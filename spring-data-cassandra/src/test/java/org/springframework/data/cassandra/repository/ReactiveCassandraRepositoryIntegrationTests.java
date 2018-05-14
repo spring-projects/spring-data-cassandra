@@ -15,17 +15,18 @@
  */
 package org.springframework.data.cassandra.repository;
 
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-import reactor.test.StepVerifier;
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.reactivestreams.Publisher;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -44,7 +45,7 @@ import org.springframework.data.cassandra.repository.support.SimpleReactiveCassa
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
-import org.springframework.data.repository.query.DefaultEvaluationContextProvider;
+import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -107,7 +108,7 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractKeyspac
 		factory.setRepositoryBaseClass(SimpleReactiveCassandraRepository.class);
 		factory.setBeanClassLoader(classLoader);
 		factory.setBeanFactory(beanFactory);
-		factory.setEvaluationContextProvider(DefaultEvaluationContextProvider.INSTANCE);
+		factory.setEvaluationContextProvider(QueryMethodEvaluationContextProvider.DEFAULT);
 
 		repository = factory.getRepository(UserRepository.class);
 		groupRepostitory = factory.getRepository(GroupRepository.class);
@@ -228,5 +229,6 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractKeyspac
 	interface GroupRepository extends ReactiveCassandraRepository<Group, GroupKey> {
 
 		Flux<Group> findByIdGroupnameAndIdHashPrefix(String groupname, String hashPrefix, Sort sort);
+
 	}
 }

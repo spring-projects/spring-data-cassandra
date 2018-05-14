@@ -37,16 +37,17 @@ import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.repository.query.DefaultEvaluationContextProvider;
+import org.springframework.data.repository.query.ExtensionAwareQueryMethodEvaluationContextProvider;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.util.ClassUtils;
 
 /**
  * Integration tests for {@link SimpleCassandraRepository}.
  *
  * @author Mark Paluch
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration
 public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest
 		implements BeanClassLoaderAware, BeanFactoryAware {
@@ -62,16 +63,16 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 
 	@Autowired private CassandraOperations operations;
 
-	CassandraRepositoryFactory factory;
-	ClassLoader classLoader;
-	BeanFactory beanFactory;
-	UserRepostitory repository;
+	private BeanFactory beanFactory;
+	private CassandraRepositoryFactory factory;
+	private ClassLoader classLoader;
+	private UserRepostitory repository;
 
-	User dave, oliver, carter, boyd;
+	private User dave, oliver, carter, boyd;
 
 	@Override
 	public void setBeanClassLoader(ClassLoader classLoader) {
-		this.classLoader = classLoader == null ? org.springframework.util.ClassUtils.getDefaultClassLoader() : classLoader;
+		this.classLoader = classLoader != null ? classLoader : ClassUtils.getDefaultClassLoader();
 	}
 
 	@Override
@@ -86,7 +87,7 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 		factory.setRepositoryBaseClass(SimpleCassandraRepository.class);
 		factory.setBeanClassLoader(classLoader);
 		factory.setBeanFactory(beanFactory);
-		factory.setEvaluationContextProvider(DefaultEvaluationContextProvider.INSTANCE);
+		factory.setEvaluationContextProvider(ExtensionAwareQueryMethodEvaluationContextProvider.DEFAULT);
 
 		repository = factory.getRepository(UserRepostitory.class);
 
@@ -301,5 +302,6 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 		assertThat(loaded).isEmpty();
 	}
 
-	interface UserRepostitory extends CassandraRepository<User, String> {}
+	interface UserRepostitory extends CassandraRepository<User, String> { }
+
 }

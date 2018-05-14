@@ -39,4 +39,5 @@ public interface SessionFactoryLookup {
 	 * @throws SessionFactoryLookupFailureException if the lookup failed.
 	 */
 	SessionFactory getSessionFactory(String sessionFactoryName) throws SessionFactoryLookupFailureException;
+
 }

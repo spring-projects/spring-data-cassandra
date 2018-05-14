@@ -481,9 +481,8 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 		Function<Row, T> mapper = getMapper(entityClass, entityClass, entity.getTableName());
 
 		return new MappingListenableFutureAdapter<>(
-				getAsyncCqlOperations().query(select, (row, rowNum) -> mapper.apply(row)), it -> {
-					return it.isEmpty() ? null : (T) it.get(0);
-				});
+				getAsyncCqlOperations().query(select, (row, rowNum) -> mapper.apply(row)),
+						it -> it.isEmpty() ? null : (T) it.get(0));
 	}
 
 	/* (non-Javadoc)

@@ -17,7 +17,7 @@ package org.springframework.data.cassandra.repository.query;
 
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.repository.Query;
-import org.springframework.data.repository.query.EvaluationContextProvider;
+import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 
 import com.datastax.driver.core.SimpleStatement;
@@ -46,16 +46,18 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 
 	/**
 	 * Create a new {@link StringBasedCassandraQuery} for the given {@link CassandraQueryMethod},
-	 * {@link CassandraOperations}, {@link SpelExpressionParser}, and {@link EvaluationContextProvider}.
+	 * {@link CassandraOperations}, {@link SpelExpressionParser}, and {@link QueryMethodEvaluationContextProvider}.
 	 *
 	 * @param queryMethod {@link CassandraQueryMethod} on which this query is based.
 	 * @param operations {@link CassandraOperations} used to perform data access in Cassandra.
 	 * @param expressionParser {@link SpelExpressionParser} used to parse expressions in the query.
-	 * @param evaluationContextProvider {@link EvaluationContextProvider} used to access the potentially shared
-	 *          {@link org.springframework.expression.spel.support.StandardEvaluationContext}.
+	 * @param evaluationContextProvider {@link QueryMethodEvaluationContextProvider} used to access
+	 * the potentially shared {@link org.springframework.expression.spel.support.StandardEvaluationContext}.
+	 * @see org.springframework.data.cassandra.repository.query.CassandraQueryMethod
+	 * @see org.springframework.data.cassandra.core.CassandraOperations
 	 */
 	public StringBasedCassandraQuery(CassandraQueryMethod queryMethod, CassandraOperations operations,
-			SpelExpressionParser expressionParser, EvaluationContextProvider evaluationContextProvider) {
+			SpelExpressionParser expressionParser, QueryMethodEvaluationContextProvider evaluationContextProvider) {
 
 		this(queryMethod.getRequiredAnnotatedQuery(), queryMethod, operations, expressionParser,
 				evaluationContextProvider);
@@ -63,17 +65,19 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 
 	/**
 	 * Create a new {@link StringBasedCassandraQuery} for the given {@code query}, {@link CassandraQueryMethod},
-	 * {@link CassandraOperations}, {@link SpelExpressionParser}, and {@link EvaluationContextProvider}.
+	 * {@link CassandraOperations}, {@link SpelExpressionParser}, and {@link QueryMethodEvaluationContextProvider}.
 	 *
-	 * @param query
+	 * @param query {@link String} containing the Apache Cassandra CQL query to execute.
 	 * @param method {@link CassandraQueryMethod} on which this query is based.
 	 * @param operations {@link CassandraOperations} used to perform data access in Cassandra.
 	 * @param expressionParser {@link SpelExpressionParser} used to parse expressions in the query.
-	 * @param evaluationContextProvider {@link EvaluationContextProvider} used to access the potentially shared
-	 *          {@link org.springframework.expression.spel.support.StandardEvaluationContext}.
+	 * @param evaluationContextProvider {@link QueryMethodEvaluationContextProvider} used to access
+	 * the potentially shared {@link org.springframework.expression.spel.support.StandardEvaluationContext}.
+	 * @see org.springframework.data.cassandra.repository.query.CassandraQueryMethod
+	 * @see org.springframework.data.cassandra.core.CassandraOperations
 	 */
 	public StringBasedCassandraQuery(String query, CassandraQueryMethod method, CassandraOperations operations,
-			SpelExpressionParser expressionParser, EvaluationContextProvider evaluationContextProvider) {
+			SpelExpressionParser expressionParser, QueryMethodEvaluationContextProvider evaluationContextProvider) {
 
 		super(method, operations);
 
@@ -82,7 +86,7 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 
 		if (method.hasAnnotatedQuery()) {
 
-			Query queryAnnotation = method.getQueryAnnotation().get();
+			Query queryAnnotation = method.getQueryAnnotation().orElse(null);
 
 			this.isCountQuery = queryAnnotation.count();
 			this.isExistsQuery = queryAnnotation.exists();

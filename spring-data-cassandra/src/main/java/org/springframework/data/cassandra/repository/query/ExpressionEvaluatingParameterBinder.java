@@ -19,8 +19,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.Parameter;
+import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
@@ -39,7 +39,7 @@ class ExpressionEvaluatingParameterBinder {
 
 	private final SpelExpressionParser expressionParser;
 
-	private final EvaluationContextProvider evaluationContextProvider;
+	private final QueryMethodEvaluationContextProvider evaluationContextProvider;
 
 	/**
 	 * Creates new {@link ExpressionEvaluatingParameterBinder}
@@ -48,7 +48,7 @@ class ExpressionEvaluatingParameterBinder {
 	 * @param evaluationContextProvider must not be {@literal null}.
 	 */
 	ExpressionEvaluatingParameterBinder(SpelExpressionParser expressionParser,
-			EvaluationContextProvider evaluationContextProvider) {
+			QueryMethodEvaluationContextProvider evaluationContextProvider) {
 
 		Assert.notNull(expressionParser, "ExpressionParser must not be null");
 		Assert.notNull(evaluationContextProvider, "EvaluationContextProvider must not be null");
@@ -202,6 +202,7 @@ class ExpressionEvaluatingParameterBinder {
 
 		private ParameterBinding(int parameterIndex, boolean quoted, @Nullable String expression,
 				@Nullable String parameterName) {
+
 			this.parameterIndex = parameterIndex;
 			this.quoted = quoted;
 			this.expression = expression;

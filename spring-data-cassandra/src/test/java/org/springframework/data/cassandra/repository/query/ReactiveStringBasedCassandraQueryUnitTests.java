@@ -40,7 +40,7 @@ import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.AbstractRepositoryMetadata;
-import org.springframework.data.repository.query.ExtensionAwareEvaluationContextProvider;
+import org.springframework.data.repository.query.ExtensionAwareQueryMethodEvaluationContextProvider;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.util.ReflectionUtils;
 
@@ -57,17 +57,17 @@ import com.datastax.driver.core.SimpleStatement;
 @RunWith(MockitoJUnitRunner.class)
 public class ReactiveStringBasedCassandraQueryUnitTests {
 
-	SpelExpressionParser PARSER = new SpelExpressionParser();
+	private static final SpelExpressionParser PARSER = new SpelExpressionParser();
 
-	@Mock ReactiveCassandraOperations operations;
-	@Mock ReactiveCqlOperations cqlOperations;
-	@Mock ReactiveSession reactiveSession;
-	@Mock Cluster cluster;
-	@Mock Configuration configuration;
+	@Mock private Cluster cluster;
+	@Mock private Configuration configuration;
+	@Mock private ReactiveCassandraOperations operations;
+	@Mock private ReactiveCqlOperations cqlOperations;
+	@Mock private ReactiveSession reactiveSession;
 
-	RepositoryMetadata metadata;
-	MappingCassandraConverter converter;
-	ProjectionFactory factory;
+	private MappingCassandraConverter converter;
+	private ProjectionFactory factory;
+	private RepositoryMetadata metadata;
 
 	@Before
 	@SuppressWarnings("unchecked")
@@ -136,9 +136,10 @@ public class ReactiveStringBasedCassandraQueryUnitTests {
 				new ReactiveCassandraQueryMethod(method, metadata, factory, converter.getMappingContext());
 
 		return new ReactiveStringBasedCassandraQuery(queryMethod, operations, PARSER,
-				new ExtensionAwareEvaluationContextProvider());
+				ExtensionAwareQueryMethodEvaluationContextProvider.DEFAULT);
 	}
 
+	@SuppressWarnings("unused")
 	private interface SampleRepository extends Repository<Person, String> {
 
 		@Query("SELECT * FROM person WHERE lastname=?0;")
@@ -147,5 +148,6 @@ public class ReactiveStringBasedCassandraQueryUnitTests {
 
 		@Query("SELECT * FROM person WHERE lastname=?0;")
 		Person findByLastname(QueryOptions queryOptions, String lastname);
+
 	}
 }

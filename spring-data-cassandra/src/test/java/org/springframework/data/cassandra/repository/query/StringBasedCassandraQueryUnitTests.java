@@ -15,8 +15,8 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -32,6 +32,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
@@ -48,7 +49,7 @@ import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.AbstractRepositoryMetadata;
-import org.springframework.data.repository.query.ExtensionAwareEvaluationContextProvider;
+import org.springframework.data.repository.query.ExtensionAwareQueryMethodEvaluationContextProvider;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.repository.query.QueryCreationException;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
@@ -70,15 +71,15 @@ import com.datastax.driver.core.UserType;
 @RunWith(MockitoJUnitRunner.class)
 public class StringBasedCassandraQueryUnitTests {
 
-	SpelExpressionParser PARSER = new SpelExpressionParser();
+	private static final SpelExpressionParser PARSER = new SpelExpressionParser();
 
-	@Mock CassandraOperations operations;
-	@Mock UserTypeResolver userTypeResolver;
-	@Mock UDTValue udtValue;
+	@Mock private CassandraOperations operations;
+	@Mock private UDTValue udtValue;
+	@Mock private UserTypeResolver userTypeResolver;
 
-	RepositoryMetadata metadata;
-	MappingCassandraConverter converter;
-	ProjectionFactory factory;
+	private RepositoryMetadata metadata;
+	private MappingCassandraConverter converter;
+	private ProjectionFactory factory;
 
 	@Before
 	@SuppressWarnings("unchecked")
@@ -381,9 +382,10 @@ public class StringBasedCassandraQueryUnitTests {
 				new CassandraQueryMethod(method, metadata, factory, converter.getMappingContext());
 
 		return new StringBasedCassandraQuery(queryMethod, operations, PARSER,
-				new ExtensionAwareEvaluationContextProvider());
+				ExtensionAwareQueryMethodEvaluationContextProvider.DEFAULT);
 	}
 
+	@SuppressWarnings("unused")
 	private interface SampleRepository extends Repository<Person, String> {
 
 		@Query("SELECT * FROM person WHERE lastname = ?0;")
@@ -434,10 +436,11 @@ public class StringBasedCassandraQueryUnitTests {
 
 		@ComposedQueryAnnotation
 		Person findByComposedQueryAnnotation(String lastname);
+
 	}
 
 	@Retention(RetentionPolicy.RUNTIME)
 	@Query("SELECT * FROM person WHERE lastname = ?0;")
-	@interface ComposedQueryAnnotation {
-	}
+	@interface ComposedQueryAnnotation { }
+
 }

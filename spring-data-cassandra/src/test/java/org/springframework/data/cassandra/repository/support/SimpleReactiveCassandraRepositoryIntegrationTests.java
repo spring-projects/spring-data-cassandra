@@ -15,17 +15,18 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Arrays;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.util.Arrays;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
@@ -36,9 +37,9 @@ import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.repository.ReactiveCassandraRepository;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
-import org.springframework.data.repository.query.DefaultEvaluationContextProvider;
+import org.springframework.data.repository.query.ExtensionAwareQueryMethodEvaluationContextProvider;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * Integration tests for {@link SimpleReactiveCassandraRepository}.
@@ -46,7 +47,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @author Mark Paluch
  * @author Christoph Strobl
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration
 public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest
 		implements BeanClassLoaderAware, BeanFactoryAware {
@@ -60,14 +61,15 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 		}
 	}
 
-	@Autowired private ReactiveCassandraOperations operations;
+	@Autowired
+	private ReactiveCassandraOperations operations;
 
-	ReactiveCassandraRepositoryFactory factory;
-	ClassLoader classLoader;
-	BeanFactory beanFactory;
-	UserRepostitory repository;
+	private BeanFactory beanFactory;
+	private ClassLoader classLoader;
+	private ReactiveCassandraRepositoryFactory factory;
+	private UserRepostitory repository;
 
-	User dave, oliver, carter, boyd;
+	private User dave, oliver, carter, boyd;
 
 	@Override
 	public void setBeanClassLoader(ClassLoader classLoader) {
@@ -86,7 +88,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 		factory.setRepositoryBaseClass(SimpleReactiveCassandraRepository.class);
 		factory.setBeanClassLoader(classLoader);
 		factory.setBeanFactory(beanFactory);
-		factory.setEvaluationContextProvider(DefaultEvaluationContextProvider.INSTANCE);
+		factory.setEvaluationContextProvider(ExtensionAwareQueryMethodEvaluationContextProvider.DEFAULT);
 
 		repository = factory.getRepository(UserRepostitory.class);
 
@@ -380,5 +382,6 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 		StepVerifier.create(repository.findById(boyd.getId())).expectNextCount(0).verifyComplete();
 	}
 
-	interface UserRepostitory extends ReactiveCassandraRepository<User, String> {}
+	interface UserRepostitory extends ReactiveCassandraRepository<User, String> { }
+
 }

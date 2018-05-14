@@ -17,7 +17,7 @@ package org.springframework.data.cassandra.repository.query;
 
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.repository.Query;
-import org.springframework.data.repository.query.EvaluationContextProvider;
+import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.util.Assert;
 
@@ -47,17 +47,20 @@ public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandra
 
 	/**
 	 * Create a new {@link ReactiveStringBasedCassandraQuery} for the given {@link CassandraQueryMethod},
-	 * {@link ReactiveCassandraOperations}, {@link SpelExpressionParser}, and {@link EvaluationContextProvider}.
+	 * {@link ReactiveCassandraOperations}, {@link SpelExpressionParser},
+	 * and {@link QueryMethodEvaluationContextProvider}.
 	 *
 	 * @param queryMethod {@link ReactiveCassandraQueryMethod} on which this query is based.
 	 * @param operations {@link ReactiveCassandraOperations} used to perform data access in Cassandra.
 	 * @param expressionParser {@link SpelExpressionParser} used to parse expressions in the query.
-	 * @param evaluationContextProvider {@link EvaluationContextProvider} used to access the potentially shared
-	 *          {@link org.springframework.expression.spel.support.StandardEvaluationContext}.
+	 * @param evaluationContextProvider {@link QueryMethodEvaluationContextProvider} used to access
+	 * the potentially shared {@link org.springframework.expression.spel.support.StandardEvaluationContext}.
+	 * @see org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryMethod
+	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations
 	 */
 	public ReactiveStringBasedCassandraQuery(ReactiveCassandraQueryMethod queryMethod,
 			ReactiveCassandraOperations operations, SpelExpressionParser expressionParser,
-			EvaluationContextProvider evaluationContextProvider) {
+			QueryMethodEvaluationContextProvider evaluationContextProvider) {
 
 		this(queryMethod.getRequiredAnnotatedQuery(), queryMethod, operations, expressionParser,
 				evaluationContextProvider);
@@ -65,17 +68,20 @@ public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandra
 
 	/**
 	 * Create a new {@link ReactiveStringBasedCassandraQuery} for the given {@code query}, {@link CassandraQueryMethod},
-	 * {@link ReactiveCassandraOperations}, {@link SpelExpressionParser}, and {@link EvaluationContextProvider}.
+	 * {@link ReactiveCassandraOperations}, {@link SpelExpressionParser},
+	 * and {@link QueryMethodEvaluationContextProvider}.
 	 *
 	 * @param method {@link ReactiveCassandraQueryMethod} on which this query is based.
 	 * @param operations {@link ReactiveCassandraOperations} used to perform data access in Cassandra.
 	 * @param expressionParser {@link SpelExpressionParser} used to parse expressions in the query.
-	 * @param evaluationContextProvider {@link EvaluationContextProvider} used to access the potentially shared
-	 *          {@link org.springframework.expression.spel.support.StandardEvaluationContext}.
+	 * @param evaluationContextProvider {@link QueryMethodEvaluationContextProvider} used to access
+	 * the potentially shared {@link org.springframework.expression.spel.support.StandardEvaluationContext}.
+	 * @see org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryMethod
+	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations
 	 */
 	public ReactiveStringBasedCassandraQuery(String query, ReactiveCassandraQueryMethod method,
 			ReactiveCassandraOperations operations, SpelExpressionParser expressionParser,
-			EvaluationContextProvider evaluationContextProvider) {
+			QueryMethodEvaluationContextProvider evaluationContextProvider) {
 
 		super(method, operations);
 
@@ -86,7 +92,7 @@ public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandra
 
 		if (method.hasAnnotatedQuery()) {
 
-			Query queryAnnotation = method.getQueryAnnotation().get();
+			Query queryAnnotation = method.getQueryAnnotation().orElse(null);
 
 			this.isCountQuery = queryAnnotation.count();
 			this.isExistsQuery = queryAnnotation.exists();

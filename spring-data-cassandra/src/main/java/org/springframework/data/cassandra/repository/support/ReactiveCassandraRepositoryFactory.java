@@ -31,9 +31,9 @@ import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.ReactiveRepositoryFactorySupport;
-import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
+import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.lang.Nullable;
@@ -90,7 +90,7 @@ public class ReactiveCassandraRepositoryFactory extends ReactiveRepositoryFactor
 	 */
 	@Override
 	protected Optional<QueryLookupStrategy> getQueryLookupStrategy(@Nullable Key key,
-			EvaluationContextProvider evaluationContextProvider) {
+			QueryMethodEvaluationContextProvider evaluationContextProvider) {
 		return Optional.of(new CassandraQueryLookupStrategy(operations, evaluationContextProvider, mappingContext));
 	}
 
@@ -113,12 +113,12 @@ public class ReactiveCassandraRepositoryFactory extends ReactiveRepositoryFactor
 	 */
 	private static class CassandraQueryLookupStrategy implements QueryLookupStrategy {
 
-		private final EvaluationContextProvider evaluationContextProvider;
+		private final QueryMethodEvaluationContextProvider evaluationContextProvider;
 		private final ReactiveCassandraOperations operations;
 		private final MappingContext<? extends CassandraPersistentEntity<?>, ? extends CassandraPersistentProperty> mappingContext;
 
 		CassandraQueryLookupStrategy(ReactiveCassandraOperations operations,
-				EvaluationContextProvider evaluationContextProvider,
+				QueryMethodEvaluationContextProvider evaluationContextProvider,
 				MappingContext<? extends CassandraPersistentEntity<?>, ? extends CassandraPersistentProperty> mappingContext) {
 
 			this.evaluationContextProvider = evaluationContextProvider;

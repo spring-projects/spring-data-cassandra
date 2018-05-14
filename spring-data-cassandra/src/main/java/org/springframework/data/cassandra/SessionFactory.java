@@ -42,4 +42,5 @@ public interface SessionFactory {
 	 * @return a {@link Session} to Apache Cassandra.
 	 */
 	Session getSession();
+
 }
