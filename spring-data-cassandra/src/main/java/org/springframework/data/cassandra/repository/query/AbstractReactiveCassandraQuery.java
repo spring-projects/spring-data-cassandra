@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
+import org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution.SlicedExecution;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -102,8 +103,9 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 		ResultProcessor resultProcessor = getQueryMethod().getResultProcessor()
 				.withDynamicProjection(convertingParameterAccessor);
 
-		ReactiveCassandraQueryExecution queryExecution = getExecution(new ResultProcessingConverter(resultProcessor,
-				getReactiveCassandraOperations().getConverter().getMappingContext(), getEntityInstantiators()));
+		ReactiveCassandraQueryExecution queryExecution = getExecution(parameterAccessor,
+				new ResultProcessingConverter(resultProcessor,
+						getReactiveCassandraOperations().getConverter().getMappingContext(), getEntityInstantiators()));
 
 		Class<?> resultType = resolveResultType(resultProcessor);
 
@@ -127,17 +129,24 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 
 	/**
 	 * Returns the execution instance to use.
-	 *
+	 * @param parameterAccessor must not be {@literal null}.
 	 * @param resultProcessing must not be {@literal null}. @return
 	 */
-	private ReactiveCassandraQueryExecution getExecution(Converter<Object, Object> resultProcessing) {
-		return new ResultProcessingExecution(getExecutionToWrap(), resultProcessing);
+	private ReactiveCassandraQueryExecution getExecution(CassandraParameterAccessor parameterAccessor,
+			Converter<Object, Object> resultProcessing) {
+		return new ResultProcessingExecution(getExecutionToWrap(parameterAccessor), resultProcessing);
 	}
 
 	/* (non-Javadoc) */
-	private ReactiveCassandraQueryExecution getExecutionToWrap() {
-		return (getQueryMethod().isCollectionQuery() ? new CollectionExecution(getReactiveCassandraOperations())
-				: new SingleEntityExecution(getReactiveCassandraOperations(), isLimiting()));
+	private ReactiveCassandraQueryExecution getExecutionToWrap(CassandraParameterAccessor parameterAccessor) {
+
+		if (getQueryMethod().isSliceQuery()) {
+			return new SlicedExecution(getReactiveCassandraOperations(), parameterAccessor.getPageable());
+		} else if (getQueryMethod().isCollectionQuery()) {
+			return new CollectionExecution(getReactiveCassandraOperations());
+		} else {
+			return new SingleEntityExecution(getReactiveCassandraOperations(), isLimiting());
+		}
 	}
 
 	/**

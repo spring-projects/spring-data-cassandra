@@ -17,7 +17,9 @@ package org.springframework.data.cassandra.core;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
+import org.springframework.data.cassandra.ReactiveResultSet;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.cql.QueryOptionsUtil;
 import org.springframework.data.cassandra.core.cql.RowMapper;
@@ -29,9 +31,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.util.Assert;
+import reactor.core.publisher.Mono;
 
 import com.datastax.driver.core.PagingState;
 import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Delete.Where;
 import com.datastax.driver.core.querybuilder.Insert;
@@ -164,5 +168,24 @@ class QueryUtils {
 		CassandraPageRequest pageRequest = CassandraPageRequest.of(PageRequest.of(page, pageSize), pagingState);
 
 		return new SliceImpl<>(result, pageRequest, pagingState != null);
+	}
+
+	/**
+	 * Read a {@link Mono<Slice>} of data from the {@link ReactiveResultSet} for a {@link Pageable}.
+	 *
+	 * @param resultSet must not be {@literal null}.
+	 * @param fetchSize must not be {@literal null}.
+	 * @param rowMapper must not be {@literal null}.
+	 * @return the resulting {@link Slice}.
+	 */
+	static <T> Mono<Slice<T>> readSlice(ReactiveResultSet resultSet, Integer fetchSize, Function<Row, T> rowMapper) {
+
+		return resultSet.rows().take(fetchSize).map(rowMapper).collectList()
+				.map(entities -> {
+					PagingState pagingState = resultSet.getExecutionInfo().getPagingState();
+					PageRequest request = PageRequest.of(0, fetchSize);
+					CassandraPageRequest pageRequest = CassandraPageRequest.of(request, pagingState);
+					return new SliceImpl<>(entities, pageRequest, pagingState != null);
+				});
 	}
 }

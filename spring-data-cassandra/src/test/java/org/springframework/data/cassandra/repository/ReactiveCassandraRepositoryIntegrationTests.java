@@ -35,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
+import org.springframework.data.cassandra.core.query.CassandraPageRequest;
 import org.springframework.data.cassandra.domain.Group;
 import org.springframework.data.cassandra.domain.GroupKey;
 import org.springframework.data.cassandra.domain.User;
@@ -42,6 +43,8 @@ import org.springframework.data.cassandra.repository.support.IntegrationTestConf
 import org.springframework.data.cassandra.repository.support.ReactiveCassandraRepositoryFactory;
 import org.springframework.data.cassandra.repository.support.SimpleReactiveCassandraRepository;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.repository.query.DefaultEvaluationContextProvider;
@@ -128,6 +131,13 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractKeyspac
 		StepVerifier.create(repository.findByLastname(dave.getLastname())).expectNextCount(2).verifyComplete();
 	}
 
+	@Test //DATACASS-529
+	public void shouldFindSliceByLastName() {
+		StepVerifier.create(repository.findByLastname(carter.getLastname(), CassandraPageRequest.first(1)))
+				.expectNextMatches(users -> users.getSize() == 1 && users.hasNext())
+				.verifyComplete();
+	}
+
 	@Test // DATACASS-525
 	public void findOneWithManyResultsShouldFail() {
 		StepVerifier.create(repository.findOneByLastname(dave.getLastname()))
@@ -184,6 +194,8 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractKeyspac
 	interface UserRepository extends ReactiveCassandraRepository<User, String> {
 
 		Flux<User> findByLastname(String lastname);
+
+		Mono<Slice<User>> findByLastname(String firstname, Pageable pageable);
 
 		Mono<User> findFirstByLastname(String lastname);
 

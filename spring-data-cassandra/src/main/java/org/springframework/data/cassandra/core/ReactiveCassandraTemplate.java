@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.core;
 
+import java.util.function.Function;
+
 import lombok.NonNull;
 import lombok.Value;
 
@@ -30,6 +32,7 @@ import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.convert.QueryMapper;
 import org.springframework.data.cassandra.core.convert.UpdateMapper;
+import org.springframework.data.cassandra.core.cql.CassandraAccessor;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.cql.CqlProvider;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
@@ -41,6 +44,7 @@ import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.query.Query;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -48,6 +52,7 @@ import org.springframework.util.ClassUtils;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.Row;
 import com.datastax.driver.core.exceptions.DriverException;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Insert;
@@ -243,6 +248,23 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 
 		return getReactiveCqlOperations().query(cql, (row, rowNum) -> getConverter().read(entityClass, row));
 	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#slice(com.datastax.driver.core.Statement, java.lang.Class)
+	 */
+    @Override
+    public <T> Mono<Slice<T>> slice(Statement statement, Class<T> entityClass) {
+
+        Assert.notNull(statement, "Statement must not be null");
+        Assert.notNull(entityClass, "Entity type must not be null");
+
+        Mono<ReactiveResultSet> resultSetMono = getReactiveCqlOperations().queryForResultSet(statement);
+        Mono<Integer> effectiveFetchSizeMono = getEffectiveFetchSize(statement);
+		Function<Row,T> rowMapper = (row) -> getConverter().read(entityClass, row);
+
+		return Mono.zip(resultSetMono, effectiveFetchSizeMono)
+				.flatMap(tuple -> QueryUtils.readSlice(tuple.getT1(), tuple.getT2(), rowMapper));
+    }
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#selectOne(com.datastax.driver.core.Statement, java.lang.Class)
@@ -462,8 +484,27 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations {
 		return getReactiveCqlOperations().execute(truncate).then();
 	}
 
-	@Value
-	static class StatementCallback implements ReactiveSessionCallback<WriteResult>, CqlProvider {
+    @SuppressWarnings("ConstantConditions")
+    private Mono<Integer> getEffectiveFetchSize(Statement statement) {
+
+        if (statement.getFetchSize() > 0) {
+            return Mono.just(statement.getFetchSize());
+        }
+
+        if (getReactiveCqlOperations() instanceof CassandraAccessor) {
+            CassandraAccessor accessor = (CassandraAccessor) getReactiveCqlOperations();
+            if (accessor.getFetchSize() != -1) {
+                return Mono.just(accessor.getFetchSize());
+            }
+        }
+
+		return getReactiveCqlOperations().execute((ReactiveSessionCallback<Integer>) session ->
+				Mono.fromSupplier(() -> session.getCluster().getConfiguration().getQueryOptions().getFetchSize())
+		).single();
+    }
+
+    @Value
+    static class StatementCallback implements ReactiveSessionCallback<WriteResult>, CqlProvider {
 
 		@NonNull Statement statement;
 

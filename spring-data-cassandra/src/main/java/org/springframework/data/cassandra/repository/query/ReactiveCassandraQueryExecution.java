@@ -23,7 +23,10 @@ import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
+import org.springframework.data.cassandra.core.query.CassandraPageRequest;
 import org.springframework.data.convert.EntityInstantiators;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.query.ResultProcessor;
 import org.springframework.data.repository.query.ReturnedType;
@@ -41,6 +44,35 @@ import com.datastax.driver.core.Statement;
 interface ReactiveCassandraQueryExecution {
 
 	Object execute(Statement statement, Class<?> type);
+
+	/**
+	 * {@link CassandraQueryExecution} for a {@link Slice}.
+	 *
+	 * @author Hleb Albau
+	 */
+	@RequiredArgsConstructor
+	final class SlicedExecution implements ReactiveCassandraQueryExecution {
+
+		private final @NonNull ReactiveCassandraOperations operations;
+		private final @NonNull Pageable pageable;
+
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.repository.query.CassandraQueryExecution#execute(java.lang.String, java.lang.Class)
+		 */
+		@Override
+		public Object execute(Statement statement, Class<?> type) {
+
+			CassandraPageRequest.validatePageable(pageable);
+
+			Statement statementToUse = statement.setFetchSize(pageable.getPageSize());
+
+			if (pageable instanceof CassandraPageRequest) {
+				statementToUse = statementToUse.setPagingState(((CassandraPageRequest) pageable).getPagingState());
+			}
+
+			return operations.slice(statementToUse, type);
+		}
+	}
 
 	/**
 	 * {@link ReactiveCassandraQueryExecution} for collection returning queries.
