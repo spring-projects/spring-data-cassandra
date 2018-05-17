@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.query;
 
-import static org.springframework.data.cassandra.core.query.SerializationUtils.*;
+import static org.springframework.data.cassandra.core.query.SerializationUtils.serializeToCqlSafely;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -52,7 +52,7 @@ public class Update {
 	/**
 	 * Create an empty {@link Update} object.
 	 *
-	 * @return a new {@link Update}.
+	 * @return a new, empty {@link Update}.
 	 */
 	public static Update empty() {
 		return EMPTY;
@@ -221,6 +221,7 @@ public class Update {
 	 *
 	 * @author Mark Paluch
 	 */
+	@SuppressWarnings("unused")
 	public interface AddToBuilder {
 
 		/**
@@ -531,7 +532,6 @@ public class Update {
 
 		@SuppressWarnings({ "unchecked", "rawtypes" })
 		public AddToMapOp(ColumnName columnName, Map<? extends Object, ? extends Object> value) {
-
 			super(columnName);
 			this.value = (Map) value;
 		}
@@ -557,7 +557,6 @@ public class Update {
 		private final @Nullable Object value;
 
 		public SetOp(ColumnName columnName, @Nullable Object value) {
-
 			super(columnName);
 			this.value = value;
 		}
@@ -649,7 +648,6 @@ public class Update {
 		private final Number value;
 
 		public IncrOp(ColumnName columnName, Number value) {
-
 			super(columnName);
 			this.value = value;
 		}

@@ -132,6 +132,7 @@ public interface ReactiveUpdateOperation {
 		 * @see reactor.core.publisher.Mono
 		 */
 		Mono<WriteResult> apply(Update update);
+
 	}
 
 	/**

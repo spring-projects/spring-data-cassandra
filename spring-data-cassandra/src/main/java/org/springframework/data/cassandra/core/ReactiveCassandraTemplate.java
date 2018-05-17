@@ -15,11 +15,12 @@
  */
 package org.springframework.data.cassandra.core;
 
+import java.util.function.Function;
+
 import lombok.Value;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.util.function.Function;
 
 import org.reactivestreams.Publisher;
 import org.springframework.context.ApplicationEvent;

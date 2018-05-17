@@ -15,8 +15,9 @@
  */
 package org.springframework.data.cassandra.core.query;
 
-import static java.util.stream.StreamSupport.*;
-import static org.springframework.util.ObjectUtils.*;
+import static java.util.stream.StreamSupport.stream;
+import static org.springframework.util.ObjectUtils.nullSafeEquals;
+import static org.springframework.util.ObjectUtils.nullSafeHashCode;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -76,9 +77,9 @@ public class Query implements Filter {
 	}
 
 	/**
-	 * Static factory method to create an empty {@link Query}
+	 * Static factory method to create an empty {@link Query}.
 	 *
-	 * @return the new {@link Query}.
+	 * @return a new, empty {@link Query}.
 	 */
 	public static Query empty() {
 		return EMPTY;
@@ -110,8 +111,8 @@ public class Query implements Filter {
 		List<CriteriaDefinition> collect = stream(criteriaDefinitions.spliterator(), false)
 				.collect(Collectors.toList());
 
-		return new Query(collect, Columns.empty(), Sort.unsorted(), Optional.empty(), Optional.empty(), Optional.empty(),
-				false);
+		return new Query(collect, Columns.empty(), Sort.unsorted(), Optional.empty(), Optional.empty(),
+				Optional.empty(), false);
 	}
 
 	/**
@@ -332,8 +333,8 @@ public class Query implements Filter {
 		boolean limitEqual = this.limit == that.limit;
 		boolean allowFilteringEqual = this.allowFiltering == that.allowFiltering;
 
-		return (criteriaEqual && columnsEqual && sortEqual && pagingStateEqual && queryOptionsEqual && limitEqual
-				&& allowFilteringEqual);
+		return criteriaEqual && columnsEqual && sortEqual && pagingStateEqual && queryOptionsEqual && limitEqual
+				&& allowFilteringEqual;
 	}
 
 	/* (non-Javadoc)
