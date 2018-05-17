@@ -1,6 +1,17 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 2.1.0.M3 (2018-05-17)
+----------------------------------------
+* DATACASS-553 - Adapt to SpEL Extension API changes in Spring Data Commons.
+* DATACASS-549 - Add Criteria.ne(...) and Criteria.isNotNull() operators.
+* DATACASS-548 - Upgrade to Cassandra Java Driver 3.5.0.
+* DATACASS-547 - Annotate writing converters for Cassandra date/time conversion.
+* DATACASS-546 - Unable to delete user-defined types when one UDT references another.
+* DATACASS-545 - Release 2.1 M3 (Lovelace).
+* DATACASS-484 - Add Kotlin extensions for Template API.
+
+
 Changes in version 2.0.7.RELEASE (2018-05-08)
 ---------------------------------------------
 * DATACASS-547 - Annotate writing converters for Cassandra date/time conversion.
