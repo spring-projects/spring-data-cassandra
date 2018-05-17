@@ -15,9 +15,8 @@
  */
 package org.springframework.data.cassandra.core.query;
 
-import static java.util.stream.StreamSupport.stream;
-import static org.springframework.util.ObjectUtils.nullSafeEquals;
-import static org.springframework.util.ObjectUtils.nullSafeHashCode;
+import static java.util.stream.StreamSupport.*;
+import static org.springframework.util.ObjectUtils.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
