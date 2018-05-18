@@ -15,6 +15,18 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.function.Consumer;
+
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
+import org.springframework.data.cassandra.CassandraConnectionFailureException;
+import org.springframework.data.cassandra.CassandraInvalidQueryException;
+import org.springframework.data.cassandra.core.cql.support.PreparedStatementCache;
+
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.ConsistencyLevel;
@@ -35,17 +47,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.dao.IncorrectResultSizeDataAccessException;
-import org.springframework.data.cassandra.CassandraConnectionFailureException;
-import org.springframework.data.cassandra.CassandraInvalidQueryException;
-import org.springframework.data.cassandra.core.cql.support.PreparedStatementCache;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -61,6 +62,7 @@ import static org.mockito.Mockito.when;
  * Unit tests for {@link CqlTemplate}.
  *
  * @author Mark Paluch
+ * @author Mike Barlotta (CodeSmell)
  */
 @RunWith(MockitoJUnitRunner.class)
 public class CqlTemplateUnitTests {

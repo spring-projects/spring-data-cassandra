@@ -15,6 +15,19 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.support.DataAccessUtils;
+import org.springframework.data.cassandra.SessionFactory;
+import org.springframework.data.cassandra.core.cql.support.PreparedStatementCache;
+import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
+
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Host;
 import com.datastax.driver.core.PreparedStatement;
@@ -24,18 +37,6 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.exceptions.DriverException;
-import org.springframework.dao.DataAccessException;
-import org.springframework.dao.support.DataAccessUtils;
-import org.springframework.data.cassandra.SessionFactory;
-import org.springframework.data.cassandra.core.cql.support.PreparedStatementCache;
-import org.springframework.lang.Nullable;
-import org.springframework.util.Assert;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
 
 /**
  * <b>This is the central class in the CQL core package.</b> It simplifies the use of CQL and helps to avoid common
@@ -69,6 +70,7 @@ import java.util.function.Function;
  * @author Antoine Toulme
  * @author John Blum
  * @author Mark Paluch
+ * @author Mike Barlotta (CodeSmell)
  * @see PreparedStatementCreator
  * @see PreparedStatementBinder
  * @see PreparedStatementCallback
