@@ -286,7 +286,6 @@ public class CqlTemplateUnitTests {
         when(mockCache.getPreparedStatement(Mockito.any(Session.class), Mockito.any(RegularStatement.class)))
             .thenReturn(preparedStatement);
 
-        when(session.prepare("SELECT * FROM user WHERE username = ?")).thenReturn(preparedStatement);
         when(preparedStatement.bind("Walter")).thenReturn(boundStatement);
         when(session.execute(boundStatement)).thenReturn(resultSet);
         when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
@@ -654,7 +653,6 @@ public class CqlTemplateUnitTests {
         when(mockCache.getPreparedStatement(Mockito.any(Session.class), Mockito.any(RegularStatement.class)))
             .thenReturn(preparedStatement);
 
-        when(session.prepare("SELECT * FROM user WHERE username = ?")).thenReturn(preparedStatement);
         when(preparedStatement.bind("Walter")).thenReturn(boundStatement);
         when(session.execute(boundStatement)).thenReturn(resultSet);
         when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
@@ -721,7 +719,6 @@ public class CqlTemplateUnitTests {
         when(mockCache.getPreparedStatement(Mockito.any(Session.class), Mockito.any(RegularStatement.class)))
             .thenReturn(preparedStatement);
 
-        when(session.prepare("SELECT * FROM user WHERE username = ?")).thenReturn(preparedStatement);
         when(preparedStatement.bind("Walter")).thenReturn(boundStatement);
         when(session.execute(boundStatement)).thenReturn(resultSet);
         when(resultSet.iterator()).thenReturn(Arrays.asList(row, row).iterator());
