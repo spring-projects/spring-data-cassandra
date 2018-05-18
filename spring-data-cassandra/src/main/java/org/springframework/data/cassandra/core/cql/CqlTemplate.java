@@ -15,18 +15,6 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-
-import org.springframework.dao.DataAccessException;
-import org.springframework.dao.support.DataAccessUtils;
-import org.springframework.data.cassandra.SessionFactory;
-import org.springframework.lang.Nullable;
-import org.springframework.util.Assert;
-
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Host;
 import com.datastax.driver.core.PreparedStatement;
@@ -36,6 +24,18 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.exceptions.DriverException;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.support.DataAccessUtils;
+import org.springframework.data.cassandra.SessionFactory;
+import org.springframework.data.cassandra.core.cql.support.PreparedStatementCache;
+import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
 
 /**
  * <b>This is the central class in the CQL core package.</b> It simplifies the use of CQL and helps to avoid common
@@ -78,6 +78,8 @@ import com.datastax.driver.core.exceptions.DriverException;
  * @see org.springframework.dao.support.PersistenceExceptionTranslator
  */
 public class CqlTemplate extends CassandraAccessor implements CqlOperations {
+
+    private PreparedStatementCache preparedStatementCache;
 
 	/**
 	 * Create a new, uninitialized {@link CqlTemplate}. Note: The {@link SessionFactory} has to be set before using the
@@ -704,9 +706,13 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	/* (non-Javadoc) */
-	protected PreparedStatementCreator newPreparedStatementCreator(String cql) {
-		return new SimplePreparedStatementCreator(cql);
-	}
+    protected PreparedStatementCreator newPreparedStatementCreator(String cql) {
+        if (preparedStatementCache == null) {
+            return new SimplePreparedStatementCreator(cql);
+        } else {
+            return org.springframework.data.cassandra.core.cql.support.CachedPreparedStatementCreator.of(preparedStatementCache, cql);
+        }
+    }
 
 	// -------------------------------------------------------------------------
 	// Implementation hooks and helper methods
@@ -734,25 +740,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		return sessionFactory.getSession();
 	}
 
-	private class SimplePreparedStatementCreator implements PreparedStatementCreator, CqlProvider {
-
-		private final String cql;
-
-		SimplePreparedStatementCreator(String cql) {
-
-			Assert.notNull(cql, "CQL must not be null");
-
-			this.cql = cql;
-		}
-
-		@Override
-		public PreparedStatement createPreparedStatement(Session session) throws DriverException {
-			return session.prepare(cql);
-		}
-
-		@Override
-		public String getCql() {
-			return cql;
-		}
+	public void setPreparedStatementCache(PreparedStatementCache psCache) {
+	    this.preparedStatementCache = psCache;
 	}
+
 }
