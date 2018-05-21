@@ -24,7 +24,6 @@ import java.util.function.Function;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.data.cassandra.SessionFactory;
-import org.springframework.data.cassandra.core.cql.support.PreparedStatementCache;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -80,8 +79,6 @@ import com.datastax.driver.core.exceptions.DriverException;
  * @see org.springframework.dao.support.PersistenceExceptionTranslator
  */
 public class CqlTemplate extends CassandraAccessor implements CqlOperations {
-
-    private PreparedStatementCache preparedStatementCache;
 
 	/**
 	 * Create a new, uninitialized {@link CqlTemplate}. Note: The {@link SessionFactory} has to be set before using the
@@ -408,7 +405,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	@Override
 	public boolean execute(String cql, @Nullable PreparedStatementBinder psb) throws DataAccessException {
 		// noinspection ConstantConditions
-		return query(new SimplePreparedStatementCreator(cql), psb, ResultSet::wasApplied);
+		return query(newPreparedStatementCreator(cql), psb, ResultSet::wasApplied);
 	}
 
 	/*
@@ -708,13 +705,9 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	/* (non-Javadoc) */
-    protected PreparedStatementCreator newPreparedStatementCreator(String cql) {
-        if (preparedStatementCache == null) {
-            return new SimplePreparedStatementCreator(cql);
-        } else {
-            return org.springframework.data.cassandra.core.cql.support.CachedPreparedStatementCreator.of(preparedStatementCache, cql);
-        }
-    }
+	protected PreparedStatementCreator newPreparedStatementCreator(String cql) {
+		return new SimplePreparedStatementCreator(cql);
+	}
 
 	// -------------------------------------------------------------------------
 	// Implementation hooks and helper methods
@@ -740,10 +733,6 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		Assert.state(sessionFactory != null, "SessionFactory is null");
 
 		return sessionFactory.getSession();
-	}
-
-	public void setPreparedStatementCache(PreparedStatementCache psCache) {
-	    this.preparedStatementCache = psCache;
 	}
 
 }
