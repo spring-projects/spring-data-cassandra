@@ -40,7 +40,6 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.cassandra.CassandraConnectionFailureException;
 import org.springframework.data.cassandra.CassandraInvalidQueryException;
-import org.springframework.data.cassandra.core.cql.support.PreparedStatementCache;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.ColumnDefinitions;
@@ -69,7 +68,6 @@ public class CqlTemplateUnitTests {
 	@Mock PreparedStatement preparedStatement;
 	@Mock BoundStatement boundStatement;
 	@Mock ColumnDefinitions columnDefinitions;
-	@Mock PreparedStatementCache mockCache;
 
 	CqlTemplate template;
 
