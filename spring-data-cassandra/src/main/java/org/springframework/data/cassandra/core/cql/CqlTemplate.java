@@ -408,7 +408,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	@Override
 	public boolean execute(String cql, @Nullable PreparedStatementBinder psb) throws DataAccessException {
 		// noinspection ConstantConditions
-		return query(new SimplePreparedStatementCreator(cql), psb, ResultSet::wasApplied);
+		return query(newPreparedStatementCreator(cql), psb, ResultSet::wasApplied);
 	}
 
 	/*
