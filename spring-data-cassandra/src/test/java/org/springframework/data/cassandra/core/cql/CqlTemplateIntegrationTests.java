@@ -24,9 +24,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
 
 import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Select;
 
 /**
  * Integration tests for {@link CqlTemplate}.
@@ -35,137 +37,148 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
  */
 public class CqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
-	static final AtomicBoolean initialized = new AtomicBoolean();
-	CqlTemplate template;
+    static final AtomicBoolean initialized = new AtomicBoolean();
+    CqlTemplate template;
 
-	@Before
-	public void before() throws Exception {
+    @Before
+    public void before() throws Exception {
 
-		if (initialized.compareAndSet(false, true)) {
-			getSession().execute("CREATE TABLE IF NOT EXISTS user (id text PRIMARY KEY, username text);");
-		} else {
-			session.execute("TRUNCATE user;");
-		}
+        if (initialized.compareAndSet(false, true)) {
+            getSession().execute("CREATE TABLE IF NOT EXISTS user (id text PRIMARY KEY, username text);");
+        } else {
+            session.execute("TRUNCATE user;");
+        }
 
-		session.execute("INSERT INTO user (id, username) VALUES ('WHITE', 'Walter');");
+        session.execute("INSERT INTO user (id, username) VALUES ('WHITE', 'Walter');");
 
-		template = new CqlTemplate();
-		template.setSession(getSession());
-	}
+        template = new CqlTemplate();
+        template.setSession(getSession());
+    }
 
-	@Test // DATACASS-292
-	public void executeShouldRemoveRecords() throws Exception {
+    @Test // DATACASS-292
+    public void executeShouldRemoveRecords() throws Exception {
 
-		template.execute("DELETE FROM user WHERE id = 'WHITE'");
+        template.execute("DELETE FROM user WHERE id = 'WHITE'");
 
-		assertThat(session.execute("SELECT * FROM user").one()).isNull();
-	}
+        assertThat(session.execute("SELECT * FROM user").one()).isNull();
+    }
 
-	@Test // DATACASS-292
-	public void queryShouldInvokeCallback() throws Exception {
+    @Test // DATACASS-292
+    public void queryShouldInvokeCallback() throws Exception {
 
-		List<String> result = new ArrayList<>();
-		template.query("SELECT id FROM user;", row -> {
-			result.add(row.getString(0));
-		});
+        List<String> result = new ArrayList<>();
+        template.query("SELECT id FROM user;", row -> {
+            result.add(row.getString(0));
+        });
 
-		assertThat(result).contains("WHITE");
-	}
+        assertThat(result).contains("WHITE");
+    }
 
-	@Test // DATACASS-292
-	public void queryForObjectShouldReturnFirstColumn() throws Exception {
+    @Test // DATACASS-292
+    public void queryForObjectShouldReturnFirstColumn() throws Exception {
 
-		String id = template.queryForObject("SELECT id FROM user;", String.class);
+        String id = template.queryForObject("SELECT id FROM user;", String.class);
 
-		assertThat(id).isEqualTo("WHITE");
-	}
+        assertThat(id).isEqualTo("WHITE");
+    }
 
-	@Test // DATACASS-292
-	public void queryForObjectShouldReturnMap() throws Exception {
+    @Test // DATACASS-292
+    public void queryForObjectShouldReturnMap() throws Exception {
 
-		Map<String, Object> map = template.queryForMap("SELECT * FROM user;");
+        Map<String, Object> map = template.queryForMap("SELECT * FROM user;");
 
-		assertThat(map).containsEntry("id", "WHITE").containsEntry("username", "Walter");
-	}
+        assertThat(map).containsEntry("id", "WHITE").containsEntry("username", "Walter");
+    }
 
-	@Test // DATACASS-292
-	public void executeStatementShouldRemoveRecords() throws Exception {
+    @Test // DATACASS-292
+    public void executeStatementShouldRemoveRecords() throws Exception {
 
-		template.execute(QueryBuilder.delete().from("user").where(QueryBuilder.eq("id", "WHITE")));
+        template.execute(QueryBuilder.delete().from("user").where(QueryBuilder.eq("id", "WHITE")));
 
-		assertThat(session.execute("SELECT * FROM user").one()).isNull();
-	}
+        assertThat(session.execute("SELECT * FROM user").one()).isNull();
+    }
 
-	@Test // DATACASS-292
-	public void queryStatementShouldInvokeCallback() throws Exception {
+    @Test // DATACASS-292
+    public void queryStatementShouldInvokeCallback() throws Exception {
 
-		List<String> result = new ArrayList<>();
-		template.query(QueryBuilder.select("id").from("user"), row -> {
-			result.add(row.getString(0));
-		});
+        List<String> result = new ArrayList<>();
+        template.query(QueryBuilder.select("id").from("user"), row -> {
+            result.add(row.getString(0));
+        });
 
-		assertThat(result).contains("WHITE");
-	}
+        assertThat(result).contains("WHITE");
+    }
 
-	@Test // DATACASS-292
-	public void queryForObjectStatementShouldReturnFirstColumn() throws Exception {
+    @Test // DATACASS-292
+    public void queryForObjectStatementShouldReturnFirstColumn() throws Exception {
 
-		String id = template.queryForObject(QueryBuilder.select("id").from("user"), String.class);
+        String id = template.queryForObject(QueryBuilder.select("id").from("user"), String.class);
 
-		assertThat(id).isEqualTo("WHITE");
-	}
+        assertThat(id).isEqualTo("WHITE");
+    }
 
-	@Test // DATACASS-292
-	public void queryForObjectStatementShouldReturnMap() throws Exception {
+    @Test // DATACASS-292
+    public void queryForObjectStatementShouldReturnMap() throws Exception {
 
-		Map<String, Object> map = template.queryForMap(QueryBuilder.select().from("user"));
+        Map<String, Object> map = template.queryForMap(QueryBuilder.select().from("user"));
 
-		assertThat(map).containsEntry("id", "WHITE").containsEntry("username", "Walter");
-	}
+        assertThat(map).containsEntry("id", "WHITE").containsEntry("username", "Walter");
+    }
 
-	@Test // DATACASS-292
-	public void executeWithArgsShouldRemoveRecords() throws Exception {
+    @Test // DATACASS-292
+    public void executeWithArgsShouldRemoveRecords() throws Exception {
 
-		template.execute("DELETE FROM user WHERE id = ?", "WHITE");
+        template.execute("DELETE FROM user WHERE id = ?", "WHITE");
 
-		assertThat(session.execute("SELECT * FROM user").one()).isNull();
-	}
+        assertThat(session.execute("SELECT * FROM user").one()).isNull();
+    }
 
-	@Test // DATACASS-292
-	public void queryPreparedStatementShouldInvokeCallback() throws Exception {
+    @Test // DATACASS-292
+    public void queryPreparedStatementShouldInvokeCallback() throws Exception {
 
-		List<String> result = new ArrayList<>();
-		template.query("SELECT id FROM user WHERE id = ?;", row -> {
-			result.add(row.getString(0));
-		}, "WHITE");
+        List<String> result = new ArrayList<>();
+        template.query("SELECT id FROM user WHERE id = ?;", row -> {
+            result.add(row.getString(0));
+        }, "WHITE");
 
-		assertThat(result).contains("WHITE");
-	}
+        assertThat(result).contains("WHITE");
+    }
 
-	@Test // DATACASS-292
-	public void queryPreparedStatementCreatorShouldInvokeCallback() throws Exception {
+    @Test // DATACASS-292
+    public void queryPreparedStatementCreatorShouldInvokeCallback() throws Exception {
 
-		List<String> result = new ArrayList<>();
-		template.query(session -> session.prepare("SELECT id FROM user WHERE id = ?;"), ps -> ps.bind("WHITE"), row -> {
-			result.add(row.getString(0));
-		});
+        List<String> result = new ArrayList<>();
+        template.query(session -> session.prepare("SELECT id FROM user WHERE id = ?;"), ps -> ps.bind("WHITE"), row -> {
+            result.add(row.getString(0));
+        });
 
-		assertThat(result).contains("WHITE");
-	}
+        assertThat(result).contains("WHITE");
+    }
 
-	@Test // DATACASS-292
-	public void queryForObjectWithArgsShouldReturnFirstColumn() throws Exception {
+    @Test // DATACASS-292
+    public void queryForObjectWithArgsShouldReturnFirstColumn() throws Exception {
 
-		String id = template.queryForObject("SELECT id FROM user WHERE id = ?;", String.class, "WHITE");
+        String id = template.queryForObject("SELECT id FROM user WHERE id = ?;", String.class, "WHITE");
 
-		assertThat(id).isEqualTo("WHITE");
-	}
+        assertThat(id).isEqualTo("WHITE");
+    }
 
-	@Test // DATACASS-292
-	public void queryForObjectWithArgsShouldReturnMap() throws Exception {
+    @Test // DATACASS-292
+    public void queryForObjectWithArgsShouldReturnMap() throws Exception {
 
-		Map<String, Object> map = template.queryForMap("SELECT * FROM user WHERE id = ?;", "WHITE");
+        Map<String, Object> map = template.queryForMap("SELECT * FROM user WHERE id = ?;", "WHITE");
 
-		assertThat(map).containsEntry("id", "WHITE").containsEntry("username", "Walter");
-	}
+        assertThat(map).containsEntry("id", "WHITE").containsEntry("username", "Walter");
+    }
+
+    @Test // DATACASS-556
+    public void queryRegularStatementShouldUsePreparedStatement() throws Exception {
+
+        Select userSelect = QueryBuilder.select("id").from("user");
+        userSelect.where(QueryBuilder.eq("id", ""));
+
+        List<String> result = template.query(userSelect, (row, index) -> row.getString(0), "WHITE");
+
+        assertThat(result).contains("WHITE");
+    }
 }
