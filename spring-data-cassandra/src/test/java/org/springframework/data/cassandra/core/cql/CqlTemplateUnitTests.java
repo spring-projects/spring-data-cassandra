@@ -15,10 +15,24 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,21 +40,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.cassandra.CassandraConnectionFailureException;
 import org.springframework.data.cassandra.CassandraInvalidQueryException;
+import org.springframework.data.cassandra.core.cql.support.PreparedStatementCache;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
@@ -54,6 +64,7 @@ import com.datastax.driver.core.policies.DowngradingConsistencyRetryPolicy;
  * Unit tests for {@link CqlTemplate}.
  *
  * @author Mark Paluch
+ * @author Mike Barlotta (CodeSmell)
  */
 @RunWith(MockitoJUnitRunner.class)
 public class CqlTemplateUnitTests {
@@ -64,6 +75,7 @@ public class CqlTemplateUnitTests {
 	@Mock PreparedStatement preparedStatement;
 	@Mock BoundStatement boundStatement;
 	@Mock ColumnDefinitions columnDefinitions;
+	@Mock PreparedStatementCache mockCache;
 
 	CqlTemplate template;
 
@@ -266,6 +278,25 @@ public class CqlTemplateUnitTests {
 
 		assertThat(applied).isTrue();
 	}
+
+    @Test // DATACASS-555
+    public void queryWithArgsAndWithCache() {
+
+        template.setPreparedStatementCache(mockCache);
+        when(mockCache.getPreparedStatement(Mockito.any(Session.class), Mockito.any(RegularStatement.class)))
+            .thenReturn(preparedStatement);
+
+        when(preparedStatement.bind("Walter")).thenReturn(boundStatement);
+        when(session.execute(boundStatement)).thenReturn(resultSet);
+        when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
+
+        List<Object> resultList = template.query("SELECT * FROM user WHERE username = ?", (row, rowNum) -> "OK", "Walter");
+        assertNotNull(resultList);
+        assertEquals(1, resultList.size());
+        assertThat((String) resultList.get(0)).isEqualTo("OK");
+
+        verify(mockCache, times(1)).getPreparedStatement(Mockito.any(Session.class), Mockito.any(RegularStatement.class));
+    }
 
 	// -------------------------------------------------------------------------
 	// Tests dealing with com.datastax.driver.core.Statement
@@ -615,6 +646,23 @@ public class CqlTemplateUnitTests {
 		assertThat(result).isEqualTo("OK");
 	}
 
+    @Test // DATACASS-555
+    public void queryForObjectPreparedStatementShouldReturnRecordWithCache() {
+
+        template.setPreparedStatementCache(mockCache);
+        when(mockCache.getPreparedStatement(Mockito.any(Session.class), Mockito.any(RegularStatement.class)))
+            .thenReturn(preparedStatement);
+
+        when(preparedStatement.bind("Walter")).thenReturn(boundStatement);
+        when(session.execute(boundStatement)).thenReturn(resultSet);
+        when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
+
+        String result = template.queryForObject("SELECT * FROM user WHERE username = ?", (row, rowNum) -> "OK", "Walter");
+        assertThat(result).isEqualTo("OK");
+
+        verify(mockCache, times(1)).getPreparedStatement(Mockito.any(Session.class), Mockito.any(RegularStatement.class));
+    }
+
 	@Test // DATACASS-292
 	public void queryForObjectPreparedStatementShouldFailReturningManyRecords() {
 
@@ -663,6 +711,27 @@ public class CqlTemplateUnitTests {
 
 		assertThat(result).contains("OK", "NOT OK");
 	}
+
+    @Test // DATACASS-555
+    public void queryForListPreparedStatementWithTypeShouldReturnRecordWithCache() {
+
+        template.setPreparedStatementCache(mockCache);
+        when(mockCache.getPreparedStatement(Mockito.any(Session.class), Mockito.any(RegularStatement.class)))
+            .thenReturn(preparedStatement);
+
+        when(preparedStatement.bind("Walter")).thenReturn(boundStatement);
+        when(session.execute(boundStatement)).thenReturn(resultSet);
+        when(resultSet.iterator()).thenReturn(Arrays.asList(row, row).iterator());
+        when(row.getColumnDefinitions()).thenReturn(columnDefinitions);
+        when(columnDefinitions.size()).thenReturn(1);
+        when(row.getString(0)).thenReturn("OK", "NOT OK");
+
+        List<String> result = template.queryForList("SELECT * FROM user WHERE username = ?", String.class, "Walter");
+
+        assertThat(result).contains("OK", "NOT OK");
+
+        verify(mockCache, times(1)).getPreparedStatement(Mockito.any(Session.class), Mockito.any(RegularStatement.class));
+    }
 
 	@Test // DATACASS-292
 	public void updatePreparedStatementShouldReturnApplied() {
