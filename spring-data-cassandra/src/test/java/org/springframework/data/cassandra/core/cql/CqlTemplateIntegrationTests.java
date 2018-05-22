@@ -34,6 +34,7 @@ import com.datastax.driver.core.querybuilder.Select;
  * Integration tests for {@link CqlTemplate}.
  *
  * @author Mark Paluch
+ * @author Mike Barlotta (CodeSmell)
  */
 public class CqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
