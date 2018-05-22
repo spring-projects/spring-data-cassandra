@@ -406,6 +406,10 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
     public <T> List<T> query(RegularStatement regStatement, RowMapper<T> rowMapper, Object... args) throws DataAccessException {
         return query(newPreparedStatementCreator(regStatement), newPreparedStatementBinder(args), newResultSetExtractor(rowMapper));
     }
+
+    public ResultSet queryForResultSet(RegularStatement regStatement, Object... args) throws DataAccessException {
+        return query(newPreparedStatementCreator(regStatement), newPreparedStatementBinder(args), rs -> rs);
+    }
     // - mike (end)
 
 
