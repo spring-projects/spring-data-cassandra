@@ -5,8 +5,7 @@ This has traditionally been for JDBC and JPA. Spring Data for Apache Cassandra e
 by providing an implementation of the `org.springframework.dao.support.PersistenceExceptionTranslator` interface.
 
 The motivation behind mapping to Spring's {spring-framework-docs}html/dao.html#dao-exceptions[consistent data access exception hierarchy]
-is that you are then able to write portable and descriptive exception handling code without resorting to coding against
-and handling specific Cassandra Exceptions. All of Spring's data access exceptions are inherited from the root,
-`DataAccessException` class so you can be sure that you will be able to catch all database related exceptions
+is to let you write portable and descriptive exception handling code without resorting to coding against
+and handling specific Cassandra exceptions. All of Spring's data access exceptions are inherited from the
+`DataAccessException` class, so you can be sure that you can catch all database-related exceptions
 within a single try-catch block.
-
