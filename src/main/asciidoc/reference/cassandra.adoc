@@ -22,9 +22,7 @@ the DataStax Java Driver so that they are familiar and so that you can map your 
 [[cassandra.getting-started]]
 == Getting Started
 
-Spring Data for Apache Cassandra requires Apache Cassandra 2.1 or later, Datastax Java Driver 3.0 or later,
-and Java SE 8 or later. An easy way to quickly set up and bootstrap a working environment is to create
-a Spring-based project in http://spring.io/tools/sts[STS] or use http://start.spring.io/[Spring Initializer].
+Spring Data for Apache Cassandra requires Apache Cassandra 2.1 or later and Datastax Java Driver 3.0 or later. An easy way to quickly set up and bootstrap a working environment is to create a Spring-based project in http://spring.io/tools/sts[STS] or use http://start.spring.io/[Spring Initializer].
 
 First, you need to set up a running Apache Cassandra server. See the
 http://cassandra.apache.org/doc/latest/getting_started/index.html[Apache Cassandra Quick Start Guide]
@@ -504,7 +502,7 @@ Spring Data for Apache Cassandra can support you with schema creation.
 
 === Keyspaces and Lifecycle Scripts
 
-The  first thing to start with is a Cassandra keyspace. A \keyspace is a logical grouping of tables that share
+The  first thing to start with is a Cassandra keyspace. A keyspace is a logical grouping of tables that share
 the same replication factor and replication strategy. Keyspace management is located in the `Cluster` configuration,
 which has the `KeyspaceSpecification` and startup and shutdown CQL script execution.
 
@@ -669,7 +667,7 @@ public class CassandraConfiguration extends AbstractCassandraConfiguration {
 The `CqlTemplate` class is the central class in the core CQL package. It handles the creation and release of resources.
 It performs the basic tasks of the core CQL workflow, such as statement creation and execution, and leaves application code
 to provide CQL and extract results. The `CqlTemplate` class executes CQL queries and update statements, performs
-iteration over ResultSet` instances and extraction of returned parameter values. It also catches CQL exceptions and translates
+iteration over `ResultSet` instances and extraction of returned parameter values. It also catches CQL exceptions and translates
 them to the generic, more informative, exception hierarchy defined in the `org.springframework.dao` package.
 
 When you use the `CqlTemplate` for your code, you need only implement callback interfaces, which have a clearly
@@ -690,14 +688,14 @@ on the CQL API instances: `CqlTemplate`, `AsyncCqlTemplate`, and `ReactiveCqlTem
 query option is not set.
 
 NOTE: `CqlTemplate` comes in different execution model flavors. The basic `CqlTemplate` uses a blocking execution model.
-You can use `AsyncCqlTemplate` for asynchronous execution and synchronization with ListenableFuture` instances or
+You can use `AsyncCqlTemplate` for asynchronous execution and synchronization with `ListenableFuture` instances or
 <<cassandra.reactive.cql-template,`ReactiveCqlTemplate`>> for reactive execution.
 
 [[cassandracql-template.examples]]
 === Examples of `CqlTemplate` Class Usage
 
 This section provides some examples of the `CqlTemplate` class in action. These examples are not an exhaustive list
-of all of the functionality exposed by the `CqlTemplate`. See the https://docs.spring.io/spring-data/cassandra/docs/current/api/[Javadoc] for that.
+of all of the functionality exposed by the `CqlTemplate`. See the https://docs.spring.io/spring-data/cassandra/docs/{version}/api/[Javadoc] for that.
 
 [[cassandra.cql-template.examples.query]]
 ==== Querying (SELECT) with `CqlTemplate`
@@ -707,7 +705,7 @@ The following query gets the number of rows in a relation:
 ====
 [source,java]
 ----
-int rowCount = cqlTemplate.queryForObject("select count(*) from t_actor", Integer.class);
+int rowCount = cqlTemplate.queryForObject("SELECT COUNT(*) FROM t_actor", Integer.class);
 ----
 ====
 
@@ -717,7 +715,7 @@ The following query uses a bind variable:
 [source,java]
 ----
 int countOfActorsNamedJoe = cqlTemplate.queryForObject(
-		"select count(*) from t_actor where first_name = ?", Integer.class, "Joe");
+		"SELECT COUNT(*) FROM t_actor WHERE first_name = ?", Integer.class, "Joe");
 ----
 ====
 
@@ -727,7 +725,7 @@ The following example queries for a `String`:
 [source,java]
 ----
 String lastName = cqlTemplate.queryForObject(
-		"select last_name from t_actor where id = ?",
+		"SELECT last_name FROM t_actor WHERE id = ?",
 		String.class, 1212L);
 ----
 ====
@@ -738,7 +736,7 @@ The following example queries and populates a single domain object:
 [source,java]
 ----
 Actor actor = cqlTemplate.queryForObject(
-		"select first_name, last_name from t_actor where id = ?",
+		"SELECT first_name, last_name FROM t_actor WHERE id = ?",
 		new RowMapper<Actor>() {
 			public Actor mapRow(Row row, int rowNum) {
 				Actor actor = new Actor();
@@ -757,7 +755,7 @@ The following example queries and populates multiple domain objects:
 [source,java]
 ----
 List<Actor> actors = cqlTemplate.query(
-		"select first_name, last_name from t_actor",
+		"SELECT first_name, last_name FROM t_actor",
 		new RowMapper<Actor>() {
 			public Actor mapRow(Row row int rowNum) {
 				Actor actor = new Actor();
@@ -779,7 +777,7 @@ For example, it might be better to write the last code snippet as follows:
 [source,java]
 ----
 public List<Actor> findAllActors() {
-	return cqlTemplate.query("select first_name, last_name from t_actor", ActorMapper.INSTANCE);
+	return cqlTemplate.query("SELECT first_name, last_name FROM t_actor", ActorMapper.INSTANCE);
 }
 
 enum ActorMapper implements RowMapper<Actor> {
@@ -797,7 +795,7 @@ enum ActorMapper implements RowMapper<Actor> {
 ====
 
 [[cassandra.cql-template.examples.update]]
-==== Updating `INSERT`, `UPDATE`, and `DELETE` with `CqlTemplate`
+==== `INSERT`, `UPDATE`, and `DELETE` with `CqlTemplate`
 
 You can use the `execute(…)` method to perform `INSERT`, `UPDATE`, and `DELETE` operations. Parameter values are usually provided
 as variable arguments or, alternatively, as an object array.
@@ -924,8 +922,8 @@ Another central feature of `CassandraTemplate` is exception translation of excep
 Java driver into Spring's portable Data Access Exception hierarchy. See the section on
 <<cassandra.exception,exception translation>> for more information.
 
-NOTE: `CassandraTemplate` has different execution model flavors. The basic `CassandraTemplate` uses a
-blocking execution model. You can use `AsyncCassandraTemplate` for asynchronous execution and synchronization
+NOTE: The Template API has different execution model flavors. The basic `CassandraTemplate` uses a
+blocking (imperative-synchronous) execution model. You can use `AsyncCassandraTemplate` for asynchronous execution and synchronization
 with `ListenableFuture` instances or <<cassandra.reactive.template,`ReactiveCassandraTemplate`>> for reactive execution.
 
 [[cassandra.template.instantiating]]
@@ -944,6 +942,8 @@ There are two ways to get a `CassandraTemplate`, depending on how you load you S
 [[cassandra-template-autowiring]]
 ==== Autowiring
 
+You can autowire a `CassandraOperations` into your project, as the following example shows:
+
 ====
 [source,java]
 ----
@@ -954,7 +954,7 @@ private CassandraOperations cassandraOperations;
 
 As with all Spring autowiring, this assumes there is only one bean of type `CassandraOperations` in the `ApplicationContext`.
 If you have multiple `CassandraTemplate` beans (which is the case if you work with multiple keyspaces
-in the same project), then you can use the `@Qualifier`annotation to designate the bean you want to autowire.
+in the same project), then you can use the `@Qualifier` annotation to designate the bean you want to autowire.
 
 ====
 [source,java]
@@ -967,9 +967,9 @@ private CassandraOperations cassandraOperations;
 
 [float]
 [[cassandra-template-bean-lookup-applicationcontext]]
-==== Bean Lookup with ApplicationContext
+==== Bean Lookup with `ApplicationContext`
 
-You can also lookup the `CassandraTemplate` bean from the `ApplicationContext`, as shown in the following example:
+You can also look up the `CassandraTemplate` bean from the `ApplicationContext`, as shown in the following example:
 
 ====
 [source,java]
@@ -996,16 +996,16 @@ and "`<<mapping-conversion>>`" for the current type mapping matrix.
 === Methods for Inserting and Updating rows
 
 `CassandraTemplate` has several convenient methods for saving and inserting your objects. To have more
-fine-grained control over the conversion process, you can register Spring `Converters` with the `MappingCassandraConverter`
+fine-grained control over the conversion process, you can register Spring `Converter` instances with the `MappingCassandraConverter`
 (for example, `Converter<Row, Person>`).
 
 NOTE: The difference between insert and update operations is that `INSERT` operations do not insert `null` values.
 
-The simple case of using the insert operation is to save a POJO. In this case, the table name is determined
-by the simple (not fully-qualified) name of the class. The table in which to store the object can be overridden
-by using mapping metadata.
+The simple case of using the `INSERT` operation is to save a POJO. In this case, the table name is determined by
+the simple class name (not the fully qualified class name). The table to store the object can be overridden by
+using mapping metadata.
 
-When inserting or updating, the `id` property must be set. Apache Cassandra has no means with which to generate an ID.
+When inserting or updating, the `id` property must be set. Apache Cassandra has no means to generate an ID.
 
 The following example uses the save operation and retrieves its contents:
 
@@ -1051,7 +1051,7 @@ when using `InsertOptions` and `UpdateOptions`.
 [[cassandra.template.insert-update.table]]
 ==== Which Table Are My Rows Inserted into?
 
-You can manage the collection name that is used for operating on the tables in two ways. The default table name
+You can manage the table name that is used for operating on the tables in two ways. The default table name
 is the simple class name changed to start with a lower-case letter. So, an instance of
 the `com.example.Person` class would be stored in the `person` table.
 The second way is to specify a table name in the `@Table` annotation.
@@ -1148,7 +1148,7 @@ Update.empty().set("key").atIndex(5).to("Spring Data");
 // UPDATE … SET key = key + ['Spring', 'DATA'];
 Update.empty().addTo("key").appendAll("Spring", "Data");
 ----
-===
+====
 
 Note that `Update` is immutable once created. Invoking methods creates new immutable (intermediate) `Update` objects.
 

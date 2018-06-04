@@ -42,7 +42,7 @@ Spring Data converts reactive wrapper types behind the scenes so that you can st
 [[cassandra.reactive.repositories.usage]]
 == Usage
 
-To access entities stored in Apache Cassandra, you can use Spring Data's sophisticated repository support,
+To access domain entities stored in Apache Cassandra, you can use Spring Data's sophisticated repository support,
 which significantly eases implementing DAOs. To do so, create an interface for your repository, as the following example shows:
 
 .Sample Person entity
@@ -64,11 +64,11 @@ public class Person {
 
 Note that the entity has a property named `id` of type `String`.
 The default serialization mechanism used in `CassandraTemplate` (which backs the repository support)
-regards properties named `id` as the row ID.
+regards properties named `id` as being the row ID.
 
-The following example interface definition includes method definitions that define queries:
+The following example shows a repository definition to persist `Person` entities:
 
-.Basic repository interface to persist Person entities
+.Basic repository interface to persist `Person` entities
 ====
 [source]
 ----
