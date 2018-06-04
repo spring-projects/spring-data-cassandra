@@ -69,6 +69,8 @@ import com.datastax.driver.core.exceptions.DriverException;
  * @author Antoine Toulme
  * @author John Blum
  * @author Mark Paluch
+ * @author Mike Barlotta (CodeSmell)
+ *
  * @see PreparedStatementCreator
  * @see PreparedStatementBinder
  * @see PreparedStatementCallback
@@ -404,7 +406,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	@Override
 	public boolean execute(String cql, @Nullable PreparedStatementBinder psb) throws DataAccessException {
 		// noinspection ConstantConditions
-		return query(new SimplePreparedStatementCreator(cql), psb, ResultSet::wasApplied);
+	    return query(newPreparedStatementCreator(cql), psb, ResultSet::wasApplied);
 	}
 
 	/*
@@ -734,25 +736,4 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		return sessionFactory.getSession();
 	}
 
-	private class SimplePreparedStatementCreator implements PreparedStatementCreator, CqlProvider {
-
-		private final String cql;
-
-		SimplePreparedStatementCreator(String cql) {
-
-			Assert.notNull(cql, "CQL must not be null");
-
-			this.cql = cql;
-		}
-
-		@Override
-		public PreparedStatement createPreparedStatement(Session session) throws DriverException {
-			return session.prepare(cql);
-		}
-
-		@Override
-		public String getCql() {
-			return cql;
-		}
-	}
 }
