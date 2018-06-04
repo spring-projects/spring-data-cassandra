@@ -1,9 +1,16 @@
 = Spring Data for Apache Cassandra - Reference Documentation
-David Webb, Matthew Adams, John Blum, Mark Paluch
+David Webb, Matthew Adams, John Blum, Mark Paluch, Jay Bryant
 :revnumber: {version}
 :revdate: {localdate}
-:toc:
-:toc-placement!:
+:linkcss:
+:doctype: book
+:docinfo: shared
+:toc: left
+:toclevels: 4
+:source-highlighter: prettify
+:icons: font
+:imagesdir: images
+ifdef::backend-epub3[:front-cover-image: image:epub-cover.png[Front Cover,1050,1600]]
 :spring-data-commons-docs: ../../../../spring-data-commons/src/main/asciidoc
 :spring-framework-docs: http://docs.spring.io/spring/docs/{springVersion}/spring-framework-reference/
 
@@ -13,42 +20,29 @@ NOTE: Copies of this document may be made for your own use and for distribution 
 charge any fee for such copies and further provided that each copy contains this Copyright Notice, whether distributed
 in print or electronically.
 
-toc::[]
 include::preface.adoc[]
 
-:leveloffset: +1
-
-include::new-features.adoc[]
-include::{spring-data-commons-docs}/dependencies.adoc[]
-include::{spring-data-commons-docs}/repositories.adoc[]
-
-:leveloffset: -1
+include::new-features.adoc[leveloffset=+1]
+include::{spring-data-commons-docs}/dependencies.adoc[leveloffset=+1]
+include::{spring-data-commons-docs}/repositories.adoc[leveloffset=+1]
 
 [[reference]]
 = Reference Documentation
 
-:leveloffset: +1
-
-include::reference/introduction.adoc[]
-include::reference/cassandra.adoc[]
-include::reference/converters.adoc[]
-include::reference/reactive-cassandra.adoc[]
-include::reference/cassandra-repositories.adoc[]
-include::reference/reactive-cassandra-repositories.adoc[]
-include::reference/mapping.adoc[]
-
-:leveloffset: -1
+include::reference/introduction.adoc[leveloffset=+1]
+include::reference/cassandra.adoc[leveloffset=+1]
+include::reference/converters.adoc[leveloffset=+1]
+include::reference/reactive-cassandra.adoc[leveloffset=+1]
+include::reference/cassandra-repositories.adoc[leveloffset=+1]
+include::reference/reactive-cassandra-repositories.adoc[leveloffset=+1]
+include::reference/mapping.adoc[leveloffset=+1]
 
 [[appendix]]
 = Appendix
 
 :numbered!:
-:leveloffset: +1
-
-include::{spring-data-commons-docs}/repository-namespace-reference.adoc[]
-include::{spring-data-commons-docs}/repository-populator-namespace-reference.adoc[]
-include::{spring-data-commons-docs}/repository-query-keywords-reference.adoc[]
-include::{spring-data-commons-docs}/repository-query-return-types-reference.adoc[]
-include::reference/migration-guides.adoc[]
-
-:leveloffset: -1
+include::{spring-data-commons-docs}/repository-namespace-reference.adoc[leveloffset=+1]
+include::{spring-data-commons-docs}/repository-populator-namespace-reference.adoc[leveloffset=+1]
+include::{spring-data-commons-docs}/repository-query-keywords-reference.adoc[leveloffset=+1]
+include::{spring-data-commons-docs}/repository-query-return-types-reference.adoc[leveloffset=+1]
+include::reference/migration-guides.adoc[leveloffset=+1]
