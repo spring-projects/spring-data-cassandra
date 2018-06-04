@@ -2,8 +2,10 @@
 David Webb, Matthew Adams, John Blum, Mark Paluch, Jay Bryant
 :revnumber: {version}
 :revdate: {localdate}
-:toc:
-:toc-placement!:
+:linkcss:
+:doctype: book
+:docinfo: shared
+:toc: left
 :toclevels: 4
 :source-highlighter: prettify
 :icons: font

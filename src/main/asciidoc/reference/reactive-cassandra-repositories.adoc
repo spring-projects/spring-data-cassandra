@@ -1,21 +1,17 @@
 [[cassandra.reactive.repositories]]
 = Reactive Cassandra Repositories
 
-
-[[cassandra.reactive.repositories.intro]]
-== Introduction
-
-This chapter will outline the specialties handled by the reactive _Repository_ support for Apache Cassandra.
-This builds on the core _Repository_ infrastructure explained in <<cassandra.repositories>>, so make sure
-you have a good understanding of the basic concepts explained there.
+This chapter outlines the specialties handled by the reactive repository support for Apache Cassandra.
+It builds on the core repository infrastructure explained in <<cassandra.repositories>>, so
+you should have a good understanding of the basic concepts explained there.
 
 Reactive usage is broken up into two phases: Composition and Execution.
 
-Calling _Repository_ methods lets you compose a reactive sequence by obtaining ``Publisher``s and applying operators.
-No I/O happens until now. Passing the reactive sequence to a reactive execution infrastructure,
+Calling repository methods lets you compose a reactive sequence by obtaining `Publisher` instances and applying operators.
+No I/O happens until you subscribe. Passing the reactive sequence to a reactive execution infrastructure,
 such as {spring-framework-docs}web.html#web-reactive[Spring WebFlux]
-or http://vertx.io/docs/vertx-reactive-streams/java/[Vert.x]), will subscribe to the publisher and initiate
-the actual execution.
+or http://vertx.io/docs/vertx-reactive-streams/java/[Vert.x]), subscribes to the publisher and initiate
+the actual execution. See http://projectreactor.io/docs/core/release/reference/#reactive.subscribe[the Project reactor documentation] for more detail.
 
 
 [[cassandra.reactive.repositories.libraries]]
@@ -26,14 +22,14 @@ https://github.com/ReactiveX/RxJava[RxJava] and https://projectreactor.io/[Proje
 
 Spring Data for Apache Cassandra is built on top of the https://github.com/datastax/java-driver[DataStax Cassandra Driver].
 The driver is not reactive but the asynchronous capabilities allow us to adopt and expose the `Publisher` APIs
-in order to provide maximum interoperability by relying on the http://www.reactive-streams.org/[Reactive Streams] initiative.
+to provide maximum interoperability by relying on the http://www.reactive-streams.org/[Reactive Streams] initiative.
 Static APIs, such as `ReactiveCassandraOperations`, are provided by using Project Reactor's `Flux` and `Mono` types.
-Project Reactor offers various adapters to convert reactive wrapper types (`Flux` to `Observable` and vice versa)
+Project Reactor offers various adapters to convert reactive wrapper types (`Flux` to `Observable` and back),
 but conversion can easily clutter your code.
 
-Spring Data's _Repository_ abstraction is a dynamic API, mostly defined by you and your requirements,
-as you are declaring query methods. Reactive Cassandra _Repositories_ can be either implemented using RxJava
-or Project Reactor wrapper types by simply extending from one of the library-specific repository interfaces:
+Spring Data's repository abstraction is a dynamic API that is mostly defined by you and your requirements
+as you declare query methods. Reactive Cassandra repositories can be implemented by using either RxJava
+or Project Reactor wrapper types by extending from one of the library-specific repository interfaces:
 
 * `ReactiveCrudRepository`
 * `ReactiveSortingRepository`
@@ -46,8 +42,8 @@ Spring Data converts reactive wrapper types behind the scenes so that you can st
 [[cassandra.reactive.repositories.usage]]
 == Usage
 
-To access entities stored in Apache Cassandra, you can leverage Spring Data's sophisticated _Repository_ support,
-which eases implementing DAOs quite significantly. To do so, simply create an interface for your _Repository_:
+To access entities stored in Apache Cassandra, you can use Spring Data's sophisticated repository support,
+which significantly eases implementing DAOs. To do so, create an interface for your repository, as the following example shows:
 
 .Sample Person entity
 ====
@@ -66,9 +62,11 @@ public class Person {
 ----
 ====
 
-We have a simple domain object here. Note that the entity has a property named "`id`" of type `String`.
-The default serialization mechanism used in `CassandraTemplate` (which is backing the _Repository_ support)
-regards properties named "id" as the row id.
+Note that the entity has a property named `id` of type `String`.
+The default serialization mechanism used in `CassandraTemplate` (which backs the repository support)
+regards properties named `id` as the row ID.
+
+The following example interface definition includes method definitions that define queries:
 
 .Basic repository interface to persist Person entities
 ====
@@ -88,18 +86,18 @@ public interface ReactivePersonRepository extends ReactiveSortingRepository<Pers
   Flux<Person> findByAge(int age);                                               <5>
 }
 ----
-<1> The method shows a query for all people with the given firstname. The query will be derived parsing the method name for constraints which can be concatenated with And and Or. Thus the method name will result in a query expression of `SELECT * FROM person WHERE firstname = :firstname`.
-<2> The method shows a query for all people with the given firstname once the firstname is emitted via the given `Publisher`.
-<3> Find a single entity for given criteria. Completes with `IncorrectResultSizeDataAccessException` on non unique results.
-<4> Unlike 3, the first entity is always emitted even if the query yields more result rows.
-<5> Shows a query method annotated with `@AllowFiltering` that allows server-side filtering.
+<1> A query for all people with the given `firstname`. The query is derived by parsing the method name for constraints, which can be concatenated with `And` and `Or`. Thus, the method name results in a query expression of `SELECT * FROM person WHERE firstname = :firstname`.
+<2> A query for all people with the given `firstname` once the `firstname` is emitted from the given `Publisher`.
+<3> Find a single entity for the given criteria. Completes with `IncorrectResultSizeDataAccessException` on non-unique results.
+<4> Unlike the preceding query, the first entity is always emitted even if the query yields more result rows.
+<5> A query method annotated with `@AllowFiltering`, which allows server-side filtering.
 ====
 
-For JavaConfig, use the `@EnableReactiveCassandraRepositories` annotation. The annotation carries the very same attributes
-like the corresponding XML namespace element. If no base package is configured the infrastructure will scan the package
-of the annotated configuration class.
+For Java configuration, use the `@EnableReactiveCassandraRepositories` annotation. The annotation carries the same attributes
+as the corresponding XML namespace element. If no base package is configured, the infrastructure scans the package
+of the annotated configuration class. The following example uses the `@EnableReactiveCassandraRepositories` annotation:
 
-.JavaConfig for repositories
+.Java configuration for repositories
 ====
 [source,java]
 ----
@@ -119,9 +117,9 @@ class ApplicationConfig extends AbstractReactiveCassandraConfiguration {
 ----
 ====
 
-Since our domain _Repository_ extends `ReactiveSortingRepository`, it provides you with CRUD operations
-as well as methods for sorted access to the entities. Working with the _Repository_ instance is just a matter of
-dependency injecting it into a client.
+Since our domain repository extends `ReactiveSortingRepository`, it provides you with CRUD operations
+as well as methods for sorted access to the entities. Working with the repository instance is a matter of
+dependency injecting it into a client, as the following example shows:
 
 .Sorted access to Person entities
 ====
@@ -143,11 +141,11 @@ public class PersonRepositoryTests {
 == Features
 
 Spring Data's Reactive Cassandra support comes with the same set of features as
-<<cassandra.repositories,imperative repositories>>.
+the support for <<cassandra.repositories,imperative repositories>>.
 
-The following features are supported:
+It supports the following features:
 
-* Query Methods using <<cassandra.repositories.queries,String queries and Query Derivation>>
+* Query Methods that use <<cassandra.repositories.queries,String queries and Query Derivation>>
 * <<projections>>
 
-NOTE: Query methods must return a reactive type. Resolved types (`User` vs. `Mono<User>`) are not supported.
+NOTE: Query methods must return a reactive type. Resolved types (`User` versus `Mono<User>`) are not supported.
