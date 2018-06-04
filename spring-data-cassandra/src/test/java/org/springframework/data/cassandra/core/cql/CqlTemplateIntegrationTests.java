@@ -27,11 +27,13 @@ import org.junit.Test;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
 
 import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Select;
 
 /**
  * Integration tests for {@link CqlTemplate}.
  *
  * @author Mark Paluch
+ * @author Mike Barlotta (CodeSmell)
  */
 public class CqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
@@ -168,4 +170,15 @@ public class CqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegra
 
 		assertThat(map).containsEntry("id", "WHITE").containsEntry("username", "Walter");
 	}
+	
+    @Test // DATACASS-556
+    public void queryRegularStatementShouldUsePreparedStatement() throws Exception {
+
+        Select userSelect = QueryBuilder.select("id").from("user");
+        userSelect.where(QueryBuilder.eq("id", ""));
+
+        List<String> result = template.query(userSelect, (row, index) -> row.getString(0), "WHITE");
+
+        assertThat(result).contains("WHITE");
+    }
 }

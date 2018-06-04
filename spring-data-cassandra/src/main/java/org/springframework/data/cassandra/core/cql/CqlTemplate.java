@@ -30,6 +30,7 @@ import org.springframework.util.Assert;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Host;
 import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
@@ -69,6 +70,7 @@ import com.datastax.driver.core.exceptions.DriverException;
  * @author Antoine Toulme
  * @author John Blum
  * @author Mark Paluch
+ * @author Mike Barlotta (CodeSmell)
  * @see PreparedStatementCreator
  * @see PreparedStatementBinder
  * @see PreparedStatementCallback
@@ -385,17 +387,45 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	// -------------------------------------------------------------------------
-	// Methods dealing with com.datastax.driver.core.PreparedStatement
+	// Methods dealing with com.datastax.driver.core.PreparedStatement and com.datastax.driver.core.RegularStatement
 	// -------------------------------------------------------------------------
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cqlOperations#execute(java.lang.String, java.lang.Object[])
-	 */
-	@Override
-	public boolean execute(String cql, Object... args) throws DataAccessException {
-		return execute(cql, newPreparedStatementBinder(args));
-	}
+	// - mike
+    public boolean execute(RegularStatement regStatement, Object... args) throws DataAccessException {
+        return execute(regStatement, newPreparedStatementBinder(args));
+    }
+
+    public boolean execute(RegularStatement regStatement, @Nullable PreparedStatementBinder psb) throws DataAccessException {
+        return query(newPreparedStatementCreator(regStatement), psb, ResultSet::wasApplied);
+    }
+
+    public <T> T query(RegularStatement regStatement, ResultSetExtractor<T> resultSetExtractor, Object... args) throws DataAccessException {
+        return query(newPreparedStatementCreator(regStatement), newPreparedStatementBinder(args), resultSetExtractor);
+    }
+
+    public <T> List<T> query(RegularStatement regStatement, RowMapper<T> rowMapper, Object... args) throws DataAccessException {
+        return query(newPreparedStatementCreator(regStatement), newPreparedStatementBinder(args), newResultSetExtractor(rowMapper));
+    }
+
+    public ResultSet queryForResultSet(RegularStatement regStatement, Object... args) throws DataAccessException {
+        return query(newPreparedStatementCreator(regStatement), newPreparedStatementBinder(args), rs -> rs);
+    }
+    // - mike (end)
+
+
+    // -------------------------------------------------------------------------
+    // Methods dealing with com.datastax.driver.core.PreparedStatement
+    // -------------------------------------------------------------------------
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.springframework.data.cassandra.core.cqlOperations#execute(java.lang.String, java.lang.Object[])
+     */
+    @Override
+    public boolean execute(String cql, Object... args) throws DataAccessException {
+        return execute(cql, newPreparedStatementBinder(args));
+    }
 
 	/*
 	 * (non-Javadoc)
@@ -404,7 +434,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	@Override
 	public boolean execute(String cql, @Nullable PreparedStatementBinder psb) throws DataAccessException {
 		// noinspection ConstantConditions
-		return query(new SimplePreparedStatementCreator(cql), psb, ResultSet::wasApplied);
+		return query(newPreparedStatementCreator(cql), psb, ResultSet::wasApplied);
 	}
 
 	/*
@@ -704,9 +734,13 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	/* (non-Javadoc) */
-	protected PreparedStatementCreator newPreparedStatementCreator(String cql) {
-		return new SimplePreparedStatementCreator(cql);
-	}
+    protected PreparedStatementCreator newPreparedStatementCreator(String cql) {
+        return new SimplePreparedStatementCreator(cql);
+    }
+
+    protected PreparedStatementCreator newPreparedStatementCreator(RegularStatement regStatement) {
+        return new SimplePreparedStatementCreator(regStatement.getQueryString());
+    }
 
 	// -------------------------------------------------------------------------
 	// Implementation hooks and helper methods
@@ -734,25 +768,4 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		return sessionFactory.getSession();
 	}
 
-	private class SimplePreparedStatementCreator implements PreparedStatementCreator, CqlProvider {
-
-		private final String cql;
-
-		SimplePreparedStatementCreator(String cql) {
-
-			Assert.notNull(cql, "CQL must not be null");
-
-			this.cql = cql;
-		}
-
-		@Override
-		public PreparedStatement createPreparedStatement(Session session) throws DriverException {
-			return session.prepare(cql);
-		}
-
-		@Override
-		public String getCql() {
-			return cql;
-		}
-	}
 }
