@@ -5,7 +5,7 @@ The reactive Cassandra support contains a wide range of features:
 
 * Spring configuration support using Java-based `@Configuration` classes.
 * `ReactiveCqlTemplate` helper class that increases productivity by properly handling common Cassandra data access operations.
-* `ReactiveCassandraTemplate` helper class that increases productivity by using `ReactiveCassandraOperations in a reactive manner. It includes integrated object mapping between tables and POJOs.
+* `ReactiveCassandraTemplate` helper class that increases productivity by using `ReactiveCassandraOperations` in a reactive manner. It includes integrated object mapping between tables and POJOs.
 * Exception translation into Spring's portable {spring-framework-docs}data-access.html#dao-exceptions[Data Access Exception Hierarchy].
 * Feature rich object mapping integrated with Spring's {spring-framework-docs}core.html#core-convert[Conversion Service].
 * Java-based Query, Criteria, and Update DSLs.
@@ -19,23 +19,20 @@ Spring Data for Apache Cassandra uses consistent naming conventions on objects i
 in the DataStax Java Driver so that they are immediately familiar and so that you can map your existing knowledge
 onto the Spring APIs.
 
-
 [[cassandra.reactive.getting-started]]
 == Getting Started
 
-Spring Data for Apache Cassandra support requires Apache Cassandra 2.1 or later, Datastax Java Driver 3.0 or later,
-and Java SE 8 or later. An easy way to set up and bootstrap a working environment is to create a Spring-based project
-in http://spring.io/tools/sts[STS] or use http://start.spring.io/[Spring Initializer].
+Spring Data for Apache Cassandra requires Apache Cassandra 2.1 or later and Datastax Java Driver 3.0 or later. An easy way to quickly set up and bootstrap a working environment is to create a Spring-based project in http://spring.io/tools/sts[STS] or use http://start.spring.io/[Spring Initializer].
 
 First, you need to set up a running Apache Cassandra server. See the
 http://cassandra.apache.org/doc/latest/getting_started/index.html[Apache Cassandra Quick Start Guide]
 for an explanation on how to start Apache Cassandra. Once installed, starting Cassandra is typically a matter of
 executing the following command: `CASSANDRA_HOME/bin/cassandra -f`.
 
-To create a Spring project in STS go to File -> New -> Spring Template Project -> Simple Spring Utility Project
+To create a Spring project in STS, go to File -> New -> Spring Template Project -> Simple Spring Utility Project
 and press Yes when prompted. Then enter a project and a package name, such as `org.spring.data.cassandra.example`.
 
-Then add the dependency to your pom.xml `dependencies` section, as follows:
+Then you can add the following dependency declaration to your pom.xml file's `dependencies` section.
 
 ====
 [source,xml,subs="verbatim,attributes"]
@@ -52,7 +49,7 @@ Then add the dependency to your pom.xml `dependencies` section, as follows:
 ----
 ====
 
-You should also change the version of Spring in the pom.xml to be as follows:
+Also, you should change the version of Spring in the pom.xml file to be as follows:
 
 ====
 [source,xml,subs="verbatim,attributes"]
@@ -61,10 +58,9 @@ You should also change the version of Spring in the pom.xml to be as follows:
 ----
 ====
 
-If you use a milestone release instead of a GA release, you also need to add the location of the Spring Milestone
-repository for Maven to your pom.xml (which is at the same level of your `<dependencies/>` element), as follows:
+If using a milestone release instead of a GA release, you also need to add the location of the Spring Milestone
+repository for Maven to your pom.xml file so that it is at the same level of your `<dependencies/>` element, as follows:
 
-====
 [source,xml]
 ----
 <repositories>
@@ -75,15 +71,14 @@ repository for Maven to your pom.xml (which is at the same level of your `<depen
   </repository>
 </repositories>
 ----
-====
 
-You can browse the repository is also http://repo.spring.io/milestone/org/springframework/data/[here].
+The repository is also http://repo.spring.io/milestone/org/springframework/data/[browseable here].
 
-You can browse all Spring repositories https://repo.spring.io/webapp/#/home[here].
+You can also browse all Spring repositories https://repo.spring.io/webapp/#/home[here].
 
-Now, you can create a simple Java application that stores and reads a domain object to and from Cassandra.
+Now you can create a simple Java application that stores and reads a domain object to and from Cassandra.
 
-To do so, create a simple domain object class to persist, as the following example shows:
+To do so, first create a simple domain object class to persist, as the following example shows:
 
 ====
 [source,java]
@@ -183,7 +178,7 @@ public class CassandraApplication {
 ----
 ====
 
-This simple example contains a few noteworthy items:
+Even in this simple example, there are a few notable things to point out:
 
 * A fully synchronous flow does not benefit from a reactive infrastructure, because a reactive programming model
 requires synchronization.
@@ -192,28 +187,26 @@ requires synchronization.
 Optionally, you can override these mapping names to match your Cassandra database table and column names.
 * You can either use raw CQL or the DataStax `QueryBuilder` API to construct your queries.
 
-
 [[cassandra.reactive.examples-repo]]
 == Examples Repository
 
 A https://github.com/spring-projects/spring-data-examples[Github repository] contains several examples that you
 can download and play around with to get a feel for how the library works.
 
-
 [[cassandra.reactive.connectors]]
 == Connecting to Cassandra with Spring
 
-One of the first tasks when using Apache Cassandra and Spring is to create a `com.datastax.driver.core.Session` object by
-using the Spring container. There are two main ways to do this: either by using Java-based bean metadata or by using XML-based
+One of the first tasks when using Apache Cassandra with Spring is to create a `com.datastax.driver.core.Session` object by
+using the Spring IoC container. You can do so either by using Java-based bean metadata or by using XML-based
 bean metadata. These are discussed in the following sections.
 
-NOTE: For those not familiar with how to configure the Spring container by using Java-based bean metadata instead of
+NOTE: For those not familiar with how to configure the Spring container using Java-based bean metadata instead of
 XML-based metadata, see the high-level introduction in the reference docs
 http://docs.spring.io/spring/docs/3.2.x/spring-framework-reference/html/new-in-3.0.html#new-java-configuration[here]
 as well as the detailed documentation {spring-framework-docs}core.html#beans-java-instantiating-container[here].
 
 
-[[cassandra.cassandra-reactive-java-config]]
+[[reactive.cassandra.java-config]]
 === Registering a Session instance using Java-based metadata
 
 You can configure Reactive Cassandra support by using <<cassandra.cassandra-java-config,Java Configuration classes>>.
@@ -281,7 +274,7 @@ a custom subclass of the `ReactiveCqlTemplate` class).
 === Examples of `ReactiveCqlTemplate` Class Usage
 
 This section provides some examples of `ReactiveCqlTemplate` class usage. These examples are not an exhaustive list
-of all of the functionality exposed by the `ReactiveCqlTemplate`. See the attendant https://docs.spring.io/spring-data/cassandra/docs/current/api/index.html?org/springframework/cassandra/core/ReactiveCqlTemplate.html[Javadocs] for that.
+of all of the functionality exposed by the `ReactiveCqlTemplate`. See the attendant https://docs.spring.io/spring-data/cassandra/docs/{version}/api/org/springframework/data/cassandra/core/cql/ReactiveCqlTemplate.html[Javadocs] for that.
 
 [[cql-template.examples.query]]
 ==== Querying (SELECT) with `ReactiveCqlTemplate`
@@ -290,7 +283,7 @@ The following query gets the number of rows in a relation:
 ====
 [source,java]
 ----
-Mono<Integer> rowCount = reactiveCqlTemplate.queryForObject("select count(*) from t_actor", Integer.class);
+Mono<Integer> rowCount = reactiveCqlTemplate.queryForObject("SELECT COUNT(*) FROM t_actor", Integer.class);
 ----
 ====
 
@@ -300,7 +293,7 @@ The following query uses a bind variable:
 [source,java]
 ----
 Mono<Integer> countOfActorsNamedJoe = reactiveCqlTemplate.queryForObject(
-		"select count(*) from t_actor where first_name = ?", Integer.class, "Joe");
+		"SELECT COUNT(*) FROM t_actor WHERE first_name = ?", Integer.class, "Joe");
 ----
 ====
 
@@ -310,7 +303,7 @@ The following example queries for a `String`:
 [source,java]
 ----
 Mono<String> lastName = reactiveCqlTemplate.queryForObject(
-		"select last_name from t_actor where id = ?",
+		"SELECT last_name FROM t_actor WHERE id = ?",
 		String.class, 1212L);
 ----
 ====
@@ -321,7 +314,7 @@ The following exmaple queries and populates a single domain object:
 [source,java]
 ----
 Mono<Actor> actor = reactiveCqlTemplate.queryForObject(
-		"select first_name, last_name from t_actor where id = ?",
+		"SELECT first_name, last_name FROM t_actor WHERE id = ?",
 		new RowMapper<Actor>() {
 			public Actor mapRow(Row row, int rowNum) {
 				Actor actor = new Actor();
@@ -340,7 +333,7 @@ The following example queries and populates a number of domain objects:
 [source,java]
 ----
 Flux<Actor> actors = reactiveCqlTemplate.query(
-		"select first_name, last_name from t_actor",
+		"SELECT first_name, last_name FROM t_actor",
 		new RowMapper<Actor>() {
 			public Actor mapRow(Row row int rowNum) {
 				Actor actor = new Actor();
@@ -362,7 +355,7 @@ For example, it might be better to write the last code snippet as follows:
 [source,java]
 ----
 public Flux<Actor> findAllActors() {
-	return reactiveCqlTemplate.query("select first_name, last_name from t_actor", ActorMapper.INSTANCE);
+	return reactiveCqlTemplate.query("SELECT first_name, last_name FROM t_actor", ActorMapper.INSTANCE);
 }
 
 enum ActorMapper implements RowMapper<Actor> {
@@ -380,40 +373,40 @@ enum ActorMapper implements RowMapper<Actor> {
 ====
 
 [[cassandra.reactive.cql-template.examples.update]]
-==== Updating INSERT, UPDATE, and DELETE with `ReactiveCqlTemplate`
+==== `INSERT`, `UPDATE`, and `DELETE` with `ReactiveCqlTemplate`
 
-You can use the `execute(…)` method to perform insert, update, and delete operations. Parameter values are usually
-provided as variable arguments (var args) or as an `Object` array.
+You can use the `execute(…)` method to perform `INSERT`, `UPDATE`, and `DELETE` operations. Parameter values are usually provided
+as variable arguments or, alternatively, as an object array.
 
-The following example shows how to use the `execute` method to do an insert operation:
+The following example shows how to perform an `INSERT` operation with `ReactiveCqlTemplate`:
 
 ====
 [source,java]
 ----
 Mono<Boolean> applied = reactiveCqlTemplate.execute(
-		"insert into t_actor (first_name, last_name) values (?, ?)",
+		"INSERT INTO t_actor (first_name, last_name) VALUES (?, ?)",
 		"Leonor", "Watling");
 ----
 ====
 
-The following example shows how to use the `execute` method to do an update operation:
+The following example shows how to perform an `UPDATE` operation with `ReactiveCqlTemplate`:
 
 ====
 [source,java]
 ----
 Mono<Boolean> applied = reactiveCqlTemplate.execute(
-		"update t_actor set last_name = ? where id = ?",
+		"UPDATE t_actor SET last_name = ? WHERE id = ?",
 		"Banjo", 5276L);
 ----
 ====
 
-The following example shows how to use the `execute` method to do a delete operation:
+The following example shows how to perform an `DELETE` operation with `ReactiveCqlTemplate`:
 
 ====
 [source,java]
 ----
 Mono<Boolean> applied = reactiveCqlTemplate.execute(
-		"delete from actor where id = ?",
+		"DELETE FROM actor WHERE id = ?",
 		Long.valueOf(actorId));
 ----
 ====
@@ -436,7 +429,7 @@ NOTE: Once configured, `ReactiveCassandraTemplate` is thread-safe and can be reu
 
 The mapping between rows in a Cassandra table and domain classes is done by delegating to an implementation of
 the `CassandraConverter` interface. Spring provides a default implementation, `MappingCassandraConverter`,
-but you can also write your own custom converter. See "`<<mapping-chapter>>`"
+but you can also write your own custom converter. See "`<<mapping.chapter>>`"
 for more detailed information.
 
 The `ReactiveCassandraTemplate` class implements the `ReactiveCassandraOperations` interface. As often as possible,
@@ -470,11 +463,11 @@ that the Spring container is being used.
 
 There are two ways to get a `ReactiveCassandraTemplate`, depending on how you load you Spring `ApplicationContext`:
 
-* <<reactive-cassandra-template-autowiring>>
-* <<reactive-cassandra-template-application-context>>
+* <<reactive.cassandra.template.autowiring>>
+* <<reactive.cassandra.template.application-context>>
 
 [float]
-[[reactive-cassandra-template-autowiring]]
+[[reactive.cassandra.template.autowiring]]
 ==== Autowiring
 
 You can autowire a `ReactiveCassandraTemplate` into your project, as the following example shows:
@@ -487,9 +480,9 @@ private ReactiveCassandraOperations reactiveCassandraOperations;
 ----
 ====
 
-Like all Spring Autowiring, the preceding example assumes there is only one bean of type `ReactiveCassandraOperations` in the `ApplicationContext`.
+Like all Spring autowiring, this assumes there is only one bean of type `ReactiveCassandraOperations` in the `ApplicationContext`.
 If you have multiple `ReactiveCassandraTemplate` beans (which can be the case if you are working with multiple keyspaces
-in the same project), you can use the `@Qualifier`annotation to designate which bean you want to autowire.
+in the same project), then you can use the `@Qualifier` annotation to designate which bean you want to autowire.
 
 ====
 [source,java]
@@ -501,10 +494,10 @@ private ReactiveCassandraOperations reactiveCassandraOperations;
 ====
 
 [float]
-[[reactive-cassandra-template-application-context]]
+[[reactive.cassandra.template.application-context]]
 ==== Bean Lookup with `ApplicationContext`
 
-You can also look up the `CassandraTemplate` bean from the `ApplicationContext`, as the following example shows:
+You can also look up the `ReactiveCassandraTemplate` bean from the `ApplicationContext`, as shown in the following example:
 
 ====
 [source,java]
@@ -516,27 +509,27 @@ ReactiveCassandraOperations reactiveCassandraOperations = applicationContext.get
 [[cassandra.reactive.template.save-update-remove]]
 == Saving, Updating, and Removing Rows
 
-`ReactiveCassandraTemplate` provides a way for you to save, update, and delete your domain objects
+`ReactiveCassandraTemplate` provides a simple way for you to save, update, and delete your domain objects
 and map those objects to tables managed in Cassandra.
 
 [[cassandra.reactive.template.insert-update]]
-=== Methods for Inserting and Updating Rows
+=== Methods for Inserting and Updating rows
 
 `CassandraTemplate` has several convenient methods for saving and inserting your objects. To have more
 fine-grained control over the conversion process, you can register Spring `Converter` instances with the `MappingCassandraConverter`
 (for example, `Converter<Row, Person>`).
 
-NOTE: The difference between insert and update operations is that an `INSERT` operation does not insert `null` values.
+NOTE: The difference between insert and update operations is that `INSERT` operations do not insert `null` values.
 
-The simple case of using the INSERT operation is to save a POJO. In this case, the table name is determined by
+The simple case of using the `INSERT` operation is to save a POJO. In this case, the table name is determined by
 the simple class name (not the fully qualified class name). The table to store the object can be overridden by
 using mapping metadata.
 
-When inserting or updating, the `id` property must be set. There is no means to generate an ID in Apache Cassandra.
+When inserting or updating, the `id` property must be set. Apache Cassandra has no means to generate an ID.
 
-The following example shows how to use the save operation and retrieve its contents:
+The following example uses the save operation and retrieves its contents:
 
-.Inserting and retrieving objects using the `CassandraTemplate`
+.Inserting and retrieving objects by using the `CassandraTemplate`
 ====
 [source,java]
 ----
@@ -551,47 +544,46 @@ Mono<Person> queriedBob = reactiveCassandraTemplate.selectOneById(query(where("a
 ----
 ====
 
-The following insert and save operations are available:
+You can use the following operations to insert and save:
 
-* `void` *insert* `(Object objectToSave)`: Insert the object in an Apache Cassandra table.
-* `WriteResult` *insert* `(Object objectToSave, InsertOptions options)`: Insert the object in an Apache Cassandra table
-applying `InsertOptions`.
+* `void` *insert* `(Object objectToSave)`: Inserts the object in an Apache Cassandra table.
+* `WriteResult` *insert* `(Object objectToSave, InsertOptions options)`: Inserts the object in an Apache Cassandra table and
+applies `InsertOptions`.
 
-The following update operations are available:
+You can use the following update operations:
 
-* `void` *update* `(Object objectToSave)`: Update the object in an Apache Cassandra table.
-* `WriteResult` *update* `(Object objectToSave, UpdateOptions options)`: Update the object in an Apache Cassandra table
-applying `UpdateOptions`.
+* `void` *update* `(Object objectToSave)`: Updates the object in an Apache Cassandra table.
+* `WriteResult` *update* `(Object objectToSave, UpdateOptions options)`: Updates the object in an Apache Cassandra table and
+applies `UpdateOptions`.
 
-You can also use the old fashioned way: You can write your own CQL statements, as the following example shows:
+You can also use the old fashioned way and write your own CQL statements, as the following example shows:
 
-====
 [source,java]
 ----
-String cql = "insert into person (age, name) values (39, 'Bob')";
+String cql = "INSERT INTO person (age, name) VALUES (39, 'Bob')";
 
 Mono<Boolean> applied = reactiveCassandraTemplate.getReactiveCqlOperations().execute(cql);
 ----
-====
 
-You can also configure additional options (such as TTL, consistency level, and lightweight transactions)
-by using `InsertOptions` and `UpdateOptions`.
+You can also configure additional options such as TTL, consistency level, and lightweight transactions
+when using `InsertOptions` and `UpdateOptions`.
 
-[[cassandra-template.insert-update.table]]
-==== Into Which Table Are Rows Inserted?
+[[cassandra.reactive.template.insert-update.table]]
+==== Which Table Are My Rows Inserted into?
 
-You can manage the collection name that is used for operating on tables in two ways. The default table name
-is based on the simple class name changed to start with a lower-case letter. For example, an instance of
-the `com.example.Person` class is stored in a table called `person`. You can customize this by providing
-a different collection name by using the `@Table` annotation.
+You can manage the table name that is used for operating on the tables in two ways. The default table name
+is the simple class name changed to start with a lower-case letter. So, an instance of
+the `com.example.Person` class would be stored in the `person` table.
+The second way is to specify a table name in the `@Table` annotation.
 
-[[cassandra-template.update]]
+
+[[cassandra.reactive.template.update]]
 === Updating Rows in a Table
 
-For updates, we can select to update a number of rows.
+For updates, you can select to update a number of rows.
 
-The following example shows how to update a single account object in which we add a one-time $50.00 bonus to the balance
-by using the `+` assignment:
+The following example shows updating a single account object by adding a one-time $50.00 bonus to the balance
+with the `+` assignment:
 
 .Updating rows using `CasandraTemplate`
 ====

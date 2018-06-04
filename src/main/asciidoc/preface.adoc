@@ -18,6 +18,7 @@ core Spring concepts.
 
 Spring Data uses the Spring Framework's {spring-framework-docs}core.html[core]
 functionality, including:
+
 * {spring-framework-docs}core.html#beans[IoC] container
 * {spring-framework-docs}core.html#validation[validation, type conversion and data binding]
 * {spring-framework-docs}core.html#expressions[expression language]
@@ -61,7 +62,7 @@ and so on.
 [[requirements]]
 == Requirements
 
-Spring Data for Apache Cassandra 1.x binaries require JDK level 6.0 and later and http://spring.io/docs[Spring Framework] {springVersion} and later.
+Spring Data for Apache Cassandra 2.x binaries require JDK level 8.0 and later and http://spring.io/docs[Spring Framework] {springVersion} and later.
 
 It requires http://cassandra.apache.org/[Cassandra] 2.0 or later.
 

@@ -130,10 +130,6 @@ public enum Condition {
 ----
 ====
 
-NOTE: `enum` mapping using ordinal values requires at least Spring 4.3.0. Using earlier Spring versions requires
-<<mapping-explicit-converters,custom converters>> for each `enum` type.
-
-
 [[mapping-conventions]]
 == Convention-based Mapping
 
@@ -300,8 +296,7 @@ Composite keys can be represented in two ways with Spring Data for Apache Cassan
 
 The simplest form of a composite key is a key with one partition key and one clustering key.
 
-The following example shows a CQL table and the corresponding POJOs that represent the table and its composite key:
-// TODO Add the POJOs
+The following example shows a CQL statement to represent the table and its composite key:
 
 .CQL Table with a Composite Primary Key
 ====
@@ -652,7 +647,7 @@ The `AbstractCassandraEventListener` has the following callback methods:
 * `onAfterSave`: Called in `CassandraTemplate…insert(…)` and `.update(…)` operations after inserting or updating a row in the database.
 * `onBeforeDelete`: Called in `CassandraTemplate.delete(…)` operations before deleting row from the database.
 * `onAfterDelete`: Called in `CassandraTemplate.delete(…)` operations after deleting row from the database.
-* `onAfterLoad`: Called in the `CassandraTemplate.#select(…)`, `.slice(…)`, and `.stream(…)` methods after each row is retrieved from the database.
-* `onAfterConvert`: Called in the `CassandraTemplate.#select(…)`, `.slice(…)`, and `.stream(…)` methods after converting a row retrieved from the database to a POJO.
+* `onAfterLoad`: Called in the `CassandraTemplate.select(…)`, `.slice(…)`, and `.stream(…)` methods after each row is retrieved from the database.
+* `onAfterConvert`: Called in the `CassandraTemplate.select(…)`, `.slice(…)`, and `.stream(…)` methods after converting a row retrieved from the database to a POJO.
 
 NOTE: Lifecycle events are emitted only for root-level types. Complex types used as properties within an aggregate root are not subject to event publication.

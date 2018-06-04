@@ -199,12 +199,12 @@ public interface PersonRepository extends CrudRepository<Person, String> {
 ----
 <1> The method shows a query for all people with the given `lastname`. The query is derived from parsing
 the method name for constraints, which can be concatenated with `And`. Thus, the method name results in
-a query expression of `SELECT * from person WHERE lastname = 'lastname'`.
+a query expression of `SELECT * FROM person WHERE lastname = 'lastname'`.
 <2> Applies pagination to a query. You can equip your method signature with a `Pageable` parameter and let the method return a `Slice` instance, and we automatically page the query accordingly.
 <3> Passing a `QueryOptions` object applies the query options to the resulting query before its execution.
 <4> Applies dynamic sorting to a query. You can add a `Sort` parameter to your method signature, and Spring Data
 automatically applies ordering to the query.
-<5> Shows that you can query based on properties that are not a primitive type by using Converter` instances registered
+<5> Shows that you can query based on properties that are not a primitive type by using `Converter` instances registered
 in `CustomConversions`. Throws `IncorrectResultSizeDataAccessException` if more than one match is found.
 <6> Uses the `First` keyword to restrict the query to only the first result. Unlike the preceding method, this method does
 not throw an exception if more than one match is found.
