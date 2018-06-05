@@ -740,7 +740,7 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Create a new CQL-based AsyncPreparedStatementCreator using the CQL passed in. By default, we'll create an
+	 * Create a new CQL-based {@link AsyncPreparedStatementCreator} using the CQL passed in. By default, we'll create an
 	 * {@link SimpleAsyncPreparedStatementCreator}. This method allows for the creation to be overridden by subclasses.
 	 *
 	 * @param cql static CQL to execute, must not be empty or {@literal null}.
