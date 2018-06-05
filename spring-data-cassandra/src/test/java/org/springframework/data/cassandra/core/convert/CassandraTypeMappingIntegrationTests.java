@@ -535,8 +535,10 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 		assertThat(loaded.getLocalDateTime()).isEqualTo(entity.getLocalDateTime());
 	}
 
-	@Test // DATACASS-296
+	@Test // DATACASS-296, DATACASS-563
 	public void shouldReadAndWriteLocalTime() {
+
+		assumeTrue(cassandraVersion.isGreaterThanOrEqualTo(VERSION_3_10));
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 
@@ -549,8 +551,10 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 		assertThat(loaded.getLocalTime()).isEqualTo(entity.getLocalTime());
 	}
 
-	@Test // DATACASS-296
+	@Test // DATACASS-296, DATACASS-563
 	public void shouldReadAndWriteJodaLocalTime() {
+
+		assumeTrue(cassandraVersion.isGreaterThanOrEqualTo(VERSION_3_10));
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 
@@ -647,8 +651,10 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 		assertThat(loaded.getBpLocalDateTime()).isEqualTo(entity.getBpLocalDateTime());
 	}
 
-	@Test // DATACASS-296
+	@Test // DATACASS-296, DATACASS-563
 	public void shouldReadAndWriteBpLocalTime() {
+
+		assumeTrue(cassandraVersion.isGreaterThanOrEqualTo(VERSION_3_10));
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 
