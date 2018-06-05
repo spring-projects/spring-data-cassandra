@@ -470,7 +470,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 */
 	@Override
 	public <T> Flux<T> execute(String cql, ReactivePreparedStatementCallback<T> action) throws DataAccessException {
-		return execute(new SimpleReactivePreparedStatementCreator(cql), action);
+		return execute(newReactivePreparedStatementCreator(cql), action);
 	}
 
 	/**
@@ -520,7 +520,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	@Override
 	public <T> Flux<T> query(String cql, @Nullable PreparedStatementBinder psb, ReactiveResultSetExtractor<T> rse)
 			throws DataAccessException {
-		return query(new SimpleReactivePreparedStatementCreator(cql), psb, rse);
+		return query(newReactivePreparedStatementCreator(cql), psb, rse);
 	}
 
 	/* (non-Javadoc)
@@ -528,7 +528,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 */
 	@Override
 	public <T> Flux<T> query(String cql, ReactiveResultSetExtractor<T> rse, Object... args) throws DataAccessException {
-		return query(new SimpleReactivePreparedStatementCreator(cql), newArgPreparedStatementBinder(args), rse);
+		return query(newReactivePreparedStatementCreator(cql), newArgPreparedStatementBinder(args), rse);
 	}
 
 	/* (non-Javadoc)
@@ -615,7 +615,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 
 		Assert.hasText(cql, "CQL must not be empty");
 
-		return query(new SimpleReactivePreparedStatementCreator(cql), newArgPreparedStatementBinder(args), Mono::just)
+		return query(newReactivePreparedStatementCreator(cql), newArgPreparedStatementBinder(args), Mono::just)
 				.next();
 	}
 
@@ -641,7 +641,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 */
 	@Override
 	public Mono<Boolean> execute(String cql, @Nullable PreparedStatementBinder psb) throws DataAccessException {
-		return query(new SimpleReactivePreparedStatementCreator(cql), psb, resultSet -> Mono.just(resultSet.wasApplied()))
+		return query(newReactivePreparedStatementCreator(cql), psb, resultSet -> Mono.just(resultSet.wasApplied()))
 				.next();
 	}
 
@@ -661,9 +661,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 
 		Assert.notNull(args, "Args Publisher must not be null");
 
-		SimpleReactivePreparedStatementCreator psc = new SimpleReactivePreparedStatementCreator(cql);
-
-		return execute(psc, (session, ps) -> Flux.from(args).flatMap(objects -> {
+		return execute(newReactivePreparedStatementCreator(cql), (session, ps) -> Flux.from(args).flatMap(objects -> {
 
 			if (logger.isDebugEnabled()) {
 				logger.debug("Executing Prepared CQL Statement [{}]", cql);
@@ -681,6 +679,19 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	// -------------------------------------------------------------------------
 	// Implementation hooks and helper methods
 	// -------------------------------------------------------------------------
+
+	/**
+	 * Create a new CQL-based {@link ReactivePreparedStatementCreator} using the CQL passed in. By default, we'll create
+	 * an {@link SimpleReactivePreparedStatementCreator}. This method allows for the creation to be overridden by
+	 * subclasses.
+	 *
+	 * @param cql static CQL to execute, must not be empty or {@literal null}.
+	 * @return the new {@link ReactivePreparedStatementCreator} to use
+	 * @since 2.0.8
+	 */
+	protected ReactivePreparedStatementCreator newReactivePreparedStatementCreator(String cql) {
+		return new SimpleReactivePreparedStatementCreator(cql);
+	}
 
 	/**
 	 * Create a reusable {@link Flux} given a {@link ReactiveStatementCallback} without exception translation.

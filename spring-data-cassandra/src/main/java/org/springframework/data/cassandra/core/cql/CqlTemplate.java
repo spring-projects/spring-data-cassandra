@@ -69,8 +69,7 @@ import com.datastax.driver.core.exceptions.DriverException;
  * @author Antoine Toulme
  * @author John Blum
  * @author Mark Paluch
- * @author Mike Barlotta (CodeSmell)
- *
+ * @author Mike Barlotta
  * @see PreparedStatementCreator
  * @see PreparedStatementBinder
  * @see PreparedStatementCallback
@@ -406,7 +405,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	@Override
 	public boolean execute(String cql, @Nullable PreparedStatementBinder psb) throws DataAccessException {
 		// noinspection ConstantConditions
-	    return query(newPreparedStatementCreator(cql), psb, ResultSet::wasApplied);
+		return query(newPreparedStatementCreator(cql), psb, ResultSet::wasApplied);
 	}
 
 	/*
@@ -705,14 +704,20 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		return getCurrentSession().getCluster().getMetadata().getAllHosts();
 	}
 
-	/* (non-Javadoc) */
-	protected PreparedStatementCreator newPreparedStatementCreator(String cql) {
-		return new SimplePreparedStatementCreator(cql);
-	}
-
 	// -------------------------------------------------------------------------
 	// Implementation hooks and helper methods
 	// -------------------------------------------------------------------------
+
+	/**
+	 * Create a new CQL-based {@link PreparedStatementCreator} using the CQL passed in. By default, we'll create an
+	 * {@link SimplePreparedStatementCreator}. This method allows for the creation to be overridden by subclasses.
+	 *
+	 * @param cql static CQL to execute, must not be empty or {@literal null}.
+	 * @return the new {@link PreparedStatementCreator} to use
+	 */
+	protected PreparedStatementCreator newPreparedStatementCreator(String cql) {
+		return new SimplePreparedStatementCreator(cql);
+	}
 
 	/**
 	 * Translate the given {@link DriverException} into a generic {@link DataAccessException}.
