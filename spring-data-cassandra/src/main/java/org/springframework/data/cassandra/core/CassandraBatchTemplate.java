@@ -20,6 +20,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
+import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity;
+import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.querybuilder.Batch;
@@ -109,10 +111,16 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 		Assert.notNull(entities, "Entities must not be null");
 		Assert.notNull(options, "WriteOptions must not be null");
 
+		CassandraMappingContext mappingContext = operations.getConverter().getMappingContext();
+
 		for (Object entity : entities) {
 
 			Assert.notNull(entity, "Entity must not be null");
-			batch.add(QueryUtils.createInsertQuery(getTableName(entity), entity, options, operations.getConverter()));
+
+			BasicCassandraPersistentEntity<?> persistentEntity = mappingContext
+					.getRequiredPersistentEntity(entity.getClass());
+			batch.add(QueryUtils.createInsertQuery(persistentEntity.getTableName().toCql(), entity, options,
+					operations.getConverter(), persistentEntity));
 		}
 
 		return this;

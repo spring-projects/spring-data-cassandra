@@ -15,12 +15,11 @@
  */
 package org.springframework.data.cassandra.core;
 
-import java.util.function.Function;
-
 import lombok.Value;
-
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.function.Function;
 
 import org.reactivestreams.Publisher;
 import org.springframework.context.ApplicationEvent;
@@ -433,7 +432,9 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations, A
 
 	Mono<WriteResult> doInsert(Object entity, WriteOptions options, CqlIdentifier tableName) {
 
-		Insert insert = QueryUtils.createInsertQuery(tableName.toCql(), entity, options, getConverter());
+		CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
+
+		Insert insert = QueryUtils.createInsertQuery(tableName.toCql(), entity, options, getConverter(), persistentEntity);
 
 		// noinspection ConstantConditions
 		Mono<WriteResult> result = getReactiveCqlOperations().execute(new StatementCallback(insert))

@@ -16,16 +16,21 @@
 package org.springframework.data.cassandra.core;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.springframework.beans.DirectFieldAccessor;
+import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.cql.QueryOptionsUtil;
 import org.springframework.data.cassandra.core.cql.RowMapper;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.query.CassandraPageRequest;
 import org.springframework.data.convert.EntityWriter;
 import org.springframework.data.domain.PageRequest;
@@ -64,17 +69,20 @@ class QueryUtils {
 	 * @param objectToUpdate the object to save, must not be {@literal null}.
 	 * @param options optional {@link WriteOptions} to apply to the {@link Insert} statement, may be {@literal null}.
 	 * @param entityWriter the {@link EntityWriter} to write insert values.
+	 * @param entity must not be {@literal null}.
 	 * @return The Query object to run with session.execute();
 	 */
 	static Insert createInsertQuery(String tableName, Object objectToUpdate, WriteOptions options,
-			EntityWriter<Object, Object> entityWriter) {
+			CassandraConverter entityWriter, CassandraPersistentEntity<?> entity) {
 
 		Assert.hasText(tableName, "TableName must not be empty");
 		Assert.notNull(objectToUpdate, "Object to insert must not be null");
-		Assert.notNull(entityWriter, "EntityWriter must not be null");
+		Assert.notNull(entityWriter, "CassandraConverter must not be null");
+		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
 
 		Insert insert = QueryOptionsUtil.addWriteOptions(QueryBuilder.insertInto(tableName), options);
 
+		boolean insertNulls = false;
 		if (options instanceof InsertOptions) {
 
 			InsertOptions insertOptions = (InsertOptions) options;
@@ -82,9 +90,22 @@ class QueryUtils {
 			if (insertOptions.isIfNotExists()) {
 				insert = insert.ifNotExists();
 			}
+
+			insertNulls = insertOptions.isInsertNulls();
 		}
 
-		entityWriter.write(objectToUpdate, insert);
+		if (insertNulls) {
+
+			Map<String, Object> toInsert = new LinkedHashMap<>();
+
+			entityWriter.write(objectToUpdate, toInsert, entity);
+
+			for (Entry<String, Object> entry : toInsert.entrySet()) {
+				insert.value(entry.getKey(), entry.getValue());
+			}
+		} else {
+			entityWriter.write(objectToUpdate, insert);
+		}
 
 		return insert;
 	}

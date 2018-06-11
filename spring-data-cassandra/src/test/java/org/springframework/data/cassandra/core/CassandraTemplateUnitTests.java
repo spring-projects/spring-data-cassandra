@@ -15,14 +15,11 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -36,7 +33,6 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
-
 import org.springframework.data.cassandra.CassandraConnectionFailureException;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.domain.User;
@@ -250,8 +246,24 @@ public class CassandraTemplateUnitTests {
 				.isEqualTo("INSERT INTO users (firstname,id,lastname) VALUES ('Walter','heisenberg','White') IF NOT EXISTS;");
 	}
 
+	@Test // DATACASS-560
+	public void insertShouldInsertWithNulls() {
+
+		InsertOptions insertOptions = InsertOptions.builder().withInsertNulls().build();
+
+		when(resultSet.wasApplied()).thenReturn(true);
+
+		User user = new User("heisenberg", null, null);
+
+		template.insert(user, insertOptions);
+
+		verify(session).execute(statementCaptor.capture());
+		assertThat(statementCaptor.getValue().toString())
+				.isEqualTo("INSERT INTO users (firstname,id,lastname) VALUES (null,'heisenberg',null);");
+	}
+
 	@Test // DATACASS-292
-	public void insertShouldTranslateException() throws Exception {
+	public void insertShouldTranslateException() {
 
 		reset(session);
 		when(session.execute(any(Statement.class))).thenThrow(new NoHostAvailableException(Collections.emptyMap()));
@@ -351,7 +363,7 @@ public class CassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-292
-	public void deleteShouldTranslateException() throws Exception {
+	public void deleteShouldTranslateException() {
 
 		reset(session);
 		when(session.execute(any(Statement.class))).thenThrow(new NoHostAvailableException(Collections.emptyMap()));

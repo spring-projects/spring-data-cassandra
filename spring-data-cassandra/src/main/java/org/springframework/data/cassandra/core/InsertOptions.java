@@ -41,13 +41,16 @@ public class InsertOptions extends WriteOptions {
 
 	private boolean ifNotExists;
 
+	private boolean insertNulls;
+
 	private InsertOptions(@Nullable ConsistencyLevel consistencyLevel, @Nullable RetryPolicy retryPolicy,
 			@Nullable Boolean tracing, @Nullable Integer fetchSize, Duration readTimeout, Duration ttl,
-			@Nullable Long timestamp, boolean ifNotExists) {
+			@Nullable Long timestamp, boolean ifNotExists, boolean insertNulls) {
 
 		super(consistencyLevel, retryPolicy, tracing, fetchSize, readTimeout, ttl, timestamp);
 
 		this.ifNotExists = ifNotExists;
+		this.insertNulls = insertNulls;
 	}
 
 	/**
@@ -87,6 +90,14 @@ public class InsertOptions extends WriteOptions {
 	}
 
 	/**
+	 * @return {@literal true} to insert {@literal null} values from an entity.
+	 * @since 2.1
+	 */
+	public boolean isInsertNulls() {
+		return this.insertNulls;
+	}
+
+	/**
 	 * Builder for {@link InsertOptions}.
 	 *
 	 * @author Mark Paluch
@@ -97,6 +108,8 @@ public class InsertOptions extends WriteOptions {
 
 		private boolean ifNotExists;
 
+		private boolean insertNulls;
+
 		private InsertOptionsBuilder() {}
 
 		private InsertOptionsBuilder(InsertOptions insertOptions) {
@@ -104,6 +117,7 @@ public class InsertOptions extends WriteOptions {
 			super(insertOptions);
 
 			this.ifNotExists = insertOptions.ifNotExists;
+			this.insertNulls = insertOptions.insertNulls;
 		}
 
 		/* (non-Javadoc)
@@ -248,13 +262,41 @@ public class InsertOptions extends WriteOptions {
 		}
 
 		/**
+		 * Insert {@literal null} values from an entity. This allows the usage of {@code INSERT} statements as upsert by
+		 * ensuring * that the whole entity state is persisted. Inserting {@literal null}s in Cassandra creates tombstones
+		 * so this * option should be used with caution.
+		 *
+		 * @return {@code this} {@link InsertOptionsBuilder}
+		 * @since 2.1
+		 */
+		public InsertOptionsBuilder withInsertNulls() {
+			return withInsertNulls(true);
+		}
+
+		/**
+		 * Insert {@literal null} values from an entity. This allows the usage of {@code INSERT} statements as upsert by
+		 * ensuring that the whole entity state is persisted. Inserting {@literal null}s in Cassandra creates tombstones so
+		 * this option should be used with caution.
+		 *
+		 * @param insertNulls {@literal true} to enable insertion of {@literal null} values.
+		 * @return {@code this} {@link InsertOptionsBuilder}
+		 * @since 2.1
+		 */
+		public InsertOptionsBuilder withInsertNulls(boolean insertNulls) {
+
+			this.insertNulls = insertNulls;
+
+			return this;
+		}
+
+		/**
 		 * Builds a new {@link InsertOptions} with the configured values.
 		 *
 		 * @return a new {@link InsertOptions} with the configured values
 		 */
 		public InsertOptions build() {
 			return new InsertOptions(this.consistencyLevel, this.retryPolicy, this.tracing, this.fetchSize, this.readTimeout,
-					this.ttl, this.timestamp, this.ifNotExists);
+					this.ttl, this.timestamp, this.ifNotExists, this.insertNulls);
 		}
 	}
 }

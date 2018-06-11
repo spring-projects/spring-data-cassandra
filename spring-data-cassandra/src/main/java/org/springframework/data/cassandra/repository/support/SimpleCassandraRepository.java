@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
-import static org.springframework.data.cassandra.core.query.Criteria.where;
+import static org.springframework.data.cassandra.core.query.Criteria.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +23,7 @@ import java.util.Optional;
 
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
+import org.springframework.data.cassandra.core.InsertOptions;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;
@@ -46,13 +47,15 @@ import com.datastax.driver.core.querybuilder.Select;
  */
 public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, ID> {
 
+	private static final InsertOptions INSERT_NULLS = InsertOptions.builder().withInsertNulls().build();
+
 	private final CassandraEntityInformation<T, ID> entityInformation;
 
 	private final CassandraOperations operations;
 
 	/**
-	 * Create a new {@link SimpleCassandraRepository} for the given {@link CassandraEntityInformation}
-	 * and {@link CassandraTemplate}.
+	 * Create a new {@link SimpleCassandraRepository} for the given {@link CassandraEntityInformation} and
+	 * {@link CassandraTemplate}.
 	 *
 	 * @param metadata must not be {@literal null}.
 	 * @param operations must not be {@literal null}.
@@ -74,9 +77,7 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		Insert insert = createInsert(entity);
-
-		operations.getCqlOperations().execute(insert);
+		operations.insert(entity, INSERT_NULLS);
 
 		return entity;
 	}
@@ -94,7 +95,7 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 		for (S entity : entities) {
 
 			result.add(entity);
-			operations.getCqlOperations().execute(createInsert(entity));
+			operations.insert(entity, INSERT_NULLS);
 		}
 
 		return result;
@@ -105,6 +106,8 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 	 *
 	 * @param entity the entity, must not be {@literal null}.
 	 * @return the constructed {@link Insert} statement.
+	 * @deprecated since 2.1, use {@link InsertOptions#isInsertNulls()} with
+	 *             {@link CassandraOperations#insert(Object, InsertOptions)}.
 	 */
 	protected <S extends T> Insert createInsert(S entity) {
 		return InsertUtil.createInsert(operations.getConverter(), entity);

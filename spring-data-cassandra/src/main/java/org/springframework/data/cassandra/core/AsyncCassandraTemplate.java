@@ -502,8 +502,9 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 		Assert.notNull(entity, "Entity must not be null");
 		Assert.notNull(options, "InsertOptions must not be null");
 
-		CqlIdentifier tableName = getTableName(entity);
-		Insert insert = QueryUtils.createInsertQuery(tableName.toCql(), entity, options, getConverter());
+		CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
+		CqlIdentifier tableName = persistentEntity.getTableName();
+		Insert insert = QueryUtils.createInsertQuery(tableName.toCql(), entity, options, getConverter(), persistentEntity);
 
 		maybeEmitEvent(new BeforeSaveEvent<>(entity, tableName, insert));
 

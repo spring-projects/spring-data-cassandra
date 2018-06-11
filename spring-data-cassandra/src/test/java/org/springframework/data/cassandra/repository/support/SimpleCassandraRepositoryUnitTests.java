@@ -15,14 +15,11 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.io.Serializable;
+import static org.mockito.Mockito.*;
 
 import lombok.Data;
+
+import java.io.Serializable;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -31,11 +28,10 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.CassandraOperations;
+import org.springframework.data.cassandra.core.InsertOptions;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.cql.CqlOperations;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
@@ -72,15 +68,10 @@ public class SimpleCassandraRepositoryUnitTests {
 
 	@Before
 	public void before() {
-
 		mappingContext.setUserTypeResolver(userTypeResolver);
-
-		when(cassandraOperations.getConverter()).thenReturn(converter);
-		when(cassandraOperations.getCqlOperations()).thenReturn(cqlOperations);
-		when(userTypeResolver.resolveType(CqlIdentifier.of("address"))).thenReturn(userType);
 	}
 
-	@Test // DATACASS-428
+	@Test // DATACASS-428, DATACASS-560
 	public void saveShouldInsertNewPrimaryKeyOnlyEntity() {
 
 		CassandraPersistentEntity<?> entity = converter.getMappingContext().getRequiredPersistentEntity(SimplePerson.class);
@@ -92,11 +83,10 @@ public class SimpleCassandraRepositoryUnitTests {
 
 		repository.save(person);
 
-		verify(cqlOperations).execute(insertCaptor.capture());
-		assertThat(insertCaptor.getValue().toString()).isEqualTo("INSERT INTO simpleperson (id) VALUES (null);");
+		verify(cassandraOperations).insert(person, InsertOptions.builder().withInsertNulls().build());
 	}
 
-	@Test // DATACASS-428
+	@Test // DATACASS-428, DATACASS-560
 	public void saveShouldUpdateNewEntity() {
 
 		CassandraPersistentEntity<?> entity = converter.getMappingContext().getRequiredPersistentEntity(Person.class);
@@ -108,10 +98,10 @@ public class SimpleCassandraRepositoryUnitTests {
 
 		repository.save(person);
 
-		verify(cqlOperations).execute(any(Insert.class));
+		verify(cassandraOperations).insert(person, InsertOptions.builder().withInsertNulls().build());
 	}
 
-	@Test // DATACASS-428
+	@Test // DATACASS-428, DATACASS-560
 	public void saveShouldUpdateExistingEntity() {
 
 		CassandraPersistentEntity<?> entity = converter.getMappingContext().getRequiredPersistentEntity(Person.class);
@@ -125,10 +115,7 @@ public class SimpleCassandraRepositoryUnitTests {
 
 		repository.save(person);
 
-		verify(cqlOperations).execute(insertCaptor.capture());
-		assertThat(insertCaptor.getValue().toString())
-				.contains("INSERT INTO person (lastname,firstname,alternativeaddresses,");
-		assertThat(insertCaptor.getValue().toString()).contains("VALUES ('bar','foo',null");
+		verify(cassandraOperations).insert(person, InsertOptions.builder().withInsertNulls().build());
 	}
 
 	@Test // DATACASS-428

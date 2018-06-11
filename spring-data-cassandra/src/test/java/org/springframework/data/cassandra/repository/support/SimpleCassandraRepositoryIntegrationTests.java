@@ -15,23 +15,29 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.core.CassandraOperations;
+import org.springframework.data.cassandra.core.mapping.event.AbstractCassandraEventListener;
+import org.springframework.data.cassandra.core.mapping.event.AfterSaveEvent;
+import org.springframework.data.cassandra.core.mapping.event.BeforeSaveEvent;
+import org.springframework.data.cassandra.core.mapping.event.CassandraMappingEvent;
 import org.springframework.data.cassandra.core.query.CassandraPageRequest;
 import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.repository.CassandraRepository;
@@ -59,9 +65,15 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 		public String[] getEntityBasePackages() {
 			return new String[] { User.class.getPackage().getName() };
 		}
+
+		@Bean
+		CaptureEventListener eventListener() {
+			return new CaptureEventListener();
+		}
 	}
 
 	@Autowired private CassandraOperations operations;
+	@Autowired private CaptureEventListener eventListener;
 
 	private BeanFactory beanFactory;
 	private CassandraRepositoryFactory factory;
@@ -99,6 +111,8 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 		boyd = new User("45", "Boyd", "Tinsley");
 
 		repository.saveAll(Arrays.asList(oliver, dave, carter, boyd));
+
+		eventListener.clear();
 	}
 
 	@Test // DATACASS-396
@@ -217,6 +231,18 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 		});
 	}
 
+	@Test // DATACASS-560
+	public void saveShouldEmitEvents() {
+
+		dave.setFirstname("Hello, Dave");
+		dave.setLastname("Bowman");
+
+		repository.save(dave);
+
+		assertThat(eventListener.getBeforeSave()).hasSize(1);
+		assertThat(eventListener.getAfterSave()).hasSize(1);
+	}
+
 	@Test // DATACASS-396
 	public void saveEntityShouldInsertNewEntity() {
 
@@ -304,4 +330,35 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 
 	interface UserRepostitory extends CassandraRepository<User, String> { }
 
+	static class CaptureEventListener extends AbstractCassandraEventListener<User> {
+
+		private final List<CassandraMappingEvent<?>> events = new CopyOnWriteArrayList<>();
+
+		@Override
+		public void onBeforeSave(BeforeSaveEvent<User> event) {
+			events.add(event);
+		}
+
+		@Override
+		public void onAfterSave(AfterSaveEvent<User> event) {
+			events.add(event);
+		}
+
+		private void clear() {
+			events.clear();
+		}
+
+		List<BeforeSaveEvent<User>> getBeforeSave() {
+			return filter(BeforeSaveEvent.class);
+		}
+
+		List<AfterSaveEvent<User>> getAfterSave() {
+			return filter(AfterSaveEvent.class);
+		}
+
+		@SuppressWarnings("unchecked")
+		private <T> List<T> filter(Class<? super T> targetType) {
+			return (List) events.stream().filter(targetType::isInstance).map(targetType::cast).collect(Collectors.toList());
+		}
+	}
 }

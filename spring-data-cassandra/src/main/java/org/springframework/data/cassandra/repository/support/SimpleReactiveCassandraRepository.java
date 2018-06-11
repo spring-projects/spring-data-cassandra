@@ -18,12 +18,12 @@ package org.springframework.data.cassandra.repository.support;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import org.reactivestreams.Publisher;
+import org.springframework.data.cassandra.core.InsertOptions;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.repository.ReactiveCassandraRepository;
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;
 import org.springframework.util.Assert;
-
-import org.reactivestreams.Publisher;
 
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
@@ -37,6 +37,8 @@ import com.datastax.driver.core.querybuilder.Select;
  * @since 2.0
  */
 public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassandraRepository<T, ID> {
+
+	private static final InsertOptions INSERT_NULLS = InsertOptions.builder().withInsertNulls().build();
 
 	private final CassandraEntityInformation<T, ID> entityInformation;
 
@@ -67,7 +69,7 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		return operations.getReactiveCqlOperations().execute(createInsert(entity)).map(it -> entity);
+		return operations.insert(entity, INSERT_NULLS).thenReturn(entity);
 	}
 
 	/**
@@ -75,6 +77,8 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 	 *
 	 * @param entity the entity, must not be {@literal null}.
 	 * @return the constructed {@link Insert} statement.
+	 * @deprecated since 2.1, use {@link InsertOptions#isInsertNulls()} with
+	 *             {@link ReactiveCassandraOperations#insert(Object, InsertOptions)}.
 	 */
 	private <S extends T> Insert createInsert(S entity) {
 		return InsertUtil.createInsert(operations.getConverter(), entity);
@@ -100,7 +104,7 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 		Assert.notNull(entityStream, "The given Publisher of entities must not be null");
 
 		return Flux.from(entityStream)
-				.flatMap(entity -> operations.getReactiveCqlOperations().execute(createInsert(entity)).map(it -> entity));
+				.flatMap(entity -> operations.insert(entity, INSERT_NULLS).thenReturn(entity));
 	}
 
 	/* (non-Javadoc)

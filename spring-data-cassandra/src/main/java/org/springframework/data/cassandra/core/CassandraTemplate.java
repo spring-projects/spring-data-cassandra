@@ -549,7 +549,9 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 
 	WriteResult doInsert(Object entity, WriteOptions options, CqlIdentifier tableName) {
 
-		Insert insert = QueryUtils.createInsertQuery(tableName.toCql(), entity, options, getConverter());
+		CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
+
+		Insert insert = QueryUtils.createInsertQuery(tableName.toCql(), entity, options, getConverter(), persistentEntity);
 
 		maybeEmitEvent(new BeforeSaveEvent<>(entity, tableName, insert));
 
