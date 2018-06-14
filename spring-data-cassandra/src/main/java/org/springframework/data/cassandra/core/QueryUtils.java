@@ -50,7 +50,7 @@ import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Update;
 
 /**
- * Simple utility class for working with the QueryBuilder API.
+ * Simple utility class for working with the QueryBuilder API using mapped entities.
  * <p>
  * Only intended for internal use.
  *
@@ -66,30 +66,26 @@ class QueryUtils {
 	 * Creates a Query Object for an insert.
 	 *
 	 * @param tableName the table name, must not be empty and not {@literal null}.
-	 * @param objectToUpdate the object to save, must not be {@literal null}.
+	 * @param objectToInsert the object to save, must not be {@literal null}.
 	 * @param options optional {@link WriteOptions} to apply to the {@link Insert} statement, may be {@literal null}.
 	 * @param entityWriter the {@link EntityWriter} to write insert values.
 	 * @param entity must not be {@literal null}.
 	 * @return The Query object to run with session.execute();
 	 */
-	static Insert createInsertQuery(String tableName, Object objectToUpdate, WriteOptions options,
+	static Insert createInsertQuery(String tableName, Object objectToInsert, WriteOptions options,
 			CassandraConverter entityWriter, CassandraPersistentEntity<?> entity) {
 
 		Assert.hasText(tableName, "TableName must not be empty");
-		Assert.notNull(objectToUpdate, "Object to insert must not be null");
+		Assert.notNull(objectToInsert, "Object to insert must not be null");
 		Assert.notNull(entityWriter, "CassandraConverter must not be null");
 		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
 
-		Insert insert = QueryOptionsUtil.addWriteOptions(QueryBuilder.insertInto(tableName), options);
+		Insert insert = addWriteOptions(QueryBuilder.insertInto(tableName), options);
 
 		boolean insertNulls = false;
 		if (options instanceof InsertOptions) {
 
 			InsertOptions insertOptions = (InsertOptions) options;
-
-			if (insertOptions.isIfNotExists()) {
-				insert = insert.ifNotExists();
-			}
 
 			insertNulls = insertOptions.isInsertNulls();
 		}
@@ -98,13 +94,13 @@ class QueryUtils {
 
 			Map<String, Object> toInsert = new LinkedHashMap<>();
 
-			entityWriter.write(objectToUpdate, toInsert, entity);
+			entityWriter.write(objectToInsert, toInsert, entity);
 
 			for (Entry<String, Object> entry : toInsert.entrySet()) {
 				insert.value(entry.getKey(), entry.getValue());
 			}
 		} else {
-			entityWriter.write(objectToUpdate, insert);
+			entityWriter.write(objectToInsert, insert);
 		}
 
 		return insert;
@@ -127,16 +123,7 @@ class QueryUtils {
 		Assert.notNull(objectToUpdate, "Object to update must not be null");
 		Assert.notNull(entityWriter, "EntityWriter must not be null");
 
-		Update update = QueryOptionsUtil.addWriteOptions(QueryBuilder.update(tableName), options);
-
-		if (options instanceof UpdateOptions) {
-
-			UpdateOptions updateOptions = (UpdateOptions) options;
-
-			if (updateOptions.isIfExists()) {
-				update.where().ifExists();
-			}
-		}
+		Update update = addWriteOptions(QueryBuilder.update(tableName), options);
 
 		entityWriter.write(objectToUpdate, update);
 
@@ -244,5 +231,76 @@ class QueryUtils {
 		}
 
 		return CqlIdentifier.of("unknown");
+	}
+
+	/**
+	 * Add common {@link WriteOptions} options to {@link Insert} CQL statements.
+	 *
+	 * @param insert {@link Insert} CQL statement, must not be {@literal null}.
+	 * @param writeOptions write options (e.g. consistency level) to add to the CQL statement.
+	 * @return the given {@link Insert}.
+	 * @see #addWriteOptions(Insert, WriteOptions)
+	 * @since 2.1
+	 */
+	static Insert addWriteOptions(Insert insert, WriteOptions writeOptions) {
+
+		Assert.notNull(insert, "Insert must not be null");
+
+		if (writeOptions instanceof InsertOptions) {
+
+			InsertOptions insertOptions = (InsertOptions) writeOptions;
+
+			if (insertOptions.isIfNotExists()) {
+				insert = insert.ifNotExists();
+			}
+		}
+
+		QueryOptionsUtil.addWriteOptions(insert, writeOptions);
+
+		return insert;
+	}
+
+	/**
+	 * Add common {@link WriteOptions} options to {@link Update} CQL statements.
+	 *
+	 * @param update {@link Update} CQL statement, must not be {@literal null}.
+	 * @param writeOptions write options (e.g. consistency level) to add to the CQL statement.
+	 * @return the given {@link Update}.
+	 * @see QueryOptionsUtil#addWriteOptions(Update, WriteOptions)
+	 * @since 2.1
+	 */
+	static Update addWriteOptions(Update update, WriteOptions writeOptions) {
+
+		Assert.notNull(update, "Update must not be null");
+
+		QueryOptionsUtil.addWriteOptions(update, writeOptions);
+
+		if (writeOptions instanceof UpdateOptions) {
+
+			UpdateOptions updateOptions = (UpdateOptions) writeOptions;
+
+			if (updateOptions.isIfExists()) {
+				update.where().ifExists();
+			}
+		}
+
+		return update;
+	}
+
+	/**
+	 * Add common {@link WriteOptions} options to {@link Delete} CQL statements.
+	 *
+	 * @param delete {@link Delete} CQL statement, must not be {@literal null}.
+	 * @param writeOptions write options (e.g. consistency level) to add to the CQL statement.
+	 * @return the given {@link Delete}.
+	 * @since 2.1
+	 */
+	static Delete addWriteOptions(Delete delete, WriteOptions writeOptions) {
+
+		Assert.notNull(delete, "Delete must not be null");
+
+		QueryOptionsUtil.addQueryOptions(delete, writeOptions);
+
+		return delete;
 	}
 }

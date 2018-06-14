@@ -18,9 +18,12 @@ package org.springframework.data.cassandra.core;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
+import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import org.springframework.data.cassandra.domain.User;
 
 import com.datastax.driver.core.SimpleStatement;
+import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 
@@ -30,6 +33,8 @@ import com.datastax.driver.core.querybuilder.Select;
  * @author Mark Paluch
  */
 public class QueryUtilsUnitTests {
+
+	private final MappingCassandraConverter converter = new MappingCassandraConverter();
 
 	@Test // DATACASS-106
 	public void shouldRetrieveTableNameFromSelect() {
@@ -56,5 +61,16 @@ public class QueryUtilsUnitTests {
 		CqlIdentifier tableName = QueryUtils.getTableName(new SimpleStatement("SELECT * from \"table\""));
 
 		assertThat(tableName).isEqualTo(CqlIdentifier.of("table"));
+	}
+
+	@Test // DATACASS-569
+	public void shouldCreateInsertQuery() {
+
+		User user = new User("heisenberg", "Walter", "White");
+		Insert insert = QueryUtils.createInsertQuery("user", user, InsertOptions.builder().withIfNotExists().build(),
+				converter, converter.getMappingContext().getRequiredPersistentEntity(User.class));
+
+		assertThat(insert.toString())
+				.isEqualTo("INSERT INTO user (firstname,id,lastname) VALUES ('Walter','heisenberg','White') IF NOT EXISTS;");
 	}
 }

@@ -313,7 +313,7 @@ public class StatementFactory {
 
 		query.getQueryOptions().ifPresent(queryOptions -> {
 			if (queryOptions instanceof WriteOptions) {
-				QueryOptionsUtil.addWriteOptions(update, (WriteOptions) queryOptions);
+				QueryUtils.addWriteOptions(update, (WriteOptions) queryOptions);
 			} else {
 				QueryOptionsUtil.addQueryOptions(update, queryOptions);
 			}
@@ -454,7 +454,7 @@ public class StatementFactory {
 
 		query.getQueryOptions().ifPresent(queryOptions -> {
 			if (queryOptions instanceof WriteOptions) {
-				QueryOptionsUtil.addWriteOptions(delete, (WriteOptions) queryOptions);
+				QueryUtils.addWriteOptions(delete, (WriteOptions) queryOptions);
 			} else {
 				QueryOptionsUtil.addQueryOptions(delete, queryOptions);
 			}
