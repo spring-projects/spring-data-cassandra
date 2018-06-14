@@ -229,6 +229,17 @@ public class StatementFactoryUnitTests {
 		assertThat(update.toString()).isEqualTo("UPDATE person SET number=number-1;");
 	}
 
+	@Test // DATACASS-569
+	public void shouldCreateSetUpdateIfExists() {
+
+		Query query = Query.query(Criteria.where("foo").is("bar"))
+				.queryOptions(UpdateOptions.builder().withIfExists().build());
+
+		Statement update = statementFactory.update(query, Update.empty().set("firstName", "baz"), personEntity);
+
+		assertThat(update.toString()).isEqualTo("UPDATE person SET first_name='baz' WHERE foo='bar' IF EXISTS;");
+	}
+
 	static class Person {
 
 		@Id String id;
