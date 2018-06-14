@@ -19,8 +19,11 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Field;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.junit.Test;
@@ -106,6 +109,32 @@ public class BasicCassandraPersistentPropertyUnitTests {
 		assertThat(timeUUIDProperty.getDataType().getName()).isEqualTo(Name.TIMEUUID);
 	}
 
+	@Test // DATACASS-568
+	public void shouldFindAnnotationInMapTypes() {
+
+		assertThat(findAnnotatedType(TypeWithMaps.class, "parameterized")).isNull();
+		assertThat(findAnnotatedType(TypeWithMaps.class, "parameterizedWithAnnotation")).isNotNull();
+		assertThat(findAnnotatedType(TypeWithMaps.class, "parameterizedWithParameterAnnotation")).isNotNull();
+		assertThat(findAnnotatedType(TypeWithMaps.class, "unparameterized")).isNull();
+		assertThat(findAnnotatedType(TypeWithMaps.class, "unparameterizedWithAnnotation")).isNotNull();
+		assertThat(findAnnotatedType(TypeWithMaps.class, "subtype")).isNull();
+	}
+
+	@Test // DATACASS-568
+	public void shouldFindAnnotationInCollectionTypes() {
+
+		assertThat(findAnnotatedType(TypeWithCollections.class, "parameterized")).isNull();
+		assertThat(findAnnotatedType(TypeWithCollections.class, "parameterizedWithAnnotation")).isNotNull();
+		assertThat(findAnnotatedType(TypeWithCollections.class, "parameterizedWithParameterAnnotation")).isNotNull();
+		assertThat(findAnnotatedType(TypeWithCollections.class, "unparameterized")).isNull();
+		assertThat(findAnnotatedType(TypeWithCollections.class, "unparameterizedWithAnnotation")).isNotNull();
+		assertThat(findAnnotatedType(TypeWithCollections.class, "subtype")).isNull();
+	}
+
+	private AnnotatedType findAnnotatedType(Class<?> type, String parameterized) {
+		return getPropertyFor(TypeWithMaps.class, parameterized).findAnnotatedType(Indexed.class);
+	}
+
 	private CassandraPersistentProperty getPropertyFor(Class<?> type, String fieldName) {
 
 		Field field = ReflectionUtils.findField(type, fieldName);
@@ -181,4 +210,38 @@ public class BasicCassandraPersistentPropertyUnitTests {
 
 		@CassandraType(type = Name.TIMEUUID) UUID timeUUID;
 	}
+
+	static class TypeWithMaps {
+
+		Map<String, String> parameterized;
+
+		@Indexed Map<String, String> parameterizedWithAnnotation;
+
+		Map<String, @Indexed String> parameterizedWithParameterAnnotation;
+
+		Map unparameterized;
+
+		@Indexed Map unparameterizedWithAnnotation;
+
+		MapType subtype;
+	}
+
+	static class TypeWithCollections {
+
+		List<String> parameterized;
+
+		@Indexed List<String> parameterizedWithAnnotation;
+
+		List<@Indexed String> parameterizedWithParameterAnnotation;
+
+		List unparameterized;
+
+		@Indexed List unparameterizedWithAnnotation;
+
+		ListType subtype;
+	}
+
+	interface MapType extends Map<String, String> {}
+
+	interface ListType extends List<String> {}
 }

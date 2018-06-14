@@ -446,16 +446,19 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 			return true;
 		}
 
-		AnnotatedParameterizedType parameterizedType = (AnnotatedParameterizedType) type;
-		AnnotatedType[] arguments = parameterizedType.getAnnotatedActualTypeArguments();
+		if (type instanceof AnnotatedParameterizedType) {
 
-		if (typeInformation.isCollectionLike() && arguments.length == 1) {
-			return AnnotatedElementUtils.hasAnnotation(arguments[0], annotationType);
-		}
+			AnnotatedParameterizedType parameterizedType = (AnnotatedParameterizedType) type;
+			AnnotatedType[] arguments = parameterizedType.getAnnotatedActualTypeArguments();
 
-		if (typeInformation.isMap() && arguments.length == 2) {
-			return AnnotatedElementUtils.hasAnnotation(arguments[0], annotationType)
-					|| AnnotatedElementUtils.hasAnnotation(arguments[1], annotationType);
+			if (typeInformation.isCollectionLike() && arguments.length == 1) {
+				return AnnotatedElementUtils.hasAnnotation(arguments[0], annotationType);
+			}
+
+			if (typeInformation.isMap() && arguments.length == 2) {
+				return AnnotatedElementUtils.hasAnnotation(arguments[0], annotationType)
+						|| AnnotatedElementUtils.hasAnnotation(arguments[1], annotationType);
+			}
 		}
 
 		return false;
