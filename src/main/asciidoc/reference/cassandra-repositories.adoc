@@ -117,7 +117,7 @@ as the following example does by autowiring `PersonRepository`:
 ====
 [source,java]
 ----
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration
 public class PersonRepositoryTests {
 
@@ -139,7 +139,7 @@ Cassandra repositories support paging and sorting for paginated and sorted acces
 ====
 [source,java]
 ----
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration
 public class PersonRepositoryTests {
 

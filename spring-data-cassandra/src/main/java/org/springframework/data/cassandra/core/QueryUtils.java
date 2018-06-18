@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.core;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,11 +38,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
-import reactor.core.publisher.Mono;
 
 import com.datastax.driver.core.PagingState;
 import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Delete.Where;
@@ -49,6 +51,7 @@ import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Update;
+import com.google.common.collect.Iterators;
 
 /**
  * Simple utility class for working with the QueryBuilder API using mapped entities.
@@ -177,14 +180,33 @@ class QueryUtils {
 
 		int toRead = resultSet.getAvailableWithoutFetching();
 
-		List<T> result = new ArrayList<>(toRead);
+		return readSlice(() -> Iterators.limit(resultSet.iterator(), toRead), resultSet.getExecutionInfo().getPagingState(),
+				mapper, page, pageSize);
+	}
 
-		for (int index = 0; index < toRead; index++) {
-			T element = mapper.mapRow(resultSet.one(), index);
+	/**
+	 * Read a {@link Slice} of data from the {@link Iterable} of {@link Row}s for a {@link Pageable}.
+	 *
+	 * @param rows must not be {@literal null}.
+	 * @param pagingState
+	 * @param mapper must not be {@literal null}.
+	 * @param page
+	 * @param pageSize
+	 * @return the resulting {@link Slice}.
+	 * @since 2.1
+	 */
+	static <T> Slice<T> readSlice(Iterable<Row> rows, @Nullable PagingState pagingState, RowMapper<T> mapper, int page,
+			int pageSize) {
+
+		List<T> result = new ArrayList<>(pageSize);
+
+		Iterator<Row> iterator = rows.iterator();
+		int index = 0;
+
+		while (iterator.hasNext()) {
+			T element = mapper.mapRow(iterator.next(), index++);
 			result.add(element);
 		}
-
-		PagingState pagingState = resultSet.getExecutionInfo().getPagingState();
 
 		CassandraPageRequest pageRequest = CassandraPageRequest.of(PageRequest.of(page, pageSize), pagingState);
 

@@ -15,33 +15,23 @@
  */
 package org.springframework.data.cassandra.core.cql.session;
 
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoProcessor;
 import reactor.core.publisher.MonoSink;
 import reactor.core.scheduler.Scheduler;
 
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.cassandra.ReactiveResultSet;
 import org.springframework.data.cassandra.ReactiveSession;
 import org.springframework.util.Assert;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.ColumnDefinitions;
-import com.datastax.driver.core.ExecutionInfo;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.SimpleStatement;
-import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.*;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -252,6 +242,7 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 			this.resultSet = resultSet;
 		}
 
+
 		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.ReactiveResultSet#rows()
 		 */
@@ -260,7 +251,15 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 			return getRows(Mono.just(this.resultSet));
 		}
 
-		Flux<Row> getRows(Mono<ResultSet> nextResults) {
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.ReactiveResultSet#availableRows()
+		 */
+		@Override
+		public Flux<Row> availableRows() {
+			return toRows(this.resultSet);
+		}
+
+		private Flux<Row> getRows(Mono<ResultSet> nextResults) {
 
 			return nextResults.flatMapMany(it -> {
 
@@ -280,7 +279,7 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 
 		static Flux<Row> toRows(ResultSet resultSet) {
 
-			int prefetch = Math.max(1, resultSet.getAvailableWithoutFetching());
+			int prefetch = Math.max(0, resultSet.getAvailableWithoutFetching());
 
 			return Flux.fromIterable(resultSet).take(prefetch);
 		}

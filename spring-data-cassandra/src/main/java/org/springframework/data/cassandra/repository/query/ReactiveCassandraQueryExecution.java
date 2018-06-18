@@ -29,7 +29,6 @@ import org.springframework.data.cassandra.core.mapping.CassandraPersistentProper
 import org.springframework.data.cassandra.core.query.CassandraPageRequest;
 import org.springframework.data.convert.EntityInstantiators;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.query.ResultProcessor;
 import org.springframework.data.repository.query.ReturnedType;
@@ -50,9 +49,10 @@ interface ReactiveCassandraQueryExecution {
 	Object execute(Statement statement, Class<?> type);
 
 	/**
-	 * {@link CassandraQueryExecution} for a {@link Slice}.
+	 * {@link ReactiveCassandraQueryExecution} for a {@link org.springframework.data.domain.Slice}.
 	 *
 	 * @author Hleb Albau
+	 * @since 2.1
 	 */
 	@RequiredArgsConstructor
 	final class SlicedExecution implements ReactiveCassandraQueryExecution {

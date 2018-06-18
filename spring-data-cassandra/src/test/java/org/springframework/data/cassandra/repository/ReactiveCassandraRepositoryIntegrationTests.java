@@ -15,18 +15,17 @@
  */
 package org.springframework.data.cassandra.repository;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import org.reactivestreams.Publisher;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -49,6 +48,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
+import org.springframework.data.util.Streamable;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -137,6 +137,12 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractKeyspac
 		StepVerifier.create(repository.findByLastname(carter.getLastname(), CassandraPageRequest.first(1)))
 				.expectNextMatches(users -> users.getSize() == 1 && users.hasNext())
 				.verifyComplete();
+	}
+
+	@Test // DATACASS-529
+	public void shouldFindEmpptySliceByLastName() {
+		StepVerifier.create(repository.findByLastname("foo", CassandraPageRequest.first(1)))
+				.expectNextMatches(Streamable::isEmpty).verifyComplete();
 	}
 
 	@Test // DATACASS-525

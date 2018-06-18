@@ -11,8 +11,9 @@ This chapter summarizes changes and new features for each release.
 * Cassandra Mapped Tuple support via `@Tuple`.
 * Support for Cassandra `time` columns via `LocalTime`.
 * Support for `map` columns using User-defined/converted types.
-* <<cassandra.mapping-usage.events>>
+* <<cassandra.mapping-usage.events>>.
 * Kotlin extensions for Template API.
+* Reactive Paging support through `Mono<Slice<T>>`.
 
 [[new-features.2-0-0]]
 == What's new in Spring Data for Apache Cassandra 2.0

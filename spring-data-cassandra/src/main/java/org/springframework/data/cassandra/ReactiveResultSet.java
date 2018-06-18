@@ -15,9 +15,9 @@
  */
 package org.springframework.data.cassandra;
 
-import java.util.List;
-
 import reactor.core.publisher.Flux;
+
+import java.util.List;
 
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.ExecutionInfo;
@@ -48,20 +48,31 @@ import com.datastax.driver.core.Row;
 public interface ReactiveResultSet {
 
 	/**
-	 * Returns a {@link Flux} over the rows contained in this result set.
+	 * Returns a {@link Flux} over the rows contained in this result set applying transparent paging.
 	 * <p>
 	 * The {@link Flux} will stream over all records that in this {@link ReactiveResultSet} according to the reactive
-	 * demand.
+	 * demand and fetch next result chunks by issuing the underlying query with the current
+	 * {@link com.datastax.driver.core.PagingState} applied.
 	 * <p>
 	 *
-	 * @return a {@link Flux} of rows that will stream over all {@link Row rows} in this {@link ReactiveResultSet}.
+	 * @return a {@link Flux} of rows that will stream over all {@link Row rows} of the entire result.
 	 */
 	Flux<Row> rows();
 
 	/**
-	 * Returns the columns returned in this ResultSet.
+	 * Returns a {@link Flux} over the rows contained in this result set chunk. This method does not apply transparent
+	 * paging. Use {@link com.datastax.driver.core.PagingState} from {@link #getExecutionInfo()} to issue subsequent
+	 * queries to obtain the next result chunk.
 	 *
-	 * @return the columns returned in this ResultSet.
+	 * @return a {@link Flux} of rows that will stream over all {@link Row rows} in this {@link ReactiveResultSet}.
+	 * @since 2.1
+	 */
+	Flux<Row> availableRows();
+
+	/**
+	 * Returns the columns returned in this {@link ReactiveResultSet}.
+	 *
+	 * @return the columns returned in this {@link ReactiveResultSet}.
 	 */
 	ColumnDefinitions getColumnDefinitions();
 
@@ -82,7 +93,7 @@ public interface ReactiveResultSet {
 	boolean wasApplied();
 
 	/**
-	 * Returns information on the execution of the last query made for this result set.
+	 * Returns information on the execution of the last query made for this {@link ReactiveResultSet}.
 	 * <p>
 	 * Note that in most cases, a result set is fetched with only one query, but large result sets can be paged and thus
 	 * be retrieved by multiple queries. In that case this method return the {@link ExecutionInfo} for the last query
@@ -91,18 +102,18 @@ public interface ReactiveResultSet {
 	 * The returned object includes basic information such as the queried hosts, but also the Cassandra query trace if
 	 * tracing was enabled for the query.
 	 *
-	 * @return the execution info for the last query made for this result set.
+	 * @return the {@link ExecutionInfo} for the last query made for this {@link ReactiveResultSet}.
 	 */
 	ExecutionInfo getExecutionInfo();
 
 	/**
-	 * Return the execution information for all queries made to retrieve this result set.
+	 * Return the execution information for all queries made to retrieve this {@link ReactiveResultSet}.
 	 * <p>
 	 * Unless the result set is large enough to get paged underneath, the returned list will be singleton. If paging has
 	 * been used however, the returned list contains the {@link ExecutionInfo} objects for all the queries done to obtain
 	 * this result set (at the time of the call) in the order those queries were made.
 	 *
-	 * @return a list of the execution info for all the queries made for this result set.
+	 * @return a list of the {@link ExecutionInfo} for all the queries made for this {@link ReactiveResultSet}.
 	 */
 	List<ExecutionInfo> getAllExecutionInfo();
 

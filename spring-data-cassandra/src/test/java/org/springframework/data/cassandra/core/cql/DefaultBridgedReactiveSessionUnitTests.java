@@ -15,22 +15,16 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import reactor.core.publisher.Flux;
+import reactor.test.StepVerifier;
 
 import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Queue;
-
-import reactor.core.publisher.Flux;
-import reactor.test.StepVerifier;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -38,7 +32,6 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
 import org.springframework.data.cassandra.ReactiveResultSet;
 import org.springframework.data.cassandra.core.cql.session.DefaultBridgedReactiveSession;
 
@@ -75,6 +68,15 @@ public class DefaultBridgedReactiveSessionUnitTests {
 
 		when(sessionMock.executeAsync(any(Statement.class))).thenReturn(future);
 		when(sessionMock.prepareAsync(any(RegularStatement.class))).thenReturn(preparedStatementFuture);
+
+		doAnswer(invocation -> {
+
+			Runnable listener = invocation.getArgument(0);
+
+			listener.run();
+
+			return null;
+		}).when(future).addListener(any(), any());
 	}
 
 	@Test // DATACASS-335
@@ -169,15 +171,6 @@ public class DefaultBridgedReactiveSessionUnitTests {
 		when(resultSet.getAvailableWithoutFetching()).thenReturn(10);
 		when(resultSet.iterator()).thenReturn(rows);
 
-		doAnswer(invocation -> {
-
-			Runnable listener = invocation.getArgument(0);
-
-			listener.run();
-
-			return null;
-		}).when(future).addListener(any(), any());
-
 		when(future.get()).thenReturn(resultSet);
 		when(resultSet.isFullyFetched()).thenReturn(true);
 
@@ -187,6 +180,25 @@ public class DefaultBridgedReactiveSessionUnitTests {
 			.subscribe();
 
 		verify(rows, times(10)).next();
+		verify(resultSet, never()).fetchMoreResults();
+	}
+
+	@Test // DATACASS-529
+	public void shouldReadAvailableResults() throws Exception {
+
+		Iterator<Row> rows = mockIterator();
+
+		ResultSet resultSet = mock(ResultSet.class);
+		when(resultSet.iterator()).thenReturn(rows);
+		when(resultSet.getAvailableWithoutFetching()).thenReturn(10);
+		when(future.get()).thenReturn(resultSet);
+
+		Flux<Row> flux = reactiveSession.execute(new SimpleStatement("")).flatMapMany(ReactiveResultSet::availableRows);
+
+		StepVerifier.create(flux).expectNextCount(10).verifyComplete();
+
+		verify(rows, times(10)).next();
+		verify(future, times(1)).addListener(any(), any());
 		verify(resultSet, never()).fetchMoreResults();
 	}
 
@@ -204,15 +216,6 @@ public class DefaultBridgedReactiveSessionUnitTests {
 
 		when(emptyResultSet.iterator()).thenReturn(Collections.emptyIterator());
 		when(emptyResultSet.isFullyFetched()).thenReturn(true);
-
-		doAnswer(invocation -> {
-
-			Runnable listener = invocation.getArgument(0);
-
-			listener.run();
-
-			return null;
-		}).when(future).addListener(any(), any());
 
 		when(future.get()).thenReturn(resultSet);
 		when(resultSet.isFullyFetched()).thenReturn(false, true);
@@ -239,6 +242,7 @@ public class DefaultBridgedReactiveSessionUnitTests {
 		when(resultSet.getAvailableWithoutFetching()).thenReturn(10);
 		when(resultSet.iterator()).thenReturn(rows);
 
+		reset(future);
 		doAnswer(invocation -> {
 			runnables.offer(invocation.getArgument(0));
 			return null;

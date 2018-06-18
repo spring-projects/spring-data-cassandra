@@ -23,10 +23,10 @@ import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.cql.ReactiveCqlOperations;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
+import org.springframework.data.cassandra.core.query.CassandraPageRequest;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.core.query.Update;
 import org.springframework.data.domain.Slice;
-
 
 import com.datastax.driver.core.Statement;
 
@@ -35,6 +35,7 @@ import com.datastax.driver.core.Statement;
  * Not often used directly, but a useful option to enhance testability, as it can easily be mocked or stubbed.
  *
  * @author Mark Paluch
+ * @author Hleb Albau
  * @since 2.0
  * @see ReactiveCassandraTemplate
  * @see ReactiveCqlOperations
@@ -100,15 +101,14 @@ public interface ReactiveCassandraOperations extends ReactiveFluentCassandraOper
 	<T> Flux<T> select(Statement statement, Class<T> entityClass) throws DataAccessException;
 
 	/**
-	 * Execute a {@code SELECT} query with paging and convert the result set to a {@link Slice} of entities.
-	 *
-	 * A sliced query translates the effective {@link Statement#getFetchSize() fetch size} to the page size.
+	 * Execute a {@code SELECT} query with paging and convert the result set to a {@link Slice} of entities. A sliced
+	 * query translates the effective {@link Statement#getFetchSize() fetch size} to the page size.
 	 *
 	 * @param statement the CQL statement, must not be {@literal null}.
 	 * @param entityClass The entity type must not be {@literal null}.
-	 * @return the result object returned by the action or {@link Mono#empty()}
+	 * @return the result object returned by the action or {@link Mono#just(Object)} of an empty {@link Slice}.
 	 * @throws DataAccessException if there is any problem executing the query.
-	 * @since 2.0
+	 * @since 2.1
 	 */
 	<T> Mono<Slice<T>> slice(Statement statement, Class<T> entityClass) throws DataAccessException;
 
@@ -137,11 +137,23 @@ public interface ReactiveCassandraOperations extends ReactiveFluentCassandraOper
 	<T> Flux<T> select(Query query, Class<T> entityClass) throws DataAccessException;
 
 	/**
+	 * Execute a {@code SELECT} query with paging and convert the result set to a {@link Slice} of entities.
+	 *
+	 * @param query the query object used to create a CQL statement, must not be {@literal null}.
+	 * @param entityClass The entity type must not be {@literal null}.
+	 * @return the result object returned by the action or {@link Mono#just(Object)} of an empty {@link Slice}.
+	 * @throws DataAccessException if there is any problem executing the query.
+	 * @since 2.1
+	 * @see CassandraPageRequest
+	 */
+	<T> Mono<Slice<T>> slice(Query query, Class<T> entityClass) throws DataAccessException;
+
+	/**
 	 * Execute a {@code SELECT} query and convert the resulting item to an entity.
 	 *
 	 * @param query must not be {@literal null}.
 	 * @param entityClass The entity type must not be {@literal null}.
-	 * @return the result object returned by the action or {@link Mono#empty()}
+	 * @return the result object returned by the action or {@link Mono#empty()}.
 	 * @throws DataAccessException if there is any problem issuing the execution.
 	 */
 	<T> Mono<T> selectOne(Query query, Class<T> entityClass) throws DataAccessException;

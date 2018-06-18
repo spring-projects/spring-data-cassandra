@@ -15,13 +15,11 @@
  */
 package org.springframework.data.cassandra.core;
 
-import java.util.function.Function;
-
-import lombok.NonNull;
 import lombok.Value;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Collections;
 import java.util.function.Function;
 
 import org.reactivestreams.Publisher;
@@ -43,6 +41,7 @@ import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.cql.ReactiveCqlOperations;
 import org.springframework.data.cassandra.core.cql.ReactiveCqlTemplate;
 import org.springframework.data.cassandra.core.cql.ReactiveSessionCallback;
+import org.springframework.data.cassandra.core.cql.RowMapper;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.data.cassandra.core.cql.session.DefaultReactiveSessionFactory;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
@@ -56,6 +55,7 @@ import org.springframework.data.cassandra.core.mapping.event.BeforeDeleteEvent;
 import org.springframework.data.cassandra.core.mapping.event.BeforeSaveEvent;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
@@ -68,7 +68,6 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.Statement;
-import com.datastax.driver.core.Row;
 import com.datastax.driver.core.exceptions.DriverException;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Insert;
@@ -92,6 +91,7 @@ import com.datastax.driver.core.querybuilder.Update;
  * @author Mark Paluch
  * @author John Blum
  * @author Lukasz Antoniak
+ * @author Hleb Albau
  * @since 2.0
  */
 public class ReactiveCassandraTemplate implements ReactiveCassandraOperations, ApplicationEventPublisherAware {
@@ -239,19 +239,28 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations, A
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#slice(com.datastax.driver.core.Statement, java.lang.Class)
 	 */
-    @Override
-    public <T> Mono<Slice<T>> slice(Statement statement, Class<T> entityClass) {
+	@Override
+	public <T> Mono<Slice<T>> slice(Statement statement, Class<T> entityClass) {
 
-        Assert.notNull(statement, "Statement must not be null");
-        Assert.notNull(entityClass, "Entity type must not be null");
+		Assert.notNull(statement, "Statement must not be null");
+		Assert.notNull(entityClass, "Entity type must not be null");
 
-        Mono<ReactiveResultSet> resultSetMono = getReactiveCqlOperations().queryForResultSet(statement);
-        Mono<Integer> effectiveFetchSizeMono = getEffectiveFetchSize(statement);
-		Function<Row,T> rowMapper = (row) -> getConverter().read(entityClass, row);
+		Mono<ReactiveResultSet> resultSetMono = getReactiveCqlOperations().queryForResultSet(statement);
+		Mono<Integer> effectiveFetchSizeMono = getEffectiveFetchSize(statement);
+		RowMapper<T> rowMapper = (row, i) -> getConverter().read(entityClass, row);
 
-		return Mono.zip(resultSetMono, effectiveFetchSizeMono)
-				.flatMap(tuple -> QueryUtils.readSlice(tuple.getT1(), tuple.getT2(), rowMapper));
-    }
+		return resultSetMono.zipWith(effectiveFetchSizeMono).flatMap(tuple -> {
+
+			ReactiveResultSet resultSet = tuple.getT1();
+			Integer effectiveFetchSize = tuple.getT2();
+
+			return resultSet.availableRows().collectList().map(it -> {
+				return QueryUtils.readSlice(it, resultSet.getExecutionInfo().getPagingState(), rowMapper, 1,
+						effectiveFetchSize);
+			});
+
+		}).defaultIfEmpty(new SliceImpl<>(Collections.emptyList()));
+	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#selectOne(com.datastax.driver.core.Statement, java.lang.Class)
@@ -284,6 +293,20 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations, A
 		Function<Row, T> mapper = getMapper(entityClass, returnType, tableName);
 
 		return getReactiveCqlOperations().query(select, (row, rowNum) -> mapper.apply(row));
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#slice(org.springframework.data.cassandra.core.query.Query, java.lang.Class)
+	 */
+	@Override
+	public <T> Mono<Slice<T>> slice(Query query, Class<T> entityClass) throws DataAccessException {
+
+		Assert.notNull(query, "Query must not be null");
+		Assert.notNull(entityClass, "Entity type must not be null");
+
+		RegularStatement select = getStatementFactory().select(query, getRequiredPersistentEntity(entityClass));
+
+		return slice(select, entityClass);
 	}
 
 	/* (non-Javadoc)
@@ -683,27 +706,26 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations, A
 		return converter;
 	}
 
-    @SuppressWarnings("ConstantConditions")
-    private Mono<Integer> getEffectiveFetchSize(Statement statement) {
+	@SuppressWarnings("ConstantConditions")
+	private Mono<Integer> getEffectiveFetchSize(Statement statement) {
 
-        if (statement.getFetchSize() > 0) {
-            return Mono.just(statement.getFetchSize());
-        }
+		if (statement.getFetchSize() > 0) {
+			return Mono.just(statement.getFetchSize());
+		}
 
-        if (getReactiveCqlOperations() instanceof CassandraAccessor) {
-            CassandraAccessor accessor = (CassandraAccessor) getReactiveCqlOperations();
-            if (accessor.getFetchSize() != -1) {
-                return Mono.just(accessor.getFetchSize());
-            }
-        }
+		if (getReactiveCqlOperations() instanceof CassandraAccessor) {
+			CassandraAccessor accessor = (CassandraAccessor) getReactiveCqlOperations();
+			if (accessor.getFetchSize() != -1) {
+				return Mono.just(accessor.getFetchSize());
+			}
+		}
 
-		return getReactiveCqlOperations().execute((ReactiveSessionCallback<Integer>) session ->
-				Mono.fromSupplier(() -> session.getCluster().getConfiguration().getQueryOptions().getFetchSize())
-		).single();
-    }
+		return getReactiveCqlOperations().execute((ReactiveSessionCallback<Integer>) session -> Mono
+				.just(session.getCluster().getConfiguration().getQueryOptions().getFetchSize())).single();
+	}
 
-    @Value
-    static class StatementCallback implements ReactiveSessionCallback<WriteResult>, CqlProvider {
+	@Value
+	static class StatementCallback implements ReactiveSessionCallback<WriteResult>, CqlProvider {
 
 		@lombok.NonNull Statement statement;
 

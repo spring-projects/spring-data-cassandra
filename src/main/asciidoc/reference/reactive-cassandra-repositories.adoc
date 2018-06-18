@@ -137,6 +137,35 @@ public class PersonRepositoryTests {
 ----
 ====
 
+Cassandra repositories support paging and sorting for paginated and sorted access to the entities. Cassandra paging requires a paging state to forward-only navigate through pages. A `Slice` keeps track of the current paging state and allows for creation of a `Pageable` to request the next page. The following example shows how to set up paging access to `Person` entities:
+
+.Paging access to `Person` entities
+====
+[source,java]
+----
+@RunWith(SpringRunner.class)
+@ContextConfiguration
+public class PersonRepositoryTests {
+
+    @Autowired PersonRepository repository;
+
+    @Test
+    public void readsPagesCorrectly() {
+
+      Mono<Slice<Person>> firstBatch = repository.findAll(CassandraPageRequest.first(10));
+
+      Mono<Slice<Person>> nextBatch = firstBatch.flatMap(it -> repository.findAll(it.nextPageable()));
+
+      // …
+    }
+}
+----
+====
+
+The preceding example creates an application context with Spring's unit test support, which performs annotation-based
+dependency injection into the test class. Inside the test cases (the test methods), we use the repository to query
+the data store. We invoke the repository query method that requests all `Person` instances.
+
 [[cassandra.reactive.repositories.features]]
 == Features
 
