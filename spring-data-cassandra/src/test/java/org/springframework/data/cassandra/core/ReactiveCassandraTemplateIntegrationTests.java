@@ -92,16 +92,20 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 		verifyUser(user.getId()).expectNext(user).verifyComplete();
 	}
 
-	@Test // DATACASS-250
+	@Test // DATACASS-250, DATACASS-573
 	public void insertShouldCreateEntityWithLwt() {
 
 		InsertOptions lwtOptions = InsertOptions.builder().withIfNotExists().build();
 
 		User user = new User("heisenberg", "Walter", "White");
 
-		Mono<WriteResult> inserted = template.insert(user, lwtOptions);
+		Mono<EntityWriteResult<User>> inserted = template.insert(user, lwtOptions);
 
-		StepVerifier.create(inserted.map(WriteResult::wasApplied)).expectNext(true).verifyComplete();
+		StepVerifier.create(inserted).consumeNextWith(actual -> {
+
+			assertThat(actual.wasApplied()).isTrue();
+			assertThat(actual.getEntity()).isSameAs(user);
+		}).verifyComplete();
 	}
 
 	@Test // DATACASS-250

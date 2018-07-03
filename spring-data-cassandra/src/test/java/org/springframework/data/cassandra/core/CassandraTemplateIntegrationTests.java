@@ -146,31 +146,33 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 		assertThat(loaded).isEqualTo(token1);
 	}
 
-	@Test // DATACASS-292
+	@Test // DATACASS-292, DATACASS-573
 	public void insertShouldInsertEntity() {
 
 		User user = new User("heisenberg", "Walter", "White");
 
 		assertThat(template.selectOneById(user.getId(), User.class)).isNull();
 
-		template.insert(user);
+		User result = template.insert(user);
 
+		assertThat(result).isSameAs(user);
 		assertThat(template.selectOneById(user.getId(), User.class)).isEqualTo(user);
 	}
 
-	@Test // DATACASS-250
+	@Test // DATACASS-250, DATACASS-573
 	public void insertShouldCreateEntityWithLwt() {
 
 		InsertOptions lwtOptions = InsertOptions.builder().withIfNotExists().build();
 
 		User user = new User("heisenberg", "Walter", "White");
 
-		template.insert(user, lwtOptions);
+		EntityWriteResult<User> result = template.insert(user, lwtOptions);
 
+		assertThat(result.getEntity()).isSameAs(user);
 		assertThat(template.selectOneById(user.getId(), User.class)).isNotNull();
 	}
 
-	@Test // DATACASS-250
+	@Test // DATACASS-250, DATACASS-573
 	public void insertShouldNotUpdateEntityWithLwt() {
 
 		InsertOptions lwtOptions = InsertOptions.builder().withIfNotExists().build();
@@ -181,7 +183,7 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 
 		user.setFirstname("Walter Hartwell");
 
-		WriteResult lwt = template.insert(user, lwtOptions);
+		EntityWriteResult<User> lwt = template.insert(user, lwtOptions);
 
 		assertThat(lwt.wasApplied()).isFalse();
 		assertThat(template.selectOneById(user.getId(), User.class).getFirstname()).isEqualTo("Walter");
@@ -239,7 +241,7 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 		assertThat(template.exists(Query.query(where("id").is("foo")), User.class)).isFalse();
 	}
 
-	@Test // DATACASS-292
+	@Test // DATACASS-292, DATACASS-573
 	public void updateShouldUpdateEntity() {
 
 		User user = new User("heisenberg", "Walter", "White");
@@ -247,8 +249,9 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 
 		user.setFirstname("Walter Hartwell");
 
-		template.update(user);
+		User result = template.update(user);
 
+		assertThat(result).isSameAs(user);
 		assertThat(template.selectOneById(user.getId(), User.class)).isEqualTo(user);
 	}
 

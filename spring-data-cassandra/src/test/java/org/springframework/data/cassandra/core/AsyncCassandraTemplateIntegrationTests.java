@@ -15,8 +15,8 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.data.cassandra.core.query.Criteria.where;
+import static org.assertj.core.api.Assertions.*;
+import static org.springframework.data.cassandra.core.query.Criteria.*;
 
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -25,7 +25,6 @@ import java.util.concurrent.Future;
 
 import org.junit.Before;
 import org.junit.Test;
-
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.AsyncCqlTemplate;
 import org.springframework.data.cassandra.core.query.CassandraPageRequest;
@@ -120,7 +119,7 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 
 		User user = new User("heisenberg", "Walter", "White");
 
-		ListenableFuture<WriteResult> inserted = template.insert(user, lwtOptions);
+		ListenableFuture<EntityWriteResult<User>> inserted = template.insert(user, lwtOptions);
 
 		assertThat(getUninterruptibly(inserted).wasApplied()).isTrue();
 	}
@@ -136,7 +135,7 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 
 		user.setFirstname("Walter Hartwell");
 
-		ListenableFuture<WriteResult> lwt = template.insert(user, lwtOptions);
+		ListenableFuture<EntityWriteResult<User>> lwt = template.insert(user, lwtOptions);
 
 		assertThat(getUninterruptibly(lwt).wasApplied()).isFalse();
 		assertThat(getUser(user.getId()).getFirstname()).isEqualTo("Walter");
@@ -147,9 +146,10 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 
 		User user = new User("heisenberg", "Walter", "White");
 
-		getUninterruptibly(template.insert(user));
+		User result = getUninterruptibly(template.insert(user));
 
 		ListenableFuture<Long> count = template.count(User.class);
+		assertThat(result).isSameAs(user);
 		assertThat(getUninterruptibly(count)).isEqualTo(1L);
 	}
 
@@ -196,7 +196,7 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 
 		User user = new User("heisenberg", "Walter", "White");
 
-		ListenableFuture<WriteResult> lwt = template.update(user, lwtOptions);
+		ListenableFuture<EntityWriteResult<User>> lwt = template.update(user, lwtOptions);
 
 		assertThat(getUninterruptibly(lwt).wasApplied()).isFalse();
 		assertThat(getUser(user.getId())).isNull();
@@ -212,9 +212,10 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 
 		user.setFirstname("Walter Hartwell");
 
-		ListenableFuture<WriteResult> updated = template.update(user, lwtOptions);
+		ListenableFuture<EntityWriteResult<User>> updated = template.update(user, lwtOptions);
 
 		assertThat(getUninterruptibly(updated).wasApplied()).isTrue();
+		assertThat(getUninterruptibly(updated).getEntity()).isSameAs(user);
 		assertThat(getUser(user.getId()).getFirstname()).isEqualTo("Walter Hartwell");
 	}
 

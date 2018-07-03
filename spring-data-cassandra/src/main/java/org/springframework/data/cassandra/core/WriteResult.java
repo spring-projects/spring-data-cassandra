@@ -35,7 +35,9 @@ import com.datastax.driver.core.Row;
 public class WriteResult {
 
 	private final boolean wasApplied;
+
 	private final List<ExecutionInfo> executionInfo;
+
 	private final List<Row> rows;
 
 	WriteResult(List<ExecutionInfo> executionInfo, boolean wasApplied, List<Row> rows) {
@@ -45,7 +47,7 @@ public class WriteResult {
 		this.rows = rows;
 	}
 
-	private WriteResult(ResultSet resultSet) {
+	WriteResult(ResultSet resultSet) {
 
 		this.executionInfo = resultSet.getAllExecutionInfo();
 		this.wasApplied = resultSet.wasApplied();

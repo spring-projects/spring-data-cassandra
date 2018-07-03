@@ -254,11 +254,11 @@ public interface ReactiveCassandraOperations extends ReactiveFluentCassandraOper
 	 *
 	 * @param entity The entity to insert, must not be {@literal null}.
 	 * @param options must not be {@literal null}.
-	 * @return the {@link WriteResult} for this operation.
+	 * @return the {@link EntityWriteResult} for this operation.
 	 * @throws DataAccessException if there is any problem issuing the execution.
 	 * @see InsertOptions#empty()
 	 */
-	Mono<WriteResult> insert(Object entity, InsertOptions options) throws DataAccessException;
+	<T> Mono<EntityWriteResult<T>> insert(T entity, InsertOptions options) throws DataAccessException;
 
 	/**
 	 * Update the given entity and emit the entity if the update was applied.
@@ -274,11 +274,11 @@ public interface ReactiveCassandraOperations extends ReactiveFluentCassandraOper
 	 *
 	 * @param entity The entity to update, must not be {@literal null}.
 	 * @param options must not be {@literal null}.
-	 * @return the {@link WriteResult} for this operation.
+	 * @return the {@link EntityWriteResult} for this operation.
 	 * @throws DataAccessException if there is any problem issuing the execution.
 	 * @see UpdateOptions#empty()
 	 */
-	Mono<WriteResult> update(Object entity, UpdateOptions options) throws DataAccessException;
+	<T> Mono<EntityWriteResult<T>> update(T entity, UpdateOptions options) throws DataAccessException;
 
 	/**
 	 * Delete the given entity and emit the entity if the delete was applied.

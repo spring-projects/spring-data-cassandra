@@ -118,11 +118,12 @@ public interface ReactiveInsertOperation {
 		 * Insert exactly one {@link Object}.
 		 *
 		 * @param object {@link Object} to insert; must not be {@literal null}.
+		 * @return the {@link EntityWriteResult} for this operation.
 		 * @throws IllegalArgumentException if {@link Object} is {@literal null}.
-		 * @see org.springframework.data.cassandra.core.WriteResult
+		 * @see org.springframework.data.cassandra.core.EntityWriteResult
 		 * @see reactor.core.publisher.Mono
 		 */
-		Mono<WriteResult> one(T object);
+		Mono<EntityWriteResult<T>> one(T object);
 
 	}
 

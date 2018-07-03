@@ -30,6 +30,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.CassandraOperations;
+import org.springframework.data.cassandra.core.EntityWriteResult;
 import org.springframework.data.cassandra.core.InsertOptions;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.CqlOperations;
@@ -63,6 +64,7 @@ public class SimpleCassandraRepositoryUnitTests {
 	@Mock CqlOperations cqlOperations;
 	@Mock UserTypeResolver userTypeResolver;
 	@Mock UserType userType;
+	@Mock EntityWriteResult writeResult;
 
 	@Captor ArgumentCaptor<Insert> insertCaptor;
 
@@ -71,7 +73,7 @@ public class SimpleCassandraRepositoryUnitTests {
 		mappingContext.setUserTypeResolver(userTypeResolver);
 	}
 
-	@Test // DATACASS-428, DATACASS-560
+	@Test // DATACASS-428, DATACASS-560, DATACASS-573
 	public void saveShouldInsertNewPrimaryKeyOnlyEntity() {
 
 		CassandraPersistentEntity<?> entity = converter.getMappingContext().getRequiredPersistentEntity(SimplePerson.class);
@@ -81,12 +83,15 @@ public class SimpleCassandraRepositoryUnitTests {
 
 		SimplePerson person = new SimplePerson();
 
+		when(cassandraOperations.insert(eq(person), any())).thenReturn(writeResult);
+		when(writeResult.getEntity()).thenReturn(person);
+
 		repository.save(person);
 
 		verify(cassandraOperations).insert(person, InsertOptions.builder().withInsertNulls().build());
 	}
 
-	@Test // DATACASS-428, DATACASS-560
+	@Test // DATACASS-428, DATACASS-560, DATACASS-573
 	public void saveShouldUpdateNewEntity() {
 
 		CassandraPersistentEntity<?> entity = converter.getMappingContext().getRequiredPersistentEntity(Person.class);
@@ -96,12 +101,15 @@ public class SimpleCassandraRepositoryUnitTests {
 
 		Person person = new Person();
 
+		when(cassandraOperations.insert(eq(person), any())).thenReturn(writeResult);
+		when(writeResult.getEntity()).thenReturn(person);
+
 		repository.save(person);
 
 		verify(cassandraOperations).insert(person, InsertOptions.builder().withInsertNulls().build());
 	}
 
-	@Test // DATACASS-428, DATACASS-560
+	@Test // DATACASS-428, DATACASS-560, DATACASS-573
 	public void saveShouldUpdateExistingEntity() {
 
 		CassandraPersistentEntity<?> entity = converter.getMappingContext().getRequiredPersistentEntity(Person.class);
@@ -112,6 +120,9 @@ public class SimpleCassandraRepositoryUnitTests {
 		Person person = new Person();
 		person.setFirstname("foo");
 		person.setLastname("bar");
+
+		when(cassandraOperations.insert(eq(person), any())).thenReturn(writeResult);
+		when(writeResult.getEntity()).thenReturn(person);
 
 		repository.save(person);
 

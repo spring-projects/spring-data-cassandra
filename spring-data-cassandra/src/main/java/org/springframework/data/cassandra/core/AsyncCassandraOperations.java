@@ -292,11 +292,11 @@ public interface AsyncCassandraOperations {
 	 *
 	 * @param entity The entity to insert, must not be {@literal null}.
 	 * @param options must not be {@literal null}.
-	 * @return the {@link WriteResult} for this operation.
+	 * @return the {@link EntityWriteResult} for this operation.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see InsertOptions#empty()
 	 */
-	ListenableFuture<WriteResult> insert(Object entity, InsertOptions options) throws DataAccessException;
+	<T> ListenableFuture<EntityWriteResult<T>> insert(T entity, InsertOptions options) throws DataAccessException;
 
 	/**
 	 * Update the given entity and return the entity if the update was applied.
@@ -312,11 +312,11 @@ public interface AsyncCassandraOperations {
 	 *
 	 * @param entity The entity to update, must not be {@literal null}.
 	 * @param options must not be {@literal null}.
-	 * @return the {@link WriteResult} for this operation.
+	 * @return the {@link EntityWriteResult} for this operation.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see UpdateOptions#empty()
 	 */
-	ListenableFuture<WriteResult> update(Object entity, UpdateOptions options) throws DataAccessException;
+	<T> ListenableFuture<EntityWriteResult<T>> update(T entity, UpdateOptions options) throws DataAccessException;
 
 	/**
 	 * Delete the given entity and return the entity if the delete was applied.

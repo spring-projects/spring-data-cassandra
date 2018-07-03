@@ -211,7 +211,7 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 		assertThat(repository.count()).isEqualTo(3);
 	}
 
-	@Test // DATACASS-396
+	@Test // DATACASS-396, DATACASS-573
 	public void saveEntityShouldUpdateExistingEntity() {
 
 		dave.setFirstname("Hello, Dave");
@@ -219,7 +219,7 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 
 		User saved = repository.save(dave);
 
-		assertThat(saved).isEqualTo(saved);
+		assertThat(saved).isSameAs(saved);
 
 		Optional<User> loaded = repository.findById(dave.getId());
 
@@ -257,14 +257,14 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 		assertThat(loaded).contains(User);
 	}
 
-	@Test // DATACASS-396, DATACASS-416
+	@Test // DATACASS-396, DATACASS-416, DATACASS-573
 	public void saveIterableOfNewEntitiesShouldInsertEntity() {
 
 		repository.deleteAll();
 
 		List<User> saved = repository.saveAll(Arrays.asList(dave, oliver, boyd));
 
-		assertThat(saved).hasSize(3);
+		assertThat(saved).hasSize(3).contains(dave, oliver, boyd);
 
 		assertThat(repository.count()).isEqualTo(3);
 	}

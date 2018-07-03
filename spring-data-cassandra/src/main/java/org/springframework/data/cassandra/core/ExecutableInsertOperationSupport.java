@@ -91,7 +91,7 @@ class ExecutableInsertOperationSupport implements ExecutableInsertOperation {
 		 * @see org.springframework.data.cassandra.core.ExecutableInsertOperation.TerminatingInsert#one(java.lang.Object)
 		 */
 		@Override
-		public WriteResult one(T object) {
+		public EntityWriteResult<T> one(T object) {
 
 			Assert.notNull(object, "Object must not be null");
 

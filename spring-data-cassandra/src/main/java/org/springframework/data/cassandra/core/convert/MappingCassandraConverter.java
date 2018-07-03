@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
+import lombok.AllArgsConstructor;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -23,8 +25,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Function;
 
-import lombok.AllArgsConstructor;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.ApplicationContext;
@@ -56,9 +58,6 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.DataType;
@@ -277,9 +276,10 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 		S instance = instantiator.createInstance(entity, parameterValueProvider);
 
-		readProperties(entity, valueProvider, newConvertingPropertyAccessor(instance, entity));
+		ConvertingPropertyAccessor propertyAccessor = newConvertingPropertyAccessor(instance, entity);
+		readProperties(entity, valueProvider, propertyAccessor);
 
-		return instance;
+		return (S) propertyAccessor.getBean();
 	}
 
 	private void readProperties(CassandraPersistentEntity<?> entity, CassandraValueProvider valueProvider,
@@ -309,10 +309,11 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			}
 
 			// now recurse on using the key this time
-			readProperties(keyEntity, valueProvider, newConvertingPropertyAccessor(key, keyEntity));
+			ConvertingPropertyAccessor pkPropertyAccessor = newConvertingPropertyAccessor(key, keyEntity);
+			readProperties(keyEntity, valueProvider, pkPropertyAccessor);
 
 			// now that the key's properties have been populated, set the key property on the entity
-			propertyAccessor.setProperty(property, key);
+			propertyAccessor.setProperty(property, pkPropertyAccessor.getBean());
 
 			return;
 		}

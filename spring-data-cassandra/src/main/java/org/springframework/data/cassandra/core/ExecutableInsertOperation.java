@@ -114,10 +114,11 @@ public interface ExecutableInsertOperation {
 		 * Insert exactly one {@link Object}.
 		 *
 		 * @param object {@link Object} to insert; must not be {@literal null}.
+		 * @return the {@link EntityWriteResult} for this operation.
 		 * @throws IllegalArgumentException if {@link Object} is {@literal null}.
-		 * @see org.springframework.data.cassandra.core.WriteResult
+		 * @see org.springframework.data.cassandra.core.EntityWriteResult
 		 */
-		WriteResult one(T object);
+		EntityWriteResult<T> one(T object);
 
 	}
 

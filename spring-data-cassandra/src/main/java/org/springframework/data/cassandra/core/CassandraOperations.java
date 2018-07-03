@@ -310,39 +310,41 @@ public interface CassandraOperations extends FluentCassandraOperations {
 	 * Insert the given entity and return the entity if the insert was applied.
 	 *
 	 * @param entity The entity to insert, must not be {@literal null}.
+	 * @return the inserted entity.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	void insert(Object entity) throws DataAccessException;
+	<T> T insert(T entity) throws DataAccessException;
 
 	/**
 	 * Insert the given entity applying {@link WriteOptions} and return the entity if the insert was applied.
 	 *
 	 * @param entity The entity to insert, must not be {@literal null}.
 	 * @param options must not be {@literal null}.
-	 * @return the {@link WriteResult} for this operation.
+	 * @return the {@link EntityWriteResult} for this operation.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see InsertOptions#empty()
 	 */
-	WriteResult insert(Object entity, InsertOptions options) throws DataAccessException;
+	<T> EntityWriteResult<T> insert(T entity, InsertOptions options) throws DataAccessException;
 
 	/**
 	 * Update the given entity and return the entity if the update was applied.
 	 *
 	 * @param entity The entity to update, must not be {@literal null}.
+	 * @return the updated entity.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	void update(Object entity) throws DataAccessException;
+	<T> T update(T entity) throws DataAccessException;
 
 	/**
 	 * Update the given entity applying {@link WriteOptions} and return the entity if the update was applied.
 	 *
 	 * @param entity The entity to update, must not be {@literal null}.
 	 * @param options must not be {@literal null}.
-	 * @return the {@link WriteResult} for this operation.
+	 * @return the {@link EntityWriteResult} for this operation.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see UpdateOptions#empty()
 	 */
-	WriteResult update(Object entity, UpdateOptions options) throws DataAccessException;
+	<T> EntityWriteResult<T> update(T entity, UpdateOptions options) throws DataAccessException;
 
 	/**
 	 * Delete the given entity and return the entity if the delete was applied.

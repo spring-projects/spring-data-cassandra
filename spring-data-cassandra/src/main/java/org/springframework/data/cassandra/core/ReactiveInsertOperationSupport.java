@@ -19,7 +19,6 @@ import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-
 import reactor.core.publisher.Mono;
 
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
@@ -86,7 +85,7 @@ class ReactiveInsertOperationSupport implements ReactiveInsertOperation {
 		 * @see org.springframework.data.cassandra.core.ReactiveInsertOperation.TerminatingInsert#one(java.lang.Object)
 		 */
 		@Override
-		public Mono<WriteResult> one(T object) {
+		public Mono<EntityWriteResult<T>> one(T object) {
 
 			Assert.notNull(object, "Object must not be null");
 

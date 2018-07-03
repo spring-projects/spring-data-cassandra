@@ -497,7 +497,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#insert(java.lang.Object, org.springframework.data.cassandra.core.InsertOptions)
 	 */
 	@Override
-	public ListenableFuture<WriteResult> insert(Object entity, InsertOptions options) {
+	public <T> ListenableFuture<EntityWriteResult<T>> insert(T entity, InsertOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
 		Assert.notNull(options, "InsertOptions must not be null");
@@ -511,7 +511,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 		return new MappingListenableFutureAdapter<>(getAsyncCqlOperations().execute(new AsyncStatementCallback(insert)),
 				resultSet -> {
 					maybeEmitEvent(new AfterSaveEvent<>(entity, tableName));
-					return WriteResult.of(resultSet);
+					return EntityWriteResult.of(resultSet, entity);
 				});
 	}
 
@@ -520,14 +520,14 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 	 */
 	@Override
 	public <T> ListenableFuture<T> update(T entity) {
-		return new MappingListenableFutureAdapter<>(update(entity, UpdateOptions.empty()), writeResult -> entity);
+		return new MappingListenableFutureAdapter<>(update(entity, UpdateOptions.empty()), EntityWriteResult::getEntity);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#update(java.lang.Object, org.springframework.data.cassandra.core.UpdateOptions)
 	 */
 	@Override
-	public ListenableFuture<WriteResult> update(Object entity, UpdateOptions options) {
+	public <T> ListenableFuture<EntityWriteResult<T>> update(T entity, UpdateOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
 		Assert.notNull(options, "UpdateOptions must not be null");
@@ -540,7 +540,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 		return new MappingListenableFutureAdapter<>(getAsyncCqlOperations().execute(new AsyncStatementCallback(update)),
 				resultSet -> {
 					maybeEmitEvent(new AfterSaveEvent<>(entity, tableName));
-					return WriteResult.of(resultSet);
+					return EntityWriteResult.of(resultSet, entity);
 				});
 	}
 

@@ -531,15 +531,15 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#insert(java.lang.Object)
 	 */
 	@Override
-	public void insert(Object entity) {
-		insert(entity, InsertOptions.empty());
+	public <T> T insert(T entity) {
+		return insert(entity, InsertOptions.empty()).getEntity();
 	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#insert(java.lang.Object, org.springframework.data.cassandra.core.InsertOptions)
 	 */
 	@Override
-	public WriteResult insert(Object entity, InsertOptions options) {
+	public <T> EntityWriteResult<T> insert(T entity, InsertOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
 		Assert.notNull(options, "InsertOptions must not be null");
@@ -547,7 +547,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		return doInsert(entity, options, getTableName(entity));
 	}
 
-	WriteResult doInsert(Object entity, WriteOptions options, CqlIdentifier tableName) {
+	<T> EntityWriteResult<T> doInsert(T entity, WriteOptions options, CqlIdentifier tableName) {
 
 		CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
 
@@ -560,22 +560,22 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 
 		maybeEmitEvent(new AfterSaveEvent<>(entity, tableName));
 
-		return result;
+		return EntityWriteResult.of(result, entity);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#update(java.lang.Object)
 	 */
 	@Override
-	public void update(Object entity) {
-		update(entity, UpdateOptions.empty());
+	public <T> T update(T entity) {
+		return update(entity, UpdateOptions.empty()).getEntity();
 	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#update(java.lang.Object, org.springframework.data.cassandra.core.UpdateOptions)
 	 */
 	@Override
-	public WriteResult update(Object entity, UpdateOptions options) {
+	public <T> EntityWriteResult<T> update(T entity, UpdateOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
 		Assert.notNull(options, "UpdateOptions must not be null");
@@ -590,7 +590,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 
 		maybeEmitEvent(new AfterSaveEvent<>(entity, tableName));
 
-		return result;
+		return EntityWriteResult.of(result, entity);
 	}
 
 	/* (non-Javadoc)

@@ -461,14 +461,14 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations, A
 	 */
 	@Override
 	public <T> Mono<T> insert(T entity) {
-		return insert(entity, InsertOptions.empty()).map(writeResult -> entity);
+		return insert(entity, InsertOptions.empty()).map(EntityWriteResult::getEntity);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#insert(java.lang.Object, org.springframework.data.cassandra.core.InsertOptions)
 	 */
 	@Override
-	public Mono<WriteResult> insert(Object entity, InsertOptions options) {
+	public <T> Mono<EntityWriteResult<T>> insert(T entity, InsertOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
 		Assert.notNull(options, "InsertOptions must not be null");
@@ -476,15 +476,18 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations, A
 		return doInsert(entity, options, getTableName(entity));
 	}
 
-	Mono<WriteResult> doInsert(Object entity, WriteOptions options, CqlIdentifier tableName) {
+	<T> Mono<EntityWriteResult<T>> doInsert(T entity, WriteOptions options, CqlIdentifier tableName) {
 
 		CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
 
 		Insert insert = QueryUtils.createInsertQuery(tableName.toCql(), entity, options, getConverter(), persistentEntity);
 
 		// noinspection ConstantConditions
-		Mono<WriteResult> result = getReactiveCqlOperations().execute(new StatementCallback(insert))
-				.doOnSubscribe(it -> maybeEmitEvent(new BeforeSaveEvent<>(entity, tableName, insert))).next();
+		Mono<EntityWriteResult<T>> result = getReactiveCqlOperations() //
+				.execute(new StatementCallback(insert)) //
+				.doOnSubscribe(it -> maybeEmitEvent(new BeforeSaveEvent<>(entity, tableName, insert))) //
+				.map(it -> EntityWriteResult.of(it, entity)) //
+				.next();
 
 		return result.doOnNext(it -> maybeEmitEvent(new AfterSaveEvent<>(entity, tableName)));
 	}
@@ -501,7 +504,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations, A
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#update(java.lang.Object, org.springframework.data.cassandra.core.UpdateOptions)
 	 */
 	@Override
-	public Mono<WriteResult> update(Object entity, UpdateOptions options) {
+	public <T> Mono<EntityWriteResult<T>> update(T entity, UpdateOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
 		Assert.notNull(options, "UpdateOptions must not be null");
@@ -509,8 +512,11 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations, A
 		CqlIdentifier tableName = getTableName(entity);
 		Update update = QueryUtils.createUpdateQuery(tableName.toCql(), entity, options, getConverter());
 
-		Mono<WriteResult> result = getReactiveCqlOperations().execute(new StatementCallback(update))
-				.doOnSubscribe(it -> maybeEmitEvent(new BeforeSaveEvent<>(entity, tableName, update))).next();
+		Mono<EntityWriteResult<T>> result = getReactiveCqlOperations() //
+				.execute(new StatementCallback(update)) //
+				.doOnSubscribe(it -> maybeEmitEvent(new BeforeSaveEvent<>(entity, tableName, update))) //
+				.map(it -> EntityWriteResult.of(it, entity)) //
+				.next();
 
 		return result.doOnNext(it -> maybeEmitEvent(new AfterSaveEvent<>(entity, tableName)));
 	}
@@ -535,8 +541,10 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations, A
 		CqlIdentifier tableName = getTableName(entity);
 		Delete delete = QueryUtils.createDeleteQuery(tableName.toCql(), entity, options, getConverter());
 
-		Mono<WriteResult> result = getReactiveCqlOperations().execute(new StatementCallback(delete))
-				.doOnSubscribe(it -> maybeEmitEvent(new BeforeDeleteEvent<>(delete, entity.getClass(), tableName))).next();
+		Mono<WriteResult> result = getReactiveCqlOperations() //
+				.execute(new StatementCallback(delete)) //
+				.doOnSubscribe(it -> maybeEmitEvent(new BeforeDeleteEvent<>(delete, entity.getClass(), tableName))) //
+				.next();
 
 		return result.doOnNext(it -> maybeEmitEvent(new AfterDeleteEvent<>(delete, entity.getClass(), tableName)));
 	}

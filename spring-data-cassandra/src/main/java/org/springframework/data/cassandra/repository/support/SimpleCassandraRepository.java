@@ -77,9 +77,7 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		operations.insert(entity, INSERT_NULLS);
-
-		return entity;
+		return operations.insert(entity, INSERT_NULLS).getEntity();
 	}
 
 	/* (non-Javadoc)
@@ -93,9 +91,7 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 		List<S> result = new ArrayList<>();
 
 		for (S entity : entities) {
-
-			result.add(entity);
-			operations.insert(entity, INSERT_NULLS);
+			result.add(operations.insert(entity, INSERT_NULLS).getEntity());
 		}
 
 		return result;
@@ -121,9 +117,7 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		operations.insert(entity);
-
-		return entity;
+		return operations.insert(entity);
 	}
 
 	/* (non-Javadoc)
@@ -137,8 +131,7 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 		List<S> result = new ArrayList<>();
 
 		for (S entity : entities) {
-			operations.insert(entity);
-			result.add(entity);
+			result.add(operations.insert(entity));
 		}
 
 		return result;

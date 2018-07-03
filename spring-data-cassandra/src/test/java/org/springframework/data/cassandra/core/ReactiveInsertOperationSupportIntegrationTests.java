@@ -15,18 +15,16 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.Collections;
+import static org.assertj.core.api.Assertions.*;
 
 import lombok.Data;
-
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.util.Collections;
+
 import org.junit.Before;
 import org.junit.Test;
-
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
@@ -90,21 +88,26 @@ public class ReactiveInsertOperationSupportIntegrationTests extends AbstractKeys
 		this.template.insert(Person.class).inTable((String) null);
 	}
 
-	@Test // DATACASS-485
+	@Test // DATACASS-485, DATACASS-573
 	public void insertOne() {
 
-		Mono<WriteResult> writeResult = this.template.insert(Person.class).inTable("person").one(han);
+		Mono<EntityWriteResult<Person>> writeResult = this.template.insert(Person.class).inTable("person").one(han);
 
-		StepVerifier.create(writeResult.map(WriteResult::wasApplied)).expectNext(true).verifyComplete();
+		StepVerifier.create(writeResult).consumeNextWith(actual -> {
+
+			assertThat(actual.wasApplied()).isTrue();
+			assertThat(actual.getEntity()).isSameAs(han);
+		}).verifyComplete();
+
 		StepVerifier.create(template.selectOneById(han.id, Person.class)).expectNext(han).verifyComplete();
 	}
 
-	@Test // DATACASS-485
+	@Test // DATACASS-485, DATACASS-573
 	public void insertOneWithOptions() {
 
 		this.template.insert(Person.class).inTable("person").one(han);
 
-		Mono<WriteResult> writeResult = this.template
+		Mono<EntityWriteResult<Person>> writeResult = this.template
 				.insert(Person.class).inTable("person")
 				.withOptions(InsertOptions.builder().withIfNotExists().build())
 				.one(han);
