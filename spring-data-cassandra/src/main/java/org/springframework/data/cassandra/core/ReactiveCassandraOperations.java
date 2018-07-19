@@ -48,6 +48,14 @@ import com.datastax.driver.core.Statement;
 public interface ReactiveCassandraOperations extends ReactiveFluentCassandraOperations {
 
 	/**
+	 * Returns a new {@link ReactiveCassandraBatchOperations}. Each {@link ReactiveCassandraBatchOperations} instance can be executed only
+	 * once so you might want to obtain new {@link ReactiveCassandraBatchOperations} instances for each batch.
+	 *
+	 * @return a new {@link ReactiveCassandraBatchOperations} associated with the given entity class.
+	 */
+	ReactiveCassandraBatchOperations batchOps();
+
+	/**
 	 * Returns the underlying {@link CassandraConverter}.
 	 *
 	 * @return the underlying {@link CassandraConverter}.
