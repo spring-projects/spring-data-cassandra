@@ -77,12 +77,6 @@
 			<artifactId>cassandra-driver-core</artifactId>
 		</dependency>
 
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>${guava}</version>
-		</dependency>
-
 		<!-- Reactor -->
 		<dependency>
 			<groupId>io.projectreactor</groupId>
