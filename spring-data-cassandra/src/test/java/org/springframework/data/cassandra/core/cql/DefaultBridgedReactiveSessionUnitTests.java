@@ -52,7 +52,7 @@ import com.google.common.util.concurrent.ListenableFuture;
  *
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(MockitoJUnitRunner.Silent.class)
 public class DefaultBridgedReactiveSessionUnitTests {
 
 	@Mock Session sessionMock;
@@ -77,6 +77,8 @@ public class DefaultBridgedReactiveSessionUnitTests {
 
 			return null;
 		}).when(future).addListener(any(), any());
+
+		when(future.isDone()).thenReturn(true);
 	}
 
 	@Test // DATACASS-335
@@ -248,6 +250,7 @@ public class DefaultBridgedReactiveSessionUnitTests {
 			return null;
 		}).when(future).addListener(any(), any());
 
+		when(future.isDone()).thenReturn(true);
 		when(future.get()).thenReturn(resultSet);
 		when(resultSet.isFullyFetched()).thenReturn(false, false, true);
 		when(resultSet.fetchMoreResults()).thenReturn(future);
