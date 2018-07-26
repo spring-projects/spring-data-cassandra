@@ -1,6 +1,23 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 2.1.0.RC1 (2018-07-26)
+-----------------------------------------
+* DATACASS-581 - Fix test conditions in DefaultBridgedReactiveSessionUnitTests.
+* DATACASS-580 - Upgrade to Cassandra Driver 3.5.1.
+* DATACASS-579 - pom.xml declares outdated Google Guava dependency.
+* DATACASS-573 - Add support for immutable objects.
+* DATACASS-569 - CassandraTemplate.update(…) does not apply UpdateOptions.ifExists.
+* DATACASS-568 - BasicCassandraPersistentProperty.findAnnotatedType(…) fails with non-parameterized Collection/Map properties.
+* DATACASS-563 - Time tests fail with Cassandra 2.2.
+* DATACASS-562 - Add coverpage for epub documentation output.
+* DATACASS-561 - Full editing pass on reference documentation.
+* DATACASS-560 - SimpleCassandraRepository and SimpleReactiveCassandraRepository do not emit insert events.
+* DATACASS-555 - Use CqlTemplate.newPreparedStatementCreator for creation of PreparedStatementCreator.
+* DATACASS-554 - Release 2.1 RC1 (Lovelace).
+* DATACASS-529 - Allow slice queries using reactive repositories.
+
+
 Changes in version 2.0.8.RELEASE (2018-06-13)
 ---------------------------------------------
 * DATACASS-562 - Add coverpage for epub documentation output.
