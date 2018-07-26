@@ -1,6 +1,13 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 2.0.9.RELEASE (2018-07-26)
+---------------------------------------------
+* DATACASS-569 - CassandraTemplate.update(…) does not apply UpdateOptions.ifExists.
+* DATACASS-568 - BasicCassandraPersistentProperty.findAnnotatedType(…) fails with non-parameterized Collection/Map properties.
+* DATACASS-567 - Release 2.0.9 (Kay SR9).
+
+
 Changes in version 2.1.0.RC1 (2018-07-26)
 -----------------------------------------
 * DATACASS-581 - Fix test conditions in DefaultBridgedReactiveSessionUnitTests.
