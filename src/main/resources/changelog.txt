@@ -1,6 +1,11 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 1.5.14.RELEASE (2018-07-27)
+----------------------------------------------
+* DATACASS-566 - Release 1.5.14 (Ingalls SR14).
+
+
 Changes in version 2.0.9.RELEASE (2018-07-26)
 ---------------------------------------------
 * DATACASS-569 - CassandraTemplate.update(…) does not apply UpdateOptions.ifExists.
