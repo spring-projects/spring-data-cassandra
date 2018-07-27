@@ -172,6 +172,14 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations, A
 	}
 
 	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#batchOps()
+	 */
+	@Override
+	public ReactiveCassandraBatchOperations batchOps() {
+		return new ReactiveCassandraBatchTemplate(this);
+	}
+
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#getConverter()
 	 */
 	@Override
