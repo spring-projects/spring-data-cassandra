@@ -37,11 +37,11 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
  */
 class CassandraBatchTemplate implements CassandraBatchOperations {
 
-	private AtomicBoolean executed = new AtomicBoolean();
-
-	private final Batch batch;
-
 	private final CassandraOperations operations;
+
+	private final AtomicBoolean executed = new AtomicBoolean();
+
+	private final Batch batch = QueryBuilder.batch();
 
 	/**
 	 * Create a new {@link CassandraBatchTemplate} given {@link CassandraOperations}.
@@ -53,7 +53,6 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 		Assert.notNull(operations, "CassandraOperations must not be null");
 
 		this.operations = operations;
-		this.batch = QueryBuilder.batch();
 	}
 
 	/* (non-Javadoc)

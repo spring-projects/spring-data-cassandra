@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2018 the original author or authors.
+ * Copyright 2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,32 +17,34 @@ package org.springframework.data.cassandra.core;
 
 import reactor.core.publisher.Mono;
 
+import org.reactivestreams.Subscriber;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
 
 /**
- * Reactive Batch operations for insert/update/delete actions on a table. {@link ReactiveCassandraBatchOperations} use logged Cassandra
- * {@code BATCH}es for single entities and collections of entities. A {@link ReactiveCassandraBatchOperations} instance cannot
- * be modified/used once it was executed.
+ * Reactive Batch operations for insert/update/delete actions on a table. {@link ReactiveCassandraBatchOperations} use
+ * logged Cassandra {@code BATCH}es for single entities and collections of entities. A
+ * {@link ReactiveCassandraBatchOperations} instance cannot be modified/used once it was executed.
  * <p>
  * Batches are atomic by default. In the context of a Cassandra batch operation, atomic means that if any of the batch
- * succeeds, all of it will. Statement order does not matter within a batch. {@link ReactiveCassandraBatchOperations} applies
- * all rows using the same {@link #withTimestamp(long) timestamp} if supplied, otherwise Cassandra will generate a
- * timestamp.
+ * succeeds, all of it will. Statement order does not matter within a batch. {@link ReactiveCassandraBatchOperations}
+ * applies all rows using the same {@link #withTimestamp(long) timestamp} if supplied, otherwise Cassandra will generate
+ * a timestamp.
  * <p>
  * Multi partition batches should only be used to achieve atomicity for a few writes on different tables. Apart from
  * this they should be avoided because they’re too expensive. Single partition batches can be used to get atomicity and
  * isolation, they're not much more expensive than normal writes.
  *
  * @author Oleh Dokuka
- * @since 2.0
+ * @since 2.1
  */
 public interface ReactiveCassandraBatchOperations {
 
 	/**
-	 * Execute the batch. The batch can be executed only once.
+	 * Execute the batch. The batch can be executed only once. An execution is registered on
+	 * {@link org.reactivestreams.Publisher#subscribe(Subscriber) subscribe}.
 	 *
-	 * @return the {@link Mono<WriteResult>} for the bulk operation.
-	 * @throws IllegalStateException if the batch is executed after it was executed already.
+	 * @return the {@link Mono<WriteResult>} for the bulk operation. Terminates with {@link IllegalStateException} if an
+	 *         already executed batch is being attempted to execute.
 	 */
 	Mono<WriteResult> execute();
 

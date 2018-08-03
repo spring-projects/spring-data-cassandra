@@ -36,6 +36,7 @@ import com.datastax.driver.core.Statement;
  *
  * @author Mark Paluch
  * @author Hleb Albau
+ * @author Oleh Dokuka
  * @since 2.0
  * @see ReactiveCassandraTemplate
  * @see ReactiveCqlOperations
@@ -48,10 +49,12 @@ import com.datastax.driver.core.Statement;
 public interface ReactiveCassandraOperations extends ReactiveFluentCassandraOperations {
 
 	/**
-	 * Returns a new {@link ReactiveCassandraBatchOperations}. Each {@link ReactiveCassandraBatchOperations} instance can be executed only
-	 * once so you might want to obtain new {@link ReactiveCassandraBatchOperations} instances for each batch.
+	 * Returns a new {@link ReactiveCassandraBatchOperations}. Each {@link ReactiveCassandraBatchOperations} instance can
+	 * be executed only once so you might want to obtain new {@link ReactiveCassandraBatchOperations} instances for each
+	 * batch.
 	 *
 	 * @return a new {@link ReactiveCassandraBatchOperations} associated with the given entity class.
+	 * @since 2.1
 	 */
 	ReactiveCassandraBatchOperations batchOps();
 
