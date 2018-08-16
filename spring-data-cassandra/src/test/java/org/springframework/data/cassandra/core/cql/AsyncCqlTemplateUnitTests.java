@@ -43,16 +43,7 @@ import org.springframework.data.cassandra.CassandraInvalidQueryException;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.util.concurrent.ListenableFuture;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.ColumnDefinitions;
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.ResultSetFuture;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.SimpleStatement;
-import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.*;
 import com.datastax.driver.core.exceptions.InvalidQueryException;
 import com.datastax.driver.core.exceptions.NoHostAvailableException;
 import com.datastax.driver.core.policies.DowngradingConsistencyRetryPolicy;
@@ -578,6 +569,7 @@ public class AsyncCqlTemplateUnitTests {
 
 		when(session.executeAsync(boundStatement)).thenReturn(new TestResultSetFuture(resultSet));
 		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
+		when(resultSet.spliterator()).thenCallRealMethod();
 
 		ListenableFuture<ResultSet> future = template
 				.query(session -> new AsyncResult<PreparedStatement>(preparedStatement), ps -> {
@@ -773,6 +765,7 @@ public class AsyncCqlTemplateUnitTests {
 
 		when(this.session.executeAsync((Statement) any())).thenReturn(new TestResultSetFuture(resultSet));
 		when(this.resultSet.iterator()).thenReturn(Arrays.asList(row, row, row).iterator());
+		when(this.resultSet.spliterator()).thenCallRealMethod();
 
 		when(this.row.getString(0)).thenReturn(results[0], results[1], results[2]);
 
