@@ -1,6 +1,13 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 2.1.0.RC2 (2018-08-20)
+-----------------------------------------
+* DATACASS-587 - Adapt tests to AssertJ changes.
+* DATACASS-582 - Release 2.1 RC2 (Lovelace).
+* DATACASS-574 - Add reactive batch operations.
+
+
 Changes in version 1.5.14.RELEASE (2018-07-27)
 ----------------------------------------------
 * DATACASS-566 - Release 1.5.14 (Ingalls SR14).
