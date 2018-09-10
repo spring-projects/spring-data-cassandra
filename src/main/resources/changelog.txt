@@ -1,6 +1,11 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 1.5.15.RELEASE (2018-09-10)
+----------------------------------------------
+* DATACASS-584 - Release 1.5.15 (Ingalls SR15).
+
+
 Changes in version 2.1.0.RC2 (2018-08-20)
 -----------------------------------------
 * DATACASS-587 - Adapt tests to AssertJ changes.
