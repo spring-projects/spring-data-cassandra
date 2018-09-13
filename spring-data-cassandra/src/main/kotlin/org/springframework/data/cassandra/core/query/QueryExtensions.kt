@@ -25,7 +25,7 @@ package org.springframework.data.cassandra.core.query
 /**
  * Extension for [Query.query] providing a global query alias for an improved DSL.
  */
-fun query(criteria: Criteria): Query = Query.query(criteria)
+fun query(criteria: CriteriaDefinition): Query = Query.query(criteria)
 
 /**
  * Extension for [Query.query] providing a global query alias for an improved DSL.

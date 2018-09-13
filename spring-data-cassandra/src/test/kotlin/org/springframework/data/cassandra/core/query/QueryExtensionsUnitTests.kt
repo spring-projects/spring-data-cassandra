@@ -26,6 +26,14 @@ import org.junit.Test
 class QueryExtensionsUnitTests {
 
 	@Test
+	fun `should create query from single criteria`() {
+
+		val query = query(where("jedi").isEqualTo(true))
+
+		assertThat(query.toString()).contains("jedi = true")
+	}
+
+	@Test
 	fun `should create query from concatenated criteria`() {
 
 		val query = query(where("foo").isEqualTo("bar") and //
