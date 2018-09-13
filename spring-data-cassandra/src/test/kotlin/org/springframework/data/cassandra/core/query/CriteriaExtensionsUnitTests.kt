@@ -35,7 +35,7 @@ class CriteriaExtensionsUnitTests {
 	@Mock(answer = Answers.RETURNS_MOCKS)
 	lateinit var criteria: Criteria
 
-	@Test
+	@Test // DATACASS-484
 	fun `isEqualTo() extension should call its Java counterpart`() {
 
 		val foo = "foo"
@@ -44,7 +44,7 @@ class CriteriaExtensionsUnitTests {
 		verify(criteria).`is`(foo)
 	}
 
-	@Test
+	@Test // DATACASS-484
 	fun `isEqualTo() extension should support nullable value`() {
 
 		criteria.isEqualTo(null)
@@ -52,7 +52,7 @@ class CriteriaExtensionsUnitTests {
 		verify(criteria).`is`(null)
 	}
 
-	@Test
+	@Test // DATACASS-484
 	fun `inValues(varags) extension should call its Java counterpart`() {
 
 		val foo = "foo"
@@ -63,7 +63,7 @@ class CriteriaExtensionsUnitTests {
 		Mockito.verify(criteria).`in`(foo, bar)
 	}
 
-	@Test
+	@Test // DATACASS-484
 	fun `inValues(varags) extension should support nullable values`() {
 
 		criteria.inValues(null, null)
@@ -71,7 +71,7 @@ class CriteriaExtensionsUnitTests {
 		Mockito.verify(criteria).`in`(null, null)
 	}
 
-	@Test
+	@Test // DATACASS-484
 	fun `inValues(Collection) extension should call its Java counterpart`() {
 
 		val c = listOf("foo", "bar")
@@ -81,7 +81,7 @@ class CriteriaExtensionsUnitTests {
 		verify(criteria).`in`(c)
 	}
 
-	@Test
+	@Test // DATACASS-484
 	fun `inValues(Collection) extension should support nullable values`() {
 
 		val c = listOf("foo", null, "bar")
@@ -91,7 +91,7 @@ class CriteriaExtensionsUnitTests {
 		verify(criteria).`in`(c)
 	}
 
-	@Test
+	@Test // DATACASS-484
 	fun `where(String) should create Criteria`() {
 
 		val criteria = where("foo").isEqualTo("bar");
@@ -100,7 +100,7 @@ class CriteriaExtensionsUnitTests {
 		assertThat(criteria.predicate).isNotNull()
 	}
 
-	@Test
+	@Test // DATACASS-484
 	fun `and(CriteriaDefinition) should concatenate criteria`() {
 
 		val criteriaDefinitions = where("foo").isEqualTo("bar") and where("baz").isEqualTo("bar") and where("name").isEqualTo("Doe")

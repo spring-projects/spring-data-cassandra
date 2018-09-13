@@ -25,7 +25,7 @@ import org.junit.Test
  */
 class QueryExtensionsUnitTests {
 
-	@Test
+	@Test // DATACASS-595
 	fun `should create query from single criteria`() {
 
 		val query = query(where("jedi").isEqualTo(true))
@@ -33,7 +33,7 @@ class QueryExtensionsUnitTests {
 		assertThat(query.toString()).contains("jedi = true")
 	}
 
-	@Test
+	@Test // DATACASS-484
 	fun `should create query from concatenated criteria`() {
 
 		val query = query(where("foo").isEqualTo("bar") and //
