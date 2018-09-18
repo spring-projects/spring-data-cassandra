@@ -11,6 +11,8 @@ map domain objects to tables without providing any additional metadata, by follo
 In this chapter, we describe the features of the `MappingCassandraConverter`, how to use conventions for
 mapping domain objects to tables, and how to override those conventions with annotation-based mapping metadata.
 
+include::../{spring-data-commons-docs}/object-mapping.adoc[leveloffset=+1]
+
 
 [[mapping-conversion]]
 == Data Mapping and Type Conversion
