@@ -38,7 +38,6 @@ import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
-import org.springframework.data.util.Version;
 
 /**
  * Integration tests for {@link ExecutableSelectOperationSupport}.
@@ -51,7 +50,6 @@ public class ExecutableSelectOperationSupportIntegrationTests extends AbstractKe
 
 	Person han;
 	Person luke;
-	Version cassandraVersion;
 
 	@Before
 	public void setUp() {
@@ -122,7 +120,6 @@ public class ExecutableSelectOperationSupportIntegrationTests extends AbstractKe
 
 	@Test // DATACASS-485
 	public void findAllBy() {
-
 		assertThat(this.template.query(Person.class).matching(queryLuke()).all()).containsExactlyInAnyOrder(luke);
 	}
 
@@ -135,7 +132,6 @@ public class ExecutableSelectOperationSupportIntegrationTests extends AbstractKe
 
 	@Test // DATACASS-485
 	public void findAllByWithCollection() {
-
 		assertThat(this.template.query(Human.class).inTable("person").matching(queryLuke()).all()).hasSize(1);
 	}
 
@@ -148,13 +144,11 @@ public class ExecutableSelectOperationSupportIntegrationTests extends AbstractKe
 
 	@Test // DATACASS-485
 	public void findBy() {
-
 		assertThat(this.template.query(Person.class).matching(queryLuke()).one()).contains(luke);
 	}
 
 	@Test // DATACASS-485
 	public void findByNoMatch() {
-
 		assertThat(this.template.query(Person.class).matching(querySpock()).one()).isEmpty();
 	}
 
@@ -165,7 +159,6 @@ public class ExecutableSelectOperationSupportIntegrationTests extends AbstractKe
 
 	@Test // DATACASS-485
 	public void findByReturningOneValue() {
-
 		assertThat(this.template.query(Person.class).matching(queryLuke()).oneValue()).isEqualTo(luke);
 	}
 
@@ -176,7 +169,6 @@ public class ExecutableSelectOperationSupportIntegrationTests extends AbstractKe
 
 	@Test // DATACASS-485
 	public void findByReturningFirstValue() {
-
 		assertThat(this.template.query(Person.class).matching(queryLuke()).firstValue()).isEqualTo(luke);
 	}
 
@@ -187,7 +179,6 @@ public class ExecutableSelectOperationSupportIntegrationTests extends AbstractKe
 
 	@Test // DATACASS-485
 	public void findByReturningFirstValueAsClosedInterfaceProjection() {
-
 
 		PersonProjection result = this.template
 				.query(Person.class)
@@ -201,7 +192,6 @@ public class ExecutableSelectOperationSupportIntegrationTests extends AbstractKe
 
 	@Test // DATACASS-485
 	public void findByReturningFirstValueAsOpenInterfaceProjection() {
-
 
 		PersonSpELProjection result = this.template
 				.query(Person.class)
@@ -254,7 +244,6 @@ public class ExecutableSelectOperationSupportIntegrationTests extends AbstractKe
 	@Test // DATACASS-485
 	public void streamAllReturningResultsAsOpenInterfaceProjection() {
 
-
 		TerminatingSelect<PersonSpELProjection> operation =
 				this.template.query(Person.class).as(PersonSpELProjection.class);
 
@@ -281,7 +270,6 @@ public class ExecutableSelectOperationSupportIntegrationTests extends AbstractKe
 
 	@Test // DATACASS-485
 	public void countShouldReturnNrOfElementsInCollectionWhenNoQueryPresent() {
-
 		assertThat(this.template.query(Person.class).count()).isEqualTo(2);
 	}
 
@@ -306,7 +294,6 @@ public class ExecutableSelectOperationSupportIntegrationTests extends AbstractKe
 
 	@Test // DATACASS-485
 	public void existsShouldReturnTrueIfAtLeastOneElementMatchesQuery() {
-
 		assertThat(this.template.query(Person.class).matching(queryLuke()).exists()).isTrue();
 	}
 
