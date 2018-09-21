@@ -1,6 +1,14 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 2.1.0.RELEASE (2018-09-21)
+---------------------------------------------
+* DATACASS-597 - Upgrade to Cassandra Driver 3.6.0.
+* DATACASS-596 - Include documentation about Object Mapping Fundamentals.
+* DATACASS-595 - QueryExtensionsKt#query needs to accept CriteriaDefinitions.
+* DATACASS-588 - Release 2.1 GA (Lovelace).
+
+
 Changes in version 2.0.10.RELEASE (2018-09-10)
 ----------------------------------------------
 * DATACASS-583 - Release 2.0.10 (Kay SR10).
