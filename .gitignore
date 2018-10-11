@@ -1,9 +1,13 @@
 #*
 .#*
 *~
+*.iml
+*.ipr
+*.iws
 _site
 .idea
 *.sw[op]
 .project
+build
 sample-pages
 target
