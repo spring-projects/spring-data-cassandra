@@ -19,7 +19,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.data.cassandra.ReactiveSession;
 import org.springframework.data.cassandra.ReactiveSessionFactory;
 import org.springframework.data.cassandra.core.CassandraAdminTemplate;
-import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.core.ReactiveCassandraTemplate;
 import org.springframework.data.cassandra.core.cql.ReactiveCqlOperations;
 import org.springframework.data.cassandra.core.cql.ReactiveCqlTemplate;
@@ -64,12 +63,12 @@ public abstract class AbstractReactiveCassandraConfiguration extends AbstractCas
 	/**
 	 * Creates a {@link CassandraAdminTemplate}.
 	 *
-	 * @return the {@link ReactiveCassandraOperations}.
+	 * @return the {@link ReactiveCassandraTemplate}.
 	 * @see #reactiveSessionFactory()
 	 * @see #cassandraConverter()
 	 */
 	@Bean
-	public ReactiveCassandraOperations reactiveCassandraTemplate() {
+	public ReactiveCassandraTemplate reactiveCassandraTemplate() {
 		return new ReactiveCassandraTemplate(reactiveSessionFactory(), cassandraConverter());
 	}
 
@@ -80,7 +79,7 @@ public abstract class AbstractReactiveCassandraConfiguration extends AbstractCas
 	 * @see #reactiveSessionFactory()
 	 */
 	@Bean
-	public ReactiveCqlOperations reactiveCqlTemplate() {
+	public ReactiveCqlTemplate reactiveCqlTemplate() {
 		return new ReactiveCqlTemplate(reactiveSessionFactory());
 	}
 }
