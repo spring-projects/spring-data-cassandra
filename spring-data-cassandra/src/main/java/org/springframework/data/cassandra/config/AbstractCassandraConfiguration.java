@@ -24,7 +24,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.SessionFactory;
-import org.springframework.data.cassandra.core.CassandraAdminOperations;
 import org.springframework.data.cassandra.core.CassandraAdminTemplate;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.CassandraCustomConversions;
@@ -196,7 +195,7 @@ public abstract class AbstractCassandraConfiguration extends AbstractClusterConf
 	 * @throws Exception if the {@link com.datastax.driver.core.Session} could not be obtained.
 	 */
 	@Bean
-	public CassandraAdminOperations cassandraTemplate() throws Exception {
+	public CassandraAdminTemplate cassandraTemplate() throws Exception {
 		return new CassandraAdminTemplate(sessionFactory(), cassandraConverter());
 	}
 
