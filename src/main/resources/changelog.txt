@@ -1,6 +1,12 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 2.1.1.RELEASE (2018-10-15)
+---------------------------------------------
+* DATACASS-600 - CassandraDataAutoConfiguration.cassandraTemplate(…) declares Operations interface instead of implementation class.
+* DATACASS-598 - Release 2.1.1 (Lovelace SR1).
+
+
 Changes in version 2.1.0.RELEASE (2018-09-21)
 ---------------------------------------------
 * DATACASS-597 - Upgrade to Cassandra Driver 3.6.0.
