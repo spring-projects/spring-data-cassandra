@@ -1,0 +1,20 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: openjdk
+    tag: 8-jdk-alpine
+
+inputs:
+- name: spring-data-geode-github
+
+outputs:
+- name: spring-data-geode-artifactory
+
+caches:
+- path: maven
+
+run:
+  path: spring-data-geode-github/ci/test.sh
