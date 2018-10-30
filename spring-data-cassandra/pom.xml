@@ -22,6 +22,7 @@
 		<validation>1.1.0.Final</validation>
 		<java-module-name>spring.data.cassandra</java-module-name>
 		<project.root>${basedir}/..</project.root>
+		<kotlin>1.2.71</kotlin>
 	</properties>
 
 	<dependencies>
