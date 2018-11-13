@@ -961,23 +961,6 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	@SuppressWarnings("unchecked")
 	private Object convertReadValue(Object value, TypeInformation<?> typeInformation) {
 
-		if (getCustomConversions().hasCustomWriteTarget(typeInformation.getRequiredActualType().getType())
-				&& typeInformation.isCollectionLike()) {
-
-			if (value instanceof Collection) {
-
-				Collection<Object> original = (Collection<Object>) value;
-
-				Collection<Object> converted = CollectionFactory.createCollection(typeInformation.getType(), original.size());
-
-				for (Object element : original) {
-					converted.add(getConversionService().convert(element, typeInformation.getRequiredActualType().getType()));
-				}
-
-				return converted;
-			}
-		}
-
 		if (typeInformation.isCollectionLike() && value instanceof Collection) {
 			return readCollectionOrArrayInternal((Collection<?>) value, typeInformation);
 		}
@@ -1034,16 +1017,14 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 		BasicCassandraPersistentEntity<?> entity = getMappingContext().getPersistentEntity(elementType);
 
-		if (entity != null) {
+		if (entity != null && entity.isUserDefinedType()) {
+			for (Object element : source) {
+				collection.add(readEntityFromUdt(entity, (UDTValue) element));
+			}
 
-			if (entity.isUserDefinedType()) {
-				for (Object udtValue : source) {
-					collection.add(readEntityFromUdt(entity, (UDTValue) udtValue));
-				}
-			} else if (entity.isTupleType()) {
-				for (Object tupleValue : source) {
-					collection.add(readEntityFromTuple(entity, (TupleValue) tupleValue));
-				}
+		} else if (entity != null && entity.isTupleType()) {
+			for (Object element : source) {
+				collection.add(readEntityFromTuple(entity, (TupleValue) element));
 			}
 		} else {
 			for (Object element : source) {
