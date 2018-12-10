@@ -2,16 +2,8 @@
 David Webb, Matthew Adams, John Blum, Mark Paluch, Jay Bryant
 :revnumber: {version}
 :revdate: {localdate}
-:linkcss:
-:doctype: book
-:docinfo: shared
-:toc: left
-:toclevels: 4
-:source-highlighter: prettify
-:icons: font
-:imagesdir: images
 ifdef::backend-epub3[:front-cover-image: image:epub-cover.png[Front Cover,1050,1600]]
-:spring-data-commons-docs: ../../../../spring-data-commons/src/main/asciidoc
+:spring-data-commons-docs: ../../../../../spring-data-commons/src/main/asciidoc
 :spring-framework-docs: http://docs.spring.io/spring/docs/{springVersion}/spring-framework-reference/
 
 (C) 2008-2018 The original author(s).
