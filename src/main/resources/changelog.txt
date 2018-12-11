@@ -1,6 +1,14 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 2.2.0.M1 (2018-12-11)
+----------------------------------------
+* DATACASS-613 - Simplify reference documentation setup.
+* DATACASS-612 - Release 2.2 M1 (Moore).
+* DATACASS-607 - Custom conversion not applies for Collection elements if only read converter is registered.
+* DATACASS-600 - CassandraDataAutoConfiguration.cassandraTemplate(…) declares Operations interface instead of implementation class.
+
+
 Changes in version 2.1.3.RELEASE (2018-11-27)
 ---------------------------------------------
 * DATACASS-607 - Custom conversion not applies for Collection elements if only read converter is registered.
