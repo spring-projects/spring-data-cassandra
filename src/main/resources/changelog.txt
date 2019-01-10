@@ -1,6 +1,12 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 1.5.18.RELEASE (2019-01-10)
+----------------------------------------------
+* DATACASS-616 - Update copyright years to 2019.
+* DATACASS-608 - Release 1.5.18 (Ingalls SR18).
+
+
 Changes in version 2.2.0.M1 (2018-12-11)
 ----------------------------------------
 * DATACASS-613 - Simplify reference documentation setup.
