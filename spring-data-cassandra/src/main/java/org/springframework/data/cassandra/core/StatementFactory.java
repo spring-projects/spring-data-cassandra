@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.core;
 
+import java.beans.PropertyDescriptor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -27,6 +28,7 @@ import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.cql.QueryOptionsUtil;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
+import org.springframework.data.cassandra.core.query.Columns;
 import org.springframework.data.cassandra.core.query.Columns.ColumnSelector;
 import org.springframework.data.cassandra.core.query.Columns.FunctionCall;
 import org.springframework.data.cassandra.core.query.Columns.Selector;
@@ -46,7 +48,13 @@ import org.springframework.data.cassandra.core.query.Update.SetAtKeyOp;
 import org.springframework.data.cassandra.core.query.Update.SetOp;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
+import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.projection.ProjectionFactory;
+import org.springframework.data.projection.ProjectionInformation;
+import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Statement;
@@ -74,6 +82,8 @@ public class StatementFactory {
 	private final QueryMapper queryMapper;
 
 	private final UpdateMapper updateMapper;
+
+	private final ProjectionFactory projectionFactory = new SpelAwareProxyProjectionFactory();
 
 	/**
 	 * Create {@link StatementFactory} given {@link UpdateMapper}.
@@ -190,8 +200,8 @@ public class StatementFactory {
 		return createSelect(query, entity, filter, selectors, tableName);
 	}
 
-	private Select createSelect(Query query, CassandraPersistentEntity<?> entity, Filter filter,
-			List<Selector> selectors, CqlIdentifier tableName) {
+	private Select createSelect(Query query, CassandraPersistentEntity<?> entity, Filter filter, List<Selector> selectors,
+			CqlIdentifier tableName) {
 
 		Sort sort = Optional.of(query.getSort()).map(querySort -> getQueryMapper().getMappedSort(querySort, entity))
 				.orElse(Sort.unsorted());
@@ -223,8 +233,8 @@ public class StatementFactory {
 
 			Selection selection = QueryBuilder.select();
 
-			selectors.forEach(selector ->
-				selector.getAlias().map(CqlIdentifier::toCql).ifPresent(getSelection(selection, selector)::as));
+			selectors.forEach(
+					selector -> selector.getAlias().map(CqlIdentifier::toCql).ifPresent(getSelection(selection, selector)::as));
 			select = selection.from(from.toCql());
 		}
 
@@ -465,6 +475,43 @@ public class StatementFactory {
 		return delete;
 	}
 
+	/**
+	 * Compute the {@link Columns} to include type if the {@code returnType} is a {@literal DTO projection} or a
+	 * {@literal closed interface projection}.
+	 *
+	 * @param columns must not be {@literal null}.
+	 * @param persistentEntity must not be {@literal null}.
+	 * @param returnType must not be {@literal null}.
+	 * @return {@link Columns} with columns to be included.
+	 * @since 2.2
+	 */
+	Columns computeColumnsForProjection(Columns columns, PersistentEntity<?, ?> persistentEntity, Class<?> returnType) {
+
+		if (!columns.isEmpty() || ClassUtils.isAssignable(persistentEntity.getType(), returnType)) {
+			return columns;
+		}
+
+		Columns projectedColumns = Columns.empty();
+
+		if (returnType.isInterface()) {
+
+			ProjectionInformation projectionInformation = projectionFactory.getProjectionInformation(returnType);
+
+			if (projectionInformation.isClosed()) {
+
+				for (PropertyDescriptor inputProperty : projectionInformation.getInputProperties()) {
+					projectedColumns = projectedColumns.include(inputProperty.getName());
+				}
+			}
+		} else {
+			for (PersistentProperty<?> property : persistentEntity) {
+				projectedColumns = projectedColumns.include(property.getName());
+			}
+		}
+
+		return projectedColumns;
+	}
+
 	private static Delete delete(List<String> columnNames, CqlIdentifier from, Filter filter) {
 
 		Delete select;
@@ -538,7 +585,7 @@ public class StatementFactory {
 				return QueryBuilder.containsKey(columnName, predicate.getValue());
 		}
 
-		throw new IllegalArgumentException(String.format("Criteria %s %s %s not supported",
-				columnName, predicate.getOperator(), predicate.getValue()));
+		throw new IllegalArgumentException(
+				String.format("Criteria %s %s %s not supported", columnName, predicate.getOperator(), predicate.getValue()));
 	}
 }

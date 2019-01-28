@@ -15,14 +15,15 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
-
-import java.lang.reflect.Method;
-import java.util.Arrays;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import rx.Single;
+
+import java.lang.reflect.Method;
+import java.util.Arrays;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -31,7 +32,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
@@ -48,8 +48,6 @@ import org.springframework.util.ClassUtils;
 
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.Statement;
-
-import rx.Single;
 
 /**
  * Unit tests for {@link ReactivePartTreeCassandraQuery}.
@@ -107,12 +105,12 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname='foo' ALLOW FILTERING;");
 	}
 
-	@Test // DATACASS-335
+	@Test // DATACASS-335, DATACASS-313
 	public void usesDynamicProjection() {
 
 		String query = deriveQueryFromMethod("findDynamicallyProjectedBy", PersonProjection.class);
 
-		assertThat(query).isEqualTo("SELECT * FROM person;");
+		assertThat(query).isEqualTo("SELECT lastname,firstname FROM person;");
 	}
 
 	@Test // DATACASS-146

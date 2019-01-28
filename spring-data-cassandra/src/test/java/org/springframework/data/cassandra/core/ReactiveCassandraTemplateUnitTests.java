@@ -15,19 +15,15 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.Collections;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+
+import java.util.Collections;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -36,7 +32,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
 import org.springframework.data.cassandra.ReactiveResultSet;
 import org.springframework.data.cassandra.ReactiveSession;
 import org.springframework.data.cassandra.core.query.Query;
@@ -129,6 +124,28 @@ public class ReactiveCassandraTemplateUnitTests {
 
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM users WHERE id='myid';");
+	}
+
+	@Test // DATACASS-313
+	public void selectProjectedOneShouldReturnMappedResults() {
+
+		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
+		when(columnDefinitions.contains(anyString())).thenReturn(true);
+		when(columnDefinitions.getType(anyInt())).thenReturn(DataType.ascii());
+
+		when(columnDefinitions.getIndexOf("firstname")).thenReturn(0);
+
+		when(row.getObject(0)).thenReturn("Walter");
+
+		template.query(User.class).as(UserProjection.class).first() //
+				.as(StepVerifier::create) //
+				.assertNext(actual -> {
+
+					assertThat(actual.getFirstname()).isEqualTo("Walter");
+				}).verifyComplete();
+
+		verify(session).execute(statementCaptor.capture());
+		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT firstname FROM users LIMIT 1;");
 	}
 
 	@Test // DATACASS-335
@@ -265,5 +282,9 @@ public class ReactiveCassandraTemplateUnitTests {
 
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("TRUNCATE users;");
+	}
+
+	interface UserProjection {
+		String getFirstname();
 	}
 }

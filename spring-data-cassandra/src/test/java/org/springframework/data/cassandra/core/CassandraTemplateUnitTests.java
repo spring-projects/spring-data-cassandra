@@ -16,9 +16,7 @@
 package org.springframework.data.cassandra.core;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Collections;
@@ -150,6 +148,24 @@ public class CassandraTemplateUnitTests {
 		assertThat(user).isEqualTo(new User("myid", "Walter", "White"));
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM users WHERE id='myid';");
+	}
+
+	@Test // DATACASS-313
+	public void selectProjectedOneShouldReturnMappedResults() {
+
+		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
+		when(columnDefinitions.contains(anyString())).thenReturn(true);
+		when(columnDefinitions.getType(anyInt())).thenReturn(DataType.ascii());
+
+		when(columnDefinitions.getIndexOf("firstname")).thenReturn(0);
+
+		when(row.getObject(0)).thenReturn("Walter");
+
+		UserProjection user = template.query(User.class).as(UserProjection.class).oneValue();
+
+		assertThat(user.getFirstname()).isEqualTo("Walter");
+		verify(session).execute(statementCaptor.capture());
+		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT firstname FROM users LIMIT 2;");
 	}
 
 	@Test // DATACASS-292
@@ -393,5 +409,9 @@ public class CassandraTemplateUnitTests {
 		template.batchOps().insert(new User()).execute();
 
 		verify(session).execute(Mockito.any(Batch.class));
+	}
+
+	interface UserProjection {
+		String getFirstname();
 	}
 }

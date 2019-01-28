@@ -49,6 +49,7 @@ import org.springframework.data.cassandra.core.mapping.event.AfterLoadEvent;
 import org.springframework.data.cassandra.core.mapping.event.AfterSaveEvent;
 import org.springframework.data.cassandra.core.mapping.event.BeforeDeleteEvent;
 import org.springframework.data.cassandra.core.mapping.event.BeforeSaveEvent;
+import org.springframework.data.cassandra.core.query.Columns;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.mapping.context.MappingContext;
@@ -322,8 +323,14 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	<T> List<T> doSelect(Query query, Class<?> entityClass, CqlIdentifier tableName, Class<T> returnType) {
 
 		Function<Row, T> mapper = getMapper(entityClass, returnType, tableName);
+		CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entityClass);
 
-		RegularStatement select = getStatementFactory().select(query, getRequiredPersistentEntity(entityClass), tableName);
+		Columns columns = getStatementFactory().computeColumnsForProjection(query.getColumns(), persistentEntity,
+				returnType);
+
+		Query queryToUse = query.columns(columns);
+
+		RegularStatement select = getStatementFactory().select(queryToUse, persistentEntity, tableName);
 
 		return getCqlOperations().query(select, (row, rowNum) -> mapper.apply(row));
 	}
