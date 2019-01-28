@@ -41,6 +41,8 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.springframework.core.SpringVersion;
 import org.springframework.core.convert.ConverterNotFoundException;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.cassandra.core.mapping.BasicMapId;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
@@ -947,6 +949,21 @@ public class MappingCassandraConverterUnitTests {
 		assertThat(map.get("Europe/Paris")).hasOnlyElementsOfType(LocalDate.class);
 	}
 
+	@Test // DATACASS-189
+	public void shouldSkipTransientProperties() {
+
+		WithTransient withTransient = new WithTransient();
+		withTransient.firstname = "Foo";
+		withTransient.lastname = "Bar";
+		withTransient.displayName = "FooBar";
+
+		Insert insert = QueryBuilder.insertInto("table");
+
+		this.mappingCassandraConverter.write(withTransient, insert);
+
+		assertThat(insert.toString()).isEqualTo("INSERT INTO table (firstname,lastname) VALUES ('Foo','Bar');");
+	}
+
 	@SuppressWarnings("unchecked")
 	private static <T> List<T> getListValue(Insert statement) {
 
@@ -1207,5 +1224,14 @@ public class MappingCassandraConverterUnitTests {
 		@PrimaryKey private String id;
 
 		Map<ZoneId, List<java.time.LocalDate>> times;
+	}
+
+	static class WithTransient {
+
+		@Id String id;
+
+		String firstname;
+		String lastname;
+		@Transient String displayName;
 	}
 }
