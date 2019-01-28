@@ -113,9 +113,8 @@ public interface AsyncCassandraOperations {
 	<T> ListenableFuture<List<T>> select(Statement statement, Class<T> entityClass) throws DataAccessException;
 
 	/**
-	 * Execute a {@code SELECT} query with paging and convert the result set to a {@link Slice} of entities.
-	 *
-	 * A sliced query translates the effective {@link Statement#getFetchSize() fetch size} to the page size.
+	 * Execute a {@code SELECT} query with paging and convert the result set to a {@link Slice} of entities. A sliced
+	 * query translates the effective {@link Statement#getFetchSize() fetch size} to the page size.
 	 *
 	 * @param statement the CQL statement, must not be {@literal null}.
 	 * @param entityClass The entity type must not be {@literal null}.
@@ -230,10 +229,9 @@ public interface AsyncCassandraOperations {
 	ListenableFuture<Long> count(Class<?> entityClass) throws DataAccessException;
 
 	/**
-	 * Returns the number of rows for the given entity class applying {@link Query}.
-	 *
-	 * This overridden method allows users to further refine the selection criteria using a {@link Query} predicate
-	 * to determine how many entities of the given {@link Class type} match the criteria.
+	 * Returns the number of rows for the given entity class applying {@link Query}. This overridden method allows users
+	 * to further refine the selection criteria using a {@link Query} predicate to determine how many entities of the
+	 * given {@link Class type} match the criteria.
 	 *
 	 * @param query user-provided count {@link Query} to execute; must not be {@literal null}.
 	 * @param entityClass {@link Class type} of the entity; must not be {@literal null}.
@@ -246,9 +244,9 @@ public interface AsyncCassandraOperations {
 	/**
 	 * Determine whether a row of {@code entityClass} with the given {@code id} exists.
 	 *
-	 * @param id Id value. For single primary keys it's the plain value. For composite primary keys either, it's
-	 * an instance of either {@link org.springframework.data.cassandra.core.mapping.PrimaryKeyClass}
-	 * or {@link org.springframework.data.cassandra.core.mapping.MapId}. Must not be {@literal null}.
+	 * @param id Id value. For single primary keys it's the plain value. For composite primary keys either, it's an
+	 *          instance of either {@link org.springframework.data.cassandra.core.mapping.PrimaryKeyClass} or
+	 *          {@link org.springframework.data.cassandra.core.mapping.MapId}. Must not be {@literal null}.
 	 * @param entityClass {@link Class type} of the entity; must not be {@literal null}.
 	 * @return {@literal true} if the object exists.
 	 * @throws DataAccessException if any problem occurs while executing the query.
@@ -337,6 +335,20 @@ public interface AsyncCassandraOperations {
 	 * @see QueryOptions#empty()
 	 */
 	ListenableFuture<WriteResult> delete(Object entity, QueryOptions options) throws DataAccessException;
+
+	/**
+	 * Delete the given entity applying {@link DeleteOptions} and return the entity if the delete was applied.
+	 *
+	 * @param entity must not be {@literal null}.
+	 * @param options must not be {@literal null}.
+	 * @return the {@link WriteResult} for this operation.
+	 * @throws DataAccessException if there is any problem executing the query.
+	 * @see DeleteOptions#empty()
+	 * @since 2.2
+	 */
+	default ListenableFuture<WriteResult> delete(Object entity, DeleteOptions options) throws DataAccessException {
+		return delete(entity, (QueryOptions) options);
+	}
 
 	/**
 	 * Remove the given object from the table by id.

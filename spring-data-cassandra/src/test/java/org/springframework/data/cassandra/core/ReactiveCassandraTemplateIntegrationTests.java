@@ -276,6 +276,46 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 		verifyUser(user.getId()).verifyComplete();
 	}
 
+	@Test // DATACASS-606
+	public void deleteShouldRemoveEntityWithLwt() {
+
+		DeleteOptions lwtOptions = DeleteOptions.builder().withIfExists().build();
+
+		User user = new User("heisenberg", "Walter", "White");
+		StepVerifier.create(template.insert(user)).expectNextCount(1).verifyComplete();
+
+		template.delete(user, lwtOptions).map(WriteResult::wasApplied) //
+				.as(StepVerifier::create) //
+				.expectNext(true) //
+				.verifyComplete();
+
+		template.delete(user, lwtOptions).map(WriteResult::wasApplied) //
+				.as(StepVerifier::create) //
+				.expectNext(false) //
+				.verifyComplete();
+	}
+
+	@Test // DATACASS-606
+	public void deleteByQueryShouldRemoveEntityWithLwt() {
+
+		DeleteOptions lwtOptions = DeleteOptions.builder().withIfExists().build();
+
+		User user = new User("heisenberg", "Walter", "White");
+		StepVerifier.create(template.insert(user)).expectNextCount(1).verifyComplete();
+
+		Query query = Query.query(where("id").is("heisenberg")).queryOptions(lwtOptions);
+
+		template.delete(query, User.class) //
+				.as(StepVerifier::create) //
+				.expectNext(true) //
+				.verifyComplete();
+
+		template.delete(query, User.class) //
+				.as(StepVerifier::create) //
+				.expectNext(false) //
+				.verifyComplete();
+	}
+
 	@Test // DATACASS-343
 	public void shouldSelectByQueryWithSorting() {
 

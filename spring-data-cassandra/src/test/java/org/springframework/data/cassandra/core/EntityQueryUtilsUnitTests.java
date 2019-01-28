@@ -23,16 +23,17 @@ import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.domain.User;
 
 import com.datastax.driver.core.SimpleStatement;
+import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 
 /**
- * Unit tests for {@link QueryUtils}.
+ * Unit tests for {@link EntityQueryUtils}.
  *
  * @author Mark Paluch
  */
-public class QueryUtilsUnitTests {
+public class EntityQueryUtilsUnitTests {
 
 	private final MappingCassandraConverter converter = new MappingCassandraConverter();
 
@@ -41,7 +42,7 @@ public class QueryUtilsUnitTests {
 
 		Select select = QueryBuilder.select().from("keyspace", "table");
 
-		CqlIdentifier tableName = QueryUtils.getTableName(select);
+		CqlIdentifier tableName = EntityQueryUtils.getTableName(select);
 
 		assertThat(tableName).isEqualTo(CqlIdentifier.of("table"));
 	}
@@ -49,16 +50,16 @@ public class QueryUtilsUnitTests {
 	@Test // DATACASS-106
 	public void shouldRetrieveTableNameFromSimpleStatement() {
 
-		assertThat(QueryUtils.getTableName(new SimpleStatement("SELECT * FROM table")))
+		assertThat(EntityQueryUtils.getTableName(new SimpleStatement("SELECT * FROM table")))
 				.isEqualTo(CqlIdentifier.of("table"));
-		assertThat(QueryUtils.getTableName(new SimpleStatement("SELECT * FROM foo.table where")))
+		assertThat(EntityQueryUtils.getTableName(new SimpleStatement("SELECT * FROM foo.table where")))
 				.isEqualTo(CqlIdentifier.of("table"));
 	}
 
 	@Test // DATACASS-106
 	public void shouldRetrieveQuotedTableNameFromSimpleStatement() {
 
-		CqlIdentifier tableName = QueryUtils.getTableName(new SimpleStatement("SELECT * from \"table\""));
+		CqlIdentifier tableName = EntityQueryUtils.getTableName(new SimpleStatement("SELECT * from \"table\""));
 
 		assertThat(tableName).isEqualTo(CqlIdentifier.of("table"));
 	}
@@ -67,10 +68,22 @@ public class QueryUtilsUnitTests {
 	public void shouldCreateInsertQuery() {
 
 		User user = new User("heisenberg", "Walter", "White");
-		Insert insert = QueryUtils.createInsertQuery("user", user, InsertOptions.builder().withIfNotExists().build(),
+		Insert insert = EntityQueryUtils.createInsertQuery("user", user, InsertOptions.builder().withIfNotExists().build(),
 				converter, converter.getMappingContext().getRequiredPersistentEntity(User.class));
 
 		assertThat(insert.toString())
 				.isEqualTo("INSERT INTO user (firstname,id,lastname) VALUES ('Walter','heisenberg','White') IF NOT EXISTS;");
+	}
+
+	@Test // DATACASS-606
+	public void shouldConsiderDeleteIfExists() {
+
+		User user = new User("heisenberg", "Walter", "White");
+
+		DeleteOptions options = DeleteOptions.builder().withIfExists().build();
+
+		Delete delete = EntityQueryUtils.createDeleteQuery("foo", user, options, converter);
+
+		assertThat(delete.toString()).isEqualTo("DELETE FROM foo WHERE id='heisenberg' IF EXISTS;");
 	}
 }

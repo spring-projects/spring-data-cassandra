@@ -258,7 +258,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		Assert.notNull(statement, "Statement must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		Function<Row, T> mapper = getMapper(entityClass, entityClass, QueryUtils.getTableName(statement));
+		Function<Row, T> mapper = getMapper(entityClass, entityClass, EntityQueryUtils.getTableName(statement));
 
 		return getCqlOperations().query(statement, (row, rowNum) -> mapper.apply(row));
 	}
@@ -274,9 +274,10 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 
 		ResultSet resultSet = getCqlOperations().queryForResultSet(statement);
 
-		Function<Row, T> mapper = getMapper(entityClass, entityClass, QueryUtils.getTableName(statement));
+		Function<Row, T> mapper = getMapper(entityClass, entityClass, EntityQueryUtils.getTableName(statement));
 
-		return QueryUtils.readSlice(resultSet, (row, rowNum) -> mapper.apply(row), 0, getEffectiveFetchSize(statement));
+		return EntityQueryUtils.readSlice(resultSet, (row, rowNum) -> mapper.apply(row), 0,
+				getEffectiveFetchSize(statement));
 	}
 
 	/* (non-Javadoc)
@@ -291,7 +292,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		ResultSet resultSet = getCqlOperations().queryForResultSet(statement);
 
 		return StreamSupport.stream(resultSet.spliterator(), false)
-				.map(getMapper(entityClass, entityClass, QueryUtils.getTableName(statement)));
+				.map(getMapper(entityClass, entityClass, EntityQueryUtils.getTableName(statement)));
 	}
 
 	/* (non-Javadoc)
@@ -551,7 +552,8 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 
 		CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
 
-		Insert insert = QueryUtils.createInsertQuery(tableName.toCql(), entity, options, getConverter(), persistentEntity);
+		Insert insert = EntityQueryUtils.createInsertQuery(tableName.toCql(), entity, options, getConverter(),
+				persistentEntity);
 
 		maybeEmitEvent(new BeforeSaveEvent<>(entity, tableName, insert));
 
@@ -581,7 +583,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		Assert.notNull(options, "UpdateOptions must not be null");
 
 		CqlIdentifier tableName = getTableName(entity);
-		Update update = QueryUtils.createUpdateQuery(tableName.toCql(), entity, options, getConverter());
+		Update update = EntityQueryUtils.createUpdateQuery(tableName.toCql(), entity, options, getConverter());
 
 		maybeEmitEvent(new BeforeSaveEvent<>(entity, tableName, update));
 
@@ -611,7 +613,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		Assert.notNull(options, "QueryOptions must not be null");
 
 		CqlIdentifier tableName = getTableName(entity);
-		Delete delete = QueryUtils.createDeleteQuery(tableName.toCql(), entity, options, getConverter());
+		Delete delete = EntityQueryUtils.createDeleteQuery(tableName.toCql(), entity, options, getConverter());
 
 		maybeEmitEvent(new BeforeDeleteEvent<>(delete, entity.getClass(), tableName));
 

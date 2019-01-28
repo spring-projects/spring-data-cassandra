@@ -61,7 +61,7 @@ import com.google.common.collect.Iterators;
  * @author Mark Paluch
  * @since 2.0
  */
-class QueryUtils {
+class EntityQueryUtils {
 
 	private static final Pattern FROM_REGEX = Pattern.compile(" FROM ([\"]?[\\w]*[\\\\.]?[\\w]*[\"]?)[\\s]?",
 			Pattern.CASE_INSENSITIVE);
@@ -155,7 +155,7 @@ class QueryUtils {
 		Delete delete = deleteSelection.from(tableName);
 
 		if (options instanceof WriteOptions) {
-			QueryOptionsUtil.addWriteOptions(delete, (WriteOptions) options);
+			addWriteOptions(delete, (WriteOptions) options);
 		} else {
 			QueryOptionsUtil.addQueryOptions(delete, options);
 		}
@@ -322,7 +322,16 @@ class QueryUtils {
 
 		Assert.notNull(delete, "Delete must not be null");
 
-		QueryOptionsUtil.addQueryOptions(delete, writeOptions);
+		QueryOptionsUtil.addWriteOptions(delete, writeOptions);
+
+		if (writeOptions instanceof DeleteOptions) {
+
+			DeleteOptions deleteOptions = (DeleteOptions) writeOptions;
+
+			if (deleteOptions.isIfExists()) {
+				delete.where().ifExists();
+			}
+		}
 
 		return delete;
 	}

@@ -348,6 +348,31 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 		assertThat(template.selectOneById(user.getId(), User.class)).isNull();
 	}
 
+	@Test // DATACASS-606
+	public void deleteShouldRemoveEntityWithLwt() {
+
+		DeleteOptions lwtOptions = DeleteOptions.builder().withIfExists().build();
+
+		User user = new User("heisenberg", "Walter", "White");
+		template.insert(user);
+
+		assertThat(template.delete(user, lwtOptions).wasApplied()).isTrue();
+		assertThat(template.delete(user, lwtOptions).wasApplied()).isFalse();
+	}
+
+	@Test // DATACASS-606
+	public void deleteByQueryShouldRemoveEntityWithLwt() {
+
+		DeleteOptions lwtOptions = DeleteOptions.builder().withIfExists().build();
+
+		User user = new User("heisenberg", "Walter", "White");
+		template.insert(user);
+
+		Query query = Query.query(where("id").is("heisenberg")).queryOptions(lwtOptions);
+		assertThat(template.delete(query, User.class)).isTrue();
+		assertThat(template.delete(query, User.class)).isFalse();
+	}
+
 	@Test // DATACASS-182
 	public void stream() {
 

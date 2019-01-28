@@ -126,7 +126,7 @@ public abstract class QueryOptionsUtil {
 	 */
 	public static Delete addWriteOptions(Delete delete, WriteOptions writeOptions) {
 
-		Assert.notNull(delete, "Update must not be null");
+		Assert.notNull(delete, "Delete must not be null");
 
 		addQueryOptions(delete, writeOptions);
 

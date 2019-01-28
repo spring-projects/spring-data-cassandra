@@ -249,7 +249,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 		Assert.notNull(statement, "Statement must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		Function<Row, T> mapper = getMapper(entityClass, entityClass, QueryUtils.getTableName(statement));
+		Function<Row, T> mapper = getMapper(entityClass, entityClass, EntityQueryUtils.getTableName(statement));
 
 		return getAsyncCqlOperations().query(statement, (row, rowNum) -> mapper.apply(row));
 	}
@@ -265,10 +265,10 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 
 		ListenableFuture<ResultSet> resultSet = getAsyncCqlOperations().queryForResultSet(statement);
 
-		Function<Row, T> mapper = getMapper(entityClass, entityClass, QueryUtils.getTableName(statement));
+		Function<Row, T> mapper = getMapper(entityClass, entityClass, EntityQueryUtils.getTableName(statement));
 
 		return new MappingListenableFutureAdapter<>(resultSet,
-				rs -> QueryUtils.readSlice(rs, (row, rowNum) -> mapper.apply(row), 0, getEffectiveFetchSize(statement)));
+				rs -> EntityQueryUtils.readSlice(rs, (row, rowNum) -> mapper.apply(row), 0, getEffectiveFetchSize(statement)));
 	}
 
 	/* (non-Javadoc)
@@ -282,7 +282,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 		Assert.notNull(entityConsumer, "Entity Consumer must not be empty");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		Function<Row, T> mapper = getMapper(entityClass, entityClass, QueryUtils.getTableName(statement));
+		Function<Row, T> mapper = getMapper(entityClass, entityClass, EntityQueryUtils.getTableName(statement));
 
 		return getAsyncCqlOperations().query(statement, row -> {
 			entityConsumer.accept(mapper.apply(row));
@@ -504,7 +504,8 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 
 		CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
 		CqlIdentifier tableName = persistentEntity.getTableName();
-		Insert insert = QueryUtils.createInsertQuery(tableName.toCql(), entity, options, getConverter(), persistentEntity);
+		Insert insert = EntityQueryUtils.createInsertQuery(tableName.toCql(), entity, options, getConverter(),
+				persistentEntity);
 
 		maybeEmitEvent(new BeforeSaveEvent<>(entity, tableName, insert));
 
@@ -533,7 +534,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 		Assert.notNull(options, "UpdateOptions must not be null");
 
 		CqlIdentifier tableName = getTableName(entity);
-		Update update = QueryUtils.createUpdateQuery(tableName.toCql(), entity, options, getConverter());
+		Update update = EntityQueryUtils.createUpdateQuery(tableName.toCql(), entity, options, getConverter());
 
 		maybeEmitEvent(new BeforeSaveEvent<>(entity, tableName, update));
 
@@ -562,7 +563,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 		Assert.notNull(options, "QueryOptions must not be null");
 
 		CqlIdentifier tableName = getTableName(entity);
-		Delete delete = QueryUtils.createDeleteQuery(tableName.toCql(), entity, options, getConverter());
+		Delete delete = EntityQueryUtils.createDeleteQuery(tableName.toCql(), entity, options, getConverter());
 
 		maybeEmitEvent(new BeforeDeleteEvent<>(delete, entity.getClass(), tableName));
 
