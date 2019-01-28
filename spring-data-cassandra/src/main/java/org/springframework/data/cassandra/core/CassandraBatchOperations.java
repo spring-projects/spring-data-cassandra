@@ -80,6 +80,7 @@ public interface CassandraBatchOperations {
 	 * @return {@code this} {@link CassandraBatchOperations}.
 	 * @throws IllegalStateException if the batch was already executed.
 	 * @since 2.0
+	 * @see InsertOptions
 	 */
 	CassandraBatchOperations insert(Iterable<?> entities, WriteOptions options);
 
@@ -109,6 +110,7 @@ public interface CassandraBatchOperations {
 	 * @return {@code this} {@link CassandraBatchOperations}.
 	 * @throws IllegalStateException if the batch was already executed.
 	 * @since 2.0
+	 * @see UpdateOptions
 	 */
 	CassandraBatchOperations update(Iterable<?> entities, WriteOptions options);
 
@@ -129,4 +131,16 @@ public interface CassandraBatchOperations {
 	 * @throws IllegalStateException if the batch was already executed.
 	 */
 	CassandraBatchOperations delete(Iterable<?> entities);
+
+	/**
+	 * Add a collection of deletes with given {@link WriteOptions} to the batch.
+	 *
+	 * @param entities the entities to delete; must not be {@literal null}.
+	 * @param options the WriteOptions to apply; must not be {@literal null}.
+	 * @return {@code this} {@link CassandraBatchOperations}.
+	 * @throws IllegalStateException if the batch was already executed.
+	 * @since 2.2
+	 * @see DeleteOptions
+	 */
+	CassandraBatchOperations delete(Iterable<?> entities, WriteOptions options);
 }

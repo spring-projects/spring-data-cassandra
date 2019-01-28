@@ -18,7 +18,6 @@ package org.springframework.data.cassandra.core;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
@@ -118,7 +117,7 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 
 			BasicCassandraPersistentEntity<?> persistentEntity = mappingContext
 					.getRequiredPersistentEntity(entity.getClass());
-			batch.add(QueryUtils.createInsertQuery(persistentEntity.getTableName().toCql(), entity, options,
+			batch.add(EntityQueryUtils.createInsertQuery(persistentEntity.getTableName().toCql(), entity, options,
 					operations.getConverter(), persistentEntity));
 		}
 
@@ -157,7 +156,7 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 		for (Object entity : entities) {
 
 			Assert.notNull(entity, "Entity must not be null");
-			batch.add(QueryUtils.createUpdateQuery(getTableName(entity), entity, options, operations.getConverter()));
+			batch.add(EntityQueryUtils.createUpdateQuery(getTableName(entity), entity, options, operations.getConverter()));
 		}
 
 		return this;
@@ -179,14 +178,22 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 	 */
 	@Override
 	public CassandraBatchOperations delete(Iterable<?> entities) {
+		return delete(entities, DeleteOptions.empty());
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraBatchOperations#delete(java.lang.Iterable, org.springframework.data.cassandra.core.cql.WriteOptions)
+	 */
+	@Override
+	public CassandraBatchOperations delete(Iterable<?> entities, WriteOptions options) {
 
 		assertNotExecuted();
 		Assert.notNull(entities, "Entities must not be null");
+		Assert.notNull(options, "WriteOptions must not be null");
 
 		for (Object entity : entities) {
 			Assert.notNull(entity, "Entity must not be null");
-			batch.add(
-					QueryUtils.createDeleteQuery(getTableName(entity), entity, QueryOptions.empty(), operations.getConverter()));
+			batch.add(EntityQueryUtils.createDeleteQuery(getTableName(entity), entity, options, operations.getConverter()));
 		}
 
 		return this;

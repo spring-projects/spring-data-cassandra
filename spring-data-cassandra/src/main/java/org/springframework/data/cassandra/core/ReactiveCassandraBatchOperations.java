@@ -35,6 +35,7 @@ import org.springframework.data.cassandra.core.cql.WriteOptions;
  * isolation, they're not much more expensive than normal writes.
  *
  * @author Oleh Dokuka
+ * @author Mark Paluch
  * @since 2.1
  */
 public interface ReactiveCassandraBatchOperations {
@@ -91,10 +92,9 @@ public interface ReactiveCassandraBatchOperations {
 	 * @param options the WriteOptions to apply; must not be {@literal null}.
 	 * @return {@code this} {@link ReactiveCassandraBatchOperations}.
 	 * @throws IllegalStateException if the batch was already executed.
-	 * @since 2.0
+	 * @see InsertOptions
 	 */
 	ReactiveCassandraBatchOperations insert(Iterable<?> entities, WriteOptions options);
-
 
 	/**
 	 * Add a collection of inserts with given {@link WriteOptions} to the batch.
@@ -103,7 +103,7 @@ public interface ReactiveCassandraBatchOperations {
 	 * @param options the WriteOptions to apply; must not be {@literal null}.
 	 * @return {@code this} {@link ReactiveCassandraBatchOperations}.
 	 * @throws IllegalStateException if the batch was already executed.
-	 * @since 2.0
+	 * @see InsertOptions
 	 */
 	ReactiveCassandraBatchOperations insert(Mono<? extends Iterable<?>> entities, WriteOptions options);
 
@@ -141,7 +141,7 @@ public interface ReactiveCassandraBatchOperations {
 	 * @param options the WriteOptions to apply; must not be {@literal null}.
 	 * @return {@code this} {@link ReactiveCassandraBatchOperations}.
 	 * @throws IllegalStateException if the batch was already executed.
-	 * @since 2.0
+	 * @see UpdateOptions
 	 */
 	ReactiveCassandraBatchOperations update(Iterable<?> entities, WriteOptions options);
 
@@ -152,7 +152,7 @@ public interface ReactiveCassandraBatchOperations {
 	 * @param options the WriteOptions to apply; must not be {@literal null}.
 	 * @return {@code this} {@link ReactiveCassandraBatchOperations}.
 	 * @throws IllegalStateException if the batch was already executed.
-	 * @since 2.0
+	 * @see UpdateOptions
 	 */
 	ReactiveCassandraBatchOperations update(Mono<? extends Iterable<?>> entities, WriteOptions options);
 
@@ -182,4 +182,28 @@ public interface ReactiveCassandraBatchOperations {
 	 * @throws IllegalStateException if the batch was already executed.
 	 */
 	ReactiveCassandraBatchOperations delete(Mono<? extends Iterable<?>> entities);
+
+	/**
+	 * Add a collection of deletes with given {@link WriteOptions} to the batch.
+	 *
+	 * @param entities the entities to delete; must not be {@literal null}.
+	 * @param options the WriteOptions to apply; must not be {@literal null}.
+	 * @return {@code this} {@link ReactiveCassandraBatchOperations}.
+	 * @throws IllegalStateException if the batch was already executed.
+	 * @since 2.2
+	 * @see DeleteOptions
+	 */
+	ReactiveCassandraBatchOperations delete(Iterable<?> entities, WriteOptions options);
+
+	/**
+	 * Add a collection of deletes with given {@link WriteOptions} to the batch.
+	 *
+	 * @param entities the entities to delete; must not be {@literal null}.
+	 * @param options the WriteOptions to apply; must not be {@literal null}.
+	 * @return {@code this} {@link ReactiveCassandraBatchOperations}.
+	 * @throws IllegalStateException if the batch was already executed.
+	 * @since 2.2
+	 * @see DeleteOptions
+	 */
+	ReactiveCassandraBatchOperations delete(Mono<? extends Iterable<?>> entities, WriteOptions options);
 }

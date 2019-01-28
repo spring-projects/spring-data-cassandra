@@ -27,7 +27,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
-import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
@@ -178,7 +177,7 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 
 			BasicCassandraPersistentEntity<?> persistentEntity = mappingContext
 					.getRequiredPersistentEntity(entity.getClass());
-			insertQueries.add(QueryUtils.createInsertQuery(persistentEntity.getTableName().toCql(), entity, options,
+			insertQueries.add(EntityQueryUtils.createInsertQuery(persistentEntity.getTableName().toCql(), entity, options,
 					converter, persistentEntity));
 		}
 
@@ -251,7 +250,7 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 
 			Assert.notNull(entity, "Entity must not be null");
 
-			updateQueries.add(QueryUtils.createUpdateQuery(getTable(entity), entity, options, converter));
+			updateQueries.add(EntityQueryUtils.createUpdateQuery(getTable(entity), entity, options, converter));
 		}
 
 		return updateQueries;
@@ -273,13 +272,7 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 	 */
 	@Override
 	public ReactiveCassandraBatchOperations delete(Iterable<?> entities) {
-
-		assertNotExecuted();
-		Assert.notNull(entities, "Entities must not be null");
-
-		batchMonos.add(Mono.just(doDelete(entities)));
-
-		return this;
+		return delete(entities, DeleteOptions.empty());
 	}
 
 	/* (non-Javadoc)
@@ -287,16 +280,40 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 	 */
 	@Override
 	public ReactiveCassandraBatchOperations delete(Mono<? extends Iterable<?>> entities) {
+		return delete(entities, DeleteOptions.empty());
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.ReactiveCassandraBatchOperations#delete(java.lang.Iterable, org.springframework.data.cassandra.core.cql.WriteOptions)
+	 */
+	@Override
+	public ReactiveCassandraBatchOperations delete(Iterable<?> entities, WriteOptions options) {
 
 		assertNotExecuted();
 		Assert.notNull(entities, "Entities must not be null");
+		Assert.notNull(options, "WriteOptions must not be null");
 
-		batchMonos.add(entities.map(this::doDelete));
+		batchMonos.add(Mono.just(doDelete(entities, options)));
 
 		return this;
 	}
 
-	private Collection<? extends BuiltStatement> doDelete(Iterable<?> entities) {
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.ReactiveCassandraBatchOperations#delete(reactor.core.publisher.Mono, org.springframework.data.cassandra.core.cql.WriteOptions)
+	 */
+	@Override
+	public ReactiveCassandraBatchOperations delete(Mono<? extends Iterable<?>> entities, WriteOptions options) {
+
+		assertNotExecuted();
+		Assert.notNull(entities, "Entities must not be null");
+		Assert.notNull(options, "WriteOptions must not be null");
+
+		batchMonos.add(entities.map(it -> doDelete(it, options)));
+
+		return this;
+	}
+
+	private Collection<? extends BuiltStatement> doDelete(Iterable<?> entities, WriteOptions options) {
 
 		List<Delete> deleteQueries = new ArrayList<>();
 		CassandraConverter converter = operations.getConverter();
@@ -305,7 +322,7 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 
 			Assert.notNull(entity, "Entity must not be null");
 
-			deleteQueries.add(QueryUtils.createDeleteQuery(getTable(entity), entity, QueryOptions.empty(), converter));
+			deleteQueries.add(EntityQueryUtils.createDeleteQuery(getTable(entity), entity, options, converter));
 		}
 
 		return deleteQueries;
