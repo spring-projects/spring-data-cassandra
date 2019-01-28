@@ -93,7 +93,7 @@ public class CassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-292
-	public void selectShouldTranslateException() throws Exception {
+	public void selectShouldTranslateException() {
 
 		when(resultSet.iterator()).thenThrow(new NoHostAvailableException(Collections.emptyMap()));
 
@@ -337,7 +337,7 @@ public class CassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-292
-	public void updateShouldTranslateException() throws Exception {
+	public void updateShouldTranslateException() {
 
 		reset(session);
 		when(session.execute(any(Statement.class))).thenThrow(new NoHostAvailableException(Collections.emptyMap()));
