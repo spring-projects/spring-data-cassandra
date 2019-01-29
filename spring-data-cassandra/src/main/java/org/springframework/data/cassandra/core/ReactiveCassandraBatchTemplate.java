@@ -27,9 +27,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
+import org.springframework.data.cassandra.core.convert.UpdateMapper;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
@@ -55,6 +57,12 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 
 	private final Batch batch = QueryBuilder.batch();
 
+	private final CassandraConverter converter;
+
+	private final CassandraMappingContext mappingContext;
+
+	private final StatementFactory statementFactory;
+
 	private final List<Mono<Collection<? extends BuiltStatement>>> batchMonos = new CopyOnWriteArrayList<>();
 
 	/**
@@ -67,6 +75,9 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 		Assert.notNull(operations, "CassandraOperations must not be null");
 
 		this.operations = operations;
+		this.converter = operations.getConverter();
+		this.mappingContext = converter.getMappingContext();
+		this.statementFactory = new StatementFactory(new UpdateMapper(converter));
 	}
 
 	/* (non-Javadoc)
@@ -250,7 +261,9 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 
 			Assert.notNull(entity, "Entity must not be null");
 
-			updateQueries.add(EntityQueryUtils.createUpdateQuery(getTable(entity), entity, options, converter));
+			CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
+			updateQueries
+					.add(statementFactory.update(entity, options, converter, persistentEntity, persistentEntity.getTableName()));
 		}
 
 		return updateQueries;
@@ -322,7 +335,9 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 
 			Assert.notNull(entity, "Entity must not be null");
 
-			deleteQueries.add(EntityQueryUtils.createDeleteQuery(getTable(entity), entity, options, converter));
+			CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
+			deleteQueries
+					.add(statementFactory.delete(entity, options, converter, persistentEntity, persistentEntity.getTableName()));
 		}
 
 		return deleteQueries;
@@ -332,11 +347,7 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 		Assert.state(!executed.get(), "This Cassandra Batch was already executed");
 	}
 
-	private String getTable(Object entity) {
-
-		Assert.notNull(entity, "Entity must not be null");
-
-		return operations.getConverter().getMappingContext()
-				.getRequiredPersistentEntity(ClassUtils.getUserClass(entity.getClass())).getTableName().toCql();
+	private CassandraPersistentEntity<?> getRequiredPersistentEntity(Class<?> entityType) {
+		return this.mappingContext.getRequiredPersistentEntity(ClassUtils.getUserClass(entityType));
 	}
 }
