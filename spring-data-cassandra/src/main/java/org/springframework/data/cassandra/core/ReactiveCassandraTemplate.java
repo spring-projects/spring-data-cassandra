@@ -526,8 +526,9 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations, A
 		Assert.notNull(entity, "Entity must not be null");
 		Assert.notNull(options, "UpdateOptions must not be null");
 
-		CqlIdentifier tableName = getTableName(entity);
-		Update update = EntityQueryUtils.createUpdateQuery(tableName.toCql(), entity, options, getConverter());
+		CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
+		CqlIdentifier tableName = persistentEntity.getTableName();
+		Update update = getStatementFactory().update(entity, options, getConverter(), persistentEntity, tableName);
 
 		Mono<EntityWriteResult<T>> result = getReactiveCqlOperations() //
 				.execute(new StatementCallback(update)) //
@@ -555,9 +556,9 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations, A
 		Assert.notNull(entity, "Entity must not be null");
 		Assert.notNull(options, "QueryOptions must not be null");
 
-		CqlIdentifier tableName = getTableName(entity);
-
-		Delete delete = EntityQueryUtils.createDeleteQuery(tableName.toCql(), entity, options, getConverter());
+		CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
+		CqlIdentifier tableName = persistentEntity.getTableName();
+		Delete delete = getStatementFactory().delete(entity, options, getConverter(), persistentEntity, tableName);
 
 		Mono<WriteResult> result = getReactiveCqlOperations() //
 				.execute(new StatementCallback(delete)) //

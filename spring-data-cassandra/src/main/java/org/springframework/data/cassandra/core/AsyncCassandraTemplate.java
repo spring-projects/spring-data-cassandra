@@ -312,8 +312,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return select(getStatementFactory().select(query, getRequiredPersistentEntity(entityClass)),
-				entityClass);
+		return select(getStatementFactory().select(query, getRequiredPersistentEntity(entityClass)), entityClass);
 	}
 
 	/* (non-Javadoc)
@@ -325,8 +324,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return slice(this.statementFactory.select(query, getRequiredPersistentEntity(entityClass)),
-				entityClass);
+		return slice(this.statementFactory.select(query, getRequiredPersistentEntity(entityClass)), entityClass);
 	}
 
 	/* (non-Javadoc)
@@ -340,8 +338,8 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 		Assert.notNull(entityConsumer, "Entity Consumer must not be empty");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return select(getStatementFactory().select(query, getRequiredPersistentEntity(entityClass)),
-				entityConsumer, entityClass);
+		return select(getStatementFactory().select(query, getRequiredPersistentEntity(entityClass)), entityConsumer,
+				entityClass);
 	}
 
 	/* (non-Javadoc)
@@ -353,8 +351,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return selectOne(getStatementFactory().select(query, getRequiredPersistentEntity(entityClass)),
-				entityClass);
+		return selectOne(getStatementFactory().select(query, getRequiredPersistentEntity(entityClass)), entityClass);
 	}
 
 	/* (non-Javadoc)
@@ -368,8 +365,8 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 		Assert.notNull(update, "Update must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return getAsyncCqlOperations().execute(
-				getStatementFactory().update(query, update, getRequiredPersistentEntity(entityClass)));
+		return getAsyncCqlOperations()
+				.execute(getStatementFactory().update(query, update, getRequiredPersistentEntity(entityClass)));
 	}
 
 	/* (non-Javadoc)
@@ -482,7 +479,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 
 		return new MappingListenableFutureAdapter<>(
 				getAsyncCqlOperations().query(select, (row, rowNum) -> mapper.apply(row)),
-						it -> it.isEmpty() ? null : (T) it.get(0));
+				it -> it.isEmpty() ? null : (T) it.get(0));
 	}
 
 	/* (non-Javadoc)
@@ -533,8 +530,9 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 		Assert.notNull(entity, "Entity must not be null");
 		Assert.notNull(options, "UpdateOptions must not be null");
 
-		CqlIdentifier tableName = getTableName(entity);
-		Update update = EntityQueryUtils.createUpdateQuery(tableName.toCql(), entity, options, getConverter());
+		CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
+		CqlIdentifier tableName = persistentEntity.getTableName();
+		Update update = getStatementFactory().update(entity, options, getConverter(), persistentEntity, tableName);
 
 		maybeEmitEvent(new BeforeSaveEvent<>(entity, tableName, update));
 
@@ -562,8 +560,9 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 		Assert.notNull(entity, "Entity must not be null");
 		Assert.notNull(options, "QueryOptions must not be null");
 
-		CqlIdentifier tableName = getTableName(entity);
-		Delete delete = EntityQueryUtils.createDeleteQuery(tableName.toCql(), entity, options, getConverter());
+		CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
+		CqlIdentifier tableName = persistentEntity.getTableName();
+		Delete delete = getStatementFactory().delete(entity, options, getConverter(), persistentEntity, tableName);
 
 		maybeEmitEvent(new BeforeDeleteEvent<>(delete, entity.getClass(), tableName));
 

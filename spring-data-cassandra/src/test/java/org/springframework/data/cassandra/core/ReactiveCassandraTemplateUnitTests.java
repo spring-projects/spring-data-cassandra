@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.core;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.data.cassandra.core.query.Criteria.*;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -34,7 +35,9 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.cassandra.ReactiveResultSet;
 import org.springframework.data.cassandra.ReactiveSession;
+import org.springframework.data.cassandra.core.query.Filter;
 import org.springframework.data.cassandra.core.query.Query;
+import org.springframework.data.cassandra.core.query.Update;
 import org.springframework.data.cassandra.domain.User;
 
 import com.datastax.driver.core.ColumnDefinitions;
@@ -261,6 +264,76 @@ public class ReactiveCassandraTemplateUnitTests {
 				.isEqualTo("UPDATE users SET firstname='Walter',lastname='White' WHERE id='heisenberg';");
 	}
 
+	@Test // DATACASS-575
+	public void updateShouldUpdateEntityWithOptions() {
+
+		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
+
+		UpdateOptions updateOptions = UpdateOptions.builder().withIfExists().build();
+		User user = new User("heisenberg", "Walter", "White");
+
+		template.update(user, updateOptions) //
+				.as(StepVerifier::create) //
+				.expectNextCount(1) //
+				.verifyComplete();
+
+		verify(session).execute(statementCaptor.capture());
+		assertThat(statementCaptor.getValue().toString())
+				.isEqualTo("UPDATE users SET firstname='Walter',lastname='White' WHERE id='heisenberg' IF EXISTS;");
+	}
+
+	@Test // DATACASS-575
+	public void updateShouldUpdateEntityWithLwt() {
+
+		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
+
+		UpdateOptions options = UpdateOptions.builder().ifCondition(where("firstname").is("Walter")).build();
+		User user = new User("heisenberg", "Walter", "White");
+
+		template.update(user, options) //
+				.as(StepVerifier::create) //
+				.expectNextCount(1) //
+				.verifyComplete();
+
+		verify(session).execute(statementCaptor.capture());
+		assertThat(statementCaptor.getValue().toString())
+				.isEqualTo("UPDATE users SET firstname='Walter',lastname='White' WHERE id='heisenberg' IF firstname='Walter';");
+	}
+
+	@Test // DATACASS-575
+	public void updateShouldApplyUpdateQuery() {
+
+		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
+
+		template.update(Query.query(where("id").is("heisenberg")), Update.update("firstname", "Walter"), User.class) //
+				.as(StepVerifier::create) //
+				.expectNextCount(1) //
+				.verifyComplete();
+
+		verify(session).execute(statementCaptor.capture());
+		assertThat(statementCaptor.getValue().toString())
+				.isEqualTo("UPDATE users SET firstname='Walter' WHERE id='heisenberg';");
+	}
+
+	@Test // DATACASS-575
+	public void updateShouldApplyUpdateQueryWitLwt() {
+
+		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
+
+		Filter ifCondition = Filter.from(where("firstname").is("Walter"), where("lastname").is("White"));
+		Query query = Query.query(where("id").is("heisenberg"))
+				.queryOptions(UpdateOptions.builder().ifCondition(ifCondition).build());
+
+		template.update(query, Update.update("firstname", "Walter"), User.class) //
+				.as(StepVerifier::create) //
+				.expectNextCount(1) //
+				.verifyComplete();
+
+		verify(session).execute(statementCaptor.capture());
+		assertThat(statementCaptor.getValue().toString()).isEqualTo(
+				"UPDATE users SET firstname='Walter' WHERE id='heisenberg' IF firstname='Walter' AND lastname='White';");
+	}
+
 	@Test // DATACASS-335
 	public void deleteShouldRemoveEntity() {
 
@@ -273,6 +346,42 @@ public class ReactiveCassandraTemplateUnitTests {
 
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("DELETE FROM users WHERE id='heisenberg';");
+	}
+
+	@Test // DATACASS-575
+	public void deleteShouldRemoveEntityWithLwt() {
+
+		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
+
+		User user = new User("heisenberg", "Walter", "White");
+		DeleteOptions options = DeleteOptions.builder().ifCondition(where("firstname").is("Walter")).build();
+
+		template.delete(user, options) //
+				.as(StepVerifier::create) //
+				.expectNextCount(1) //
+				.verifyComplete();
+
+		verify(session).execute(statementCaptor.capture());
+		assertThat(statementCaptor.getValue().toString())
+				.isEqualTo("DELETE FROM users WHERE id='heisenberg' IF firstname='Walter';");
+	}
+
+	@Test // DATACASS-575
+	public void deleteShouldRemoveByQueryWithLwt() {
+
+		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
+
+		DeleteOptions options = DeleteOptions.builder().ifCondition(where("firstname").is("Walter")).build();
+		Query query = Query.query(where("id").is("heisenberg")).queryOptions(options);
+
+		template.delete(query, User.class) //
+				.as(StepVerifier::create) //
+				.expectNextCount(1) //
+				.verifyComplete();
+
+		verify(session).execute(statementCaptor.capture());
+		assertThat(statementCaptor.getValue().toString())
+				.isEqualTo("DELETE FROM users WHERE id='heisenberg' IF firstname='Walter';");
 	}
 
 	@Test // DATACASS-335

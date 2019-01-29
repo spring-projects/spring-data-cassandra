@@ -16,10 +16,9 @@
 package org.springframework.data.cassandra.core;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.data.cassandra.core.query.Criteria.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,7 +36,9 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.cassandra.CassandraConnectionFailureException;
+import org.springframework.data.cassandra.core.query.Filter;
 import org.springframework.data.cassandra.core.query.Query;
+import org.springframework.data.cassandra.core.query.Update;
 import org.springframework.data.cassandra.domain.User;
 import org.springframework.util.concurrent.ListenableFuture;
 
@@ -298,6 +299,56 @@ public class AsyncCassandraTemplateUnitTests {
 				.isEqualTo("UPDATE users SET firstname='Walter',lastname='White' WHERE id='heisenberg';");
 	}
 
+	@Test // DATACASS-575
+	public void updateShouldUpdateEntityWithOptions() {
+
+		UpdateOptions updateOptions = UpdateOptions.builder().withIfExists().build();
+		User user = new User("heisenberg", "Walter", "White");
+
+		template.update(user, updateOptions);
+
+		verify(session).executeAsync(statementCaptor.capture());
+		assertThat(statementCaptor.getValue().toString())
+				.isEqualTo("UPDATE users SET firstname='Walter',lastname='White' WHERE id='heisenberg' IF EXISTS;");
+	}
+
+	@Test // DATACASS-575
+	public void updateShouldUpdateEntityWithLwt() {
+
+		UpdateOptions options = UpdateOptions.builder().ifCondition(where("firstname").is("Walter")).build();
+		User user = new User("heisenberg", "Walter", "White");
+
+		template.update(user, options);
+
+		verify(session).executeAsync(statementCaptor.capture());
+		assertThat(statementCaptor.getValue().toString())
+				.isEqualTo("UPDATE users SET firstname='Walter',lastname='White' WHERE id='heisenberg' IF firstname='Walter';");
+	}
+
+	@Test // DATACASS-575
+	public void updateShouldApplyUpdateQuery() {
+
+		template.update(Query.query(where("id").is("heisenberg")), Update.update("firstname", "Walter"), User.class);
+
+		verify(session).executeAsync(statementCaptor.capture());
+		assertThat(statementCaptor.getValue().toString())
+				.isEqualTo("UPDATE users SET firstname='Walter' WHERE id='heisenberg';");
+	}
+
+	@Test // DATACASS-575
+	public void updateShouldApplyUpdateQueryWitLwt() {
+
+		Filter ifCondition = Filter.from(where("firstname").is("Walter"), where("lastname").is("White"));
+		Query query = Query.query(where("id").is("heisenberg"))
+				.queryOptions(UpdateOptions.builder().ifCondition(ifCondition).build());
+
+		template.update(query, Update.update("firstname", "Walter"), User.class);
+
+		verify(session).executeAsync(statementCaptor.capture());
+		assertThat(statementCaptor.getValue().toString()).isEqualTo(
+				"UPDATE users SET firstname='Walter' WHERE id='heisenberg' IF firstname='Walter' AND lastname='White';");
+	}
+
 	@Test // DATACASS-292
 	public void updateShouldTranslateException() throws Exception {
 
@@ -343,6 +394,32 @@ public class AsyncCassandraTemplateUnitTests {
 		assertThat(getUninterruptibly(future)).isEqualTo(user);
 		verify(session).executeAsync(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("DELETE FROM users WHERE id='heisenberg';");
+	}
+
+	@Test // DATACASS-575
+	public void deleteShouldRemoveEntityWithLwt() {
+
+		User user = new User("heisenberg", "Walter", "White");
+		DeleteOptions options = DeleteOptions.builder().ifCondition(where("firstname").is("Walter")).build();
+
+		template.delete(user, options);
+
+		verify(session).executeAsync(statementCaptor.capture());
+		assertThat(statementCaptor.getValue().toString())
+				.isEqualTo("DELETE FROM users WHERE id='heisenberg' IF firstname='Walter';");
+	}
+
+	@Test // DATACASS-575
+	public void deleteShouldRemoveByQueryWithLwt() {
+
+		DeleteOptions options = DeleteOptions.builder().ifCondition(where("firstname").is("Walter")).build();
+		Query query = Query.query(where("id").is("heisenberg")).queryOptions(options);
+
+		template.delete(query, User.class);
+
+		verify(session).executeAsync(statementCaptor.capture());
+		assertThat(statementCaptor.getValue().toString())
+				.isEqualTo("DELETE FROM users WHERE id='heisenberg' IF firstname='Walter';");
 	}
 
 	@Test // DATACASS-292

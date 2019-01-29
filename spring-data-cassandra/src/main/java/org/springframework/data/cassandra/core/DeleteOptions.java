@@ -22,7 +22,10 @@ import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.data.cassandra.core.cql.WriteOptions;
+import org.springframework.data.cassandra.core.query.CriteriaDefinition;
+import org.springframework.data.cassandra.core.query.Filter;
 import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
 
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.policies.RetryPolicy;
@@ -38,15 +41,18 @@ public class DeleteOptions extends WriteOptions {
 
 	private static final DeleteOptions EMPTY = new DeleteOptionsBuilder().build();
 
-	private boolean ifExists;
+	private final boolean ifExists;
+
+	private final @Nullable Filter ifCondition;
 
 	private DeleteOptions(@Nullable ConsistencyLevel consistencyLevel, @Nullable RetryPolicy retryPolicy,
 			@Nullable Boolean tracing, @Nullable Integer fetchSize, Duration readTimeout, Duration ttl,
-			@Nullable Long timestamp, boolean ifExists) {
+			@Nullable Long timestamp, boolean ifExists, @Nullable Filter ifCondition) {
 
 		super(consistencyLevel, retryPolicy, tracing, fetchSize, readTimeout, ttl, timestamp);
 
 		this.ifExists = ifExists;
+		this.ifCondition = ifCondition;
 	}
 
 	/**
@@ -78,10 +84,18 @@ public class DeleteOptions extends WriteOptions {
 	}
 
 	/**
-	 * @return {@literal true} to apply {@code IF EXISTS} to {@code UPDATE} operations.
+	 * @return {@literal true} to apply {@code IF EXISTS} to {@code DELETE} operations.
 	 */
 	public boolean isIfExists() {
 		return this.ifExists;
+	}
+
+	/**
+	 * @return the {@link Filter IF condition} for conditional deletes.
+	 */
+	@Nullable
+	public Filter getIfCondition() {
+		return ifCondition;
 	}
 
 	/**
@@ -92,6 +106,8 @@ public class DeleteOptions extends WriteOptions {
 	public static class DeleteOptionsBuilder extends WriteOptionsBuilder {
 
 		private boolean ifExists;
+
+		private @Nullable Filter ifCondition;
 
 		private DeleteOptionsBuilder() {}
 
@@ -223,7 +239,7 @@ public class DeleteOptions extends WriteOptions {
 		}
 
 		/**
-		 * Use light-weight transactions by applying {@code IF EXISTS}.
+		 * Use light-weight transactions by applying {@code IF EXISTS}. Replaces a previous {@link #ifCondition(Filter)}.
 		 *
 		 * @return {@code this} {@link DeleteOptionsBuilder}
 		 */
@@ -232,7 +248,7 @@ public class DeleteOptions extends WriteOptions {
 		}
 
 		/**
-		 * Use light-weight transactions by applying {@code IF EXISTS}.
+		 * Use light-weight transactions by applying {@code IF EXISTS}. Replaces a previous {@link #ifCondition(Filter)}.
 		 *
 		 * @param ifNotExists {@literal true} to enable {@code IF EXISTS}.
 		 * @return {@code this} {@link DeleteOptionsBuilder}
@@ -240,6 +256,38 @@ public class DeleteOptions extends WriteOptions {
 		public DeleteOptionsBuilder ifExists(boolean ifNotExists) {
 
 			this.ifExists = ifNotExists;
+			this.ifCondition = null;
+
+			return this;
+		}
+
+		/**
+		 * Use light-weight transactions by applying {@code IF} {@link CriteriaDefinition condition}. Replaces a previous
+		 * {@link #ifCondition(Filter)} and {@link #ifExists(boolean)}.
+		 *
+		 * @param criteria the {@link Filter criteria} to apply for conditional updates, must not be {@literal null}.
+		 * @return {@code this} {@link DeleteOptionsBuilder}
+		 */
+		public DeleteOptionsBuilder ifCondition(CriteriaDefinition criteria) {
+
+			Assert.notNull(criteria, "CriteriaDefinition must not be null");
+
+			return ifCondition(Filter.from(criteria));
+		}
+
+		/**
+		 * Use light-weight transactions by applying {@code IF} {@link Filter condition}. Replaces a previous
+		 * {@link #ifCondition(Filter)} and {@link #ifExists(boolean)}.
+		 *
+		 * @param condition the {@link Filter condition} to apply for conditional deletes, must not be {@literal null}.
+		 * @return {@code this} {@link DeleteOptionsBuilder}
+		 */
+		public DeleteOptionsBuilder ifCondition(Filter condition) {
+
+			Assert.notNull(condition, "Filter condition must not be null");
+
+			this.ifCondition = condition;
+			this.ifExists = false;
 
 			return this;
 		}
@@ -251,7 +299,7 @@ public class DeleteOptions extends WriteOptions {
 		 */
 		public DeleteOptions build() {
 			return new DeleteOptions(this.consistencyLevel, this.retryPolicy, this.tracing, this.fetchSize, this.readTimeout,
-					this.ttl, this.timestamp, this.ifExists);
+					this.ttl, this.timestamp, this.ifExists, this.ifCondition);
 		}
 	}
 }

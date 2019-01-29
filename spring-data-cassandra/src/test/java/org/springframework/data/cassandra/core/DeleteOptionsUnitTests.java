@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,45 +24,41 @@ import org.junit.Test;
 import org.springframework.data.cassandra.core.query.Query;
 
 /**
- * Unit tests for {@link UpdateOptions}.
+ * Unit tests for {@link DeleteOptions}.
  *
  * @author Mark Paluch
- * @author Lukasz Antoniak
  */
-public class UpdateOptionsUnitTests {
+public class DeleteOptionsUnitTests {
 
-	@Test // DATACASS-250, DATACASS-155
-	public void shouldConfigureUpdateOptions() {
+	@Test // DATACASS-575
+	public void shouldConfigureDeleteOptions() {
 
 		Instant now = Instant.ofEpochSecond(1234);
 
-		UpdateOptions updateOptions = UpdateOptions.builder() //
+		DeleteOptions deleteOptions = DeleteOptions.builder() //
 				.ttl(10) //
 				.timestamp(now) //
 				.withIfExists() //
 				.build();
 
-		assertThat(updateOptions.getTtl()).isEqualTo(Duration.ofSeconds(10));
-		assertThat(updateOptions.getTimestamp()).isEqualTo(now.toEpochMilli() * 1000);
-		assertThat(updateOptions.isIfExists()).isTrue();
+		assertThat(deleteOptions.getTtl()).isEqualTo(Duration.ofSeconds(10));
+		assertThat(deleteOptions.getTimestamp()).isEqualTo(now.toEpochMilli() * 1000);
+		assertThat(deleteOptions.isIfExists()).isTrue();
 	}
 
-	@Test // DATACASS-56, DATACASS-155
-	public void buildUpdateOptionsMutate() {
+	@Test // DATACASS-575
+	public void buildDeleteOptionsMutate() {
 
-		UpdateOptions updateOptions = UpdateOptions.builder() //
+		DeleteOptions deleteOptions = DeleteOptions.builder() //
 				.ttl(10) //
 				.timestamp(1519222753) //
 				.withIfExists() //
 				.build();
 
-		UpdateOptions mutated = updateOptions.mutate() //
-				.ttl(20) //
-				.timestamp(1519000753) //
-				.build();
+		DeleteOptions mutated = deleteOptions.mutate().ttl(20).timestamp(1519000753).build();
 
 		assertThat(mutated).isNotNull();
-		assertThat(mutated).isNotSameAs(updateOptions);
+		assertThat(mutated).isNotSameAs(deleteOptions);
 		assertThat(mutated.getTtl()).isEqualTo(Duration.ofSeconds(20));
 		assertThat(mutated.getTimestamp()).isEqualTo(1519000753);
 		assertThat(mutated.isIfExists()).isTrue();
@@ -71,12 +67,12 @@ public class UpdateOptionsUnitTests {
 	@Test // DATACASS-575
 	public void shouldApplyFilterCondition() {
 
-		UpdateOptions updateOptions = UpdateOptions.builder() //
+		DeleteOptions deleteOptions = DeleteOptions.builder() //
 				.withIfExists() //
 				.ifCondition(Query.empty()) //
 				.build();
 
-		assertThat(updateOptions.isIfExists()).isFalse();
-		assertThat(updateOptions.getIfCondition()).isEqualTo(Query.empty());
+		assertThat(deleteOptions.isIfExists()).isFalse();
+		assertThat(deleteOptions.getIfCondition()).isEqualTo(Query.empty());
 	}
 }

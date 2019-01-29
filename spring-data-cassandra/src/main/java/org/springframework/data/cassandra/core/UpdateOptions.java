@@ -22,7 +22,10 @@ import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.data.cassandra.core.cql.WriteOptions;
+import org.springframework.data.cassandra.core.query.CriteriaDefinition;
+import org.springframework.data.cassandra.core.query.Filter;
 import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
 
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.policies.RetryPolicy;
@@ -39,15 +42,18 @@ public class UpdateOptions extends WriteOptions {
 
 	private static final UpdateOptions EMPTY = new UpdateOptionsBuilder().build();
 
-	private boolean ifExists;
+	private final boolean ifExists;
+
+	private final @Nullable Filter ifCondition;
 
 	private UpdateOptions(@Nullable ConsistencyLevel consistencyLevel, @Nullable RetryPolicy retryPolicy,
 			@Nullable Boolean tracing, @Nullable Integer fetchSize, Duration readTimeout, Duration ttl,
-			@Nullable Long timestamp, boolean ifExists) {
+			@Nullable Long timestamp, boolean ifExists, @Nullable Filter ifCondition) {
 
 		super(consistencyLevel, retryPolicy, tracing, fetchSize, readTimeout, ttl, timestamp);
 
 		this.ifExists = ifExists;
+		this.ifCondition = ifCondition;
 	}
 
 	/**
@@ -87,6 +93,15 @@ public class UpdateOptions extends WriteOptions {
 	}
 
 	/**
+	 * @return the {@link Filter IF condition} for conditional updates.
+	 * @since 2.2
+	 */
+	@Nullable
+	public Filter getIfCondition() {
+		return ifCondition;
+	}
+
+	/**
 	 * Builder for {@link UpdateOptions}.
 	 *
 	 * @author Mark Paluch
@@ -97,6 +112,8 @@ public class UpdateOptions extends WriteOptions {
 
 		private boolean ifExists;
 
+		private @Nullable Filter ifCondition;
+
 		private UpdateOptionsBuilder() {}
 
 		private UpdateOptionsBuilder(UpdateOptions updateOptions) {
@@ -104,6 +121,7 @@ public class UpdateOptions extends WriteOptions {
 			super(updateOptions);
 
 			this.ifExists = updateOptions.ifExists;
+			this.ifCondition = updateOptions.ifCondition;
 		}
 
 		/* (non-Javadoc)
@@ -227,7 +245,7 @@ public class UpdateOptions extends WriteOptions {
 		}
 
 		/**
-		 * Use light-weight transactions by applying {@code IF EXISTS}.
+		 * Use light-weight transactions by applying {@code IF EXISTS}. Replaces a previous {@link #ifCondition(Filter)}.
 		 *
 		 * @return {@code this} {@link UpdateOptionsBuilder}
 		 */
@@ -236,7 +254,7 @@ public class UpdateOptions extends WriteOptions {
 		}
 
 		/**
-		 * Use light-weight transactions by applying {@code IF EXISTS}.
+		 * Use light-weight transactions by applying {@code IF EXISTS}. Replaces a previous {@link #ifCondition(Filter)}.
 		 *
 		 * @param ifNotExists {@literal true} to enable {@code IF EXISTS}.
 		 * @return {@code this} {@link UpdateOptionsBuilder}
@@ -244,6 +262,40 @@ public class UpdateOptions extends WriteOptions {
 		public UpdateOptionsBuilder ifExists(boolean ifNotExists) {
 
 			this.ifExists = ifNotExists;
+			this.ifCondition = null;
+
+			return this;
+		}
+
+		/**
+		 * Use light-weight transactions by applying {@code IF} {@link CriteriaDefinition condition}. Replaces a previous
+		 * {@link #ifCondition(Filter)} and {@link #ifExists(boolean)}.
+		 *
+		 * @param criteria the {@link Filter criteria} to apply for conditional updates, must not be {@literal null}.
+		 * @return {@code this} {@link UpdateOptionsBuilder}
+		 * @since 2.2
+		 */
+		public UpdateOptionsBuilder ifCondition(CriteriaDefinition criteria) {
+
+			Assert.notNull(criteria, "CriteriaDefinition must not be null");
+
+			return ifCondition(Filter.from(criteria));
+		}
+
+		/**
+		 * Use light-weight transactions by applying {@code IF} {@link Filter condition}. Replaces a previous
+		 * {@link #ifCondition(Filter)} and {@link #ifExists(boolean)}.
+		 *
+		 * @param condition the {@link Filter condition} to apply for conditional updates, must not be {@literal null}.
+		 * @return {@code this} {@link UpdateOptionsBuilder}
+		 * @since 2.2
+		 */
+		public UpdateOptionsBuilder ifCondition(Filter condition) {
+
+			Assert.notNull(condition, "Filter condition must not be null");
+
+			this.ifCondition = condition;
+			this.ifExists = false;
 
 			return this;
 		}
@@ -255,7 +307,7 @@ public class UpdateOptions extends WriteOptions {
 		 */
 		public UpdateOptions build() {
 			return new UpdateOptions(this.consistencyLevel, this.retryPolicy, this.tracing, this.fetchSize, this.readTimeout,
-					this.ttl, this.timestamp, this.ifExists);
+					this.ttl, this.timestamp, this.ifExists, this.ifCondition);
 		}
 	}
 }
