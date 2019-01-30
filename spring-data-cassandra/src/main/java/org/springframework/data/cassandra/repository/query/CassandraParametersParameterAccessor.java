@@ -66,8 +66,7 @@ public class CassandraParametersParameterAccessor extends ParametersParameterAcc
 				: CassandraSimpleTypeHolder.getDataTypeFor(getParameterType(index)));
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.repository.query.CassandraParameterAccessor#findCassandraType(int)
 	 */
 	@Nullable
@@ -75,8 +74,7 @@ public class CassandraParametersParameterAccessor extends ParametersParameterAcc
 		return getParameters().getParameter(index).getCassandraType();
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.repository.query.CassandraParameterAccessor#getParameterType(int)
 	 */
 	@Override
@@ -84,8 +82,7 @@ public class CassandraParametersParameterAccessor extends ParametersParameterAcc
 		return getParameters().getParameter(index).getType();
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.springframework.data.repository.query.ParametersParameterAccessor#getParameters()
 	 */
 	@Override
@@ -93,18 +90,16 @@ public class CassandraParametersParameterAccessor extends ParametersParameterAcc
 		return (CassandraParameters) super.getParameters();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mongodb.repository.query.CassandraParameterAccessor#getValues()
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.repository.query.CassandraParameterAccessor#getValues()
 	 */
 	@Override
 	public Object[] getValues() {
 		return this.values.toArray();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mongodb.repository.query.CassandraParameterAccessor#getQueryOptions()
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.repository.query.CassandraParameterAccessor#getQueryOptions()
 	 */
 	@Nullable
 	@Override
