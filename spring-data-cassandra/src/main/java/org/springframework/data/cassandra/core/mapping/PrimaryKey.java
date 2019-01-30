@@ -29,9 +29,14 @@ import org.springframework.data.annotation.Id;
  * <p/>
  * Remember, if the Cassandra table has multiple primary key columns, then you must define a class annotated with
  * {@link PrimaryKeyClass} to represent the primary key!
+ * <p/>
+ * Use {@link PrimaryKeyColumn} in conjunction with {@link Id} to specify extended primary key column properties.
  *
  * @author Alex Shvid
  * @author Matthew T. Adams
+ * @author Mark Paluch
+ * @see Id
+ * @see PrimaryKeyColumn
  */
 @Retention(value = RetentionPolicy.RUNTIME)
 @Target(value = { ElementType.ANNOTATION_TYPE, ElementType.FIELD, ElementType.METHOD })

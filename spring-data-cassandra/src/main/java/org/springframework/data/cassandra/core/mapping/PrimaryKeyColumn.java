@@ -26,10 +26,15 @@ import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 
 /**
  * Identifies the annotated field of a composite primary key class as a primary key field that is either a partition or
- * cluster key field.
+ * cluster key field. Annotated properties must be either reside in a {@link PrimaryKeyClass} to be part of the
+ * composite key or annotated with {@link org.springframework.data.annotation.Id} to identify a single property as
+ * primary key column.
  *
  * @author Matthew T. Adams
  * @author Mark Paluch
+ * @see org.springframework.data.annotation.Id
+ * @see PrimaryKey
+ * @see PrimaryKeyClass
  */
 @Retention(value = RetentionPolicy.RUNTIME)
 @Target(value = { ElementType.ANNOTATION_TYPE, ElementType.FIELD, ElementType.METHOD })

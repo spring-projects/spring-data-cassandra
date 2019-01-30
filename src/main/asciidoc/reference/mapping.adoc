@@ -410,7 +410,7 @@ You can specify the name of the table where the object is stored.
 * `@PrimaryKey`: Similar to `@Id` but lets you specify the column name.
 * `@PrimaryKeyColumn`: Cassandra-specific annotation for primary key columns that lets you specify
 primary key column attributes, such as for clustered or partitioned. Can be used on single and multiple attributes
-to indicate either a single or a composite (compound) primary key.
+to indicate either a single or a composite (compound) primary key. If used on a property within the entity, make sure to apply the `@Id` annotation as well.
 * `@PrimaryKeyClass`: Applied at the class level to indicate that this class is a compound primary key class.
 Must be referenced with `@PrimaryKey` in the entity class.
 * `@Transient`: By default, all private fields are mapped to the row. This annotation excludes the field
