@@ -60,7 +60,6 @@ public class ReactiveCassandraRepositoryFactoryUnitTests {
 	public void usesMappingCassandraEntityInformationIfMappingContextSet() {
 
 		when(mappingContext.getRequiredPersistentEntity(Person.class)).thenReturn(entity);
-		when(entity.getType()).thenReturn(Person.class);
 
 		ReactiveCassandraRepositoryFactory repositoryFactory = new ReactiveCassandraRepositoryFactory(template);
 
@@ -74,7 +73,6 @@ public class ReactiveCassandraRepositoryFactoryUnitTests {
 	public void createsRepositoryWithIdTypeLong() {
 
 		when(mappingContext.getRequiredPersistentEntity(Person.class)).thenReturn(entity);
-		when(entity.getType()).thenReturn(Person.class);
 
 		ReactiveCassandraRepositoryFactory repositoryFactory = new ReactiveCassandraRepositoryFactory(template);
 		MyPersonRepository repository = repositoryFactory.getRepository(MyPersonRepository.class);

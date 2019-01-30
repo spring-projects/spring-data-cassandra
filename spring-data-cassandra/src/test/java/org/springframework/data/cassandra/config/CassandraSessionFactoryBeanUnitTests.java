@@ -16,8 +16,7 @@
 package org.springframework.data.cassandra.config;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.cassandra.config.CassandraSessionFactoryBean.*;
 
@@ -29,6 +28,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
+import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
@@ -55,6 +55,7 @@ public class CassandraSessionFactoryBeanUnitTests {
 	public void setup() {
 
 		when(mockCluster.connect()).thenReturn(mockSession);
+		when(mockConverter.getMappingContext()).thenReturn(new CassandraMappingContext());
 
 		factoryBean = spy(new CassandraSessionFactoryBean());
 		factoryBean.setCluster(mockCluster);

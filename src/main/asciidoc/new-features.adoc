@@ -10,6 +10,7 @@ This chapter summarizes changes and new features for each release.
 * Kotlin Coroutine extensions for `ReactiveFluentCassandraOperations`.
 * Lightweight transaction support via `DeleteOptions` using the Template API.
 * Filter conditions for lightweight transaction update and delete (`UPDATE … IF <condition>`, `DELETE … IF <condition>`).
+* Optimistic Locking support.
 
 [[new-features.2-1-0]]
 == What's new in Spring Data for Apache Cassandra 2.1

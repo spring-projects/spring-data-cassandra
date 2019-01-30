@@ -1167,6 +1167,45 @@ You can use the following overloaded methods to remove an object from the databa
 * `T` *delete* `(T entity, QueryOptions queryOptions)`: Deletes the given object applying `QueryOptions`.
 * `boolean` *deleteById* `(Object id, Class<?> entityClass)`: Deletes the object using the given Id.
 
+[[cassandra.template.optimistic-locking]]
+=== Optimistic Locking
+
+The `@Version` annotation provides syntax similar to that of JPA in the context of Cassandra and makes sure updates are only applied to rows with a matching version.
+Optimistic Locking leverages Cassandra's lightweight transactions to conditionally insert, update and delete rows.
+Therefore, `INSERT` statements are executed with the `IF NOT EXISTS` condition.
+For updates and deletes, the actual value of the version property is added to the `UPDATE` condition in such a way that the modification does not have any effect if another operation altered the row in the meantime.
+In that case, an `OptimisticLockingFailureException` is thrown.
+The following example shows these features:
+
+====
+[source,java]
+----
+@Table
+class Person {
+
+  @Id String id;
+  String firstname;
+  String lastname;
+  @Version Long version;
+}
+
+Person daenerys = template.insert(new Person("Daenerys"));                            <1>
+
+Person tmp = template.findOne(query(where("id").is(daenerys.getId())), Person.class); <2>
+
+daenerys.setLastname("Targaryen");
+template.save(daenerys);                                                              <3>
+
+template.save(tmp); // throws OptimisticLockingFailureException                       <4>
+----
+<1> Intially insert document. `version` is set to `0`.
+<2> Load the just inserted document. `version` is still `0`.
+<3> Update the document with `version = 0`. Set the `lastname` and bump `version` to `1`.
+<4> Try to update the previously loaded document that still has `version = 0`. The operation fails with an `OptimisticLockingFailureException`, as the current `version` is `1`.
+====
+
+NOTE: Optimistic Locking is only supported with single-entity operations and not for batch operations.
+
 [[cassandra.template.query]]
 == Querying Rows
 

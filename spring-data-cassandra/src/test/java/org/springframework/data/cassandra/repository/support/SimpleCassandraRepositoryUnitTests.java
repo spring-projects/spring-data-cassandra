@@ -29,6 +29,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.EntityWriteResult;
 import org.springframework.data.cassandra.core.InsertOptions;
@@ -71,6 +72,7 @@ public class SimpleCassandraRepositoryUnitTests {
 	@Before
 	public void before() {
 		mappingContext.setUserTypeResolver(userTypeResolver);
+		when(cassandraOperations.getConverter()).thenReturn(converter);
 	}
 
 	@Test // DATACASS-428, DATACASS-560, DATACASS-573
@@ -89,6 +91,41 @@ public class SimpleCassandraRepositoryUnitTests {
 		repository.save(person);
 
 		verify(cassandraOperations).insert(person, InsertOptions.builder().withInsertNulls().build());
+	}
+
+	@Test // DATACASS-576
+	public void shouldInsertNewVersionedEntity() {
+
+		when(cassandraOperations.insert(any(), any(InsertOptions.class))).thenReturn(writeResult);
+
+		CassandraPersistentEntity<?> entity = converter.getMappingContext()
+				.getRequiredPersistentEntity(VersionedPerson.class);
+
+		repository = new SimpleCassandraRepository<Object, String>(new MappingCassandraEntityInformation(entity, converter),
+				cassandraOperations);
+
+		VersionedPerson versionedPerson = new VersionedPerson();
+
+		repository.save(versionedPerson);
+
+		verify(cassandraOperations).insert(versionedPerson, InsertOptions.builder().withInsertNulls().build());
+	}
+
+	@Test // DATACASS-576
+	public void shouldUpdateExistingVersionedEntity() {
+
+		CassandraPersistentEntity<?> entity = converter.getMappingContext()
+				.getRequiredPersistentEntity(VersionedPerson.class);
+
+		repository = new SimpleCassandraRepository<Object, String>(new MappingCassandraEntityInformation(entity, converter),
+				cassandraOperations);
+
+		VersionedPerson versionedPerson = new VersionedPerson();
+		versionedPerson.setVersion(2);
+
+		repository.save(versionedPerson);
+
+		verify(cassandraOperations).update(versionedPerson);
 	}
 
 	@Test // DATACASS-428, DATACASS-560, DATACASS-573
@@ -166,4 +203,12 @@ public class SimpleCassandraRepositoryUnitTests {
 
 		@Id String id;
 	}
+
+	@Data
+	static class VersionedPerson {
+
+		@Id String id;
+		@Version long version;
+	}
+
 }

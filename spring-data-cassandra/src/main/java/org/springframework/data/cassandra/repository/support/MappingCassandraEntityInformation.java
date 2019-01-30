@@ -21,7 +21,7 @@ import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.mapping.MapId;
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;
-import org.springframework.data.repository.core.support.AbstractEntityInformation;
+import org.springframework.data.repository.core.support.PersistentEntityInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -33,7 +33,7 @@ import org.springframework.util.Assert;
  * @author Matthew T. Adams
  * @author Mark Paluch
  */
-public class MappingCassandraEntityInformation<T, ID> extends AbstractEntityInformation<T, ID>
+public class MappingCassandraEntityInformation<T, ID> extends PersistentEntityInformation<T, ID>
 		implements CassandraEntityInformation<T, ID> {
 
 	private final CassandraPersistentEntity<T> entityMetadata;
@@ -47,7 +47,7 @@ public class MappingCassandraEntityInformation<T, ID> extends AbstractEntityInfo
 	 */
 	public MappingCassandraEntityInformation(CassandraPersistentEntity<T> entity, CassandraConverter converter) {
 
-		super(entity.getType());
+		super(entity);
 
 		this.entityMetadata = entity;
 		this.converter = converter;
