@@ -43,11 +43,8 @@ import org.springframework.data.repository.Repository;
 public class ReactiveCassandraRepositoryFactoryUnitTests {
 
 	@Mock CassandraConverter converter;
-
 	@Mock CassandraMappingContext mappingContext;
-
 	@Mock BasicCassandraPersistentEntity entity;
-
 	@Mock ReactiveCassandraTemplate template;
 
 	@Before

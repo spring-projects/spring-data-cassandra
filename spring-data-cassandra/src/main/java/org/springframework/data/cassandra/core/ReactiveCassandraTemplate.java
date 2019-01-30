@@ -801,6 +801,24 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations, A
 		return getMappingContext().getRequiredPersistentEntity(ClassUtils.getUserClass(entityType));
 	}
 
+	@SuppressWarnings("ConstantConditions")
+	private Mono<Integer> getEffectiveFetchSize(Statement statement) {
+
+		if (statement.getFetchSize() > 0) {
+			return Mono.just(statement.getFetchSize());
+		}
+
+		if (getReactiveCqlOperations() instanceof CassandraAccessor) {
+			CassandraAccessor accessor = (CassandraAccessor) getReactiveCqlOperations();
+			if (accessor.getFetchSize() != -1) {
+				return Mono.just(accessor.getFetchSize());
+			}
+		}
+
+		return getReactiveCqlOperations().execute((ReactiveSessionCallback<Integer>) session -> Mono
+				.just(session.getCluster().getConfiguration().getQueryOptions().getFetchSize())).single();
+	}
+
 	@SuppressWarnings("unchecked")
 	private <T> Function<Row, T> getMapper(Class<?> entityType, Class<T> targetType, CqlIdentifier tableName) {
 
@@ -838,24 +856,6 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations, A
 		converter.afterPropertiesSet();
 
 		return converter;
-	}
-
-	@SuppressWarnings("ConstantConditions")
-	private Mono<Integer> getEffectiveFetchSize(Statement statement) {
-
-		if (statement.getFetchSize() > 0) {
-			return Mono.just(statement.getFetchSize());
-		}
-
-		if (getReactiveCqlOperations() instanceof CassandraAccessor) {
-			CassandraAccessor accessor = (CassandraAccessor) getReactiveCqlOperations();
-			if (accessor.getFetchSize() != -1) {
-				return Mono.just(accessor.getFetchSize());
-			}
-		}
-
-		return getReactiveCqlOperations().execute((ReactiveSessionCallback<Integer>) session -> Mono
-				.just(session.getCluster().getConfiguration().getQueryOptions().getFetchSize())).single();
 	}
 
 	@Value

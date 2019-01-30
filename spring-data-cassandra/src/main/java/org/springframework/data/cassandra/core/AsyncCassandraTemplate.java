@@ -778,7 +778,6 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 		return session.getCluster().getConfiguration().getQueryOptions().getFetchSize();
 	}
 
-	@SuppressWarnings("ConstantConditions")
 	private int getEffectiveFetchSize(Statement statement) {
 
 		if (statement.getFetchSize() > 0) {

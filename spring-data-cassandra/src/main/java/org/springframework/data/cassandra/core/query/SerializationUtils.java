@@ -43,7 +43,7 @@ abstract class SerializationUtils {
 	/**
 	 * Serializes the given object into pseudo-CQL meaning it's trying to create a CQL representation as far as possible
 	 * but falling back to the given object's {@link Object#toString()} method if it's not serializable. Useful for
-	 * printing raw {@link Criteria}s containing complex values before actually converting them into Mongo native types.
+	 * printing raw {@link Criteria}s containing complex values before actually converting them into CQL native types.
 	 *
 	 * @param criteria may be {@literal null}.
 	 * @return may be {@literal null}.
@@ -64,7 +64,7 @@ abstract class SerializationUtils {
 	/**
 	 * Serializes the given object into pseudo-CQL meaning it's trying to create a CQL representation as far as possible
 	 * but falling back to the given object's {@link Object#toString()} method if it's not serializable. Useful for
-	 * printing raw {@link Criteria}s containing complex values before actually converting them into Mongo native types.
+	 * printing raw {@link Criteria}s containing complex values before actually converting them into CQL native types.
 	 *
 	 * @param value value to serialize to CQL, may be {@literal null}.
 	 * @return the value as a serialized CQL {@link String}, may be {@literal null}.
