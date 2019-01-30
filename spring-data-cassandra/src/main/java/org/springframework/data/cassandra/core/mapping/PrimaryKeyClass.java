@@ -31,6 +31,8 @@ import org.springframework.data.annotation.Persistent;
  *
  * @author Alex Shvid
  * @author Matthew T. Adams
+ * @author Mark Paluch
+ * @see PrimaryKeyColumn
  */
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
