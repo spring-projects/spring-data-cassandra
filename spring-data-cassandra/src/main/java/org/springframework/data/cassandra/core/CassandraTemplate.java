@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.core;
 import lombok.Value;
 
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -26,7 +27,9 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.cassandra.SessionFactory;
+import org.springframework.data.cassandra.core.EntityOperations.AdaptibleEntity;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.convert.QueryMapper;
@@ -101,6 +104,8 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 
 	private final SpelAwareProxyProjectionFactory projectionFactory;
 
+	private final EntityOperations operations;
+
 	private final StatementFactory statementFactory;
 
 	private @Nullable ApplicationEventPublisher eventPublisher;
@@ -164,6 +169,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		this.cqlOperations = cqlOperations;
 		this.mappingContext = converter.getMappingContext();
 		this.projectionFactory = new SpelAwareProxyProjectionFactory();
+		this.operations = new EntityOperations(converter.getMappingContext());
 		this.statementFactory = new StatementFactory(new QueryMapper(converter), new UpdateMapper(converter));
 	}
 
@@ -196,7 +202,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	 */
 	@Override
 	public CqlIdentifier getTableName(Class<?> entityClass) {
-		return getRequiredPersistentEntity(entityClass).getTableName();
+		return operations.getTableName(entityClass);
 	}
 
 	/* (non-Javadoc)
@@ -557,19 +563,36 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 
 	<T> EntityWriteResult<T> doInsert(T entity, WriteOptions options, CqlIdentifier tableName) {
 
+		AdaptibleEntity<T> source = operations.forEntity(entity, converter.getConversionService());
 		CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
 
-		Insert insert = EntityQueryUtils.createInsertQuery(tableName.toCql(), entity, options, getConverter(),
+		T entityToUse = source.isVersionedEntity() ? source.initializeVersionProperty() : entity;
+
+		Insert insert = EntityQueryUtils.createInsertQuery(tableName.toCql(), entityToUse, options, getConverter(),
 				persistentEntity);
 
-		maybeEmitEvent(new BeforeSaveEvent<>(entity, tableName, insert));
+		if (source.isVersionedEntity()) {
+			return doInsertVersioned(insert.ifNotExists(), entityToUse, source, tableName);
+		}
 
-		// noinspection ConstantConditions
-		WriteResult result = getCqlOperations().execute(new StatementCallback(insert));
+		return doInsert(insert, entityToUse, tableName);
+	}
 
-		maybeEmitEvent(new AfterSaveEvent<>(entity, tableName));
+	private <T> EntityWriteResult<T> doInsertVersioned(Insert insert, T entity, AdaptibleEntity<T> source,
+			CqlIdentifier tableName) {
 
-		return EntityWriteResult.of(result, entity);
+		return executeSave(entity, tableName, insert, result -> {
+
+			if (!result.wasApplied()) {
+				throw new OptimisticLockingFailureException(
+						String.format("Cannot insert entity %s with version, %s into table %s as it already exists", entity,
+								source.getVersion(), tableName));
+			}
+		});
+	}
+
+	private <T> EntityWriteResult<T> doInsert(Insert insert, T entity, CqlIdentifier tableName) {
+		return executeSave(entity, tableName, insert);
 	}
 
 	/* (non-Javadoc)
@@ -591,16 +614,39 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 
 		CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
 		CqlIdentifier tableName = persistentEntity.getTableName();
+		AdaptibleEntity<T> source = operations.forEntity(entity, converter.getConversionService());
+
+		if (source.isVersionedEntity()) {
+			return doUpdateVersioned(source, options, tableName, persistentEntity);
+		}
+
+		return doUpdate(entity, options, tableName, persistentEntity);
+	}
+
+	private <T> EntityWriteResult<T> doUpdateVersioned(AdaptibleEntity<T> source, UpdateOptions options,
+			CqlIdentifier tableName, CassandraPersistentEntity<?> persistentEntity) {
+
+		Number previousVersion = source.getVersion();
+		T entity = source.incrementVersion();
+
 		Update update = getStatementFactory().update(entity, options, getConverter(), persistentEntity, tableName);
 
-		maybeEmitEvent(new BeforeSaveEvent<>(entity, tableName, update));
+		return executeSave(entity, tableName, source.appendVersionCondition(update, previousVersion), result -> {
 
-		// noinspection ConstantConditions
-		WriteResult result = getCqlOperations().execute(new StatementCallback(update));
+			if (!result.wasApplied()) {
+				throw new OptimisticLockingFailureException(
+						String.format("Cannot save entity %s with version %s to table %s. Has it been modified meanwhile?", entity,
+								source.getVersion(), tableName));
+			}
+		});
+	}
 
-		maybeEmitEvent(new AfterSaveEvent<>(entity, tableName));
+	private <T> EntityWriteResult<T> doUpdate(T entity, UpdateOptions options, CqlIdentifier tableName,
+			CassandraPersistentEntity<?> persistentEntity) {
 
-		return EntityWriteResult.of(result, entity);
+		Update update = getStatementFactory().update(entity, options, getConverter(), persistentEntity, tableName);
+
+		return executeSave(entity, tableName, update);
 	}
 
 	/* (non-Javadoc)
@@ -622,16 +668,32 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 
 		CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
 		CqlIdentifier tableName = persistentEntity.getTableName();
+		AdaptibleEntity<Object> source = operations.forEntity(entity, converter.getConversionService());
+
 		Delete delete = getStatementFactory().delete(entity, options, getConverter(), persistentEntity, tableName);
 
-		maybeEmitEvent(new BeforeDeleteEvent<>(delete, entity.getClass(), tableName));
+		if (source.isVersionedEntity()) {
+			return doDeleteVersioned(delete, entity, source, tableName);
+		}
 
-		// noinspection ConstantConditions
-		WriteResult result = getCqlOperations().execute(new StatementCallback(delete));
+		return doDelete(delete, entity, tableName);
+	}
 
-		maybeEmitEvent(new AfterDeleteEvent<>(delete, entity.getClass(), tableName));
+	private WriteResult doDeleteVersioned(Delete delete, Object entity, AdaptibleEntity<Object> source,
+			CqlIdentifier tableName) {
 
-		return result;
+		return executeDelete(entity, tableName, source.appendVersionCondition(delete), result -> {
+
+			if (!result.wasApplied()) {
+				throw new OptimisticLockingFailureException(
+						String.format("Cannot delete entity %s with version, %s in table %s. Has it been modified meanwhile?",
+								entity, source.getVersion(), tableName));
+			}
+		});
+	}
+
+	private WriteResult doDelete(Delete delete, Object entity, CqlIdentifier tableName) {
+		return executeDelete(entity, tableName, delete, result -> {});
 	}
 
 	/* (non-Javadoc)
@@ -752,6 +814,36 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		return this.statementFactory;
 	}
 
+	private <T> EntityWriteResult<T> executeSave(T entity, CqlIdentifier tableName, Statement statement) {
+		return executeSave(entity, tableName, statement, ignore -> {});
+	}
+
+	private <T> EntityWriteResult<T> executeSave(T entity, CqlIdentifier tableName, Statement statement,
+			Consumer<WriteResult> resultConsumer) {
+
+		maybeEmitEvent(new BeforeSaveEvent<>(entity, tableName, statement));
+
+		WriteResult result = getCqlOperations().execute(new StatementCallback(statement));
+		resultConsumer.accept(result);
+
+		maybeEmitEvent(new AfterSaveEvent<>(entity, tableName));
+
+		return EntityWriteResult.of(result, entity);
+	}
+
+	private WriteResult executeDelete(Object entity, CqlIdentifier tableName, Statement statement,
+			Consumer<WriteResult> resultConsumer) {
+
+		maybeEmitEvent(new BeforeDeleteEvent<>(statement, entity.getClass(), tableName));
+
+		WriteResult result = getCqlOperations().execute(new StatementCallback(statement));
+		resultConsumer.accept(result);
+
+		maybeEmitEvent(new AfterDeleteEvent<>(statement, entity.getClass(), tableName));
+
+		return result;
+	}
+
 	private CqlIdentifier getTableName(Object entity) {
 		return getRequiredPersistentEntity(entity.getClass()).getTableName();
 	}
@@ -790,15 +882,13 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 
 		return row -> {
 
-			maybeEmitEvent(new AfterLoadEvent(row, targetType, tableName));
+			maybeEmitEvent(new AfterLoadEvent<>(row, targetType, tableName));
 
 			Object source = getConverter().read(typeToRead, row);
 
 			T result = (T) (targetType.isInterface() ? getProjectionFactory().createProjection(targetType, source) : source);
 
-			if (result != null) {
-				maybeEmitEvent(new AfterConvertEvent<>(row, result, tableName));
-			}
+			maybeEmitEvent(new AfterConvertEvent<>(row, result, tableName));
 
 			return result;
 		};
@@ -834,7 +924,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		 */
 		@Override
 		public WriteResult doInSession(Session session) throws DriverException, DataAccessException {
-			return WriteResult.of(session.execute(statement));
+			return WriteResult.of(session.execute(this.statement));
 		}
 
 		/* (non-Javadoc)
@@ -842,7 +932,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		 */
 		@Override
 		public String getCql() {
-			return statement.toString();
+			return this.statement.toString();
 		}
 	}
 }

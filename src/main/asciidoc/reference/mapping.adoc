@@ -426,6 +426,7 @@ Types are derived from the declaration by default.
 * `@Tuple`: Applied at the type level to use a type as a mapped tuple.
 * `@Element`: Applied at the field level to specify element or field ordinals within a mapped tuple.
 Types are derived from the property declaration by default.
+* `@Version`: Applied at field level is used for optimistic locking and checked for modification on save operations. The initial value is `zero` which is bumped automatically on every update.
 
 The mapping metadata infrastructure is defined in the separate, spring-data-commons project that is both
 technology- and data store-agnostic.

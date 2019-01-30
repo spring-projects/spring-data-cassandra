@@ -26,7 +26,9 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.cassandra.SessionFactory;
+import org.springframework.data.cassandra.core.EntityOperations.AdaptibleEntity;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.convert.QueryMapper;
@@ -104,6 +106,8 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 
 	private final SpelAwareProxyProjectionFactory projectionFactory;
 
+	private final EntityOperations operations;
+
 	private final StatementFactory statementFactory;
 
 	private @Nullable ApplicationEventPublisher eventPublisher;
@@ -168,6 +172,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 		this.cqlOperations = asyncCqlTemplate;
 		this.exceptionTranslator = asyncCqlTemplate.getExceptionTranslator();
 		this.projectionFactory = new SpelAwareProxyProjectionFactory();
+		this.operations = new EntityOperations(converter.getMappingContext());
 		this.statementFactory = new StatementFactory(new QueryMapper(converter), new UpdateMapper(converter));
 	}
 
@@ -487,7 +492,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 	 */
 	@Override
 	public <T> ListenableFuture<T> insert(T entity) {
-		return new MappingListenableFutureAdapter<>(insert(entity, InsertOptions.empty()), writeResult -> entity);
+		return new MappingListenableFutureAdapter<>(insert(entity, InsertOptions.empty()), EntityWriteResult::getEntity);
 	}
 
 	/* (non-Javadoc)
@@ -499,18 +504,37 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 		Assert.notNull(entity, "Entity must not be null");
 		Assert.notNull(options, "InsertOptions must not be null");
 
+		AdaptibleEntity<T> source = operations.forEntity(entity, converter.getConversionService());
 		CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
 		CqlIdentifier tableName = persistentEntity.getTableName();
-		Insert insert = EntityQueryUtils.createInsertQuery(tableName.toCql(), entity, options, getConverter(),
+
+		T entityToUse = source.isVersionedEntity() ? source.initializeVersionProperty() : entity;
+
+		Insert insert = EntityQueryUtils.createInsertQuery(tableName.toCql(), entityToUse, options, getConverter(),
 				persistentEntity);
 
-		maybeEmitEvent(new BeforeSaveEvent<>(entity, tableName, insert));
+		if (source.isVersionedEntity()) {
+			return doInsertVersioned(insert.ifNotExists(), entityToUse, source, tableName);
+		}
 
-		return new MappingListenableFutureAdapter<>(getAsyncCqlOperations().execute(new AsyncStatementCallback(insert)),
-				resultSet -> {
-					maybeEmitEvent(new AfterSaveEvent<>(entity, tableName));
-					return EntityWriteResult.of(resultSet, entity);
-				});
+		return doInsert(insert, entityToUse, source, tableName);
+	}
+
+	private <T> ListenableFuture<EntityWriteResult<T>> doInsertVersioned(Insert insert, T entity,
+			AdaptibleEntity<T> source, CqlIdentifier tableName) {
+
+		return executeSave(entity, tableName, insert, result -> {
+			if (!result.wasApplied()) {
+				throw new OptimisticLockingFailureException(
+						String.format("Cannot insert entity %s with version, %s into table %s as it already exists", entity,
+								source.getVersion(), tableName));
+			}
+		});
+	}
+
+	private <T> ListenableFuture<EntityWriteResult<T>> doInsert(Insert insert, T entity, AdaptibleEntity<T> source,
+			CqlIdentifier tableName) {
+		return executeSave(entity, tableName, insert);
 	}
 
 	/* (non-Javadoc)
@@ -532,15 +556,38 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 
 		CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
 		CqlIdentifier tableName = persistentEntity.getTableName();
+		AdaptibleEntity<T> source = operations.forEntity(entity, converter.getConversionService());
+
+		if (source.isVersionedEntity()) {
+			return doUpdateVersioned(source, options, tableName, persistentEntity);
+		}
+
+		return doUpdate(entity, options, tableName, persistentEntity);
+	}
+
+	private <T> ListenableFuture<EntityWriteResult<T>> doUpdate(T entity, UpdateOptions options, CqlIdentifier tableName,
+			CassandraPersistentEntity<?> persistentEntity) {
+
 		Update update = getStatementFactory().update(entity, options, getConverter(), persistentEntity, tableName);
 
-		maybeEmitEvent(new BeforeSaveEvent<>(entity, tableName, update));
+		return executeSave(entity, tableName, update);
+	}
 
-		return new MappingListenableFutureAdapter<>(getAsyncCqlOperations().execute(new AsyncStatementCallback(update)),
-				resultSet -> {
-					maybeEmitEvent(new AfterSaveEvent<>(entity, tableName));
-					return EntityWriteResult.of(resultSet, entity);
-				});
+	private <T> ListenableFuture<EntityWriteResult<T>> doUpdateVersioned(AdaptibleEntity<T> source, UpdateOptions options,
+			CqlIdentifier tableName, CassandraPersistentEntity<?> persistentEntity) {
+
+		Number previousVersion = source.getVersion();
+		T entity = source.incrementVersion();
+
+		Update update = getStatementFactory().update(entity, options, getConverter(), persistentEntity, tableName);
+
+		return executeSave(entity, tableName, source.appendVersionCondition(update, previousVersion), result -> {
+			if (!result.wasApplied()) {
+				throw new OptimisticLockingFailureException(
+						String.format("Cannot save entity %s with version %s to table %s. Has it been modified meanwhile?", entity,
+								source.getVersion(), tableName));
+			}
+		});
 	}
 
 	/* (non-Javadoc)
@@ -562,15 +609,31 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 
 		CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
 		CqlIdentifier tableName = persistentEntity.getTableName();
+		AdaptibleEntity<Object> source = operations.forEntity(entity, converter.getConversionService());
+
 		Delete delete = getStatementFactory().delete(entity, options, getConverter(), persistentEntity, tableName);
 
-		maybeEmitEvent(new BeforeDeleteEvent<>(delete, entity.getClass(), tableName));
+		if (source.isVersionedEntity()) {
+			return doDeleteVersioned(delete, entity, source, tableName);
+		}
 
-		return new MappingListenableFutureAdapter<>(getAsyncCqlOperations().execute(new AsyncStatementCallback(delete)),
-				resultSet -> {
-					maybeEmitEvent(new AfterDeleteEvent<>(delete, entity.getClass(), tableName));
-					return WriteResult.of(resultSet);
-				});
+		return doDelete(delete, entity, tableName);
+	}
+
+	private ListenableFuture<WriteResult> doDeleteVersioned(Delete delete, Object entity, AdaptibleEntity<Object> source,
+			CqlIdentifier tableName) {
+
+		return executeDelete(entity, tableName, source.appendVersionCondition(delete), result -> {
+			if (!result.wasApplied()) {
+				throw new OptimisticLockingFailureException(
+						String.format("Cannot delete entity %s with version, %s in table %s. Has it been modified meanwhile?",
+								entity, source.getVersion(), tableName));
+			}
+		});
+	}
+
+	private ListenableFuture<WriteResult> doDelete(Delete delete, Object entity, CqlIdentifier tableName) {
+		return executeDelete(entity, tableName, delete, result -> {});
 	}
 
 	/* (non-Javadoc)
@@ -654,8 +717,52 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 		return this.statementFactory;
 	}
 
+	private <T> ListenableFuture<EntityWriteResult<T>> executeSave(T entity, CqlIdentifier tableName,
+			Statement statement) {
+		return executeSave(entity, tableName, statement, ignore -> {
+
+		});
+	}
+
+	private <T> ListenableFuture<EntityWriteResult<T>> executeSave(T entity, CqlIdentifier tableName, Statement statement,
+			Consumer<WriteResult> beforeAfterSaveEvent) {
+
+		maybeEmitEvent(new BeforeSaveEvent<>(entity, tableName, statement));
+
+		ListenableFuture<ResultSet> result = getAsyncCqlOperations().execute(new AsyncStatementCallback(statement));
+
+		return new MappingListenableFutureAdapter<>(result, resultSet -> {
+			EntityWriteResult<T> writeResult = EntityWriteResult.of(resultSet, entity);
+
+			beforeAfterSaveEvent.accept(writeResult);
+
+			maybeEmitEvent(new AfterSaveEvent<>(entity, tableName));
+
+			return writeResult;
+		});
+	}
+
+	private ListenableFuture<WriteResult> executeDelete(Object entity, CqlIdentifier tableName, Statement statement,
+			Consumer<WriteResult> resultConsumer) {
+
+		maybeEmitEvent(new BeforeDeleteEvent<>(statement, entity.getClass(), tableName));
+
+		ListenableFuture<ResultSet> result = getAsyncCqlOperations().execute(new AsyncStatementCallback(statement));
+
+		return new MappingListenableFutureAdapter<>(result, resultSet -> {
+
+			WriteResult writeResult = WriteResult.of(resultSet);
+
+			resultConsumer.accept(writeResult);
+
+			maybeEmitEvent(new AfterDeleteEvent<>(statement, entity.getClass(), tableName));
+
+			return writeResult;
+		});
+	}
+
 	private CqlIdentifier getTableName(Class<?> entityClass) {
-		return getRequiredPersistentEntity(entityClass).getTableName();
+		return operations.getTableName(entityClass);
 	}
 
 	private CqlIdentifier getTableName(Object entity) {

@@ -24,11 +24,14 @@ import java.util.Optional;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.core.InsertOptions;
+import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.mapping.context.AbstractMappingContext;
 import org.springframework.data.util.StreamUtils;
 import org.springframework.data.util.Streamable;
 import org.springframework.util.Assert;
@@ -53,6 +56,8 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 
 	private final CassandraOperations operations;
 
+	private final AbstractMappingContext<BasicCassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
+
 	/**
 	 * Create a new {@link SimpleCassandraRepository} for the given {@link CassandraEntityInformation} and
 	 * {@link CassandraTemplate}.
@@ -67,6 +72,7 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 
 		this.entityInformation = metadata;
 		this.operations = operations;
+		this.mappingContext = operations.getConverter().getMappingContext();
 	}
 
 	/* (non-Javadoc)
@@ -76,6 +82,14 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 	public <S extends T> S save(S entity) {
 
 		Assert.notNull(entity, "Entity must not be null");
+
+		BasicCassandraPersistentEntity<?> persistentEntity = mappingContext.getPersistentEntity(entity.getClass());
+		if (persistentEntity != null && persistentEntity.hasVersionProperty()) {
+
+			if (!entityInformation.isNew(entity)) {
+				return operations.update(entity);
+			}
+		}
 
 		return operations.insert(entity, INSERT_NULLS).getEntity();
 	}
@@ -91,7 +105,7 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 		List<S> result = new ArrayList<>();
 
 		for (S entity : entities) {
-			result.add(operations.insert(entity, INSERT_NULLS).getEntity());
+			result.add(save(entity));
 		}
 
 		return result;

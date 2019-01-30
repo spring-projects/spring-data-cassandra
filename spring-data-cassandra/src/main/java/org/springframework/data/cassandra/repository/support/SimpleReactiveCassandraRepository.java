@@ -19,10 +19,14 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import org.reactivestreams.Publisher;
+import org.springframework.data.cassandra.core.EntityWriteResult;
 import org.springframework.data.cassandra.core.InsertOptions;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
+import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.repository.ReactiveCassandraRepository;
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;
+import org.springframework.data.mapping.context.AbstractMappingContext;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.querybuilder.Insert;
@@ -44,6 +48,8 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 
 	private final ReactiveCassandraOperations operations;
 
+	private final AbstractMappingContext<BasicCassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
+
 	/**
 	 * Create a new {@link SimpleReactiveCassandraRepository} for the given {@link CassandraEntityInformation} and
 	 * {@link ReactiveCassandraOperations}.
@@ -59,6 +65,7 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 
 		this.entityInformation = metadata;
 		this.operations = operations;
+		this.mappingContext = operations.getConverter().getMappingContext();
 	}
 
 	/* (non-Javadoc)
@@ -69,7 +76,15 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		return operations.insert(entity, INSERT_NULLS).thenReturn(entity);
+		BasicCassandraPersistentEntity<?> persistentEntity = mappingContext.getPersistentEntity(entity.getClass());
+		if (persistentEntity != null && persistentEntity.hasVersionProperty()) {
+
+			if (!entityInformation.isNew(entity)) {
+				return operations.update(entity);
+			}
+		}
+
+		return operations.insert(entity, INSERT_NULLS).map(EntityWriteResult::getEntity);
 	}
 
 	/**
@@ -103,8 +118,7 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 
 		Assert.notNull(entityStream, "The given Publisher of entities must not be null");
 
-		return Flux.from(entityStream)
-				.flatMap(entity -> operations.insert(entity, INSERT_NULLS).thenReturn(entity));
+		return Flux.from(entityStream).flatMap(this::save);
 	}
 
 	/* (non-Javadoc)
