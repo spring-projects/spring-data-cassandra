@@ -435,6 +435,10 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 		for (CassandraPersistentProperty property : entity) {
 
+			if (!property.isWritable()) {
+				continue;
+			}
+
 			Object value = getWriteValue(property, propertyAccessor);
 
 			if (log.isDebugEnabled()) {
@@ -474,6 +478,10 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			CassandraPersistentEntity<?> entity) {
 
 		for (CassandraPersistentProperty property : entity) {
+
+			if (!property.isWritable()) {
+				continue;
+			}
 
 			Object value = getWriteValue(property, propertyAccessor);
 
@@ -642,6 +650,10 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			CassandraPersistentEntity<?> entity) {
 
 		for (CassandraPersistentProperty property : entity) {
+
+			if (!property.isWritable()) {
+				continue;
+			}
 
 			Object value = getWriteValue(property, propertyAccessor);
 

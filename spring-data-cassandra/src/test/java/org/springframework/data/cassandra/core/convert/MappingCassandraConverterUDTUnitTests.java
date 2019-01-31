@@ -15,18 +15,18 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
-import static org.springframework.data.cassandra.test.util.RowMockUtil.column;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.data.cassandra.test.util.RowMockUtil.*;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -35,7 +35,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
+import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.UserDefinedType;
@@ -61,7 +61,8 @@ public class MappingCassandraConverterUDTUnitTests {
 	@Rule public final ExpectedException expectedException = ExpectedException.none();
 	@Mock UserTypeResolver userTypeResolver;
 
-	UserType manufacturer = UserTypeBuilder.forName("manufacturer").withField("name", DataType.varchar()).build();
+	UserType manufacturer = UserTypeBuilder.forName("manufacturer").withField("name", DataType.varchar())
+			.withField("displayname", DataType.varchar()).build();
 	UserType currency = UserTypeBuilder.forName("mycurrency").withField("currency", DataType.varchar()).build();
 
 	Row rowMock;
@@ -82,10 +83,10 @@ public class MappingCassandraConverterUDTUnitTests {
 		when(userTypeResolver.resolveType(CqlIdentifier.of("currency"))).thenReturn(currency);
 	}
 
-	@Test // DATACASS-487
+	@Test // DATACASS-487, DATACASS-623
 	public void shouldReadMappedUdtInMap() {
 
-		UDTValue key = manufacturer.newValue().setString("name", "a good one");
+		UDTValue key = manufacturer.newValue().setString("name", "a good one").setString("displayname", "my displayName");
 		UDTValue value1 = currency.newValue().setString("currency", "EUR");
 		UDTValue value2 = currency.newValue().setString("currency", "USD");
 
@@ -93,21 +94,22 @@ public class MappingCassandraConverterUDTUnitTests {
 
 		map.put(key, Arrays.asList(value1, value2));
 
-		rowMock = RowMockUtil.newRowMock(column("acceptedCurrencies", map, DataType.map(manufacturer, DataType.list(currency))));
+		rowMock = RowMockUtil
+				.newRowMock(column("acceptedCurrencies", map, DataType.map(manufacturer, DataType.list(currency))));
 
 		Supplier supplier = mappingCassandraConverter.read(Supplier.class, rowMock);
 
 		assertThat(supplier.getAcceptedCurrencies()).isNotEmpty();
 
-		List<Currency> currencies = supplier.getAcceptedCurrencies().get(new Manufacturer("a good one"));
+		List<Currency> currencies = supplier.getAcceptedCurrencies().get(new Manufacturer("a good one", "my displayName"));
 
 		assertThat(currencies).contains(new Currency("EUR"), new Currency("USD"));
 	}
 
-	@Test // DATACASS-487
+	@Test // DATACASS-487, DATACASS-623
 	public void shouldWriteMappedUdtInMap() {
 
-		Map<Manufacturer, List<Currency>> currencies = Collections.singletonMap(new Manufacturer("a good one"),
+		Map<Manufacturer, List<Currency>> currencies = Collections.singletonMap(new Manufacturer("a good one", "foo"),
 				Arrays.asList(new Currency("EUR"), new Currency("USD")));
 
 		Supplier supplier = new Supplier(currencies);
@@ -116,14 +118,17 @@ public class MappingCassandraConverterUDTUnitTests {
 
 		mappingCassandraConverter.write(supplier, insert);
 
-		assertThat(insert.toString()).contains("VALUES ({{name:'a good one'}:[{currency:'EUR'},{currency:'USD'}]}");
+		assertThat(insert.toString())
+				.contains("VALUES ({{name:'a good one',displayname:NULL}:[{currency:'EUR'},{currency:'USD'}]}");
 	}
 
 	@UserDefinedType
 	@Data
 	@AllArgsConstructor
 	private static class Manufacturer {
+
 		String name;
+		@ReadOnlyProperty String displayName;
 	}
 
 	@UserDefinedType

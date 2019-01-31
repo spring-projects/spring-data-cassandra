@@ -42,6 +42,7 @@ import org.junit.rules.ExpectedException;
 import org.springframework.core.SpringVersion;
 import org.springframework.core.convert.ConverterNotFoundException;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.cassandra.core.mapping.BasicMapId;
@@ -964,6 +965,34 @@ public class MappingCassandraConverterUnitTests {
 		assertThat(insert.toString()).isEqualTo("INSERT INTO table (firstname,lastname) VALUES ('Foo','Bar');");
 	}
 
+	@Test // DATACASS-623
+	public void insertShouldSkipTransientReadProperties() {
+
+		WithTransient withTransient = new WithTransient();
+		withTransient.firstname = "Foo";
+		withTransient.computedName = "FooBar";
+
+		Insert insert = QueryBuilder.insertInto("table");
+
+		this.mappingCassandraConverter.write(withTransient, insert);
+
+		assertThat(insert.toString()).isEqualTo("INSERT INTO table (firstname) VALUES ('Foo');");
+	}
+
+	@Test // DATACASS-623
+	public void updateShouldSkipTransientReadProperties() {
+
+		WithTransient withTransient = new WithTransient();
+		withTransient.firstname = "Foo";
+		withTransient.computedName = "FooBar";
+
+		Update update = QueryBuilder.update("table");
+
+		this.mappingCassandraConverter.write(withTransient, update);
+
+		assertThat(update.toString()).isEqualTo("UPDATE table SET firstname='Foo',lastname=null WHERE id=null;");
+	}
+
 	@SuppressWarnings("unchecked")
 	private static <T> List<T> getListValue(Insert statement) {
 
@@ -1233,5 +1262,6 @@ public class MappingCassandraConverterUnitTests {
 		String firstname;
 		String lastname;
 		@Transient String displayName;
+		@ReadOnlyProperty String computedName;
 	}
 }
