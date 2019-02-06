@@ -176,10 +176,7 @@ public class DefaultBridgedReactiveSessionUnitTests {
 		when(future.get()).thenReturn(resultSet);
 		when(resultSet.isFullyFetched()).thenReturn(true);
 
-		reactiveSession.execute(new SimpleStatement(""))
-			.flatMapMany(ReactiveResultSet::rows)
-			.collectList()
-			.subscribe();
+		reactiveSession.execute(new SimpleStatement("")).flatMapMany(ReactiveResultSet::rows).collectList().subscribe();
 
 		verify(rows, times(10)).next();
 		verify(resultSet, never()).fetchMoreResults();
@@ -259,30 +256,24 @@ public class DefaultBridgedReactiveSessionUnitTests {
 
 		StepVerifier.create(flux, 0) //
 				.then(() -> runnables.poll().run()) // complete the first future from executeAsync()
-				.thenRequest(9).expectNextCount(9)
-				.then(() -> {
+				.thenRequest(9).expectNextCount(9).then(() -> {
 					// feed the 9 elements from the initial ResultSet
 					verify(resultSet, never()).fetchMoreResults();
-				}).thenRequest(1).expectNextCount(1)
-				.then(() -> {
+				}).thenRequest(1).expectNextCount(1).then(() -> {
 
 					// initial ResultSet exhausted, fetch next chunk
 					verify(resultSet).fetchMoreResults();
 					runnables.poll().run();
-				}).thenRequest(1).expectNextCount(1)
-				.then(() -> {
+				}).thenRequest(1).expectNextCount(1).then(() -> {
 
 					// first element from the second ResultSet received, no subsequent fetch
 					assertThat(runnables).isEmpty();
-				}).thenRequest(19).expectNextCount(9)
-				.then(() -> {
+				}).thenRequest(19).expectNextCount(9).then(() -> {
 
 					// second ResultSet exhausted
 					assertThat(runnables).hasSize(1);
 					runnables.poll().run();
-				})
-				.thenRequest(10).expectNextCount(10)
-				.verifyComplete();
+				}).thenRequest(10).expectNextCount(10).verifyComplete();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -301,8 +292,8 @@ public class DefaultBridgedReactiveSessionUnitTests {
 	@SuppressWarnings("all")
 	private static <T extends Statement> T eq(T value) {
 
-		return ArgumentMatchers.argThat(argument -> argument instanceof Statement
-				? value.toString().equals(argument.toString())
-				: value.equals(argument));
+		return ArgumentMatchers
+				.argThat(argument -> argument instanceof Statement ? value.toString().equals(argument.toString())
+						: value.equals(argument));
 	}
 }
