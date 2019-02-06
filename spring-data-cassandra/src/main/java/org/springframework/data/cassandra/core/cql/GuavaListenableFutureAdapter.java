@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
+import io.netty.util.concurrent.ImmediateExecutor;
+
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -88,7 +90,7 @@ public class GuavaListenableFutureAdapter<T> implements ListenableFuture<T> {
 
 				settableFuture.setException(t);
 			}
-		});
+		}, ImmediateExecutor.INSTANCE);
 
 		return settableFuture;
 	}

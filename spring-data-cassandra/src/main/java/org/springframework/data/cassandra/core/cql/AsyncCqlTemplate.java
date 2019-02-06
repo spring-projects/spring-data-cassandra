@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
+import io.netty.util.concurrent.ImmediateExecutor;
+
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -506,8 +508,7 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 	 */
 	@Override
 	public <T> ListenableFuture<T> query(AsyncPreparedStatementCreator preparedStatementCreator,
-			@Nullable PreparedStatementBinder psb, ResultSetExtractor<T> resultSetExtractor)
-			throws DataAccessException {
+			@Nullable PreparedStatementBinder psb, ResultSetExtractor<T> resultSetExtractor) throws DataAccessException {
 
 		Assert.notNull(preparedStatementCreator, "AsyncPreparedStatementCreator must not be null");
 		Assert.notNull(resultSetExtractor, "ResultSetExtractor object must not be null");
@@ -553,7 +554,7 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 								settableListenableFuture.setException(ex);
 							}
 						}
-					}), ex -> {
+					}, ImmediateExecutor.INSTANCE), ex -> {
 						if (ex instanceof DriverException) {
 							settableListenableFuture.setException(translateException(exceptionTranslator, (DriverException) ex));
 						} else {
@@ -574,11 +575,9 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 	 */
 	@Override
 	public ListenableFuture<Void> query(AsyncPreparedStatementCreator preparedStatementCreator,
-			@Nullable PreparedStatementBinder psb, RowCallbackHandler rowCallbackHandler)
-			throws DataAccessException {
+			@Nullable PreparedStatementBinder psb, RowCallbackHandler rowCallbackHandler) throws DataAccessException {
 
-		ListenableFuture<?> results = query(preparedStatementCreator, psb,
-				newResultSetExtractor(rowCallbackHandler));
+		ListenableFuture<?> results = query(preparedStatementCreator, psb, newResultSetExtractor(rowCallbackHandler));
 
 		return new ExceptionTranslatingListenableFutureAdapter<>(new MappingListenableFutureAdapter<>(results, o -> null),
 				getExceptionTranslator());
@@ -661,8 +660,8 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#query(java.lang.String, org.springframework.data.cassandra.core.cql.PreparedStatementBinder, org.springframework.data.cassandra.core.cql.RowMapper)
 	 */
 	@Override
-	public <T> ListenableFuture<List<T>> query(String cql, @Nullable PreparedStatementBinder psb,
-			RowMapper<T> rowMapper) throws DataAccessException {
+	public <T> ListenableFuture<List<T>> query(String cql, @Nullable PreparedStatementBinder psb, RowMapper<T> rowMapper)
+			throws DataAccessException {
 
 		return query(newAsyncPreparedStatementCreator(cql), psb, newResultSetExtractor(rowMapper));
 	}

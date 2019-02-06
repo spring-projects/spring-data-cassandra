@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.core.cql.session;
 
+import io.netty.util.concurrent.ImmediateExecutor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoProcessor;
@@ -34,7 +35,6 @@ import org.springframework.util.Assert;
 import com.datastax.driver.core.*;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.MoreExecutors;
 
 /**
  * Default implementation of a {@link ReactiveSession}. This implementation bridges asynchronous {@link Session} methods
@@ -52,6 +52,7 @@ import com.google.common.util.concurrent.MoreExecutors;
  * <p>
  *
  * @author Mark Paluch
+ * @author Mateusz Stefek
  * @since 2.0
  * @see Mono
  * @see ReactiveResultSet
@@ -156,12 +157,11 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 
 				ListenableFuture<ResultSet> future = this.session.executeAsync(statement);
 
-				ListenableFuture<ReactiveResultSet> resultSetFuture =
-					Futures.transform(future, DefaultReactiveResultSet::new, MoreExecutors.directExecutor());
+				ListenableFuture<ReactiveResultSet> resultSetFuture = Futures.transform(future, DefaultReactiveResultSet::new,
+						ImmediateExecutor.INSTANCE);
 
 				adaptFuture(resultSetFuture, sink);
-			}
-			catch (Exception cause) {
+			} catch (Exception cause) {
 				sink.error(cause);
 			}
 		});
@@ -196,8 +196,7 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 				ListenableFuture<PreparedStatement> resultSetFuture = this.session.prepareAsync(statement);
 
 				adaptFuture(resultSetFuture, sink);
-			}
-			catch (Exception cause) {
+			} catch (Exception cause) {
 				sink.error(cause);
 			}
 		});
@@ -224,11 +223,9 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 			if (future.isDone()) {
 				try {
 					sink.success(future.get());
-				}
-				catch (ExecutionException cause) {
+				} catch (ExecutionException cause) {
 					sink.error(cause.getCause());
-				}
-				catch (Exception cause) {
+				} catch (Exception cause) {
 					sink.error(cause);
 				}
 			}
@@ -242,7 +239,6 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 		DefaultReactiveResultSet(ResultSet resultSet) {
 			this.resultSet = resultSet;
 		}
-
 
 		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.ReactiveResultSet#rows()
@@ -272,9 +268,7 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 
 				MonoProcessor<ResultSet> processor = MonoProcessor.create();
 
-				return rows
-					.doOnComplete(() -> fetchMore(it.fetchMoreResults(), processor))
-					.concatWith(getRows(processor));
+				return rows.doOnComplete(() -> fetchMore(it.fetchMoreResults(), processor)).concatWith(getRows(processor));
 			});
 		}
 
@@ -294,17 +288,14 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 					try {
 						sink.onNext(future.get());
 						sink.onComplete();
-					}
-					catch (ExecutionException cause) {
+					} catch (ExecutionException cause) {
 						sink.onError(cause.getCause());
-					}
-					catch (Exception cause) {
+					} catch (Exception cause) {
 						sink.onError(cause);
 					}
 				}, Runnable::run);
 
-			}
-			catch (Exception cause) {
+			} catch (Exception cause) {
 				sink.onError(cause);
 			}
 		}
