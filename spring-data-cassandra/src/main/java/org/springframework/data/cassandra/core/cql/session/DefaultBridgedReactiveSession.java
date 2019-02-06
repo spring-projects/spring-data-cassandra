@@ -15,36 +15,26 @@
  */
 package org.springframework.data.cassandra.core.cql.session;
 
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-
+import io.netty.util.concurrent.ImmediateExecutor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoProcessor;
 import reactor.core.publisher.MonoSink;
 import reactor.core.scheduler.Scheduler;
 
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.cassandra.ReactiveResultSet;
 import org.springframework.data.cassandra.ReactiveSession;
 import org.springframework.util.Assert;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.ColumnDefinitions;
-import com.datastax.driver.core.ExecutionInfo;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.SimpleStatement;
-import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.*;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.MoreExecutors;
 
 /**
  * Default implementation of a {@link ReactiveSession}. This implementation bridges asynchronous {@link Session} methods
@@ -62,6 +52,7 @@ import com.google.common.util.concurrent.MoreExecutors;
  * <p>
  *
  * @author Mark Paluch
+ * @author Mateusz Stefek
  * @since 2.0
  * @see Mono
  * @see ReactiveResultSet
@@ -166,12 +157,11 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 
 				ListenableFuture<ResultSet> future = this.session.executeAsync(statement);
 
-				ListenableFuture<ReactiveResultSet> resultSetFuture =
-					Futures.transform(future, DefaultReactiveResultSet::new, MoreExecutors.directExecutor());
+				ListenableFuture<ReactiveResultSet> resultSetFuture = Futures.transform(future, DefaultReactiveResultSet::new,
+						ImmediateExecutor.INSTANCE);
 
 				adaptFuture(resultSetFuture, sink);
-			}
-			catch (Exception cause) {
+			} catch (Exception cause) {
 				sink.error(cause);
 			}
 		});
@@ -206,8 +196,7 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 				ListenableFuture<PreparedStatement> resultSetFuture = this.session.prepareAsync(statement);
 
 				adaptFuture(resultSetFuture, sink);
-			}
-			catch (Exception cause) {
+			} catch (Exception cause) {
 				sink.error(cause);
 			}
 		});
@@ -234,11 +223,9 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 			if (future.isDone()) {
 				try {
 					sink.success(future.get());
-				}
-				catch (ExecutionException cause) {
+				} catch (ExecutionException cause) {
 					sink.error(cause.getCause());
-				}
-				catch (Exception cause) {
+				} catch (Exception cause) {
 					sink.error(cause);
 				}
 			}
@@ -273,9 +260,7 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 
 				MonoProcessor<ResultSet> processor = MonoProcessor.create();
 
-				return rows
-					.doOnComplete(() -> fetchMore(it.fetchMoreResults(), processor))
-					.concatWith(getRows(processor));
+				return rows.doOnComplete(() -> fetchMore(it.fetchMoreResults(), processor)).concatWith(getRows(processor));
 			});
 		}
 
@@ -295,17 +280,14 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 					try {
 						sink.onNext(future.get());
 						sink.onComplete();
-					}
-					catch (ExecutionException cause) {
+					} catch (ExecutionException cause) {
 						sink.onError(cause.getCause());
-					}
-					catch (Exception cause) {
+					} catch (Exception cause) {
 						sink.onError(cause);
 					}
 				}, Runnable::run);
 
-			}
-			catch (Exception cause) {
+			} catch (Exception cause) {
 				sink.onError(cause);
 			}
 		}
