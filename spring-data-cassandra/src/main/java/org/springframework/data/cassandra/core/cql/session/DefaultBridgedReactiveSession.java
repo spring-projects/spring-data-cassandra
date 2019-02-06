@@ -34,6 +34,7 @@ import org.springframework.util.Assert;
 import com.datastax.driver.core.*;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
 
 /**
  * Default implementation of a {@link ReactiveSession}. This implementation bridges asynchronous {@link Session} methods
@@ -156,7 +157,7 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 				ListenableFuture<ResultSet> future = this.session.executeAsync(statement);
 
 				ListenableFuture<ReactiveResultSet> resultSetFuture =
-					Futures.transform(future, DefaultReactiveResultSet::new);
+					Futures.transform(future, DefaultReactiveResultSet::new, MoreExecutors.directExecutor());
 
 				adaptFuture(resultSetFuture, sink);
 			}
