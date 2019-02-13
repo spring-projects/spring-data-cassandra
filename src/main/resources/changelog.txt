@@ -1,6 +1,14 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 2.1.5.RELEASE (2019-02-13)
+---------------------------------------------
+* DATACASS-625 - Upgrade to Apache Cassandra 3.11.4.
+* DATACASS-622 - Release 2.1.5 (Lovelace SR5).
+* DATACASS-599 - Assert compatibility with Guava 26.0-jre+.
+* DATACASS-585 - @PrimaryKeyColumn does not identify a property as @Id property.
+
+
 Changes in version 2.1.4.RELEASE (2019-01-10)
 ---------------------------------------------
 * DATACASS-616 - Update copyright years to 2019.
