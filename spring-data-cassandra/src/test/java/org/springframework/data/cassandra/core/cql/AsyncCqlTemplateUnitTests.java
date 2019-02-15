@@ -36,6 +36,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.cassandra.CassandraConnectionFailureException;
@@ -560,7 +561,7 @@ public class AsyncCqlTemplateUnitTests {
 		ListenableFuture<Iterator<Row>> future = template.query(session -> new AsyncResult<>(preparedStatement),
 				ResultSet::iterator);
 
-		assertThat(getUninterruptibly(future)).hasSize(1).contains(row);
+		assertThat((Iterable<Row>) () -> getUninterruptibly(future)).contains(row);
 		verify(preparedStatement).bind();
 	}
 

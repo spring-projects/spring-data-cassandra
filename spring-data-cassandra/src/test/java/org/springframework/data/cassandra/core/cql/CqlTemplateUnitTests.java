@@ -504,7 +504,7 @@ public class CqlTemplateUnitTests {
 
 		Iterator<Row> iterator = template.query(session -> preparedStatement, ResultSet::iterator);
 
-		assertThat(iterator).hasSize(1).contains(row);
+		assertThat(iterator).hasNext();
 		verify(preparedStatement).bind();
 	}
 
