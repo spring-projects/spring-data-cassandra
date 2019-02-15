@@ -317,7 +317,7 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 		for (int count = 0; count < 100; count++) {
 			User user = new User("heisenberg" + count, "Walter", "White");
 			expectedIds.add(user.getId());
-			template.insert(user);
+			getUninterruptibly(template.insert(user));
 		}
 
 		Set<String> ids = new HashSet<>();
