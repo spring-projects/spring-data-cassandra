@@ -15,12 +15,9 @@
  */
 package org.springframework.data.cassandra.core
 
-import com.nhaarman.mockito_kotlin.verify
+import io.mockk.mockk
+import io.mockk.verify
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.mockito.Answers
-import org.mockito.Mock
-import org.mockito.junit.MockitoJUnitRunner
 import org.springframework.data.cassandra.domain.Person
 import org.springframework.data.cassandra.domain.User
 
@@ -29,40 +26,37 @@ import org.springframework.data.cassandra.domain.User
  *
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner::class)
 class ReactiveSelectOperationExtensionsUnitTests {
 
-	@Mock(answer = Answers.RETURNS_MOCKS)
-	lateinit var operations: ReactiveFluentCassandraOperations
+	val operations = mockk<ReactiveCassandraOperations>(relaxed = true)
 
-	@Mock(answer = Answers.RETURNS_MOCKS)
-	lateinit var operationWithProjection: ReactiveSelectOperation.SelectWithProjection<User>
+	val operationWithProjection = mockk<ReactiveSelectOperation.SelectWithProjection<User>>(relaxed = true)
 
 	@Test // DATACASS-484
 	fun `query(KClass) extension should call its Java counterpart`() {
 
 		operations.query(Person::class);
-		verify(operations).query(Person::class.java)
+		verify { operations.query(Person::class.java) }
 	}
 
 	@Test // DATACASS-484
 	fun `query() with reified type parameter extension should call its Java counterpart`() {
 
 		operations.query<Person>()
-		verify(operations).query(Person::class.java)
+		verify { operations.query(Person::class.java) }
 	}
 
 	@Test // DATACASS-484
 	fun `asType(KClass) extension should call its Java counterpart`() {
 
 		operationWithProjection.asType(User::class);
-		verify(operationWithProjection).`as`(User::class.java)
+		verify { operationWithProjection.`as`(User::class.java) }
 	}
 
 	@Test // DATACASS-484
 	fun `asType() with reified type parameter extension should call its Java counterpart`() {
 
 		operationWithProjection.asType<User>();
-		verify(operationWithProjection).`as`(User::class.java)
+		verify { operationWithProjection.`as`(User::class.java) }
 	}
 }

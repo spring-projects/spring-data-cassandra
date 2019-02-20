@@ -15,25 +15,20 @@
  */
 package org.springframework.data.cassandra.core.query
 
-import com.nhaarman.mockito_kotlin.verify
+import io.mockk.mockk
+import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.Ignore
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.mockito.Answers
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.junit.MockitoJUnitRunner
 
 /**
  * Unit tests for [CriteriaExtensions].
  *
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner::class)
 class CriteriaExtensionsUnitTests {
 
-	@Mock(answer = Answers.RETURNS_MOCKS)
-	lateinit var criteria: Criteria
+	val criteria = mockk<Criteria>(relaxed = true)
 
 	@Test // DATACASS-484
 	fun `isEqualTo() extension should call its Java counterpart`() {
@@ -41,7 +36,7 @@ class CriteriaExtensionsUnitTests {
 		val foo = "foo"
 		criteria.isEqualTo(foo)
 
-		verify(criteria).`is`(foo)
+		verify { criteria.`is`(foo) }
 	}
 
 	@Test // DATACASS-484
@@ -49,7 +44,7 @@ class CriteriaExtensionsUnitTests {
 
 		criteria.isEqualTo(null)
 
-		verify(criteria).`is`(null)
+		verify { criteria.`is`(null) }
 	}
 
 	@Test // DATACASS-484
@@ -60,7 +55,7 @@ class CriteriaExtensionsUnitTests {
 
 		criteria.inValues(foo, bar)
 
-		Mockito.verify(criteria).`in`(foo, bar)
+		verify { criteria.`in`(foo, bar) }
 	}
 
 	@Test // DATACASS-484
@@ -68,7 +63,7 @@ class CriteriaExtensionsUnitTests {
 
 		criteria.inValues(null, null)
 
-		Mockito.verify(criteria).`in`(null, null)
+		verify { criteria.`in`(null, null) }
 	}
 
 	@Test // DATACASS-484
@@ -78,7 +73,7 @@ class CriteriaExtensionsUnitTests {
 
 		criteria.inValues(c)
 
-		verify(criteria).`in`(c)
+		verify { criteria.`in`(c) }
 	}
 
 	@Test // DATACASS-484
@@ -88,7 +83,7 @@ class CriteriaExtensionsUnitTests {
 
 		criteria.inValues(c)
 
-		verify(criteria).`in`(c)
+		verify { criteria.`in`(c) }
 	}
 
 	@Test // DATACASS-484

@@ -15,12 +15,9 @@
  */
 package org.springframework.data.cassandra.core
 
-import com.nhaarman.mockito_kotlin.verify
+import io.mockk.mockk
+import io.mockk.verify
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.mockito.Answers
-import org.mockito.Mock
-import org.mockito.junit.MockitoJUnitRunner
 import org.springframework.data.cassandra.domain.Person
 
 /**
@@ -28,23 +25,21 @@ import org.springframework.data.cassandra.domain.Person
  *
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner::class)
 class ReactiveUpdateOperationExtensionsUnitTests {
 
-	@Mock(answer = Answers.RETURNS_MOCKS)
-	lateinit var operations: ReactiveFluentCassandraOperations
+	val operations = mockk<ReactiveFluentCassandraOperations>(relaxed = true)
 
 	@Test // DATACASS-484
 	fun `update(KClass) extension should call its Java counterpart`() {
 
 		operations.update(Person::class);
-		verify(operations).update(Person::class.java)
+		verify { operations.update(Person::class.java) }
 	}
 
 	@Test // DATACASS-484
 	fun `update() with reified type parameter extension should call its Java counterpart`() {
 
 		operations.update<Person>()
-		verify(operations).update(Person::class.java)
+		verify { operations.update(Person::class.java) }
 	}
 }

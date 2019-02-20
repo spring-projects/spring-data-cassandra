@@ -17,15 +17,10 @@ package org.springframework.data.cassandra.core.cql
 
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.SimpleStatement
-import com.nhaarman.mockito_kotlin.any
-import com.nhaarman.mockito_kotlin.eq
-import com.nhaarman.mockito_kotlin.verify
+import io.mockk.mockk
+import io.mockk.verify
 import org.junit.Ignore
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.mockito.Answers
-import org.mockito.Mock
-import org.mockito.junit.MockitoJUnitRunner
 import org.springframework.data.cassandra.domain.Person
 
 /**
@@ -33,45 +28,43 @@ import org.springframework.data.cassandra.domain.Person
  *
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner::class)
 class ReactiveCqlOperationsExtensionsUnitTests {
 
-	@Mock(answer = Answers.RETURNS_MOCKS)
-	lateinit var operations: ReactiveCqlOperations
+	val operations = mockk<ReactiveCqlOperations>(relaxed = true)
 
 	@Test // DATACASS-484
 	fun `queryForObject(String, KClass) extension should call its Java counterpart`() {
 
 		operations.queryForObject("", Person::class)
-		verify(operations).queryForObject("", Person::class.java)
+		verify { operations.queryForObject("", Person::class.java) }
 	}
 
 	@Test // DATACASS-484
 	fun `queryForObject(String) extension should call its Java counterpart`() {
 
 		operations.queryForObject<Person>("")
-		verify(operations).queryForObject("", Person::class.java)
+		verify { operations.queryForObject("", Person::class.java) }
 	}
 
 	@Test // DATACASS-484
 	fun `queryForObject(String, KClass, array) extension should call its Java counterpart`() {
 
 		operations.queryForObject("", Person::class, "foo", "bar")
-		verify(operations).queryForObject("", Person::class.java, arrayOf("foo", "bar"))
+		verify { operations.queryForObject("", Person::class.java, arrayOf("foo", "bar")) }
 	}
 
 	@Test // DATACASS-484
 	fun `queryForObject(String, array) extension should call its Java counterpart`() {
 
 		operations.queryForObject<Person>("", "foo", "bar")
-		verify(operations).queryForObject("", Person::class.java, arrayOf("foo", "bar"))
+		verify { operations.queryForObject("", Person::class.java, arrayOf("foo", "bar")) }
 	}
 
 	@Test // DATACASS-484
 	fun `queryForObject(String, RowMapper, array) extension should call its Java counterpart`() {
 
 		operations.queryForObject("", 3) { rs: Row, _: Int -> rs.getInt(1) }
-		verify(operations).queryForObject(eq(""), any<RowMapper<Int>>(), eq(3))
+		verify { operations.queryForObject(eq(""), any<RowMapper<Int>>(), eq(3)) }
 	}
 
 	@Test // DATACASS-484
@@ -80,7 +73,7 @@ class ReactiveCqlOperationsExtensionsUnitTests {
 		val statement = SimpleStatement("SELECT * FROM person")
 
 		operations.queryForObject(statement, Person::class)
-		verify(operations).queryForObject(statement, Person::class.java)
+		verify { operations.queryForObject(statement, Person::class.java) }
 	}
 
 	@Test // DATACASS-484
@@ -89,21 +82,21 @@ class ReactiveCqlOperationsExtensionsUnitTests {
 		val statement = SimpleStatement("SELECT * FROM person")
 
 		operations.queryForObject<Person>(statement)
-		verify(operations).queryForObject(statement, Person::class.java)
+		verify { operations.queryForObject(statement, Person::class.java) }
 	}
 
 	@Test // DATACASS-484
 	fun `queryForFlux(String) extension should call its Java counterpart`() {
 
 		operations.queryForFlux<Person>("")
-		verify(operations).queryForFlux("", Person::class.java)
+		verify { operations.queryForFlux("", Person::class.java) }
 	}
 
 	@Test // DATACASS-484
 	fun `queryForFlux(String, array) extension should call its Java counterpart`() {
 
 		operations.queryForFlux<Person>("", "foo", "bar")
-		verify(operations).queryForFlux("", Person::class.java, arrayOf("foo", "bar"))
+		verify { operations.queryForFlux("", Person::class.java, arrayOf("foo", "bar")) }
 	}
 
 	@Test // DATACASS-484
@@ -111,7 +104,7 @@ class ReactiveCqlOperationsExtensionsUnitTests {
 	fun `queryForFlux(String, RowMapper, array) extension should call its Java counterpart`() {
 
 		//operations.queryForFlux("", 3) { rs: Row, _: Int -> rs.getInt(1) }
-		verify(operations).queryForFlux(eq(""), any<RowMapper<Int>>(), eq(3))
+		verify { operations.queryForFlux(eq(""), any<RowMapper<Int>>(), eq(3)) }
 	}
 
 	@Test // DATACASS-484
@@ -120,7 +113,7 @@ class ReactiveCqlOperationsExtensionsUnitTests {
 		val statement = SimpleStatement("SELECT * FROM person")
 
 		operations.queryForFlux(statement, Person::class)
-		verify(operations).queryForFlux(statement, Person::class.java)
+		verify { operations.queryForFlux(statement, Person::class.java) }
 	}
 
 	@Test // DATACASS-484
@@ -129,20 +122,20 @@ class ReactiveCqlOperationsExtensionsUnitTests {
 		val statement = SimpleStatement("SELECT * FROM person")
 
 		operations.queryForFlux<Person>(statement)
-		verify(operations).queryForFlux(statement, Person::class.java)
+		verify { operations.queryForFlux(statement, Person::class.java) }
 	}
 
 	@Test // DATACASS-484
 	fun `query(String, ResultSetExtractor, array) extension should call its Java counterpart`() {
 
 		operations.query("", 3) { rs -> rs.rows().next().cast(Person::class.java) }
-		verify(operations).query(eq(""), any<ReactiveResultSetExtractor<Person>>(), eq(3))
+		verify { operations.query(eq(""), any<ReactiveResultSetExtractor<Person>>(), eq(3)) }
 	}
 
 	@Test // DATACASS-484
 	fun `query(String, RowMapper, array) extension should call its Java counterpart`() {
 
 		operations.query("", 3) { row, _ -> row.columnDefinitions }
-		verify(operations).query(eq(""), any<RowMapper<Person>>(), eq(3))
+		verify { operations.query(eq(""), any<RowMapper<Person>>(), eq(3)) }
 	}
 }

@@ -15,12 +15,10 @@
  */
 package org.springframework.data.cassandra.core
 
-import com.nhaarman.mockito_kotlin.verify
+import io.mockk.mockk
+import io.mockk.verify
+import org.junit.Ignore
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.mockito.Answers
-import org.mockito.Mock
-import org.mockito.junit.MockitoJUnitRunner
 import org.springframework.data.cassandra.domain.Person
 
 /**
@@ -28,23 +26,21 @@ import org.springframework.data.cassandra.domain.Person
  *
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner::class)
 class ExecutableDeleteOperationExtensionsUnitTests {
 
-	@Mock(answer = Answers.RETURNS_MOCKS)
-	lateinit var operations: FluentCassandraOperations
+	val operations = mockk<FluentCassandraOperations>(relaxed = true)
 
 	@Test // DATACASS-484
 	fun `delete(KClass) extension should call its Java counterpart`() {
 
 		operations.delete(Person::class);
-		verify(operations).delete(Person::class.java)
+		verify { operations.delete(Person::class.java) }
 	}
 
 	@Test // DATACASS-484
 	fun `delete() with reified type parameter extension should call its Java counterpart`() {
 
 		operations.delete<Person>()
-		verify(operations).delete(Person::class.java)
+		verify { operations.delete(Person::class.java) }
 	}
 }
