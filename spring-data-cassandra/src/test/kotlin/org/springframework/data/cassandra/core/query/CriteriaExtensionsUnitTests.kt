@@ -26,6 +26,7 @@ import org.junit.Test
  *
  * @author Mark Paluch
  */
+@Ignore("See https://github.com/mockk/mockk/issues/259")
 class CriteriaExtensionsUnitTests {
 
 	val criteria = mockk<Criteria>(relaxed = true)
