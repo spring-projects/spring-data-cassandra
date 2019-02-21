@@ -29,6 +29,7 @@ import kotlin.reflect.KClass
 /**
  * Extension for [ReactiveSelectOperation.query] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("query<T>()"))
 fun <T : Any> ReactiveSelectOperation.query(entityClass: KClass<T>): ReactiveSelectOperation.ReactiveSelect<T> =
 		query(entityClass.java)
 
@@ -41,6 +42,7 @@ inline fun <reified T : Any> ReactiveSelectOperation.query(): ReactiveSelectOper
 /**
  * Extension for [ReactiveSelectOperation.SelectWithProjection. as] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("asType<T>()"))
 fun <T : Any> ReactiveSelectOperation.SelectWithProjection<*>.asType(resultType: KClass<T>): ReactiveSelectOperation.SelectWithQuery<T> =
 		`as`(resultType.java)
 

@@ -33,6 +33,7 @@ import kotlin.reflect.KClass
 /**
  * Extension for [ReactiveCqlOperations.queryForObject] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("queryForObject<T>(cql)"))
 fun <T : Any> ReactiveCqlOperations.queryForObject(cql: String, entityClass: KClass<T>): Mono<T> =
 		queryForObject(cql, entityClass.java)
 
@@ -45,6 +46,7 @@ inline fun <reified T : Any> ReactiveCqlOperations.queryForObject(cql: String): 
 /**
  * Extension for [ReactiveCqlOperations.queryForObject] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("queryForObject<T>(cql, args)"))
 fun <T : Any> ReactiveCqlOperations.queryForObject(cql: String, entityClass: KClass<T>, vararg args: Any): Mono<T> =
 		queryForObject(cql, entityClass.java, args)
 
@@ -63,6 +65,7 @@ fun <T : Any> ReactiveCqlOperations.queryForObject(cql: String, vararg args: Any
 /**
  * Extension for [ReactiveCqlOperations.queryForObject] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("queryForObject<T>(statement)"))
 fun <T : Any> ReactiveCqlOperations.queryForObject(statement: Statement, entityClass: KClass<T>): Mono<T> =
 		queryForObject(statement, entityClass.java)
 
@@ -89,6 +92,7 @@ inline fun <reified T : Any> ReactiveCqlOperations.queryForFlux(cql: String, var
 /**
  * Extension for [ReactiveCqlOperations.queryForFlux] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("queryForFlux<T>(statement)"))
 fun <T : Any> ReactiveCqlOperations.queryForFlux(statement: Statement, entityClass: KClass<T>): Flux<T> =
 		queryForFlux(statement, entityClass.java)
 

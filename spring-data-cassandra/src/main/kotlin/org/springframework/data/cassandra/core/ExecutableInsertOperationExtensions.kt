@@ -27,6 +27,7 @@ import kotlin.reflect.KClass
 /**
  * Extension for [ExecutableInsertOperation.insert] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("insert<T>()"))
 fun <T : Any> ExecutableInsertOperation.insert(entityClass: KClass<T>): ExecutableInsertOperation.ExecutableInsert<T> =
 		insert(entityClass.java)
 

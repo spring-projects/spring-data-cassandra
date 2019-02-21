@@ -28,6 +28,7 @@ import kotlin.reflect.KClass
 /**
  * Extension for [ReactiveInsertOperation.insert] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("insert<T>()"))
 fun <T : Any> ReactiveInsertOperation.insert(entityClass: KClass<T>): ReactiveInsertOperation.ReactiveInsert<T> =
 		insert(entityClass.java)
 

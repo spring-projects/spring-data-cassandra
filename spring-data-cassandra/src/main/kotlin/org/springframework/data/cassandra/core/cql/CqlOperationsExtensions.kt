@@ -30,6 +30,7 @@ import kotlin.reflect.KClass
 /**
  * Extension for [CqlOperations.queryForObject] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("queryForObject<T>(cql)"))
 fun <T : Any> CqlOperations.queryForObject(cql: String, entityClass: KClass<T>): T? =
 		queryForObject(cql, entityClass.java)
 
@@ -42,6 +43,7 @@ inline fun <reified T : Any> CqlOperations.queryForObject(cql: String): T? =
 /**
  * Extension for [CqlOperations.queryForObject] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("queryForObject<T>(cql, args)"))
 fun <T : Any> CqlOperations.queryForObject(cql: String, entityClass: KClass<T>, vararg args: Any): T? =
 		queryForObject(cql, entityClass.java, args)
 
@@ -60,6 +62,7 @@ fun <T : Any> CqlOperations.queryForObject(cql: String, vararg args: Any, functi
 /**
  * Extension for [CqlOperations.queryForObject] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("queryForObject<T>(statement)"))
 fun <T : Any> CqlOperations.queryForObject(statement: Statement, entityClass: KClass<T>): T? =
 		queryForObject(statement, entityClass.java)
 
@@ -86,6 +89,7 @@ inline fun <reified T : Any> CqlOperations.queryForList(cql: String, vararg args
 /**
  * Extension for [CqlOperations.queryForList] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("queryForList<T>(statement)"))
 fun <T : Any> CqlOperations.queryForList(statement: Statement, entityClass: KClass<T>): List<T> =
 		queryForList(statement, entityClass.java)
 

@@ -28,6 +28,7 @@ import kotlin.reflect.KClass
 /**
  * Extension for [ReactiveDeleteOperation.delete] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("delete<T>()"))
 fun <T : Any> ReactiveDeleteOperation.delete(entityClass: KClass<T>): ReactiveDeleteOperation.ReactiveDelete =
 		delete(entityClass.java)
 

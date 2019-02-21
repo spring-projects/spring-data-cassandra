@@ -27,6 +27,7 @@ import kotlin.reflect.KClass
 /**
  * Extension for [ExecutableSelectOperation.query] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("query<T>()"))
 fun <T : Any> ExecutableSelectOperation.query(entityClass: KClass<T>): ExecutableSelectOperation.ExecutableSelect<T> =
 		query(entityClass.java)
 

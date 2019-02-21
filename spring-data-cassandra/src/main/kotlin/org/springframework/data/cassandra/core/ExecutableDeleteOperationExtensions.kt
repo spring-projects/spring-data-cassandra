@@ -27,6 +27,7 @@ import kotlin.reflect.KClass
 /**
  * Extension for [ExecutableRemoveOperation.delete] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("delete<T>()"))
 fun <T : Any> ExecutableDeleteOperation.delete(entityClass: KClass<T>): ExecutableDeleteOperation.ExecutableDelete =
 		delete(entityClass.java)
 
