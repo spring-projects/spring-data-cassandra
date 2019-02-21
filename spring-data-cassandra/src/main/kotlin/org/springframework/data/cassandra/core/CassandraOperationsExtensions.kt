@@ -33,6 +33,7 @@ import kotlin.reflect.KClass
 /**
  * Extension for [CassandraOperations.getTableName] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("getTableName<T>()"))
 fun <T : Any> CassandraOperations.getTableName(entityClass: KClass<T>): CqlIdentifier =
 		getTableName(entityClass.java)
 
@@ -49,6 +50,7 @@ inline fun <reified T : Any> CassandraOperations.getTableName(): CqlIdentifier =
 /**
  * Extension for [CassandraOperations.select] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("select<T>(cql)"))
 fun <T : Any> CassandraOperations.select(cql: String, entityClass: KClass<T>): List<T> =
 		select(cql, entityClass.java)
 
@@ -61,6 +63,7 @@ inline fun <reified T : Any> CassandraOperations.select(cql: String): List<T> =
 /**
  * Extension for [CassandraOperations.stream] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("stream<T>(cql)"))
 fun <T : Any> CassandraOperations.stream(cql: String, entityClass: KClass<T>): Stream<T> =
 		stream(cql, entityClass.java)
 
@@ -73,6 +76,7 @@ inline fun <reified T : Any> CassandraOperations.stream(cql: String): Stream<T> 
 /**
  * Extension for [CassandraOperations.selectOne] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("selectOne<T>(cql)"))
 fun <T : Any> CassandraOperations.selectOne(cql: String, entityClass: KClass<T>): T? =
 		selectOne(cql, entityClass.java)
 
@@ -89,6 +93,7 @@ inline fun <reified T : Any> CassandraOperations.selectOne(cql: String): T? =
 /**
  * Extension for [CassandraOperations.select] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("select<T>(statement)"))
 fun <T : Any> CassandraOperations.select(statement: Statement, entityClass: KClass<T>): List<T> =
 		select(statement, entityClass.java)
 
@@ -101,6 +106,7 @@ inline fun <reified T : Any> CassandraOperations.select(statement: Statement): L
 /**
  * Extension for [CassandraOperations.slice] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("slice<T>(statement)"))
 fun <T : Any> CassandraOperations.slice(statement: Statement, entityClass: KClass<T>): Slice<T> =
 		slice(statement, entityClass.java)
 
@@ -113,6 +119,7 @@ inline fun <reified T : Any> CassandraOperations.slice(statement: Statement): Sl
 /**
  * Extension for [CassandraOperations.stream] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("stream<T>(statement)"))
 fun <T : Any> CassandraOperations.stream(statement: Statement, entityClass: KClass<T>): Stream<T> =
 		stream(statement, entityClass.java)
 
@@ -125,6 +132,7 @@ inline fun <reified T : Any> CassandraOperations.stream(statement: Statement): S
 /**
  * Extension for [CassandraOperations.selectOne] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("selectOne<T>(statement)"))
 fun <T : Any> CassandraOperations.selectOne(statement: Statement, entityClass: KClass<T>): T? =
 		selectOne(statement, entityClass.java)
 
@@ -141,6 +149,7 @@ inline fun <reified T : Any> CassandraOperations.selectOne(statement: Statement)
 /**
  * Extension for [CassandraOperations.select] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("select<T>(query)"))
 fun <T : Any> CassandraOperations.select(query: Query, entityClass: KClass<T>): List<T> =
 		select(query, entityClass.java)
 
@@ -153,6 +162,7 @@ inline fun <reified T : Any> CassandraOperations.select(query: Query): List<T> =
 /**
  * Extension for [CassandraOperations.slice] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("slice<T>(query)"))
 fun <T : Any> CassandraOperations.slice(query: Query, entityClass: KClass<T>): Slice<T> =
 		slice(query, entityClass.java)
 
@@ -165,6 +175,7 @@ inline fun <reified T : Any> CassandraOperations.slice(query: Query): Slice<T> =
 /**
  * Extension for [CassandraOperations.stream] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("stream<T>(query)"))
 fun <T : Any> CassandraOperations.stream(query: Query, entityClass: KClass<T>): Stream<T> =
 		stream(query, entityClass.java)
 
@@ -177,6 +188,7 @@ inline fun <reified T : Any> CassandraOperations.stream(query: Query): Stream<T>
 /**
  * Extension for [CassandraOperations.selectOne] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("selectOne<T>(query)"))
 fun <T : Any> CassandraOperations.selectOne(query: Query, entityClass: KClass<T>): T? =
 		selectOne(query, entityClass.java)
 
@@ -189,6 +201,7 @@ inline fun <reified T : Any> CassandraOperations.selectOne(query: Query): T? =
 /**
  * Extension for [CassandraOperations.update] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("update<T>(query, update)"))
 fun <T : Any> CassandraOperations.update(query: Query, update: Update, entityClass: KClass<T>): Boolean =
 		update(query, update, entityClass.java)
 
@@ -201,6 +214,7 @@ inline fun <reified T : Any> CassandraOperations.update(query: Query, update: Up
 /**
  * Extension for [CassandraOperations.delete] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("delete<T>(query)"))
 fun <T : Any> CassandraOperations.delete(query: Query, entityClass: KClass<T>): Boolean =
 		delete(query, entityClass.java)
 
@@ -218,6 +232,7 @@ inline fun <reified T : Any> CassandraOperations.delete(query: Query): Boolean =
 /**
  * Extension for [CassandraOperations.count] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("count<T>()"))
 fun <T : Any> CassandraOperations.count(entityClass: KClass<T>): Long =
 		count(entityClass.java)
 
@@ -230,6 +245,7 @@ inline fun <reified T : Any> CassandraOperations.count(): Long =
 /**
  * Extension for [CassandraOperations.count] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("count<T>(query)"))
 fun <T : Any> CassandraOperations.count(query: Query, entityClass: KClass<T>): Long =
 		count(query, entityClass.java)
 
@@ -242,6 +258,7 @@ inline fun <reified T : Any> CassandraOperations.count(query: Query): Long =
 /**
  * Extension for [CassandraOperations.exists] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("exists<T>(id)"))
 fun <T : Any> CassandraOperations.exists(id: Any, entityClass: KClass<T>): Boolean =
 		exists(id, entityClass.java)
 
@@ -249,11 +266,12 @@ fun <T : Any> CassandraOperations.exists(id: Any, entityClass: KClass<T>): Boole
  * Extension for [CassandraOperations.exists] leveraging reified type parameters.
  */
 inline fun <reified T : Any> CassandraOperations.exists(id: Any): Boolean =
-		exists(id, T::class)
+		exists(id, T::class.java)
 
 /**
  * Extension for [CassandraOperations.count] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("exists<T>(query)"))
 fun <T : Any> CassandraOperations.exists(query: Query, entityClass: KClass<T>): Boolean =
 		exists(query, entityClass.java)
 
@@ -266,6 +284,7 @@ inline fun <reified T : Any> CassandraOperations.exists(query: Query): Boolean =
 /**
  * Extension for [CassandraOperations.selectOneById] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("selectOneById<T>(id)"))
 fun <T : Any> CassandraOperations.selectOneById(id: Any, entityClass: KClass<T>): T? =
 		selectOneById(id, entityClass.java)
 
@@ -278,6 +297,7 @@ inline fun <reified T : Any> CassandraOperations.selectOneById(id: Any): T? =
 /**
  * Extension for [CassandraOperations.deleteById] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("deleteById<T>(id)"))
 fun <T : Any> CassandraOperations.deleteById(id: Any, entityClass: KClass<T>): Boolean =
 		deleteById(id, entityClass.java)
 
@@ -290,6 +310,7 @@ inline fun <reified T : Any> CassandraOperations.deleteById(id: Any): Boolean =
 /**
  * Extension for [CassandraOperations.truncate] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("truncate<T>()"))
 fun <T : Any> CassandraOperations.truncate(entityClass: KClass<T>): Unit =
 		truncate(entityClass.java)
 

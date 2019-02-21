@@ -36,6 +36,7 @@ import kotlin.reflect.KClass
 /**
  * Extension for [ReactiveCassandraOperations.select] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("select<T>(cql)"))
 fun <T : Any> ReactiveCassandraOperations.select(cql: String, entityClass: KClass<T>): Flux<T> =
 		select(cql, entityClass.java)
 
@@ -48,6 +49,7 @@ inline fun <reified T : Any> ReactiveCassandraOperations.select(cql: String): Fl
 /**
  * Extension for [ReactiveCassandraOperations.selectOne] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("selectOne<T>(cql)"))
 fun <T : Any> ReactiveCassandraOperations.selectOne(cql: String, entityClass: KClass<T>): Mono<T> =
 		selectOne(cql, entityClass.java)
 
@@ -64,6 +66,7 @@ inline fun <reified T : Any> ReactiveCassandraOperations.selectOne(cql: String):
 /**
  * Extension for [ReactiveCassandraOperations.select] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("select<T>(statement)"))
 fun <T : Any> ReactiveCassandraOperations.select(statement: Statement, entityClass: KClass<T>): Flux<T> =
 		select(statement, entityClass.java)
 
@@ -76,6 +79,7 @@ inline fun <reified T : Any> ReactiveCassandraOperations.select(statement: State
 /**
  * Extension for [ReactiveCassandraOperations.selectOne] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("selectOne<T>(statement)"))
 fun <T : Any> ReactiveCassandraOperations.selectOne(statement: Statement, entityClass: KClass<T>): Mono<T> =
 		selectOne(statement, entityClass.java)
 
@@ -92,6 +96,7 @@ inline fun <reified T : Any> ReactiveCassandraOperations.selectOne(statement: St
 /**
  * Extension for [ReactiveCassandraOperations.select] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("select<T>(query)"))
 fun <T : Any> ReactiveCassandraOperations.select(query: Query, entityClass: KClass<T>): Flux<T> =
 		select(query, entityClass.java)
 
@@ -104,6 +109,7 @@ inline fun <reified T : Any> ReactiveCassandraOperations.select(query: Query): F
 /**
  * Extension for [ReactiveCassandraOperations.selectOne] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("selectOne<T>(query)"))
 fun <T : Any> ReactiveCassandraOperations.selectOne(query: Query, entityClass: KClass<T>): Mono<T> =
 		selectOne(query, entityClass.java)
 
@@ -116,6 +122,7 @@ inline fun <reified T : Any> ReactiveCassandraOperations.selectOne(query: Query)
 /**
  * Extension for [ReactiveCassandraOperations.update] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("update<T>(query, update)"))
 fun <T : Any> ReactiveCassandraOperations.update(query: Query, update: Update, entityClass: KClass<T>): Mono<Boolean> =
 		update(query, update, entityClass.java)
 
@@ -128,6 +135,7 @@ inline fun <reified T : Any> ReactiveCassandraOperations.update(query: Query, up
 /**
  * Extension for [ReactiveCassandraOperations.delete] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("delete<T>(query)"))
 fun <T : Any> ReactiveCassandraOperations.delete(query: Query, entityClass: KClass<T>): Mono<Boolean> =
 		delete(query, entityClass.java)
 
@@ -145,6 +153,7 @@ inline fun <reified T : Any> ReactiveCassandraOperations.delete(query: Query): M
 /**
  * Extension for [ReactiveCassandraOperations.count] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("count<T>()"))
 fun <T : Any> ReactiveCassandraOperations.count(entityClass: KClass<T>): Mono<Long> =
 		count(entityClass.java)
 
@@ -157,6 +166,7 @@ inline fun <reified T : Any> ReactiveCassandraOperations.count(): Mono<Long> =
 /**
  * Extension for [ReactiveCassandraOperations.count] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("count<T>(query)"))
 fun <T : Any> ReactiveCassandraOperations.count(query: Query, entityClass: KClass<T>): Mono<Long> =
 		count(query, entityClass.java)
 
@@ -169,6 +179,7 @@ inline fun <reified T : Any> ReactiveCassandraOperations.count(query: Query): Mo
 /**
  * Extension for [ReactiveCassandraOperations.exists] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("exists<T>(id)"))
 fun <T : Any> ReactiveCassandraOperations.exists(id: Any, entityClass: KClass<T>): Mono<Boolean> =
 		exists(id, entityClass.java)
 
@@ -181,6 +192,7 @@ inline fun <reified T : Any> ReactiveCassandraOperations.exists(id: Any): Mono<B
 /**
  * Extension for [ReactiveCassandraOperations.count] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("exists<T>(query)"))
 fun <T : Any> ReactiveCassandraOperations.exists(query: Query, entityClass: KClass<T>): Mono<Boolean> =
 		exists(query, entityClass.java)
 
@@ -193,6 +205,7 @@ inline fun <reified T : Any> ReactiveCassandraOperations.exists(query: Query): M
 /**
  * Extension for [ReactiveCassandraOperations.selectOneById] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("selectOneById<T>(id)"))
 fun <T : Any> ReactiveCassandraOperations.selectOneById(id: Any, entityClass: KClass<T>): Mono<T> =
 		selectOneById(id, entityClass.java)
 
@@ -205,6 +218,7 @@ inline fun <reified T : Any> ReactiveCassandraOperations.selectOneById(id: Any):
 /**
  * Extension for [ReactiveCassandraOperations.deleteById] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("deleteById<T>(id)"))
 fun <T : Any> ReactiveCassandraOperations.deleteById(id: Any, entityClass: KClass<T>): Mono<Boolean> =
 		deleteById(id, entityClass.java)
 
@@ -217,6 +231,7 @@ inline fun <reified T : Any> ReactiveCassandraOperations.deleteById(id: Any): Mo
 /**
  * Extension for [ReactiveCassandraOperations.truncate] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("truncate<T>()"))
 fun <T : Any> ReactiveCassandraOperations.truncate(entityClass: KClass<T>): Mono<Void> =
 		truncate(entityClass.java)
 

@@ -36,6 +36,7 @@ import kotlin.reflect.KClass
 /**
  * Extension for [AsyncCassandraOperations.select] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("select<T>(cql)"))
 fun <T : Any> AsyncCassandraOperations.select(cql: String, entityClass: KClass<T>): ListenableFuture<List<T>> =
 		select(cql, entityClass.java)
 
@@ -48,6 +49,7 @@ inline fun <reified T : Any> AsyncCassandraOperations.select(cql: String): Liste
 /**
  * Extension for [AsyncCassandraOperations.select] providing a Consumer-like function.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("select<T>(cql, consumer)"))
 fun <T : Any> AsyncCassandraOperations.select(cql: String, entityClass: KClass<T>, consumer: (T) -> Unit): ListenableFuture<Void> =
 		select(cql, consumer, entityClass.java)
 
@@ -60,6 +62,7 @@ inline fun <reified T : Any> AsyncCassandraOperations.select(cql: String, crossi
 /**
  * Extension for [AsyncCassandraOperations.selectOne] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("selectOne<T>(cql)"))
 fun <T : Any> AsyncCassandraOperations.selectOne(cql: String, entityClass: KClass<T>): ListenableFuture<T?> =
 		selectOne(cql, entityClass.java)
 
@@ -76,6 +79,7 @@ inline fun <reified T : Any> AsyncCassandraOperations.selectOne(cql: String): Li
 /**
  * Extension for [AsyncCassandraOperations.select] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("select<T>(statement)"))
 fun <T : Any> AsyncCassandraOperations.select(statement: Statement, entityClass: KClass<T>): ListenableFuture<List<T>> =
 		select(statement, entityClass.java)
 
@@ -88,6 +92,7 @@ inline fun <reified T : Any> AsyncCassandraOperations.select(statement: Statemen
 /**
  * Extension for [AsyncCassandraOperations.select] providing a Consumer-like function.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("select<T>(statement, consumer)"))
 fun <T : Any> AsyncCassandraOperations.select(statement: Statement, entityClass: KClass<T>, consumer: (T) -> Unit): ListenableFuture<Void> =
 		select(statement, consumer, entityClass.java)
 
@@ -100,6 +105,7 @@ inline fun <reified T : Any> AsyncCassandraOperations.select(statement: Statemen
 /**
  * Extension for [AsyncCassandraOperations.slice] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("slice<T>(statement)"))
 fun <T : Any> AsyncCassandraOperations.slice(statement: Statement, entityClass: KClass<T>): ListenableFuture<Slice<T>> =
 		slice(statement, entityClass.java)
 
@@ -112,6 +118,7 @@ inline fun <reified T : Any> AsyncCassandraOperations.slice(statement: Statement
 /**
  * Extension for [AsyncCassandraOperations.selectOne] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("selectOne<T>(statement)"))
 fun <T : Any> AsyncCassandraOperations.selectOne(statement: Statement, entityClass: KClass<T>): ListenableFuture<T?> =
 		selectOne(statement, entityClass.java)
 
@@ -128,6 +135,7 @@ inline fun <reified T : Any> AsyncCassandraOperations.selectOne(statement: State
 /**
  * Extension for [AsyncCassandraOperations.select] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("select<T>(query)"))
 fun <T : Any> AsyncCassandraOperations.select(query: Query, entityClass: KClass<T>): ListenableFuture<List<T>> =
 		select(query, entityClass.java)
 
@@ -140,18 +148,21 @@ inline fun <reified T : Any> AsyncCassandraOperations.select(query: Query): List
 /**
  * Extension for [AsyncCassandraOperations.select] providing a Consumer-like function.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("select<T>(query, consumer)"))
 fun <T : Any> AsyncCassandraOperations.select(query: Query, entityClass: KClass<T>, consumer: (T) -> Unit): ListenableFuture<Void> =
 		select(query, consumer, entityClass.java)
 
 /**
  * Extension for [AsyncCassandraOperations.select] providing a Consumer-like function leveraging reified type parameters.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("select<T>(query, consumer)"))
 inline fun <reified T : Any> AsyncCassandraOperations.select(query: Query, crossinline consumer: (T) -> Unit): ListenableFuture<Void> =
 		select(query, { consumer(it) }, T::class.java)
 
 /**
  * Extension for [AsyncCassandraOperations.slice] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("slice<T>(query)"))
 fun <T : Any> AsyncCassandraOperations.slice(query: Query, entityClass: KClass<T>): ListenableFuture<Slice<T>> =
 		slice(query, entityClass.java)
 
@@ -164,6 +175,7 @@ inline fun <reified T : Any> AsyncCassandraOperations.slice(query: Query): Liste
 /**
  * Extension for [AsyncCassandraOperations.selectOne] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("selectOne<T>(query)"))
 fun <T : Any> AsyncCassandraOperations.selectOne(query: Query, entityClass: KClass<T>): ListenableFuture<T?> =
 		selectOne(query, entityClass.java)
 
@@ -176,6 +188,7 @@ inline fun <reified T : Any> AsyncCassandraOperations.selectOne(query: Query): L
 /**
  * Extension for [AsyncCassandraOperations.update] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("update<T>(query, update)"))
 fun <T : Any> AsyncCassandraOperations.update(query: Query, update: Update, entityClass: KClass<T>): ListenableFuture<Boolean> =
 		update(query, update, entityClass.java)
 
@@ -188,6 +201,7 @@ inline fun <reified T : Any> AsyncCassandraOperations.update(query: Query, updat
 /**
  * Extension for [AsyncCassandraOperations.delete] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("delete<T>(query)"))
 fun <T : Any> AsyncCassandraOperations.delete(query: Query, entityClass: KClass<T>): ListenableFuture<Boolean> =
 		delete(query, entityClass.java)
 
@@ -205,6 +219,7 @@ inline fun <reified T : Any> AsyncCassandraOperations.delete(query: Query): List
 /**
  * Extension for [AsyncCassandraOperations.count] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("count<T>()"))
 fun <T : Any> AsyncCassandraOperations.count(entityClass: KClass<T>): ListenableFuture<Long> =
 		count(entityClass.java)
 
@@ -217,6 +232,7 @@ inline fun <reified T : Any> AsyncCassandraOperations.count(): ListenableFuture<
 /**
  * Extension for [AsyncCassandraOperations.count] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("count<T>(query)"))
 fun <T : Any> AsyncCassandraOperations.count(query: Query, entityClass: KClass<T>): ListenableFuture<Long> =
 		count(query, entityClass.java)
 
@@ -229,6 +245,7 @@ inline fun <reified T : Any> AsyncCassandraOperations.count(query: Query): Liste
 /**
  * Extension for [AsyncCassandraOperations.exists] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("exists<T>(id)"))
 fun <T : Any> AsyncCassandraOperations.exists(id: Any, entityClass: KClass<T>): ListenableFuture<Boolean> =
 		exists(id, entityClass.java)
 
@@ -236,11 +253,12 @@ fun <T : Any> AsyncCassandraOperations.exists(id: Any, entityClass: KClass<T>): 
  * Extension for [AsyncCassandraOperations.exists] leveraging reified type parameters.
  */
 inline fun <reified T : Any> AsyncCassandraOperations.exists(id: Any): ListenableFuture<Boolean> =
-		exists(id, T::class)
+		exists(id, T::class.java)
 
 /**
  * Extension for [AsyncCassandraOperations.count] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("exists<T>(query)"))
 fun <T : Any> AsyncCassandraOperations.exists(query: Query, entityClass: KClass<T>): ListenableFuture<Boolean> =
 		exists(query, entityClass.java)
 
@@ -253,6 +271,7 @@ inline fun <reified T : Any> AsyncCassandraOperations.exists(query: Query): List
 /**
  * Extension for [AsyncCassandraOperations.selectOneById] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("selectOneById<T>(id)"))
 fun <T : Any> AsyncCassandraOperations.selectOneById(id: Any, entityClass: KClass<T>): ListenableFuture<T?> =
 		selectOneById(id, entityClass.java)
 
@@ -265,6 +284,7 @@ inline fun <reified T : Any> AsyncCassandraOperations.selectOneById(id: Any): Li
 /**
  * Extension for [AsyncCassandraOperations.deleteById] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("deleteById<T>(id)"))
 fun <T : Any> AsyncCassandraOperations.deleteById(id: Any, entityClass: KClass<T>): ListenableFuture<Boolean> =
 		deleteById(id, entityClass.java)
 
@@ -277,6 +297,7 @@ inline fun <reified T : Any> AsyncCassandraOperations.deleteById(id: Any): Liste
 /**
  * Extension for [AsyncCassandraOperations.truncate] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("truncate<T>()"))
 fun <T : Any> AsyncCassandraOperations.truncate(entityClass: KClass<T>): ListenableFuture<Void> =
 		truncate(entityClass.java)
 

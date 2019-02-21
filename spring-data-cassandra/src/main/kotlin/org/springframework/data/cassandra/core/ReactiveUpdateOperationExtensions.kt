@@ -27,6 +27,7 @@ import kotlin.reflect.KClass
 /**
  * Extension for [ReactiveUpdateOperation.update] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("update<T>()"))
 fun <T : Any> ReactiveUpdateOperation.update(entityClass: KClass<T>): ReactiveUpdateOperation.ReactiveUpdate =
 		update(entityClass.java)
 
