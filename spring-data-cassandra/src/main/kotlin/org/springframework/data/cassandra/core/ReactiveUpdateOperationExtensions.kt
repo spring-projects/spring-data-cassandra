@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.core
 
+import kotlinx.coroutines.reactive.awaitSingle
+import org.springframework.data.cassandra.core.query.Update
 import kotlin.reflect.KClass
 
 /**
@@ -35,3 +37,11 @@ fun <T : Any> ReactiveUpdateOperation.update(entityClass: KClass<T>): ReactiveUp
  */
 inline fun <reified T : Any> ReactiveUpdateOperation.update(): ReactiveUpdateOperation.ReactiveUpdate =
 		update(T::class.java)
+
+/**
+ * Coroutines variant of [ReactiveUpdateOperation.TerminatingUpdate.apply].
+ *
+ * @author MarkPaluch
+ * @since 2.2
+ */
+suspend fun ReactiveUpdateOperation.TerminatingUpdate.applyAndAwait(update: Update): WriteResult = apply(update).awaitSingle()

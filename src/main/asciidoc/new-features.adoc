@@ -7,6 +7,7 @@ This chapter summarizes changes and new features for each release.
 == What's new in Spring Data for Apache Cassandra 2.2
 * Read-only properties annotated with `@ReadOnlyProperty` to exclude non-writable properties from entity-bound `INSERT` and `UPDATE` operations.
 * Support for derived `Between` queries.
+* Kotlin Coroutine extensions for `ReactiveFluentCassandraOperations`.
 
 [[new-features.2-1-0]]
 == What's new in Spring Data for Apache Cassandra 2.1

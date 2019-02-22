@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.core
 
+import kotlinx.coroutines.reactive.awaitFirstOrNull
+import kotlinx.coroutines.reactive.awaitSingle
 import kotlin.reflect.KClass
 
 /**
@@ -47,3 +49,39 @@ fun <T : Any> ReactiveSelectOperation.SelectWithProjection<*>.asType(resultType:
  */
 inline fun <reified T : Any> ReactiveSelectOperation.SelectWithProjection<*>.asType(): ReactiveSelectOperation.SelectWithQuery<T> =
 		`as`(T::class.java)
+
+/**
+ * Coroutines variant of [ReactiveSelectOperation.TerminatingSelect.one].
+ *
+ * @author Mark Paluch
+ * @since 2.2
+ */
+suspend inline fun <reified T : Any> ReactiveSelectOperation.TerminatingSelect<T>.awaitOne(): T? =
+		one().awaitFirstOrNull()
+
+/**
+ * Coroutines variant of [ReactiveSelectOperation.TerminatingSelect.first].
+ *
+ * @author Mark Paluch
+ * @since 2.2
+ */
+suspend inline fun <reified T : Any> ReactiveSelectOperation.TerminatingSelect<T>.awaitFirst(): T? =
+		first().awaitFirstOrNull()
+
+/**
+ * Coroutines variant of [ReactiveSelectOperation.TerminatingSelect.count].
+ *
+ * @author Mark Paluch
+ * @since 2.2
+ */
+suspend fun <T : Any> ReactiveSelectOperation.TerminatingSelect<T>.awaitCount(): Long =
+		count().awaitSingle()
+
+/**
+ * Coroutines variant of [ReactiveSelectOperation.TerminatingSelect.exists].
+ *
+ * @author Mark Paluch
+ * @since 2.2
+ */
+suspend fun <T : Any> ReactiveSelectOperation.TerminatingSelect<T>.awaitExists(): Boolean =
+		exists().awaitSingle()

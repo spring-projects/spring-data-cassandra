@@ -15,11 +15,15 @@
  */
 package org.springframework.data.cassandra.core
 
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.runBlocking
+import org.assertj.core.api.Assertions
 import org.junit.Test
 import org.springframework.data.cassandra.domain.Person
 import org.springframework.data.cassandra.domain.User
+import reactor.core.publisher.Mono
 
 /**
  * Unit tests for [ReactiveSelectOperationExtensions].
@@ -58,5 +62,65 @@ class ReactiveSelectOperationExtensionsUnitTests {
 
 		operationWithProjection.asType<User>();
 		verify { operationWithProjection.`as`(User::class.java) }
+	}
+
+	@Test // DATACASS-632
+	fun terminatingFindAwaitOne() {
+
+		val find = mockk<ReactiveSelectOperation.TerminatingSelect<String>>()
+		every { find.one() } returns Mono.just("foo")
+
+		runBlocking {
+			Assertions.assertThat(find.awaitOne()).isEqualTo("foo")
+		}
+
+		verify {
+			find.one()
+		}
+	}
+
+	@Test // DATACASS-632
+	fun terminatingFindAwaitFirst() {
+
+		val find = mockk<ReactiveSelectOperation.TerminatingSelect<String>>()
+		every { find.first() } returns Mono.just("foo")
+
+		runBlocking {
+			Assertions.assertThat(find.awaitFirst()).isEqualTo("foo")
+		}
+
+		verify {
+			find.first()
+		}
+	}
+
+	@Test // DATACASS-632
+	fun terminatingFindAwaitCount() {
+
+		val find = mockk<ReactiveSelectOperation.TerminatingSelect<String>>()
+		every { find.count() } returns Mono.just(1)
+
+		runBlocking {
+			Assertions.assertThat(find.awaitCount()).isEqualTo(1)
+		}
+
+		verify {
+			find.count()
+		}
+	}
+
+	@Test // DATACASS-632
+	fun terminatingFindAwaitExists() {
+
+		val find = mockk<ReactiveSelectOperation.TerminatingSelect<String>>()
+		every { find.exists() } returns Mono.just(true)
+
+		runBlocking {
+			Assertions.assertThat(find.awaitExists()).isTrue()
+		}
+
+		verify {
+			find.exists()
+		}
 	}
 }

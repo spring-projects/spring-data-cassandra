@@ -15,11 +15,14 @@
  */
 package org.springframework.data.cassandra.core
 
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import org.junit.Ignore
+import kotlinx.coroutines.runBlocking
+import org.assertj.core.api.Assertions
 import org.junit.Test
 import org.springframework.data.cassandra.domain.Person
+import reactor.core.publisher.Mono
 
 /**
  * Unit tests for [ReactiveInsertOperationExtensions].
@@ -42,5 +45,21 @@ class ReactiveInsertOperationExtensionsUnitTests {
 
 		operations.insert<Person>()
 		verify { operations.insert(Person::class.java) }
+	}
+
+	@Test // DATACASS-632
+	fun oneAndAwait() {
+
+		val insert = mockk<ReactiveInsertOperation.TerminatingInsert<String>>()
+		val result = mockk<EntityWriteResult<String>>()
+		every { insert.one("foo") } returns Mono.just(result)
+
+		runBlocking {
+			Assertions.assertThat(insert.oneAndAwait("foo")).isEqualTo(result)
+		}
+
+		verify {
+			insert.one("foo")
+		}
 	}
 }

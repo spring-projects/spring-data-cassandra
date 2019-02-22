@@ -15,10 +15,15 @@
  */
 package org.springframework.data.cassandra.core
 
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.runBlocking
+import org.assertj.core.api.Assertions
 import org.junit.Test
+import org.springframework.data.cassandra.core.query.Update
 import org.springframework.data.cassandra.domain.Person
+import reactor.core.publisher.Mono
 
 /**
  * Unit tests for [ReactiveUpdateOperationExtensions].
@@ -41,5 +46,22 @@ class ReactiveUpdateOperationExtensionsUnitTests {
 
 		operations.update<Person>()
 		verify { operations.update(Person::class.java) }
+	}
+
+	@Test // DATACASS-632
+	fun applyAndAwait() {
+
+		val update = mockk<ReactiveUpdateOperation.TerminatingUpdate>()
+		val result = mockk<WriteResult>()
+		val updateObj = mockk<Update>();
+		every { update.apply(updateObj) } returns Mono.just(result)
+
+		runBlocking {
+			Assertions.assertThat(update.applyAndAwait(updateObj)).isEqualTo(result)
+		}
+
+		verify {
+			update.apply(updateObj)
+		}
 	}
 }

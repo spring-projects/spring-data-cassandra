@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.core
 
+import kotlinx.coroutines.reactive.awaitSingle
 import kotlin.reflect.KClass
 
 /**
@@ -35,3 +36,12 @@ fun <T : Any> ReactiveInsertOperation.insert(entityClass: KClass<T>): ReactiveIn
  */
 inline fun <reified T : Any> ReactiveInsertOperation.insert(): ReactiveInsertOperation.ReactiveInsert<T> =
 		insert(T::class.java)
+
+/**
+ * Coroutines variant of [ReactiveInsertOperation.TerminatingInsert.one].
+ *
+ * @author Mark Paluch
+ * @since 2.2
+ */
+suspend inline fun <reified T : Any> ReactiveInsertOperation.TerminatingInsert<T>.oneAndAwait(o: T): EntityWriteResult<T> =
+		one(o).awaitSingle()

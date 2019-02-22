@@ -15,10 +15,14 @@
  */
 package org.springframework.data.cassandra.core
 
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.runBlocking
+import org.assertj.core.api.Assertions
 import org.junit.Test
 import org.springframework.data.cassandra.domain.Person
+import reactor.core.publisher.Mono
 
 /**
  * Unit tests for [ReactiveDeleteOperationExtensions].
@@ -41,5 +45,21 @@ class ReactiveDeleteOperationExtensionsUnitTests {
 
 		operations.delete<Person>()
 		verify { operations.delete(Person::class.java) }
+	}
+
+	@Test // DATACASS-632
+	fun allAndAwait() {
+
+		val delete = mockk<ReactiveDeleteOperation.TerminatingDelete>()
+		val result = mockk<WriteResult>()
+		every { delete.all() } returns Mono.just(result)
+
+		runBlocking {
+			Assertions.assertThat(delete.allAndAwait()).isEqualTo(result)
+		}
+
+		verify {
+			delete.all()
+		}
 	}
 }

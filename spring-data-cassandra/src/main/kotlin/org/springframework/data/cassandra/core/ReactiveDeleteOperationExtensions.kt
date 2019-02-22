@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.core
 
+import kotlinx.coroutines.reactive.awaitSingle
 import kotlin.reflect.KClass
 
 /**
@@ -35,3 +36,12 @@ fun <T : Any> ReactiveDeleteOperation.delete(entityClass: KClass<T>): ReactiveDe
  */
 inline fun <reified T : Any> ReactiveDeleteOperation.delete(): ReactiveDeleteOperation.ReactiveDelete =
 		delete(T::class.java)
+
+/**
+ * Coroutines variant of [ReactiveDeleteOperation.TerminatingDelete.all].
+ *
+ * @author Mark Paluch
+ * @since 2.2
+ */
+suspend fun ReactiveDeleteOperation.TerminatingDelete.allAndAwait(): WriteResult =
+		all().awaitSingle()
