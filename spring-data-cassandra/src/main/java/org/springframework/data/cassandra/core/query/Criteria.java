@@ -63,7 +63,21 @@ public class Criteria implements CriteriaDefinition {
 	 * @return a new {@link Criteria} for {@code columnName}.
 	 */
 	public static Criteria where(String columnName) {
-		return new Criteria(ColumnName.from(columnName));
+		return where(ColumnName.from(columnName));
+	}
+
+	/**
+	 * Static factory method to create a {@link Criteria} using the provided {@link ColumnName}.
+	 *
+	 * @param columnName must not be {@literal null}.
+	 * @return a new {@link Criteria} for {@code columnName}.
+	 * @since 2.2
+	 */
+	public static Criteria where(ColumnName columnName) {
+
+		Assert.notNull(columnName, "ColumnName must not be null");
+
+		return new Criteria(columnName);
 	}
 
 	/**

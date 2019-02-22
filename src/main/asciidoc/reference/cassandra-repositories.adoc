@@ -247,6 +247,11 @@ The following table shows short examples of the keywords that you can use in que
 | `findByAgeLessThanEqual(int age)`
 | `age <= age`
 
+| `Between`
+| `findByAgeBetween(int from, int to)` and `findByAgeBetween(Range<Integer> range)`
+| ``age > from AND age < to`` and
+lower / upper bounds (`>` / `>=` & `<` / `<=`) according to `Range`
+
 | `In`
 | `findByAgeIn(Collection ages)`
 | `age IN (ages...)`

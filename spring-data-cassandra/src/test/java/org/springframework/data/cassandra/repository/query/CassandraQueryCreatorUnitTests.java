@@ -29,6 +29,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.StatementFactory;
@@ -47,6 +48,7 @@ import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.cassandra.repository.support.MappingCassandraEntityInformation;
+import org.springframework.data.domain.Range;
 import org.springframework.data.repository.query.parser.PartTree;
 
 import com.datastax.driver.core.RegularStatement;
@@ -64,7 +66,7 @@ public class CassandraQueryCreatorUnitTests {
 	@Rule public ExpectedException exception = ExpectedException.none();
 
 	@Before
-	public void setUp() throws SecurityException, NoSuchMethodException {
+	public void setUp() {
 
 		context = new CassandraMappingContext();
 		context.setUserTypeResolver(mock(UserTypeResolver.class));
@@ -136,6 +138,23 @@ public class CassandraQueryCreatorUnitTests {
 		String query = createQuery("findByFirstnameLessThanEqual", Person.class, "Walter");
 
 		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname<='Walter';");
+	}
+
+	@Test // DATACASS-627
+	public void createsBetweenQueryCorrectly() {
+
+		String query = createQuery("findByFirstnameBetween", Person.class, 1, 2);
+
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname>1 AND firstname<2;");
+	}
+
+	@Test // DATACASS-627
+	public void createsBetweenQueryWithRangeCorrectly() {
+
+		String query = createQuery("findByFirstnameBetween", Person.class,
+				Range.from(Range.Bound.inclusive(1)).to(Range.Bound.exclusive(2)));
+
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname>=1 AND firstname<2;");
 	}
 
 	@Test // DATACASS-7
