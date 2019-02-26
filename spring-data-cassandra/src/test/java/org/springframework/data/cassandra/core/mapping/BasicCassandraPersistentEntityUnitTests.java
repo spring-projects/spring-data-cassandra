@@ -15,19 +15,14 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.isA;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.Optional;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,6 +33,8 @@ import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import org.springframework.data.mapping.Association;
+import org.springframework.data.mapping.AssociationHandler;
 import org.springframework.data.util.ClassTypeInformation;
 
 /**
@@ -149,6 +146,30 @@ public class BasicCassandraPersistentEntityUnitTests {
 				new BasicCassandraPersistentEntity<>(ClassTypeInformation.from(PrimaryKeyClassWithComposedAnnotation.class));
 
 		assertThat(entity.isCompositePrimaryKey()).isTrue();
+	}
+
+	@Test // DATACASS-633
+	@SuppressWarnings("unchecked")
+	public void shouldRejectAssociationCreation() {
+
+		BasicCassandraPersistentEntity<PrimaryKeyClassWithComposedAnnotation> entity = new BasicCassandraPersistentEntity<>(
+				ClassTypeInformation.from(PrimaryKeyClassWithComposedAnnotation.class));
+
+		assertThatThrownBy(() -> entity.addAssociation(mock(Association.class)))
+				.isInstanceOf(UnsupportedCassandraOperationException.class);
+	}
+
+	@Test // DATACASS-633
+	@SuppressWarnings("unchecked")
+	public void shouldNoOpOnDoWithAssociations() {
+
+		BasicCassandraPersistentEntity<PrimaryKeyClassWithComposedAnnotation> entity = new BasicCassandraPersistentEntity<>(
+				ClassTypeInformation.from(PrimaryKeyClassWithComposedAnnotation.class));
+
+		AssociationHandler<CassandraPersistentProperty> handlerMock = mock(AssociationHandler.class);
+		entity.doWithAssociations(handlerMock);
+
+		verifyZeroInteractions(handlerMock);
 	}
 
 	@Table("messages")
