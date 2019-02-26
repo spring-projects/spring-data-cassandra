@@ -143,7 +143,6 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	 */
 	@Override
 	public void doWithAssociations(AssociationHandler<CassandraPersistentProperty> handler) {
-		throw new UnsupportedCassandraOperationException("Cassandra does not support associations");
 	}
 
 	/* (non-Javadoc)
