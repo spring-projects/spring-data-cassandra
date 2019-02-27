@@ -15,12 +15,12 @@
  */
 package org.springframework.data.cassandra.core;
 
-import lombok.Value;
-
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.function.Function;
+
+import lombok.Value;
 
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
@@ -324,7 +324,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return slice(this.statementFactory.select(query, getRequiredPersistentEntity(entityClass)), entityClass);
+		return slice(getStatementFactory().select(query, getRequiredPersistentEntity(entityClass)), entityClass);
 	}
 
 	/* (non-Javadoc)
@@ -338,8 +338,8 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 		Assert.notNull(entityConsumer, "Entity Consumer must not be empty");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return select(getStatementFactory().select(query, getRequiredPersistentEntity(entityClass)), entityConsumer,
-				entityClass);
+		return select(getStatementFactory()
+				.select(query, getRequiredPersistentEntity(entityClass)), entityConsumer, entityClass);
 	}
 
 	/* (non-Javadoc)
@@ -473,13 +473,14 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 		CassandraPersistentEntity<?> entity = getRequiredPersistentEntity(entityClass);
 
 		Select select = QueryBuilder.select().all().from(entity.getTableName().toCql());
+
 		getConverter().write(id, select.where(), entity);
 
 		Function<Row, T> mapper = getMapper(entityClass, entityClass, entity.getTableName());
 
 		return new MappingListenableFutureAdapter<>(
 				getAsyncCqlOperations().query(select, (row, rowNum) -> mapper.apply(row)),
-				it -> it.isEmpty() ? null : (T) it.get(0));
+				it -> it.isEmpty() ? null : it.get(0));
 	}
 
 	/* (non-Javadoc)
@@ -718,8 +719,8 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 
 	private void maybeEmitEvent(ApplicationEvent event) {
 
-		if (eventPublisher != null) {
-			eventPublisher.publishEvent(event);
+		if (this.eventPublisher != null) {
+			this.eventPublisher.publishEvent(event);
 		}
 	}
 
@@ -747,7 +748,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 		 */
 		@Override
 		protected T adapt(@Nullable S adapteeResult) throws ExecutionException {
-			return mapper.apply(adapteeResult);
+			return this.mapper.apply(adapteeResult);
 		}
 	}
 
@@ -766,9 +767,9 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 		@Override
 		public ListenableFuture<ResultSet> doInSession(Session session) throws DriverException, DataAccessException {
 			return new GuavaListenableFutureAdapter<>(session.executeAsync(statement),
-					e -> (e instanceof DriverException
+					e -> e instanceof DriverException
 							? exceptionTranslator.translate("AsyncStatementCallback", getCql(), (DriverException) e)
-							: exceptionTranslator.translateExceptionIfPossible(e)));
+							: exceptionTranslator.translateExceptionIfPossible(e));
 		}
 
 		/* (non-Javadoc)
@@ -776,7 +777,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 		 */
 		@Override
 		public String getCql() {
-			return statement.toString();
+			return this.statement.toString();
 		}
 	}
 }

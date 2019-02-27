@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.core.query;
 
+import java.util.Optional;
+
 import lombok.EqualsAndHashCode;
 
 import org.springframework.lang.Nullable;
@@ -72,7 +74,7 @@ public interface CriteriaDefinition {
 		 * @return the operator, such as {@literal =}, {@literal >=}, {@literal LIKE}.
 		 */
 		public Operator getOperator() {
-			return operator;
+			return this.operator;
 		}
 
 		/**
@@ -80,7 +82,7 @@ public interface CriteriaDefinition {
 		 */
 		@Nullable
 		public Object getValue() {
-			return value;
+			return this.value;
 		}
 	}
 
@@ -131,12 +133,24 @@ public interface CriteriaDefinition {
 				return toString();
 			}
 		},
+
 		GT(">"),
 		GTE(">="),
 		LT("<"),
 		LTE("<="),
 		IN("IN"),
 		LIKE("LIKE");
+
+		public static Optional<Operators> from(String operator) {
+
+			for (Operators operatorsValue : Operators.values()) {
+				if (operatorsValue.toString().equals(operator)) {
+					return Optional.of(operatorsValue);
+				}
+			}
+
+			return Optional.empty();
+		}
 
 		private final String operator;
 
@@ -146,7 +160,7 @@ public interface CriteriaDefinition {
 
 		@Override
 		public String toString() {
-			return operator;
+			return this.operator;
 		}
 	}
 }

@@ -328,9 +328,8 @@ public class StatementFactory {
 
 		query.getQueryOptions().ifPresent(queryOptions -> {
 
-			potentiallyApplyIfCondition(queryOptions, UpdateOptions.class, UpdateOptions::getIfCondition, condition -> {
-				addIfCondition(condition, update, entity);
-			});
+			potentiallyApplyIfCondition(queryOptions, UpdateOptions.class, UpdateOptions::getIfCondition,
+					condition -> addIfCondition(condition, update, entity));
 
 			if (queryOptions instanceof WriteOptions) {
 				EntityQueryUtils.addWriteOptions(update, (WriteOptions) queryOptions);
@@ -359,12 +358,11 @@ public class StatementFactory {
 			EntityWriter<Object, Object> entityWriter, CassandraPersistentEntity<?> persistentEntity,
 			CqlIdentifier tableName) {
 
-		com.datastax.driver.core.querybuilder.Update update = EntityQueryUtils.createUpdateQuery(tableName.toCql(), entity,
-				options, entityWriter);
+		com.datastax.driver.core.querybuilder.Update update =
+				EntityQueryUtils.createUpdateQuery(tableName.toCql(), entity, options, entityWriter);
 
-		potentiallyApplyIfCondition(options, UpdateOptions.class, UpdateOptions::getIfCondition, condition -> {
-			addIfCondition(condition, update, persistentEntity);
-		});
+		potentiallyApplyIfCondition(options, UpdateOptions.class, UpdateOptions::getIfCondition,
+				condition -> addIfCondition(condition, update, persistentEntity));
 
 		return update;
 	}
@@ -407,9 +405,8 @@ public class StatementFactory {
 
 		query.getQueryOptions().ifPresent(queryOptions -> {
 
-			potentiallyApplyIfCondition(queryOptions, DeleteOptions.class, DeleteOptions::getIfCondition, condition -> {
-				addIfCondition(condition, delete, entity);
-			});
+			potentiallyApplyIfCondition(queryOptions, DeleteOptions.class, DeleteOptions::getIfCondition,
+					condition -> addIfCondition(condition, delete, entity));
 
 			if (queryOptions instanceof WriteOptions) {
 				EntityQueryUtils.addWriteOptions(delete, (WriteOptions) queryOptions);
@@ -439,9 +436,8 @@ public class StatementFactory {
 
 		Delete delete = EntityQueryUtils.createDeleteQuery(tableName.toCql(), entity, options, entityWriter);
 
-		potentiallyApplyIfCondition(options, DeleteOptions.class, DeleteOptions::getIfCondition, condition -> {
-			addIfCondition(condition, delete, persistentEntity);
-		});
+		potentiallyApplyIfCondition(options, DeleteOptions.class, DeleteOptions::getIfCondition,
+				condition -> addIfCondition(condition, delete, persistentEntity));
 
 		return delete;
 	}
@@ -624,40 +620,46 @@ public class StatementFactory {
 		if (optionsClass.isInstance(object)) {
 
 			T options = optionsClass.cast(object);
+
 			Filter filter = filterExtractor.apply(options);
+
 			if (filter != null) {
 				consumeIfPresent.accept(filter);
 			}
 		}
-
 	}
 
 	private static Clause toClause(CriteriaDefinition criteriaDefinition) {
 
-		Predicate predicate = criteriaDefinition.getPredicate();
 		String columnName = criteriaDefinition.getColumnName().toCql();
 
-		switch (predicate.getOperator().toString()) {
+		Predicate predicate = criteriaDefinition.getPredicate();
 
-			case "=":
+		CriteriaDefinition.Operators predicateOperator =
+			CriteriaDefinition.Operators.from(predicate.getOperator().toString())
+				.orElseThrow(() -> new IllegalArgumentException(String.format("Unknown operator [%s]", predicate.getOperator())));
+
+		switch (predicateOperator) {
+
+			case EQ:
 				return QueryBuilder.eq(columnName, predicate.getValue());
 
-			case "!=":
+			case NE:
 				return QueryBuilder.ne(columnName, predicate.getValue());
 
-			case ">":
+			case GT:
 				return QueryBuilder.gt(columnName, predicate.getValue());
 
-			case ">=":
+			case GTE:
 				return QueryBuilder.gte(columnName, predicate.getValue());
 
-			case "<":
+			case LT:
 				return QueryBuilder.lt(columnName, predicate.getValue());
 
-			case "<=":
+			case LTE:
 				return QueryBuilder.lte(columnName, predicate.getValue());
 
-			case "IN":
+			case IN:
 
 				if (predicate.getValue() instanceof List) {
 					return QueryBuilder.in(columnName, (List<?>) predicate.getValue());
@@ -669,25 +671,28 @@ public class StatementFactory {
 
 				return QueryBuilder.in(columnName, predicate.getValue());
 
-			case "LIKE":
+			case LIKE:
 				return QueryBuilder.like(columnName, predicate.getValue());
 
-			case "IS NOT NULL":
+			case IS_NOT_NULL:
 				return QueryBuilder.notNull(columnName);
 
-			case "CONTAINS":
+			case CONTAINS:
+
 				Assert.state(predicate.getValue() != null,
 						() -> String.format("CONTAINS value for column %s is null", columnName));
+
 				return QueryBuilder.contains(columnName, predicate.getValue());
 
-			case "CONTAINS KEY":
+			case CONTAINS_KEY:
+
 				Assert.state(predicate.getValue() != null,
 						() -> String.format("CONTAINS KEY value for column %s is null", columnName));
+
 				return QueryBuilder.containsKey(columnName, predicate.getValue());
 		}
 
-		throw new IllegalArgumentException(
-				String.format("Criteria %s %s %s not supported", columnName, predicate.getOperator(), predicate.getValue()));
+		throw new IllegalArgumentException(String.format("Criteria %s %s %s not supported",
+				columnName, predicate.getOperator(), predicate.getValue()));
 	}
-
 }

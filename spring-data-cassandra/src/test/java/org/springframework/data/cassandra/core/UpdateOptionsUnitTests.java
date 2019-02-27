@@ -15,12 +15,13 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
 import java.time.Instant;
 
 import org.junit.Test;
+
 import org.springframework.data.cassandra.core.query.Query;
 
 /**
@@ -45,6 +46,7 @@ public class UpdateOptionsUnitTests {
 		assertThat(updateOptions.getTtl()).isEqualTo(Duration.ofSeconds(10));
 		assertThat(updateOptions.getTimestamp()).isEqualTo(now.toEpochMilli() * 1000);
 		assertThat(updateOptions.isIfExists()).isTrue();
+		assertThat(updateOptions.getIfCondition()).isNull();
 	}
 
 	@Test // DATACASS-56, DATACASS-155
@@ -66,6 +68,7 @@ public class UpdateOptionsUnitTests {
 		assertThat(mutated.getTtl()).isEqualTo(Duration.ofSeconds(20));
 		assertThat(mutated.getTimestamp()).isEqualTo(1519000753);
 		assertThat(mutated.isIfExists()).isTrue();
+		assertThat(mutated.getIfCondition()).isNull();
 	}
 
 	@Test // DATACASS-575

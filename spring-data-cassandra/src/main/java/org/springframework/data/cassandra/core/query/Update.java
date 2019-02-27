@@ -478,7 +478,7 @@ public class Update {
 		 * @return the {@link ColumnName}.
 		 */
 		public ColumnName getColumnName() {
-			return columnName;
+			return this.columnName;
 		}
 	}
 
@@ -500,11 +500,11 @@ public class Update {
 		}
 
 		public Iterable<Object> getValue() {
-			return value;
+			return this.value;
 		}
 
 		public Mode getMode() {
-			return mode;
+			return this.mode;
 		}
 
 		/* (non-Javadoc)

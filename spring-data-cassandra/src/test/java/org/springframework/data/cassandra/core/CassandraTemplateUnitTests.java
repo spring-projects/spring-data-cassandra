@@ -15,10 +15,15 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-import static org.springframework.data.cassandra.core.query.Criteria.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.data.cassandra.core.query.Criteria.where;
 
 import java.util.Collections;
 import java.util.List;
@@ -32,6 +37,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.cassandra.CassandraConnectionFailureException;
 import org.springframework.data.cassandra.core.query.Filter;
 import org.springframework.data.cassandra.core.query.Query;
@@ -355,7 +361,10 @@ public class CassandraTemplateUnitTests {
 	@Test // DATACASS-575
 	public void updateShouldApplyUpdateQuery() {
 
-		template.update(Query.query(where("id").is("heisenberg")), Update.update("firstname", "Walter"), User.class);
+		Query query = Query.query(where("id").is("heisenberg"));
+		Update update = Update.update("firstname", "Walter");
+
+		template.update(query, update, User.class);
 
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString())
@@ -366,14 +375,17 @@ public class CassandraTemplateUnitTests {
 	public void updateShouldApplyUpdateQueryWitLwt() {
 
 		Filter ifCondition = Filter.from(where("firstname").is("Walter"), where("lastname").is("White"));
+
 		Query query = Query.query(where("id").is("heisenberg"))
 				.queryOptions(UpdateOptions.builder().ifCondition(ifCondition).build());
 
-		template.update(query, Update.update("firstname", "Walter"), User.class);
+		Update update = Update.update("firstname", "Walter");
+
+		template.update(query, update, User.class);
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().toString()).isEqualTo(
-				"UPDATE users SET firstname='Walter' WHERE id='heisenberg' IF firstname='Walter' AND lastname='White';");
+		assertThat(statementCaptor.getValue().toString())
+			.isEqualTo("UPDATE users SET firstname='Walter' WHERE id='heisenberg' IF firstname='Walter' AND lastname='White';");
 	}
 
 	@Test // DATACASS-292

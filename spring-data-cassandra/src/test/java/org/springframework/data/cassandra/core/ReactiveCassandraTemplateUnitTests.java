@@ -15,16 +15,20 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-import static org.springframework.data.cassandra.core.query.Criteria.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.data.cassandra.core.query.Criteria.where;
+
+import java.util.Collections;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-
-import java.util.Collections;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -33,6 +37,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.cassandra.ReactiveResultSet;
 import org.springframework.data.cassandra.ReactiveSession;
 import org.springframework.data.cassandra.core.query.Filter;
@@ -305,7 +310,10 @@ public class ReactiveCassandraTemplateUnitTests {
 
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
 
-		template.update(Query.query(where("id").is("heisenberg")), Update.update("firstname", "Walter"), User.class) //
+		Query query = Query.query(where("id").is("heisenberg"));
+		Update update = Update.update("firstname", "Walter");
+
+		template.update(query, update, User.class) //
 				.as(StepVerifier::create) //
 				.expectNextCount(1) //
 				.verifyComplete();
@@ -321,17 +329,20 @@ public class ReactiveCassandraTemplateUnitTests {
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
 
 		Filter ifCondition = Filter.from(where("firstname").is("Walter"), where("lastname").is("White"));
+
 		Query query = Query.query(where("id").is("heisenberg"))
 				.queryOptions(UpdateOptions.builder().ifCondition(ifCondition).build());
 
-		template.update(query, Update.update("firstname", "Walter"), User.class) //
+		Update update = Update.update("firstname", "Walter");
+
+		template.update(query, update, User.class) //
 				.as(StepVerifier::create) //
 				.expectNextCount(1) //
 				.verifyComplete();
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().toString()).isEqualTo(
-				"UPDATE users SET firstname='Walter' WHERE id='heisenberg' IF firstname='Walter' AND lastname='White';");
+		assertThat(statementCaptor.getValue().toString())
+				.isEqualTo("UPDATE users SET firstname='Walter' WHERE id='heisenberg' IF firstname='Walter' AND lastname='White';");
 	}
 
 	@Test // DATACASS-335

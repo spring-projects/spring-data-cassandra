@@ -54,7 +54,6 @@ public interface ReactiveUpdateOperation {
 	/**
 	 * Begin creating an {@code UPDATE} operation for the given {@link Class domainType}.
 	 *
-	 * @param <T> {@link Class type} of the application domain object.
 	 * @param domainType {@link Class type} of domain object to update; must not be {@literal null}.
 	 * @return new instance of {@link ReactiveUpdate}.
 	 * @throws IllegalArgumentException if {@link Class domainType} is {@literal null}.
