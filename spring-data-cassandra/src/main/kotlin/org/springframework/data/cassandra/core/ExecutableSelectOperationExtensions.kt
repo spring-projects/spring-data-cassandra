@@ -40,6 +40,7 @@ inline fun <reified T : Any> ExecutableSelectOperation.query(): ExecutableSelect
 /**
  * Extension for [ExecutableSelectOperation.SelectWithProjection. as] providing a [KClass] based variant.
  */
+@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("asType<T>()"))
 fun <T : Any> ExecutableSelectOperation.SelectWithProjection<*>.asType(resultType: KClass<T>): ExecutableSelectOperation.SelectWithQuery<T> =
 		`as`(resultType.java)
 

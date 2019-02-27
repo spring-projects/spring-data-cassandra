@@ -187,7 +187,7 @@ fun <T : Any> ReactiveCassandraOperations.exists(id: Any, entityClass: KClass<T>
  * Extension for [ReactiveCassandraOperations.exists] leveraging reified type parameters.
  */
 inline fun <reified T : Any> ReactiveCassandraOperations.exists(id: Any): Mono<Boolean> =
-		exists(id, T::class)
+		exists(id, T::class.java)
 
 /**
  * Extension for [ReactiveCassandraOperations.count] providing a [KClass] based variant.
