@@ -15,8 +15,8 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
 
@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity;
@@ -42,9 +43,9 @@ import org.springframework.data.repository.Repository;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class CassandraRepositoryFactoryUnitTests {
 
+	@Mock BasicCassandraPersistentEntity entity;
 	@Mock CassandraConverter converter;
 	@Mock CassandraMappingContext mappingContext;
-	@Mock BasicCassandraPersistentEntity entity;
 	@Mock CassandraTemplate template;
 
 	@Before
@@ -79,4 +80,5 @@ public class CassandraRepositoryFactoryUnitTests {
 	}
 
 	interface MyPersonRepository extends Repository<Person, Long> {}
+
 }

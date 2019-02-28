@@ -15,8 +15,8 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
 
@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.cassandra.core.ReactiveCassandraTemplate;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity;
@@ -42,13 +43,14 @@ import org.springframework.data.repository.Repository;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class ReactiveCassandraRepositoryFactoryUnitTests {
 
+	@Mock BasicCassandraPersistentEntity entity;
 	@Mock CassandraConverter converter;
 	@Mock CassandraMappingContext mappingContext;
-	@Mock BasicCassandraPersistentEntity entity;
 	@Mock ReactiveCassandraTemplate template;
 
 	@Before
 	public void setUp() {
+
 		when(template.getConverter()).thenReturn(converter);
 		when(converter.getMappingContext()).thenReturn(mappingContext);
 	}
@@ -60,8 +62,8 @@ public class ReactiveCassandraRepositoryFactoryUnitTests {
 
 		ReactiveCassandraRepositoryFactory repositoryFactory = new ReactiveCassandraRepositoryFactory(template);
 
-		CassandraEntityInformation<Person, Serializable> entityInformation = repositoryFactory
-				.getEntityInformation(Person.class);
+		CassandraEntityInformation<Person, Serializable> entityInformation =
+				repositoryFactory.getEntityInformation(Person.class);
 
 		assertThat(entityInformation).isInstanceOf(MappingCassandraEntityInformation.class);
 	}
@@ -78,4 +80,5 @@ public class ReactiveCassandraRepositoryFactoryUnitTests {
 	}
 
 	interface MyPersonRepository extends Repository<Person, Long> {}
+
 }

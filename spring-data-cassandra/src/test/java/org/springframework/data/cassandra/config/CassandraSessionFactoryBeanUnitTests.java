@@ -15,18 +15,26 @@
  */
 package org.springframework.data.cassandra.config;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-import static org.springframework.data.cassandra.config.CassandraSessionFactoryBean.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
+import static org.springframework.data.cassandra.config.CassandraSessionFactoryBean.DEFAULT_CREATE_IF_NOT_EXISTS;
+import static org.springframework.data.cassandra.config.CassandraSessionFactoryBean.DEFAULT_DROP_TABLES;
+import static org.springframework.data.cassandra.config.CassandraSessionFactoryBean.DEFAULT_DROP_UNUSED_TABLES;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 
@@ -42,8 +50,6 @@ import com.datastax.driver.core.Session;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class CassandraSessionFactoryBeanUnitTests {
-
-	@Rule public ExpectedException exception = ExpectedException.none();
 
 	@Mock CassandraConverter mockConverter;
 	@Mock Cluster mockCluster;
@@ -83,14 +89,19 @@ public class CassandraSessionFactoryBeanUnitTests {
 		verify(factoryBean, times(1)).performSchemaAction();
 	}
 
-	@Test // DATACASS-219
+	@Test(expected = IllegalStateException.class) // DATACASS-219
 	public void afterPropertiesSetThrowsIllegalStateExceptionWhenConverterIsNull() throws Exception {
 
-		exception.expect(IllegalStateException.class);
-		exception.expectMessage("Converter was not properly initialized");
+		try {
+			factoryBean.setCluster(mockCluster);
+			factoryBean.afterPropertiesSet();
+		} catch (IllegalStateException expected) {
 
-		factoryBean.setCluster(mockCluster);
-		factoryBean.afterPropertiesSet();
+			assertThat(expected).hasMessage("Converter was not properly initialized");
+			assertThat(expected).hasNoCause();
+
+			throw expected;
+		}
 	}
 
 	private void performSchemaActionCallsCreateTableWithArgumentsMatchingTheSchemaAction(SchemaAction schemaAction,
@@ -104,9 +115,11 @@ public class CassandraSessionFactoryBeanUnitTests {
 		}).when(factoryBean).createTables(anyBoolean(), anyBoolean(), anyBoolean());
 
 		factoryBean.setSchemaAction(schemaAction);
+
 		assertThat(factoryBean.getSchemaAction()).isEqualTo(schemaAction);
 
 		factoryBean.performSchemaAction();
+
 		verify(factoryBean, times(1)).createTables(eq(dropTables), eq(dropUnused), eq(ifNotExists));
 	}
 
@@ -150,38 +163,56 @@ public class CassandraSessionFactoryBeanUnitTests {
 	public void setAndGetConverter() {
 
 		assertThat(factoryBean.getConverter()).isNull();
+
 		factoryBean.setConverter(mockConverter);
+
 		assertThat(factoryBean.getConverter()).isEqualTo(mockConverter);
+
 		verifyZeroInteractions(mockConverter);
 	}
 
-	@Test // DATACASS-219
+	@Test(expected = IllegalArgumentException.class) // DATACASS-219
 	public void setConverterToNull() {
 
-		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("CassandraConverter must not be null");
+		try {
+			factoryBean.setConverter(null);
+		} catch (IllegalArgumentException expected) {
 
-		factoryBean.setConverter(null);
+			assertThat(expected).hasMessage("CassandraConverter must not be null");
+			assertThat(expected).hasNoCause();
+
+			throw expected;
+		}
 	}
 
 	@Test // DATACASS-219
 	public void setAndGetSchemaAction() {
 
 		assertThat(factoryBean.getSchemaAction()).isEqualTo(SchemaAction.NONE);
+
 		factoryBean.setSchemaAction(SchemaAction.CREATE);
+
 		assertThat(factoryBean.getSchemaAction()).isEqualTo(SchemaAction.CREATE);
+
 		factoryBean.setSchemaAction(SchemaAction.NONE);
+
 		assertThat(factoryBean.getSchemaAction()).isEqualTo(SchemaAction.NONE);
 	}
 
-	@Test // DATACASS-219
+	@Test(expected = IllegalArgumentException.class) // DATACASS-219
 	public void setSchemaActionToNullThrowsIllegalArgumentException() {
 
-		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("SchemaAction must not be null");
+		try {
+			factoryBean.setSchemaAction(null);
+		} catch (IllegalArgumentException expected) {
 
-		factoryBean.setSchemaAction(null);
+			assertThat(expected).hasMessage("SchemaAction must not be null");
+			assertThat(expected).hasNoCause();
+
+			throw expected;
+		}
 	}
 
 	static class Person {}
+
 }

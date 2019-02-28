@@ -15,11 +15,14 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
-import static org.mockito.Mockito.*;
-
-import lombok.Data;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
+
+import lombok.Data;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -28,6 +31,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.cassandra.core.CassandraOperations;
@@ -57,14 +61,15 @@ import com.datastax.driver.core.querybuilder.Insert;
 public class SimpleCassandraRepositoryUnitTests {
 
 	CassandraMappingContext mappingContext = new CassandraMappingContext();
+
 	MappingCassandraConverter converter = new MappingCassandraConverter(mappingContext);
 
 	SimpleCassandraRepository<Object, ? extends Serializable> repository;
 
 	@Mock CassandraOperations cassandraOperations;
 	@Mock CqlOperations cqlOperations;
-	@Mock UserTypeResolver userTypeResolver;
 	@Mock UserType userType;
+	@Mock UserTypeResolver userTypeResolver;
 	@Mock EntityWriteResult writeResult;
 
 	@Captor ArgumentCaptor<Insert> insertCaptor;
@@ -121,6 +126,7 @@ public class SimpleCassandraRepositoryUnitTests {
 				cassandraOperations);
 
 		VersionedPerson versionedPerson = new VersionedPerson();
+
 		versionedPerson.setVersion(2);
 
 		repository.save(versionedPerson);
@@ -155,6 +161,7 @@ public class SimpleCassandraRepositoryUnitTests {
 				cassandraOperations);
 
 		Person person = new Person();
+
 		person.setFirstname("foo");
 		person.setLastname("bar");
 
@@ -210,5 +217,4 @@ public class SimpleCassandraRepositoryUnitTests {
 		@Id String id;
 		@Version long version;
 	}
-
 }

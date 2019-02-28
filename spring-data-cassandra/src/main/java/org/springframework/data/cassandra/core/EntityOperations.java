@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.core;
 
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -36,22 +37,20 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Update;
 
 /**
- * Common operations performed on an entity in the context of it's mapping metadata.
+ * Common data access operations performed on an entity using a {@link MappingContext} containing mapping metadata.
  *
  * @author Mark Paluch
- * @since 2.2
+ * @author John Blum
  * @see CassandraTemplate
  * @see AsyncCassandraTemplate
  * @see ReactiveCassandraTemplate
+ * @since 2.2
  */
 @RequiredArgsConstructor
 class EntityOperations {
 
-	private final @NonNull MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> context;
-
-	private CassandraPersistentEntity<?> getRequiredPersistentEntity(Class<?> entityType) {
-		return context.getRequiredPersistentEntity(ClassUtils.getUserClass(entityType));
-	}
+	@NonNull @Getter(AccessLevel.PROTECTED)
+	private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
 
 	/**
 	 * Creates a new {@link Entity} for the given bean.
@@ -61,19 +60,9 @@ class EntityOperations {
 	 */
 	public <T> Entity<T> forEntity(T entity) {
 
-		Assert.notNull(entity, "Bean must not be null!");
+		Assert.notNull(entity, "Bean must not be null");
 
-		return MappedEntity.of(entity, context);
-	}
-
-	/**
-	 * Returns the table name to which the entity shall be persisted.
-	 *
-	 * @param entityClass entity class, must not be {@literal null}.
-	 * @return the table name to which the entity shall be persisted.
-	 */
-	public CqlIdentifier getTableName(Class<?> entityClass) {
-		return getRequiredPersistentEntity(entityClass).getTableName();
+		return MappedEntity.of(entity, getMappingContext());
 	}
 
 	/**
@@ -85,10 +74,31 @@ class EntityOperations {
 	 */
 	public <T> AdaptibleEntity<T> forEntity(T entity, ConversionService conversionService) {
 
-		Assert.notNull(entity, "Bean must not be null!");
-		Assert.notNull(conversionService, "ConversionService must not be null!");
+		Assert.notNull(entity, "Bean must not be null");
+		Assert.notNull(conversionService, "ConversionService must not be null");
 
-		return AdaptibleMappedEntity.of(entity, context, conversionService);
+		return AdaptibleMappedEntity.of(entity, getMappingContext(), conversionService);
+	}
+
+	/**
+	 * Returns the {@link MappingContext} used by this entity data access operations class to access mapping meta-data
+	 * used to store (map) object to Cassandra tables.
+	 *
+	 * @return the {@link MappingContext} used by this entity data access operations class.
+	 * @see org.springframework.data.cassandra.core.mapping.CassandraMappingContext
+	 */
+	CassandraPersistentEntity<?> getRequiredPersistentEntity(Class<?> entityType) {
+		return getMappingContext().getRequiredPersistentEntity(ClassUtils.getUserClass(entityType));
+	}
+
+	/**
+	 * Returns the table name to which the entity shall be persisted.
+	 *
+	 * @param entityClass entity class, must not be {@literal null}.
+	 * @return the table name to which the entity shall be persisted.
+	 */
+	CqlIdentifier getTableName(Class<?> entityClass) {
+		return getRequiredPersistentEntity(entityClass).getTableName();
 	}
 
 	/**
@@ -195,11 +205,27 @@ class EntityOperations {
 		}
 
 		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.EntityOperations.Entity#getBean()
+		 */
+		@Override
+		public T getBean() {
+			return this.propertyAccessor.getBean();
+		}
+
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.EntityOperations.Entity#isNew()
+		 */
+		@Override
+		public boolean isNew() {
+			return this.entity.isNew(getBean());
+		}
+
+		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.core.EntityOperations.Entity#isVersionedEntity()
 		 */
 		@Override
 		public boolean isVersionedEntity() {
-			return entity.hasVersionProperty();
+			return this.entity.hasVersionProperty();
 		}
 
 		/* (non-Javadoc)
@@ -208,23 +234,7 @@ class EntityOperations {
 		@Override
 		@Nullable
 		public Object getVersion() {
-			return propertyAccessor.getProperty(entity.getRequiredVersionProperty());
-		}
-
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.EntityOperations.Entity#getBean()
-		 */
-		@Override
-		public T getBean() {
-			return propertyAccessor.getBean();
-		}
-
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.EntityOperations.Entity#isNew()
-		 */
-		@Override
-		public boolean isNew() {
-			return entity.isNew(propertyAccessor.getBean());
+			return this.propertyAccessor.getProperty(this.entity.getRequiredVersionProperty());
 		}
 	}
 
@@ -232,6 +242,18 @@ class EntityOperations {
 
 		private final CassandraPersistentEntity<?> entity;
 		private final ConvertingPropertyAccessor<T> propertyAccessor;
+
+		private static <T> AdaptibleEntity<T> of(T bean,
+				MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext,
+				ConversionService conversionService) {
+
+			CassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(bean.getClass());
+
+			PersistentPropertyAccessor<T> propertyAccessor = entity.getPropertyAccessor(bean);
+
+			return new AdaptibleMappedEntity<>(entity,
+				new ConvertingPropertyAccessor<>(propertyAccessor, conversionService));
+		}
 
 		private AdaptibleMappedEntity(CassandraPersistentEntity<?> entity, ConvertingPropertyAccessor<T> propertyAccessor) {
 
@@ -241,22 +263,13 @@ class EntityOperations {
 			this.propertyAccessor = propertyAccessor;
 		}
 
-		private static <T> AdaptibleEntity<T> of(T bean,
-				MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> context,
-				ConversionService conversionService) {
-
-			CassandraPersistentEntity<?> entity = context.getRequiredPersistentEntity(bean.getClass());
-			PersistentPropertyAccessor<T> propertyAccessor = entity.getPropertyAccessor(bean);
-
-			return new AdaptibleMappedEntity<>(entity, new ConvertingPropertyAccessor<>(propertyAccessor, conversionService));
-		}
-
 		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.core.EntityOperations.AdaptibleEntity#appendVersionCondition(com.datastax.driver.core.querybuilder.Update, java.lang.Number)
 		 */
 		@Override
 		public Statement appendVersionCondition(com.datastax.driver.core.querybuilder.Update update,
 				Number currentVersionNumber) {
+
 			return update.onlyIf(QueryBuilder.eq(getVersionColumnName().toCql(), currentVersionNumber));
 		}
 
@@ -274,15 +287,14 @@ class EntityOperations {
 		@Override
 		public T initializeVersionProperty() {
 
-			if (!entity.hasVersionProperty()) {
-				return propertyAccessor.getBean();
+			if (this.entity.hasVersionProperty()) {
+
+				CassandraPersistentProperty versionProperty = this.entity.getRequiredVersionProperty();
+
+				this.propertyAccessor.setProperty(versionProperty, versionProperty.getType().isPrimitive() ? 1 : 0);
 			}
 
-			CassandraPersistentProperty versionProperty = entity.getRequiredVersionProperty();
-
-			propertyAccessor.setProperty(versionProperty, versionProperty.getType().isPrimitive() ? 1 : 0);
-
-			return propertyAccessor.getBean();
+			return this.propertyAccessor.getBean();
 		}
 
 		/* (non-Javadoc)
@@ -291,13 +303,14 @@ class EntityOperations {
 		@Override
 		public T incrementVersion() {
 
-			CassandraPersistentProperty versionProperty = entity.getRequiredVersionProperty();
+			CassandraPersistentProperty versionProperty = this.entity.getRequiredVersionProperty();
+
 			Number version = getVersion();
 			Number nextVersion = version == null ? 0 : version.longValue() + 1;
 
-			propertyAccessor.setProperty(versionProperty, nextVersion);
+			this.propertyAccessor.setProperty(versionProperty, nextVersion);
 
-			return propertyAccessor.getBean();
+			return this.propertyAccessor.getBean();
 		}
 
 		/* (non-Javadoc)
@@ -307,13 +320,13 @@ class EntityOperations {
 		@Nullable
 		public Number getVersion() {
 
-			CassandraPersistentProperty versionProperty = entity.getRequiredVersionProperty();
+			CassandraPersistentProperty versionProperty = this.entity.getRequiredVersionProperty();
 
-			return propertyAccessor.getProperty(versionProperty, Number.class);
+			return this.propertyAccessor.getProperty(versionProperty, Number.class);
 		}
 
 		private CqlIdentifier getVersionColumnName() {
-			return entity.getRequiredVersionProperty().getColumnName();
+			return this.entity.getRequiredVersionProperty().getColumnName();
 		}
 	}
 }

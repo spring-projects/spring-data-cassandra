@@ -15,13 +15,15 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import lombok.Data;
 import lombok.experimental.Wither;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
@@ -43,6 +45,7 @@ public class OptimisticLockingIntegrationTests extends AbstractKeyspaceCreatingI
 	public void setUp() {
 
 		MappingCassandraConverter converter = new MappingCassandraConverter();
+
 		converter.afterPropertiesSet();
 
 		template = new CassandraTemplate(session, converter);
@@ -94,6 +97,7 @@ public class OptimisticLockingIntegrationTests extends AbstractKeyspaceCreatingI
 		VersionedEntity versionedEntity = new VersionedEntity(42);
 
 		template.insert(versionedEntity);
+
 		assertThatThrownBy(() -> template.update(new VersionedEntity(42, 5, "f")))
 				.isInstanceOf(OptimisticLockingFailureException.class);
 	}
@@ -104,9 +108,11 @@ public class OptimisticLockingIntegrationTests extends AbstractKeyspaceCreatingI
 		VersionedEntity versionedEntity = new VersionedEntity(42);
 
 		VersionedEntity saved = template.insert(versionedEntity);
+
 		template.delete(saved);
 
 		VersionedEntity loaded = template.query(VersionedEntity.class).firstValue();
+
 		assertThat(loaded).isNull();
 	}
 
@@ -119,6 +125,7 @@ public class OptimisticLockingIntegrationTests extends AbstractKeyspaceCreatingI
 				.isInstanceOf(OptimisticLockingFailureException.class);
 
 		VersionedEntity loaded = template.query(VersionedEntity.class).firstValue();
+
 		assertThat(loaded).isNotNull();
 	}
 

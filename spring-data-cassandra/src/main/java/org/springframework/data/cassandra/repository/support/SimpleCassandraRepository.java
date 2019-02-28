@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
-import static org.springframework.data.cassandra.core.query.Criteria.*;
+import static org.springframework.data.cassandra.core.query.Criteria.where;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,17 +46,18 @@ import com.datastax.driver.core.querybuilder.Select;
  * @author Alex Shvid
  * @author Matthew T. Adams
  * @author Mark Paluch
+ * @author John Blum
  * @see org.springframework.data.cassandra.repository.CassandraRepository
  */
 public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, ID> {
 
 	private static final InsertOptions INSERT_NULLS = InsertOptions.builder().withInsertNulls().build();
 
+	private final AbstractMappingContext<BasicCassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
+
 	private final CassandraEntityInformation<T, ID> entityInformation;
 
 	private final CassandraOperations operations;
-
-	private final AbstractMappingContext<BasicCassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
 
 	/**
 	 * Create a new {@link SimpleCassandraRepository} for the given {@link CassandraEntityInformation} and
@@ -83,15 +84,16 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		BasicCassandraPersistentEntity<?> persistentEntity = mappingContext.getPersistentEntity(entity.getClass());
+		BasicCassandraPersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(entity.getClass());
+
 		if (persistentEntity != null && persistentEntity.hasVersionProperty()) {
 
 			if (!entityInformation.isNew(entity)) {
-				return operations.update(entity);
+				return this.operations.update(entity);
 			}
 		}
 
-		return operations.insert(entity, INSERT_NULLS).getEntity();
+		return this.operations.insert(entity, INSERT_NULLS).getEntity();
 	}
 
 	/* (non-Javadoc)
@@ -120,7 +122,7 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 	 *             {@link CassandraOperations#insert(Object, InsertOptions)}.
 	 */
 	protected <S extends T> Insert createInsert(S entity) {
-		return InsertUtil.createInsert(operations.getConverter(), entity);
+		return InsertUtil.createInsert(this.operations.getConverter(), entity);
 	}
 
 	/* (non-Javadoc)
@@ -131,7 +133,7 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		return operations.insert(entity);
+		return this.operations.insert(entity);
 	}
 
 	/* (non-Javadoc)
@@ -145,7 +147,7 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 		List<S> result = new ArrayList<>();
 
 		for (S entity : entities) {
-			result.add(operations.insert(entity));
+			result.add(this.operations.insert(entity));
 		}
 
 		return result;
@@ -159,7 +161,7 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 
 		Assert.notNull(id, "The given id must not be null");
 
-		return Optional.ofNullable(operations.selectOneById(id, entityInformation.getJavaType()));
+		return Optional.ofNullable(this.operations.selectOneById(id, this.entityInformation.getJavaType()));
 	}
 
 	/* (non-Javadoc)
@@ -170,7 +172,7 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 
 		Assert.notNull(id, "The given id must not be null");
 
-		return operations.exists(id, entityInformation.getJavaType());
+		return this.operations.exists(id, this.entityInformation.getJavaType());
 	}
 
 	/* (non-Javadoc)
@@ -178,7 +180,7 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 	 */
 	@Override
 	public long count() {
-		return operations.count(entityInformation.getJavaType());
+		return this.operations.count(this.entityInformation.getJavaType());
 	}
 
 	/* (non-Javadoc)
@@ -187,9 +189,9 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 	@Override
 	public List<T> findAll() {
 
-		Select select = QueryBuilder.select().all().from(entityInformation.getTableName().toCql());
+		Select select = QueryBuilder.select().all().from(this.entityInformation.getTableName().toCql());
 
-		return operations.select(select, entityInformation.getJavaType());
+		return this.operations.select(select, this.entityInformation.getJavaType());
 	}
 
 	/* (non-Javadoc)
@@ -202,8 +204,8 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 
 		List<ID> idCollection = Streamable.of(ids).stream().collect(StreamUtils.toUnmodifiableList());
 
-		return operations.select(Query.query(where(entityInformation.getIdAttribute()).in(idCollection)),
-				entityInformation.getJavaType());
+		return this.operations.select(Query.query(where(this.entityInformation.getIdAttribute()).in(idCollection)),
+				this.entityInformation.getJavaType());
 	}
 
 	/* (non-Javadoc)
@@ -214,7 +216,7 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 
 		Assert.notNull(pageable, "Pageable must not be null");
 
-		return operations.slice(Query.empty().pageRequest(pageable), entityInformation.getJavaType());
+		return this.operations.slice(Query.empty().pageRequest(pageable), this.entityInformation.getJavaType());
 	}
 
 	/* (non-Javadoc)
@@ -225,7 +227,7 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 
 		Assert.notNull(id, "The given id must not be null");
 
-		operations.deleteById(id, entityInformation.getJavaType());
+		this.operations.deleteById(id, this.entityInformation.getJavaType());
 	}
 
 	/* (non-Javadoc)
@@ -236,7 +238,7 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 
 		Assert.notNull(entity, "The given entity must not be null");
 
-		deleteById(entityInformation.getRequiredId(entity));
+		deleteById(this.entityInformation.getRequiredId(entity));
 	}
 
 	/* (non-Javadoc)
@@ -247,7 +249,7 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 
 		Assert.notNull(entities, "The given Iterable of entities must not be null");
 
-		entities.forEach(operations::delete);
+		entities.forEach(this.operations::delete);
 	}
 
 	/* (non-Javadoc)
@@ -255,6 +257,6 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 	 */
 	@Override
 	public void deleteAll() {
-		operations.truncate(entityInformation.getJavaType());
+		this.operations.truncate(this.entityInformation.getJavaType());
 	}
 }

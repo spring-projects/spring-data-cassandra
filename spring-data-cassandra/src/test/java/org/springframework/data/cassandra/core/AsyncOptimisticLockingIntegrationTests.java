@@ -15,15 +15,17 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.util.concurrent.Future;
 
 import lombok.Data;
 import lombok.experimental.Wither;
 
-import java.util.concurrent.Future;
-
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
@@ -47,6 +49,7 @@ public class AsyncOptimisticLockingIntegrationTests extends AbstractKeyspaceCrea
 	public void setUp() {
 
 		MappingCassandraConverter converter = new MappingCassandraConverter();
+
 		converter.afterPropertiesSet();
 
 		template = new AsyncCassandraTemplate(session, converter);
@@ -110,9 +113,11 @@ public class AsyncOptimisticLockingIntegrationTests extends AbstractKeyspaceCrea
 		VersionedEntity versionedEntity = new VersionedEntity(42);
 
 		VersionedEntity saved = getUninterruptibly(template.insert(versionedEntity));
+
 		getUninterruptibly(template.delete(saved));
 
 		VersionedEntity loaded = getUninterruptibly(template.selectOne(Query.empty(), VersionedEntity.class));
+
 		assertThat(loaded).isNull();
 	}
 
@@ -125,6 +130,7 @@ public class AsyncOptimisticLockingIntegrationTests extends AbstractKeyspaceCrea
 				.hasRootCauseInstanceOf(OptimisticLockingFailureException.class);
 
 		VersionedEntity loaded = getUninterruptibly(template.selectOne(Query.empty(), VersionedEntity.class));
+
 		assertThat(loaded).isNotNull();
 	}
 

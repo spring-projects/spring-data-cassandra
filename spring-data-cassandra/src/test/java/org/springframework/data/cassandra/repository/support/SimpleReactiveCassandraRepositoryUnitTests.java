@@ -15,12 +15,15 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
-import static org.mockito.Mockito.*;
-
-import lombok.Data;
-import reactor.core.publisher.Mono;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
+
+import lombok.Data;
+
+import reactor.core.publisher.Mono;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -29,6 +32,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.cassandra.core.EntityWriteResult;
@@ -97,6 +101,7 @@ public class SimpleReactiveCassandraRepositoryUnitTests {
 				new MappingCassandraEntityInformation(entity, converter), cassandraOperations);
 
 		VersionedPerson versionedPerson = new VersionedPerson();
+
 		versionedPerson.setVersion(2);
 
 		repository.save(versionedPerson);
@@ -110,5 +115,4 @@ public class SimpleReactiveCassandraRepositoryUnitTests {
 		@Id String id;
 		@Version long version;
 	}
-
 }

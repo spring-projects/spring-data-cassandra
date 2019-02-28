@@ -63,9 +63,10 @@ public class MappingCassandraEntityInformation<T, ID> extends PersistentEntityIn
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		CassandraPersistentProperty idProperty = entityMetadata.getIdProperty();
+		CassandraPersistentProperty idProperty = this.entityMetadata.getIdProperty();
 
-		return idProperty != null ? (ID) entityMetadata.getIdentifierAccessor(entity).getIdentifier()
+		return idProperty != null
+				? (ID) this.entityMetadata.getIdentifierAccessor(entity).getIdentifier()
 				: (ID) converter.getId(entity, entityMetadata);
 	}
 
@@ -76,8 +77,8 @@ public class MappingCassandraEntityInformation<T, ID> extends PersistentEntityIn
 	@Override
 	public Class<ID> getIdType() {
 
-		if (entityMetadata.getIdProperty() != null) {
-			return (Class<ID>) entityMetadata.getRequiredIdProperty().getType();
+		if (this.entityMetadata.getIdProperty() != null) {
+			return (Class<ID>) this.entityMetadata.getRequiredIdProperty().getType();
 		}
 
 		return (Class<ID>) MapId.class;
@@ -88,7 +89,7 @@ public class MappingCassandraEntityInformation<T, ID> extends PersistentEntityIn
 	 */
 	@Override
 	public String getIdAttribute() {
-		return entityMetadata.getRequiredIdProperty().getName();
+		return this.entityMetadata.getRequiredIdProperty().getName();
 	}
 
 	/* (non-Javadoc)
@@ -96,6 +97,6 @@ public class MappingCassandraEntityInformation<T, ID> extends PersistentEntityIn
 	 */
 	@Override
 	public CqlIdentifier getTableName() {
-		return entityMetadata.getTableName();
+		return this.entityMetadata.getTableName();
 	}
 }

@@ -15,14 +15,16 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import lombok.Data;
 import lombok.experimental.Wither;
+
 import reactor.test.StepVerifier;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
@@ -47,6 +49,7 @@ public class ReactiveOptimisticLockingIntegrationTests extends AbstractKeyspaceC
 	public void setUp() {
 
 		MappingCassandraConverter converter = new MappingCassandraConverter();
+
 		converter.afterPropertiesSet();
 
 		template = new ReactiveCassandraTemplate(new DefaultBridgedReactiveSession(session), converter);
@@ -64,17 +67,13 @@ public class ReactiveOptimisticLockingIntegrationTests extends AbstractKeyspaceC
 
 		template.insert(versionedEntity) //
 				.as(StepVerifier::create) //
-				.consumeNextWith(actual -> {
-
-					assertThat(actual.version).isEqualTo(1);
-				}).verifyComplete();
+				.consumeNextWith(actual -> assertThat(actual.version).isEqualTo(1))
+				.verifyComplete();
 
 		template.selectOne(Query.empty(), VersionedEntity.class) //
 				.as(StepVerifier::create) //
-				.consumeNextWith(actual -> {
-
-					assertThat(actual.version).isEqualTo(1);
-				}).verifyComplete();
+				.consumeNextWith(actual -> assertThat(actual.version).isEqualTo(1))
+				.verifyComplete();
 	}
 
 	@Test // DATACASS-576
@@ -97,17 +96,13 @@ public class ReactiveOptimisticLockingIntegrationTests extends AbstractKeyspaceC
 
 		template.insert(versionedEntity).flatMap(template::update) //
 				.as(StepVerifier::create) //
-				.consumeNextWith(actual -> {
-
-					assertThat(actual.version).isEqualTo(2);
-				}).verifyComplete();
+				.consumeNextWith(actual -> assertThat(actual.version).isEqualTo(2))
+				.verifyComplete();
 
 		template.selectOne(Query.empty(), VersionedEntity.class) //
 				.as(StepVerifier::create) //
-				.consumeNextWith(actual -> {
-
-					assertThat(actual.version).isEqualTo(2);
-				}).verifyComplete();
+				.consumeNextWith(actual -> assertThat(actual.version).isEqualTo(2))
+				.verifyComplete();
 	}
 
 	@Test // DATACASS-576

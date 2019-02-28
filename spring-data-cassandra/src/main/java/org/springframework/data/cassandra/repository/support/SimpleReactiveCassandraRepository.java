@@ -44,11 +44,11 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 
 	private static final InsertOptions INSERT_NULLS = InsertOptions.builder().withInsertNulls().build();
 
+	private final AbstractMappingContext<BasicCassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
+
 	private final CassandraEntityInformation<T, ID> entityInformation;
 
 	private final ReactiveCassandraOperations operations;
-
-	private final AbstractMappingContext<BasicCassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
 
 	/**
 	 * Create a new {@link SimpleReactiveCassandraRepository} for the given {@link CassandraEntityInformation} and
@@ -76,15 +76,16 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		BasicCassandraPersistentEntity<?> persistentEntity = mappingContext.getPersistentEntity(entity.getClass());
+		BasicCassandraPersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(entity.getClass());
+
 		if (persistentEntity != null && persistentEntity.hasVersionProperty()) {
 
-			if (!entityInformation.isNew(entity)) {
-				return operations.update(entity);
+			if (!this.entityInformation.isNew(entity)) {
+				return this.operations.update(entity);
 			}
 		}
 
-		return operations.insert(entity, INSERT_NULLS).map(EntityWriteResult::getEntity);
+		return this.operations.insert(entity, INSERT_NULLS).map(EntityWriteResult::getEntity);
 	}
 
 	/**
@@ -96,7 +97,7 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 	 *             {@link ReactiveCassandraOperations#insert(Object, InsertOptions)}.
 	 */
 	private <S extends T> Insert createInsert(S entity) {
-		return InsertUtil.createInsert(operations.getConverter(), entity);
+		return InsertUtil.createInsert(this.operations.getConverter(), entity);
 	}
 
 	/* (non-Javadoc)
@@ -129,7 +130,7 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		return operations.insert(entity);
+		return this.operations.insert(entity);
 	}
 
 	/* (non-Javadoc)
@@ -140,7 +141,7 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 
 		Assert.notNull(entities, "The given Iterable of entities must not be null");
 
-		return Flux.fromIterable(entities).flatMap(operations::insert);
+		return Flux.fromIterable(entities).flatMap(this.operations::insert);
 	}
 
 	/* (non-Javadoc)
@@ -151,7 +152,7 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 
 		Assert.notNull(entityStream, "The given Publisher of entities must not be null");
 
-		return Flux.from(entityStream).flatMap(operations::insert);
+		return Flux.from(entityStream).flatMap(this.operations::insert);
 	}
 
 	/*
@@ -160,7 +161,7 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 	 */
 	@Override
 	public Mono<Long> count() {
-		return operations.count(entityInformation.getJavaType());
+		return this.operations.count(this.entityInformation.getJavaType());
 	}
 
 	/*
@@ -172,7 +173,7 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 
 		Assert.notNull(id, "The given id must not be null");
 
-		return operations.exists(id, entityInformation.getJavaType());
+		return this.operations.exists(id, this.entityInformation.getJavaType());
 	}
 
 	/*
@@ -196,7 +197,7 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 
 		Assert.notNull(id, "The given id must not be null");
 
-		return operations.selectOneById(id, entityInformation.getJavaType());
+		return this.operations.selectOneById(id, this.entityInformation.getJavaType());
 	}
 
 	/*
@@ -218,9 +219,9 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 	@Override
 	public Flux<T> findAll() {
 
-		Select select = QueryBuilder.select().from(entityInformation.getTableName().toCql());
+		Select select = QueryBuilder.select().from(this.entityInformation.getTableName().toCql());
 
-		return operations.select(select, entityInformation.getJavaType());
+		return this.operations.select(select, this.entityInformation.getJavaType());
 	}
 
 	/*
@@ -256,7 +257,7 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 
 		Assert.notNull(entity, "The given entity must not be null");
 
-		return operations.delete(entity).then();
+		return this.operations.delete(entity).then();
 	}
 
 	/* (non-Javadoc)
@@ -267,7 +268,7 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 
 		Assert.notNull(id, "The given id must not be null");
 
-		return operations.deleteById(id, entityInformation.getJavaType()).then();
+		return this.operations.deleteById(id, this.entityInformation.getJavaType()).then();
 	}
 
 	/* (non-Javadoc)
@@ -286,7 +287,7 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 	 */
 	@Override
 	public Mono<Void> deleteAll() {
-		return operations.truncate(entityInformation.getJavaType());
+		return this.operations.truncate(this.entityInformation.getJavaType());
 	}
 
 	/* (non-Javadoc)
@@ -297,7 +298,7 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 
 		Assert.notNull(entities, "The given Iterable of entities must not be null");
 
-		return Flux.fromIterable(entities).flatMap(operations::delete).then();
+		return Flux.fromIterable(entities).flatMap(this.operations::delete).then();
 	}
 
 	/* (non-Javadoc)
@@ -308,6 +309,6 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 
 		Assert.notNull(entityStream, "The given Publisher of entities must not be null");
 
-		return Flux.from(entityStream).flatMap(operations::delete).then();
+		return Flux.from(entityStream).flatMap(this.operations::delete).then();
 	}
 }
