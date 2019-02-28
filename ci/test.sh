@@ -6,6 +6,6 @@ set -euo pipefail
 
 rm -rf $HOME/.m2/repository/org/springframework/data 2> /dev/null || :
 
-cd spring-data-geode-github
+cd spring-data-cassandra-github
 
 ./mvnw clean dependency:list test -P${PROFILE} -Dsort -Dbundlor.enabled=false -B
