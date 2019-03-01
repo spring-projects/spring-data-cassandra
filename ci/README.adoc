@@ -18,7 +18,7 @@ Next, run the `test.sh` script from inside the container:
 +
 2. `PROFILE=none spring-data-cassandra-github/ci/test.sh`
 
-Since the container is binding to your source, you can make edits from your IDE and run continue to run build jobs.
+Since the container is binding to your source, you can make edits from your IDE and continue to run build jobs.
 
 If you need to test the `build.sh` script, then do this:
 
