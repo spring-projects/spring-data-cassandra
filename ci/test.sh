@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/bin/bash
 
 set -euo pipefail
 
@@ -8,4 +8,4 @@ rm -rf $HOME/.m2/repository/org/springframework/data 2> /dev/null || :
 
 cd spring-data-cassandra-github
 
-./mvnw clean dependency:list test -P${PROFILE} -Dsort -Dbundlor.enabled=false -B
+./mvnw clean dependency:list test -P${PROFILE} -Dsort
