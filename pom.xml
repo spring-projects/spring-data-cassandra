@@ -16,7 +16,7 @@
 
 	<name>Spring Data for Apache Cassandra</name>
 	<description>Spring Data for Apache Cassandra</description>
-	<url>http://projects.spring.io/spring-data-cassandra/</url>
+	<url>https://projects.spring.io/spring-data-cassandra/</url>
 
 	<developers>
 		<developer>
@@ -36,7 +36,7 @@
 			<name>David Webb</name>
 			<email>dwebb at prowaveconsulting.com</email>
 			<organization>Prowave Consulting Inc.</organization>
-			<organizationUrl>http://www.prowaveconsulting.com</organizationUrl>
+			<organizationUrl>https://www.prowave.io/</organizationUrl>
 			<roles>
 				<role>Project Lead</role>
 				<role>Developer</role>
@@ -58,7 +58,7 @@
 			<name>John Blum</name>
 			<email>jblum at pivotal.io</email>
 			<organization>Pivotal</organization>
-			<organizationUrl>http://www.pivotal.io</organizationUrl>
+			<organizationUrl>https://www.pivotal.io</organizationUrl>
 			<roles>
 				<role>Developer</role>
 			</roles>
@@ -69,7 +69,7 @@
 			<name>Mark Paluch</name>
 			<email>mpaluch at pivotal.io</email>
 			<organization>Pivotal</organization>
-			<organizationUrl>http://www.pivotal.io</organizationUrl>
+			<organizationUrl>https://www.pivotal.io</organizationUrl>
 			<roles>
 				<role>Developer</role>
 			</roles>
