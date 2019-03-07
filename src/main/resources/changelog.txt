@@ -1,6 +1,30 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 2.2.0.M2 (2019-03-07)
+----------------------------------------
+* DATACASS-634 - Upgrade to Cassandra Driver 3.7.1.
+* DATACASS-633 - BasicCassandraPersistentEntity.doWithAssociations(…) should no-op.
+* DATACASS-632 - Add Kotlin extensions for Coroutines support.
+* DATACASS-631 - Deprecate Kotlin extensions providing a KClass overload.
+* DATACASS-630 - Remove version for managed Kotlin dependencies.
+* DATACASS-629 - Migrate Kotlin tests to Mockk.
+* DATACASS-628 - Upgrade to AssertJ 3.12.0.
+* DATACASS-627 - Add support for derived 'between' queries using Range.
+* DATACASS-625 - Upgrade to Apache Cassandra 3.11.4.
+* DATACASS-623 - Add support for @ReadOnlyProperty.
+* DATACASS-619 - Introduce Concourse CI.
+* DATACASS-617 - Accept QueryOptions in BatchOperations.delete().
+* DATACASS-616 - Update copyright years to 2019.
+* DATACASS-614 - Release 2.2 M2 (Moore).
+* DATACASS-606 - Support LWT for delete operations (DELETE .. IF EXISTS).
+* DATACASS-599 - Assert compatibility with Guava 26.0-jre+.
+* DATACASS-585 - @PrimaryKeyColumn does not identify a property as @Id property.
+* DATACASS-575 - Support conditions in lightweight transactions.
+* DATACASS-313 - Limit queried fields.
+* DATACASS-189 - Add test for @Transient property handling.
+
+
 Changes in version 2.1.5.RELEASE (2019-02-13)
 ---------------------------------------------
 * DATACASS-625 - Upgrade to Apache Cassandra 3.11.4.
