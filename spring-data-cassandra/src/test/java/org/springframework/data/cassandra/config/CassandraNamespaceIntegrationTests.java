@@ -15,10 +15,11 @@
  */
 package org.springframework.data.cassandra.config;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.cassandra.core.CassandraTemplate;
@@ -27,7 +28,7 @@ import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.SimpleUserTypeResolver;
 import org.springframework.data.cassandra.repository.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import com.datastax.driver.core.Cluster;
@@ -43,24 +44,29 @@ import com.datastax.driver.core.SocketOptions;
  *
  * @author Mark Paluch
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration
+@SuppressWarnings("unused")
 public class CassandraNamespaceIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
 
-	@Autowired ApplicationContext applicationContext;
+	@Autowired
+	private ApplicationContext applicationContext;
 
 	@Test // DATACASS-271
 	public void clusterShouldHaveCompressionSet() {
 
-		Cluster cluster = applicationContext.getBean(Cluster.class);
+		Cluster cluster = this.applicationContext.getBean(Cluster.class);
+
 		Configuration configuration = cluster.getConfiguration();
+
 		assertThat(configuration.getProtocolOptions().getCompression()).isEqualTo(Compression.SNAPPY);
 	}
 
 	@Test // DATACASS-271
 	public void clusterShouldHavePoolingOptionsConfigured() {
 
-		Cluster cluster = applicationContext.getBean(Cluster.class);
+		Cluster cluster = this.applicationContext.getBean(Cluster.class);
+
 		PoolingOptions poolingOptions = cluster.getConfiguration().getPoolingOptions();
 
 		assertThat(poolingOptions.getMaxRequestsPerConnection(HostDistance.LOCAL)).isEqualTo(101);
@@ -76,7 +82,8 @@ public class CassandraNamespaceIntegrationTests extends AbstractSpringDataEmbedd
 	@Test // DATACASS-271
 	public void clusterShouldHaveSocketOptionsConfigured() {
 
-		Cluster cluster = applicationContext.getBean(Cluster.class);
+		Cluster cluster = this.applicationContext.getBean(Cluster.class);
+
 		SocketOptions socketOptions = cluster.getConfiguration().getSocketOptions();
 
 		assertThat(socketOptions.getConnectTimeoutMillis()).isEqualTo(5000);
@@ -91,10 +98,10 @@ public class CassandraNamespaceIntegrationTests extends AbstractSpringDataEmbedd
 	@Test // DATACASS-172
 	public void mappingContextShouldHaveUserTypeResolverConfigured() {
 
-		CassandraMappingContext mappingContext = applicationContext.getBean(CassandraMappingContext.class);
+		CassandraMappingContext mappingContext = this.applicationContext.getBean(CassandraMappingContext.class);
 
-		SimpleUserTypeResolver userTypeResolver = (SimpleUserTypeResolver) ReflectionTestUtils.getField(mappingContext,
-				"userTypeResolver");
+		SimpleUserTypeResolver userTypeResolver =
+				(SimpleUserTypeResolver) ReflectionTestUtils.getField(mappingContext, "userTypeResolver");
 
 		assertThat(userTypeResolver).isNotNull();
 	}
@@ -102,8 +109,9 @@ public class CassandraNamespaceIntegrationTests extends AbstractSpringDataEmbedd
 	@Test // DATACASS-417
 	public void mappingContextShouldCassandraTemplateConfigured() {
 
-		CassandraTemplate cassandraTemplate = applicationContext.getBean(CassandraTemplate.class);
-		CqlTemplate cqlTemplate = applicationContext.getBean(CqlTemplate.class);
+		CassandraTemplate cassandraTemplate = this.applicationContext.getBean(CassandraTemplate.class);
+
+		CqlTemplate cqlTemplate = this.applicationContext.getBean(CqlTemplate.class);
 
 		assertThat(cassandraTemplate.getCqlOperations()).isSameAs(cqlTemplate);
 	}

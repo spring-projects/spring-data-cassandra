@@ -41,15 +41,27 @@ import org.springframework.data.cassandra.core.cql.keyspace.AlterKeyspaceSpecifi
 import org.springframework.data.cassandra.core.cql.keyspace.CreateKeyspaceSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.DropKeyspaceSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceActionSpecification;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import com.datastax.driver.core.*;
+import com.datastax.driver.core.AuthProvider;
+import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Cluster.Builder;
+import com.datastax.driver.core.Host;
+import com.datastax.driver.core.LatencyTracker;
+import com.datastax.driver.core.NettyOptions;
+import com.datastax.driver.core.PoolingOptions;
 import com.datastax.driver.core.ProtocolOptions.Compression;
+import com.datastax.driver.core.ProtocolVersion;
+import com.datastax.driver.core.QueryOptions;
+import com.datastax.driver.core.SSLOptions;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.SocketOptions;
+import com.datastax.driver.core.TimestampGenerator;
 import com.datastax.driver.core.policies.AddressTranslator;
 import com.datastax.driver.core.policies.LoadBalancingPolicy;
 import com.datastax.driver.core.policies.ReconnectionPolicy;
@@ -71,20 +83,20 @@ import com.datastax.driver.core.policies.SpeculativeExecutionPolicy;
  * <strong>XML configuration</strong>
  *
  * <pre class="code">
-     <cql:cluster contact-points="…"
-				  port="${build.cassandra.native_transport_port}" compression="SNAPPY" netty-options-ref="nettyOptions">
-		<cql:local-pooling-options
-				min-simultaneous-requests="26" max-simultaneous-requests="101"
-				core-connections="3" max-connections="9"/>
-		<cql:remote-pooling-options
-				min-simultaneous-requests="25" max-simultaneous-requests="100"
-				core-connections="1" max-connections="2"/>
-		<cql:socket-options connect-timeout-millis="5000"
-							 keep-alive="true" reuse-address="true" so-linger="60" tcp-no-delay="true"
-							 receive-buffer-size="65536" send-buffer-size="65536"/>
-		<cql:keyspace name="${cassandra.keyspace}" action="CREATE_DROP"
-					   durable-writes="true"/>
-	</cass:cluster>
+ <cql:cluster contact-points="…"
+ port="${build.cassandra.native_transport_port}" compression="SNAPPY" netty-options-ref="nettyOptions">
+ <cql:local-pooling-options
+ min-simultaneous-requests="26" max-simultaneous-requests="101"
+ core-connections="3" max-connections="9"/>
+ <cql:remote-pooling-options
+ min-simultaneous-requests="25" max-simultaneous-requests="100"
+ core-connections="1" max-connections="2"/>
+ <cql:socket-options connect-timeout-millis="5000"
+ keep-alive="true" reuse-address="true" so-linger="60" tcp-no-delay="true"
+ receive-buffer-size="65536" send-buffer-size="65536"/>
+ <cql:keyspace name="${cassandra.keyspace}" action="CREATE_DROP"
+ durable-writes="true"/>
+ </cass:cluster>
  * </pre>
  *
  * @author Alex Shvid
@@ -132,16 +144,6 @@ public class CassandraClusterFactoryBean
 	private @Nullable CompressionType compressionType;
 	private @Nullable Host.StateListener hostStateListener;
 	private @Nullable LatencyTracker latencyTracker;
-
-	private List<CreateKeyspaceSpecification> keyspaceCreations = new ArrayList<>();
-	private List<AlterKeyspaceSpecification> keyspaceAlterations = new ArrayList<>();
-	private List<DropKeyspaceSpecification> keyspaceDrops = new ArrayList<>();
-	private Set<KeyspaceActionSpecification> keyspaceSpecifications = new HashSet<>();
-	private List<KeyspaceActions> keyspaceActions = new ArrayList<>();
-
-	private List<String> startupScripts = new ArrayList<>();
-	private List<String> shutdownScripts = new ArrayList<>();
-
 	private @Nullable LoadBalancingPolicy loadBalancingPolicy;
 	private NettyOptions nettyOptions = NettyOptions.DEFAULT_INSTANCE;
 	private @Nullable PoolingOptions poolingOptions;
@@ -153,6 +155,15 @@ public class CassandraClusterFactoryBean
 	private @Nullable SocketOptions socketOptions;
 	private @Nullable SSLOptions sslOptions;
 	private @Nullable TimestampGenerator timestampGenerator;
+
+	private List<AlterKeyspaceSpecification> keyspaceAlterations = new ArrayList<>();
+	private List<CreateKeyspaceSpecification> keyspaceCreations = new ArrayList<>();
+	private List<DropKeyspaceSpecification> keyspaceDrops = new ArrayList<>();
+	private List<KeyspaceActions> keyspaceActions = new ArrayList<>();
+	private List<String> startupScripts = new ArrayList<>();
+	private List<String> shutdownScripts = new ArrayList<>();
+
+	private Set<KeyspaceActionSpecification> keyspaceSpecifications = new HashSet<>();
 
 	private @Nullable String beanName;
 	private @Nullable String clusterName;
@@ -166,97 +177,172 @@ public class CassandraClusterFactoryBean
 	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
+		this.cluster = initializeCluster(withRegistrations(buildCluster()));
+	}
 
-		Assert.hasText(contactPoints, "At least one server is required");
+	private @NonNull Cluster buildCluster() {
 
-		Cluster.Builder clusterBuilder = newClusterBuilder();
+		Assert.hasText(this.contactPoints, "At least one server is required");
 
-		clusterBuilder.addContactPoints(StringUtils.commaDelimitedListToStringArray(contactPoints)).withPort(port);
-		clusterBuilder.withMaxSchemaAgreementWaitSeconds(maxSchemaAgreementWaitSeconds);
+		Builder clusterBuilder = newClusterBuilder()
+				.addContactPoints(StringUtils.commaDelimitedListToStringArray(this.contactPoints))
+				.withMaxSchemaAgreementWaitSeconds(this.maxSchemaAgreementWaitSeconds)
+				.withPort(this.port);
 
-		Optional.ofNullable(compressionType).map(CassandraClusterFactoryBean::convertCompressionType)
-				.ifPresent(clusterBuilder::withCompression);
+		Optional.ofNullable(this.addressTranslator).ifPresent(clusterBuilder::withAddressTranslator);
+		Optional.ofNullable(this.loadBalancingPolicy).ifPresent(clusterBuilder::withLoadBalancingPolicy);
+		Optional.ofNullable(this.nettyOptions).ifPresent(clusterBuilder::withNettyOptions);
+		Optional.ofNullable(this.poolingOptions).ifPresent(clusterBuilder::withPoolingOptions);
+		Optional.ofNullable(this.protocolVersion).ifPresent(clusterBuilder::withProtocolVersion);
+		Optional.ofNullable(this.queryOptions).ifPresent(clusterBuilder::withQueryOptions);
+		Optional.ofNullable(this.reconnectionPolicy).ifPresent(clusterBuilder::withReconnectionPolicy);
+		Optional.ofNullable(this.retryPolicy).ifPresent(clusterBuilder::withRetryPolicy);
+		Optional.ofNullable(this.socketOptions).ifPresent(clusterBuilder::withSocketOptions);
+		Optional.ofNullable(this.speculativeExecutionPolicy).ifPresent(clusterBuilder::withSpeculativeExecutionPolicy);
+		Optional.ofNullable(this.timestampGenerator).ifPresent(clusterBuilder::withTimestampGenerator);
 
-		Optional.ofNullable(addressTranslator).ifPresent(clusterBuilder::withAddressTranslator);
-		Optional.ofNullable(loadBalancingPolicy).ifPresent(clusterBuilder::withLoadBalancingPolicy);
-		clusterBuilder.withNettyOptions(nettyOptions);
-		Optional.ofNullable(poolingOptions).ifPresent(clusterBuilder::withPoolingOptions);
-		Optional.ofNullable(protocolVersion).ifPresent(clusterBuilder::withProtocolVersion);
-		Optional.ofNullable(queryOptions).ifPresent(clusterBuilder::withQueryOptions);
-		Optional.ofNullable(reconnectionPolicy).ifPresent(clusterBuilder::withReconnectionPolicy);
-		Optional.ofNullable(retryPolicy).ifPresent(clusterBuilder::withRetryPolicy);
-		Optional.ofNullable(socketOptions).ifPresent(clusterBuilder::withSocketOptions);
-		Optional.ofNullable(speculativeExecutionPolicy).ifPresent(clusterBuilder::withSpeculativeExecutionPolicy);
-		Optional.ofNullable(timestampGenerator).ifPresent(clusterBuilder::withTimestampGenerator);
+		Optional.ofNullable(this.authProvider)
+				.map(clusterBuilder::withAuthProvider)
+				.orElseGet(() -> StringUtils.hasText(this.username)
+					? clusterBuilder.withCredentials(this.username, this.password)
+					: clusterBuilder);
 
-		if (authProvider != null) {
-			clusterBuilder.withAuthProvider(authProvider);
-		} else if (username != null) {
-			clusterBuilder.withCredentials(username, password);
-		}
+		Optional.ofNullable(this.compressionType)
+			.map(CassandraClusterFactoryBean::convertCompressionType)
+			.ifPresent(clusterBuilder::withCompression);
 
-		if (!jmxReportingEnabled) {
+		if (!this.jmxReportingEnabled) {
 			clusterBuilder.withoutJMXReporting();
 		}
 
-		if (!metricsEnabled) {
+		if (!this.metricsEnabled) {
 			clusterBuilder.withoutMetrics();
 		}
 
-		if (sslEnabled) {
-			if (sslOptions != null) {
-				clusterBuilder.withSSL(sslOptions);
-			} else {
-				clusterBuilder.withSSL();
-			}
+		if (this.sslEnabled) {
+			Optional.ofNullable(this.sslOptions)
+				.map(clusterBuilder::withSSL)
+				.orElseGet(clusterBuilder::withSSL);
 		}
 
-		Optional.ofNullable(resolveClusterName()).filter(StringUtils::hasText).ifPresent(clusterBuilder::withClusterName);
+		Optional.ofNullable(resolveClusterName())
+				.filter(StringUtils::hasText)
+				.ifPresent(clusterBuilder::withClusterName);
 
-		if (clusterBuilderConfigurer != null) {
-			clusterBuilderConfigurer.configure(clusterBuilder);
+		if (this.clusterBuilderConfigurer != null) {
+			this.clusterBuilderConfigurer.configure(clusterBuilder);
 		}
 
-		cluster = clusterBuilder.build();
+		return clusterBuilder.build();
+	}
 
-		Optional.ofNullable(hostStateListener).ifPresent(cluster::register);
-		Optional.ofNullable(latencyTracker).ifPresent(cluster::register);
+	private static Compression convertCompressionType(CompressionType type) {
 
-		generateSpecificationsFromFactoryBeans();
+		switch (type) {
+			case NONE:
+				return Compression.NONE;
+			case SNAPPY:
+				return Compression.SNAPPY;
+			case LZ4:
+				return Compression.LZ4;
+		}
 
-		List<KeyspaceActionSpecification> startup = new ArrayList<>(keyspaceCreations.size() + keyspaceAlterations.size());
-		startup.addAll(keyspaceCreations);
-		startup.addAll(keyspaceAlterations);
-
-		executeSpecsAndScripts(startup, startupScripts, cluster);
+		throw new IllegalArgumentException(String.format("Unknown compression type [%s]", type));
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * @see com.datastax.driver.core.Cluster#builder()
 	 */
-	Cluster.Builder newClusterBuilder() {
+	@NonNull Cluster.Builder newClusterBuilder() {
 		return Cluster.builder();
 	}
 
-	/* (non-Javadoc) */
-	@Nullable
-	private String resolveClusterName() {
-		return StringUtils.hasText(clusterName) ? clusterName : beanName;
+	private @Nullable String resolveClusterName() {
+		return StringUtils.hasText(this.clusterName) ? this.clusterName : this.beanName;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.DisposableBean#destroy()
-	 */
-	@Override
-	public void destroy() {
+	private @NonNull Cluster withRegistrations(@NonNull Cluster cluster) {
 
-		if (cluster != null) {
+		Optional.ofNullable(this.hostStateListener).ifPresent(cluster::register);
+		Optional.ofNullable(this.latencyTracker).ifPresent(cluster::register);
 
-			executeSpecsAndScripts(keyspaceDrops, shutdownScripts, cluster);
-			cluster.close();
+		return cluster;
+	}
+
+	private @NonNull Cluster initializeCluster(@NonNull Cluster cluster) {
+
+		generateSpecificationsFromFactoryBeans();
+
+		List<KeyspaceActionSpecification> startupSpecifications =
+			new ArrayList<>(this.keyspaceCreations.size() + this.keyspaceAlterations.size());
+
+		startupSpecifications.addAll(this.keyspaceCreations);
+		startupSpecifications.addAll(this.keyspaceAlterations);
+
+		executeSpecsAndScripts(startupSpecifications, this.startupScripts, cluster);
+
+		return cluster;
+	}
+
+	private void executeSpecsAndScripts(List<? extends KeyspaceActionSpecification> keyspaceActionSpecifications,
+			List<String> scripts, Cluster cluster) {
+
+		if (!CollectionUtils.isEmpty(keyspaceActionSpecifications) || !CollectionUtils.isEmpty(scripts)) {
+
+			try (Session session = cluster.connect()) {
+
+				CqlTemplate template = new CqlTemplate(session);
+
+				keyspaceActionSpecifications
+					.forEach(keyspaceActionSpecification -> template.execute(toCql(keyspaceActionSpecification)));
+
+				scripts.forEach(template::execute);
+			}
 		}
+	}
+
+	/**
+	 * Evaluates the contents of all the KeyspaceSpecificationFactoryBeans
+	 * and generates the proper KeyspaceSpecification from them.
+	 */
+	private void generateSpecificationsFromFactoryBeans() {
+
+		generateSpecifications(this.keyspaceSpecifications);
+		this.keyspaceActions.forEach(actions -> generateSpecifications(actions.getActions()));
+	}
+
+	private void generateSpecifications(Collection<KeyspaceActionSpecification> specifications) {
+
+		specifications.forEach(keyspaceActionSpecification -> {
+
+			if (keyspaceActionSpecification instanceof AlterKeyspaceSpecification) {
+				this.keyspaceAlterations.add((AlterKeyspaceSpecification) keyspaceActionSpecification);
+			}
+			else if (keyspaceActionSpecification instanceof CreateKeyspaceSpecification) {
+				this.keyspaceCreations.add((CreateKeyspaceSpecification) keyspaceActionSpecification);
+			}
+			else if (keyspaceActionSpecification instanceof DropKeyspaceSpecification) {
+				this.keyspaceDrops.add((DropKeyspaceSpecification) keyspaceActionSpecification);
+			}
+		});
+	}
+
+
+	private String toCql(KeyspaceActionSpecification specification) {
+
+		if (specification instanceof AlterKeyspaceSpecification) {
+			return new AlterKeyspaceCqlGenerator((AlterKeyspaceSpecification) specification).toCql();
+		}
+		else if (specification instanceof CreateKeyspaceSpecification) {
+			return new CreateKeyspaceCqlGenerator((CreateKeyspaceSpecification) specification).toCql();
+		}
+		else if (specification instanceof DropKeyspaceSpecification) {
+			return new DropKeyspaceCqlGenerator((DropKeyspaceSpecification) specification).toCql();
+		}
+
+		throw new IllegalArgumentException("Unsupported specification type: "
+			+ ClassUtils.getQualifiedName(specification.getClass()));
 	}
 
 	/*
@@ -265,7 +351,7 @@ public class CassandraClusterFactoryBean
 	 */
 	@Override
 	public Cluster getObject() {
-		return cluster;
+		return this.cluster;
 	}
 
 	/*
@@ -274,7 +360,7 @@ public class CassandraClusterFactoryBean
 	 */
 	@Override
 	public Class<? extends Cluster> getObjectType() {
-		return (cluster != null ? cluster.getClass() : Cluster.class);
+		return this.cluster != null ? this.cluster.getClass() : Cluster.class;
 	}
 
 	/*
@@ -288,79 +374,24 @@ public class CassandraClusterFactoryBean
 
 	/*
 	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.DisposableBean#destroy()
+	 */
+	@Override
+	public void destroy() {
+
+		if (this.cluster != null) {
+			executeSpecsAndScripts(this.keyspaceDrops, this.shutdownScripts, this.cluster);
+			this.cluster.close();
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.dao.support.PersistenceExceptionTranslator#translateExceptionIfPossible(java.lang.RuntimeException)
 	 */
 	@Override
-	public DataAccessException translateExceptionIfPossible(RuntimeException ex) {
-		return exceptionTranslator.translateExceptionIfPossible(ex);
-	}
-
-	/**
-	 * Examines the contents of all the KeyspaceSpecificationFactoryBeans and generates the proper KeyspaceSpecification
-	 * from them.
-	 */
-	private void generateSpecificationsFromFactoryBeans() {
-
-		generateSpecifications(keyspaceSpecifications);
-		keyspaceActions.forEach(actions -> generateSpecifications(actions.getActions()));
-	}
-
-	private void generateSpecifications(Collection<KeyspaceActionSpecification> specifications) {
-
-		specifications.forEach(keyspaceActionSpecification -> {
-
-			if (keyspaceActionSpecification instanceof CreateKeyspaceSpecification) {
-				keyspaceCreations.add((CreateKeyspaceSpecification) keyspaceActionSpecification);
-			}
-
-			if (keyspaceActionSpecification instanceof DropKeyspaceSpecification) {
-				keyspaceDrops.add((DropKeyspaceSpecification) keyspaceActionSpecification);
-			}
-
-			if (keyspaceActionSpecification instanceof AlterKeyspaceSpecification) {
-				keyspaceAlterations.add((AlterKeyspaceSpecification) keyspaceActionSpecification);
-			}
-		});
-	}
-
-	private void executeSpecsAndScripts(List<? extends KeyspaceActionSpecification> keyspaceActionSpecifications,
-			List<String> scripts, Cluster cluster) {
-
-		if (!CollectionUtils.isEmpty(keyspaceActionSpecifications) || !CollectionUtils.isEmpty(scripts)) {
-
-			Session session = cluster.connect();
-
-			try {
-				CqlTemplate template = new CqlTemplate(session);
-
-				keyspaceActionSpecifications
-						.forEach(keyspaceActionSpecification -> template.execute(toCql(keyspaceActionSpecification)));
-
-				scripts.forEach(template::execute);
-			} finally {
-				if (session != null) {
-					session.close();
-				}
-			}
-		}
-	}
-
-	private String toCql(KeyspaceActionSpecification specification) {
-
-		if (specification instanceof CreateKeyspaceSpecification) {
-			return new CreateKeyspaceCqlGenerator((CreateKeyspaceSpecification) specification).toCql();
-		}
-
-		if (specification instanceof DropKeyspaceSpecification) {
-			return new DropKeyspaceCqlGenerator((DropKeyspaceSpecification) specification).toCql();
-		}
-
-		if (specification instanceof AlterKeyspaceSpecification) {
-			return new AlterKeyspaceCqlGenerator((AlterKeyspaceSpecification) specification).toCql();
-		}
-
-		throw new IllegalArgumentException(
-				"Unsupported specification type: " + ClassUtils.getQualifiedName(specification.getClass()));
+	public DataAccessException translateExceptionIfPossible(RuntimeException cause) {
+		return exceptionTranslator.translateExceptionIfPossible(cause);
 	}
 
 	/*
@@ -369,7 +400,7 @@ public class CassandraClusterFactoryBean
 	 * @since 1.5
 	 */
 	@Override
-	public void setBeanName(String beanName) {
+	public void setBeanName(@Nullable String beanName) {
 		this.beanName = beanName;
 	}
 
@@ -495,7 +526,7 @@ public class CassandraClusterFactoryBean
 	 * @return the {@link List} of {@link KeyspaceActions}.
 	 */
 	public List<KeyspaceActions> getKeyspaceActions() {
-		return Collections.unmodifiableList(keyspaceActions);
+		return Collections.unmodifiableList(this.keyspaceActions);
 	}
 
 	/**
@@ -560,7 +591,7 @@ public class CassandraClusterFactoryBean
 	 * @return the startup scripts
 	 */
 	public List<String> getStartupScripts() {
-		return Collections.unmodifiableList(startupScripts);
+		return Collections.unmodifiableList(this.startupScripts);
 	}
 
 	/**
@@ -578,7 +609,7 @@ public class CassandraClusterFactoryBean
 	 * @return the shutdown scripts
 	 */
 	public List<String> getShutdownScripts() {
-		return Collections.unmodifiableList(shutdownScripts);
+		return Collections.unmodifiableList(this.shutdownScripts);
 	}
 
 	/**
@@ -592,7 +623,7 @@ public class CassandraClusterFactoryBean
 	 * @return the {@link KeyspaceActionSpecification} associated with this factory.
 	 */
 	public Set<KeyspaceActionSpecification> getKeyspaceSpecifications() {
-		return Collections.unmodifiableSet(keyspaceSpecifications);
+		return Collections.unmodifiableSet(this.keyspaceSpecifications);
 	}
 
 	/**
@@ -646,7 +677,7 @@ public class CassandraClusterFactoryBean
 	}
 
 	/**
-	 * @param latencyTracker The latencyTracker to set.
+	 * @param latencyTracker {@link LatencyTracker} to set.
 	 */
 	public void setLatencyTracker(LatencyTracker latencyTracker) {
 		this.latencyTracker = latencyTracker;
@@ -667,13 +698,14 @@ public class CassandraClusterFactoryBean
 
 	/**
 	 * Sets the {@link ClusterBuilderConfigurer} used to apply additional configuration logic to the
-	 * {@link com.datastax.driver.core.Cluster.Builder}. {@link ClusterBuilderConfigurer} is invoked after all provided
-	 * options are configured. The factory will {@link Builder#build()} the {@link Cluster} after applying
-	 * {@link ClusterBuilderConfigurer}.
+	 * {@link com.datastax.driver.core.Cluster.Builder} object.
+	 *
+	 * {@link ClusterBuilderConfigurer} is invoked after all provided options are configured. The factory will
+	 * {@link Builder#build()} the {@link Cluster} after applying {@link ClusterBuilderConfigurer}.
 	 *
 	 * @param clusterBuilderConfigurer {@link ClusterBuilderConfigurer} used to configure the
-	 *          {@link com.datastax.driver.core.Cluster.Builder}.
-	 * @see org.springframework.data.cql.config.ClusterBuilderConfigurer
+	 * {@link com.datastax.driver.core.Cluster.Builder}.
+	 * @see org.springframework.data.cassandra.config.ClusterBuilderConfigurer
 	 */
 	public void setClusterBuilderConfigurer(@Nullable ClusterBuilderConfigurer clusterBuilderConfigurer) {
 		this.clusterBuilderConfigurer = clusterBuilderConfigurer;
@@ -724,19 +756,5 @@ public class CassandraClusterFactoryBean
 	 */
 	public void setTimestampGenerator(@Nullable TimestampGenerator timestampGenerator) {
 		this.timestampGenerator = timestampGenerator;
-	}
-
-	private static Compression convertCompressionType(CompressionType type) {
-
-		switch (type) {
-			case NONE:
-				return Compression.NONE;
-			case SNAPPY:
-				return Compression.SNAPPY;
-			case LZ4:
-				return Compression.LZ4;
-		}
-
-		throw new IllegalArgumentException(String.format("Unknown compression type [%s]", type));
 	}
 }

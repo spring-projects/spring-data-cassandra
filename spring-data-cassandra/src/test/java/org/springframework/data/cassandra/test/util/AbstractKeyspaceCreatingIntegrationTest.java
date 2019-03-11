@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.test.util;
 
 import org.junit.ClassRule;
+
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.Session;
@@ -33,72 +34,83 @@ import com.datastax.driver.core.Session;
  * @author Matthew T. Adams
  * @author David Webb
  * @author Mark Paluch
+ * @author John Blum
  */
 public abstract class AbstractKeyspaceCreatingIntegrationTest extends AbstractEmbeddedCassandraIntegrationTest {
 
 	/**
-	 * Class rule to prepare a keyspace to give tests a keyspace context. The keyspace name is random and changes per
-	 * test.
+	 * Class rule to prepare a Cassandra Keyspace giving tests a Keyspace context.
+	 * The Keyspace name is random and changes per test.
 	 */
-	@ClassRule public static final KeyspaceRule keyspaceRule = new KeyspaceRule(cassandraEnvironment);
+	@ClassRule
+	public static final KeyspaceRule keyspaceRule = new KeyspaceRule(cassandraEnvironment);
 
 	/**
-	 * The session that's connected to the keyspace used in the current instance's test.
+	 * The Session that's connected to the Cassandra Keyspace used in tests.
 	 */
 	protected Session session;
 
 	/**
-	 * The name of the keyspace to use for this test instance.
+	 * The name of the Cassanda Keyspace to use for this test.
 	 */
 	protected final String keyspace;
 
 	/**
-	 * Create a new {@link AbstractKeyspaceCreatingIntegrationTest}.
+	 * Constructs a new instance of {@link AbstractKeyspaceCreatingIntegrationTest}.
 	 */
 	public AbstractKeyspaceCreatingIntegrationTest() {
 		this(keyspaceRule.getKeyspaceName());
 	}
 
-	private AbstractKeyspaceCreatingIntegrationTest(final String keyspace) {
+	private AbstractKeyspaceCreatingIntegrationTest(String keyspace) {
 
 		Assert.hasText(keyspace, "Keyspace must not be empty");
 
 		this.keyspace = keyspace;
 		this.session = keyspaceRule.getSession();
 
-		cassandraRule.before(session -> {
+		this.cassandraRule.before(session -> {
 
 			if (!keyspace.equals(session.getLoggedKeyspace())) {
-				session.execute(String.format("USE %s;", keyspace));
+				session.execute(String.format(KeyspaceRule.USE_KEYSPACE_CQL, keyspace));
 			}
+
 			return null;
 		});
 	}
 
 	/**
-	 * Returns the {@link Session}. The session is logged into the {@link #getKeyspace()}.
+	 * Returns the configured {@link String name} of the Cassandra Keyspace used for tests.
 	 *
-	 * @return
-	 */
-	public Session getSession() {
-		return session;
-	}
-
-	/**
-	 * Returns the keyspace name.
-	 *
-	 * @return
+	 * @return the confiured {@link String name} of the Cassandra Keyspace used for tests.
 	 */
 	public String getKeyspace() {
-		return keyspace;
+		return this.keyspace;
 	}
 
 	/**
-	 * Drop a Keyspace if it exists.
+	 * Returns the configured {@link Session}.
 	 *
-	 * @param keyspace
+	 * The {@link Session} is logged into the {@link #getKeyspace()}.
+	 *
+	 * @return the configured {@link Session}.
+	 * @see com.datastax.driver.core.Session
+	 */
+	public Session getSession() {
+		return this.session;
+	}
+
+	@SuppressWarnings("unused")
+	protected void dropKeyspace() {
+		dropKeyspace(getKeyspace());
+	}
+
+	/**
+	 * Drops the given Keyspace by {@link String name} if it exists.
+	 *
+	 * @param keyspace {@link String name} of the Keyspace to drop.
 	 */
 	public void dropKeyspace(String keyspace) {
-		session.execute("DROP KEYSPACE IF EXISTS " + keyspace);
+		this.session.execute(String.format(KeyspaceRule.DROP_KEYSPACE_IF_EXISTS_CQL, keyspace));
 	}
 }

@@ -30,7 +30,7 @@ import org.springframework.util.Assert;
 @SuppressWarnings("serial")
 public class CassandraConnectionProperties extends Properties {
 
-	protected String resourceName = null;
+	protected String resourceName;
 
 	/**
 	 * Create a new {@link CassandraConnectionProperties} using properties from
@@ -41,34 +41,43 @@ public class CassandraConnectionProperties extends Properties {
 	}
 
 	protected CassandraConnectionProperties(String resourceName) {
+
 		this.resourceName = resourceName;
 		loadProperties();
 	}
 
 	private void loadProperties() {
-		loadProperties(resourceName);
+
+		loadProperties(this.resourceName);
 		putAll(System.getProperties());
 	}
 
 	private void loadProperties(String resourceName) {
+
 		InputStream in = null;
+
 		try {
 			in = getClass().getResourceAsStream(resourceName);
-			if (in == null) {
-				return;
+
+			if (in != null) {
+				load(in);
 			}
-			load(in);
-		} catch (Exception x) {
-			throw new RuntimeException(x);
+		} catch (Exception cause) {
+			throw new RuntimeException(cause);
 		} finally {
 			if (in != null) {
 				try {
 					in.close();
-				} catch (Exception e) {
-					// gulp
-				}
+				} catch (Exception ignore) { }
 			}
 		}
+	}
+
+	/**
+	 * @return the Cassandra hostname
+	 */
+	public String getCassandraHost() {
+		return getProperty("build.cassandra.host");
 	}
 
 	/**
@@ -100,22 +109,15 @@ public class CassandraConnectionProperties extends Properties {
 	}
 
 	/**
-	 * @return the Cassandra hostname
-	 */
-	public String getCassandraHost() {
-		return getProperty("build.cassandra.host");
-	}
-
-	/**
 	 * @return the Cassandra type (Embedded or External)
 	 */
 	public CassandraType getCassandraType() {
 
-		String property = getProperty("build.cassandra.mode");
-		if (property != null && property.equalsIgnoreCase(CassandraType.EXTERNAL.name())) {
-			return CassandraType.EXTERNAL;
-		}
-		return CassandraType.EMBEDDED;
+		String cassandraType = getProperty("build.cassandra.mode");
+
+		return CassandraType.EXTERNAL.name().equalsIgnoreCase(cassandraType)
+			? CassandraType.EXTERNAL
+			: CassandraType.EMBEDDED;
 	}
 
 	/**
@@ -155,14 +157,16 @@ public class CassandraConnectionProperties extends Properties {
 		String propertyValue = getProperty(propertyName);
 		try {
 			return converter.convert(propertyValue);
-		} catch (Exception e) {
-			throw new IllegalArgumentException(String.format("%1$s: cannot parse value [%2$s] of property [%3$s] as a [%4$s]",
-					resourceName, propertyValue, propertyName, type.getSimpleName()), e);
+		} catch (Exception cause) {
+
+			String message = "%1$s: cannot parse value [%2$s] of property [%3$s] as a [%4$s]";
+
+			throw new IllegalArgumentException(String.format(message, this.resourceName, propertyValue, propertyName,
+					type.getSimpleName()), cause);
 		}
 	}
 
 	public enum CassandraType {
 		EMBEDDED, EXTERNAL
-
 	}
 }

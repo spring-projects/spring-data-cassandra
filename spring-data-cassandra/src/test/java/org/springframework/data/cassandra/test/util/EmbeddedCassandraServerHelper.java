@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.test.util;
 
-import static java.util.concurrent.TimeUnit.*;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -74,21 +74,21 @@ class EmbeddedCassandraServerHelper {
 	}
 
 	/**
-	 * Get embedded cassandra RPC port.
-	 *
-	 * @return the cassandra RPC port
-	 */
-	public static int getRpcPort() {
-		return DatabaseDescriptor.getRpcPort();
-	}
-
-	/**
 	 * Get embedded cassandra native transport port.
 	 *
 	 * @return the cassandra native transport port.
 	 */
 	public static int getNativeTransportPort() {
 		return DatabaseDescriptor.getNativeTransportPort();
+	}
+
+	/**
+	 * Get embedded cassandra RPC port.
+	 *
+	 * @return the cassandra RPC port
+	 */
+	public static int getRpcPort() {
+		return DatabaseDescriptor.getRpcPort();
 	}
 
 	/**
@@ -113,16 +113,17 @@ class EmbeddedCassandraServerHelper {
 	public static void startEmbeddedCassandra(String yamlResource, String tmpDir, long timeout) throws Exception {
 
 		if (cassandraRef.get() != null) {
-			/* nothing to do Cassandra is already started */
+			/* Nothing to do; Cassandra is already started */
 			return;
 		}
 
 		if (!sync.compareAndSet(null, new Object())) {
-			/* A different Thread was faster, so nothing to do for us here */
+			/* A different Thread was faster, so nothing to do this time */
 			return;
 		}
 
 		File yamlFile = new File(tmpDir, new File(yamlResource).getName());
+
 		prepareCassandraDirectory(yamlResource, tmpDir, yamlFile);
 		startEmbeddedCassandra(yamlFile, timeout);
 	}
@@ -160,8 +161,10 @@ class EmbeddedCassandraServerHelper {
 
 		cleanupAndRecreateDirectories();
 
-		final CassandraDaemon cassandraDaemon = new CassandraDaemon();
+		CassandraDaemon cassandraDaemon = new CassandraDaemon();
+
 		ExecutorService executor = Executors.newSingleThreadExecutor();
+
 		Future<?> future = executor.submit(() -> {
 			cassandraDaemon.activate();
 			cassandraRef.compareAndSet(null, cassandraDaemon);
@@ -169,16 +172,17 @@ class EmbeddedCassandraServerHelper {
 
 		try {
 			future.get(timeout, MILLISECONDS);
-		} catch (ExecutionException e) {
+		} catch (ExecutionException cause) {
 
 			log.error("Cassandra daemon did not start after " + timeout + " ms. Consider increasing the timeout");
-			throw new IllegalStateException("Cassandra daemon did not start within timeout", e);
-		} catch (InterruptedException e) {
 
-			log.error("Interrupted waiting for Cassandra daemon to start:", e);
+			throw new IllegalStateException("Cassandra daemon did not start within timeout", cause);
+		} catch (InterruptedException cause) {
+
+			log.error("Interrupted waiting for Cassandra daemon to start:", cause);
 			Thread.currentThread().interrupt();
 
-			throw new IllegalStateException(e);
+			throw new IllegalStateException(cause);
 		} finally {
 			executor.shutdown();
 		}
@@ -192,13 +196,14 @@ class EmbeddedCassandraServerHelper {
 		createCassandraDirectories();
 
 		CommitLog commitLog = CommitLog.instance;
+
 		commitLog.getCurrentPosition(); // wait for commit log allocator instantiation to avoid hanging on a race condition
 		commitLog.resetUnsafe(true); // cleanup screws w/ CommitLog, this brings it back to safe state
 	}
 
 	private static void cleanup() throws IOException {
 
-		// clean up commitlog and data locations
+		// clean up commit log and data locations
 		rmdirs(DatabaseDescriptor.getCommitLogLocation());
 		rmdirs(DatabaseDescriptor.getAllDataFileLocations());
 	}
@@ -247,6 +252,9 @@ class EmbeddedCassandraServerHelper {
 	}
 
 	private static void rmdirs(File... fileOrDirectories) throws IOException {
-		Arrays.stream(fileOrDirectories).filter(File::exists).forEach(FileUtils::deleteRecursive);
+
+		Arrays.stream(fileOrDirectories)
+				.filter(File::exists)
+				.forEach(FileUtils::deleteRecursive);
 	}
 }

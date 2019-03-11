@@ -60,9 +60,12 @@ public abstract class AbstractClusterConfiguration {
 	protected Cluster getRequiredCluster() {
 
 		CassandraClusterFactoryBean factoryBean = cluster();
-		Assert.state(factoryBean.getObject() != null, "Cluster factory not initialized");
 
-		return factoryBean.getObject();
+		Cluster cluster = factoryBean.getObject();
+
+		Assert.state(cluster != null, "Cluster not initialized");
+
+		return cluster;
 	}
 
 	/**

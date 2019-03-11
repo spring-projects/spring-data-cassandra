@@ -33,6 +33,7 @@ import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.SimpleTupleTypeFactory;
 import org.springframework.data.cassandra.core.mapping.SimpleUserTypeResolver;
 import org.springframework.data.cassandra.core.mapping.Table;
+import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.lang.Nullable;
@@ -146,8 +147,10 @@ public abstract class AbstractCassandraConfiguration extends AbstractClusterConf
 
 		Cluster cluster = getRequiredCluster();
 
-		CassandraMappingContext mappingContext = new CassandraMappingContext(
-				new SimpleUserTypeResolver(cluster, getKeyspaceName()), new SimpleTupleTypeFactory(cluster));
+		UserTypeResolver userTypeResolver = new SimpleUserTypeResolver(cluster, getKeyspaceName());
+
+		CassandraMappingContext mappingContext =
+				new CassandraMappingContext(userTypeResolver, new SimpleTupleTypeFactory(cluster));
 
 		Optional.ofNullable(this.beanClassLoader).ifPresent(mappingContext::setBeanClassLoader);
 

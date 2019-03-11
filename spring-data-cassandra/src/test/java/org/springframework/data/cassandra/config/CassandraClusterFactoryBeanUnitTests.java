@@ -15,18 +15,35 @@
  */
 package org.springframework.data.cassandra.config;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
-import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.junit.Test;
+
 import org.springframework.data.cassandra.support.IntegrationTestNettyOptions;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.datastax.driver.core.*;
+import com.datastax.driver.core.AuthProvider;
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.Configuration;
+import com.datastax.driver.core.PlainTextAuthProvider;
+import com.datastax.driver.core.PoolingOptions;
+import com.datastax.driver.core.ProtocolOptions;
 import com.datastax.driver.core.ProtocolOptions.Compression;
+import com.datastax.driver.core.ProtocolVersion;
+import com.datastax.driver.core.QueryOptions;
+import com.datastax.driver.core.RemoteEndpointAwareJdkSSLOptions;
+import com.datastax.driver.core.SSLOptions;
+import com.datastax.driver.core.SocketOptions;
+import com.datastax.driver.core.TimestampGenerator;
 import com.datastax.driver.core.policies.AddressTranslator;
 import com.datastax.driver.core.policies.ExponentialReconnectionPolicy;
 import com.datastax.driver.core.policies.LoadBalancingPolicy;
@@ -47,6 +64,7 @@ public class CassandraClusterFactoryBeanUnitTests {
 	public void shouldInitializeWithoutAnyOptions() throws Exception {
 
 		CassandraClusterFactoryBean bean = new CassandraClusterFactoryBean();
+
 		bean.afterPropertiesSet();
 
 		assertThat(bean.getObject()).isNotNull();
@@ -59,6 +77,7 @@ public class CassandraClusterFactoryBeanUnitTests {
 	public void shouldShutdownClusterInstance() throws Exception {
 
 		CassandraClusterFactoryBean bean = new CassandraClusterFactoryBean();
+
 		bean.afterPropertiesSet();
 		bean.destroy();
 
@@ -273,6 +292,8 @@ public class CassandraClusterFactoryBeanUnitTests {
 		Cluster mockCluster = mock(Cluster.class);
 
 		when(mockClusterBuilder.addContactPoints(anyString())).thenReturn(mockClusterBuilder);
+		when(mockClusterBuilder.withMaxSchemaAgreementWaitSeconds(anyInt())).thenReturn(mockClusterBuilder);
+		when(mockClusterBuilder.withPort(anyInt())).thenReturn(mockClusterBuilder);
 		when(mockClusterBuilder.build()).thenReturn(mockCluster);
 
 		CassandraClusterFactoryBean bean = spy(new CassandraClusterFactoryBean());
@@ -294,6 +315,8 @@ public class CassandraClusterFactoryBeanUnitTests {
 		Cluster mockCluster = mock(Cluster.class);
 
 		when(mockClusterBuilder.addContactPoints(anyString())).thenReturn(mockClusterBuilder);
+		when(mockClusterBuilder.withMaxSchemaAgreementWaitSeconds(anyInt())).thenReturn(mockClusterBuilder);
+		when(mockClusterBuilder.withPort(anyInt())).thenReturn(mockClusterBuilder);
 		when(mockClusterBuilder.build()).thenReturn(mockCluster);
 
 		CassandraClusterFactoryBean bean = spy(new CassandraClusterFactoryBean());

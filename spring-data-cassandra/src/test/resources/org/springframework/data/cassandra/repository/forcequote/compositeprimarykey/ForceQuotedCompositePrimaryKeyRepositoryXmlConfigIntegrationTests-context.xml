@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cass="http://www.springframework.org/schema/data/cassandra"
-	xsi:schemaLocation="
-		http://www.springframework.org/schema/data/cassandra http://www.springframework.org/schema/data/cassandra/spring-cassandra.xsd
-		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
-		">
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:cass="http://www.springframework.org/schema/data/cassandra"
+	   xsi:schemaLocation="
+	   	http://www.springframework.org/schema/data/cassandra http://www.springframework.org/schema/data/cassandra/spring-cassandra.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+">
 
-	<import resource="classpath:/config/spring-data-cassandra-basic.xml" />
+	<import resource="classpath:/config/spring-data-cassandra-basic.xml"/>
 
 	<cass:mapping
 			entity-base-packages="org.springframework.data.cassandra.repository.forcequote.compositeprimarykey">
@@ -36,6 +37,6 @@
 		schema-action="RECREATE_DROP_UNUSED">
 	</cass:session>
 
-	<cass:repositories
-			base-package="org.springframework.data.cassandra.repository.forcequote.compositeprimarykey"/>
+	<cass:repositories base-package="org.springframework.data.cassandra.repository.forcequote.compositeprimarykey"/>
+
 </beans>

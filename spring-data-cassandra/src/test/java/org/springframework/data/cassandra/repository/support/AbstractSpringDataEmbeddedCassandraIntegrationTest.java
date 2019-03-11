@@ -30,17 +30,19 @@ import org.springframework.data.cassandra.test.util.AbstractEmbeddedCassandraInt
 public abstract class AbstractSpringDataEmbeddedCassandraIntegrationTest
 		extends AbstractEmbeddedCassandraIntegrationTest {
 
-	@Autowired private CassandraOperations template;
+	@Autowired @SuppressWarnings("unused")
+	private CassandraOperations template;
 
 	/**
-	 * Truncate table for all known {@link org.springframework.data.mapping.PersistentEntity entities}.
+	 * Truncate tables for all known {@link org.springframework.data.mapping.PersistentEntity entities}.
 	 */
 	public void deleteAllEntities() {
 
-		Stream<? extends CassandraPersistentEntity<?>> stream = template.getConverter().getMappingContext()
-				.getTableEntities()
-				.stream();
+		Stream<? extends CassandraPersistentEntity<?>> stream =
+				this.template.getConverter().getMappingContext().getTableEntities().stream();
 
-		stream.map(CassandraPersistentEntity::getType).filter(type -> !type.isInterface()).forEach(template::truncate);
+		stream.map(CassandraPersistentEntity::getType)
+				.filter(type -> !type.isInterface())
+				.forEach(this.template::truncate);
 	}
 }

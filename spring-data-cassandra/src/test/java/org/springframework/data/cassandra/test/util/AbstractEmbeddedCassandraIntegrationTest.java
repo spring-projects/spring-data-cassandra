@@ -19,6 +19,7 @@ import java.util.UUID;
 
 import org.junit.ClassRule;
 import org.junit.Rule;
+
 import org.springframework.data.cassandra.support.CqlDataSet;
 
 import com.datastax.driver.core.Cluster;
@@ -36,49 +37,55 @@ import com.datastax.driver.core.Cluster;
 public abstract class AbstractEmbeddedCassandraIntegrationTest {
 
 	/**
-	 * Initiate a Cassandra environment in test class scope.
+	 * Initiate a Cassandra environment in this test scope.
 	 */
-	@ClassRule public static final CassandraRule cassandraEnvironment = new CassandraRule("embedded-cassandra.yaml");
+	@ClassRule
+	public static final CassandraRule cassandraEnvironment =
+			new CassandraRule("embedded-cassandra.yaml");
 
 	/**
-	 * Initiate a Cassandra environment in test scope.
-	 */
-	@Rule public final CassandraRule cassandraRule = cassandraEnvironment.testInstance().before(session -> {
-		AbstractEmbeddedCassandraIntegrationTest.this.cluster = session.getCluster();
-		return null;
-	});
-
-	/**
-	 * The {@link Cluster} that's connected to Cassandra.
-	 */
-	protected Cluster cluster;
-
-	/**
-	 * Creates a random UUID.
+	 * Create and return a random {@link UUID} as a {@link String}.
 	 *
-	 * @return
+	 * @return a random {@link UUID} as a {@link String}.
+	 * @see java.util.UUID#randomUUID()
 	 */
 	public static String uuid() {
 		return UUID.randomUUID().toString();
 	}
 
 	/**
-	 * Returns the {@link Cluster}.
+	 * Initiate a Cassandra environment in test scope.
+	 */
+	@Rule
+	public final CassandraRule cassandraRule = cassandraEnvironment.testInstance().before(session -> {
+		AbstractEmbeddedCassandraIntegrationTest.this.cluster = session.getCluster();
+		return null;
+	});
+
+	/**
+	 * The {@link Cluster} connected to Cassandra.
+	 */
+	protected Cluster cluster;
+
+	/**
+	 * Returns the {@link Cluster} instance.
 	 *
-	 * @return
+	 * @return an instance of {@link Cluster} connected to Cassandra.
 	 */
 	public Cluster getCluster() {
-		return cluster;
+		return this.cluster;
 	}
 
 	/**
-	 * Executes a CQL script from a classpath resource in given {@code keyspace}.
+	 * Executes a CQL script from a classpath resource in the given {@code keyspace}.
 	 *
-	 * @param cqlResourceName
-	 * @param keyspace
+	 * @param cqlResourceName {@link String resource name} of the CQL script to apply.
+	 * @param keyspace {@link String name} of the Cassandra Keyspace in which to apply the CQL script.
 	 */
 	public void execute(String cqlResourceName, String keyspace) {
-		cassandraRule.execute(CqlDataSet.fromClassPath(cqlResourceName).executeIn(keyspace));
-	}
 
+		CqlDataSet cqlDataSet = CqlDataSet.fromClassPath(cqlResourceName).executeIn(keyspace);
+
+		this.cassandraRule.execute(cqlDataSet);
+	}
 }

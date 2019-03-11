@@ -86,7 +86,10 @@ public class CassandraCqlSessionFactoryBean
 
 	/* (non-Javadoc) */
 	Session connect(@Nullable String keyspaceName) {
-		return (StringUtils.hasText(keyspaceName) ? getCluster().connect(keyspaceName) : getCluster().connect());
+
+		return StringUtils.hasText(keyspaceName)
+				? getCluster().connect(keyspaceName)
+				: getCluster().connect();
 	}
 
 	/*
@@ -104,7 +107,7 @@ public class CassandraCqlSessionFactoryBean
 	 */
 	@Override
 	public Class<? extends Session> getObjectType() {
-		return (this.session != null ? this.session.getClass() : Session.class);
+		return this.session != null ? this.session.getClass() : Session.class;
 	}
 
 	/*
@@ -121,6 +124,7 @@ public class CassandraCqlSessionFactoryBean
 	 */
 	@Override
 	public void destroy() throws Exception {
+
 		executeScripts(getShutdownScripts());
 		getSession().close();
 	}
@@ -253,7 +257,7 @@ public class CassandraCqlSessionFactoryBean
 	 * Sets CQL scripts to be executed immediately before the session is shutdown.
 	 */
 	public void setShutdownScripts(@Nullable List<String> scripts) {
-		this.shutdownScripts = (scripts != null ? new ArrayList<>(scripts) : Collections.emptyList());
+		this.shutdownScripts = scripts != null ? new ArrayList<>(scripts) : Collections.emptyList();
 	}
 
 	/**

@@ -25,7 +25,7 @@ import org.springframework.data.cassandra.core.cql.keyspace.AlterKeyspaceSpecifi
 import org.springframework.data.cassandra.core.cql.keyspace.DefaultOption;
 import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceOption;
 import org.springframework.data.cassandra.core.cql.keyspace.Option;
-import org.springframework.data.cassandra.support.RandomKeySpaceName;
+import org.springframework.data.cassandra.support.RandomKeyspaceName;
 
 /**
  * Unit tests for {@link AlterKeyspaceCqlGenerator}.
@@ -62,7 +62,7 @@ public class AlterKeyspaceCqlGeneratorUnitTests {
 
 	public static class CompleteTest extends AlterKeyspaceTest {
 
-		public String name = RandomKeySpaceName.create();
+		public String name = RandomKeyspaceName.create();
 		public Boolean durableWrites = true;
 
 		public Map<Option, Object> replicationMap = new HashMap<>();

@@ -16,15 +16,16 @@
 
 package org.springframework.data.cassandra.config;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.junit.Rule;
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
+
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -32,8 +33,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.core.cql.SessionCallback;
 import org.springframework.data.cassandra.domain.Person;
-import org.springframework.data.cassandra.test.util.AbstractEmbeddedCassandraIntegrationTest;
-import org.springframework.data.cassandra.test.util.KeyspaceRule;
+import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.KeyspaceMetadata;
@@ -42,48 +42,44 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
 
 /**
- * The SchemaActionIntegrationTests class is a test suite of test cases testing the contract and behavior of various
- * {@link SchemaAction}s on startup of a Spring configured, Cassandra application client.
+ * Integration test testing various {@link SchemaAction SchemaActions} on startup of a Spring configured,
+ * Apache Cassandra application client.
  *
  * @author John Blum
  * @author Mark Paluch
+ * @see org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest
  */
-public class SchemaActionIntegrationTests extends AbstractEmbeddedCassandraIntegrationTest {
+public class SchemaActionIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
-	protected static final String KEYSPACE_NAME = SchemaActionIntegrationTests.class.getSimpleName().toLowerCase();
+	protected static final String CREATE_PERSON_TABLE_CQL =
+			"CREATE TABLE IF NOT EXISTS person (id int, firstName text, lastName text, PRIMARY KEY(id));";
 
-	protected static final String PERSON_TABLE_DEFINITION_CQL = String
-			.format("CREATE TABLE %s.person (id int, firstName text, lastName text, PRIMARY KEY(id));", KEYSPACE_NAME);
-
-	@Rule public ExpectedException exception = ExpectedException.none();
-
-	@Rule public KeyspaceRule KEYSPACE_RULE = new KeyspaceRule(cassandraEnvironment, KEYSPACE_NAME);
+	protected static final String DROP_ADDRESS_TYPE_CQL = "DROP TYPE IF EXISTS address";
+	protected static final String DROP_PERSON_TABLE_CQL = "DROP TABLE IF EXISTS person";
 
 	protected ConfigurableApplicationContext newApplicationContext(Class<?>... annotatedClasses) {
-		AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext(annotatedClasses);
+
+		AnnotationConfigApplicationContext applicationContext =
+				new AnnotationConfigApplicationContext(annotatedClasses);
 
 		applicationContext.registerShutdownHook();
 
 		return applicationContext;
 	}
 
+	@SuppressWarnings("all")
 	protected <T> T doInSessionWithConfiguration(Class<?> annotatedClass, SessionCallback<T> sessionCallback) {
-		ConfigurableApplicationContext applicationContext = null;
 
-		try {
-			applicationContext = newApplicationContext(annotatedClass);
+		try (ConfigurableApplicationContext applicationContext = newApplicationContext(annotatedClass)) {
 			return sessionCallback.doInSession(applicationContext.getBean(Session.class));
-		} finally {
-			if (applicationContext != null) {
-				applicationContext.close();
-			}
 		}
 	}
 
-	protected void assertHasTableWithColumns(Session session, String tableName, String... columns) {
+	@SuppressWarnings("all")
+	protected void assertTableWithColumnsExists(Session session, String tableName, String... columns) {
 
 		Metadata clusterMetadata = session.getCluster().getMetadata();
-		KeyspaceMetadata keyspaceMetadata = clusterMetadata.getKeyspace(KEYSPACE_NAME);
+		KeyspaceMetadata keyspaceMetadata = clusterMetadata.getKeyspace(getKeyspace());
 
 		assertThat(keyspaceMetadata).isNotNull();
 
@@ -99,11 +95,24 @@ public class SchemaActionIntegrationTests extends AbstractEmbeddedCassandraInteg
 		assertThat(tableMetadata.getColumns()).hasSize(columns.length);
 	}
 
+	@Before
+	public void setup() {
+
+		Session session = getSession();
+
+		session.execute(DROP_PERSON_TABLE_CQL);
+		session.execute(DROP_ADDRESS_TYPE_CQL);
+	}
+
 	@Test
 	public void createWithNoExistingTableCreatesTableFromEntity() {
-		doInSessionWithConfiguration(CreateWithNoExistingTableConfiguration.class, (SessionCallback<Void>) session -> {
-			assertHasTableWithColumns(session, "person", "firstName", "lastName", "nickname", "birthDate", "numberOfChildren",
-					"cool", "createdDate", "zoneId", "mainAddress", "alternativeAddresses");
+
+		doInSessionWithConfiguration(CreateWithNoExistingTableConfiguration.class, session -> {
+
+			assertTableWithColumnsExists(session, "person", "firstName", "lastName", "nickname",
+					"birthDate", "numberOfChildren", "cool", "createdDate", "zoneId", "mainAddress",
+					"alternativeAddresses");
+
 			return null;
 		});
 	}
@@ -112,43 +121,54 @@ public class SchemaActionIntegrationTests extends AbstractEmbeddedCassandraInteg
 	public void createWithExistingTableThrowsErrorWhenCreatingTableFromEntity() {
 
 		try {
-			doInSessionWithConfiguration(CreateWithExistingTableConfiguration.class, s -> {
-				fail(String.format("%s should have failed!", CreateWithExistingTableConfiguration.class.getSimpleName()));
+
+			doInSessionWithConfiguration(CreateWithExistingTableConfiguration.class, session -> {
+				fail(String.format("%s should have failed", CreateWithExistingTableConfiguration.class.getSimpleName()));
 				return null;
 			});
-			fail("Missing BeanCreationException");
-		} catch (BeanCreationException e) {
-			assertThat(e).hasMessageContaining(String.format("Table %s.person already exists", KEYSPACE_NAME));
+
+			fail("Expected BeanCreationException");
+
+		} catch (BeanCreationException cause) {
+			assertThat(cause).hasMessageContaining(String.format("Table %s.person already exists", getKeyspace()));
 		}
 	}
 
 	@Test
 	public void createIfNotExistsWithNoExistingTableCreatesTableFromEntity() {
-		doInSessionWithConfiguration(CreateIfNotExistsWithNoExistingTableConfiguration.class,
-				(SessionCallback<Void>) session -> {
-					assertHasTableWithColumns(session, "person", "firstName", "lastName", "nickname", "birthDate",
-							"numberOfChildren", "cool", "createdDate", "zoneId", "mainAddress", "alternativeAddresses");
-					return null;
-				});
+
+		doInSessionWithConfiguration(CreateIfNotExistsWithNoExistingTableConfiguration.class, session -> {
+
+			assertTableWithColumnsExists(session, "person", "firstName", "lastName", "nickname",
+				"birthDate", "numberOfChildren", "cool", "createdDate", "zoneId", "mainAddress",
+				"alternativeAddresses");
+
+			return null;
+		});
 	}
 
 	@Test
 	public void createIfNotExistsWithExistingTableUsesExistingTable() {
-		doInSessionWithConfiguration(CreateIfNotExistsWithExistingTableConfiguration.class,
-				(SessionCallback<Void>) session -> {
-					assertHasTableWithColumns(session, "person", "id", "firstName", "lastName");
-					return null;
-				});
+
+		doInSessionWithConfiguration(CreateIfNotExistsWithExistingTableConfiguration.class, session -> {
+
+			assertTableWithColumnsExists(session, "person", "id", "firstName", "lastName");
+
+			return null;
+		});
 	}
 
 	@Test
 	public void recreateTableFromEntityDropsExistingTable() {
-		doInSessionWithConfiguration(RecreateSchemaActionWithExistingTableConfiguration.class,
-				(SessionCallback<Void>) session -> {
-					assertHasTableWithColumns(session, "person", "firstName", "lastName", "nickname", "birthDate",
-							"numberOfChildren", "cool", "createdDate", "zoneId", "mainAddress", "alternativeAddresses");
-					return null;
-				});
+
+		doInSessionWithConfiguration(RecreateSchemaActionWithExistingTableConfiguration.class, session -> {
+
+			assertTableWithColumnsExists(session, "person", "firstName", "lastName", "nickname",
+				"birthDate", "numberOfChildren", "cool", "createdDate", "zoneId", "mainAddress",
+				"alternativeAddresses");
+
+			return null;
+		});
 	}
 
 	@Configuration
@@ -170,7 +190,7 @@ public class SchemaActionIntegrationTests extends AbstractEmbeddedCassandraInteg
 
 		@Override
 		protected List<String> getStartupScripts() {
-			return Collections.singletonList(PERSON_TABLE_DEFINITION_CQL);
+			return Collections.singletonList(CREATE_PERSON_TABLE_CQL);
 		}
 	}
 
@@ -193,7 +213,7 @@ public class SchemaActionIntegrationTests extends AbstractEmbeddedCassandraInteg
 
 		@Override
 		protected List<String> getStartupScripts() {
-			return Collections.singletonList(PERSON_TABLE_DEFINITION_CQL);
+			return Collections.singletonList(CREATE_PERSON_TABLE_CQL);
 		}
 	}
 
@@ -207,7 +227,7 @@ public class SchemaActionIntegrationTests extends AbstractEmbeddedCassandraInteg
 
 		@Override
 		protected List<String> getStartupScripts() {
-			return Collections.singletonList(PERSON_TABLE_DEFINITION_CQL);
+			return Collections.singletonList(CREATE_PERSON_TABLE_CQL);
 		}
 	}
 
@@ -217,7 +237,9 @@ public class SchemaActionIntegrationTests extends AbstractEmbeddedCassandraInteg
 		@Bean
 		@Override
 		public CassandraClusterFactoryBean cluster() {
+
 			return new CassandraClusterFactoryBean() {
+
 				@Override
 				public void afterPropertiesSet() throws Exception {
 					// avoid Cassandra Cluster creation; use embedded
@@ -231,13 +253,13 @@ public class SchemaActionIntegrationTests extends AbstractEmbeddedCassandraInteg
 		}
 
 		@Override
-		protected Set<Class<?>> getInitialEntitySet() throws ClassNotFoundException {
+		protected Set<Class<?>> getInitialEntitySet() {
 			return Collections.singleton(Person.class);
 		}
 
 		@Override
 		protected String getKeyspaceName() {
-			return KEYSPACE_NAME;
+			return keyspaceRule.getKeyspaceName();
 		}
 	}
 }

@@ -133,6 +133,7 @@ public class CassandraSessionFactoryBean extends CassandraCqlSessionFactoryBean 
 	public void setSchemaAction(SchemaAction schemaAction) {
 
 		Assert.notNull(schemaAction, "SchemaAction must not be null");
+
 		this.schemaAction = schemaAction;
 	}
 
@@ -158,13 +159,13 @@ public class CassandraSessionFactoryBean extends CassandraCqlSessionFactoryBean 
 
 	private void performSchemaActions(boolean drop, boolean dropUnused, boolean ifNotExists) {
 
-		CassandraPersistentEntitySchemaCreator schemaCreator = new CassandraPersistentEntitySchemaCreator(
-				getMappingContext(), getCassandraAdminOperations());
+		CassandraPersistentEntitySchemaCreator schemaCreator =
+				new CassandraPersistentEntitySchemaCreator(getMappingContext(), getCassandraAdminOperations());
 
 		if (drop) {
 
-			CassandraPersistentEntitySchemaDropper schemaDropper = new CassandraPersistentEntitySchemaDropper(
-					getMappingContext(), getCassandraAdminOperations());
+			CassandraPersistentEntitySchemaDropper schemaDropper =
+					new CassandraPersistentEntitySchemaDropper(getMappingContext(), getCassandraAdminOperations());
 
 			schemaDropper.dropTables(dropUnused);
 			schemaDropper.dropUserTypes(dropUnused);

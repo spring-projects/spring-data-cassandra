@@ -22,16 +22,16 @@ import java.util.UUID;
  *
  * @author Matthew T. Adams
  */
-public class RandomKeySpaceName {
+public abstract class RandomKeyspaceName {
 
-	private RandomKeySpaceName() {
-
-	}
+	private RandomKeyspaceName() { }
 
 	/**
-	 * Creates a random key space name starting with {@code ks} based on a random {@link UUID}.
+	 * Creates a random {@link String keyspace name} starting with {@code ks} based on a random {@link UUID}.
 	 *
-	 * @return
+	 * @return a random {@link String keyspace name}.
+	 * @see java.lang.String
+	 * @see java.util.UUID
 	 */
 	public static String create() {
 		return "ks" + UUID.randomUUID().toString().replace("-", "");

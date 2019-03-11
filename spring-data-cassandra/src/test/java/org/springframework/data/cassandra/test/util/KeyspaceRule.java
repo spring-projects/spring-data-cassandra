@@ -16,7 +16,8 @@
 package org.springframework.data.cassandra.test.util;
 
 import org.junit.rules.ExternalResource;
-import org.springframework.data.cassandra.support.RandomKeySpaceName;
+
+import org.springframework.data.cassandra.support.RandomKeyspaceName;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.Cluster;
@@ -38,78 +39,104 @@ import com.datastax.driver.core.Session;
  */
 public class KeyspaceRule extends ExternalResource {
 
+	static final String CREATE_KEYSPACE_CQL =
+		"CREATE KEYSPACE %s WITH durable_writes = false AND replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};";
+
+	static final String DROP_KEYSPACE_CQL = "DROP KEYSPACE %s;";
+	static final String DROP_KEYSPACE_IF_EXISTS_CQL = String.format(DROP_KEYSPACE_CQL, "IF EXISTS %s");
+	static final String USE_KEYSPACE_CQL = "USE %s;";
+
 	private final CassandraRule cassandraRule;
+
 	private Session session;
+
 	private final String keyspaceName;
 
 	/**
-	 * Create a {@link KeyspaceRule} initialized with a {@link CassandraRule} for creating a keyspace using a random name.
+	 * Constructs a new instance of {@link KeyspaceRule} initialized with a {@link CassandraRule}
+	 * to create a Cassandra Keyspace using a random name.
 	 *
-	 * @param cassandraRule
+	 * @param cassandraRule {@link CassandraRule} used to setup the Cassandra environment.
+	 * @throws IllegalArgumentException if {@link CassandraRule} is {@literal null}.
+	 * @see org.springframework.data.cassandra.support.RandomKeyspaceName
+	 * @see org.springframework.data.cassandra.test.util.CassandraRule
 	 */
 	public KeyspaceRule(CassandraRule cassandraRule) {
-		this(cassandraRule, RandomKeySpaceName.create());
+		this(cassandraRule, RandomKeyspaceName.create());
 	}
 
 	/**
-	 * Create a {@link KeyspaceRule} initialized with a {@link CassandraRule} for creating a keyspace using the given
-	 * {@code keyspaceName}.
+	 * Constructs a new instance of {@link KeyspaceRule} initialized with a {@link CassandraRule}
+	 * to create a Cassandra Keyspace with the given {@code keyspaceName}.
 	 *
-	 * @param cassandraRule
-	 * @param keyspaceName
+	 * @param cassandraRule {@link CassandraRule} used to setup the Cassandra environment.
+	 * @param keyspaceName {@link String name} of the Cassandra Keyspace to use in tests.
+	 * @throws IllegalArgumentException if {@link CassandraRule} is {@literal null}
+	 * or the Keyspace name is not specified.
+	 * @see org.springframework.data.cassandra.test.util.CassandraRule
+	 * @see org.springframework.data.cassandra.test.util.CassandraRule
 	 */
 	public KeyspaceRule(CassandraRule cassandraRule, String keyspaceName) {
 
-		Assert.notNull(cassandraRule, "CassandraRule must not be null!");
-		Assert.hasText(keyspaceName, "KeyspaceName must not be empty!");
+		Assert.notNull(cassandraRule, "CassandraRule must not be null");
+		Assert.hasText(keyspaceName, "KeyspaceName must not be empty");
 
-		this.keyspaceName = keyspaceName;
 		this.cassandraRule = cassandraRule;
+		this.keyspaceName = keyspaceName;
+
+		this.cassandraRule.before(session -> {
+			KeyspaceRule.this.session = this.cassandraRule.getSession();
+			return null;
+		});
+	}
+
+	/**
+	 * Returns the {@link String name} of the Cassandra Keyspace.
+	 *
+	 * @return the {@link String name} of the Cassandra keyspace.
+	 */
+	public String getKeyspaceName() {
+		return this.keyspaceName;
+	}
+
+	/**
+	 * Returns the {@link Session}.
+	 *
+	 * The {@link Session} state can be initialized and pointing to a Keyspace other than {@code system}.
+	 *
+	 * @return the current Cassandr {@link Session}.
+	 * @see com.datastax.driver.core.Session
+	 */
+	public Session getSession() {
+		return this.session;
+	}
+
+	private Session resolveSession() {
+
+		Session session = getSession();
+
+		this.session = session != null ? session : this.cassandraRule.getSession();
+
+		Assert.state(this.session != null, "Session was not initialized");
+
+		return this.session;
 	}
 
 	@Override
-	protected void before() throws Throwable {
+	protected void before() {
 
-		// Support initialized and initializing CassandraRule.
-		if (cassandraRule.getCluster() != null) {
-			this.session = cassandraRule.getSession();
-		} else {
-			cassandraRule.before(session -> {
-				KeyspaceRule.this.session = cassandraRule.getSession();
-				return null;
-			});
-		}
+		Session session = resolveSession();
 
-		Assert.state(session != null, "Session was not initialized");
-
-		session.execute(String.format("CREATE KEYSPACE %s WITH durable_writes = false AND "
-				+ "replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};", keyspaceName));
-		session.execute(String.format("USE %s;", keyspaceName));
+		session.execute(String.format(CREATE_KEYSPACE_CQL, this.keyspaceName));
+		session.execute(String.format(USE_KEYSPACE_CQL, this.keyspaceName));
 	}
 
 	@Override
 	protected void after() {
 
-		session.execute("USE system;");
-		session.execute(String.format("DROP KEYSPACE %s;", keyspaceName));
-	}
+		Session session = getSession();
 
-	/**
-	 * Returns the {@link Session}. The session state can be initialized and pointing to a keyspace other than
-	 * {@code system}.
-	 *
-	 * @return
-	 */
-	public Session getSession() {
-		return session;
-	}
-
-	/**
-	 * Returns the keyspace name.
-	 *
-	 * @return
-	 */
-	public String getKeyspaceName() {
-		return keyspaceName;
+		session.execute(String.format(USE_KEYSPACE_CQL, "system"));
+		session.execute(String.format(DROP_KEYSPACE_CQL, this.keyspaceName));
 	}
 }

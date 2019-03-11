@@ -37,7 +37,7 @@ import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity
 import org.springframework.data.cassandra.core.mapping.SimpleUserTypeResolver;
 import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.support.CassandraConnectionProperties;
-import org.springframework.data.cassandra.support.RandomKeySpaceName;
+import org.springframework.data.cassandra.support.RandomKeyspaceName;
 
 import com.datastax.driver.core.Cluster;
 import com.google.common.collect.Sets;
@@ -48,7 +48,7 @@ import com.google.common.util.concurrent.Service;
  */
 class CassandraOperationsProducer {
 
-	public static final String KEYSPACE_NAME = RandomKeySpaceName.create();
+	public static final String KEYSPACE_NAME = RandomKeyspaceName.create();
 
 	@Produces
 	@Singleton

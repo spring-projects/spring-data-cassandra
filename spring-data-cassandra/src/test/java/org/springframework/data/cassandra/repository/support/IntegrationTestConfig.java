@@ -27,7 +27,7 @@ import org.springframework.data.cassandra.core.cql.keyspace.CreateKeyspaceSpecif
 import org.springframework.data.cassandra.core.cql.keyspace.DropKeyspaceSpecification;
 import org.springframework.data.cassandra.support.CassandraConnectionProperties;
 import org.springframework.data.cassandra.support.IntegrationTestNettyOptions;
-import org.springframework.data.cassandra.support.RandomKeySpaceName;
+import org.springframework.data.cassandra.support.RandomKeyspaceName;
 
 import com.datastax.driver.core.NettyOptions;
 import com.datastax.driver.core.QueryOptions;
@@ -45,7 +45,7 @@ public class IntegrationTestConfig extends AbstractReactiveCassandraConfiguratio
 	public static final CassandraConnectionProperties PROPS = new CassandraConnectionProperties();
 	public static final int PORT = PROPS.getCassandraPort();
 
-	public String keyspaceName = RandomKeySpaceName.create();
+	public String keyspaceName = RandomKeyspaceName.create();
 
 	@Override
 	protected int getPort() {

@@ -10,7 +10,7 @@
 ">
 
 	<bean name="randomKeyspaceName" class="java.lang.String">
-		<constructor-arg value="#{T(org.springframework.data.cassandra.support.RandomKeySpaceName).create()}"/>
+		<constructor-arg value="#{T(org.springframework.data.cassandra.support.RandomKeyspaceName).create()}"/>
 	</bean>
 
 	<bean id="nettyOptions" class="org.springframework.data.cassandra.support.IntegrationTestNettyOptions"/>

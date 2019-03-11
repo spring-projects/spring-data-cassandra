@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
 import org.springframework.data.cassandra.core.cql.keyspace.DropKeyspaceSpecification;
-import org.springframework.data.cassandra.support.RandomKeySpaceName;
+import org.springframework.data.cassandra.support.RandomKeyspaceName;
 
 /**
  * Unit tests for {@link DropKeyspaceCqlGenerator}.
@@ -45,7 +45,7 @@ public class DropKeyspaceCqlGeneratorUnitTests {
 
 	public static class BasicTest extends DropTableTest {
 
-		public String name = RandomKeySpaceName.create();
+		public String name = RandomKeyspaceName.create();
 
 		@Override
 		public DropKeyspaceSpecification specification() {
