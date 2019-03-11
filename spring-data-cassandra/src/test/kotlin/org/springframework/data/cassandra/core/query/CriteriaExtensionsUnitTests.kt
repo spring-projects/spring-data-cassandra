@@ -18,7 +18,6 @@ package org.springframework.data.cassandra.core.query
 import io.mockk.mockk
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Ignore
 import org.junit.Test
 
 /**
@@ -26,7 +25,6 @@ import org.junit.Test
  *
  * @author Mark Paluch
  */
-@Ignore("See https://github.com/mockk/mockk/issues/259")
 class CriteriaExtensionsUnitTests {
 
 	val criteria = mockk<Criteria>(relaxed = true)
