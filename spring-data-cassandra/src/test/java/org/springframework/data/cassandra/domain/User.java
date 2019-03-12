@@ -20,6 +20,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.cassandra.core.mapping.Table;
 
 /**
@@ -43,6 +44,7 @@ public class User {
 	private String firstname;
 	private String lastname;
 
+	@PersistenceConstructor
 	public User(String id, String firstname, String lastname) {
 
 		this.id = id;

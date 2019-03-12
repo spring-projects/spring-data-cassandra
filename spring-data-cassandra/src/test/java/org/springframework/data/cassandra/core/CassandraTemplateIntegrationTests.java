@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assume.*;
 import static org.springframework.data.cassandra.core.query.Criteria.*;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.time.Instant;
@@ -36,10 +37,15 @@ import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.CqlTemplate;
+import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.cassandra.core.mapping.BasicMapId;
+import org.springframework.data.cassandra.core.mapping.PrimaryKey;
+import org.springframework.data.cassandra.core.mapping.PrimaryKeyClass;
+import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
 import org.springframework.data.cassandra.core.query.CassandraPageRequest;
 import org.springframework.data.cassandra.core.query.Columns;
 import org.springframework.data.cassandra.core.query.Query;
@@ -83,9 +89,11 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 		SchemaTestUtils.potentiallyCreateTableFor(UserToken.class, template);
 		SchemaTestUtils.potentiallyCreateTableFor(BookReference.class, template);
 		SchemaTestUtils.potentiallyCreateTableFor(TimeClass.class, template);
+		SchemaTestUtils.potentiallyCreateTableFor(TypeWithCompositeKey.class, template);
 		SchemaTestUtils.truncate(User.class, template);
 		SchemaTestUtils.truncate(UserToken.class, template);
 		SchemaTestUtils.truncate(BookReference.class, template);
+		SchemaTestUtils.truncate(TypeWithCompositeKey.class, template);
 	}
 
 	@Test // DATACASS-343
@@ -128,6 +136,45 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 		List<UserToken> loaded = template.select(query, UserToken.class);
 
 		assertThat(loaded).containsSequence(token1, token2);
+	}
+
+	@Test // DATACASS-638
+	public void shouldSelectProjection() {
+
+		User user = new User("heisenberg", "Walter", "White");
+
+		template.insert(user);
+
+		Query query = Query.query(where("id").is(user.getId())).columns(Columns.empty().include("id").include("firstname"));
+		List<User> loaded = template.select(query, User.class);
+
+		assertThat(loaded).hasSize(1);
+
+		User loadedUser = loaded.get(0);
+
+		assertThat(loadedUser.getFirstname()).isNotNull();
+		assertThat(loadedUser.getLastname()).isNull();
+	}
+
+	@Test // DATACASS-638
+	public void shouldSelectProjectionWithCompositeKey() {
+
+		CompositeKey key = new CompositeKey("Walter", "White");
+		TypeWithCompositeKey user = new TypeWithCompositeKey(key, "comment");
+
+		template.insert(user);
+
+		Query query = Query.empty().columns(Columns.empty().include("firstname").include("comment"));
+		List<TypeWithCompositeKey> loaded = template.select(query, TypeWithCompositeKey.class);
+
+		assertThat(loaded).hasSize(1);
+
+		TypeWithCompositeKey loadedEntity = loaded.get(0);
+
+		assertThat(loadedEntity.getKey()).isNotNull();
+		assertThat(loadedEntity.getKey().getFirstname()).isNotNull();
+		assertThat(loadedEntity.getKey().getLastname()).isNull();
+		assertThat(loadedEntity.getComment()).isNotNull();
 	}
 
 	@Test // DATACASS-343
@@ -203,7 +250,7 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 	@Test // DATACASS-155
 	public void shouldNotOverrideLaterMutation() {
 
-		Instant now = LocalDateTime.now().atZone( ZoneId.systemDefault() ).toInstant();
+		Instant now = LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant();
 		User user = new User("heisenberg", "Walter", "White");
 		template.insert(user);
 
@@ -518,4 +565,21 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 		@Id LocalTime id;
 		LocalTime bar;
 	}
+
+	@Data
+	@AllArgsConstructor
+	static class TypeWithCompositeKey {
+		@PrimaryKey CompositeKey key;
+		String comment;
+	}
+
+	@Data
+	@PrimaryKeyClass
+	@AllArgsConstructor
+	static class CompositeKey {
+
+		@PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED) String firstname;
+		@PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED) String lastname;
+	}
+
 }

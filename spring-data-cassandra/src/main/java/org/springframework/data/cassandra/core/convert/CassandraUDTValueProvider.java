@@ -79,7 +79,6 @@ public class CassandraUDTValueProvider implements CassandraValueProvider {
 	 * @see org.springframework.data.mapping.model.PropertyValueProvider#getPropertyValue(org.springframework.data.mapping.PersistentProperty)
 	 */
 	@Nullable
-	@SuppressWarnings("unchecked")
 	public <T> T getPropertyValue(CassandraPersistentProperty property) {
 
 		String spelExpression = property.getSpelExpression();

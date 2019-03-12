@@ -27,6 +27,7 @@ import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.ApplicationContext;
@@ -952,7 +953,6 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 * @return the return value, may be {@literal null}.
 	 */
 	@Nullable
-	@SuppressWarnings("unchecked")
 	private Object getReadValue(CassandraValueProvider valueProvider, CassandraPersistentProperty property) {
 
 		if (property.isCompositePrimaryKey()) {
@@ -962,8 +962,11 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			return instantiatePrimaryKey(keyEntity, property, valueProvider);
 		}
 
-		Object value = valueProvider.getPropertyValue(property);
+		if (!valueProvider.hasProperty(property)) {
+			return null;
+		}
 
+		Object value = valueProvider.getPropertyValue(property);
 		return value == null ? null : convertReadValue(value, property.getTypeInformation());
 	}
 
@@ -1010,7 +1013,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 * @return the converted {@link Collection} or array, will never be {@literal null}.
 	 */
 	@Nullable
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings({ "rawtypes" })
 	private Object readCollectionOrArrayInternal(Collection<?> source, TypeInformation<?> targetType) {
 
 		Assert.notNull(targetType, "Target type must not be null");
