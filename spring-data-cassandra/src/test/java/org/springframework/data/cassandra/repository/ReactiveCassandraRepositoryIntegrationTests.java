@@ -15,17 +15,18 @@
  */
 package org.springframework.data.cassandra.repository;
 
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-import reactor.test.StepVerifier;
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.reactivestreams.Publisher;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -46,7 +47,6 @@ import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingInte
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.data.util.Streamable;
 import org.springframework.test.context.ContextConfiguration;
@@ -187,13 +187,12 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractKeyspac
 
 		StepVerifier
 				.create(groupRepostitory.findByIdGroupnameAndIdHashPrefix("Simpsons", "hash",
-						new Sort(Direction.ASC, "id.username"))) //
+						Sort.by("id.username").ascending())) //
 				.expectNext(new Group(key1), new Group(key2)) //
 				.verifyComplete();
 
-		StepVerifier
-				.create(groupRepostitory.findByIdGroupnameAndIdHashPrefix("Simpsons", "hash",
-						new Sort(Direction.DESC, "id.username"))) //
+		StepVerifier.create(groupRepostitory.findByIdGroupnameAndIdHashPrefix("Simpsons", "hash",
+					Sort.by("id.username").descending()))
 				.expectNext(new Group(key2), new Group(key1)) //
 				.verifyComplete();
 	}
