@@ -1,6 +1,6 @@
 buildscript {
     repositories {
-        maven { url 'http://repo.springsource.org/plugins-release' }
+        maven { url 'https://repo.springsource.org/plugins-release' }
     }
     dependencies {
         classpath 'org.springframework.build.gradle:bundlor-plugin:0.1.2'
@@ -12,9 +12,9 @@ description = 'Spring Data Cassandra'
 group = 'org.springframework.data'
 
 repositories {
-  maven { url "http://repo1.maven.org/maven2" }
-  maven { url "http://repo.springsource.org/libs-snapshot" }
-  maven { url "http://repo.springsource.org/plugins-release" }
+  maven { url "https://repo1.maven.org/maven2" }
+  maven { url "https://repo.springsource.org/libs-snapshot" }
+  maven { url "https://repo.springsource.org/plugins-release" }
   maven { url "repo" }
 }
 
@@ -87,9 +87,9 @@ javadoc {
       ]
 
      links = [
-        "http://static.springframework.org/spring/docs/3.0.x/javadoc-api",
-        "http://download.oracle.com/javase/6/docs/api",
-        "http://jackson.codehaus.org/1.8.2/javadoc"
+        "https://docs.spring.io/spring/docs/3.0.x/javadoc-api",
+        "https://download.oracle.com/javase/6/docs/api",
+        "https://jackson.codehaus.org/1.8.2/javadoc"
      ]
 
      exclude "org/springframework/data/cassandra/config/**"
