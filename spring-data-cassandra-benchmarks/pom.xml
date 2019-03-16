@@ -1,5 +1,5 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 
@@ -79,7 +79,7 @@
 							</transformers>
 							<filters>
 								<filter>
-									<!-- Shading signed JARs will fail without this. http://stackoverflow.com/questions/999489/invalid-signature-file-when-attempting-to-run-a-jar -->
+									<!-- Shading signed JARs will fail without this. https://stackoverflow.com/questions/999489/invalid-signature-file-when-attempting-to-run-a-jar -->
 									<artifact>*:*</artifact>
 									<excludes>
 										<exclude>META-INF/*.SF</exclude>
