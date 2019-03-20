@@ -22,10 +22,10 @@ the DataStax Java Driver so that they are familiar and so that you can map your 
 [[cassandra.getting-started]]
 == Getting Started
 
-Spring Data for Apache Cassandra requires Apache Cassandra 2.1 or later and Datastax Java Driver 3.0 or later. An easy way to quickly set up and bootstrap a working environment is to create a Spring-based project in http://spring.io/tools/sts[STS] or use http://start.spring.io/[Spring Initializer].
+Spring Data for Apache Cassandra requires Apache Cassandra 2.1 or later and Datastax Java Driver 3.0 or later. An easy way to quickly set up and bootstrap a working environment is to create a Spring-based project in https://spring.io/tools/sts[STS] or use https://start.spring.io/[Spring Initializer].
 
 First, you need to set up a running Apache Cassandra server. See the
-http://cassandra.apache.org/doc/latest/getting_started/index.html[Apache Cassandra Quick Start Guide]
+https://cassandra.apache.org/doc/latest/getting_started/index.html[Apache Cassandra Quick Start Guide]
 for an explanation on how to start Apache Cassandra. Once installed, starting Cassandra is typically a matter of
 executing the following command: `CASSANDRA_HOME/bin/cassandra -f`.
 
@@ -67,12 +67,12 @@ repository for Maven to your pom.xml file so that it is at the same level of you
   <repository>
     <id>spring-milestone</id>
     <name>Spring Maven MILESTONE Repository</name>
-    <url>http://repo.spring.io/libs-milestone</url>
+    <url>https://repo.spring.io/libs-milestone</url>
   </repository>
 </repositories>
 ----
 
-The repository is also http://repo.spring.io/milestone/org/springframework/data/[browseable here].
+The repository is also https://repo.spring.io/milestone/org/springframework/data/[browseable here].
 
 You can also browse all Spring repositories https://repo.spring.io/webapp/#/home[here].
 
@@ -197,7 +197,7 @@ bean metadata. These are discussed in the following sections.
 
 NOTE: For those not familiar with how to configure the Spring container using Java-based bean metadata instead of
 XML-based metadata, see the high-level introduction in the reference docs
-http://docs.spring.io/spring/docs/3.2.x/spring-framework-reference/html/new-in-3.0.html#new-java-configuration[here]
+https://docs.spring.io/spring/docs/3.2.x/spring-framework-reference/html/new-in-3.0.html#new-java-configuration[here]
 as well as the detailed documentation {spring-framework-docs}core.html#beans-java-instantiating-container[here].
 
 [[cassandra.cassandra-java-config]]
@@ -400,9 +400,9 @@ The following example shows how to configure the `cql` namespace:
   xmlns:cql="http://www.springframework.org/schema/data/cql"
   xsi:schemaLocation="
     http://www.springframework.org/schema/cql
-    http://www.springframework.org/schema/cql/spring-cql.xsd
+    https://www.springframework.org/schema/cql/spring-cql.xsd
     http://www.springframework.org/schema/beans
-    http://www.springframework.org/schema/beans/spring-beans.xsd">
+    https://www.springframework.org/schema/beans/spring-beans.xsd">
 
   <!-- Default bean name is 'cassandraCluster' -->
   <cql:cluster contact-points="localhost" port="9042">
@@ -428,9 +428,9 @@ To use the Cassandra namespace elements, you need to reference the Cassandra sch
   xmlns:cassandra="http://www.springframework.org/schema/data/cassandra"
   xsi:schemaLocation="
     http://www.springframework.org/schema/data/cassandra
-    http://www.springframework.org/schema/data/cassandra/spring-cassandra.xsd
+    https://www.springframework.org/schema/data/cassandra/spring-cassandra.xsd
     http://www.springframework.org/schema/beans
-    http://www.springframework.org/schema/beans/spring-beans.xsd">
+    https://www.springframework.org/schema/beans/spring-beans.xsd">
 
   <!-- Default bean name is 'cassandraCluster' -->
   <cassandra:cluster contact-points="localhost" port="9042">
