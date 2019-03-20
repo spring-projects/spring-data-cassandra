@@ -1,49 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cass="http://www.springframework.org/schema/cql"
-	xmlns:context="http://www.springframework.org/schema/context"
-	xsi:schemaLocation="
-	http://www.springframework.org/schema/cql https://www.springframework.org/schema/cql/spring-cql.xsd
-	http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans-3.0.xsd
-	http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context-3.0.xsd">
+	   xmlns:cassandra="http://www.springframework.org/schema/cql"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+	   	http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+	   	http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd
+	   	http://www.springframework.org/schema/cql https://www.springframework.org/schema/cql/spring-cql.xsd
+">
 
 	<context:property-placeholder
-			location="classpath:/config/cassandra-connection.properties,classpath:/org/springframework/data/cassandra/config/FullySpecifiedKeyspaceCreatingXmlConfigIntegrationTests.properties"/>
+		location="classpath:/config/cassandra-connection.properties,classpath:/org/springframework/data/cassandra/config/FullySpecifiedKeyspaceCreatingXmlConfigIntegrationTests.properties"/>
 
 	<bean id="nettyOptions" class="org.springframework.data.cassandra.support.IntegrationTestNettyOptions"/>
 
-	<cass:cluster port="${build.cassandra.native_transport_port}" compression="LZ4" netty-options-ref="nettyOptions">
-		<cass:keyspace action="CREATE_DROP" durable-writes="true"
-			name="full1">
-			<cass:replication class="SIMPLE_STRATEGY">
-				<cass:data-center name="foo" replication-factor="1" />
-				<cass:data-center name="bar" replication-factor="2" />
-			</cass:replication>
-		</cass:keyspace>
-		<cass:keyspace action="CREATE_DROP" durable-writes="false"
+	<cassandra:cluster port="${build.cassandra.native_transport_port}" compression="LZ4" netty-options-ref="nettyOptions">
+		<cassandra:keyspace action="CREATE_DROP" durable-writes="true" name="full1">
+			<cassandra:replication class="SIMPLE_STRATEGY">
+				<cassandra:data-center name="foo" replication-factor="1"/>
+				<cassandra:data-center name="bar" replication-factor="2"/>
+			</cassandra:replication>
+		</cassandra:keyspace>
+		<cassandra:keyspace action="CREATE_DROP" durable-writes="false"
 					   name="full2">
-			<cass:replication class="SIMPLE_STRATEGY" replication-factor="2"/>
-		</cass:keyspace>
-		<cass:keyspace action="ALTER" durable-writes="true"
+			<cassandra:replication class="SIMPLE_STRATEGY" replication-factor="2"/>
+		</cassandra:keyspace>
+		<cassandra:keyspace action="ALTER" durable-writes="true"
 					   name="full2">
-			<cass:replication class="NETWORK_TOPOLOGY_STRATEGY">
-				<cass:data-center name="foo" replication-factor="4"/>
-				<cass:data-center name="bar" replication-factor="4"/>
-			</cass:replication>
-		</cass:keyspace>
-		<cass:startup-cql><![CDATA[
+			<cassandra:replication class="NETWORK_TOPOLOGY_STRATEGY">
+				<cassandra:data-center name="foo" replication-factor="4"/>
+				<cassandra:data-center name="bar" replication-factor="4"/>
+			</cassandra:replication>
+		</cassandra:keyspace>
+		<cassandra:startup-cql><![CDATA[
 CREATE KEYSPACE IF NOT EXISTS script1 WITH durable_writes = true AND replication = { 'replication_factor' : 1, 'class' : 'SimpleStrategy' };
-		]]></cass:startup-cql>
-		<cass:startup-cql><![CDATA[
+		]]></cassandra:startup-cql>
+		<cassandra:startup-cql><![CDATA[
 ${script2}
-		]]></cass:startup-cql>
-		<cass:shutdown-cql><![CDATA[
+		]]></cassandra:startup-cql>
+		<cassandra:shutdown-cql><![CDATA[
 DROP KEYSPACE script1;
-		]]></cass:shutdown-cql>
-		<cass:shutdown-cql><![CDATA[
+		]]></cassandra:shutdown-cql>
+		<cassandra:shutdown-cql><![CDATA[
 DROP KEYSPACE script2;
-		]]></cass:shutdown-cql>
-	</cass:cluster>
+		]]></cassandra:shutdown-cql>
+	</cassandra:cluster>
 
-	<cass:session keyspace-name="full1" />
+	<cassandra:session keyspace-name="full1"/>
+
 </beans>
