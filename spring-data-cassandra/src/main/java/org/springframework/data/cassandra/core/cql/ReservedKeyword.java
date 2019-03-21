@@ -25,7 +25,7 @@ import org.springframework.util.StringUtils;
  * CQL keywords.
  *
  * @see <a href=
- *      "http://cassandra.apache.org/doc/cql3/CQL.html#appendixA">http://cassandra.apache.org/doc/cql3/CQL.html#appendixA</a>
+ *      "https://cassandra.apache.org/doc/cql3/CQL.html#appendixA">https://cassandra.apache.org/doc/cql3/CQL.html#appendixA</a>
  * @author Matthew T. Adams
  * @author Mark Paluch
  */

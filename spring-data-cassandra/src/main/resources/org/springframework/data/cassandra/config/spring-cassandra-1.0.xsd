@@ -7,13 +7,13 @@
 			elementFormDefault="qualified" attributeFormDefault="unqualified">
 
 	<xsd:import namespace="http://www.springframework.org/schema/beans"
-				schemaLocation="http://www.springframework.org/schema/beans/spring-beans.xsd"/>
+				schemaLocation="https://www.springframework.org/schema/beans/spring-beans.xsd"/>
 	<xsd:import namespace="http://www.springframework.org/schema/tool"
-				schemaLocation="http://www.springframework.org/schema/tool/spring-tool.xsd"/>
+				schemaLocation="https://www.springframework.org/schema/tool/spring-tool.xsd"/>
 	<xsd:import namespace="http://www.springframework.org/schema/context"
-				schemaLocation="http://www.springframework.org/schema/context/spring-context.xsd"/>
+				schemaLocation="https://www.springframework.org/schema/context/spring-context.xsd"/>
 	<xsd:import namespace="http://www.springframework.org/schema/data/repository"
-				schemaLocation="http://www.springframework.org/schema/data/repository/spring-repository.xsd"/>
+				schemaLocation="https://www.springframework.org/schema/data/repository/spring-repository.xsd"/>
 
 	<xsd:annotation>
 		<xsd:documentation><![CDATA[
