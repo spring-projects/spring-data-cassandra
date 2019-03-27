@@ -73,7 +73,7 @@ for further details. The following table maps Spring Data types to Cassandra typ
 | `blob`
 
 | `java.util.UUID`
-| `timeuuid`
+| `uuid`
 
 | `TupleValue`,  mapped Tuple Types
 | `tuple<…>`
