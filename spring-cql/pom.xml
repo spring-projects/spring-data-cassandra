@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>org.springframework.data</groupId>
 		<artifactId>spring-data-cassandra-parent</artifactId>
-		<version>1.5.20.RELEASE</version>
+		<version>1.5.21.BUILD-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
