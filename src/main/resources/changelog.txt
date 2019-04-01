@@ -1,6 +1,13 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 2.1.6.RELEASE (2019-04-01)
+---------------------------------------------
+* DATACASS-641 - Documentation incorrectly states java.util.UUID maps to Cassandra timeuuid.
+* DATACASS-633 - BasicCassandraPersistentEntity.doWithAssociations(…) should no-op.
+* DATACASS-626 - Release 2.1.6 (Lovelace SR6).
+
+
 Changes in version 2.0.14.RELEASE (2019-04-01)
 ----------------------------------------------
 * DATACASS-641 - Documentation incorrectly states java.util.UUID maps to Cassandra timeuuid.
