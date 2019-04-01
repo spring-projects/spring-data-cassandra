@@ -1,6 +1,15 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 2.0.14.RELEASE (2019-04-01)
+----------------------------------------------
+* DATACASS-641 - Documentation incorrectly states java.util.UUID maps to Cassandra timeuuid.
+* DATACASS-633 - BasicCassandraPersistentEntity.doWithAssociations(…) should no-op.
+* DATACASS-625 - Upgrade to Apache Cassandra 3.11.4.
+* DATACASS-621 - Release 2.0.14 (Kay SR14).
+* DATACASS-599 - Assert compatibility with Guava 26.0-jre+.
+
+
 Changes in version 1.5.20.RELEASE (2019-04-01)
 ----------------------------------------------
 * DATACASS-643 - Release 1.5.20 (Ingalls SR20).
