@@ -1,6 +1,11 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 1.5.19.RELEASE (2019-04-01)
+----------------------------------------------
+* DATACASS-620 - Release 1.5.19 (Ingalls SR19).
+
+
 Changes in version 2.2.0.M2 (2019-03-07)
 ----------------------------------------
 * DATACASS-634 - Upgrade to Cassandra Driver 3.7.1.
