@@ -53,21 +53,39 @@ inline fun <reified T : Any> ReactiveSelectOperation.SelectWithProjection<*>.asT
 		`as`(T::class.java)
 
 /**
- * Coroutines variant of [ReactiveSelectOperation.TerminatingSelect.one].
+ * Non-nullable Coroutines variant of [ReactiveSelectOperation.TerminatingSelect.one].
  *
  * @author Mark Paluch
  * @since 2.2
  */
-suspend inline fun <reified T : Any> ReactiveSelectOperation.TerminatingSelect<T>.awaitOne(): T? =
+suspend inline fun <reified T : Any> ReactiveSelectOperation.TerminatingSelect<T>.awaitOne(): T =
+		one().awaitSingle()
+
+/**
+ * Nullable Coroutines variant of [ReactiveSelectOperation.TerminatingSelect.one].
+ *
+ * @author Mark Paluch
+ * @since 2.2
+ */
+suspend inline fun <reified T : Any> ReactiveSelectOperation.TerminatingSelect<T>.awaitOneOrNull(): T? =
 		one().awaitFirstOrNull()
 
 /**
- * Coroutines variant of [ReactiveSelectOperation.TerminatingSelect.first].
+ * Non-nullable Coroutines variant of [ReactiveSelectOperation.TerminatingSelect.first].
  *
  * @author Mark Paluch
  * @since 2.2
  */
-suspend inline fun <reified T : Any> ReactiveSelectOperation.TerminatingSelect<T>.awaitFirst(): T? =
+suspend inline fun <reified T : Any> ReactiveSelectOperation.TerminatingSelect<T>.awaitFirst(): T =
+		first().awaitSingle()
+
+/**
+ * Nullable Coroutines variant of [ReactiveSelectOperation.TerminatingSelect.first].
+ *
+ * @author Mark Paluch
+ * @since 2.2
+ */
+suspend inline fun <reified T : Any> ReactiveSelectOperation.TerminatingSelect<T>.awaitFirstOrNull(): T? =
 		first().awaitFirstOrNull()
 
 /**

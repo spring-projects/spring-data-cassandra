@@ -65,7 +65,7 @@ class ReactiveSelectOperationExtensionsUnitTests {
 	}
 
 	@Test // DATACASS-632
-	fun terminatingFindAwaitOne() {
+	fun terminatingFindAwaitOneWithValue() {
 
 		val find = mockk<ReactiveSelectOperation.TerminatingSelect<String>>()
 		every { find.one() } returns Mono.just("foo")
@@ -80,13 +80,103 @@ class ReactiveSelectOperationExtensionsUnitTests {
 	}
 
 	@Test // DATACASS-632
-	fun terminatingFindAwaitFirst() {
+	fun terminatingFindAwaitOneWithNull() {
+
+		val find = mockk<ReactiveSelectOperation.TerminatingSelect<String>>()
+		every { find.one() } returns Mono.empty()
+
+		Assertions.assertThatExceptionOfType(NoSuchElementException::class.java).isThrownBy {
+			runBlocking { find.awaitOne() }
+		}
+
+		verify {
+			find.one()
+		}
+	}
+
+	@Test // DATACASS-632
+	fun terminatingFindAwaitOneOrNullWithValue() {
+
+		val find = mockk<ReactiveSelectOperation.TerminatingSelect<String>>()
+		every { find.one() } returns Mono.just("foo")
+
+		runBlocking {
+			Assertions.assertThat(find.awaitOneOrNull()).isEqualTo("foo")
+		}
+
+		verify {
+			find.one()
+		}
+	}
+
+	@Test // DATACASS-632
+	fun terminatingFindAwaitOneOrNullWithNull() {
+
+		val find = mockk<ReactiveSelectOperation.TerminatingSelect<String>>()
+		every { find.one() } returns Mono.empty()
+
+		runBlocking {
+			Assertions.assertThat(find.awaitOneOrNull()).isNull()
+		}
+
+		verify {
+			find.one()
+		}
+	}
+
+	@Test // DATACASS-632
+	fun terminatingFindAwaitFirstWithValue() {
 
 		val find = mockk<ReactiveSelectOperation.TerminatingSelect<String>>()
 		every { find.first() } returns Mono.just("foo")
 
 		runBlocking {
 			Assertions.assertThat(find.awaitFirst()).isEqualTo("foo")
+		}
+
+		verify {
+			find.first()
+		}
+	}
+
+	@Test // DATACASS-632
+	fun terminatingFindAwaitFirstWithNull() {
+
+		val find = mockk<ReactiveSelectOperation.TerminatingSelect<String>>()
+		every { find.first() } returns Mono.empty()
+
+		Assertions.assertThatExceptionOfType(NoSuchElementException::class.java).isThrownBy {
+			runBlocking { find.awaitFirst() }
+		}
+
+		verify {
+			find.first()
+		}
+	}
+
+	@Test // DATACASS-632
+	fun terminatingFindAwaitFirstOrNullWithValue() {
+
+		val find = mockk<ReactiveSelectOperation.TerminatingSelect<String>>()
+		every { find.first() } returns Mono.just("foo")
+
+		runBlocking {
+			Assertions.assertThat(find.awaitFirstOrNull()).isEqualTo("foo")
+		}
+
+		verify {
+			find.first()
+		}
+	}
+
+	@Test // DATACASS-632
+	fun terminatingFindAwaitFirstOrNullWithNull() {
+
+		val find = mockk<ReactiveSelectOperation.TerminatingSelect<String>>()
+		every { find.first() } returns Mono.empty()
+
+		runBlocking {
+			Assertions.assertThat(find.awaitFirstOrNull()).isNull()
 		}
 
 		verify {
