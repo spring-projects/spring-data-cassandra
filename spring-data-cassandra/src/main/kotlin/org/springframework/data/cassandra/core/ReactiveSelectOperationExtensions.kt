@@ -55,7 +55,7 @@ inline fun <reified T : Any> ReactiveSelectOperation.SelectWithProjection<*>.asT
 /**
  * Non-nullable Coroutines variant of [ReactiveSelectOperation.TerminatingSelect.one].
  *
- * @author Mark Paluch
+ * @author Sebastien Deleuze
  * @since 2.2
  */
 suspend inline fun <reified T : Any> ReactiveSelectOperation.TerminatingSelect<T>.awaitOne(): T =
@@ -65,6 +65,7 @@ suspend inline fun <reified T : Any> ReactiveSelectOperation.TerminatingSelect<T
  * Nullable Coroutines variant of [ReactiveSelectOperation.TerminatingSelect.one].
  *
  * @author Mark Paluch
+ * @author Sebastien Deleuze
  * @since 2.2
  */
 suspend inline fun <reified T : Any> ReactiveSelectOperation.TerminatingSelect<T>.awaitOneOrNull(): T? =
@@ -73,7 +74,7 @@ suspend inline fun <reified T : Any> ReactiveSelectOperation.TerminatingSelect<T
 /**
  * Non-nullable Coroutines variant of [ReactiveSelectOperation.TerminatingSelect.first].
  *
- * @author Mark Paluch
+ * @author Sebastien Deleuze
  * @since 2.2
  */
 suspend inline fun <reified T : Any> ReactiveSelectOperation.TerminatingSelect<T>.awaitFirst(): T =
@@ -83,6 +84,7 @@ suspend inline fun <reified T : Any> ReactiveSelectOperation.TerminatingSelect<T
  * Nullable Coroutines variant of [ReactiveSelectOperation.TerminatingSelect.first].
  *
  * @author Mark Paluch
+ * @author Sebastien Deleuze
  * @since 2.2
  */
 suspend inline fun <reified T : Any> ReactiveSelectOperation.TerminatingSelect<T>.awaitFirstOrNull(): T? =
