@@ -18,11 +18,14 @@ package org.springframework.data.cassandra.core
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions
 import org.junit.Test
 import org.springframework.data.cassandra.domain.Person
 import org.springframework.data.cassandra.domain.User
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 /**
@@ -211,6 +214,22 @@ class ReactiveSelectOperationExtensionsUnitTests {
 
 		verify {
 			find.exists()
+		}
+	}
+
+	@Test
+	@FlowPreview
+	fun terminatingFindAllAsFlow() {
+
+		val spec = mockk<ReactiveSelectOperation.TerminatingSelect<String>>()
+		every { spec.all() } returns Flux.just("foo", "bar", "baz")
+
+		runBlocking {
+			Assertions.assertThat(spec.allAsFlow().toList()).contains("foo", "bar", "baz")
+		}
+
+		verify {
+			spec.all()
 		}
 	}
 }

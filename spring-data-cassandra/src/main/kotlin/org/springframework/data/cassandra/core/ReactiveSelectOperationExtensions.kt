@@ -15,8 +15,11 @@
  */
 package org.springframework.data.cassandra.core
 
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.awaitSingle
+import kotlinx.coroutines.reactive.flow.asFlow
 import kotlin.reflect.KClass
 
 /**
@@ -107,3 +110,16 @@ suspend fun <T : Any> ReactiveSelectOperation.TerminatingSelect<T>.awaitCount():
  */
 suspend fun <T : Any> ReactiveSelectOperation.TerminatingSelect<T>.awaitExists(): Boolean =
 		exists().awaitSingle()
+
+/**
+ * Coroutines [Flow] variant of [ReactiveSelectOperation.TerminatingSelect.all].
+ *
+ * Backpressure is controlled by [batchSize] parameter that controls the size of in-flight elements
+ * and [org.reactivestreams.Subscription.request] size.
+ *
+ * @author Sebastien Deleuze
+ * @since 2.2
+ */
+@FlowPreview
+fun <T : Any> ReactiveSelectOperation.TerminatingSelect<T>.allAsFlow(batchSize: Int = 1): Flow<T> =
+		all().asFlow(batchSize)
