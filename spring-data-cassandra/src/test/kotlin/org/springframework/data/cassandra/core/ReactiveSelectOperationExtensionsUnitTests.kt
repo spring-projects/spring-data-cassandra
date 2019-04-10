@@ -21,7 +21,8 @@ import io.mockk.verify
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.Test
 import org.springframework.data.cassandra.domain.Person
 import org.springframework.data.cassandra.domain.User
@@ -32,6 +33,7 @@ import reactor.core.publisher.Mono
  * Unit tests for [ReactiveSelectOperationExtensions].
  *
  * @author Mark Paluch
+ * @author Sebastien Deleuze
  */
 class ReactiveSelectOperationExtensionsUnitTests {
 
@@ -74,7 +76,7 @@ class ReactiveSelectOperationExtensionsUnitTests {
 		every { find.one() } returns Mono.just("foo")
 
 		runBlocking {
-			Assertions.assertThat(find.awaitOne()).isEqualTo("foo")
+			assertThat(find.awaitOne()).isEqualTo("foo")
 		}
 
 		verify {
@@ -88,7 +90,7 @@ class ReactiveSelectOperationExtensionsUnitTests {
 		val find = mockk<ReactiveSelectOperation.TerminatingSelect<String>>()
 		every { find.one() } returns Mono.empty()
 
-		Assertions.assertThatExceptionOfType(NoSuchElementException::class.java).isThrownBy {
+		assertThatExceptionOfType(NoSuchElementException::class.java).isThrownBy {
 			runBlocking { find.awaitOne() }
 		}
 
@@ -104,7 +106,7 @@ class ReactiveSelectOperationExtensionsUnitTests {
 		every { find.one() } returns Mono.just("foo")
 
 		runBlocking {
-			Assertions.assertThat(find.awaitOneOrNull()).isEqualTo("foo")
+			assertThat(find.awaitOneOrNull()).isEqualTo("foo")
 		}
 
 		verify {
@@ -119,7 +121,7 @@ class ReactiveSelectOperationExtensionsUnitTests {
 		every { find.one() } returns Mono.empty()
 
 		runBlocking {
-			Assertions.assertThat(find.awaitOneOrNull()).isNull()
+			assertThat(find.awaitOneOrNull()).isNull()
 		}
 
 		verify {
@@ -134,7 +136,7 @@ class ReactiveSelectOperationExtensionsUnitTests {
 		every { find.first() } returns Mono.just("foo")
 
 		runBlocking {
-			Assertions.assertThat(find.awaitFirst()).isEqualTo("foo")
+			assertThat(find.awaitFirst()).isEqualTo("foo")
 		}
 
 		verify {
@@ -148,7 +150,7 @@ class ReactiveSelectOperationExtensionsUnitTests {
 		val find = mockk<ReactiveSelectOperation.TerminatingSelect<String>>()
 		every { find.first() } returns Mono.empty()
 
-		Assertions.assertThatExceptionOfType(NoSuchElementException::class.java).isThrownBy {
+		assertThatExceptionOfType(NoSuchElementException::class.java).isThrownBy {
 			runBlocking { find.awaitFirst() }
 		}
 
@@ -164,7 +166,7 @@ class ReactiveSelectOperationExtensionsUnitTests {
 		every { find.first() } returns Mono.just("foo")
 
 		runBlocking {
-			Assertions.assertThat(find.awaitFirstOrNull()).isEqualTo("foo")
+			assertThat(find.awaitFirstOrNull()).isEqualTo("foo")
 		}
 
 		verify {
@@ -179,7 +181,7 @@ class ReactiveSelectOperationExtensionsUnitTests {
 		every { find.first() } returns Mono.empty()
 
 		runBlocking {
-			Assertions.assertThat(find.awaitFirstOrNull()).isNull()
+			assertThat(find.awaitFirstOrNull()).isNull()
 		}
 
 		verify {
@@ -194,7 +196,7 @@ class ReactiveSelectOperationExtensionsUnitTests {
 		every { find.count() } returns Mono.just(1)
 
 		runBlocking {
-			Assertions.assertThat(find.awaitCount()).isEqualTo(1)
+			assertThat(find.awaitCount()).isEqualTo(1)
 		}
 
 		verify {
@@ -209,7 +211,7 @@ class ReactiveSelectOperationExtensionsUnitTests {
 		every { find.exists() } returns Mono.just(true)
 
 		runBlocking {
-			Assertions.assertThat(find.awaitExists()).isTrue()
+			assertThat(find.awaitExists()).isTrue()
 		}
 
 		verify {
@@ -217,7 +219,7 @@ class ReactiveSelectOperationExtensionsUnitTests {
 		}
 	}
 
-	@Test
+	@Test // DATACASS-648
 	@FlowPreview
 	fun terminatingFindAllAsFlow() {
 
@@ -225,7 +227,7 @@ class ReactiveSelectOperationExtensionsUnitTests {
 		every { spec.all() } returns Flux.just("foo", "bar", "baz")
 
 		runBlocking {
-			Assertions.assertThat(spec.allAsFlow().toList()).contains("foo", "bar", "baz")
+			assertThat(spec.flow().toList()).contains("foo", "bar", "baz")
 		}
 
 		verify {
