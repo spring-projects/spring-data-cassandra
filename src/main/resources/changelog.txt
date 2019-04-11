@@ -1,6 +1,18 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 2.2.0.M3 (2019-04-11)
+----------------------------------------
+* DATACASS-648 - Add Coroutines Flow extensions.
+* DATACASS-647 - Add non-nullable variant to ReactiveSelectOperation extensions.
+* DATACASS-641 - Documentation incorrectly states java.util.UUID maps to Cassandra timeuuid.
+* DATACASS-639 - Move away from Spring Data Commons deprecations.
+* DATACASS-638 - Skip properties that are not part of the result.
+* DATACASS-637 - General code maintenance.
+* DATACASS-636 - Enable CriteriaExtensionsUnitTests after MockK bugfix.
+* DATACASS-635 - Release 2.2 M3 (Moore).
+
+
 Changes in version 2.1.6.RELEASE (2019-04-01)
 ---------------------------------------------
 * DATACASS-641 - Documentation incorrectly states java.util.UUID maps to Cassandra timeuuid.
