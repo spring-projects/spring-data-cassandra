@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
@@ -29,6 +30,7 @@ import org.springframework.data.annotation.Persistent;
  * @author Alex Shvid
  * @author Matthew T. Adams
  */
+@Documented
 @Persistent
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)

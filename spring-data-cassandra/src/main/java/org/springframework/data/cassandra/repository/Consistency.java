@@ -33,9 +33,9 @@ import com.datastax.driver.core.ConsistencyLevel;
  * @see org.springframework.data.cassandra.core.cql.QueryOptions
  * @since 2.0
  */
+@Documented
 @Target({ ElementType.ANNOTATION_TYPE, ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
-@Documented
 @QueryAnnotation
 public @interface Consistency {
 

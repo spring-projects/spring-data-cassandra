@@ -30,9 +30,9 @@ import org.springframework.core.annotation.AliasFor;
  * @author Mark Paluch
  * @since 2.1
  */
+@Documented
 @Target({ ElementType.METHOD, ElementType.ANNOTATION_TYPE })
 @Retention(RetentionPolicy.RUNTIME)
-@Documented
 @Query(count = true)
 public @interface CountQuery {
 

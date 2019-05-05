@@ -16,8 +16,10 @@
 package org.springframework.data.cassandra.core.mapping;
 
 import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 import com.datastax.driver.core.DataType;
 
@@ -31,6 +33,8 @@ import com.datastax.driver.core.DataType;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
+@Target(value = { ElementType.TYPE, ElementType.TYPE_PARAMETER, ElementType.ANNOTATION_TYPE, ElementType.FIELD,
+		ElementType.METHOD, ElementType.PARAMETER })
 public @interface CassandraType {
 
 	/**
@@ -39,14 +43,14 @@ public @interface CassandraType {
 	DataType.Name type();
 
 	/**
-	 * If the property is {@link java.util.Collection Collection-like}, then this attribute holds
-	 * a single {@link DataType.Name DataType Name} representing the element type of the {@link java.util.Collection}.
+	 * If the property is {@link java.util.Collection Collection-like}, then this attribute holds a single
+	 * {@link DataType.Name DataType Name} representing the element type of the {@link java.util.Collection}.
 	 * <p/>
-	 * If the property is a {@link java.util.Map}, then this attribute holds exactly
-	 * two {@link DataType.Name DataType Names}; the first is the key type and the second is the value type.
+	 * If the property is a {@link java.util.Map}, then this attribute holds exactly two {@link DataType.Name DataType
+	 * Names}; the first is the key type and the second is the value type.
 	 * <p/>
-	 * If the property is neither {@link java.util.Collection Collection-like} nor a {@link java.util.Map},
-	 * then this attribute is ignored.
+	 * If the property is neither {@link java.util.Collection Collection-like} nor a {@link java.util.Map}, then this
+	 * attribute is ignored.
 	 *
 	 * @return an array of {@link DataType.Name} objects.
 	 * @see com.datastax.driver.core.DataType.Name
@@ -54,10 +58,9 @@ public @interface CassandraType {
 	DataType.Name[] typeArguments() default {};
 
 	/**
-	 * If the property maps to a User-Defined Type (UDT) then this attribute holds the user type name.
-	 *
-	 * For {@link java.util.Collection Collection-like} properties the user type name applies to the component type.
-	 * The user type name is only required if the UDT does not map to a class annotated with {@link UserDefinedType}.
+	 * If the property maps to a User-Defined Type (UDT) then this attribute holds the user type name. For
+	 * {@link java.util.Collection Collection-like} properties the user type name applies to the component type. The user
+	 * type name is only required if the UDT does not map to a class annotated with {@link UserDefinedType}.
 	 *
 	 * @return {@link String name} of the user type
 	 * @since 1.5

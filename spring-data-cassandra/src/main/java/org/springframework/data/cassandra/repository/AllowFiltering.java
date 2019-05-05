@@ -27,9 +27,9 @@ import java.lang.annotation.Target;
  * @author Mark Paluch
  * @since 2.0
  */
+@Documented
 @Target({ ElementType.METHOD, ElementType.ANNOTATION_TYPE })
 @Retention(RetentionPolicy.RUNTIME)
-@Documented
 @Query(allowFiltering = true)
 public @interface AllowFiltering {
 }

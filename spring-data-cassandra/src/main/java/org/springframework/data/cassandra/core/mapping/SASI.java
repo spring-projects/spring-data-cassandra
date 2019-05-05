@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -46,6 +47,7 @@ import org.springframework.core.annotation.AliasFor;
  * @see StandardAnalyzed
  * @see NonTokenizingAnalyzed
  */
+@Documented
 @Retention(value = RetentionPolicy.RUNTIME)
 @Target(value = { ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE })
 public @interface SASI {
@@ -86,7 +88,7 @@ public @interface SASI {
 	 * normalization, case sensitivity, skipping common words like "and" and "the", and localization of the language used
 	 * to complete the analysis
 	 *
-	 * @see org.apache.cassandra.index.sasi.analyzer.StandardAnalyzer.
+	 * @see org.apache.cassandra.index.sasi.analyzer.StandardAnalyzer
 	 */
 	@Retention(value = RetentionPolicy.RUNTIME)
 	@Target(value = { ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE })

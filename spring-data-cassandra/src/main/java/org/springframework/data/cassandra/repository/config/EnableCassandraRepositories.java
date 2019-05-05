@@ -40,9 +40,9 @@ import org.springframework.data.repository.query.QueryLookupStrategy.Key;
  * @author Thomas Darimont
  * @author Christoph Strobl
  */
+@Documented
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@Documented
 @Inherited
 @Import(CassandraRepositoriesRegistrar.class)
 public @interface EnableCassandraRepositories {
