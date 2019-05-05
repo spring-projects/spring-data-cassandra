@@ -16,7 +16,6 @@
 package org.springframework.data.cassandra.core.convert;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.Assume.*;
 import static org.springframework.data.cassandra.core.mapping.BasicMapId.*;
 import static org.springframework.data.cassandra.test.util.RowMockUtil.*;
 
@@ -33,14 +32,22 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.springframework.core.SpringVersion;
-import org.springframework.core.convert.ConverterNotFoundException;
+
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.cassandra.core.mapping.BasicMapId;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
@@ -57,7 +64,6 @@ import org.springframework.data.cassandra.domain.TypeWithMapId;
 import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.domain.UserToken;
 import org.springframework.data.cassandra.test.util.RowMockUtil;
-import org.springframework.data.util.Version;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import com.datastax.driver.core.DataType;
@@ -82,8 +88,6 @@ import com.datastax.driver.core.querybuilder.Update.Assignments;
  * @soundtrack Outlandich - Dont Leave Me Feat Cyt (Sun Kidz Electrocore Mix)
  */
 public class MappingCassandraConverterUnitTests {
-
-	private static final Version VERSION_4_3 = Version.parse("4.3");
 
 	@Rule public final ExpectedException expectedException = ExpectedException.none();
 
@@ -115,34 +119,27 @@ public class MappingCassandraConverterUnitTests {
 		assertThat(getValues(insert)).contains("MINT");
 	}
 
-	@Test // DATACASS-260
-	public void insertEnumDoesNotMapToOrdinalBeforeSpring43() {
-
-		assumeTrue(Version.parse(SpringVersion.getVersion()).isLessThan(VERSION_4_3));
-
-		expectedException.expect(ConverterNotFoundException.class);
-
-		UnsupportedEnumToOrdinalMapping unsupportedEnumToOrdinalMapping = new UnsupportedEnumToOrdinalMapping();
-		unsupportedEnumToOrdinalMapping.setAsOrdinal(Condition.MINT);
-
-		Insert insert = QueryBuilder.insertInto("table");
-
-		mappingCassandraConverter.write(unsupportedEnumToOrdinalMapping, insert);
-	}
-
 	@Test // DATACASS-255
-	public void insertEnumMapsToOrdinalWithSpring43AndHiger() {
+	public void insertEnumMapsToOrdinal() {
 
-		assumeTrue(Version.parse(SpringVersion.getVersion()).isGreaterThanOrEqualTo(VERSION_4_3));
-
-		UnsupportedEnumToOrdinalMapping unsupportedEnumToOrdinalMapping = new UnsupportedEnumToOrdinalMapping();
-		unsupportedEnumToOrdinalMapping.setAsOrdinal(Condition.USED);
+		EnumToOrdinalMapping enumToOrdinalMapping = new EnumToOrdinalMapping();
+		enumToOrdinalMapping.setAsOrdinal(Condition.USED);
 
 		Insert insert = QueryBuilder.insertInto("table");
 
-		mappingCassandraConverter.write(unsupportedEnumToOrdinalMapping, insert);
+		mappingCassandraConverter.write(enumToOrdinalMapping, insert);
 
 		assertThat(getValues(insert)).contains((Object) Integer.valueOf(Condition.USED.ordinal()));
+	}
+
+	@Test // DATACASS-255, DATACASS-652
+	public void selectEnumMapsToOrdinal() {
+
+		rowMock = RowMockUtil.newRowMock(column("asOrdinal", 1, DataType.cint()));
+
+		EnumToOrdinalMapping loaded = mappingCassandraConverter.read(EnumToOrdinalMapping.class, rowMock);
+
+		assertThat(loaded.getAsOrdinal()).isEqualTo(Condition.USED);
 	}
 
 	@Test // DATACASS-260
@@ -1018,7 +1015,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Table
-	public static class UnsupportedEnumToOrdinalMapping {
+	public static class EnumToOrdinalMapping {
 
 		@PrimaryKey private String id;
 
