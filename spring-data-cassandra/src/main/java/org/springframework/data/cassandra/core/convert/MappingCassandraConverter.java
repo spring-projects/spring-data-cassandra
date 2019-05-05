@@ -917,6 +917,12 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		}
 
 		if (Enum.class.isAssignableFrom(target)) {
+
+			if (value instanceof Number) {
+				int ordinal = ((Number) value).intValue();
+				return target.getEnumConstants()[ordinal];
+			}
+
 			return Enum.valueOf((Class<Enum>) target, value.toString());
 		}
 
