@@ -1,6 +1,12 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 2.1.7.RELEASE (2019-05-10)
+---------------------------------------------
+* DATACASS-652 - Loading Enums using their ordinal fails.
+* DATACASS-646 - Release 2.1.7 (Lovelace SR7).
+
+
 Changes in version 2.2.0.M3 (2019-04-11)
 ----------------------------------------
 * DATACASS-648 - Add Coroutines Flow extensions.
