@@ -1,6 +1,11 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 1.5.22.RELEASE (2019-05-13)
+----------------------------------------------
+* DATACASS-654 - Release 1.5.22 (Ingalls SR22).
+
+
 Changes in version 2.1.8.RELEASE (2019-05-13)
 ---------------------------------------------
 * DATACASS-653 - Release 2.1.8 (Lovelace SR8).
