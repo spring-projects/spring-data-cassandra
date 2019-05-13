@@ -1,6 +1,12 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 2.2.0.M4 (2019-05-13)
+----------------------------------------
+* DATACASS-652 - Loading Enums using their ordinal fails.
+* DATACASS-650 - Release 2.2 M4 (Moore).
+
+
 Changes in version 1.5.21.RELEASE (2019-05-10)
 ----------------------------------------------
 * DATACASS-644 - Release 1.5.21 (Ingalls SR21).
