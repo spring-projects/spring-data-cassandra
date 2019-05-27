@@ -1239,7 +1239,7 @@ List<Person> result = cassandraTemplate.select(query(where("age").is(50))
 ----
 ====
 
-The `select`, `selectOneById`, and `stream` methods take a `Query` object as a parameter. This object defines the criteria
+The `select`, `selectOne`, and `stream` methods take a `Query` object as a parameter. This object defines the criteria
 and options used to perform the query. The criteria is specified by using a `Criteria` object that has
 a static factory method named `where` that instantiates a new `Criteria` object. We recommend using a static import
 for `org.springframework.data.cassandra.core.query.Criteria.where` and `Query.query`, to make the query more readable.
