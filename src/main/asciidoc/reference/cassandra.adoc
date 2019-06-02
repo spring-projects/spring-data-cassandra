@@ -1286,12 +1286,11 @@ The `Query` class has some additional methods that you can use to provide option
 The `Query` class has the following methods that return rows:
 
 * `List<T>` *select* `(Query query, Class<T> entityClass)`: Query for a list of objects of type `T` from the table.
-* `T` *selectOneById* `(Query query, Class<T> entityClass)`: Query for a single object of type `T` from the table.
-* `Slice<T>` *slice* `(Query query, Class<T> entityClass)`: Starts or continues paging by querying for a `Slice` of objects of type `T` from the table.
 * `T` *selectOne* `(Query query, Class<T> entityClass)`: Query for a single object of type `T` from the table.
+* `Slice<T>` *slice* `(Query query, Class<T> entityClass)`: Starts or continues paging by querying for a `Slice` of objects of type `T` from the table.
 * `Stream<T>` *stream* `(Query query, Class<T> entityClass)`: Query for a stream of objects of type `T` from the table.
 * `List<T>` *select* `(String cql, Class<T> entityClass)`: Ad-hoc query for a list of objects of type `T` from the table by providing a CQL statement.
-* `T` *selectOneById* `(String cql, Class<T> entityClass)`: Ad-hoc query for a single object of type `T` from the table by providing a CQL statement.
+* `T` *selectOne* `(String cql, Class<T> entityClass)`: Ad-hoc query for a single object of type `T` from the table by providing a CQL statement.
 * `Stream<T>` *stream* `(String cql, Class<T> entityClass)`: Ad-hoc query for a stream of objects of type `T` from the table by providing a CQL statement.
 
 The query methods must specify the target type `T` that is returned.
