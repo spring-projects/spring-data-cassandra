@@ -21,6 +21,9 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
@@ -41,16 +44,20 @@ import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.cql.CqlProvider;
 import org.springframework.data.cassandra.core.cql.GuavaListenableFutureAdapter;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
+import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.data.cassandra.core.cql.session.DefaultSessionFactory;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.event.AfterConvertEvent;
 import org.springframework.data.cassandra.core.mapping.event.AfterDeleteEvent;
 import org.springframework.data.cassandra.core.mapping.event.AfterLoadEvent;
 import org.springframework.data.cassandra.core.mapping.event.AfterSaveEvent;
+import org.springframework.data.cassandra.core.mapping.event.BeforeConvertCallback;
 import org.springframework.data.cassandra.core.mapping.event.BeforeDeleteEvent;
+import org.springframework.data.cassandra.core.mapping.event.BeforeSaveCallback;
 import org.springframework.data.cassandra.core.mapping.event.BeforeSaveEvent;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.mapping.callback.EntityCallbacks;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.lang.Nullable;
@@ -89,7 +96,8 @@ import com.datastax.driver.core.querybuilder.Update;
  * @see org.springframework.data.cassandra.core.AsyncCassandraOperations
  * @since 2.0
  */
-public class AsyncCassandraTemplate implements AsyncCassandraOperations, ApplicationEventPublisherAware {
+public class AsyncCassandraTemplate
+		implements AsyncCassandraOperations, ApplicationEventPublisherAware, ApplicationContextAware {
 
 	private final AsyncCqlOperations cqlOperations;
 
@@ -104,6 +112,8 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 	private final StatementFactory statementFactory;
 
 	private @Nullable ApplicationEventPublisher eventPublisher;
+
+	private @Nullable EntityCallbacks entityCallbacks;
 
 	/**
 	 * Creates an instance of {@link AsyncCassandraTemplate} initialized with the given {@link Session} and a default
@@ -174,6 +184,29 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 	@Override
 	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
 		this.eventPublisher = applicationEventPublisher;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.context.ApplicationContextAware(org.springframework.context.ApplicationContext)
+	 */
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+
+		if (entityCallbacks == null) {
+			setEntityCallbacks(EntityCallbacks.create(applicationContext));
+		}
+
+		projectionFactory.setBeanFactory(applicationContext);
+		projectionFactory.setBeanClassLoader(applicationContext.getClassLoader());
+	}
+
+	/**
+	 * Configure {@link EntityCallbacks} to pre-/post-process entities during persistence operations.
+	 *
+	 * @param entityCallbacks
+	 */
+	public void setEntityCallbacks(@Nullable EntityCallbacks entityCallbacks) {
+		this.entityCallbacks = entityCallbacks;
 	}
 
 	/* (non-Javadoc)
@@ -541,9 +574,14 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 		Assert.notNull(entity, "Entity must not be null");
 		Assert.notNull(options, "InsertOptions must not be null");
 
-		AdaptibleEntity<T> source = getEntityOperations().forEntity(entity, getConverter().getConversionService());
+		return doInsert(entity, options, getTableName(entity.getClass()));
+	}
+
+	private <T> ListenableFuture<EntityWriteResult<T>> doInsert(T entity, WriteOptions options, CqlIdentifier tableName) {
+
+		AdaptibleEntity<T> source = getEntityOperations().forEntity(maybeCallBeforeConvert(entity, tableName),
+				getConverter().getConversionService());
 		CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
-		CqlIdentifier tableName = persistentEntity.getTableName();
 
 		T entityToUse = source.isVersionedEntity() ? source.initializeVersionProperty() : entity;
 
@@ -595,24 +633,26 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 		CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
 		CqlIdentifier tableName = persistentEntity.getTableName();
 
-		return source.isVersionedEntity() ? doUpdateVersioned(source, options, tableName, persistentEntity)
-				: doUpdate(entity, options, tableName, persistentEntity);
+		T entityToUpdate = maybeCallBeforeConvert(entity, tableName);
+
+		return source.isVersionedEntity() ? doUpdateVersioned(entityToUpdate, options, tableName, persistentEntity)
+				: doUpdate(entityToUpdate, options, tableName, persistentEntity);
 	}
 
-	private <T> ListenableFuture<EntityWriteResult<T>> doUpdateVersioned(AdaptibleEntity<T> source, UpdateOptions options,
+	private <T> ListenableFuture<EntityWriteResult<T>> doUpdateVersioned(T entity, UpdateOptions options,
 			CqlIdentifier tableName, CassandraPersistentEntity<?> persistentEntity) {
 
+		AdaptibleEntity<T> source = getEntityOperations().forEntity(entity, getConverter().getConversionService());
 		Number previousVersion = source.getVersion();
+		T toSave = source.incrementVersion();
 
-		T entity = source.incrementVersion();
+		Update update = getStatementFactory().update(toSave, options, getConverter(), persistentEntity, tableName);
 
-		Update update = getStatementFactory().update(entity, options, getConverter(), persistentEntity, tableName);
-
-		return executeSave(entity, tableName, source.appendVersionCondition(update, previousVersion), result -> {
+		return executeSave(toSave, tableName, source.appendVersionCondition(update, previousVersion), result -> {
 
 			if (!result.wasApplied()) {
 				throw new OptimisticLockingFailureException(
-						String.format("Cannot save entity %s with version %s to table %s. Has it been modified meanwhile?", entity,
+						String.format("Cannot save entity %s with version %s to table %s. Has it been modified meanwhile?", toSave,
 								source.getVersion(), tableName));
 			}
 		});
@@ -726,16 +766,17 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 			Consumer<WriteResult> beforeAfterSaveEvent) {
 
 		maybeEmitEvent(new BeforeSaveEvent<>(entity, tableName, statement));
+		T entityToSave = maybeCallBeforeSave(entity, tableName, statement);
 
 		ListenableFuture<ResultSet> result = getAsyncCqlOperations().execute(new AsyncStatementCallback(statement));
 
 		return new MappingListenableFutureAdapter<>(result, resultSet -> {
 
-			EntityWriteResult<T> writeResult = EntityWriteResult.of(resultSet, entity);
+			EntityWriteResult<T> writeResult = EntityWriteResult.of(resultSet, entityToSave);
 
 			beforeAfterSaveEvent.accept(writeResult);
 
-			maybeEmitEvent(new AfterSaveEvent<>(entity, tableName));
+			maybeEmitEvent(new AfterSaveEvent<>(entityToSave, tableName));
 
 			return writeResult;
 		});
@@ -823,6 +864,24 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 		if (this.eventPublisher != null) {
 			this.eventPublisher.publishEvent(event);
 		}
+	}
+
+	protected <T> T maybeCallBeforeConvert(T object, CqlIdentifier tableName) {
+
+		if (null != entityCallbacks) {
+			return (T) entityCallbacks.callback(BeforeConvertCallback.class, object, tableName);
+		}
+
+		return object;
+	}
+
+	protected <T> T maybeCallBeforeSave(T object, CqlIdentifier tableName, Statement statement) {
+
+		if (null != entityCallbacks) {
+			return (T) entityCallbacks.callback(BeforeSaveCallback.class, object, tableName, statement);
+		}
+
+		return object;
 	}
 
 	static class MappingListenableFutureAdapter<T, S>

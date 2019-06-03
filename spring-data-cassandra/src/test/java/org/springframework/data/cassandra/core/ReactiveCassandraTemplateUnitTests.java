@@ -15,20 +15,16 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.data.cassandra.core.query.Criteria.where;
-
-import java.util.Collections;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.data.cassandra.core.query.Criteria.*;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+
+import java.util.Collections;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -40,10 +36,14 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import org.springframework.data.cassandra.ReactiveResultSet;
 import org.springframework.data.cassandra.ReactiveSession;
+import org.springframework.data.cassandra.core.mapping.event.ReactiveBeforeConvertCallback;
+import org.springframework.data.cassandra.core.mapping.event.ReactiveBeforeSaveCallback;
 import org.springframework.data.cassandra.core.query.Filter;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.core.query.Update;
 import org.springframework.data.cassandra.domain.User;
+import org.springframework.data.cassandra.domain.VersionedUser;
+import org.springframework.data.mapping.callback.ReactiveEntityCallbacks;
 
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.DataType;
@@ -68,6 +68,10 @@ public class ReactiveCassandraTemplateUnitTests {
 
 	ReactiveCassandraTemplate template;
 
+	Object beforeSave;
+
+	Object beforeConvert;
+
 	@Before
 	public void setUp() {
 
@@ -75,6 +79,24 @@ public class ReactiveCassandraTemplateUnitTests {
 
 		when(session.execute(any(Statement.class))).thenReturn(Mono.just(reactiveResultSet));
 		when(row.getColumnDefinitions()).thenReturn(columnDefinitions);
+
+		ReactiveEntityCallbacks callbacks = ReactiveEntityCallbacks.create();
+		callbacks.addEntityCallback((ReactiveBeforeSaveCallback<Object>) (entity, tableName, statement) -> {
+
+			assertThat(tableName).isNotNull();
+			assertThat(statement).isNotNull();
+			beforeSave = entity;
+			return Mono.just(entity);
+		});
+
+		callbacks.addEntityCallback((ReactiveBeforeConvertCallback<Object>) (entity, tableName) -> {
+
+			assertThat(tableName).isNotNull();
+			beforeConvert = entity;
+			return Mono.just(entity);
+		});
+
+		template.setEntityCallbacks(callbacks);
 	}
 
 	@Test // DATACASS-335
@@ -226,7 +248,7 @@ public class ReactiveCassandraTemplateUnitTests {
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT COUNT(1) FROM users;");
 	}
 
-	@Test // DATACASS-335
+	@Test // DATACASS-335, DATACASS-618
 	public void insertShouldInsertEntity() {
 
 		when(reactiveResultSet.wasApplied()).thenReturn(true);
@@ -238,6 +260,24 @@ public class ReactiveCassandraTemplateUnitTests {
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString())
 				.isEqualTo("INSERT INTO users (firstname,id,lastname) VALUES ('Walter','heisenberg','White');");
+		assertThat(beforeConvert).isSameAs(user);
+		assertThat(beforeSave).isSameAs(user);
+	}
+
+	@Test // DATACASS-618
+	public void insertShouldInsertVersionedEntity() {
+
+		when(reactiveResultSet.wasApplied()).thenReturn(true);
+		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
+
+		VersionedUser user = new VersionedUser("heisenberg", "Walter", "White");
+		StepVerifier.create(template.insert(user)).expectNext(user).verifyComplete();
+
+		verify(session).execute(statementCaptor.capture());
+		assertThat(statementCaptor.getValue().toString()).isEqualTo(
+				"INSERT INTO vusers (firstname,id,lastname,version) VALUES ('Walter','heisenberg','White',0) IF NOT EXISTS;");
+		assertThat(beforeConvert).isSameAs(user);
+		assertThat(beforeSave).isSameAs(user);
 	}
 
 	@Test // DATACASS-335
@@ -254,7 +294,7 @@ public class ReactiveCassandraTemplateUnitTests {
 				}).verify();
 	}
 
-	@Test // DATACASS-335
+	@Test // DATACASS-335, DATACASS-618
 	public void updateShouldUpdateEntity() {
 
 		when(reactiveResultSet.wasApplied()).thenReturn(true);
@@ -267,6 +307,26 @@ public class ReactiveCassandraTemplateUnitTests {
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString())
 				.isEqualTo("UPDATE users SET firstname='Walter',lastname='White' WHERE id='heisenberg';");
+		assertThat(beforeConvert).isSameAs(user);
+		assertThat(beforeSave).isSameAs(user);
+	}
+
+	@Test // DATACASS-618
+	public void updateShouldUpdateVersionedEntity() {
+
+		when(reactiveResultSet.wasApplied()).thenReturn(true);
+		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
+
+		VersionedUser user = new VersionedUser("heisenberg", "Walter", "White");
+		user.setVersion(0L);
+
+		StepVerifier.create(template.update(user)).expectNext(user).verifyComplete();
+
+		verify(session).execute(statementCaptor.capture());
+		assertThat(statementCaptor.getValue().toString()).isEqualTo(
+				"UPDATE vusers SET firstname='Walter',lastname='White',version=1 WHERE id='heisenberg' IF version=0;");
+		assertThat(beforeConvert).isSameAs(user);
+		assertThat(beforeSave).isSameAs(user);
 	}
 
 	@Test // DATACASS-575
@@ -341,8 +401,8 @@ public class ReactiveCassandraTemplateUnitTests {
 				.verifyComplete();
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().toString())
-				.isEqualTo("UPDATE users SET firstname='Walter' WHERE id='heisenberg' IF firstname='Walter' AND lastname='White';");
+		assertThat(statementCaptor.getValue().toString()).isEqualTo(
+				"UPDATE users SET firstname='Walter' WHERE id='heisenberg' IF firstname='Walter' AND lastname='White';");
 	}
 
 	@Test // DATACASS-335

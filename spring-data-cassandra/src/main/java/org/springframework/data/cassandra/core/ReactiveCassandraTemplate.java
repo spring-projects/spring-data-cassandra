@@ -26,6 +26,9 @@ import java.util.function.Function;
 
 import org.reactivestreams.Publisher;
 
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
@@ -56,10 +59,14 @@ import org.springframework.data.cassandra.core.mapping.event.AfterLoadEvent;
 import org.springframework.data.cassandra.core.mapping.event.AfterSaveEvent;
 import org.springframework.data.cassandra.core.mapping.event.BeforeDeleteEvent;
 import org.springframework.data.cassandra.core.mapping.event.BeforeSaveEvent;
+import org.springframework.data.cassandra.core.mapping.event.ReactiveBeforeConvertCallback;
+import org.springframework.data.cassandra.core.mapping.event.ReactiveBeforeSaveCallback;
 import org.springframework.data.cassandra.core.query.Columns;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
+import org.springframework.data.mapping.callback.EntityCallbacks;
+import org.springframework.data.mapping.callback.ReactiveEntityCallbacks;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.lang.Nullable;
@@ -96,9 +103,12 @@ import com.datastax.driver.core.querybuilder.Update;
  * @author Hleb Albau
  * @since 2.0
  */
-public class ReactiveCassandraTemplate implements ReactiveCassandraOperations, ApplicationEventPublisherAware {
+public class ReactiveCassandraTemplate
+		implements ReactiveCassandraOperations, ApplicationEventPublisherAware, ApplicationContextAware {
 
 	private @Nullable ApplicationEventPublisher eventPublisher;
+
+	private @Nullable ReactiveEntityCallbacks entityCallbacks;
 
 	private final CassandraConverter converter;
 
@@ -187,6 +197,29 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations, A
 	@Override
 	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
 		this.eventPublisher = applicationEventPublisher;
+	}
+
+	/* (non-Javadoc)
+	* @see org.springframework.context.ApplicationContextAware(org.springframework.context.ApplicationContext)
+	*/
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+
+		if (entityCallbacks == null) {
+			setEntityCallbacks(ReactiveEntityCallbacks.create(applicationContext));
+		}
+
+		projectionFactory.setBeanFactory(applicationContext);
+		projectionFactory.setBeanClassLoader(applicationContext.getClassLoader());
+	}
+
+	/**
+	 * Configure {@link EntityCallbacks} to pre-/post-process entities during persistence operations.
+	 *
+	 * @param entityCallbacks
+	 */
+	public void setEntityCallbacks(@Nullable ReactiveEntityCallbacks entityCallbacks) {
+		this.entityCallbacks = entityCallbacks;
 	}
 
 	/* (non-Javadoc)
@@ -538,16 +571,20 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations, A
 
 	<T> Mono<EntityWriteResult<T>> doInsert(T entity, WriteOptions options, CqlIdentifier tableName) {
 
-		AdaptibleEntity<T> source = this.entityOperations.forEntity(entity, getConverter().getConversionService());
-		CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
+		return maybeCallBeforeConvert(entity, tableName).flatMap(entityToInsert -> {
 
-		T entityToUse = source.isVersionedEntity() ? source.initializeVersionProperty() : entity;
+			AdaptibleEntity<T> source = this.entityOperations.forEntity(entityToInsert,
+					getConverter().getConversionService());
+			CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entityToInsert.getClass());
 
-		Insert insert = EntityQueryUtils.createInsertQuery(tableName.toCql(), entityToUse, options, getConverter(),
-				persistentEntity);
+			T entityToUse = source.isVersionedEntity() ? source.initializeVersionProperty() : entityToInsert;
 
-		return source.isVersionedEntity() ? doInsertVersioned(insert.ifNotExists(), entityToUse, source, tableName)
-				: doInsert(insert, entityToUse, tableName);
+			Insert insert = EntityQueryUtils.createInsertQuery(tableName.toCql(), entityToUse, options, getConverter(),
+					persistentEntity);
+
+			return source.isVersionedEntity() ? doInsertVersioned(insert.ifNotExists(), entityToUse, source, tableName)
+					: doInsert(insert, entityToUse, tableName);
+		});
 	}
 
 	private <T> Mono<EntityWriteResult<T>> doInsertVersioned(Insert insert, T entity, AdaptibleEntity<T> source,
@@ -593,25 +630,28 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations, A
 		CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
 		CqlIdentifier tableName = persistentEntity.getTableName();
 
-		return source.isVersionedEntity() ? doUpdateVersioned(source, options, tableName, persistentEntity)
-				: doUpdate(entity, options, tableName, persistentEntity);
+		return maybeCallBeforeConvert(entity, tableName).flatMap(entityToUpdate -> {
+			return source.isVersionedEntity() ? doUpdateVersioned(entity, options, tableName, persistentEntity)
+					: doUpdate(entity, options, tableName, persistentEntity);
+		});
 	}
 
-	private <T> Mono<EntityWriteResult<T>> doUpdateVersioned(AdaptibleEntity<T> source, UpdateOptions options,
-			CqlIdentifier tableName, CassandraPersistentEntity<?> persistentEntity) {
+	private <T> Mono<EntityWriteResult<T>> doUpdateVersioned(T entity, UpdateOptions options, CqlIdentifier tableName,
+			CassandraPersistentEntity<?> persistentEntity) {
+
+		AdaptibleEntity<T> source = getEntityOperations().forEntity(entity, getConverter().getConversionService());
 
 		Number previousVersion = source.getVersion();
+		T toSave = source.incrementVersion();
 
-		T entity = source.incrementVersion();
+		Update update = getStatementFactory().update(toSave, options, getConverter(), persistentEntity, tableName);
 
-		Update update = getStatementFactory().update(entity, options, getConverter(), persistentEntity, tableName);
-
-		return executeSave(entity, tableName, source.appendVersionCondition(update, previousVersion), (result, sink) -> {
+		return executeSave(toSave, tableName, source.appendVersionCondition(update, previousVersion), (result, sink) -> {
 
 			if (!result.wasApplied()) {
 
 				sink.error(new OptimisticLockingFailureException(
-						String.format("Cannot save entity %s with version %s to table %s. Has it been modified meanwhile?", entity,
+						String.format("Cannot save entity %s with version %s to table %s. Has it been modified meanwhile?", toSave,
 								source.getVersion(), tableName)));
 
 				return;
@@ -763,14 +803,18 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations, A
 	private <T> Mono<EntityWriteResult<T>> executeSave(T entity, CqlIdentifier tableName, Statement statement,
 			BiConsumer<EntityWriteResult<T>, SynchronousSink<EntityWriteResult<T>>> handler) {
 
-		maybeEmitEvent(new BeforeSaveEvent<>(entity, tableName, statement));
+		return Mono.defer(() -> {
 
-		Flux<WriteResult> execute = getReactiveCqlOperations().execute(new StatementCallback(statement));
+			maybeEmitEvent(new BeforeSaveEvent<>(entity, tableName, statement));
 
-		return execute.map(it -> EntityWriteResult.of(it, entity)).handle(handler) //
-				.doOnSubscribe(it -> maybeEmitEvent(new BeforeSaveEvent<>(entity, tableName, statement))) //
-				.doOnNext(it -> maybeEmitEvent(new AfterSaveEvent<>(it, tableName))) //
-				.next();
+			return maybeCallBeforeSave(entity, tableName, statement).flatMapMany(entityToSave -> {
+				Flux<WriteResult> execute = getReactiveCqlOperations().execute(new StatementCallback(statement));
+
+				return execute.map(it -> EntityWriteResult.of(it, entityToSave)).handle(handler) //
+						.doOnNext(it -> maybeEmitEvent(new AfterSaveEvent<>(entityToSave, tableName)));
+			}).next();
+		});
+
 	}
 
 	private Mono<WriteResult> executeDelete(Object entity, CqlIdentifier tableName, Statement statement,
@@ -786,7 +830,6 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations, A
 				.next();
 	}
 
-	@SuppressWarnings("ConstantConditions")
 	private Mono<Integer> getEffectiveFetchSize(Statement statement) {
 
 		if (statement.getFetchSize() > 0) {
@@ -841,6 +884,24 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations, A
 		if (this.eventPublisher != null) {
 			this.eventPublisher.publishEvent(event);
 		}
+	}
+
+	protected <T> Mono<T> maybeCallBeforeConvert(T object, CqlIdentifier tableName) {
+
+		if (null != entityCallbacks) {
+			return entityCallbacks.callback(ReactiveBeforeConvertCallback.class, object, tableName);
+		}
+
+		return Mono.just(object);
+	}
+
+	protected <T> Mono<T> maybeCallBeforeSave(T object, CqlIdentifier tableName, Statement statement) {
+
+		if (null != entityCallbacks) {
+			return entityCallbacks.callback(ReactiveBeforeSaveCallback.class, object, tableName, statement);
+		}
+
+		return Mono.just(object);
 	}
 
 	@Value

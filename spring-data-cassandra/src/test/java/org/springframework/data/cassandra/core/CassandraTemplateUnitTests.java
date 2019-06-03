@@ -15,15 +15,10 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.data.cassandra.core.query.Criteria.where;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.data.cassandra.core.query.Criteria.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -39,10 +34,14 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import org.springframework.data.cassandra.CassandraConnectionFailureException;
+import org.springframework.data.cassandra.core.mapping.event.BeforeConvertCallback;
+import org.springframework.data.cassandra.core.mapping.event.BeforeSaveCallback;
 import org.springframework.data.cassandra.core.query.Filter;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.core.query.Update;
 import org.springframework.data.cassandra.domain.User;
+import org.springframework.data.cassandra.domain.VersionedUser;
+import org.springframework.data.mapping.callback.EntityCallbacks;
 
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.DataType;
@@ -70,6 +69,10 @@ public class CassandraTemplateUnitTests {
 
 	CassandraTemplate template;
 
+	Object beforeSave;
+
+	Object beforeConvert;
+
 	@Before
 	public void setUp() {
 
@@ -77,6 +80,24 @@ public class CassandraTemplateUnitTests {
 
 		when(session.execute(any(Statement.class))).thenReturn(resultSet);
 		when(row.getColumnDefinitions()).thenReturn(columnDefinitions);
+
+		EntityCallbacks callbacks = EntityCallbacks.create();
+		callbacks.addEntityCallback((BeforeSaveCallback<Object>) (entity, tableName, statement) -> {
+
+			assertThat(tableName).isNotNull();
+			assertThat(statement).isNotNull();
+			beforeSave = entity;
+			return entity;
+		});
+
+		callbacks.addEntityCallback((BeforeConvertCallback<Object>) (entity, tableName) -> {
+
+			assertThat(tableName).isNotNull();
+			beforeConvert = entity;
+			return entity;
+		});
+
+		template.setEntityCallbacks(callbacks);
 	}
 
 	@Test // DATACASS-292
@@ -241,7 +262,7 @@ public class CassandraTemplateUnitTests {
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT COUNT(1) FROM users;");
 	}
 
-	@Test // DATACASS-292
+	@Test // DATACASS-292, DATACASS-618
 	public void insertShouldInsertEntity() {
 
 		when(resultSet.wasApplied()).thenReturn(true);
@@ -253,6 +274,24 @@ public class CassandraTemplateUnitTests {
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString())
 				.isEqualTo("INSERT INTO users (firstname,id,lastname) VALUES ('Walter','heisenberg','White');");
+		assertThat(beforeConvert).isSameAs(user);
+		assertThat(beforeSave).isSameAs(user);
+	}
+
+	@Test // DATACASS-618
+	public void insertShouldInsertVersionedEntity() {
+
+		when(resultSet.wasApplied()).thenReturn(true);
+
+		VersionedUser user = new VersionedUser("heisenberg", "Walter", "White");
+
+		template.insert(user);
+
+		verify(session).execute(statementCaptor.capture());
+		assertThat(statementCaptor.getValue().toString()).isEqualTo(
+				"INSERT INTO vusers (firstname,id,lastname,version) VALUES ('Walter','heisenberg','White',0) IF NOT EXISTS;");
+		assertThat(beforeConvert).isSameAs(user);
+		assertThat(beforeSave).isSameAs(user);
 	}
 
 	@Test // DATACASS-250
@@ -314,7 +353,7 @@ public class CassandraTemplateUnitTests {
 		assertThat(writeResult.wasApplied()).isFalse();
 	}
 
-	@Test // DATACASS-292
+	@Test // DATACASS-292, DATACASS-618
 	public void updateShouldUpdateEntity() {
 
 		when(resultSet.wasApplied()).thenReturn(true);
@@ -326,6 +365,25 @@ public class CassandraTemplateUnitTests {
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString())
 				.isEqualTo("UPDATE users SET firstname='Walter',lastname='White' WHERE id='heisenberg';");
+		assertThat(beforeConvert).isSameAs(user);
+		assertThat(beforeSave).isSameAs(user);
+	}
+
+	@Test // DATACASS-618
+	public void updateShouldUpdateVersionedEntity() {
+
+		when(resultSet.wasApplied()).thenReturn(true);
+
+		VersionedUser user = new VersionedUser("heisenberg", "Walter", "White");
+		user.setVersion(0L);
+
+		template.update(user);
+
+		verify(session).execute(statementCaptor.capture());
+		assertThat(statementCaptor.getValue().toString()).isEqualTo(
+				"UPDATE vusers SET firstname='Walter',lastname='White',version=1 WHERE id='heisenberg' IF version=0;");
+		assertThat(beforeConvert).isSameAs(user);
+		assertThat(beforeSave).isSameAs(user);
 	}
 
 	@Test // DATACASS-250
@@ -384,8 +442,8 @@ public class CassandraTemplateUnitTests {
 		template.update(query, update, User.class);
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().toString())
-			.isEqualTo("UPDATE users SET firstname='Walter' WHERE id='heisenberg' IF firstname='Walter' AND lastname='White';");
+		assertThat(statementCaptor.getValue().toString()).isEqualTo(
+				"UPDATE users SET firstname='Walter' WHERE id='heisenberg' IF firstname='Walter' AND lastname='White';");
 	}
 
 	@Test // DATACASS-292
