@@ -11,6 +11,7 @@ This chapter summarizes changes and new features for each release.
 * Lightweight transaction support via `DeleteOptions` using the Template API.
 * Filter conditions for lightweight transaction update and delete (`UPDATE … IF <condition>`, `DELETE … IF <condition>`).
 * Optimistic Locking support.
+* Auditing via `@EnableCassandraAuditing`.
 
 [[new-features.2-1-0]]
 == What's new in Spring Data for Apache Cassandra 2.1

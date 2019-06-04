@@ -655,3 +655,6 @@ The `AbstractCassandraEventListener` has the following callback methods:
 * `onAfterConvert`: Called in the `CassandraTemplate.select(…)`, `.slice(…)`, and `.stream(…)` methods after converting a row retrieved from the database to a POJO.
 
 NOTE: Lifecycle events are emitted only for root-level types. Complex types used as properties within an aggregate root are not subject to event publication.
+
+include::../{spring-data-commons-docs}/entity-callbacks.adoc[leveloffset=+1]
+include::./cassandra-entity-callbacks.adoc[leveloffset=+2]

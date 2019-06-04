@@ -27,6 +27,8 @@ include::reference/converters.adoc[leveloffset=+1]
 include::reference/reactive-cassandra.adoc[leveloffset=+1]
 include::reference/cassandra-repositories.adoc[leveloffset=+1]
 include::reference/reactive-cassandra-repositories.adoc[leveloffset=+1]
+include::{spring-data-commons-docs}/auditing.adoc[leveloffset=+1]
+include::reference/cassandra-auditing.adoc[leveloffset=+1]
 include::reference/mapping.adoc[leveloffset=+1]
 
 [[appendix]]

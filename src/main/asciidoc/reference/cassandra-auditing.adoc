@@ -1,0 +1,33 @@
+[[cassandra.auditing]]
+== General Auditing Configuration for Cassandra
+
+To activate auditing functionality, add the Spring Data for Apache Cassandra `auditing` namespace element to your configuration, as the following example shows:
+
+.Activating auditing by using XML configuration
+====
+[source,xml]
+----
+<cassandra:auditing mapping-context-ref="customMappingContext" auditor-aware-ref="yourAuditorAwareImpl"/>
+----
+====
+
+Alternatively, auditing can be enabled by annotating a configuration class with the `@EnableCassandraAuditing` annotation, as the following example shows:
+
+.Activating auditing using JavaConfig
+====
+[source,java]
+----
+@Configuration
+@EnableCassandraAuditing
+class Config {
+
+  @Bean
+  public AuditorAware<AuditableUser> myAuditorProvider() {
+      return new AuditorAwareImpl();
+  }
+}
+----
+====
+
+If you expose a bean of type `AuditorAware` to the `ApplicationContext`, the auditing infrastructure picks it up automatically and uses it to determine the current user to be set on domain types.
+If you have multiple implementations registered in the `ApplicationContext`, you can select the one to be used by explicitly setting the `auditorAwareRef` attribute of `@EnableCassandraAuditing`.
