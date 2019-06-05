@@ -15,12 +15,18 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
+import static org.springframework.data.cassandra.core.query.Criteria.*;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 import org.reactivestreams.Publisher;
+
 import org.springframework.data.cassandra.core.InsertOptions;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
+import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.repository.ReactiveCassandraRepository;
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;
 import org.springframework.util.Assert;
@@ -103,8 +109,7 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 
 		Assert.notNull(entityStream, "The given Publisher of entities must not be null");
 
-		return Flux.from(entityStream)
-				.flatMap(entity -> operations.insert(entity, INSERT_NULLS).thenReturn(entity));
+		return Flux.from(entityStream).flatMap(entity -> operations.insert(entity, INSERT_NULLS).thenReturn(entity));
 	}
 
 	/* (non-Javadoc)
@@ -214,11 +219,27 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#findAllById(java.lang.Iterable)
 	 */
 	@Override
-	public Flux<T> findAllById(Iterable<ID> iterable) {
+	public Flux<T> findAllById(Iterable<ID> ids) {
 
-		Assert.notNull(iterable, "The given Iterable of ids must not be null");
+		Assert.notNull(ids, "The given Iterable of ids must not be null");
 
-		return findAllById(Flux.fromIterable(iterable));
+		if (FindByIdQuery.hasCompositeKeys(ids)) {
+			return findAllById(Flux.fromIterable(ids));
+		}
+
+		FindByIdQuery query = FindByIdQuery.forIds(ids);
+		List<Object> idCollection = query.getIdCollection();
+		String idField = query.getIdProperty();
+
+		if (idCollection.isEmpty()) {
+			return Flux.empty();
+		}
+
+		if (idField == null) {
+			idField = this.entityInformation.getIdAttribute();
+		}
+
+		return this.operations.select(Query.query(where(idField).in(idCollection)), this.entityInformation.getJavaType());
 	}
 
 	/*

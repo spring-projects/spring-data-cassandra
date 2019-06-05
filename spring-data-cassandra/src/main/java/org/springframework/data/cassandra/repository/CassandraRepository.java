@@ -54,8 +54,14 @@ public interface CassandraRepository<T, ID> extends CrudRepository<T, ID> {
 	@Override
 	List<T> findAll();
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#findAllById(java.lang.Iterable)
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * Note: Cassandra supports single-field {@code IN} queries only. When using {@link MapId} with multiple components,
+	 * use {@link #findById(Object)}.
+	 *
+	 * @throws org.springframework.dao.InvalidDataAccessApiUsageException thrown when using {@link MapId} with multiple
+	 *           key components.
 	 */
 	@Override
 	List<T> findAllById(Iterable<ID> ids);
