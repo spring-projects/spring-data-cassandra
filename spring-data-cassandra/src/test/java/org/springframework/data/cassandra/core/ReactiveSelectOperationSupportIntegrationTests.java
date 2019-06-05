@@ -104,7 +104,8 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 
 		Flux<Person> result = this.template.query(Person.class).all();
 
-		StepVerifier.create(result.collectList()).assertNext(actual ->
+		result.collectList().as(StepVerifier::create)
+				.assertNext(actual ->
 			assertThat(actual).containsExactlyInAnyOrder(han, luke)
 		).verifyComplete();
 	}
@@ -114,7 +115,7 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 
 		Flux<Human> result = this.template.query(Human.class).inTable("person").all();
 
-		StepVerifier.create(result).expectNextCount(2).verifyComplete();
+		result.as(StepVerifier::create).expectNextCount(2).verifyComplete();
 	}
 
 	@Test // DATACASS-485
@@ -122,7 +123,8 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 
 		Flux<Jedi> result = this.template.query(Person.class).as(Jedi.class).all();
 
-		StepVerifier.create(result.collectList()).assertNext(actual ->
+		result.collectList().as(StepVerifier::create)
+				.assertNext(actual ->
 			assertThat(actual).hasOnlyElementsOfType(Jedi.class).hasSize(2)
 		).verifyComplete();
 	}
@@ -132,7 +134,8 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 
 		Flux<PersonProjection> result = this.template.query(Person.class).as(PersonProjection.class).all();
 
-		StepVerifier.create(result.collectList()).assertNext(actual ->
+		result.collectList().as(StepVerifier::create)
+				.assertNext(actual ->
 			assertThat(actual).hasOnlyElementsOfType(PersonProjection.class).hasSize(2)
 		).verifyComplete();
 	}
@@ -142,7 +145,7 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 
 		Flux<Person> result = this.template.query(Person.class).matching(queryLuke()).all();
 
-		StepVerifier.create(result).expectNext(luke).verifyComplete();
+		result.as(StepVerifier::create).expectNext(luke).verifyComplete();
 	}
 
 	@Test // DATACASS-485
@@ -150,7 +153,8 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 
 		Flux<Jedi> result = this.template.query(Jedi.class).inTable("person").all();
 
-		StepVerifier.create(result.collectList()).assertNext(actual ->
+		result.collectList().as(StepVerifier::create)
+				.assertNext(actual ->
 			assertThat(actual).isNotEmpty().hasOnlyElementsOfType(Jedi.class)
 		).verifyComplete();
 	}
@@ -160,7 +164,7 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 
 		Flux<Human> result = this.template.query(Human.class).inTable("person").matching(queryLuke()).all();
 
-		StepVerifier.create(result.collectList()).expectNextCount(1).verifyComplete();
+		result.collectList().as(StepVerifier::create).expectNextCount(1).verifyComplete();
 	}
 
 	@Test // DATACASS-485
@@ -168,7 +172,8 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 
 		Flux<Jedi> result = this.template.query(Person.class).as(Jedi.class).all();
 
-		StepVerifier.create(result.collectList()).assertNext(actual ->
+		result.collectList().as(StepVerifier::create)
+				.assertNext(actual ->
 			assertThat(actual).isNotEmpty().hasOnlyElementsOfType(Jedi.class)
 		).verifyComplete();
 	}
@@ -178,7 +183,7 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 
 		Mono<Person> result = this.template.query(Person.class).matching(queryLuke()).one();
 
-		StepVerifier.create(result).expectNext(luke).verifyComplete();
+		result.as(StepVerifier::create).expectNext(luke).verifyComplete();
 	}
 
 	@Test // DATACASS-485
@@ -186,7 +191,7 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 
 		Mono<Person> result = this.template.query(Person.class).matching(querySpock()).one();
 
-		StepVerifier.create(result).verifyComplete();
+		result.as(StepVerifier::create).verifyComplete();
 	}
 
 	@Test // DATACASS-485
@@ -194,7 +199,7 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 
 		Mono<Person> result = this.template.query(Person.class).one();
 
-		StepVerifier.create(result).expectError(IncorrectResultSizeDataAccessException.class).verify();
+		result.as(StepVerifier::create).expectError(IncorrectResultSizeDataAccessException.class).verify();
 	}
 
 	@Test // DATACASS-485
@@ -202,7 +207,7 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 
 		Mono<Person> result = this.template.query(Person.class).matching(queryLuke()).first();
 
-		StepVerifier.create(result).expectNext(luke).verifyComplete();
+		result.as(StepVerifier::create).expectNext(luke).verifyComplete();
 	}
 
 	@Test // DATACASS-485
@@ -210,7 +215,7 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 
 		Mono<Person> result = this.template.query(Person.class).first();
 
-		StepVerifier.create(result).assertNext(actual ->
+		result.as(StepVerifier::create).assertNext(actual ->
 			assertThat(actual).isIn(han, luke)
 		).verifyComplete();
 	}
@@ -224,7 +229,7 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 				.matching(query(where("firstname").is("han")).withAllowFiltering())
 				.first();
 
-		StepVerifier.create(result).assertNext(actual -> {
+		result.as(StepVerifier::create).assertNext(actual -> {
 			assertThat(actual).isInstanceOf(PersonProjection.class);
 			assertThat(actual.getFirstname()).isEqualTo("han");
 		}).verifyComplete();
@@ -239,7 +244,7 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 				.matching(query(where("firstname").is("han")).withAllowFiltering())
 				.first();
 
-		StepVerifier.create(result).assertNext(actual -> {
+		result.as(StepVerifier::create).assertNext(actual -> {
 			assertThat(actual).isInstanceOf(PersonSpELProjection.class);
 			assertThat(actual.getName()).isEqualTo("han");
 		}).verifyComplete();
@@ -250,7 +255,7 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 
 		Mono<Long> count = this.template.query(Person.class).count();
 
-		StepVerifier.create(count).expectNext(2L).verifyComplete();
+		count.as(StepVerifier::create).expectNext(2L).verifyComplete();
 	}
 
 	@Test // DATACASS-485
@@ -261,7 +266,7 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 				.matching(query(where("firstname").is(luke.getFirstname())).withAllowFiltering())
 				.count();
 
-		StepVerifier.create(count).expectNext(1L).verifyComplete();
+		count.as(StepVerifier::create).expectNext(1L).verifyComplete();
 	}
 
 	@Test // DATACASS-485
@@ -269,17 +274,17 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 
 		Mono<Boolean> exists = this.template.query(Person.class).exists();
 
-		StepVerifier.create(exists).expectNext(true).verifyComplete();
+		exists.as(StepVerifier::create).expectNext(true).verifyComplete();
 	}
 
 	@Test // DATACASS-485
 	public void existsShouldReturnFalseIfNoElementExistsInCollection() {
 
-		StepVerifier.create(this.template.truncate(Person.class)).verifyComplete();
+		this.template.truncate(Person.class).as(StepVerifier::create).verifyComplete();
 
 		Mono<Boolean> exists = this.template.query(Person.class).exists();
 
-		StepVerifier.create(exists).expectNext(false).verifyComplete();
+		exists.as(StepVerifier::create).expectNext(false).verifyComplete();
 	}
 
 	@Test // DATACASS-485
@@ -287,7 +292,7 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 
 		Mono<Boolean> exists = this.template.query(Person.class).matching(queryLuke()).exists();
 
-		StepVerifier.create(exists).expectNext(true).verifyComplete();
+		exists.as(StepVerifier::create).expectNext(true).verifyComplete();
 	}
 
 	@Test // DATACASS-485
@@ -295,7 +300,7 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 
 		Mono<Boolean> exists = this.template.query(Person.class).matching(querySpock()).exists();
 
-		StepVerifier.create(exists).expectNext(false).verifyComplete();
+		exists.as(StepVerifier::create).expectNext(false).verifyComplete();
 	}
 
 	@Test // DATACASS-485
@@ -303,7 +308,8 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 
 		Flux<Contact> result = this.template.query(Person.class).as(Contact.class).all();
 
-		StepVerifier.create(result.collectList()).assertNext(actual ->
+		result.collectList().as(StepVerifier::create)
+				.assertNext(actual ->
 			assertThat(actual).allMatch(it -> it instanceof Person)
 		).verifyComplete();
 	}

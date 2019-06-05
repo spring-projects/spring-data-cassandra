@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import static org.springframework.data.cassandra.core.cql.CqlIdentifier.of;
+import static org.springframework.data.cassandra.core.cql.CqlIdentifier.*;
 
 import java.util.Comparator;
 import java.util.Optional;
@@ -51,8 +51,7 @@ import com.datastax.driver.core.UserType;
 public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, CassandraPersistentProperty>
 		implements CassandraPersistentEntity<T>, ApplicationContextAware {
 
-	private static final CassandraPersistentEntityMetadataVerifier DEFAULT_VERIFIER =
-			new CompositeCassandraPersistentEntityMetadataVerifier();
+	private static final CassandraPersistentEntityMetadataVerifier DEFAULT_VERIFIER = new CompositeCassandraPersistentEntityMetadataVerifier();
 
 	private Boolean forceQuote;
 
@@ -103,7 +102,6 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 		setVerifier(verifier);
 	}
 
-
 	protected CqlIdentifier determineTableName() {
 
 		Table annotation = findAnnotation(Table.class);
@@ -121,9 +119,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 			return of(getType().getSimpleName(), forceQuote);
 		}
 
-		String name = Optional.ofNullable(this.spelContext)
-				.map(it -> SpelUtils.evaluate(value, it))
-				.orElse(value);
+		String name = Optional.ofNullable(this.spelContext).map(it -> SpelUtils.evaluate(value, it)).orElse(value);
 
 		Assert.state(name != null, () -> String.format("Cannot determine default name for %s", this));
 
@@ -142,8 +138,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	 * @see org.springframework.data.mapping.model.BasicPersistentEntity#doWithAssociations(org.springframework.data.mapping.AssociationHandler)
 	 */
 	@Override
-	public void doWithAssociations(AssociationHandler<CassandraPersistentProperty> handler) {
-	}
+	public void doWithAssociations(AssociationHandler<CassandraPersistentProperty> handler) {}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity#isCompositePrimaryKey()

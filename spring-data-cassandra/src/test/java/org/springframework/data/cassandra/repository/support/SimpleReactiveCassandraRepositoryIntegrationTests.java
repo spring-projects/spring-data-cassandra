@@ -101,12 +101,12 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 	}
 
 	private void insertTestData() {
-		StepVerifier.create(repository.saveAll(Arrays.asList(oliver, dave, carter, boyd))).expectNextCount(4)
+		repository.saveAll(Arrays.asList(oliver, dave, carter, boyd)).as(StepVerifier::create).expectNextCount(4)
 				.verifyComplete();
 	}
 
 	private void deleteAll() {
-		StepVerifier.create(repository.deleteAll()).verifyComplete();
+		repository.deleteAll().as(StepVerifier::create).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -114,12 +114,12 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 
 		insertTestData();
 
-		StepVerifier.create(repository.existsById(dave.getId())).expectNext(true).verifyComplete();
+		repository.existsById(dave.getId()).as(StepVerifier::create).expectNext(true).verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void existsByIdShouldReturnFalseForAbsentObject() {
-		StepVerifier.create(repository.existsById("unknown")).expectNext(false).verifyComplete();
+		repository.existsById("unknown").as(StepVerifier::create).expectNext(false).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -127,7 +127,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 
 		insertTestData();
 
-		StepVerifier.create(repository.existsById(Mono.just(dave.getId()))).expectNext(true).verifyComplete();
+		repository.existsById(Mono.just(dave.getId())).as(StepVerifier::create).expectNext(true).verifyComplete();
 	}
 
 	@Test // DATACASS-462
@@ -135,13 +135,13 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 
 		insertTestData();
 
-		StepVerifier.create(repository.existsById(Flux.just(dave.getId(), oliver.getId()))).expectNext(true)
+		repository.existsById(Flux.just(dave.getId(), oliver.getId())).as(StepVerifier::create).expectNext(true)
 				.verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void existsByEmptyMonoOfIdShouldReturnEmptyMono() {
-		StepVerifier.create(repository.existsById(Mono.empty())).verifyComplete();
+		repository.existsById(Mono.empty()).as(StepVerifier::create).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -149,12 +149,12 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 
 		insertTestData();
 
-		StepVerifier.create(repository.findById(dave.getId())).expectNext(dave).verifyComplete();
+		repository.findById(dave.getId()).as(StepVerifier::create).expectNext(dave).verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void findByIdShouldCompleteWithoutValueForAbsentObject() {
-		StepVerifier.create(repository.findById("unknown")).verifyComplete();
+		repository.findById("unknown").as(StepVerifier::create).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -162,7 +162,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 
 		insertTestData();
 
-		StepVerifier.create(repository.findById(Mono.just(dave.getId()))).expectNext(dave).verifyComplete();
+		repository.findById(Mono.just(dave.getId())).as(StepVerifier::create).expectNext(dave).verifyComplete();
 	}
 
 	@Test // DATACASS-462
@@ -170,12 +170,13 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 
 		insertTestData();
 
-		StepVerifier.create(repository.findById(Flux.just(dave.getId(), oliver.getId()))).expectNext(dave).verifyComplete();
+		repository.findById(Flux.just(dave.getId(), oliver.getId())).as(StepVerifier::create).expectNext(dave)
+				.verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void findByIdByEmptyMonoOfIdShouldReturnEmptyMono() {
-		StepVerifier.create(repository.findById(Mono.empty())).verifyComplete();
+		repository.findById(Mono.empty()).as(StepVerifier::create).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -183,7 +184,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 
 		insertTestData();
 
-		StepVerifier.create(repository.findAll()).expectNextCount(4).verifyComplete();
+		repository.findAll().as(StepVerifier::create).expectNextCount(4).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -191,7 +192,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 
 		insertTestData();
 
-		StepVerifier.create(repository.findAllById(Arrays.asList(dave.getId(), boyd.getId()))) //
+		repository.findAllById(Arrays.asList(dave.getId(), boyd.getId())).as(StepVerifier::create) //
 				.expectNextCount(2) //
 				.verifyComplete();
 	}
@@ -201,14 +202,14 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 
 		insertTestData();
 
-		StepVerifier.create(repository.findAllById(Flux.just(dave.getId(), boyd.getId()))) //
+		repository.findAllById(Flux.just(dave.getId(), boyd.getId())).as(StepVerifier::create) //
 				.expectNextCount(2) //
 				.verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void findAllByEmptyPublisherOfIdShouldReturnResults() {
-		StepVerifier.create(repository.findAllById(Flux.empty())).verifyComplete();
+		repository.findAllById(Flux.empty()).as(StepVerifier::create).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -216,7 +217,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 
 		insertTestData();
 
-		StepVerifier.create(repository.count()).expectNext(4L).verifyComplete();
+		repository.count().as(StepVerifier::create).expectNext(4L).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -224,9 +225,9 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 
 		User person = new User("36", "Homer", "Simpson");
 
-		StepVerifier.create(repository.insert(person)).expectNext(person).verifyComplete();
+		repository.insert(person).as(StepVerifier::create).expectNext(person).verifyComplete();
 
-		StepVerifier.create(repository.findAll()).expectNextCount(1L).verifyComplete();
+		repository.findAll().as(StepVerifier::create).expectNextCount(1L).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -236,23 +237,23 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 
 		repository.insert(person);
 
-		StepVerifier.create(repository.findAll()).expectNextCount(0L).verifyComplete();
+		repository.findAll().as(StepVerifier::create).expectNextCount(0L).verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void insertIterableOfEntitiesShouldInsertEntity() {
 
-		StepVerifier.create(repository.insert(Arrays.asList(dave, oliver, boyd))).expectNextCount(3L).verifyComplete();
+		repository.insert(Arrays.asList(dave, oliver, boyd)).as(StepVerifier::create).expectNextCount(3L).verifyComplete();
 
-		StepVerifier.create(repository.findAll()).expectNextCount(3L).verifyComplete();
+		repository.findAll().as(StepVerifier::create).expectNextCount(3L).verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void insertPublisherOfEntitiesShouldInsertEntity() {
 
-		StepVerifier.create(repository.insert(Flux.just(dave, oliver, boyd))).expectNextCount(3L).verifyComplete();
+		repository.insert(Flux.just(dave, oliver, boyd)).as(StepVerifier::create).expectNextCount(3L).verifyComplete();
 
-		StepVerifier.create(repository.findAll()).expectNextCount(3L).verifyComplete();
+		repository.findAll().as(StepVerifier::create).expectNextCount(3L).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -261,9 +262,9 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 		dave.setFirstname("Hello, Dave");
 		dave.setLastname("Bowman");
 
-		StepVerifier.create(repository.save(dave)).expectNextCount(1).verifyComplete();
+		repository.save(dave).as(StepVerifier::create).expectNextCount(1).verifyComplete();
 
-		StepVerifier.create(repository.findById(dave.getId())).consumeNextWith(actual -> {
+		repository.findById(dave.getId()).as(StepVerifier::create).consumeNextWith(actual -> {
 
 			assertThat(actual.getFirstname()).isEqualTo(dave.getFirstname());
 			assertThat(actual.getLastname()).isEqualTo(dave.getLastname());
@@ -275,17 +276,17 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 
 		User person = new User("36", "Homer", "Simpson");
 
-		StepVerifier.create(repository.save(person)).expectNextCount(1).verifyComplete();
+		repository.save(person).as(StepVerifier::create).expectNextCount(1).verifyComplete();
 
-		StepVerifier.create(repository.findById(person.getId())).expectNext(person).verifyComplete();
+		repository.findById(person.getId()).as(StepVerifier::create).expectNext(person).verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void saveIterableOfNewEntitiesShouldInsertEntity() {
 
-		StepVerifier.create(repository.saveAll(Arrays.asList(dave, oliver, boyd))).expectNextCount(3).verifyComplete();
+		repository.saveAll(Arrays.asList(dave, oliver, boyd)).as(StepVerifier::create).expectNextCount(3).verifyComplete();
 
-		StepVerifier.create(repository.findAll()).expectNextCount(3L).verifyComplete();
+		repository.findAll().as(StepVerifier::create).expectNextCount(3L).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -296,19 +297,19 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 		dave.setFirstname("Hello, Dave");
 		dave.setLastname("Bowman");
 
-		StepVerifier.create(repository.saveAll(Arrays.asList(person, dave))).expectNextCount(2).verifyComplete();
+		repository.saveAll(Arrays.asList(person, dave)).as(StepVerifier::create).expectNextCount(2).verifyComplete();
 
-		StepVerifier.create(repository.findById(dave.getId())).expectNext(dave).verifyComplete();
+		repository.findById(dave.getId()).as(StepVerifier::create).expectNext(dave).verifyComplete();
 
-		StepVerifier.create(repository.findById(person.getId())).expectNext(person).verifyComplete();
+		repository.findById(person.getId()).as(StepVerifier::create).expectNext(person).verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void savePublisherOfEntitiesShouldInsertEntity() {
 
-		StepVerifier.create(repository.saveAll(Flux.just(dave, oliver, boyd))).expectNextCount(3).verifyComplete();
+		repository.saveAll(Flux.just(dave, oliver, boyd)).as(StepVerifier::create).expectNextCount(3).verifyComplete();
 
-		StepVerifier.create(repository.findAll()).expectNextCount(3L).verifyComplete();
+		repository.findAll().as(StepVerifier::create).expectNextCount(3L).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -316,9 +317,9 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 
 		insertTestData();
 
-		StepVerifier.create(repository.deleteAll()).verifyComplete();
+		repository.deleteAll().as(StepVerifier::create).verifyComplete();
 
-		StepVerifier.create(repository.findAll()).verifyComplete();
+		repository.findAll().as(StepVerifier::create).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -326,9 +327,9 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 
 		insertTestData();
 
-		StepVerifier.create(repository.deleteById(dave.getId())).verifyComplete();
+		repository.deleteById(dave.getId()).as(StepVerifier::create).verifyComplete();
 
-		StepVerifier.create(repository.findById(dave.getId())).expectNextCount(0).verifyComplete();
+		repository.findById(dave.getId()).as(StepVerifier::create).expectNextCount(0).verifyComplete();
 	}
 
 	@Test // DATACASS-462
@@ -336,9 +337,9 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 
 		insertTestData();
 
-		StepVerifier.create(repository.deleteById(Mono.just(dave.getId()))).verifyComplete();
+		repository.deleteById(Mono.just(dave.getId())).as(StepVerifier::create).verifyComplete();
 
-		StepVerifier.create(repository.existsById(dave.getId())).expectNext(false).verifyComplete();
+		repository.existsById(dave.getId()).as(StepVerifier::create).expectNext(false).verifyComplete();
 	}
 
 	@Test // DATACASS-462
@@ -346,10 +347,10 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 
 		insertTestData();
 
-		StepVerifier.create(repository.deleteById(Flux.just(dave.getId(), oliver.getId()))).verifyComplete();
+		repository.deleteById(Flux.just(dave.getId(), oliver.getId())).as(StepVerifier::create).verifyComplete();
 
-		StepVerifier.create(repository.existsById(dave.getId())).expectNext(false).verifyComplete();
-		StepVerifier.create(repository.existsById(oliver.getId())).expectNext(true).verifyComplete();
+		repository.existsById(dave.getId()).as(StepVerifier::create).expectNext(false).verifyComplete();
+		repository.existsById(oliver.getId()).as(StepVerifier::create).expectNext(true).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -357,9 +358,9 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 
 		insertTestData();
 
-		StepVerifier.create(repository.delete(dave)).verifyComplete();
+		repository.delete(dave).as(StepVerifier::create).verifyComplete();
 
-		StepVerifier.create(repository.findById(dave.getId())).expectNextCount(0).verifyComplete();
+		repository.findById(dave.getId()).as(StepVerifier::create).expectNextCount(0).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -367,9 +368,9 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 
 		insertTestData();
 
-		StepVerifier.create(repository.deleteAll(Arrays.asList(dave, boyd))).verifyComplete();
+		repository.deleteAll(Arrays.asList(dave, boyd)).as(StepVerifier::create).verifyComplete();
 
-		StepVerifier.create(repository.findById(boyd.getId())).expectNextCount(0).verifyComplete();
+		repository.findById(boyd.getId()).as(StepVerifier::create).expectNextCount(0).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -377,9 +378,9 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractK
 
 		insertTestData();
 
-		StepVerifier.create(repository.deleteAll(Flux.just(dave, boyd))).verifyComplete();
+		repository.deleteAll(Flux.just(dave, boyd)).as(StepVerifier::create).verifyComplete();
 
-		StepVerifier.create(repository.findById(boyd.getId())).expectNextCount(0).verifyComplete();
+		repository.findById(boyd.getId()).as(StepVerifier::create).expectNextCount(0).verifyComplete();
 	}
 
 	interface UserRepostitory extends ReactiveCassandraRepository<User, String> { }

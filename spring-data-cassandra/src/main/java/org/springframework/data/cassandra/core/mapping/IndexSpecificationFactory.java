@@ -94,11 +94,12 @@ class IndexSpecificationFactory {
 				AnnotatedParameterizedType parameterizedType = (AnnotatedParameterizedType) type;
 				AnnotatedType[] typeArgs = parameterizedType.getAnnotatedActualTypeArguments();
 
-				Indexed keyIndex = typeArgs.length == 2
-						? AnnotatedElementUtils.getMergedAnnotation(typeArgs[0], Indexed.class) : null;
+				Indexed keyIndex = typeArgs.length == 2 ? AnnotatedElementUtils.getMergedAnnotation(typeArgs[0], Indexed.class)
+						: null;
 
 				Indexed valueIndex = typeArgs.length == 2
-						? AnnotatedElementUtils.getMergedAnnotation(typeArgs[1], Indexed.class) : null;
+						? AnnotatedElementUtils.getMergedAnnotation(typeArgs[1], Indexed.class)
+						: null;
 
 				if ((!indexes.isEmpty() && (keyIndex != null || valueIndex != null))
 						|| (keyIndex != null && valueIndex != null)) {
@@ -152,8 +153,8 @@ class IndexSpecificationFactory {
 		long analyzerCount = INDEX_CONFIGURERS.keySet().stream().filter(property::isAnnotationPresent).count();
 
 		if (analyzerCount > 1) {
-			throw new IllegalStateException(String.format(
-					"SASI indexed property %s must be annotated only with a single analyzer annotation", property));
+			throw new IllegalStateException(
+					String.format("SASI indexed property %s must be annotated only with a single analyzer annotation", property));
 		}
 
 		for (Class<? extends Annotation> annotationType : INDEX_CONFIGURERS.keySet()) {

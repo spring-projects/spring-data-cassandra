@@ -123,8 +123,7 @@ public interface ExecutableInsertOperation {
 	}
 
 	/**
-	 * The {@link ExecutableInsert} interface provides methods for constructing {@code INSERT} operations
-	 * in a fluent way.
+	 * The {@link ExecutableInsert} interface provides methods for constructing {@code INSERT} operations in a fluent way.
 	 */
 	interface ExecutableInsert<T> extends InsertWithTable<T> {}
 

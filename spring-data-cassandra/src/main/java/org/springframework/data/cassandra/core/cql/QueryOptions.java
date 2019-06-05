@@ -15,10 +15,10 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
+import lombok.EqualsAndHashCode;
+
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
-
-import lombok.EqualsAndHashCode;
 
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -312,8 +312,7 @@ public class QueryOptions {
 		 * @return a new {@link QueryOptions} with the configured values
 		 */
 		public QueryOptions build() {
-			return new QueryOptions(this.consistencyLevel, this.retryPolicy, this.tracing,
-					this.fetchSize, this.readTimeout);
+			return new QueryOptions(this.consistencyLevel, this.retryPolicy, this.tracing, this.fetchSize, this.readTimeout);
 		}
 	}
 }

@@ -106,7 +106,6 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 		return this.delegate.getDataType(index);
 	}
 
-
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.repository.query.CassandraParameterAccessor#getParameterType(int)
 	 */
@@ -155,16 +154,15 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 			return null;
 		}
 
-		return this.converter.convertToColumnType(bindableValue,
-				findTypeInformation(index, bindableValue, null));
+		return this.converter.convertToColumnType(bindableValue, findTypeInformation(index, bindableValue, null));
 	}
 
 	@SuppressWarnings("unchecked")
 	@Nullable
 	private Object potentiallyConvert(int index, @Nullable Object bindableValue, CassandraPersistentProperty property) {
 
-		return (bindableValue == null ? null : this.converter.convertToColumnType(bindableValue,
-				findTypeInformation(index, bindableValue, property)));
+		return (bindableValue == null ? null
+				: this.converter.convertToColumnType(bindableValue, findTypeInformation(index, bindableValue, property)));
 	}
 
 	private TypeInformation<?> findTypeInformation(int index, Object bindableValue,

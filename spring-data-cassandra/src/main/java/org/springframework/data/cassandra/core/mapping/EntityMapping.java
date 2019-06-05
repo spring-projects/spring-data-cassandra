@@ -145,7 +145,7 @@ public class EntityMapping {
 	@Override
 	public String toString() {
 		return String.format(
-			"{ @type = %1$s, entityClassName = %2$s, tableName = %3$s, forceQuote = %4$s, propertyMappings = %5$s }",
+				"{ @type = %1$s, entityClassName = %2$s, tableName = %3$s, forceQuote = %4$s, propertyMappings = %5$s }",
 				getClass().getName(), getEntityClassName(), getTableName(), getForceQuote(), toString(getPropertyMappings()));
 	}
 

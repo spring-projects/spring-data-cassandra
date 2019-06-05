@@ -615,8 +615,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 
 		Assert.hasText(cql, "CQL must not be empty");
 
-		return query(newReactivePreparedStatementCreator(cql), newArgPreparedStatementBinder(args), Mono::just)
-				.next();
+		return query(newReactivePreparedStatementCreator(cql), newArgPreparedStatementBinder(args), Mono::just).next();
 	}
 
 	/* (non-Javadoc)
@@ -641,8 +640,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 */
 	@Override
 	public Mono<Boolean> execute(String cql, @Nullable PreparedStatementBinder psb) throws DataAccessException {
-		return query(newReactivePreparedStatementCreator(cql), psb, resultSet -> Mono.just(resultSet.wasApplied()))
-				.next();
+		return query(newReactivePreparedStatementCreator(cql), psb, resultSet -> Mono.just(resultSet.wasApplied())).next();
 	}
 
 	/* (non-Javadoc)

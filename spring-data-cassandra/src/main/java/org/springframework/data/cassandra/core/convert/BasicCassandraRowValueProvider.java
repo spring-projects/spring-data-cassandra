@@ -76,9 +76,8 @@ public class BasicCassandraRowValueProvider implements CassandraRowValueProvider
 
 		String spelExpression = property.getSpelExpression();
 
-		return spelExpression != null
-			? this.evaluator.evaluate(spelExpression)
-			: (T) this.reader.get(property.getRequiredColumnName());
+		return spelExpression != null ? this.evaluator.evaluate(spelExpression)
+				: (T) this.reader.get(property.getRequiredColumnName());
 	}
 
 	/* (non-Javadoc)

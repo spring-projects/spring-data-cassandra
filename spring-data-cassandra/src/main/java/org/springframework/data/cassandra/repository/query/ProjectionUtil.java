@@ -15,11 +15,11 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
+import lombok.experimental.UtilityClass;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-
-import lombok.experimental.UtilityClass;
 
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.DataType;
@@ -48,9 +48,8 @@ class ProjectionUtil {
 	}
 
 	/**
-	 * Determine whether the {@link Row} qualifies as a count projection.
-	 *
-	 * Count projection candidates have a single numeric column.
+	 * Determine whether the {@link Row} qualifies as a count projection. Count projection candidates have a single
+	 * numeric column.
 	 *
 	 * @param row {@link Row} to evaluate for a count projection.
 	 * @return a boolean value indicating whether the {@link Row} qualifies as a count projection.

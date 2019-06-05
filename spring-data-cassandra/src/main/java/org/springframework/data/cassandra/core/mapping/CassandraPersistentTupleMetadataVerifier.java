@@ -53,15 +53,14 @@ enum CassandraPersistentTupleMetadataVerifier implements CassandraPersistentEnti
 			}
 
 			if (!ordinals.add(tupleProperty.getOrdinal())) {
-				throw new MappingException(String.format("Duplicate ordinal [%d] in entity [%s]",
-						tupleProperty.getOrdinal(), entity.getName()));
+				throw new MappingException(
+						String.format("Duplicate ordinal [%d] in entity [%s]", tupleProperty.getOrdinal(), entity.getName()));
 			}
 		}
 
 		if (ordinals.isEmpty()) {
-			throw new MappingException(
-					String.format("Mapped tuple contains no persistent elements annotated with @Element in entity [%s]",
-							entity.getName()));
+			throw new MappingException(String.format(
+					"Mapped tuple contains no persistent elements annotated with @Element in entity [%s]", entity.getName()));
 		}
 
 		List<Integer> missingMappings = IntStream.range(0, ordinals.size()).boxed().collect(Collectors.toList());

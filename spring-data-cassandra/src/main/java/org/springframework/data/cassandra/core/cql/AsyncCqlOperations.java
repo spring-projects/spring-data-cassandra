@@ -96,8 +96,7 @@ public interface AsyncCqlOperations {
 	 * @return boolean value whether the statement was applied.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	ListenableFuture<Boolean> execute(String cql, @Nullable PreparedStatementBinder psb)
-			throws DataAccessException;
+	ListenableFuture<Boolean> execute(String cql, @Nullable PreparedStatementBinder psb) throws DataAccessException;
 
 	/**
 	 * Execute a CQL data access operation, implemented as callback action working on a CQL {@link PreparedStatement}.
@@ -223,8 +222,8 @@ public interface AsyncCqlOperations {
 	 * @param rowCallbackHandler object that will extract results, one row at a time, must not be {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	ListenableFuture<Void> query(String cql, @Nullable PreparedStatementBinder psb,
-			RowCallbackHandler rowCallbackHandler) throws DataAccessException;
+	ListenableFuture<Void> query(String cql, @Nullable PreparedStatementBinder psb, RowCallbackHandler rowCallbackHandler)
+			throws DataAccessException;
 
 	/**
 	 * Query given CQL to create a prepared statement from CQL and a {@link PreparedStatementBinder} implementation that
@@ -238,8 +237,8 @@ public interface AsyncCqlOperations {
 	 * @return the result {@link List}, containing mapped objects.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> ListenableFuture<List<T>> query(String cql, @Nullable PreparedStatementBinder psb,
-			RowMapper<T> rowMapper) throws DataAccessException;
+	<T> ListenableFuture<List<T>> query(String cql, @Nullable PreparedStatementBinder psb, RowMapper<T> rowMapper)
+			throws DataAccessException;
 
 	/**
 	 * Execute a query for a result {@link List}, given static CQL.
@@ -697,8 +696,7 @@ public interface AsyncCqlOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	<T> ListenableFuture<T> query(AsyncPreparedStatementCreator preparedStatementCreator,
-			@Nullable PreparedStatementBinder psb, ResultSetExtractor<T> resultSetExtractor)
-			throws DataAccessException;
+			@Nullable PreparedStatementBinder psb, ResultSetExtractor<T> resultSetExtractor) throws DataAccessException;
 
 	/**
 	 * Query using a prepared statement and a {@link PreparedStatementBinder} implementation that knows how to bind values
@@ -713,8 +711,7 @@ public interface AsyncCqlOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	ListenableFuture<Void> query(AsyncPreparedStatementCreator preparedStatementCreator,
-			@Nullable PreparedStatementBinder psb, RowCallbackHandler rowCallbackHandler)
-			throws DataAccessException;
+			@Nullable PreparedStatementBinder psb, RowCallbackHandler rowCallbackHandler) throws DataAccessException;
 
 	/**
 	 * Query using a prepared statement and a {@link PreparedStatementBinder} implementation that knows how to bind values

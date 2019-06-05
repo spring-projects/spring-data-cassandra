@@ -19,7 +19,6 @@ import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -130,8 +129,7 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 		@Override
 		public Mono<T> one() {
 
-			Flux<T> result =
-					this.template.doSelect(this.query.limit(2), this.domainType, getTableName(), this.returnType);
+			Flux<T> result = this.template.doSelect(this.query.limit(2), this.domainType, getTableName(), this.returnType);
 
 			return result.collectList() //
 					.flatMap(it -> {

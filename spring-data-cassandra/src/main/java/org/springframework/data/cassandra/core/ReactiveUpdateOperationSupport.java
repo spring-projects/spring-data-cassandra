@@ -19,7 +19,6 @@ import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-
 import reactor.core.publisher.Mono;
 
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;

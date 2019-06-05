@@ -59,10 +59,8 @@ public class BasicCassandraPersistentTupleEntity<T> extends BasicCassandraPersis
 
 	private List<DataType> getTupleFieldDataTypes() {
 
-		return StreamSupport.stream(spliterator(), false)
-				.sorted(TuplePropertyComparator.INSTANCE)
-				.map(CassandraPersistentProperty::getDataType)
-				.collect(Collectors.toList());
+		return StreamSupport.stream(spliterator(), false).sorted(TuplePropertyComparator.INSTANCE)
+				.map(CassandraPersistentProperty::getDataType).collect(Collectors.toList());
 	}
 
 	/* (non-Javadoc)

@@ -120,7 +120,8 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 
 		private final CassandraOperations operations;
 
-		CassandraQueryLookupStrategy(CassandraOperations operations, QueryMethodEvaluationContextProvider evaluationContextProvider,
+		CassandraQueryLookupStrategy(CassandraOperations operations,
+				QueryMethodEvaluationContextProvider evaluationContextProvider,
 				MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext) {
 
 			this.operations = operations;

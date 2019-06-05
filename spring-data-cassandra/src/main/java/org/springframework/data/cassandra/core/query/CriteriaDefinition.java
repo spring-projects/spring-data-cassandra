@@ -113,9 +113,7 @@ public interface CriteriaDefinition {
 	 */
 	enum Operators implements Operator {
 
-		CONTAINS("CONTAINS"),
-		CONTAINS_KEY("CONTAINS KEY"),
-		EQ("="),
+		CONTAINS("CONTAINS"), CONTAINS_KEY("CONTAINS KEY"), EQ("="),
 
 		/**
 		 * @since 2.1
@@ -131,12 +129,7 @@ public interface CriteriaDefinition {
 				return toString();
 			}
 		},
-		GT(">"),
-		GTE(">="),
-		LT("<"),
-		LTE("<="),
-		IN("IN"),
-		LIKE("LIKE");
+		GT(">"), GTE(">="), LT("<"), LTE("<="), IN("IN"), LIKE("LIKE");
 
 		private final String operator;
 

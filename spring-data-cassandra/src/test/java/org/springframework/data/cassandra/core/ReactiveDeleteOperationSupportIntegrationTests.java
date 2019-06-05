@@ -82,7 +82,7 @@ public class ReactiveDeleteOperationSupportIntegrationTests extends AbstractKeys
 				.matching(query(where("id").is(han.id)))
 				.all();
 
-		StepVerifier.create(writeResult.map(WriteResult::wasApplied)).expectNext(true).verifyComplete();
+		writeResult.map(WriteResult::wasApplied).as(StepVerifier::create).expectNext(true).verifyComplete();
 	}
 
 	@Test // DATACASS-485
@@ -93,8 +93,8 @@ public class ReactiveDeleteOperationSupportIntegrationTests extends AbstractKeys
 				.matching(query(where("id").in(han.id, luke.id)))
 				.all();
 
-		StepVerifier.create(writeResult.map(WriteResult::wasApplied)).expectNext(true).verifyComplete();
-		StepVerifier.create(template.select(Query.empty(), Person.class)).verifyComplete();
+		writeResult.map(WriteResult::wasApplied).as(StepVerifier::create).expectNext(true).verifyComplete();
+		template.select(Query.empty(), Person.class).as(StepVerifier::create).verifyComplete();
 	}
 
 	@Data

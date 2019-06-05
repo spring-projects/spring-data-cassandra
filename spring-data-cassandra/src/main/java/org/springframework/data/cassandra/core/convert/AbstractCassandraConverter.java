@@ -15,9 +15,9 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import java.util.Collections;
-
 import lombok.NonNull;
+
+import java.util.Collections;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.convert.ConversionService;

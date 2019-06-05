@@ -132,9 +132,8 @@ public class QueryMapper {
 
 			Object value = predicate.getValue();
 
-			Object mappedValue = value != null
-				? getConverter().convertToColumnType(value, getTypeInformation(field, value))
-				: null;
+			Object mappedValue = value != null ? getConverter().convertToColumnType(value, getTypeInformation(field, value))
+					: null;
 
 			Predicate mappedPredicate = new Predicate(predicate.getOperator(), mappedValue);
 
@@ -166,9 +165,8 @@ public class QueryMapper {
 
 			Field field = createPropertyField(entity, column);
 
-			columns.getSelector(column).ifPresent(selector ->
-				getCqlIdentifier(column, field).ifPresent(cqlIdentifier ->
-					selectors.add(getMappedSelector(selector, cqlIdentifier))));
+			columns.getSelector(column).ifPresent(selector -> getCqlIdentifier(column, field)
+					.ifPresent(cqlIdentifier -> selectors.add(getMappedSelector(selector, cqlIdentifier))));
 		}
 
 		if (columns.isEmpty()) {
@@ -255,10 +253,8 @@ public class QueryMapper {
 
 			field.getProperty().ifPresent(seen::add);
 
-			columns.getSelector(column)
-					.filter(selector -> selector instanceof ColumnSelector)
-					.ifPresent(columnSelector ->
-						getCqlIdentifier(column, field).map(CqlIdentifier::toCql).ifPresent(columnNames::add));
+			columns.getSelector(column).filter(selector -> selector instanceof ColumnSelector).ifPresent(
+					columnSelector -> getCqlIdentifier(column, field).map(CqlIdentifier::toCql).ifPresent(columnNames::add));
 		}
 
 		if (columns.isEmpty()) {
@@ -333,7 +329,7 @@ public class QueryMapper {
 
 	Field createPropertyField(@Nullable CassandraPersistentEntity<?> entity, ColumnName key) {
 
-		return Optional.ofNullable(entity).<Field>map(e -> new MetadataBackedField(key, e, getMappingContext()))
+		return Optional.ofNullable(entity).<Field> map(e -> new MetadataBackedField(key, e, getMappingContext()))
 				.orElseGet(() -> new Field(key));
 	}
 
@@ -464,8 +460,8 @@ public class QueryMapper {
 				PropertyPath propertyPath = PropertyPath.from(pathExpression.replaceAll("\\.\\d", ""),
 						this.entity.getTypeInformation());
 
-				PersistentPropertyPath<CassandraPersistentProperty> persistentPropertyPath =
-						this.mappingContext.getPersistentPropertyPath(propertyPath);
+				PersistentPropertyPath<CassandraPersistentProperty> persistentPropertyPath = this.mappingContext
+						.getPersistentPropertyPath(propertyPath);
 
 				return Optional.of(persistentPropertyPath);
 			} catch (PropertyReferenceException e) {

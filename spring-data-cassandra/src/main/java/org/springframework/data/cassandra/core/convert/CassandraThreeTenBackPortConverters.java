@@ -43,9 +43,8 @@ import com.datastax.driver.core.DataType.Name;
  */
 public abstract class CassandraThreeTenBackPortConverters {
 
-	private static final boolean THREE_TEN_BACK_PORT_IS_PRESENT =
-			ClassUtils.isPresent("org.threeten.bp.LocalDateTime",
-					ThreeTenBackPortConverters.class.getClassLoader());
+	private static final boolean THREE_TEN_BACK_PORT_IS_PRESENT = ClassUtils.isPresent("org.threeten.bp.LocalDateTime",
+			ThreeTenBackPortConverters.class.getClassLoader());
 
 	private CassandraThreeTenBackPortConverters() {}
 

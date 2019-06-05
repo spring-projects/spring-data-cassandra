@@ -89,7 +89,7 @@ public class ReactiveCassandraTemplateUnitTests {
 		when(row.getObject(1)).thenReturn("Walter");
 		when(row.getObject(2)).thenReturn("White");
 
-		StepVerifier.create(template.select("SELECT * FROM users", User.class)) //
+		template.select("SELECT * FROM users", User.class).as(StepVerifier::create) //
 				.expectNext(new User("myid", "Walter", "White")) //
 				.verifyComplete();
 
@@ -102,7 +102,7 @@ public class ReactiveCassandraTemplateUnitTests {
 
 		when(reactiveResultSet.rows()).thenThrow(new NoHostAvailableException(Collections.emptyMap()));
 
-		StepVerifier.create(template.select("SELECT * FROM users", User.class)) //
+		template.select("SELECT * FROM users", User.class).as(StepVerifier::create) //
 				.consumeErrorWith(e -> {
 					assertThat(e).hasRootCauseInstanceOf(NoHostAvailableException.class);
 				}).verify();
@@ -123,7 +123,7 @@ public class ReactiveCassandraTemplateUnitTests {
 		when(row.getObject(1)).thenReturn("Walter");
 		when(row.getObject(2)).thenReturn("White");
 
-		StepVerifier.create(template.selectOneById("myid", User.class)) //
+		template.selectOneById("myid", User.class).as(StepVerifier::create) //
 				.expectNext(new User("myid", "Walter", "White")) //
 				.verifyComplete();
 
@@ -136,7 +136,7 @@ public class ReactiveCassandraTemplateUnitTests {
 
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
 
-		StepVerifier.create(template.exists("myid", User.class)).expectNext(true).verifyComplete();
+		template.exists("myid", User.class).as(StepVerifier::create).expectNext(true).verifyComplete();
 
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM users WHERE id='myid';");
@@ -147,7 +147,7 @@ public class ReactiveCassandraTemplateUnitTests {
 
 		when(reactiveResultSet.rows()).thenReturn(Flux.empty());
 
-		StepVerifier.create(template.exists("myid", User.class)).expectNext(false).verifyComplete();
+		template.exists("myid", User.class).as(StepVerifier::create).expectNext(false).verifyComplete();
 
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM users WHERE id='myid';");
@@ -158,7 +158,7 @@ public class ReactiveCassandraTemplateUnitTests {
 
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
 
-		StepVerifier.create(template.exists(Query.empty(), User.class)).expectNext(true).verifyComplete();
+		template.exists(Query.empty(), User.class).as(StepVerifier::create).expectNext(true).verifyComplete();
 
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM users LIMIT 1;");
@@ -169,7 +169,7 @@ public class ReactiveCassandraTemplateUnitTests {
 
 		when(reactiveResultSet.rows()).thenReturn(Flux.empty());
 
-		StepVerifier.create(template.exists(Query.empty(), User.class)).expectNext(false).verifyComplete();
+		template.exists(Query.empty(), User.class).as(StepVerifier::create).expectNext(false).verifyComplete();
 
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM users LIMIT 1;");
@@ -182,7 +182,7 @@ public class ReactiveCassandraTemplateUnitTests {
 		when(row.getLong(0)).thenReturn(42L);
 		when(columnDefinitions.size()).thenReturn(1);
 
-		StepVerifier.create(template.count(User.class)).expectNext(42L).verifyComplete();
+		template.count(User.class).as(StepVerifier::create).expectNext(42L).verifyComplete();
 
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT count(*) FROM users;");
@@ -195,7 +195,7 @@ public class ReactiveCassandraTemplateUnitTests {
 		when(row.getLong(0)).thenReturn(42L);
 		when(columnDefinitions.size()).thenReturn(1);
 
-		StepVerifier.create(template.count(Query.empty(), User.class)).expectNext(42L).verifyComplete();
+		template.count(Query.empty(), User.class).as(StepVerifier::create).expectNext(42L).verifyComplete();
 
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT COUNT(1) FROM users;");
@@ -208,7 +208,7 @@ public class ReactiveCassandraTemplateUnitTests {
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
 
 		User user = new User("heisenberg", "Walter", "White");
-		StepVerifier.create(template.insert(user)).expectNext(user).verifyComplete();
+		template.insert(user).as(StepVerifier::create).expectNext(user).verifyComplete();
 
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString())
@@ -222,7 +222,7 @@ public class ReactiveCassandraTemplateUnitTests {
 		when(session.execute(any(Statement.class)))
 				.thenReturn(Mono.error(new NoHostAvailableException(Collections.emptyMap())));
 
-		StepVerifier.create(template.insert(new User("heisenberg", "Walter", "White"))) //
+		template.insert(new User("heisenberg", "Walter", "White")).as(StepVerifier::create) //
 				.consumeErrorWith(e -> {
 
 					assertThat(e).hasRootCauseInstanceOf(NoHostAvailableException.class);
@@ -237,7 +237,7 @@ public class ReactiveCassandraTemplateUnitTests {
 
 		User user = new User("heisenberg", "Walter", "White");
 
-		StepVerifier.create(template.update(user)).expectNext(user).verifyComplete();
+		template.update(user).as(StepVerifier::create).expectNext(user).verifyComplete();
 
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString())
@@ -252,7 +252,7 @@ public class ReactiveCassandraTemplateUnitTests {
 
 		User user = new User("heisenberg", "Walter", "White");
 
-		StepVerifier.create(template.delete(user)).expectNext(user).verifyComplete();
+		template.delete(user).as(StepVerifier::create).expectNext(user).verifyComplete();
 
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("DELETE FROM users WHERE id='heisenberg';");
@@ -261,7 +261,7 @@ public class ReactiveCassandraTemplateUnitTests {
 	@Test // DATACASS-335
 	public void truncateShouldRemoveEntities() {
 
-		StepVerifier.create(template.truncate(User.class)).verifyComplete();
+		template.truncate(User.class).as(StepVerifier::create).verifyComplete();
 
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("TRUNCATE users;");

@@ -102,15 +102,14 @@ public class CachedPreparedStatementCreator implements PreparedStatementCreator 
 	 * @param queryOptions must not be {@literal null}.
 	 * @return the {@link CachedPreparedStatementCreator} for {@code cql}.
 	 */
-	public static CachedPreparedStatementCreator of(PreparedStatementCache cache, String cql,
-			QueryOptions queryOptions) {
+	public static CachedPreparedStatementCreator of(PreparedStatementCache cache, String cql, QueryOptions queryOptions) {
 
 		Assert.notNull(cache, "Cache must not be null");
 		Assert.hasText(cql, "CQL statement is required");
 		Assert.notNull(queryOptions, "QueryOptions must not be null");
 
 		return new CachedPreparedStatementCreator(cache,
-			QueryOptionsUtil.addQueryOptions(new SimpleStatement(cql), queryOptions));
+				QueryOptionsUtil.addQueryOptions(new SimpleStatement(cql), queryOptions));
 	}
 
 	/**

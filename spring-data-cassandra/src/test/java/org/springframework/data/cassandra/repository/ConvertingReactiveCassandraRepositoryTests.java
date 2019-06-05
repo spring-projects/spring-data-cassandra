@@ -89,20 +89,20 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 			Thread.sleep(500);
 		}
 
-		StepVerifier.create(reactiveRepository.deleteAll()).verifyComplete();
+		reactiveRepository.deleteAll().as(StepVerifier::create).verifyComplete();
 
 		dave = new User("42", "Dave", "Matthews");
 		oliver = new User("4", "Oliver August", "Matthews");
 		carter = new User("49", "Carter", "Beauford");
 		boyd = new User("45", "Boyd", "Tinsley");
 
-		StepVerifier.create(reactiveRepository.saveAll(Arrays.asList(oliver, dave, carter, boyd))).expectNextCount(4)
+		reactiveRepository.saveAll(Arrays.asList(oliver, dave, carter, boyd)).as(StepVerifier::create).expectNextCount(4)
 				.verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void reactiveStreamsMethodsShouldWork() {
-		StepVerifier.create(reactiveUserRepostitory.existsById(dave.getId())).expectNext(true).verifyComplete();
+		reactiveUserRepostitory.existsById(dave.getId()).as(StepVerifier::create).expectNext(true).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -113,11 +113,12 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	@Test // DATACASS-360
 	public void dtoProjectionShouldWork() {
 
-		StepVerifier.create(reactiveUserRepostitory.findProjectedByLastname(boyd.getLastname())).consumeNextWith(actual -> {
+		reactiveUserRepostitory.findProjectedByLastname(boyd.getLastname()).as(StepVerifier::create)
+				.consumeNextWith(actual -> {
 
-			assertThat(actual.firstname).isEqualTo(boyd.getFirstname());
-			assertThat(actual.lastname).isEqualTo(boyd.getLastname());
-		}).verifyComplete();
+					assertThat(actual.firstname).isEqualTo(boyd.getFirstname());
+					assertThat(actual.lastname).isEqualTo(boyd.getLastname());
+				}).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -264,7 +265,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	@Test // DATACASS-335
 	public void shouldFindByIdByPublisherOfLastName() {
 
-		StepVerifier.create(reactiveRepository.findByLastname(Single.just(this.carter.getLastname()))) //
+		reactiveRepository.findByLastname(Single.just(this.carter.getLastname())).as(StepVerifier::create) //
 				.expectNext(carter) //
 				.verifyComplete();
 	}

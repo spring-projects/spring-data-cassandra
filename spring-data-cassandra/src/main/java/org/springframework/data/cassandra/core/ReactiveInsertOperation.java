@@ -21,12 +21,12 @@ import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.util.Assert;
 
 /**
- * The {@link ReactiveInsertOperation} interface allows creation and execution of Cassandra {@code INSERT} operations
- * in a fluent API style.
+ * The {@link ReactiveInsertOperation} interface allows creation and execution of Cassandra {@code INSERT} operations in
+ * a fluent API style.
  * <p>
- * By default,the table to operate on is derived from the initial {@link Class domainType} and can be defined
- * there via {@link org.springframework.data.cassandra.core.mapping.Table} annotation. Using {@code inTable}
- * allows a developer to override the table name for the execution.
+ * By default,the table to operate on is derived from the initial {@link Class domainType} and can be defined there via
+ * {@link org.springframework.data.cassandra.core.mapping.Table} annotation. Using {@code inTable} allows a developer to
+ * override the table name for the execution.
  *
  * <pre>
  *     <code>
@@ -128,8 +128,7 @@ public interface ReactiveInsertOperation {
 	}
 
 	/**
-	 * The {@link ReactiveInsert} interface provides methods for constructing {@code INSERT} operations
-	 * in a fluent way.
+	 * The {@link ReactiveInsert} interface provides methods for constructing {@code INSERT} operations in a fluent way.
 	 */
 	interface ReactiveInsert<T> extends InsertWithTable<T> {}
 

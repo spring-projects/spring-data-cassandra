@@ -95,7 +95,6 @@ public interface ReactiveCassandraBatchOperations {
 	 */
 	ReactiveCassandraBatchOperations insert(Iterable<?> entities, WriteOptions options);
 
-
 	/**
 	 * Add a collection of inserts with given {@link WriteOptions} to the batch.
 	 *

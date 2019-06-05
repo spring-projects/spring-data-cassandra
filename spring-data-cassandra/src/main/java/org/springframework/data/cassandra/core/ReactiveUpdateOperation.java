@@ -23,15 +23,15 @@ import org.springframework.data.cassandra.core.query.Update;
 import org.springframework.util.Assert;
 
 /**
- * The {@link ReactiveUpdateOperation} interface allows creation and execution of Cassandra {@code UPDATE} operations
- * in a fluent API style.
+ * The {@link ReactiveUpdateOperation} interface allows creation and execution of Cassandra {@code UPDATE} operations in
+ * a fluent API style.
  * <p>
  * The starting {@literal domainType} is used for mapping the {@link Query} provided via {@code matching}, as well as
  * the {@link Update} via {@code apply} into the Cassandra specific representations.
  * <p>
- * By default, the table to operate on is derived from the initial {@literal domainType} and can be defined there
- * via the {@link org.springframework.data.cassandra.core.mapping.Table} annotation. Using {@code inTable} allows
- * a developer to override the table name for the execution.
+ * By default, the table to operate on is derived from the initial {@literal domainType} and can be defined there via
+ * the {@link org.springframework.data.cassandra.core.mapping.Table} annotation. Using {@code inTable} allows a
+ * developer to override the table name for the execution.
  *
  * <pre>
  *     <code>
@@ -136,8 +136,7 @@ public interface ReactiveUpdateOperation {
 	}
 
 	/**
-	 * The {@link ReactiveUpdate} interface provides methods for constructing {@code UPDATE} operations
-	 * in a fluent way.
+	 * The {@link ReactiveUpdate} interface provides methods for constructing {@code UPDATE} operations in a fluent way.
 	 */
 	interface ReactiveUpdate extends UpdateWithTable, UpdateWithQuery {}
 

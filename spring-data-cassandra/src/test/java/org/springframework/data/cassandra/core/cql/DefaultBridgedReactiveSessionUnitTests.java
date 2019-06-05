@@ -194,7 +194,7 @@ public class DefaultBridgedReactiveSessionUnitTests {
 
 		Flux<Row> flux = reactiveSession.execute(new SimpleStatement("")).flatMapMany(ReactiveResultSet::availableRows);
 
-		StepVerifier.create(flux).expectNextCount(10).verifyComplete();
+		flux.as(StepVerifier::create).expectNextCount(10).verifyComplete();
 
 		verify(rows, times(10)).next();
 		verify(future, times(1)).addListener(any(), any());

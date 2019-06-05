@@ -15,10 +15,13 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
+import lombok.RequiredArgsConstructor;
+
 import java.util.Optional;
 import java.util.function.Function;
 
-import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.springframework.data.cassandra.core.StatementFactory;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
@@ -29,9 +32,6 @@ import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.query.QueryCreationException;
 import org.springframework.data.repository.query.parser.PartTree;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.SimpleStatement;
@@ -65,8 +65,7 @@ class QueryStatementCreator {
 	 * @param parameterAccessor must not be {@literal null}.
 	 * @return the {@literal SELECT} {@link Statement}.
 	 */
-	Statement select(StatementFactory statementFactory, PartTree tree,
-			CassandraParameterAccessor parameterAccessor) {
+	Statement select(StatementFactory statementFactory, PartTree tree, CassandraParameterAccessor parameterAccessor) {
 
 		Function<Query, Statement> function = query -> {
 
@@ -144,8 +143,7 @@ class QueryStatementCreator {
 	<T> T doWithQuery(CassandraParameterAccessor parameterAccessor, PartTree tree,
 			Function<Query, ? extends T> function) {
 
-		CassandraQueryCreator queryCreator =
-				new CassandraQueryCreator(tree, parameterAccessor, this.mappingContext);
+		CassandraQueryCreator queryCreator = new CassandraQueryCreator(tree, parameterAccessor, this.mappingContext);
 
 		Query query = queryCreator.createQuery();
 
@@ -164,9 +162,8 @@ class QueryStatementCreator {
 			if (queryOptions.isPresent()) {
 				query = Optional.ofNullable(parameterAccessor.getQueryOptions()).map(query::queryOptions).orElse(query);
 			} else if (this.queryMethod.hasConsistencyLevel()) {
-				query = query.queryOptions(QueryOptions.builder()
-						.consistencyLevel(this.queryMethod.getRequiredAnnotatedConsistencyLevel())
-						.build());
+				query = query.queryOptions(
+						QueryOptions.builder().consistencyLevel(this.queryMethod.getRequiredAnnotatedConsistencyLevel()).build());
 			}
 
 			return function.apply(query);
@@ -178,8 +175,7 @@ class QueryStatementCreator {
 	private boolean allowsFiltering() {
 
 		return this.queryMethod.getQueryAnnotation()
-			.map(org.springframework.data.cassandra.repository.Query::allowFiltering)
-			.orElse(false);
+				.map(org.springframework.data.cassandra.repository.Query::allowFiltering).orElse(false);
 	}
 
 	/**
@@ -201,8 +197,7 @@ class QueryStatementCreator {
 
 			if (queryOptions.isPresent()) {
 				queryToUse = Optional.ofNullable(parameterAccessor.getQueryOptions())
-						.map(it -> QueryOptionsUtil.addQueryOptions(boundQuery, it))
-						.orElse(boundQuery);
+						.map(it -> QueryOptionsUtil.addQueryOptions(boundQuery, it)).orElse(boundQuery);
 			} else if (this.queryMethod.hasConsistencyLevel()) {
 				queryToUse.setConsistencyLevel(this.queryMethod.getRequiredAnnotatedConsistencyLevel());
 			}

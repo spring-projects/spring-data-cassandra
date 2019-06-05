@@ -51,16 +51,15 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 	 * @param queryMethod {@link CassandraQueryMethod} on which this query is based.
 	 * @param operations {@link CassandraOperations} used to perform data access in Cassandra.
 	 * @param expressionParser {@link SpelExpressionParser} used to parse expressions in the query.
-	 * @param evaluationContextProvider {@link QueryMethodEvaluationContextProvider} used to access
-	 * the potentially shared {@link org.springframework.expression.spel.support.StandardEvaluationContext}.
+	 * @param evaluationContextProvider {@link QueryMethodEvaluationContextProvider} used to access the potentially shared
+	 *          {@link org.springframework.expression.spel.support.StandardEvaluationContext}.
 	 * @see org.springframework.data.cassandra.repository.query.CassandraQueryMethod
 	 * @see org.springframework.data.cassandra.core.CassandraOperations
 	 */
 	public StringBasedCassandraQuery(CassandraQueryMethod queryMethod, CassandraOperations operations,
 			SpelExpressionParser expressionParser, QueryMethodEvaluationContextProvider evaluationContextProvider) {
 
-		this(queryMethod.getRequiredAnnotatedQuery(), queryMethod, operations, expressionParser,
-				evaluationContextProvider);
+		this(queryMethod.getRequiredAnnotatedQuery(), queryMethod, operations, expressionParser, evaluationContextProvider);
 	}
 
 	/**
@@ -71,8 +70,8 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 	 * @param method {@link CassandraQueryMethod} on which this query is based.
 	 * @param operations {@link CassandraOperations} used to perform data access in Cassandra.
 	 * @param expressionParser {@link SpelExpressionParser} used to parse expressions in the query.
-	 * @param evaluationContextProvider {@link QueryMethodEvaluationContextProvider} used to access
-	 * the potentially shared {@link org.springframework.expression.spel.support.StandardEvaluationContext}.
+	 * @param evaluationContextProvider {@link QueryMethodEvaluationContextProvider} used to access the potentially shared
+	 *          {@link org.springframework.expression.spel.support.StandardEvaluationContext}.
 	 * @see org.springframework.data.cassandra.repository.query.CassandraQueryMethod
 	 * @see org.springframework.data.cassandra.core.CassandraOperations
 	 */

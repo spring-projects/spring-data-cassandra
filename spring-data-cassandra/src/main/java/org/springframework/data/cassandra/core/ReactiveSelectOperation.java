@@ -23,8 +23,8 @@ import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.util.Assert;
 
 /**
- * The {@link ReactiveSelectOperation} interface allows creation and execution of Cassandra {@code SELECT} operations
- * in a fluent API style.
+ * The {@link ReactiveSelectOperation} interface allows creation and execution of Cassandra {@code SELECT} operations in
+ * a fluent API style.
  * <p>
  * The starting {@literal domainType} is used for mapping the {@link Query} provided via {@code matching} int the
  * Cassandra specific representation. By default, the originating {@literal domainType} is also used for mapping back
@@ -32,8 +32,8 @@ import org.springframework.util.Assert;
  * {@literal returnType} via {@code as} to mapping the result.
  * <p>
  * By default, the table to operate on is derived from the initial {@literal domainType} and can be defined there via
- * the {@link org.springframework.data.cassandra.core.mapping.Table} annotation. Using {@code inTable} allows
- * a developer to override the table name for the execution.
+ * the {@link org.springframework.data.cassandra.core.mapping.Table} annotation. Using {@code inTable} allows a
+ * developer to override the table name for the execution.
  *
  * <pre>
  *     <code>
@@ -155,8 +155,7 @@ public interface ReactiveSelectOperation {
 		/**
 		 * Check for the presence of matching elements.
 		 *
-		 * @return a {@link Mono} emitting {@literal true} if at least one matching element exists;
-		 * never {@literal null}.
+		 * @return a {@link Mono} emitting {@literal true} if at least one matching element exists; never {@literal null}.
 		 * @see reactor.core.publisher.Mono
 		 */
 		Mono<Boolean> exists();
@@ -189,8 +188,7 @@ public interface ReactiveSelectOperation {
 	}
 
 	/**
-	 * The {@link ReactiveSelect} interface provides methods for constructing {@code SELECT} operations
-	 * in a fluent way.
+	 * The {@link ReactiveSelect} interface provides methods for constructing {@code SELECT} operations in a fluent way.
 	 */
 	interface ReactiveSelect<T> extends SelectWithTable<T>, SelectWithProjection<T> {}
 

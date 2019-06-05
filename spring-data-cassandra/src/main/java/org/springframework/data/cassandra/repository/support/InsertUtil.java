@@ -15,11 +15,11 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
+import lombok.experimental.UtilityClass;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import lombok.experimental.UtilityClass;
 
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;

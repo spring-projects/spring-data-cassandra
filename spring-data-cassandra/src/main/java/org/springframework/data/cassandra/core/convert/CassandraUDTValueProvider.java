@@ -47,8 +47,7 @@ public class CassandraUDTValueProvider implements CassandraValueProvider {
 	 * @param evaluator must not be {@literal null}.
 	 * @since 2.1
 	 */
-	public CassandraUDTValueProvider(UDTValue udtValue, CodecRegistry codecRegistry,
-			SpELExpressionEvaluator evaluator) {
+	public CassandraUDTValueProvider(UDTValue udtValue, CodecRegistry codecRegistry, SpELExpressionEvaluator evaluator) {
 
 		Assert.notNull(udtValue, "UDTValue must not be null");
 		Assert.notNull(codecRegistry, "CodecRegistry must not be null");

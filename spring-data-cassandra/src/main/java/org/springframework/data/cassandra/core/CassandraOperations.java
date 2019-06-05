@@ -134,9 +134,8 @@ public interface CassandraOperations extends FluentCassandraOperations {
 	<T> List<T> select(Statement statement, Class<T> entityClass) throws DataAccessException;
 
 	/**
-	 * Execute a {@code SELECT} query with paging and convert the result set to a {@link Slice} of entities.
-	 *
-	 * A sliced query translates the effective {@link Statement#getFetchSize() fetch size} to the page size.
+	 * Execute a {@code SELECT} query with paging and convert the result set to a {@link Slice} of entities. A sliced
+	 * query translates the effective {@link Statement#getFetchSize() fetch size} to the page size.
 	 *
 	 * @param statement the CQL statement, must not be {@literal null}.
 	 * @param entityClass The entity type must not be {@literal null}.
@@ -257,10 +256,9 @@ public interface CassandraOperations extends FluentCassandraOperations {
 	long count(Class<?> entityClass) throws DataAccessException;
 
 	/**
-	 * Returns the number of rows for the given entity class applying {@link Query}.
-	 *
-	 * This overridden method allows users to further refine the selection criteria using a {@link Query} predicate
-	 * to determine how many entities of the given {@link Class type} match the criteria.
+	 * Returns the number of rows for the given entity class applying {@link Query}. This overridden method allows users
+	 * to further refine the selection criteria using a {@link Query} predicate to determine how many entities of the
+	 * given {@link Class type} match the criteria.
 	 *
 	 * @param query user-defined count {@link Query} to execute; must not be {@literal null}.
 	 * @param entityClass {@link Class type} of the entity; must not be {@literal null}.
@@ -273,9 +271,9 @@ public interface CassandraOperations extends FluentCassandraOperations {
 	/**
 	 * Determine whether a row of {@code entityClass} with the given {@code id} exists.
 	 *
-	 * @param id Id value. For single primary keys it's the plain value. For composite primary keys either, it's
-	 * an instance of either {@link org.springframework.data.cassandra.core.mapping.PrimaryKeyClass}
-	 * or {@link org.springframework.data.cassandra.core.mapping.MapId}. Must not be {@literal null}.
+	 * @param id Id value. For single primary keys it's the plain value. For composite primary keys either, it's an
+	 *          instance of either {@link org.springframework.data.cassandra.core.mapping.PrimaryKeyClass} or
+	 *          {@link org.springframework.data.cassandra.core.mapping.MapId}. Must not be {@literal null}.
 	 * @param entityClass {@link Class type} of the entity; must not be {@literal null}.
 	 * @return {@literal true} if the object exists.
 	 * @throws DataAccessException if any problem occurs while executing the query.

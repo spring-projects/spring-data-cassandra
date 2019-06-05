@@ -33,9 +33,9 @@ import org.springframework.util.Assert;
  * the result from the {@link com.datastax.driver.core.Row}. However, it is possible to define an different
  * {@literal returnType} via {@code as} for mapping the result.
  * <p>
- * By default, the table to operate on is derived from the initial {@literal domainType} and can be defined there
- * with the {@link org.springframework.data.cassandra.core.mapping.Table} annotation as well. Using {@code inTable}
- * allows a user to override the table name for the execution.
+ * By default, the table to operate on is derived from the initial {@literal domainType} and can be defined there with
+ * the {@link org.springframework.data.cassandra.core.mapping.Table} annotation as well. Using {@code inTable} allows a
+ * user to override the table name for the execution.
  *
  * <pre>
  *     <code>
@@ -211,8 +211,8 @@ public interface ExecutableSelectOperation {
 		/**
 		 * Stream all matching elements.
 		 *
-		 * @return a {@link Stream} wrapping the Cassandra {@link com.datastax.driver.core.ResultSet},
-		 * which needs to be closed; never {@literal null}.
+		 * @return a {@link Stream} wrapping the Cassandra {@link com.datastax.driver.core.ResultSet}, which needs to be
+		 *         closed; never {@literal null}.
 		 * @see java.util.stream.Stream
 		 * @see #all()
 		 */
@@ -222,8 +222,8 @@ public interface ExecutableSelectOperation {
 	}
 
 	/**
-	 * The {@link ExecutableSelect} interface provides methods for constructing {@code SELECT} query operations
-	 * in a fluent way.
+	 * The {@link ExecutableSelect} interface provides methods for constructing {@code SELECT} query operations in a
+	 * fluent way.
 	 */
 	interface ExecutableSelect<T> extends SelectWithTable<T>, SelectWithProjection<T> {}
 

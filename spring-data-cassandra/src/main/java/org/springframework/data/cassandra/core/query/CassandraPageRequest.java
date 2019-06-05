@@ -198,8 +198,7 @@ public class CassandraPageRequest extends PageRequest {
 
 		Assert.state(hasNext(), "Cannot create a next page request without a PagingState");
 
-		return new CassandraPageRequest(getPageNumber() + 1, getPageSize(), getSort(),
-				this.pagingState, false);
+		return new CassandraPageRequest(getPageNumber() + 1, getPageSize(), getSort(), this.pagingState, false);
 	}
 
 	/* (non-Javadoc)

@@ -294,8 +294,8 @@ public class CassandraMappingContext
 			}
 			// now do some caching of the entity
 
-			Set<CassandraPersistentEntity<?>> entities =
-					this.entitySetsByTableName.computeIfAbsent(entity.getTableName(), cqlIdentifier -> new HashSet<>());
+			Set<CassandraPersistentEntity<?>> entities = this.entitySetsByTableName.computeIfAbsent(entity.getTableName(),
+					cqlIdentifier -> new HashSet<>());
 
 			entities.add(entity);
 
@@ -324,10 +324,9 @@ public class CassandraMappingContext
 	protected <T> BasicCassandraPersistentEntity<T> createPersistentEntity(TypeInformation<T> typeInformation) {
 
 		BasicCassandraPersistentEntity<T> entity = isUserDefinedType(typeInformation)
-			? new CassandraUserTypePersistentEntity<>(typeInformation, getVerifier(), resolveUserTypeResolver())
-			: isTuple(typeInformation)
-				? new BasicCassandraPersistentTupleEntity<>(typeInformation, getTupleTypeFactory())
-				: new BasicCassandraPersistentEntity<>(typeInformation, getVerifier());
+				? new CassandraUserTypePersistentEntity<>(typeInformation, getVerifier(), resolveUserTypeResolver())
+				: isTuple(typeInformation) ? new BasicCassandraPersistentTupleEntity<>(typeInformation, getTupleTypeFactory())
+						: new BasicCassandraPersistentEntity<>(typeInformation, getVerifier());
 
 		Optional.ofNullable(this.applicationContext).ifPresent(entity::setApplicationContext);
 
@@ -360,8 +359,8 @@ public class CassandraMappingContext
 			BasicCassandraPersistentEntity<?> owner, SimpleTypeHolder simpleTypeHolder) {
 
 		BasicCassandraPersistentProperty persistentProperty = owner.isTupleType()
-			? new BasicCassandraPersistentTupleProperty(property, owner, simpleTypeHolder, getUserTypeResolver())
-			: new BasicCassandraPersistentProperty(property, owner, simpleTypeHolder, getUserTypeResolver());
+				? new BasicCassandraPersistentTupleProperty(property, owner, simpleTypeHolder, getUserTypeResolver())
+				: new BasicCassandraPersistentProperty(property, owner, simpleTypeHolder, getUserTypeResolver());
 
 		Optional.ofNullable(this.applicationContext).ifPresent(persistentProperty::setApplicationContext);
 
@@ -403,9 +402,7 @@ public class CassandraMappingContext
 
 		return getPersistentEntities().stream().flatMap(entity -> StreamSupport.stream(entity.spliterator(), false))
 				.flatMap(it -> Optionals.toStream(Optional.ofNullable(it.findAnnotation(CassandraType.class))))
-				.map(CassandraType::userTypeName)
-				.filter(StringUtils::hasText)
-				.map(CqlIdentifier::of)
+				.map(CassandraType::userTypeName).filter(StringUtils::hasText).map(CqlIdentifier::of)
 				.anyMatch(identifier::equals);
 	}
 
@@ -548,8 +545,7 @@ public class CassandraMappingContext
 
 			if (annotation.type() == Name.TUPLE) {
 
-				DataType[] dataTypes = Arrays.stream(annotation.typeArguments())
-						.map(CassandraSimpleTypeHolder::getDataTypeFor)
+				DataType[] dataTypes = Arrays.stream(annotation.typeArguments()).map(CassandraSimpleTypeHolder::getDataTypeFor)
 						.toArray(DataType[]::new);
 
 				return getTupleTypeFactory().create(dataTypes);

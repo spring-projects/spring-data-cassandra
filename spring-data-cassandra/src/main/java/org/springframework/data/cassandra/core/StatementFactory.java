@@ -190,8 +190,8 @@ public class StatementFactory {
 		return createSelect(query, entity, filter, selectors, tableName);
 	}
 
-	private Select createSelect(Query query, CassandraPersistentEntity<?> entity, Filter filter,
-			List<Selector> selectors, CqlIdentifier tableName) {
+	private Select createSelect(Query query, CassandraPersistentEntity<?> entity, Filter filter, List<Selector> selectors,
+			CqlIdentifier tableName) {
 
 		Sort sort = Optional.of(query.getSort()).map(querySort -> getQueryMapper().getMappedSort(querySort, entity))
 				.orElse(Sort.unsorted());
@@ -223,8 +223,8 @@ public class StatementFactory {
 
 			Selection selection = QueryBuilder.select();
 
-			selectors.forEach(selector ->
-				selector.getAlias().map(CqlIdentifier::toCql).ifPresent(getSelection(selection, selector)::as));
+			selectors.forEach(
+					selector -> selector.getAlias().map(CqlIdentifier::toCql).ifPresent(getSelection(selection, selector)::as));
 			select = selection.from(from.toCql());
 		}
 
@@ -538,7 +538,7 @@ public class StatementFactory {
 				return QueryBuilder.containsKey(columnName, predicate.getValue());
 		}
 
-		throw new IllegalArgumentException(String.format("Criteria %s %s %s not supported",
-				columnName, predicate.getOperator(), predicate.getValue()));
+		throw new IllegalArgumentException(
+				String.format("Criteria %s %s %s not supported", columnName, predicate.getOperator(), predicate.getValue()));
 	}
 }

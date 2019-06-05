@@ -122,8 +122,7 @@ public interface ExecutableDeleteOperation {
 	}
 
 	/**
-	 * the {@link ExecutableDelete} interface provides methods for constructing {@code DELETE} operations
-	 * in a fluent way.
+	 * the {@link ExecutableDelete} interface provides methods for constructing {@code DELETE} operations in a fluent way.
 	 */
 	interface ExecutableDelete extends DeleteWithTable, DeleteWithQuery {}
 
