@@ -15,9 +15,10 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
-import static org.springframework.data.cassandra.core.query.Criteria.where;
+import static org.springframework.data.cassandra.core.query.Criteria.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,8 +33,6 @@ import org.springframework.data.cassandra.repository.query.CassandraEntityInform
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.mapping.context.AbstractMappingContext;
-import org.springframework.data.util.StreamUtils;
-import org.springframework.data.util.Streamable;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.querybuilder.Insert;
@@ -161,7 +160,11 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 
 		Assert.notNull(id, "The given id must not be null");
 
-		return Optional.ofNullable(this.operations.selectOneById(id, this.entityInformation.getJavaType()));
+		return Optional.ofNullable(doFindOne(id));
+	}
+
+	private T doFindOne(ID id) {
+		return this.operations.selectOneById(id, this.entityInformation.getJavaType());
 	}
 
 	/* (non-Javadoc)
@@ -202,10 +205,19 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 
 		Assert.notNull(ids, "The given Iterable of id's must not be null");
 
-		List<ID> idCollection = Streamable.of(ids).stream().collect(StreamUtils.toUnmodifiableList());
+		FindByIdQuery mapIdQuery = FindByIdQuery.forIds(ids);
+		List<Object> idCollection = mapIdQuery.getIdCollection();
+		String idField = mapIdQuery.getIdProperty();
 
-		return this.operations.select(Query.query(where(this.entityInformation.getIdAttribute()).in(idCollection)),
-				this.entityInformation.getJavaType());
+		if (idCollection.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		if (idField == null) {
+			idField = this.entityInformation.getIdAttribute();
+		}
+
+		return this.operations.select(Query.query(where(idField).in(idCollection)), this.entityInformation.getJavaType());
 	}
 
 	/* (non-Javadoc)

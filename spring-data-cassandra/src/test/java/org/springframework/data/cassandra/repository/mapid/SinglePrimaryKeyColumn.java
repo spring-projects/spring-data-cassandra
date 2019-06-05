@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.repository.mapid;
 
+import lombok.EqualsAndHashCode;
+
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.cassandra.core.mapping.Column;
 import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
@@ -24,6 +26,7 @@ import org.springframework.data.cassandra.core.mapping.Table;
  * @author Matthew T. Adams
  */
 @Table
+@EqualsAndHashCode
 public class SinglePrimaryKeyColumn {
 
 	@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) String key;

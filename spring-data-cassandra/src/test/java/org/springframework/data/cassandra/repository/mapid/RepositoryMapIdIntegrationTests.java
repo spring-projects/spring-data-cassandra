@@ -18,12 +18,18 @@ package org.springframework.data.cassandra.repository.mapid;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.cassandra.core.mapping.BasicMapId.*;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.core.CassandraOperations;
+import org.springframework.data.cassandra.core.mapping.BasicMapId;
 import org.springframework.data.cassandra.core.mapping.MapId;
 import org.springframework.data.cassandra.repository.config.EnableCassandraRepositories;
 import org.springframework.data.cassandra.repository.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
@@ -52,13 +58,13 @@ public class RepositoryMapIdIntegrationTests extends AbstractSpringDataEmbeddedC
 	}
 
 	@Autowired CassandraOperations template;
-	@Autowired SinglePrimaryKecColumnRepository singlePrimaryKecColumnRepository;
+	@Autowired SinglePrimaryKecColumnRepository singlePrimaryKeyColumnRepository;
 	@Autowired MultiPrimaryKeyColumnsRepository multiPrimaryKeyColumnsRepository;
 
 	@Before
 	public void before() {
 		assertThat(template).isNotNull();
-		assertThat(singlePrimaryKecColumnRepository).isNotNull();
+		assertThat(singlePrimaryKeyColumnRepository).isNotNull();
 		assertThat(multiPrimaryKeyColumnsRepository).isNotNull();
 	}
 
@@ -68,28 +74,38 @@ public class RepositoryMapIdIntegrationTests extends AbstractSpringDataEmbeddedC
 		// insert
 		SinglePrimaryKeyColumn inserted = new SinglePrimaryKeyColumn(uuid());
 		inserted.setValue(uuid());
-		SinglePrimaryKeyColumn saved = singlePrimaryKecColumnRepository.save(inserted);
+		SinglePrimaryKeyColumn saved = singlePrimaryKeyColumnRepository.save(inserted);
 		assertThat(inserted).isSameAs(saved);
 
 		// select
 		MapId id = id("key", saved.getKey());
-		SinglePrimaryKeyColumn selected = singlePrimaryKecColumnRepository.findById(id).get();
+		SinglePrimaryKeyColumn selected = singlePrimaryKeyColumnRepository.findById(id).get();
 		assertThat(saved).isNotSameAs(selected);
 		assertThat(selected.getKey()).isEqualTo(saved.getKey());
 		assertThat(selected.getValue()).isEqualTo(saved.getValue());
 
+		List<SinglePrimaryKeyColumn> allById = singlePrimaryKeyColumnRepository.findAllById(Collections.singletonList(id));
+
+		assertThat(allById).containsOnly(saved);
+
 		// update
 		selected.setValue(uuid());
-		SinglePrimaryKeyColumn updated = singlePrimaryKecColumnRepository.save(selected);
+		SinglePrimaryKeyColumn updated = singlePrimaryKeyColumnRepository.save(selected);
 		assertThat(selected).isSameAs(updated);
 
-		selected = singlePrimaryKecColumnRepository.findById(id).get();
+		selected = singlePrimaryKeyColumnRepository.findById(id).get();
 		assertThat(updated).isNotSameAs(selected);
 		assertThat(selected.getValue()).isEqualTo(updated.getValue());
 
 		// delete
-		singlePrimaryKecColumnRepository.delete(selected);
-		assertThat(singlePrimaryKecColumnRepository.findById(id)).isEmpty();
+		singlePrimaryKeyColumnRepository.delete(selected);
+		assertThat(singlePrimaryKeyColumnRepository.findById(id)).isEmpty();
+	}
+
+	@Test // DATACASS-661
+	public void findAllByIdRejectsEmptyMapId() {
+		assertThatThrownBy(() -> multiPrimaryKeyColumnsRepository.findAllById(Collections.singletonList(BasicMapId.id())))
+				.isInstanceOf(InvalidDataAccessApiUsageException.class);
 	}
 
 	@Test
@@ -108,6 +124,9 @@ public class RepositoryMapIdIntegrationTests extends AbstractSpringDataEmbeddedC
 		assertThat(selected.getKey0()).isEqualTo(saved.getKey0());
 		assertThat(selected.getKey1()).isEqualTo(saved.getKey1());
 		assertThat(selected.getValue()).isEqualTo(saved.getValue());
+
+		assertThatThrownBy(() -> multiPrimaryKeyColumnsRepository.findAllById(Collections.singletonList(id)))
+				.isInstanceOf(InvalidDataAccessApiUsageException.class);
 
 		// update
 		selected.setValue(uuid());
