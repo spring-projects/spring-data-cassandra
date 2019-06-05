@@ -15,19 +15,9 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import static org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification.createTable;
+import static org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.StreamSupport;
 
@@ -36,6 +26,7 @@ import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.core.convert.CassandraCustomConversions;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
@@ -59,6 +50,8 @@ import org.springframework.util.StringUtils;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.DataType.Name;
 import com.datastax.driver.core.TupleType;
+import com.datastax.driver.core.TupleValue;
+import com.datastax.driver.core.UDTValue;
 
 /**
  * Default implementation of a {@link MappingContext} for Cassandra using {@link CassandraPersistentEntity} and
@@ -76,8 +69,7 @@ public class CassandraMappingContext
 
 	private @Nullable ApplicationContext applicationContext;
 
-	private CassandraPersistentEntityMetadataVerifier verifier =
-			new CompositeCassandraPersistentEntityMetadataVerifier();
+	private CassandraPersistentEntityMetadataVerifier verifier = new CompositeCassandraPersistentEntityMetadataVerifier();
 
 	private @Nullable ClassLoader beanClassLoader;
 
@@ -547,7 +539,6 @@ public class CassandraMappingContext
 		return getDataTypeWithUserTypeFactory(property, DataTypeProvider.EntityUserType);
 	}
 
-	@Nullable
 	private DataType getDataTypeWithUserTypeFactory(CassandraPersistentProperty property,
 			DataTypeProvider dataTypeProvider) {
 
@@ -584,59 +575,124 @@ public class CassandraMappingContext
 			return property.getDataType();
 		}
 
-		return getDataTypeWithUserTypeFactory(property.getTypeInformation(), dataTypeProvider, property::getDataType);
+		if (TupleValue.class.isAssignableFrom(property.getType())) {
+			throw new MappingException(String.format(
+					"Unsupported raw TupleType to DataType for property [%s] in entity [%s]; Consider adding @CassandraType.",
+					property.getName(), property.getOwner().getName()));
+		}
+
+		if (UDTValue.class.isAssignableFrom(property.getType())) {
+			throw new MappingException(String.format(
+					"Unsupported raw UDTValue to DataType for property [%s] in entity [%s]; Consider adding @CassandraType.",
+					property.getName(), property.getOwner().getName()));
+		}
+
+		try {
+			DataType dataType = getDataTypeWithUserTypeFactory(property.getTypeInformation(), dataTypeProvider,
+					property::getDataType);
+
+			if (dataType == null) {
+				throw new MappingException(
+						String.format("Cannot resolve DataType for property [%s] in entity [%s]; Consider adding @CassandraType.",
+								property.getName(), property.getOwner().getName()));
+			}
+
+			return dataType;
+		} catch (InvalidDataAccessApiUsageException e) {
+			throw new MappingException(String.format("%s. Consider adding @CassandraType.", e.getMessage()), e);
+		}
 	}
 
 	@Nullable
 	private DataType getDataTypeWithUserTypeFactory(TypeInformation<?> typeInformation, DataTypeProvider dataTypeProvider,
 			Supplier<DataType> fallback) {
 
-		BasicCassandraPersistentEntity<?> persistentEntity = getPersistentEntity(typeInformation.getRequiredActualType());
+		Optional<DataType> customWriteTarget = this.customConversions.getCustomWriteTarget(typeInformation.getType())
+				.map(it -> doGetDataType(typeInformation.getType(), it));
+
+		DataType dataType = customWriteTarget.orElseGet(() -> {
+
+			Class<?> propertyType = typeInformation.getRequiredActualType().getType();
+
+			return this.customConversions.getCustomWriteTarget(propertyType).filter(it -> !typeInformation.isMap())
+					.map(it -> {
+
+						if (typeInformation.isCollectionLike()) {
+							if (List.class.isAssignableFrom(typeInformation.getType())) {
+								return DataType.list(doGetDataType(propertyType, it));
+							}
+
+							if (Set.class.isAssignableFrom(typeInformation.getType())) {
+								return DataType.set(doGetDataType(propertyType, it));
+							}
+						}
+
+						return doGetDataType(propertyType, it);
+
+					}).orElse(null);
+		});
+
+		if (dataType != null) {
+			return dataType;
+		}
+
+		if (typeInformation.isCollectionLike()) {
+
+			TypeInformation<?> componentType = typeInformation.getRequiredActualType();
+			BasicCassandraPersistentEntity<?> persistentEntity = getPersistentEntity(componentType);
+			TypeInformation<?> typeToUse = persistentEntity != null ? persistentEntity.getTypeInformation() : componentType;
+
+			if (List.class.isAssignableFrom(typeInformation.getType())) {
+				return DataType.list(getDataTypeWithUserTypeFactory(typeToUse, dataTypeProvider, fallback));
+			}
+
+			if (Set.class.isAssignableFrom(typeInformation.getType())) {
+				return DataType.set(getDataTypeWithUserTypeFactory(typeToUse, dataTypeProvider, fallback));
+			}
+
+			throw new IllegalArgumentException("Unsupported collection type: " + typeInformation);
+		}
+
+		if (typeInformation.isMap()) {
+			return getMapDataType(typeInformation, dataTypeProvider);
+		}
+
+		BasicCassandraPersistentEntity<?> persistentEntity = getPersistentEntity(typeInformation);
 
 		if (persistentEntity != null) {
 
 			if (persistentEntity.isUserDefinedType()) {
 
-				DataType dataType = getUserDataType(typeInformation, dataTypeProvider.getDataType(persistentEntity));
+				DataType udtType = dataTypeProvider.getDataType(persistentEntity);
 
-				if (dataType != null) {
-					return dataType;
+				if (udtType != null) {
+					return udtType;
 				}
+			} else if (persistentEntity.isTupleType()) {
+				return getTupleType(dataTypeProvider, persistentEntity);
 			}
 
-			if (persistentEntity.isTupleType()) {
-				return getUserDataType(typeInformation, getTupleType(dataTypeProvider, persistentEntity));
-			}
+			return dataTypeProvider.getDataType(persistentEntity);
 		}
 
-		Optional<DataType> customWriteTarget = this.customConversions.getCustomWriteTarget(typeInformation.getType())
-				.map(it -> doGetDataType(typeInformation.getType(), it));
+		DataType determinedType = doGetDataType(typeInformation);
 
-		DataType dataType = customWriteTarget
-				.orElseGet(() -> {
+		if (determinedType != null) {
+			return determinedType;
+		}
 
-					Class<?> propertyType = typeInformation.getRequiredActualType().getType();
+		return fallback.get();
+	}
 
-					return this.customConversions.getCustomWriteTarget(propertyType).filter(it -> !typeInformation.isMap())
-							.map(it -> {
-
-								if (typeInformation.isCollectionLike()) {
-									if (List.class.isAssignableFrom(typeInformation.getType())) {
-										return DataType.list(doGetDataType(propertyType, it));
-									}
-
-									if (Set.class.isAssignableFrom(typeInformation.getType())) {
-										return DataType.set(doGetDataType(propertyType, it));
-									}
-								}
-
-								return doGetDataType(propertyType, it);
-
-							}).orElse(null);
-				});
-
-		return dataType != null ? dataType
-				: typeInformation.isMap() ? getMapDataType(typeInformation, dataTypeProvider) : fallback.get();
+	/**
+	 * Resolve Cassandra {@link DataType}.
+	 *
+	 * @param typeInformation
+	 * @return
+	 */
+	@Nullable
+	private DataType doGetDataType(TypeInformation<?> typeInformation) {
+		return doGetDataType(typeInformation.getType(), typeInformation.getType());
 	}
 
 	/**

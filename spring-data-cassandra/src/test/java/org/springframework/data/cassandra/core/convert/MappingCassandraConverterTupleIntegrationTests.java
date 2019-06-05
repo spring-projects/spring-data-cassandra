@@ -23,19 +23,19 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Currency;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.config.SchemaAction;
-import org.springframework.data.cassandra.core.cql.generator.CreateTableCqlGenerator;
 import org.springframework.data.cassandra.core.cql.generator.CreateUserTypeCqlGenerator;
-import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateUserTypeSpecification;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.Element;
@@ -49,8 +49,12 @@ import org.springframework.data.convert.CustomConversions;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.TupleType;
+import com.datastax.driver.core.TupleValue;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 
@@ -103,13 +107,37 @@ public class MappingCassandraConverterTupleIntegrationTests extends AbstractSpri
 
 			this.session.execute(CreateUserTypeCqlGenerator.toCql(createAddress));
 
-			CreateTableSpecification createPerson = mappingContext
-					.getCreateTableSpecificationFor(mappingContext.getRequiredPersistentEntity(Person.class));
-
-			this.session.execute(CreateTableCqlGenerator.toCql(createPerson));
+			String ddl = "CREATE TABLE person (id text, " + "tuplevalue tuple<text,int>," //
+					+ "mapoftuples map<text, frozen<tuple<address, list<text>, text>>>, " //
+					+ "mapoftuplevalues map<text, frozen<tuple<text, int>>>, " //
+					+ "mappedtuple frozen<tuple<address, list<text>, text>>, " //
+					+ "mappedtuples list<frozen<tuple<address, list<text>, text>>>, " //
+					+ "PRIMARY KEY (id));";
+			this.session.execute(ddl);
 		} else {
 			this.session.execute("TRUNCATE person;");
 		}
+	}
+
+	@Test // DATACASS-651
+	public void shouldInsertRowWithTuple() {
+
+		TupleType tupleType = this.session.getCluster().getMetadata().newTupleType(DataType.varchar(), DataType.cint());
+
+		Person person = new Person();
+
+		person.setId("foo");
+		person.setTupleValue(tupleType.newValue("hello", 42));
+
+		Insert insert = QueryBuilder.insertInto("person");
+
+		this.converter.write(person, insert);
+		this.session.execute(insert);
+
+		ResultSet rows = this.session.execute("SELECT * FROM person");
+		Row row = rows.one();
+
+		assertThat(row.getObject("tuplevalue")).isEqualTo(person.getTupleValue());
 	}
 
 	@Test // DATACASS-523
@@ -141,8 +169,7 @@ public class MappingCassandraConverterTupleIntegrationTests extends AbstractSpri
 	@Test // DATACASS-523
 	public void shouldReadRowWithComplexTuple() {
 
-		this.session.execute("INSERT INTO person (id,mappedtuple,mappedtuples) VALUES ("
-				+ "'foo'," //
+		this.session.execute("INSERT INTO person (id,mappedtuple,mappedtuples) VALUES (" + "'foo'," //
 				+ "({zip:'myzip'},['EUR','USD'],'bar')," //
 				+ "[({zip:'myzip'},['EUR','USD'],'bar')]);\n");
 
@@ -161,14 +188,62 @@ public class MappingCassandraConverterTupleIntegrationTests extends AbstractSpri
 		assertThat(mappedTuple.getCurrency()).containsSequence(Currency.getInstance("EUR"), Currency.getInstance("USD"));
 	}
 
+	@Test // DATACASS-651
+	public void shouldInsertRowWithTupleMap() {
+
+		Person person = new Person();
+		person.setId("foo");
+
+		MappedTuple tuple = new MappedTuple();
+		tuple.setCurrency(Arrays.asList(Currency.getInstance("EUR"), Currency.getInstance("USD")));
+		tuple.setName("bar");
+
+		person.setMapOfTuples(Collections.singletonMap("foo", tuple));
+
+		TupleType tupleType = this.session.getCluster().getMetadata().newTupleType(DataType.varchar(), DataType.cint());
+		person.setMapOfTupleValues(Collections.singletonMap("mykey", tupleType.newValue("hello", 42)));
+
+		Insert insert = QueryBuilder.insertInto("person");
+
+		this.converter.write(person, insert);
+		this.session.execute(insert);
+
+		ResultSet rows = this.session.execute("SELECT * FROM person");
+		Row row = rows.one();
+
+		assertThat(row.getObject("mapoftuples")).isInstanceOf(Map.class);
+		assertThat(row.getObject("mapoftuplevalues")).isInstanceOf(Map.class);
+	}
+
+	@Test // DATACASS-651
+	public void shouldReadRowWithMapOfTuples() {
+
+		this.session.execute("INSERT INTO person (id,mapoftuples,mapoftuplevalues) VALUES "
+				+ "('foo',{'foo':(NULL,['EUR','USD'],'bar')},{'mykey':('hello',42)});\n");
+
+		ResultSet resultSet = this.session.execute("SELECT * FROM person;");
+
+		Person person = this.converter.read(Person.class, resultSet.one());
+
+		assertThat(person.getMapOfTupleValues()).hasSize(1);
+		assertThat(person.getMapOfTupleValues().get("mykey").getString(0)).isEqualTo("hello");
+
+		MappedTuple mappedTuple = person.getMapOfTuples().get("foo");
+		assertThat(mappedTuple.getName()).isEqualTo("bar");
+		assertThat(mappedTuple.getCurrency()).containsSequence(Currency.getInstance("EUR"), Currency.getInstance("USD"));
+	}
+
 	@Data
 	@Table
 	static class Person {
 
 		@Id private String id;
 
+		TupleValue tupleValue;
 		MappedTuple mappedTuple;
 		List<MappedTuple> mappedTuples;
+		Map<String, MappedTuple> mapOfTuples;
+		Map<String, TupleValue> mapOfTupleValues;
 	}
 
 	@Data
@@ -178,7 +253,6 @@ public class MappingCassandraConverterTupleIntegrationTests extends AbstractSpri
 		@Element(0) AddressUserType addressUserType;
 		@Element(1) List<Currency> currency;
 		@Element(2) String name;
-
 	}
 
 	@UserDefinedType("address")
