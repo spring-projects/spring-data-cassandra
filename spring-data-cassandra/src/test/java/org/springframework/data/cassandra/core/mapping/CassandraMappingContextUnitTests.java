@@ -15,10 +15,8 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -29,8 +27,8 @@ import java.util.NoSuchElementException;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.convert.CassandraCustomConversions;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
@@ -366,10 +364,16 @@ public class CassandraMappingContextUnitTests {
 		assertThat(entries.getColumnFunction()).isEqualTo(ColumnFunction.NONE);
 	}
 
-	@Test(expected = InvalidDataAccessApiUsageException.class) // DATACASS-284
+	@Test // DATACASS-284, DATACASS-651
 	public void shouldRejectUntypedTuples() {
-		this.mappingContext
-				.getCreateTableSpecificationFor(this.mappingContext.getRequiredPersistentEntity(UntypedTupleEntity.class));
+
+		assertThatThrownBy(() -> this.mappingContext
+				.getCreateTableSpecificationFor(this.mappingContext.getRequiredPersistentEntity(UntypedTupleEntity.class)))
+						.isInstanceOf(MappingException.class);
+
+		assertThatThrownBy(() -> this.mappingContext
+				.getCreateTableSpecificationFor(this.mappingContext.getRequiredPersistentEntity(UntypedTupleMapEntity.class)))
+						.isInstanceOf(MappingException.class);
 	}
 
 	@Test // DATACASS-284
@@ -385,6 +389,21 @@ public class CassandraMappingContextUnitTests {
 		assertThat(column.getType()).isInstanceOf(TupleType.class);
 		assertThat(column.getType()).isEqualTo(TupleType.of(ProtocolVersion.NEWEST_SUPPORTED,
 				CodecRegistry.DEFAULT_INSTANCE, DataType.varchar(), DataType.bigint()));
+	}
+
+	@Test // DATACASS-651
+	public void shouldCreateTableForEntityWithMapOfTuples() {
+
+		CreateTableSpecification tableSpecification = this.mappingContext
+				.getCreateTableSpecificationFor(this.mappingContext.getRequiredPersistentEntity(EntityWithMapOfTuples.class));
+
+		assertThat(tableSpecification.getColumns()).hasSize(2);
+
+		ColumnSpecification column = tableSpecification.getColumns().get(1);
+
+		assertThat(column.getType()).isInstanceOf(DataType.CollectionType.class);
+		assertThat(column.getType()).isEqualTo(DataType.map(DataType.text(),
+				TupleType.of(ProtocolVersion.NEWEST_SUPPORTED, CodecRegistry.DEFAULT_INSTANCE, DataType.text())));
 	}
 
 	private static CreateIndexSpecification getSpecificationFor(String column,
@@ -456,8 +475,8 @@ public class CassandraMappingContextUnitTests {
 		mappingContext.setCustomConversions(
 				new CassandraCustomConversions(Collections.singletonList(HumanToStringConverter.INSTANCE)));
 
-		CassandraPersistentEntity<?> persistentEntity =
-				mappingContext.getRequiredPersistentEntity(TypeWithListOfHumans.class);
+		CassandraPersistentEntity<?> persistentEntity = mappingContext
+				.getRequiredPersistentEntity(TypeWithListOfHumans.class);
 
 		assertThat(mappingContext.getDataType(persistentEntity.getRequiredPersistentProperty("humans")))
 				.isEqualTo(DataType.list(DataType.varchar()));
@@ -466,8 +485,7 @@ public class CassandraMappingContextUnitTests {
 	@Test // DATACASS-302
 	public void propertyTypeShouldMapToTime() {
 
-		CassandraPersistentEntity<?> persistentEntity =
-				mappingContext.getRequiredPersistentEntity(AllPossibleTypes.class);
+		CassandraPersistentEntity<?> persistentEntity = mappingContext.getRequiredPersistentEntity(AllPossibleTypes.class);
 
 		assertThat(mappingContext.getDataType(persistentEntity.getRequiredPersistentProperty("localTime")))
 				.isEqualTo(DataType.time());
@@ -490,8 +508,7 @@ public class CassandraMappingContextUnitTests {
 	@Test // DATACASS-523
 	public void shouldCreateMappedTupleType() {
 
-		CassandraPersistentEntity<?> persistentEntity =
-				this.mappingContext.getRequiredPersistentEntity(MappedTuple.class);
+		CassandraPersistentEntity<?> persistentEntity = this.mappingContext.getRequiredPersistentEntity(MappedTuple.class);
 
 		assertThat(persistentEntity).isInstanceOf(BasicCassandraPersistentTupleEntity.class);
 
@@ -566,24 +583,24 @@ public class CassandraMappingContextUnitTests {
 		try {
 			mappingContext.getCreateTableSpecificationFor(
 					mappingContext.getRequiredPersistentEntity(EntityWithComplexPrimaryKeyColumn.class));
-			fail("Missing InvalidDataAccessApiUsageException");
-		} catch (InvalidDataAccessApiUsageException e) {
+			fail("Missing MappingException");
+		} catch (MappingException e) {
 			assertThat(e).hasMessageContaining("Unknown type [class java.lang.Object] for property [complexObject]");
 		}
 
 		try {
 			mappingContext
 					.getCreateTableSpecificationFor(mappingContext.getRequiredPersistentEntity(EntityWithComplexId.class));
-			fail("Missing InvalidDataAccessApiUsageException");
-		} catch (InvalidDataAccessApiUsageException e) {
+			fail("Missing MappingException");
+		} catch (MappingException e) {
 			assertThat(e).hasMessageContaining("Unknown type [class java.lang.Object] for property [complexObject]");
 		}
 
 		try {
 			mappingContext.getCreateTableSpecificationFor(
 					mappingContext.getRequiredPersistentEntity(EntityWithPrimaryKeyClassWithComplexId.class));
-			fail("Missing InvalidDataAccessApiUsageException");
-		} catch (InvalidDataAccessApiUsageException e) {
+			fail("Missing MappingException");
+		} catch (MappingException e) {
 			assertThat(e).hasMessageContaining("Unknown type [class java.lang.Object] for property [complexObject]");
 		}
 	}
@@ -720,8 +737,20 @@ public class CassandraMappingContextUnitTests {
 	}
 
 	@Table
+	static class EntityWithMapOfTuples {
+		@Id String id;
+		Map<String, MappedTuple> map;
+	}
+
+	@Table
 	static class UntypedTupleEntity {
 		@Id String id;
-		TupleType untyped;
+		TupleValue untyped;
+	}
+
+	@Table
+	static class UntypedTupleMapEntity {
+		@Id String id;
+		Map<String, TupleValue> untyped;
 	}
 }

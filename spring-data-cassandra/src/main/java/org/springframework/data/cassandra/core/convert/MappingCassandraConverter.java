@@ -730,13 +730,15 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 			return getPropertyTargetType(property);
 		});
-
 	}
 
 	private Class<?> getPropertyTargetType(CassandraPersistentProperty property) {
 
-		DataType dataType = getMappingContext().getDataType(property);
+		if (property.isCollectionLike() || property.isMapLike()) {
+			return property.getType();
+		}
 
+		DataType dataType = getMappingContext().getDataType(property);
 		if (dataType instanceof UserType || dataType instanceof TupleType) {
 			return property.getType();
 		}
