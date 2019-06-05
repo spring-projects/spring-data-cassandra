@@ -15,13 +15,13 @@
  */
 package org.springframework.data.cassandra.core;
 
-import java.util.List;
-import java.util.stream.Stream;
-
 import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+
+import java.util.List;
+import java.util.stream.Stream;
 
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
@@ -58,7 +58,7 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 	// While the use of final fields and construction on mutation effectively makes this class Thread-safe,
 	// it is possible this implementation could generate a high-level of young-gen garbage on the JVM heap,
 	// particularly if the template query(..) (and this class) are used inside of a loop for a large number
-	// of domain types.  Of course, this assumption is highly contingent on the user's `Query`
+	// of domain types. Of course, this assumption is highly contingent on the user's `Query`
 	// in addition to his/her application design.
 
 	@RequiredArgsConstructor
@@ -83,8 +83,7 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 
 			Assert.notNull(tableName, "Table name must not be null");
 
-			return new ExecutableSelectSupport<>(this.template, this.domainType, this.returnType,
-					this.query, tableName);
+			return new ExecutableSelectSupport<>(this.template, this.domainType, this.returnType, this.query, tableName);
 		}
 
 		/* (non-Javadoc)
@@ -95,8 +94,7 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 
 			Assert.notNull(returnType, "ReturnType must not be null");
 
-			return new ExecutableSelectSupport<>(this.template, this.domainType, returnType,
-					this.query, this.tableName);
+			return new ExecutableSelectSupport<>(this.template, this.domainType, returnType, this.query, this.tableName);
 		}
 
 		/* (non-Javadoc)
@@ -107,8 +105,7 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 
 			Assert.notNull(query, "Query must not be null");
 
-			return new ExecutableSelectSupport<>(this.template, this.domainType, this.returnType,
-					query, this.tableName);
+			return new ExecutableSelectSupport<>(this.template, this.domainType, this.returnType, query, this.tableName);
 		}
 
 		/* (non-Javadoc)
@@ -133,8 +130,7 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 		@Override
 		public T firstValue() {
 
-			List<T> result =
-					this.template.doSelect(this.query.limit(1), this.domainType, getTableName(), this.returnType);
+			List<T> result = this.template.doSelect(this.query.limit(1), this.domainType, getTableName(), this.returnType);
 
 			return ObjectUtils.isEmpty(result) ? null : result.iterator().next();
 		}
@@ -145,8 +141,7 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 		@Override
 		public T oneValue() {
 
-			List<T> result =
-					this.template.doSelect(this.query.limit(2), this.domainType, getTableName(), this.returnType);
+			List<T> result = this.template.doSelect(this.query.limit(2), this.domainType, getTableName(), this.returnType);
 
 			if (ObjectUtils.isEmpty(result)) {
 				return null;

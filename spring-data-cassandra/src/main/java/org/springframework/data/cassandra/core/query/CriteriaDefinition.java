@@ -15,9 +15,9 @@
  */
 package org.springframework.data.cassandra.core.query;
 
-import java.util.Optional;
-
 import lombok.EqualsAndHashCode;
+
+import java.util.Optional;
 
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -115,9 +115,7 @@ public interface CriteriaDefinition {
 	 */
 	enum Operators implements Operator {
 
-		CONTAINS("CONTAINS"),
-		CONTAINS_KEY("CONTAINS KEY"),
-		EQ("="),
+		CONTAINS("CONTAINS"), CONTAINS_KEY("CONTAINS KEY"), EQ("="),
 
 		/**
 		 * @since 2.1
@@ -134,12 +132,7 @@ public interface CriteriaDefinition {
 			}
 		},
 
-		GT(">"),
-		GTE(">="),
-		LT("<"),
-		LTE("<="),
-		IN("IN"),
-		LIKE("LIKE");
+		GT(">"), GTE(">="), LT("<"), LTE("<="), IN("IN"), LIKE("LIKE");
 
 		public static Optional<Operators> from(String operator) {
 

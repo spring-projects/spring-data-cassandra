@@ -15,11 +15,11 @@
  */
 package org.springframework.data.cassandra.core;
 
+import lombok.EqualsAndHashCode;
+
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
-
-import lombok.EqualsAndHashCode;
 
 import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.data.cassandra.core.query.CriteriaDefinition;
@@ -299,8 +299,8 @@ public class DeleteOptions extends WriteOptions {
 		 */
 		public DeleteOptions build() {
 
-			return new DeleteOptions(this.consistencyLevel, this.retryPolicy, this.tracing, this.fetchSize,
-					this.readTimeout, this.ttl, this.timestamp, this.ifExists, this.ifCondition);
+			return new DeleteOptions(this.consistencyLevel, this.retryPolicy, this.tracing, this.fetchSize, this.readTimeout,
+					this.ttl, this.timestamp, this.ifExists, this.ifCondition);
 		}
 	}
 }

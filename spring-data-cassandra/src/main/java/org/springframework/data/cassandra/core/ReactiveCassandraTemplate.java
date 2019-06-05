@@ -15,17 +15,17 @@
  */
 package org.springframework.data.cassandra.core;
 
-import java.util.Collections;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
-
 import lombok.Value;
-
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.SynchronousSink;
 
+import java.util.Collections;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+
 import org.reactivestreams.Publisher;
+
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
@@ -198,8 +198,8 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations, A
 	}
 
 	/**
-	 * Returns the {@link EntityOperations} used to perform data access operations on an entity
-	 * inside a Cassandra data source.
+	 * Returns the {@link EntityOperations} used to perform data access operations on an entity inside a Cassandra data
+	 * source.
 	 *
 	 * @return the configured {@link EntityOperations} for this template.
 	 * @see org.springframework.data.cassandra.core.EntityOperations
@@ -310,17 +310,15 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations, A
 		Mono<Integer> effectiveFetchSizeMono = getEffectiveFetchSize(statement);
 		RowMapper<T> rowMapper = (row, i) -> getConverter().read(entityClass, row);
 
-		return resultSetMono.zipWith(effectiveFetchSizeMono)
-				.flatMap(tuple -> {
+		return resultSetMono.zipWith(effectiveFetchSizeMono).flatMap(tuple -> {
 
-					ReactiveResultSet resultSet = tuple.getT1();
-					Integer effectiveFetchSize = tuple.getT2();
+			ReactiveResultSet resultSet = tuple.getT1();
+			Integer effectiveFetchSize = tuple.getT2();
 
-					return resultSet.availableRows().collectList().map(it ->
-							EntityQueryUtils.readSlice(it, resultSet.getExecutionInfo().getPagingState(), rowMapper,
-								1, effectiveFetchSize));
+			return resultSet.availableRows().collectList().map(it -> EntityQueryUtils.readSlice(it,
+					resultSet.getExecutionInfo().getPagingState(), rowMapper, 1, effectiveFetchSize));
 
-				}).defaultIfEmpty(new SliceImpl<>(Collections.emptyList()));
+		}).defaultIfEmpty(new SliceImpl<>(Collections.emptyList()));
 	}
 
 	// -------------------------------------------------------------------------
@@ -343,8 +341,8 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations, A
 
 		CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entityClass);
 
-		Columns columns = getStatementFactory()
-				.computeColumnsForProjection(query.getColumns(), persistentEntity, returnType);
+		Columns columns = getStatementFactory().computeColumnsForProjection(query.getColumns(), persistentEntity,
+				returnType);
 
 		Query queryToUse = query.columns(columns);
 
@@ -398,8 +396,8 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations, A
 	Mono<WriteResult> doUpdate(Query query, org.springframework.data.cassandra.core.query.Update update,
 			Class<?> entityClass, CqlIdentifier tableName) {
 
-		RegularStatement statement = getStatementFactory()
-				.update(query, update, getRequiredPersistentEntity(entityClass), tableName);
+		RegularStatement statement = getStatementFactory().update(query, update, getRequiredPersistentEntity(entityClass),
+				tableName);
 
 		return getReactiveCqlOperations().execute(new StatementCallback(statement)).next();
 	}
@@ -418,8 +416,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations, A
 
 	Mono<WriteResult> doDelete(Query query, Class<?> entityClass, CqlIdentifier tableName) {
 
-		RegularStatement delete = getStatementFactory()
-				.delete(query, getRequiredPersistentEntity(entityClass), tableName);
+		RegularStatement delete = getStatementFactory().delete(query, getRequiredPersistentEntity(entityClass), tableName);
 
 		Mono<WriteResult> writeResult = getReactiveCqlOperations().execute(new StatementCallback(delete))
 				.doOnSubscribe(it -> maybeEmitEvent(new BeforeDeleteEvent<>(delete, entityClass, tableName))).next();
@@ -495,8 +492,8 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations, A
 
 	Mono<Boolean> doExists(Query query, Class<?> entityClass, CqlIdentifier tableName) {
 
-		RegularStatement select = getStatementFactory()
-				.select(query.limit(1), getRequiredPersistentEntity(entityClass), tableName);
+		RegularStatement select = getStatementFactory().select(query.limit(1), getRequiredPersistentEntity(entityClass),
+				tableName);
 
 		return getReactiveCqlOperations().queryForRows(select).hasElements();
 	}
@@ -549,8 +546,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations, A
 		Insert insert = EntityQueryUtils.createInsertQuery(tableName.toCql(), entityToUse, options, getConverter(),
 				persistentEntity);
 
-		return source.isVersionedEntity()
-				? doInsertVersioned(insert.ifNotExists(), entityToUse, source, tableName)
+		return source.isVersionedEntity() ? doInsertVersioned(insert.ifNotExists(), entityToUse, source, tableName)
 				: doInsert(insert, entityToUse, tableName);
 	}
 
@@ -562,8 +558,8 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations, A
 			if (!result.wasApplied()) {
 
 				sink.error(new OptimisticLockingFailureException(
-						String.format("Cannot insert entity %s with version %s into table %s as it already exists",
-								entity, source.getVersion(), tableName)));
+						String.format("Cannot insert entity %s with version %s into table %s as it already exists", entity,
+								source.getVersion(), tableName)));
 
 				return;
 			}
@@ -597,8 +593,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations, A
 		CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
 		CqlIdentifier tableName = persistentEntity.getTableName();
 
-		return source.isVersionedEntity()
-				? doUpdateVersioned(source, options, tableName, persistentEntity)
+		return source.isVersionedEntity() ? doUpdateVersioned(source, options, tableName, persistentEntity)
 				: doUpdate(entity, options, tableName, persistentEntity);
 	}
 
@@ -616,8 +611,8 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations, A
 			if (!result.wasApplied()) {
 
 				sink.error(new OptimisticLockingFailureException(
-						String.format("Cannot save entity %s with version %s to table %s. Has it been modified meanwhile?",
-								entity, source.getVersion(), tableName)));
+						String.format("Cannot save entity %s with version %s to table %s. Has it been modified meanwhile?", entity,
+								source.getVersion(), tableName)));
 
 				return;
 			}
@@ -657,8 +652,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations, A
 
 		Delete delete = getStatementFactory().delete(entity, options, getConverter(), persistentEntity, tableName);
 
-		return source.isVersionedEntity()
-				? doDeleteVersioned(delete, entity, source, tableName)
+		return source.isVersionedEntity() ? doDeleteVersioned(delete, entity, source, tableName)
 				: doDelete(delete, entity, tableName);
 	}
 
@@ -806,8 +800,8 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations, A
 			}
 		}
 
-		return getReactiveCqlOperations().execute((ReactiveSessionCallback<Integer>) session ->
-				Mono.just(session.getCluster().getConfiguration().getQueryOptions().getFetchSize())).single();
+		return getReactiveCqlOperations().execute((ReactiveSessionCallback<Integer>) session -> Mono
+				.just(session.getCluster().getConfiguration().getQueryOptions().getFetchSize())).single();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -821,9 +815,7 @@ public class ReactiveCassandraTemplate implements ReactiveCassandraOperations, A
 
 			Object source = getConverter().read(typeToRead, row);
 
-			T result = (T) (targetType.isInterface()
-					? getProjectionFactory().createProjection(targetType, source)
-					: source);
+			T result = (T) (targetType.isInterface() ? getProjectionFactory().createProjection(targetType, source) : source);
 
 			maybeEmitEvent(new AfterConvertEvent<>(row, result, tableName));
 

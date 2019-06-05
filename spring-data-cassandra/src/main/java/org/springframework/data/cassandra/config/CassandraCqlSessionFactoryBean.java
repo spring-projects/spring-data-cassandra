@@ -87,9 +87,7 @@ public class CassandraCqlSessionFactoryBean
 	/* (non-Javadoc) */
 	Session connect(@Nullable String keyspaceName) {
 
-		return StringUtils.hasText(keyspaceName)
-				? getCluster().connect(keyspaceName)
-				: getCluster().connect();
+		return StringUtils.hasText(keyspaceName) ? getCluster().connect(keyspaceName) : getCluster().connect();
 	}
 
 	/*

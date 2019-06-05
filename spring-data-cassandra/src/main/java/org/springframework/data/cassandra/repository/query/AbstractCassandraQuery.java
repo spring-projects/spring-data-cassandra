@@ -95,8 +95,8 @@ public abstract class AbstractCassandraQuery extends CassandraRepositoryQuerySup
 
 		Statement statement = createQuery(parameterAccessor);
 
-		CassandraQueryExecution queryExecution = getExecution(parameterAccessor, new ResultProcessingConverter(
-				resultProcessor, toMappingContext(getOperations()), getEntityInstantiators()));
+		CassandraQueryExecution queryExecution = getExecution(parameterAccessor,
+				new ResultProcessingConverter(resultProcessor, toMappingContext(getOperations()), getEntityInstantiators()));
 
 		Class<?> resultType = resolveResultType(resultProcessor);
 

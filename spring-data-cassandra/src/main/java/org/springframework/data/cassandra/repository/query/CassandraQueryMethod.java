@@ -114,8 +114,8 @@ public class CassandraQueryMethod extends QueryMethod {
 				CassandraPersistentEntity<?> returnedEntity = this.mappingContext.getPersistentEntity(returnedObjectType);
 				CassandraPersistentEntity<?> managedEntity = this.mappingContext.getRequiredPersistentEntity(domainClass);
 
-				returnedEntity = returnedEntity == null || returnedEntity.getType().isInterface()
-						? managedEntity : returnedEntity;
+				returnedEntity = returnedEntity == null || returnedEntity.getType().isInterface() ? managedEntity
+						: returnedEntity;
 
 				this.entityMetadata = new SimpleCassandraEntityMetadata<>((Class<Object>) returnedEntity.getType(),
 						managedEntity);

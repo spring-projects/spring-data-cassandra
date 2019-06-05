@@ -116,64 +116,66 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractKeyspac
 		repository = factory.getRepository(UserRepository.class);
 		groupRepostitory = factory.getRepository(GroupRepository.class);
 
-		StepVerifier.create(repository.deleteAll().concatWith(groupRepostitory.deleteAll())).verifyComplete();
+		repository.deleteAll().concatWith(groupRepostitory.deleteAll()).as(StepVerifier::create).verifyComplete();
 
 		dave = new User("42", "Dave", "Matthews");
 		oliver = new User("4", "Oliver August", "Matthews");
 		carter = new User("49", "Carter", "Beauford");
 		boyd = new User("45", "Boyd", "Tinsley");
 
-		StepVerifier.create(repository.saveAll(Arrays.asList(oliver, dave, carter, boyd))).expectNextCount(4)
+		repository.saveAll(Arrays.asList(oliver, dave, carter, boyd)).as(StepVerifier::create).expectNextCount(4)
 				.verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void shouldFindByLastName() {
-		StepVerifier.create(repository.findByLastname(dave.getLastname())).expectNextCount(2).verifyComplete();
+		repository.findByLastname(dave.getLastname()).as(StepVerifier::create).expectNextCount(2).verifyComplete();
 	}
 
 	@Test //DATACASS-529
 	public void shouldFindSliceByLastName() {
-		StepVerifier.create(repository.findByLastname(carter.getLastname(), CassandraPageRequest.first(1)))
+		repository.findByLastname(carter.getLastname(), CassandraPageRequest.first(1)).as(StepVerifier::create)
 				.expectNextMatches(users -> users.getSize() == 1 && users.hasNext())
 				.verifyComplete();
 	}
 
 	@Test // DATACASS-529
 	public void shouldFindEmpptySliceByLastName() {
-		StepVerifier.create(repository.findByLastname("foo", CassandraPageRequest.first(1)))
+		repository.findByLastname("foo", CassandraPageRequest.first(1)).as(StepVerifier::create)
 				.expectNextMatches(Streamable::isEmpty).verifyComplete();
 	}
 
 	@Test // DATACASS-525
 	public void findOneWithManyResultsShouldFail() {
-		StepVerifier.create(repository.findOneByLastname(dave.getLastname()))
+		repository.findOneByLastname(dave.getLastname()).as(StepVerifier::create)
 				.expectError(IncorrectResultSizeDataAccessException.class).verify();
 	}
 
 	@Test // DATACASS-525
 	public void findOneWithNoResultsShouldNotEmitItem() {
-		StepVerifier.create(repository.findByLastname("foo")).verifyComplete();
+		repository.findByLastname("foo").as(StepVerifier::create).verifyComplete();
 	}
 
 	@Test // DATACASS-525
 	public void findFirstWithManyResultsShouldEmitFirstItem() {
-		StepVerifier.create(repository.findFirstByLastname(dave.getLastname())).expectNextCount(1).verifyComplete();
+		repository.findFirstByLastname(dave.getLastname()).as(StepVerifier::create).expectNextCount(1).verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void shouldFindByIdByLastName() {
-		StepVerifier.create(repository.findOneByLastname(carter.getLastname())).expectNext(carter).verifyComplete();
+		repository.findOneByLastname(carter.getLastname()).as(StepVerifier::create).expectNext(carter).verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void shouldFindByIdByPublisherOfLastName() {
-		StepVerifier.create(repository.findByLastname(Mono.just(carter.getLastname()))).expectNext(carter).verifyComplete();
+		repository.findByLastname(Mono.just(carter.getLastname())).as(StepVerifier::create).expectNext(carter)
+				.verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void shouldFindUsingPublishersInStringQuery() {
-		StepVerifier.create(repository.findStringQuery(Mono.just(dave.getLastname()))).expectNextCount(2).verifyComplete();
+		repository.findStringQuery(Mono.just(dave.getLastname())).as(StepVerifier::create).expectNextCount(2)
+				.verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -182,17 +184,16 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractKeyspac
 		GroupKey key1 = new GroupKey("Simpsons", "hash", "Bart");
 		GroupKey key2 = new GroupKey("Simpsons", "hash", "Homer");
 
-		StepVerifier.create(groupRepostitory.saveAll(Flux.just(new Group(key1), new Group(key2)))).expectNextCount(2)
+		groupRepostitory.saveAll(Flux.just(new Group(key1), new Group(key2))).as(StepVerifier::create).expectNextCount(2)
 				.verifyComplete();
 
-		StepVerifier
-				.create(groupRepostitory.findByIdGroupnameAndIdHashPrefix("Simpsons", "hash",
-						Sort.by("id.username").ascending())) //
+		groupRepostitory.findByIdGroupnameAndIdHashPrefix("Simpsons", "hash", Sort.by("id.username").ascending())
+				.as(StepVerifier::create) //
 				.expectNext(new Group(key1), new Group(key2)) //
 				.verifyComplete();
 
-		StepVerifier.create(groupRepostitory.findByIdGroupnameAndIdHashPrefix("Simpsons", "hash",
-					Sort.by("id.username").descending()))
+		groupRepostitory.findByIdGroupnameAndIdHashPrefix("Simpsons", "hash", Sort.by("id.username").descending())
+				.as(StepVerifier::create)
 				.expectNext(new Group(key2), new Group(key1)) //
 				.verifyComplete();
 	}
@@ -200,21 +201,21 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractKeyspac
 	@Test // DATACASS-512
 	public void shouldCountRecords() {
 
-		StepVerifier.create(repository.countByLastname("Matthews")).expectNext(2L).verifyComplete();
-		StepVerifier.create(repository.countByLastname("None")).expectNext(0L).verifyComplete();
+		repository.countByLastname("Matthews").as(StepVerifier::create).expectNext(2L).verifyComplete();
+		repository.countByLastname("None").as(StepVerifier::create).expectNext(0L).verifyComplete();
 
-		StepVerifier.create(repository.countQueryByLastname("Matthews")).expectNext(2L).verifyComplete();
-		StepVerifier.create(repository.countQueryByLastname("None")).expectNext(0L).verifyComplete();
+		repository.countQueryByLastname("Matthews").as(StepVerifier::create).expectNext(2L).verifyComplete();
+		repository.countQueryByLastname("None").as(StepVerifier::create).expectNext(0L).verifyComplete();
 	}
 
 	@Test // DATACASS-512
 	public void shouldApplyExistsProjection() {
 
-		StepVerifier.create(repository.existsByLastname("Matthews")).expectNext(true).verifyComplete();
-		StepVerifier.create(repository.existsByLastname("None")).expectNext(false).verifyComplete();
+		repository.existsByLastname("Matthews").as(StepVerifier::create).expectNext(true).verifyComplete();
+		repository.existsByLastname("None").as(StepVerifier::create).expectNext(false).verifyComplete();
 
-		StepVerifier.create(repository.existsQueryByLastname("Matthews")).expectNext(true).verifyComplete();
-		StepVerifier.create(repository.existsQueryByLastname("None")).expectNext(false).verifyComplete();
+		repository.existsQueryByLastname("Matthews").as(StepVerifier::create).expectNext(true).verifyComplete();
+		repository.existsQueryByLastname("None").as(StepVerifier::create).expectNext(false).verifyComplete();
 	}
 
 	interface UserRepository extends ReactiveCassandraRepository<User, String> {

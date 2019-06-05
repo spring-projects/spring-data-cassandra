@@ -65,8 +65,7 @@ public class MappingCassandraEntityInformation<T, ID> extends PersistentEntityIn
 
 		CassandraPersistentProperty idProperty = this.entityMetadata.getIdProperty();
 
-		return idProperty != null
-				? (ID) this.entityMetadata.getIdentifierAccessor(entity).getIdentifier()
+		return idProperty != null ? (ID) this.entityMetadata.getIdentifierAccessor(entity).getIdentifier()
 				: (ID) converter.getId(entity, entityMetadata);
 	}
 

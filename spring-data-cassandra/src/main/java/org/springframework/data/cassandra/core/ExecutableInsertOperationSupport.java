@@ -51,7 +51,7 @@ class ExecutableInsertOperationSupport implements ExecutableInsertOperation {
 	// While the use of final fields and construction on mutation effectively makes this class Thread-safe,
 	// it is possible this implementation could generate a high-level of young-gen garbage on the JVM heap,
 	// particularly if the template insert(..) (and this class) are used inside of a loop for a large number
-	// of domain types.  Of course, this assumption is highly contingent on the user's  application design.
+	// of domain types. Of course, this assumption is highly contingent on the user's application design.
 
 	@RequiredArgsConstructor
 	@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)

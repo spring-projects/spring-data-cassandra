@@ -134,8 +134,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 			this.columnName = determineColumnName();
 		}
 
-		Assert.state(this.columnName != null,
-			() -> String.format("Cannot determine column name for %s", this));
+		Assert.state(this.columnName != null, () -> String.format("Cannot determine column name for %s", this));
 
 		return this.columnName;
 	}
@@ -172,7 +171,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		if (dataType == null) {
 			throw new InvalidDataAccessApiUsageException(String.format(
 					"Unknown type [%s] for property [%s] in entity [%s]; only primitive types and Collections or Maps of primitive types are allowed",
-							getType(), getName(), getOwner().getName()));
+					getType(), getName(), getOwner().getName()));
 		}
 
 		return dataType;
@@ -266,7 +265,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		if (dataType == null) {
 			throw new InvalidDataAccessApiUsageException(String.format(
 					"Only primitive types are allowed inside Collections for property [%1$s] of type ['%2$s'] in entity [%3$s]",
-							getName(), getType(), getOwner().getName()));
+					getName(), getType(), getOwner().getName()));
 		}
 
 		return dataType;
@@ -275,9 +274,9 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	private void assertTypeArguments(int args, int expected) {
 
 		if (args != expected) {
-			throw new InvalidDataAccessApiUsageException(
-					String.format("Expected [%1$s] type arguments for property ['%2$s'] of type ['%3$s'] in entity [%4$s]; actual was [%5$d]",
-							expected, getName(), getType(), getOwner().getName(), args));
+			throw new InvalidDataAccessApiUsageException(String.format(
+					"Expected [%1$s] type arguments for property ['%2$s'] of type ['%3$s'] in entity [%4$s]; actual was [%5$d]",
+					expected, getName(), getType(), getOwner().getName(), args));
 		}
 	}
 
@@ -430,7 +429,8 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	@Override
 	public AnnotatedType findAnnotatedType(Class<? extends Annotation> annotationType) {
 
-		return Optionals.toStream(Optional.ofNullable(getField()).map(Field::getAnnotatedType),
+		return Optionals
+				.toStream(Optional.ofNullable(getField()).map(Field::getAnnotatedType),
 						Optional.ofNullable(getGetter()).map(Method::getAnnotatedReturnType),
 						Optional.ofNullable(getSetter()).map(it -> it.getParameters()[0].getAnnotatedType()))
 				.filter(it -> hasAnnotation(it, annotationType, getTypeInformation())).findFirst().orElse(null);

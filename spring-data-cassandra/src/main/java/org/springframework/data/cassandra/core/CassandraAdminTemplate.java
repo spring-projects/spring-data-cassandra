@@ -103,8 +103,7 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 	@Override
 	public void dropTable(boolean ifExists, CqlIdentifier tableName) {
 
-		String dropTableCql =
-				DropTableCqlGenerator.toCql(DropTableSpecification.dropTable(tableName).ifExists(ifExists));
+		String dropTableCql = DropTableCqlGenerator.toCql(DropTableSpecification.dropTable(tableName).ifExists(ifExists));
 
 		getCqlOperations().execute(dropTableCql);
 	}
@@ -117,8 +116,7 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 
 		Assert.notNull(typeName, "Type name must not be null");
 
-		String dropUserTypeCql =
-				DropUserTypeCqlGenerator.toCql(DropUserTypeSpecification.dropType(typeName));
+		String dropUserTypeCql = DropUserTypeCqlGenerator.toCql(DropUserTypeSpecification.dropType(typeName));
 
 		getCqlOperations().execute(dropUserTypeCql);
 	}

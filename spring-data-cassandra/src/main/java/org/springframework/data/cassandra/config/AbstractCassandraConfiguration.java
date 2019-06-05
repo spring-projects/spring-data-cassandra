@@ -149,8 +149,8 @@ public abstract class AbstractCassandraConfiguration extends AbstractClusterConf
 
 		UserTypeResolver userTypeResolver = new SimpleUserTypeResolver(cluster, getKeyspaceName());
 
-		CassandraMappingContext mappingContext =
-				new CassandraMappingContext(userTypeResolver, new SimpleTupleTypeFactory(cluster));
+		CassandraMappingContext mappingContext = new CassandraMappingContext(userTypeResolver,
+				new SimpleTupleTypeFactory(cluster));
 
 		Optional.ofNullable(this.beanClassLoader).ifPresent(mappingContext::setBeanClassLoader);
 

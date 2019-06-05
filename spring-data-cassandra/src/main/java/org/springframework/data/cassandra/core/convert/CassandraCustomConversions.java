@@ -82,8 +82,7 @@ public class CassandraCustomConversions extends org.springframework.data.convert
 					ResolvableType classType = ResolvableType.forClass(it).as(Converter.class).getGeneric(0);
 
 					return classType.getRawClass();
-				})
-				.collect(Collectors.toList());
+				}).collect(Collectors.toList());
 
 		NATIVE_TIME_TYPE_MARKERS = new HashSet<>(timeMarkers);
 	}

@@ -21,14 +21,14 @@ import org.springframework.data.cassandra.core.query.Update;
 import org.springframework.util.Assert;
 
 /**
- * {@link ExecutableUpdateOperation} allows creation and execution of Cassandra {@code UPDATE} operation
- * in a fluent API style.
+ * {@link ExecutableUpdateOperation} allows creation and execution of Cassandra {@code UPDATE} operation in a fluent API
+ * style.
  * <p>
- * The starting {@literal domainType} is used for mapping the {@link Query} provided via {@code matching},
- * as well as the {@link Update} provided via {@code apply} into the Cassandra specific representations.
- * The table to operate on is by default derived from the initial {@literal domainType} and can be defined
- * there via {@link org.springframework.data.cassandra.core.mapping.Table}. Using {@code inTable} allows
- * the developer to override the table name for the execution.
+ * The starting {@literal domainType} is used for mapping the {@link Query} provided via {@code matching}, as well as
+ * the {@link Update} provided via {@code apply} into the Cassandra specific representations. The table to operate on is
+ * by default derived from the initial {@literal domainType} and can be defined there via
+ * {@link org.springframework.data.cassandra.core.mapping.Table}. Using {@code inTable} allows the developer to override
+ * the table name for the execution.
  *
  * <pre>
  *     <code>
@@ -131,8 +131,7 @@ public interface ExecutableUpdateOperation {
 	}
 
 	/**
-	 * The {@link ExecutableUpdate} interface provides methods for constructing {@code UPDATE} operations
-	 * in a fluent way.
+	 * The {@link ExecutableUpdate} interface provides methods for constructing {@code UPDATE} operations in a fluent way.
 	 */
 	interface ExecutableUpdate extends UpdateWithTable, UpdateWithQuery {}
 

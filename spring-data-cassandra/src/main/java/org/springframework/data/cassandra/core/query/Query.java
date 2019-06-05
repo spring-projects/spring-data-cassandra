@@ -15,9 +15,8 @@
  */
 package org.springframework.data.cassandra.core.query;
 
-import static java.util.stream.StreamSupport.stream;
-import static org.springframework.util.ObjectUtils.nullSafeEquals;
-import static org.springframework.util.ObjectUtils.nullSafeHashCode;
+import static java.util.stream.StreamSupport.*;
+import static org.springframework.util.ObjectUtils.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -108,11 +107,10 @@ public class Query implements Filter {
 
 		Assert.notNull(criteriaDefinitions, "CriteriaDefinitions must not be null");
 
-		List<CriteriaDefinition> collect = stream(criteriaDefinitions.spliterator(), false)
-				.collect(Collectors.toList());
+		List<CriteriaDefinition> collect = stream(criteriaDefinitions.spliterator(), false).collect(Collectors.toList());
 
-		return new Query(collect, Columns.empty(), Sort.unsorted(), Optional.empty(), Optional.empty(),
-				Optional.empty(), false);
+		return new Query(collect, Columns.empty(), Sort.unsorted(), Optional.empty(), Optional.empty(), Optional.empty(),
+				false);
 	}
 
 	/**
@@ -184,8 +182,8 @@ public class Query implements Filter {
 			}
 		}
 
-		return new Query(this.criteriaDefinitions, this.columns, this.sort.and(sort), this.pagingState,
-				this.queryOptions, this.limit, this.allowFiltering);
+		return new Query(this.criteriaDefinitions, this.columns, this.sort.and(sort), this.pagingState, this.queryOptions,
+				this.limit, this.allowFiltering);
 	}
 
 	/**
@@ -289,8 +287,8 @@ public class Query implements Filter {
 	 * @return a new {@link Query} object containing the former settings with {@code allowFiltering} applied.
 	 */
 	public Query withAllowFiltering() {
-		return new Query(this.criteriaDefinitions, this.columns, this.sort, this.pagingState, this.queryOptions,
-				this.limit, true);
+		return new Query(this.criteriaDefinitions, this.columns, this.sort, this.pagingState, this.queryOptions, this.limit,
+				true);
 	}
 
 	/**
@@ -362,8 +360,7 @@ public class Query implements Filter {
 	@Override
 	public String toString() {
 
-		String query = stream(this.spliterator(), false)
-				.map(SerializationUtils::serializeToCqlSafely)
+		String query = stream(this.spliterator(), false).map(SerializationUtils::serializeToCqlSafely)
 				.collect(Collectors.joining(" AND "));
 
 		return String.format("Query: %s, Columns: %s, Sort: %s, Limit: %d", query, getColumns(), getSort(), getLimit());

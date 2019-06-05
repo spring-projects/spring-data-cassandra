@@ -75,13 +75,14 @@ public class BasicCassandraPersistentTupleProperty extends BasicCassandraPersist
 			ordinal = getRequiredAnnotation(Element.class).value();
 		} catch (IllegalStateException cause) {
 			throw new MappingException(
-					String.format("Missing @Element annotation in mapped tuple type for property [%s] in entity [%s]",
-							getName(), getOwner().getName()), cause);
+					String.format("Missing @Element annotation in mapped tuple type for property [%s] in entity [%s]", getName(),
+							getOwner().getName()),
+					cause);
 		}
 
 		Assert.isTrue(ordinal >= 0,
-				String.format("Element ordinal must be greater or equal to zero for property [%s] in entity [%s]",
-						getName(), getOwner().getName()));
+				String.format("Element ordinal must be greater or equal to zero for property [%s] in entity [%s]", getName(),
+						getOwner().getName()));
 
 		return ordinal;
 	}

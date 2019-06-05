@@ -71,8 +71,8 @@ public class CreateIndexCqlGenerator extends IndexNameCqlGenerator<CreateIndexSp
 
 			List<String> entries = new ArrayList<>(options.size());
 
-			options.forEach((key, value) -> entries.add(String.format("'%s': '%s'",
-					CqlStringUtils.escapeSingle(key), CqlStringUtils.escapeSingle(value))));
+			options.forEach((key, value) -> entries
+					.add(String.format("'%s': '%s'", CqlStringUtils.escapeSingle(key), CqlStringUtils.escapeSingle(value))));
 
 			StringBuilder optionsCql = new StringBuilder(" WITH OPTIONS = ").append("{");
 

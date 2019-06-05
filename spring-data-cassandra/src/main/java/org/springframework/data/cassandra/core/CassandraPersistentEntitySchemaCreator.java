@@ -145,8 +145,8 @@ public class CassandraPersistentEntitySchemaCreator {
 	 */
 	protected List<CreateUserTypeSpecification> createUserTypeSpecifications(boolean ifNotExists) {
 
-		Collection<? extends CassandraPersistentEntity<?>> entities =
-				new ArrayList<>(this.mappingContext.getUserDefinedTypeEntities());
+		Collection<? extends CassandraPersistentEntity<?>> entities = new ArrayList<>(
+				this.mappingContext.getUserDefinedTypeEntities());
 
 		Map<CqlIdentifier, CassandraPersistentEntity<?>> byTableName = entities.stream()
 				.collect(Collectors.toMap(CassandraPersistentEntity::getTableName, entity -> entity));
@@ -166,9 +166,10 @@ public class CassandraPersistentEntitySchemaCreator {
 
 			Collections.reverse(ordered);
 
-			specifications.addAll(ordered.stream().filter(created::add).map(identifier ->
-				this.mappingContext.getCreateUserTypeSpecificationFor(byTableName.get(identifier)).ifNotExists(ifNotExists))
-				.collect(Collectors.toList()));
+			specifications.addAll(ordered
+					.stream().filter(created::add).map(identifier -> this.mappingContext
+							.getCreateUserTypeSpecificationFor(byTableName.get(identifier)).ifNotExists(ifNotExists))
+					.collect(Collectors.toList()));
 		});
 
 		return specifications;

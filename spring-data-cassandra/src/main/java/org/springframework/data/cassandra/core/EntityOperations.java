@@ -49,8 +49,7 @@ import com.datastax.driver.core.querybuilder.Update;
 @RequiredArgsConstructor
 class EntityOperations {
 
-	@NonNull @Getter(AccessLevel.PROTECTED)
-	private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
+	@NonNull @Getter(AccessLevel.PROTECTED) private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
 
 	/**
 	 * Creates a new {@link Entity} for the given bean.
@@ -251,8 +250,7 @@ class EntityOperations {
 
 			PersistentPropertyAccessor<T> propertyAccessor = entity.getPropertyAccessor(bean);
 
-			return new AdaptibleMappedEntity<>(entity,
-				new ConvertingPropertyAccessor<>(propertyAccessor, conversionService));
+			return new AdaptibleMappedEntity<>(entity, new ConvertingPropertyAccessor<>(propertyAccessor, conversionService));
 		}
 
 		private AdaptibleMappedEntity(CassandraPersistentEntity<?> entity, ConvertingPropertyAccessor<T> propertyAccessor) {

@@ -541,8 +541,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 * @see org.springframework.data.cassandra.core.cqlOperations#query(org.springframework.data.cassandra.core.cql.PreparedStatementCreator, org.springframework.data.cassandra.core.cql.PreparedStatementBinder, org.springframework.data.cassandra.core.cql.RowMapper)
 	 */
 	@Override
-	public <T> List<T> query(PreparedStatementCreator preparedStatementCreator,
-			@Nullable PreparedStatementBinder psb, RowMapper<T> rowMapper) throws DataAccessException {
+	public <T> List<T> query(PreparedStatementCreator preparedStatementCreator, @Nullable PreparedStatementBinder psb,
+			RowMapper<T> rowMapper) throws DataAccessException {
 		// noinspection ConstantConditions
 		return query(preparedStatementCreator, psb, newResultSetExtractor(rowMapper));
 	}
@@ -582,8 +582,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 * @see org.springframework.data.cassandra.core.cqlOperations#query(java.lang.String, org.springframework.data.cassandra.core.cql.PreparedStatementBinder, org.springframework.data.cassandra.core.cql.ResultSetExtractor)
 	 */
 	@Override
-	public <T> T query(String cql, @Nullable PreparedStatementBinder psb,
-			ResultSetExtractor<T> resultSetExtractor) throws DataAccessException {
+	public <T> T query(String cql, @Nullable PreparedStatementBinder psb, ResultSetExtractor<T> resultSetExtractor)
+			throws DataAccessException {
 
 		return query(newPreparedStatementCreator(cql), psb, resultSetExtractor);
 	}

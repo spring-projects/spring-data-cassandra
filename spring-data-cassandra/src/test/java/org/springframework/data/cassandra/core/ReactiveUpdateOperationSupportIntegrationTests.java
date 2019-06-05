@@ -98,7 +98,7 @@ public class ReactiveUpdateOperationSupportIntegrationTests extends AbstractKeys
 				.matching(queryHan())
 				.apply(update("firstname", "Han"));
 
-		StepVerifier.create(writeResult.map(WriteResult::wasApplied)).expectNext(true).verifyComplete();
+		writeResult.map(WriteResult::wasApplied).as(StepVerifier::create).expectNext(true).verifyComplete();
 	}
 
 	@Test // DATACASS-485
@@ -109,7 +109,7 @@ public class ReactiveUpdateOperationSupportIntegrationTests extends AbstractKeys
 				.matching(query(where("id").is(han.getId())))
 				.apply(update("name", "Han"));
 
-		StepVerifier.create(writeResult.map(WriteResult::wasApplied)).expectNext(true).verifyComplete();
+		writeResult.map(WriteResult::wasApplied).as(StepVerifier::create).expectNext(true).verifyComplete();
 
 		assertThat(this.admin.selectOne(queryHan(), Person.class))
 				.isNotEqualTo(han).hasFieldOrPropertyWithValue("firstname", "Han");

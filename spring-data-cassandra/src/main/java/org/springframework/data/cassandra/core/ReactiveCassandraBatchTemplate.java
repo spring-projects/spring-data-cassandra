@@ -15,6 +15,9 @@
  */
 package org.springframework.data.cassandra.core;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -22,9 +25,6 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
-
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.UpdateMapper;
@@ -86,8 +86,8 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 	}
 
 	/**
-	 * Return a reference to the configured {@link CassandraConverter} used to map {@link Object Objects}
-	 * to {@link com.datastax.driver.core.Row Rows}.
+	 * Return a reference to the configured {@link CassandraConverter} used to map {@link Object Objects} to
+	 * {@link com.datastax.driver.core.Row Rows}.
 	 *
 	 * @return a reference to the configured {@link CassandraConverter}.
 	 * @see org.springframework.data.cassandra.core.convert.CassandraConverter
@@ -97,8 +97,8 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 	}
 
 	/**
-	 * Returns a reference to the configured {@link CassandraMappingContext} used to map entities to Cassandra tables
-	 * and back.
+	 * Returns a reference to the configured {@link CassandraMappingContext} used to map entities to Cassandra tables and
+	 * back.
 	 *
 	 * @return a reference to the configured {@link CassandraMappingContext}.
 	 * @see org.springframework.data.cassandra.core.mapping.CassandraMappingContext
@@ -112,8 +112,8 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 	}
 
 	/**
-	 * Return a reference to the configured {@link StatementFactory} used to create Cassandra {@link Statement} objects
-	 * to perform data access operations on a Cassandra cluster.
+	 * Return a reference to the configured {@link StatementFactory} used to create Cassandra {@link Statement} objects to
+	 * perform data access operations on a Cassandra cluster.
 	 *
 	 * @return a reference to the configured {@link StatementFactory}.
 	 * @see org.springframework.data.cassandra.core.StatementFactory
@@ -231,11 +231,11 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 
 			Assert.notNull(entity, "Entity must not be null");
 
-			BasicCassandraPersistentEntity<?> persistentEntity =
-					mappingContext.getRequiredPersistentEntity(entity.getClass());
+			BasicCassandraPersistentEntity<?> persistentEntity = mappingContext
+					.getRequiredPersistentEntity(entity.getClass());
 
-			Insert insertQuery = EntityQueryUtils.createInsertQuery(persistentEntity.getTableName().toCql(),
-					entity, options, converter, persistentEntity);
+			Insert insertQuery = EntityQueryUtils.createInsertQuery(persistentEntity.getTableName().toCql(), entity, options,
+					converter, persistentEntity);
 
 			insertQueries.add(insertQuery);
 		}
@@ -313,8 +313,8 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 
 			CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
 
-			Update update = getStatementFactory()
-					.update(entity, options, converter, persistentEntity, persistentEntity.getTableName());
+			Update update = getStatementFactory().update(entity, options, converter, persistentEntity,
+					persistentEntity.getTableName());
 
 			updateQueries.add(update);
 		}
@@ -392,8 +392,8 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 
 			CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
 
-			Delete delete = getStatementFactory()
-					.delete(entity, options, converter, persistentEntity, persistentEntity.getTableName());
+			Delete delete = getStatementFactory().delete(entity, options, converter, persistentEntity,
+					persistentEntity.getTableName());
 
 			deleteQueries.add(delete);
 		}

@@ -22,11 +22,11 @@ import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.util.Assert;
 
 /**
- * The {@link ReactiveDeleteOperation} interface allows creation and execution of Cassandra {@code DELETE} operations
- * in a fluent API style.
+ * The {@link ReactiveDeleteOperation} interface allows creation and execution of Cassandra {@code DELETE} operations in
+ * a fluent API style.
  * <p>
- * The starting {@literal domainType} is used for mapping the {@link Query} provided via {@code matching}
- * into the Cassandra specific representation. By default, the table to operate on is derived from the initial
+ * The starting {@literal domainType} is used for mapping the {@link Query} provided via {@code matching} into the
+ * Cassandra specific representation. By default, the table to operate on is derived from the initial
  * {@literal domainType} and can be defined there via {@link org.springframework.data.cassandra.core.mapping.Table}
  * annotation. Using {@code inTable} allows a developer to override the table name for the execution.
  *
@@ -127,8 +127,7 @@ public interface ReactiveDeleteOperation {
 	}
 
 	/**
-	 * The {@link ReactiveDelete} interface provides methods for constructing {@code DELETE} operations
-	 * in a fluent way.
+	 * The {@link ReactiveDelete} interface provides methods for constructing {@code DELETE} operations in a fluent way.
 	 */
 	interface ReactiveDelete extends DeleteWithTable, DeleteWithQuery {}
 

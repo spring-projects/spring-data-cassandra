@@ -26,6 +26,7 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
@@ -48,20 +49,9 @@ import org.springframework.util.ClassUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import com.datastax.driver.core.AuthProvider;
-import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.*;
 import com.datastax.driver.core.Cluster.Builder;
-import com.datastax.driver.core.Host;
-import com.datastax.driver.core.LatencyTracker;
-import com.datastax.driver.core.NettyOptions;
-import com.datastax.driver.core.PoolingOptions;
 import com.datastax.driver.core.ProtocolOptions.Compression;
-import com.datastax.driver.core.ProtocolVersion;
-import com.datastax.driver.core.QueryOptions;
-import com.datastax.driver.core.SSLOptions;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.SocketOptions;
-import com.datastax.driver.core.TimestampGenerator;
 import com.datastax.driver.core.policies.AddressTranslator;
 import com.datastax.driver.core.policies.LoadBalancingPolicy;
 import com.datastax.driver.core.policies.ReconnectionPolicy;
@@ -186,8 +176,7 @@ public class CassandraClusterFactoryBean
 
 		Builder clusterBuilder = newClusterBuilder()
 				.addContactPoints(StringUtils.commaDelimitedListToStringArray(this.contactPoints))
-				.withMaxSchemaAgreementWaitSeconds(this.maxSchemaAgreementWaitSeconds)
-				.withPort(this.port);
+				.withMaxSchemaAgreementWaitSeconds(this.maxSchemaAgreementWaitSeconds).withPort(this.port);
 
 		Optional.ofNullable(this.addressTranslator).ifPresent(clusterBuilder::withAddressTranslator);
 		Optional.ofNullable(this.loadBalancingPolicy).ifPresent(clusterBuilder::withLoadBalancingPolicy);
@@ -201,15 +190,12 @@ public class CassandraClusterFactoryBean
 		Optional.ofNullable(this.speculativeExecutionPolicy).ifPresent(clusterBuilder::withSpeculativeExecutionPolicy);
 		Optional.ofNullable(this.timestampGenerator).ifPresent(clusterBuilder::withTimestampGenerator);
 
-		Optional.ofNullable(this.authProvider)
-				.map(clusterBuilder::withAuthProvider)
-				.orElseGet(() -> StringUtils.hasText(this.username)
-					? clusterBuilder.withCredentials(this.username, this.password)
-					: clusterBuilder);
+		Optional.ofNullable(this.authProvider).map(clusterBuilder::withAuthProvider).orElseGet(
+				() -> StringUtils.hasText(this.username) ? clusterBuilder.withCredentials(this.username, this.password)
+						: clusterBuilder);
 
-		Optional.ofNullable(this.compressionType)
-			.map(CassandraClusterFactoryBean::convertCompressionType)
-			.ifPresent(clusterBuilder::withCompression);
+		Optional.ofNullable(this.compressionType).map(CassandraClusterFactoryBean::convertCompressionType)
+				.ifPresent(clusterBuilder::withCompression);
 
 		if (!this.jmxReportingEnabled) {
 			clusterBuilder.withoutJMXReporting();
@@ -220,14 +206,10 @@ public class CassandraClusterFactoryBean
 		}
 
 		if (this.sslEnabled) {
-			Optional.ofNullable(this.sslOptions)
-				.map(clusterBuilder::withSSL)
-				.orElseGet(clusterBuilder::withSSL);
+			Optional.ofNullable(this.sslOptions).map(clusterBuilder::withSSL).orElseGet(clusterBuilder::withSSL);
 		}
 
-		Optional.ofNullable(resolveClusterName())
-				.filter(StringUtils::hasText)
-				.ifPresent(clusterBuilder::withClusterName);
+		Optional.ofNullable(resolveClusterName()).filter(StringUtils::hasText).ifPresent(clusterBuilder::withClusterName);
 
 		if (this.clusterBuilderConfigurer != null) {
 			this.clusterBuilderConfigurer.configure(clusterBuilder);
@@ -254,7 +236,8 @@ public class CassandraClusterFactoryBean
 	 * (non-Javadoc)
 	 * @see com.datastax.driver.core.Cluster#builder()
 	 */
-	@NonNull Cluster.Builder newClusterBuilder() {
+	@NonNull
+	Cluster.Builder newClusterBuilder() {
 		return Cluster.builder();
 	}
 
@@ -274,8 +257,8 @@ public class CassandraClusterFactoryBean
 
 		generateSpecificationsFromFactoryBeans();
 
-		List<KeyspaceActionSpecification> startupSpecifications =
-			new ArrayList<>(this.keyspaceCreations.size() + this.keyspaceAlterations.size());
+		List<KeyspaceActionSpecification> startupSpecifications = new ArrayList<>(
+				this.keyspaceCreations.size() + this.keyspaceAlterations.size());
 
 		startupSpecifications.addAll(this.keyspaceCreations);
 		startupSpecifications.addAll(this.keyspaceAlterations);
@@ -295,7 +278,7 @@ public class CassandraClusterFactoryBean
 				CqlTemplate template = new CqlTemplate(session);
 
 				keyspaceActionSpecifications
-					.forEach(keyspaceActionSpecification -> template.execute(toCql(keyspaceActionSpecification)));
+						.forEach(keyspaceActionSpecification -> template.execute(toCql(keyspaceActionSpecification)));
 
 				scripts.forEach(template::execute);
 			}
@@ -303,8 +286,8 @@ public class CassandraClusterFactoryBean
 	}
 
 	/**
-	 * Evaluates the contents of all the KeyspaceSpecificationFactoryBeans
-	 * and generates the proper KeyspaceSpecification from them.
+	 * Evaluates the contents of all the KeyspaceSpecificationFactoryBeans and generates the proper KeyspaceSpecification
+	 * from them.
 	 */
 	private void generateSpecificationsFromFactoryBeans() {
 
@@ -318,31 +301,26 @@ public class CassandraClusterFactoryBean
 
 			if (keyspaceActionSpecification instanceof AlterKeyspaceSpecification) {
 				this.keyspaceAlterations.add((AlterKeyspaceSpecification) keyspaceActionSpecification);
-			}
-			else if (keyspaceActionSpecification instanceof CreateKeyspaceSpecification) {
+			} else if (keyspaceActionSpecification instanceof CreateKeyspaceSpecification) {
 				this.keyspaceCreations.add((CreateKeyspaceSpecification) keyspaceActionSpecification);
-			}
-			else if (keyspaceActionSpecification instanceof DropKeyspaceSpecification) {
+			} else if (keyspaceActionSpecification instanceof DropKeyspaceSpecification) {
 				this.keyspaceDrops.add((DropKeyspaceSpecification) keyspaceActionSpecification);
 			}
 		});
 	}
 
-
 	private String toCql(KeyspaceActionSpecification specification) {
 
 		if (specification instanceof AlterKeyspaceSpecification) {
 			return new AlterKeyspaceCqlGenerator((AlterKeyspaceSpecification) specification).toCql();
-		}
-		else if (specification instanceof CreateKeyspaceSpecification) {
+		} else if (specification instanceof CreateKeyspaceSpecification) {
 			return new CreateKeyspaceCqlGenerator((CreateKeyspaceSpecification) specification).toCql();
-		}
-		else if (specification instanceof DropKeyspaceSpecification) {
+		} else if (specification instanceof DropKeyspaceSpecification) {
 			return new DropKeyspaceCqlGenerator((DropKeyspaceSpecification) specification).toCql();
 		}
 
-		throw new IllegalArgumentException("Unsupported specification type: "
-			+ ClassUtils.getQualifiedName(specification.getClass()));
+		throw new IllegalArgumentException(
+				"Unsupported specification type: " + ClassUtils.getQualifiedName(specification.getClass()));
 	}
 
 	/*
@@ -698,13 +676,12 @@ public class CassandraClusterFactoryBean
 
 	/**
 	 * Sets the {@link ClusterBuilderConfigurer} used to apply additional configuration logic to the
-	 * {@link com.datastax.driver.core.Cluster.Builder} object.
-	 *
-	 * {@link ClusterBuilderConfigurer} is invoked after all provided options are configured. The factory will
-	 * {@link Builder#build()} the {@link Cluster} after applying {@link ClusterBuilderConfigurer}.
+	 * {@link com.datastax.driver.core.Cluster.Builder} object. {@link ClusterBuilderConfigurer} is invoked after all
+	 * provided options are configured. The factory will {@link Builder#build()} the {@link Cluster} after applying
+	 * {@link ClusterBuilderConfigurer}.
 	 *
 	 * @param clusterBuilderConfigurer {@link ClusterBuilderConfigurer} used to configure the
-	 * {@link com.datastax.driver.core.Cluster.Builder}.
+	 *          {@link com.datastax.driver.core.Cluster.Builder}.
 	 * @see org.springframework.data.cassandra.config.ClusterBuilderConfigurer
 	 */
 	public void setClusterBuilderConfigurer(@Nullable ClusterBuilderConfigurer clusterBuilderConfigurer) {

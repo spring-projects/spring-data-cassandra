@@ -358,8 +358,8 @@ public class StatementFactory {
 			EntityWriter<Object, Object> entityWriter, CassandraPersistentEntity<?> persistentEntity,
 			CqlIdentifier tableName) {
 
-		com.datastax.driver.core.querybuilder.Update update =
-				EntityQueryUtils.createUpdateQuery(tableName.toCql(), entity, options, entityWriter);
+		com.datastax.driver.core.querybuilder.Update update = EntityQueryUtils.createUpdateQuery(tableName.toCql(), entity,
+				options, entityWriter);
 
 		potentiallyApplyIfCondition(options, UpdateOptions.class, UpdateOptions::getIfCondition,
 				condition -> addIfCondition(condition, update, persistentEntity));
@@ -635,9 +635,9 @@ public class StatementFactory {
 
 		Predicate predicate = criteriaDefinition.getPredicate();
 
-		CriteriaDefinition.Operators predicateOperator =
-			CriteriaDefinition.Operators.from(predicate.getOperator().toString())
-				.orElseThrow(() -> new IllegalArgumentException(String.format("Unknown operator [%s]", predicate.getOperator())));
+		CriteriaDefinition.Operators predicateOperator = CriteriaDefinition.Operators
+				.from(predicate.getOperator().toString()).orElseThrow(
+						() -> new IllegalArgumentException(String.format("Unknown operator [%s]", predicate.getOperator())));
 
 		switch (predicateOperator) {
 
@@ -692,7 +692,7 @@ public class StatementFactory {
 				return QueryBuilder.containsKey(columnName, predicate.getValue());
 		}
 
-		throw new IllegalArgumentException(String.format("Criteria %s %s %s not supported",
-				columnName, predicate.getOperator(), predicate.getValue()));
+		throw new IllegalArgumentException(
+				String.format("Criteria %s %s %s not supported", columnName, predicate.getOperator(), predicate.getValue()));
 	}
 }

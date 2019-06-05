@@ -49,10 +49,8 @@ public interface CassandraAdminOperations extends CassandraOperations {
 			Map<String, Object> optionsByName);
 
 	/**
-	 * Drops a table based on the given {@link Class entity type}.
-	 *
-	 * The name of the table is derived from either the simple name of the {@link Class entity class}
-	 * or name of the table specified with the {@link Table} mapping annotation.
+	 * Drops a table based on the given {@link Class entity type}. The name of the table is derived from either the simple
+	 * name of the {@link Class entity class} or name of the table specified with the {@link Table} mapping annotation.
 	 *
 	 * @param entityType {@link Class type} of the entity for which the table will be dropped.
 	 */
@@ -69,8 +67,7 @@ public interface CassandraAdminOperations extends CassandraOperations {
 	/**
 	 * Drops the {@link String named} table.
 	 *
-	 * @param ifExists If {@literal true}, will only drop the table if it exists,
-	 * else the drop operation will be ignored.
+	 * @param ifExists If {@literal true}, will only drop the table if it exists, else the drop operation will be ignored.
 	 * @param tableName {@link String Name} of the table to drop.
 	 * @since 2.1
 	 */

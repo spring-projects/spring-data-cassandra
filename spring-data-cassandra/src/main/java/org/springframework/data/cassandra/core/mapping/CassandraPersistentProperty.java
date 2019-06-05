@@ -65,8 +65,7 @@ public interface CassandraPersistentProperty
 
 		CqlIdentifier columnName = getColumnName();
 
-		Assert.state(columnName != null,
-			String.format("No column name available for this persistent property [%1$s.%2$s]",
+		Assert.state(columnName != null, String.format("No column name available for this persistent property [%1$s.%2$s]",
 				getOwner().getName(), getName()));
 
 		return columnName;
@@ -105,8 +104,7 @@ public interface CassandraPersistentProperty
 
 		Integer ordinal = getOrdinal();
 
-		Assert.state(ordinal != null ,
-			String.format("No ordinal available for this persistent property [%1$s.%2$s]",
+		Assert.state(ordinal != null, String.format("No ordinal available for this persistent property [%1$s.%2$s]",
 				getOwner().getName(), getName()));
 
 		return ordinal;

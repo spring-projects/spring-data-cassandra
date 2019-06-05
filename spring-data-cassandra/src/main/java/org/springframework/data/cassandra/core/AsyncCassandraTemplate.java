@@ -15,11 +15,11 @@
  */
 package org.springframework.data.cassandra.core;
 
+import lombok.Value;
+
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
-
-import lombok.Value;
 
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
@@ -193,8 +193,8 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 	}
 
 	/**
-	 * Returns the {@link EntityOperations} used to perform data access operations on an entity
-	 * inside a Cassandra data source.
+	 * Returns the {@link EntityOperations} used to perform data access operations on an entity inside a Cassandra data
+	 * source.
 	 *
 	 * @return the configured {@link EntityOperations} for this template.
 	 * @see org.springframework.data.cassandra.core.EntityOperations
@@ -299,7 +299,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 	 */
 	@Override
 	public <T> ListenableFuture<Void> select(Statement statement, Consumer<T> entityConsumer, Class<T> entityClass)
-		throws DataAccessException {
+			throws DataAccessException {
 
 		Assert.notNull(statement, "Statement must not be null");
 		Assert.notNull(entityConsumer, "Entity Consumer must not be empty");
@@ -360,14 +360,14 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 	 */
 	@Override
 	public <T> ListenableFuture<Void> select(Query query, Consumer<T> entityConsumer, Class<T> entityClass)
-		throws DataAccessException {
+			throws DataAccessException {
 
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityConsumer, "Entity Consumer must not be empty");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return select(getStatementFactory()
-				.select(query, getRequiredPersistentEntity(entityClass)), entityConsumer, entityClass);
+		return select(getStatementFactory().select(query, getRequiredPersistentEntity(entityClass)), entityConsumer,
+				entityClass);
 	}
 
 	/* (non-Javadoc)
@@ -550,8 +550,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 		Insert insert = EntityQueryUtils.createInsertQuery(tableName.toCql(), entityToUse, options, getConverter(),
 				persistentEntity);
 
-		return source.isVersionedEntity()
-				? doInsertVersioned(insert.ifNotExists(), entityToUse, source, tableName)
+		return source.isVersionedEntity() ? doInsertVersioned(insert.ifNotExists(), entityToUse, source, tableName)
 				: doInsert(insert, entityToUse, source, tableName);
 	}
 
@@ -562,8 +561,8 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 
 			if (!result.wasApplied()) {
 				throw new OptimisticLockingFailureException(
-						String.format("Cannot insert entity %s with version %s into table %s as it already exists",
-								entity, source.getVersion(), tableName));
+						String.format("Cannot insert entity %s with version %s into table %s as it already exists", entity,
+								source.getVersion(), tableName));
 			}
 		});
 	}
@@ -596,8 +595,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 		CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
 		CqlIdentifier tableName = persistentEntity.getTableName();
 
-		return source.isVersionedEntity()
-				? doUpdateVersioned(source, options, tableName, persistentEntity)
+		return source.isVersionedEntity() ? doUpdateVersioned(source, options, tableName, persistentEntity)
 				: doUpdate(entity, options, tableName, persistentEntity);
 	}
 
@@ -614,8 +612,8 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 
 			if (!result.wasApplied()) {
 				throw new OptimisticLockingFailureException(
-						String.format("Cannot save entity %s with version %s to table %s. Has it been modified meanwhile?",
-								entity, source.getVersion(), tableName));
+						String.format("Cannot save entity %s with version %s to table %s. Has it been modified meanwhile?", entity,
+								source.getVersion(), tableName));
 			}
 		});
 	}
@@ -651,8 +649,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 
 		Delete delete = getStatementFactory().delete(entity, options, getConverter(), persistentEntity, tableName);
 
-		return source.isVersionedEntity()
-				? doDeleteVersioned(delete, entity, source, tableName)
+		return source.isVersionedEntity() ? doDeleteVersioned(delete, entity, source, tableName)
 				: doDelete(delete, entity, tableName);
 	}
 
@@ -722,7 +719,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 	private <T> ListenableFuture<EntityWriteResult<T>> executeSave(T entity, CqlIdentifier tableName,
 			Statement statement) {
 
-		return executeSave(entity, tableName, statement, ignore -> { });
+		return executeSave(entity, tableName, statement, ignore -> {});
 	}
 
 	private <T> ListenableFuture<EntityWriteResult<T>> executeSave(T entity, CqlIdentifier tableName, Statement statement,
@@ -784,8 +781,7 @@ public class AsyncCassandraTemplate implements AsyncCassandraOperations, Applica
 
 		return getAsyncCqlOperations()
 				.execute((AsyncSessionCallback<Integer>) session -> AsyncResult.forValue(getConfiguredFetchSize(session)))
-				.completable()
-				.join();
+				.completable().join();
 	}
 
 	@SuppressWarnings("unchecked")

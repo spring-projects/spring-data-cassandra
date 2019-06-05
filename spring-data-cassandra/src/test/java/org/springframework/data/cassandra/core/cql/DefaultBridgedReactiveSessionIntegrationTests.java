@@ -66,7 +66,7 @@ public class DefaultBridgedReactiveSessionIntegrationTests extends AbstractKeysp
 
 		assertThat(keyspace.getTable("users")).isNull();
 
-		StepVerifier.create(execution)
+		execution.as(StepVerifier::create)
 			.consumeNextWith(actual -> assertThat(actual.wasApplied()).isTrue())
 			.verifyComplete();
 
@@ -75,7 +75,7 @@ public class DefaultBridgedReactiveSessionIntegrationTests extends AbstractKeysp
 
 	@Test // DATACASS-335
 	public void executeShouldTransportExceptionsInMono() {
-		StepVerifier.create(reactiveSession.execute("INSERT INTO dummy;")).expectError(SyntaxError.class).verify();
+		reactiveSession.execute("INSERT INTO dummy;").as(StepVerifier::create).expectError(SyntaxError.class).verify();
 	}
 
 	@Test // DATACASS-335
@@ -84,8 +84,9 @@ public class DefaultBridgedReactiveSessionIntegrationTests extends AbstractKeysp
 		session.execute("CREATE TABLE users (\n" + "  userid text PRIMARY KEY,\n" + "  first_name text\n" + ");");
 		session.execute("INSERT INTO users (userid, first_name) VALUES ('White', 'Walter');");
 
-		StepVerifier.create(reactiveSession.execute("SELECT * FROM users;")).consumeNextWith(actual ->
-			StepVerifier.create(actual.rows()).consumeNextWith(row ->
+		reactiveSession.execute("SELECT * FROM users;").as(StepVerifier::create)
+				.consumeNextWith(actual -> actual.rows().as(StepVerifier::create)
+						.consumeNextWith(row ->
 				assertThat(row.getString("userid")).isEqualTo("White")).verifyComplete()).verifyComplete();
 	}
 
@@ -94,7 +95,7 @@ public class DefaultBridgedReactiveSessionIntegrationTests extends AbstractKeysp
 
 		session.execute("CREATE TABLE users (\n" + "  userid text PRIMARY KEY,\n" + "  first_name text\n" + ");");
 
-		StepVerifier.create(reactiveSession.prepare("INSERT INTO users (userid, first_name) VALUES (?, ?);"))
+		reactiveSession.prepare("INSERT INTO users (userid, first_name) VALUES (?, ?);").as(StepVerifier::create)
 			.consumeNextWith(actual ->
 				assertThat(actual.getQueryString()).isEqualTo("INSERT INTO users (userid, first_name) VALUES (?, ?);"))
 			.verifyComplete();
@@ -129,7 +130,7 @@ public class DefaultBridgedReactiveSessionIntegrationTests extends AbstractKeysp
 
 		Collection<String> received = new ConcurrentLinkedQueue<>();
 
-		StepVerifier.create(execution.flatMapMany(ReactiveResultSet::rows).map(row -> row.getString(0)))
+		execution.flatMapMany(ReactiveResultSet::rows).map(row -> row.getString(0)).as(StepVerifier::create)
 				.recordWith(() -> received)
 				.expectNextCount(100)
 				.verifyComplete();

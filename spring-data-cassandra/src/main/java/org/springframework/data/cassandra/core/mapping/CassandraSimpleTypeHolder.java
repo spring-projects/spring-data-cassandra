@@ -151,11 +151,8 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 	 */
 	private static Set<Class<?>> getCassandraPrimitiveTypes(CodecRegistry codecRegistry) {
 
-		return DataType.allPrimitiveTypes().stream()
-				.map(codecRegistry::codecFor)
-				.map(TypeCodec::getJavaType)
-				.map(TypeToken::getRawType)
-				.collect(Collectors.toSet());
+		return DataType.allPrimitiveTypes().stream().map(codecRegistry::codecFor).map(TypeCodec::getJavaType)
+				.map(TypeToken::getRawType).collect(Collectors.toSet());
 	}
 
 	/**

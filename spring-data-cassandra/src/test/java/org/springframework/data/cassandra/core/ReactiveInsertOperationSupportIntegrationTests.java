@@ -93,13 +93,13 @@ public class ReactiveInsertOperationSupportIntegrationTests extends AbstractKeys
 
 		Mono<EntityWriteResult<Person>> writeResult = this.template.insert(Person.class).inTable("person").one(han);
 
-		StepVerifier.create(writeResult).consumeNextWith(actual -> {
+		writeResult.as(StepVerifier::create).consumeNextWith(actual -> {
 
 			assertThat(actual.wasApplied()).isTrue();
 			assertThat(actual.getEntity()).isSameAs(han);
 		}).verifyComplete();
 
-		StepVerifier.create(template.selectOneById(han.id, Person.class)).expectNext(han).verifyComplete();
+		template.selectOneById(han.id, Person.class).as(StepVerifier::create).expectNext(han).verifyComplete();
 	}
 
 	@Test // DATACASS-485, DATACASS-573
@@ -112,8 +112,8 @@ public class ReactiveInsertOperationSupportIntegrationTests extends AbstractKeys
 				.withOptions(InsertOptions.builder().withIfNotExists().build())
 				.one(han);
 
-		StepVerifier.create(writeResult).assertNext(it -> assertThat(it.wasApplied()).isTrue()).verifyComplete();
-		StepVerifier.create(template.selectOneById(han.id, Person.class)).expectNext(han).verifyComplete();
+		writeResult.as(StepVerifier::create).assertNext(it -> assertThat(it.wasApplied()).isTrue()).verifyComplete();
+		template.selectOneById(han.id, Person.class).as(StepVerifier::create).expectNext(han).verifyComplete();
 	}
 
 	@Data

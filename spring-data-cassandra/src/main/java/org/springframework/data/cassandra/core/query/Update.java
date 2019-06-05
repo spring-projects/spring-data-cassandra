@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.query;
 
-import static org.springframework.data.cassandra.core.query.SerializationUtils.serializeToCqlSafely;
+import static org.springframework.data.cassandra.core.query.SerializationUtils.*;
 
 import java.util.Arrays;
 import java.util.Collection;

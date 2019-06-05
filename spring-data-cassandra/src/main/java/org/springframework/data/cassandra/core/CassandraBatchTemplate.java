@@ -72,8 +72,8 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 	}
 
 	/**
-	 * Return a reference to the configured {@link CassandraConverter} used to map {@link Object Objects}
-	 * to {@link com.datastax.driver.core.Row Rows}.
+	 * Return a reference to the configured {@link CassandraConverter} used to map {@link Object Objects} to
+	 * {@link com.datastax.driver.core.Row Rows}.
 	 *
 	 * @return a reference to the configured {@link CassandraConverter}.
 	 * @see org.springframework.data.cassandra.core.convert.CassandraConverter
@@ -83,8 +83,8 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 	}
 
 	/**
-	 * Returns a reference to the configured {@link CassandraMappingContext} used to map entities to Cassandra tables
-	 * and back.
+	 * Returns a reference to the configured {@link CassandraMappingContext} used to map entities to Cassandra tables and
+	 * back.
 	 *
 	 * @return a reference to the configured {@link CassandraMappingContext}.
 	 * @see org.springframework.data.cassandra.core.mapping.CassandraMappingContext
@@ -94,8 +94,8 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 	}
 
 	/**
-	 * Return a reference to the configured {@link StatementFactory} used to create Cassandra {@link Statement} objects
-	 * to perform data access operations on a Cassandra cluster.
+	 * Return a reference to the configured {@link StatementFactory} used to create Cassandra {@link Statement} objects to
+	 * perform data access operations on a Cassandra cluster.
 	 *
 	 * @return a reference to the configured {@link StatementFactory}.
 	 * @see org.springframework.data.cassandra.core.StatementFactory
@@ -166,11 +166,11 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 
 			Assert.notNull(entity, "Entity must not be null");
 
-			BasicCassandraPersistentEntity<?> persistentEntity =
-					mappingContext.getRequiredPersistentEntity(entity.getClass());
+			BasicCassandraPersistentEntity<?> persistentEntity = mappingContext
+					.getRequiredPersistentEntity(entity.getClass());
 
-			Insert insertQuery = EntityQueryUtils.createInsertQuery(persistentEntity.getTableName().toCql(),
-					entity, options, getConverter(), persistentEntity);
+			Insert insertQuery = EntityQueryUtils.createInsertQuery(persistentEntity.getTableName().toCql(), entity, options,
+					getConverter(), persistentEntity);
 
 			this.batch.add(insertQuery);
 		}
@@ -214,8 +214,8 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 
 			CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
 
-			Update update = getStatementFactory()
-					.update(entity, options, getConverter(), persistentEntity, persistentEntity.getTableName());
+			Update update = getStatementFactory().update(entity, options, getConverter(), persistentEntity,
+					persistentEntity.getTableName());
 
 			this.batch.add(update);
 		}
@@ -259,8 +259,8 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 
 			CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
 
-			Delete delete = getStatementFactory()
-					.delete(entity, options, this.converter, persistentEntity, persistentEntity.getTableName());
+			Delete delete = getStatementFactory().delete(entity, options, this.converter, persistentEntity,
+					persistentEntity.getTableName());
 
 			this.batch.add(delete);
 		}

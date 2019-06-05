@@ -87,7 +87,7 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 		Mono<User> insert = template.insert(user);
 		verifyUser(user.getId()).verifyComplete();
 
-		StepVerifier.create(insert).expectNext(user).verifyComplete();
+		insert.as(StepVerifier::create).expectNext(user).verifyComplete();
 
 		verifyUser(user.getId()).expectNext(user).verifyComplete();
 	}
@@ -101,7 +101,7 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 
 		Mono<EntityWriteResult<User>> inserted = template.insert(user, lwtOptions);
 
-		StepVerifier.create(inserted).consumeNextWith(actual -> {
+		inserted.as(StepVerifier::create).consumeNextWith(actual -> {
 
 			assertThat(actual.wasApplied()).isTrue();
 			assertThat(actual.getEntity()).isSameAs(user);
@@ -115,12 +115,12 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 
 		User user = new User("heisenberg", "Walter", "White");
 
-		StepVerifier.create(template.insert(user, lwtOptions).map(WriteResult::wasApplied)).expectNext(true)
+		template.insert(user, lwtOptions).map(WriteResult::wasApplied).as(StepVerifier::create).expectNext(true)
 				.verifyComplete();
 
 		user.setFirstname("Walter Hartwell");
 
-		StepVerifier.create(template.insert(user, lwtOptions).map(WriteResult::wasApplied)).expectNext(false)
+		template.insert(user, lwtOptions).map(WriteResult::wasApplied).as(StepVerifier::create).expectNext(false)
 				.verifyComplete();
 
 		verifyUser(user.getId()).consumeNextWith(it -> assertThat(it.getFirstname()).isEqualTo("Walter")).verifyComplete();
@@ -131,9 +131,9 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 
 		User user = new User("heisenberg", "Walter", "White");
 
-		StepVerifier.create(template.insert(user)).expectNextCount(1).verifyComplete();
+		template.insert(user).as(StepVerifier::create).expectNextCount(1).verifyComplete();
 
-		StepVerifier.create(template.count(User.class)).expectNext(1L).verifyComplete();
+		template.count(User.class).as(StepVerifier::create).expectNext(1L).verifyComplete();
 	}
 
 	@Test // DATACASS-335
@@ -141,13 +141,13 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 
 		User user = new User("heisenberg", "Walter", "White");
 
-		StepVerifier.create(template.insert(user)).expectNextCount(1).verifyComplete();
+		template.insert(user).as(StepVerifier::create).expectNextCount(1).verifyComplete();
 
-		StepVerifier.create(template.count(Query.query(where("id").is("heisenberg")), User.class)) //
+		template.count(Query.query(where("id").is("heisenberg")), User.class).as(StepVerifier::create) //
 				.expectNext(1L) //
 				.verifyComplete();
 
-		StepVerifier.create(template.count(Query.query(where("id").is("foo")), User.class)) //
+		template.count(Query.query(where("id").is("foo")), User.class).as(StepVerifier::create) //
 				.expectNext(0L) //
 				.verifyComplete();
 	}
@@ -157,13 +157,13 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 
 		User user = new User("heisenberg", "Walter", "White");
 
-		StepVerifier.create(template.insert(user)).expectNextCount(1).verifyComplete();
+		template.insert(user).as(StepVerifier::create).expectNextCount(1).verifyComplete();
 
-		StepVerifier.create(template.exists(Query.query(where("id").is("heisenberg")), User.class)) //
+		template.exists(Query.query(where("id").is("heisenberg")), User.class).as(StepVerifier::create) //
 				.expectNext(true) //
 				.verifyComplete();
 
-		StepVerifier.create(template.exists(Query.query(where("id").is("foo")), User.class)) //
+		template.exists(Query.query(where("id").is("foo")), User.class).as(StepVerifier::create) //
 				.expectNext(false) //
 				.verifyComplete();
 	}
@@ -173,11 +173,11 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 
 		User user = new User("heisenberg", "Walter", "White");
 
-		StepVerifier.create(template.insert(user)).expectNextCount(1).verifyComplete();
+		template.insert(user).as(StepVerifier::create).expectNextCount(1).verifyComplete();
 
 		user.setFirstname("Walter Hartwell");
 
-		StepVerifier.create(template.insert(user)).expectNextCount(1).verifyComplete();
+		template.insert(user).as(StepVerifier::create).expectNextCount(1).verifyComplete();
 
 		verifyUser(user.getId()).expectNext(user).verifyComplete();
 	}
@@ -189,7 +189,7 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 
 		User user = new User("heisenberg", "Walter", "White");
 
-		StepVerifier.create(template.update(user, lwtOptions).map(WriteResult::wasApplied)).expectNext(false)
+		template.update(user, lwtOptions).map(WriteResult::wasApplied).as(StepVerifier::create).expectNext(false)
 				.verifyComplete();
 
 		verifyUser(user.getId()).verifyComplete();
@@ -201,11 +201,11 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 		UpdateOptions lwtOptions = UpdateOptions.builder().withIfExists().build();
 
 		User user = new User("heisenberg", "Walter", "White");
-		StepVerifier.create(template.insert(user)).expectNextCount(1).verifyComplete();
+		template.insert(user).as(StepVerifier::create).expectNextCount(1).verifyComplete();
 
 		user.setFirstname("Walter Hartwell");
 
-		StepVerifier.create(template.update(user, lwtOptions)).expectNextCount(1).verifyComplete();
+		template.update(user, lwtOptions).as(StepVerifier::create).expectNextCount(1).verifyComplete();
 
 		verifyUser(user.getId()).consumeNextWith(it -> assertThat(it.getFirstname()).isEqualTo("Walter Hartwell"))
 				.verifyComplete();
@@ -257,9 +257,9 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 
 		User user = new User("heisenberg", "Walter", "White");
 
-		StepVerifier.create(template.insert(user)).expectNextCount(1).verifyComplete();
+		template.insert(user).as(StepVerifier::create).expectNextCount(1).verifyComplete();
 
-		StepVerifier.create(template.delete(user)).expectNext(user).verifyComplete();
+		template.delete(user).as(StepVerifier::create).expectNext(user).verifyComplete();
 
 		verifyUser(user.getId()).verifyComplete();
 	}
@@ -269,9 +269,9 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 
 		User user = new User("heisenberg", "Walter", "White");
 
-		StepVerifier.create(template.insert(user)).expectNextCount(1).verifyComplete();
+		template.insert(user).as(StepVerifier::create).expectNextCount(1).verifyComplete();
 
-		StepVerifier.create(template.deleteById(user.getId(), User.class)).expectNext(true).verifyComplete();
+		template.deleteById(user.getId(), User.class).as(StepVerifier::create).expectNext(true).verifyComplete();
 
 		verifyUser(user.getId()).verifyComplete();
 	}
@@ -282,7 +282,7 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 		DeleteOptions lwtOptions = DeleteOptions.builder().withIfExists().build();
 
 		User user = new User("heisenberg", "Walter", "White");
-		StepVerifier.create(template.insert(user)).expectNextCount(1).verifyComplete();
+		template.insert(user).as(StepVerifier::create).expectNextCount(1).verifyComplete();
 
 		template.delete(user, lwtOptions).map(WriteResult::wasApplied) //
 				.as(StepVerifier::create) //
@@ -301,7 +301,7 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 		DeleteOptions lwtOptions = DeleteOptions.builder().withIfExists().build();
 
 		User user = new User("heisenberg", "Walter", "White");
-		StepVerifier.create(template.insert(user)).expectNextCount(1).verifyComplete();
+		template.insert(user).as(StepVerifier::create).expectNextCount(1).verifyComplete();
 
 		Query query = Query.query(where("id").is("heisenberg")).queryOptions(lwtOptions);
 
@@ -417,7 +417,7 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 	}
 
 	private FirstStep<User> verifyUser(String userId) {
-		return StepVerifier.create(template.selectOneById(userId, User.class));
+		return template.selectOneById(userId, User.class).as(StepVerifier::create);
 	}
 
 	static class QueryListener implements LatencyTracker {

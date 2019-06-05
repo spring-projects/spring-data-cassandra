@@ -62,7 +62,7 @@ public class ReactiveCqlTemplateIntegrationTests extends AbstractKeyspaceCreatin
 	@Test // DATACASS-335
 	public void executeShouldRemoveRecords() {
 
-		StepVerifier.create(template.execute("DELETE FROM user WHERE id = 'WHITE'")).expectNext(true).verifyComplete();
+		template.execute("DELETE FROM user WHERE id = 'WHITE'").as(StepVerifier::create).expectNext(true).verifyComplete();
 
 		assertThat(getSession().execute("SELECT * FROM user").one()).isNull();
 	}
@@ -70,7 +70,7 @@ public class ReactiveCqlTemplateIntegrationTests extends AbstractKeyspaceCreatin
 	@Test // DATACASS-335
 	public void queryForObjectShouldReturnFirstColumn() {
 
-		StepVerifier.create(template.queryForObject("SELECT id FROM user;", String.class)) //
+		template.queryForObject("SELECT id FROM user;", String.class).as(StepVerifier::create) //
 				.expectNext("WHITE") //
 				.verifyComplete();
 	}
@@ -78,7 +78,7 @@ public class ReactiveCqlTemplateIntegrationTests extends AbstractKeyspaceCreatin
 	@Test // DATACASS-335
 	public void queryForObjectShouldReturnMap() {
 
-		StepVerifier.create(template.queryForMap("SELECT * FROM user;")) //
+		template.queryForMap("SELECT * FROM user;").as(StepVerifier::create) //
 				.consumeNextWith(actual -> {
 
 					assertThat(actual).containsEntry("id", "WHITE").containsEntry("username", "Walter");
@@ -88,10 +88,9 @@ public class ReactiveCqlTemplateIntegrationTests extends AbstractKeyspaceCreatin
 	@Test // DATACASS-335
 	public void executeStatementShouldRemoveRecords() {
 
-		StepVerifier
-				.create(template.execute(QueryBuilder.delete() //
+		template.execute(QueryBuilder.delete() //
 						.from("user") //
-						.where(QueryBuilder.eq("id", "WHITE")))) //
+				.where(QueryBuilder.eq("id", "WHITE"))).as(StepVerifier::create) //
 				.expectNext(true) //
 				.verifyComplete();
 
@@ -101,10 +100,9 @@ public class ReactiveCqlTemplateIntegrationTests extends AbstractKeyspaceCreatin
 	@Test // DATACASS-335
 	public void queryForObjectStatementShouldReturnFirstColumn() {
 
-		StepVerifier
-				.create(template.queryForObject(QueryBuilder //
+		template.queryForObject(QueryBuilder //
 						.select("id") //
-						.from("user"), String.class)) //
+				.from("user"), String.class).as(StepVerifier::create) //
 				.expectNext("WHITE") //
 				.verifyComplete();
 	}
@@ -112,7 +110,7 @@ public class ReactiveCqlTemplateIntegrationTests extends AbstractKeyspaceCreatin
 	@Test // DATACASS-335
 	public void queryForObjectStatementShouldReturnMap() {
 
-		StepVerifier.create(template.queryForMap(QueryBuilder.select().from("user"))) //
+		template.queryForMap(QueryBuilder.select().from("user")).as(StepVerifier::create) //
 				.consumeNextWith(actual -> {
 
 					assertThat(actual).containsEntry("id", "WHITE").containsEntry("username", "Walter");
@@ -122,7 +120,8 @@ public class ReactiveCqlTemplateIntegrationTests extends AbstractKeyspaceCreatin
 	@Test // DATACASS-335
 	public void executeWithArgsShouldRemoveRecords() {
 
-		StepVerifier.create(template.execute("DELETE FROM user WHERE id = ?", "WHITE")).expectNext(true).verifyComplete();
+		template.execute("DELETE FROM user WHERE id = ?", "WHITE").as(StepVerifier::create).expectNext(true)
+				.verifyComplete();
 
 		assertThat(getSession().execute("SELECT * FROM user").one()).isNull();
 	}
@@ -130,7 +129,7 @@ public class ReactiveCqlTemplateIntegrationTests extends AbstractKeyspaceCreatin
 	@Test // DATACASS-335
 	public void queryForObjectWithArgsShouldReturnFirstColumn() {
 
-		StepVerifier.create(template.queryForObject("SELECT id FROM user WHERE id = ?;", String.class, "WHITE")) //
+		template.queryForObject("SELECT id FROM user WHERE id = ?;", String.class, "WHITE").as(StepVerifier::create) //
 				.expectNext("WHITE") //
 				.verifyComplete();
 	}
@@ -138,7 +137,7 @@ public class ReactiveCqlTemplateIntegrationTests extends AbstractKeyspaceCreatin
 	@Test // DATACASS-335
 	public void queryForObjectWithArgsShouldReturnMap() {
 
-		StepVerifier.create(template.queryForMap("SELECT * FROM user WHERE id = ?;", "WHITE")) //
+		template.queryForMap("SELECT * FROM user WHERE id = ?;", "WHITE").as(StepVerifier::create) //
 				.consumeNextWith(actual -> {
 
 					assertThat(actual).containsEntry("id", "WHITE").containsEntry("username", "Walter");
