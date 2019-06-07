@@ -24,7 +24,6 @@ import java.util.function.Function;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.dao.DataAccessException;
@@ -55,6 +54,7 @@ import org.springframework.data.cassandra.core.mapping.event.BeforeConvertCallba
 import org.springframework.data.cassandra.core.mapping.event.BeforeDeleteEvent;
 import org.springframework.data.cassandra.core.mapping.event.BeforeSaveCallback;
 import org.springframework.data.cassandra.core.mapping.event.BeforeSaveEvent;
+import org.springframework.data.cassandra.core.mapping.event.CassandraMappingEvent;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.mapping.callback.EntityCallbacks;
@@ -859,7 +859,7 @@ public class AsyncCassandraTemplate
 		return converter;
 	}
 
-	private void maybeEmitEvent(ApplicationEvent event) {
+	protected <E extends CassandraMappingEvent<T>, T> void maybeEmitEvent(E event) {
 
 		if (this.eventPublisher != null) {
 			this.eventPublisher.publishEvent(event);

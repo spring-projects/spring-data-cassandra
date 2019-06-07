@@ -29,7 +29,6 @@ import org.reactivestreams.Publisher;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.dao.DataAccessException;
@@ -59,6 +58,7 @@ import org.springframework.data.cassandra.core.mapping.event.AfterLoadEvent;
 import org.springframework.data.cassandra.core.mapping.event.AfterSaveEvent;
 import org.springframework.data.cassandra.core.mapping.event.BeforeDeleteEvent;
 import org.springframework.data.cassandra.core.mapping.event.BeforeSaveEvent;
+import org.springframework.data.cassandra.core.mapping.event.CassandraMappingEvent;
 import org.springframework.data.cassandra.core.mapping.event.ReactiveBeforeConvertCallback;
 import org.springframework.data.cassandra.core.mapping.event.ReactiveBeforeSaveCallback;
 import org.springframework.data.cassandra.core.query.Columns;
@@ -879,7 +879,7 @@ public class ReactiveCassandraTemplate
 		return converter;
 	}
 
-	private void maybeEmitEvent(ApplicationEvent event) {
+	protected <E extends CassandraMappingEvent<T>, T> void maybeEmitEvent(E event) {
 
 		if (this.eventPublisher != null) {
 			this.eventPublisher.publishEvent(event);
