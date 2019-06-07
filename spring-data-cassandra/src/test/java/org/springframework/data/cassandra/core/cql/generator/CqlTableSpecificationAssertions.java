@@ -38,6 +38,7 @@ import com.datastax.driver.core.TableOptionsMetadata;
  * @author David Webb
  * @author Alex Shvid
  * @author Antoine Toulme
+ * @author Mark Paluch
  */
 public class CqlTableSpecificationAssertions {
 
@@ -155,8 +156,6 @@ public class CqlTableSpecificationAssertions {
 				return (T) CqlStringUtils.singleQuote(options.getComment());
 			case COMPACTION:
 				return (T) options.getCompaction();
-			case COMPACT_STORAGE:
-				throw new Error(); // TODO: figure out
 			case COMPRESSION:
 				return (T) options.getCompression();
 			case DCLOCAL_READ_REPAIR_CHANCE:
@@ -166,7 +165,8 @@ public class CqlTableSpecificationAssertions {
 			case READ_REPAIR_CHANCE:
 				return (T) (Double) options.getReadRepairChance();
 		}
-		return null;
+
+		throw new IllegalArgumentException("Unsupported option: " + option);
 	}
 
 	public static void assertColumns(List<ColumnSpecification> expected, List<ColumnMetadata> actual) {

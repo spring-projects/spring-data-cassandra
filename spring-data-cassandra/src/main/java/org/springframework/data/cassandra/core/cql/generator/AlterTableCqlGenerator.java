@@ -130,7 +130,6 @@ public class AlterTableCqlGenerator extends TableOptionsCqlGenerator<AlterTableS
 
 			/*
 			 * Compact storage is illegal on alter table.
-			 * TODO - Is there a way to handle this in the specification?
 			 */
 			if (key.equals(TableOption.COMPACT_STORAGE.getName())) {
 				throw new IllegalArgumentException("Alter table cannot contain the COMPACT STORAGE option");

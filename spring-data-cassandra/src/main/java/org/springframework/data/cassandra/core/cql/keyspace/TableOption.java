@@ -25,6 +25,7 @@ import org.springframework.lang.Nullable;
  * value. Implements {@link Option} via delegation, since {@link Enum}s can't extend anything.
  *
  * @author Matthew T. Adams
+ * @author Mark Paluch
  * @see CompactionOption
  * @see CompressionOption
  * @see CachingOption
@@ -37,7 +38,10 @@ public enum TableOption implements Option {
 	COMMENT("comment", String.class, true, true, true),
 	/**
 	 * {@code COMPACT STORAGE}
+	 *
+	 * @deprecated since 2.2. Cassandra 4.x has deprecated compact storage.
 	 */
+	@Deprecated
 	COMPACT_STORAGE("COMPACT STORAGE", Void.class, false, false, false),
 	/**
 	 * {@code compaction}. Value is a <code>Map&lt;CompactionOption,Object&gt;</code>.
