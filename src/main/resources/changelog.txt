@@ -1,6 +1,19 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 2.2.0.RC1 (2019-06-14)
+-----------------------------------------
+* DATACASS-663 - Replace StepVerifier.create(...) style with .as(StepVerifier::create) style.
+* DATACASS-662 - Create security policy readme.
+* DATACASS-661 - findAllById broken when using MapIdCassandraRepository.
+* DATACASS-660 - Fix method reference in documentation.
+* DATACASS-651 - Saving Map with TupleValue attempts TupleValue type resolution.
+* DATACASS-649 - Release 2.2 RC1 (Moore).
+* DATACASS-618 - Add support for entity updates before save using EntityCallbacks.
+* DATACASS-536 - Deprecate TableOption.COMPACT_STORAGE.
+* DATACASS-4 - Implement Auditing.
+
+
 Changes in version 2.1.9.RELEASE (2019-06-14)
 ---------------------------------------------
 * DATACASS-663 - Replace StepVerifier.create(...) style with .as(StepVerifier::create) style.
