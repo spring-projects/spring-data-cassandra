@@ -46,6 +46,16 @@ public class QueryUtilsUnitTests {
 		assertThat(tableName).isEqualTo(CqlIdentifier.of("table"));
 	}
 
+	@Test // DATACASS-642
+	public void shouldRetrieveQuotedTableNameFromSelect() {
+
+		Select select = QueryBuilder.select().from("keyspace", "\"table\"");
+
+		CqlIdentifier tableName = QueryUtils.getTableName(select);
+
+		assertThat(tableName).isEqualTo(CqlIdentifier.quoted("table"));
+	}
+
 	@Test // DATACASS-106
 	public void shouldRetrieveTableNameFromSimpleStatement() {
 

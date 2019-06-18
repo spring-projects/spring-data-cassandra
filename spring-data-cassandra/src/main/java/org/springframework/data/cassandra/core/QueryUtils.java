@@ -230,7 +230,7 @@ class QueryUtils {
 			String table = (String) accessor.getPropertyValue("table");
 
 			if (table != null) {
-				return CqlIdentifier.of(table);
+				return CqlIdentifier.isQuotedIdentifier(table) ? CqlIdentifier.quoted(unquote(table)) : CqlIdentifier.of(table);
 			}
 		}
 
@@ -240,8 +240,8 @@ class QueryUtils {
 		if (matcher.find()) {
 
 			String cqlTableName = matcher.group(1);
-			if (cqlTableName.startsWith("\"")) {
-				return CqlIdentifier.quoted(cqlTableName.substring(1, cqlTableName.length() - 1));
+			if (CqlIdentifier.isQuotedIdentifier(cqlTableName)) {
+				return CqlIdentifier.quoted(unquote(cqlTableName));
 			}
 
 			int separator = cqlTableName.indexOf('.');
@@ -325,5 +325,9 @@ class QueryUtils {
 		QueryOptionsUtil.addQueryOptions(delete, writeOptions);
 
 		return delete;
+	}
+
+	private static String unquote(String identifier) {
+		return identifier.substring(1, identifier.length() - 1);
 	}
 }
