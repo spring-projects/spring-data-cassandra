@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.repository.query;
 
 import java.lang.reflect.Method;
+import java.util.Locale;
 import java.util.Optional;
 
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -24,6 +25,7 @@ import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.repository.Consistency;
 import org.springframework.data.cassandra.repository.Query;
+import org.springframework.data.cassandra.repository.Query.Idempotency;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.RepositoryMetadata;
@@ -214,12 +216,32 @@ public class CassandraQueryMethod extends QueryMethod {
 	}
 
 	/**
-	 * @return true is the method returns a {@link ResultSet}.
+	 * @return {@literal true} if the method returns a {@link ResultSet}.
 	 */
 	public boolean isResultSetQuery() {
 
 		TypeInformation<?> actualType = getReturnType().getActualType();
 
 		return actualType != null && ResultSet.class.isAssignableFrom(actualType.getType());
+	}
+
+	/**
+	 * @return Query {@link Idempotency}. Defaults to {@link Idempotency#IDEMPOTENT} for {@code SELECT} queries.
+	 */
+	Idempotency getIdempotency() {
+		return this.query.filter(it -> it.idempotent() != Idempotency.UNDEFINED) //
+				.map(Query::idempotent) //
+				.orElseGet(() -> {
+
+					String cql = getAnnotatedQuery();
+					if (StringUtils.hasText(cql)) {
+
+						if (cql.trim().toUpperCase(Locale.ENGLISH).startsWith("SELECT ")) {
+							return Idempotency.IDEMPOTENT;
+						}
+					}
+
+					return Idempotency.UNDEFINED;
+				});
 	}
 }

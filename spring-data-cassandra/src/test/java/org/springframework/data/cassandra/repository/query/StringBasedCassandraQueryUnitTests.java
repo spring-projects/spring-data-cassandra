@@ -15,8 +15,8 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -82,7 +82,6 @@ public class StringBasedCassandraQueryUnitTests {
 	private ProjectionFactory factory;
 
 	@Before
-	@SuppressWarnings("unchecked")
 	public void setUp() {
 
 		CassandraMappingContext mappingContext = new CassandraMappingContext();
@@ -137,7 +136,7 @@ public class StringBasedCassandraQueryUnitTests {
 		assertThat(actual.getObject(0)).isEqualTo("Mat\th'ew\"s");
 	}
 
-	@Test // DATACASS-117
+	@Test // DATACASS-117, DATACASS-454
 	public void bindsAndEscapesBytesIndexParameterCorrectly() {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByLastname", String.class);
@@ -146,8 +145,33 @@ public class StringBasedCassandraQueryUnitTests {
 
 		SimpleStatement actual = cassandraQuery.createQuery(accessor);
 
+		assertThat(actual.isIdempotent()).isTrue();
 		assertThat(actual.toString()).isEqualTo("SELECT * FROM person WHERE lastname = ?;");
 		assertThat(actual.getObject(0)).isEqualTo(ByteBuffer.wrap(new byte[] { 1, 2, 3, 4 }));
+	}
+
+	@Test // DATACASS-454
+	public void shouldConsiderNonIdempotentOverride() {
+
+		StringBasedCassandraQuery cassandraQuery = getQueryMethod("nonIdempotentSelect", String.class);
+		CassandraParametersParameterAccessor accessor = new CassandraParametersParameterAccessor(
+				cassandraQuery.getQueryMethod(), "Matthews");
+
+		SimpleStatement actual = cassandraQuery.createQuery(accessor);
+
+		assertThat(actual.isIdempotent()).isFalse();
+	}
+
+	@Test // DATACASS-454
+	public void shouldNotApplyIdempotencyToNonSelectStatement() {
+
+		StringBasedCassandraQuery cassandraQuery = getQueryMethod("nonIdempotentDelete");
+		CassandraParametersParameterAccessor accessor = new CassandraParametersParameterAccessor(
+				cassandraQuery.getQueryMethod());
+
+		SimpleStatement actual = cassandraQuery.createQuery(accessor);
+
+		assertThat(actual.isIdempotent()).isNull();
 	}
 
 	@Test // DATACASS-117
@@ -349,8 +373,8 @@ public class StringBasedCassandraQueryUnitTests {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByLastname", QueryOptions.class, String.class);
 
-		CassandraParametersParameterAccessor parameterAccessor =
-				new CassandraParametersParameterAccessor(cassandraQuery.getQueryMethod(), queryOptions, "Matthews");
+		CassandraParametersParameterAccessor parameterAccessor = new CassandraParametersParameterAccessor(
+				cassandraQuery.getQueryMethod(), queryOptions, "Matthews");
 
 		SimpleStatement actual = cassandraQuery.createQuery(parameterAccessor);
 
@@ -364,8 +388,8 @@ public class StringBasedCassandraQueryUnitTests {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByLastname", String.class);
 
-		CassandraParametersParameterAccessor parameterAccessor =
-				new CassandraParametersParameterAccessor(cassandraQuery.getQueryMethod(), "Matthews");
+		CassandraParametersParameterAccessor parameterAccessor = new CassandraParametersParameterAccessor(
+				cassandraQuery.getQueryMethod(), "Matthews");
 
 		SimpleStatement actual = cassandraQuery.createQuery(parameterAccessor);
 
@@ -378,8 +402,8 @@ public class StringBasedCassandraQueryUnitTests {
 
 		Method method = ReflectionUtils.findMethod(SampleRepository.class, name, args);
 
-		CassandraQueryMethod queryMethod =
-				new CassandraQueryMethod(method, metadata, factory, converter.getMappingContext());
+		CassandraQueryMethod queryMethod = new CassandraQueryMethod(method, metadata, factory,
+				converter.getMappingContext());
 
 		return new StringBasedCassandraQuery(queryMethod, operations, PARSER,
 				ExtensionAwareQueryMethodEvaluationContextProvider.DEFAULT);
@@ -388,9 +412,17 @@ public class StringBasedCassandraQueryUnitTests {
 	@SuppressWarnings("unused")
 	private interface SampleRepository extends Repository<Person, String> {
 
-		@Query("SELECT * FROM person WHERE lastname = ?0;")
+		@Query(value = "SELECT * FROM person WHERE lastname = ?0;")
 		@Consistency(ConsistencyLevel.LOCAL_ONE)
 		Person findByLastname(String lastname);
+
+		@Query(value = "SELECT * FROM person WHERE lastname = ?0;", idempotent = Query.Idempotency.NON_IDEMPOTENT)
+		@Consistency(ConsistencyLevel.LOCAL_ONE)
+		Person nonIdempotentSelect(String lastname);
+
+		@Query(value = "DELETE FROM person")
+		@Consistency(ConsistencyLevel.LOCAL_ONE)
+		Person nonIdempotentDelete();
 
 		@Query("SELECT * FROM person WHERE lastname = ?0;")
 		Person findByLastname(QueryOptions queryOptions, String lastname);
@@ -441,6 +473,7 @@ public class StringBasedCassandraQueryUnitTests {
 
 	@Retention(RetentionPolicy.RUNTIME)
 	@Query("SELECT * FROM person WHERE lastname = ?0;")
-	@interface ComposedQueryAnnotation { }
+	@interface ComposedQueryAnnotation {
+	}
 
 }

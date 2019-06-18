@@ -29,6 +29,7 @@ import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.query.Columns;
 import org.springframework.data.cassandra.core.query.Query;
+import org.springframework.data.cassandra.repository.Query.Idempotency;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.query.QueryCreationException;
 import org.springframework.data.repository.query.ResultProcessor;
@@ -211,6 +212,11 @@ class QueryStatementCreator {
 						.map(it -> QueryOptionsUtil.addQueryOptions(boundQuery, it)).orElse(boundQuery);
 			} else if (this.queryMethod.hasConsistencyLevel()) {
 				queryToUse.setConsistencyLevel(this.queryMethod.getRequiredAnnotatedConsistencyLevel());
+			}
+
+			Idempotency idempotency = this.queryMethod.getIdempotency();
+			if (idempotency != Idempotency.UNDEFINED) {
+				queryToUse.setIdempotent(idempotency == Idempotency.IDEMPOTENT);
 			}
 
 			if (LOG.isDebugEnabled()) {
