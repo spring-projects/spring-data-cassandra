@@ -230,7 +230,7 @@ class EntityQueryUtils {
 			String table = (String) accessor.getPropertyValue("table");
 
 			if (table != null) {
-				return CqlIdentifier.of(table);
+				return CqlIdentifier.isQuotedIdentifier(table) ? CqlIdentifier.quoted(unquote(table)) : CqlIdentifier.of(table);
 			}
 		}
 
@@ -240,8 +240,8 @@ class EntityQueryUtils {
 		if (matcher.find()) {
 
 			String cqlTableName = matcher.group(1);
-			if (cqlTableName.startsWith("\"")) {
-				return CqlIdentifier.quoted(cqlTableName.substring(1, cqlTableName.length() - 1));
+			if (CqlIdentifier.isQuotedIdentifier(cqlTableName)) {
+				return CqlIdentifier.quoted(unquote(cqlTableName));
 			}
 
 			int separator = cqlTableName.indexOf('.');
@@ -334,5 +334,9 @@ class EntityQueryUtils {
 		}
 
 		return delete;
+	}
+
+	private static String unquote(String identifier) {
+		return identifier.substring(1, identifier.length() - 1);
 	}
 }

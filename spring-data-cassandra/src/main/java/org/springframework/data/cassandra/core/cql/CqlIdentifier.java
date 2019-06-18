@@ -85,7 +85,7 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 
 		Assert.hasText(string, "Identifier must not be empty");
 
-		if (forceQuote || isQuotedIdentifier(string)) {
+		if (forceQuote || requiresQuoting(string)) {
 			this.unquoted = string;
 			this.identifier = "\"" + string + "\"";
 			this.quoted = true;
@@ -165,9 +165,18 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 	}
 
 	/**
-	 * Returns {@code true} if the given {@link CharSequence} is a legal unquoted identifier.
+	 * Returns {@code true} if the given {@link CharSequence} is an identifier with quotes.
 	 */
 	public static boolean isQuotedIdentifier(CharSequence chars) {
+		return chars != null && chars.length() > 1 && chars.charAt(0) == '"' && chars.charAt(chars.length() - 1) == '"';
+	}
+
+	/**
+	 * Returns {@code true} if the given {@link CharSequence} requires quoting.
+	 *
+	 * @since 2.2
+	 */
+	public static boolean requiresQuoting(CharSequence chars) {
 		return QUOTED.matcher(chars).matches() || ReservedKeyword.isReserved(chars);
 	}
 
