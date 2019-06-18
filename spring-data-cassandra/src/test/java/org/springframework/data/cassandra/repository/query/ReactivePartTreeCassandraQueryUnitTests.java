@@ -141,6 +141,15 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 		assertThat(statement.toString()).isEqualTo("SELECT COUNT(1) FROM person;");
 	}
 
+	@Test // DATACASS-611
+	public void shouldCreateDeleteQuery() {
+
+		Statement statement = deriveQueryFromMethod(PartTreeCassandraQueryUnitTests.Repo.class, "deleteAllByLastname",
+				new Class[] { String.class }, "Walter");
+
+		assertThat(statement.toString()).isEqualTo("DELETE FROM person WHERE lastname='Walter';");
+	}
+
 	@Test // DATACASS-512
 	public void shouldCreateExistsQuery() {
 
@@ -201,6 +210,8 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 		Flux<Person> findByFirstname(QueryOptions queryOptions, String firstname);
 
 		Mono<Long> countBy();
+
+		Mono<Boolean> deleteAllByLastname(String lastname);
 
 		Mono<Boolean> existsBy();
 

@@ -13,6 +13,7 @@ This chapter summarizes changes and new features for each release.
 * Optimistic Locking support.
 * Auditing via `@EnableCassandraAuditing`.
 * Idempotency support in `@Query` annotation.
+* Query derivation for <<cassandra.repositories.queries.delete,`DELETE` queries>>.
 
 [[new-features.2-1-0]]
 == What's new in Spring Data for Apache Cassandra 2.1

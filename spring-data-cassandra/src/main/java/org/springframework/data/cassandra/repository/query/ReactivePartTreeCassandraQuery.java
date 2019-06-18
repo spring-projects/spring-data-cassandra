@@ -104,6 +104,10 @@ public class ReactivePartTreeCassandraQuery extends AbstractReactiveCassandraQue
 			return getQueryStatementCreator().exists(getStatementFactory(), getTree(), parameterAccessor);
 		}
 
+		if (getTree().isDelete()) {
+			return getQueryStatementCreator().delete(getStatementFactory(), getTree(), parameterAccessor);
+		}
+
 		return getQueryStatementCreator().select(getStatementFactory(), getTree(), parameterAccessor,
 				getQueryMethod().getResultProcessor());
 	}
@@ -130,5 +134,13 @@ public class ReactivePartTreeCassandraQuery extends AbstractReactiveCassandraQue
 	@Override
 	protected boolean isLimiting() {
 		return getTree().isLimiting();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.repository.query.AbstractCassandraQuery#isModifyingQuery()
+	 */
+	@Override
+	protected boolean isModifyingQuery() {
+		return getTree().isDelete();
 	}
 }

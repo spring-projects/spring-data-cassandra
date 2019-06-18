@@ -17,9 +17,12 @@ package org.springframework.data.cassandra.repository.query;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+
+import org.reactivestreams.Publisher;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
@@ -190,7 +193,6 @@ interface ReactiveCassandraQueryExecution {
 		 * (non-Javadoc)
 		 * @see org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution#execute(java.lang.String, java.lang.Class)
 		 */
-		@SuppressWarnings("ConstantConditions")
 		@Override
 		public Object execute(Statement statement, Class<?> type) {
 			return converter.convert(delegate.execute(statement, type));
@@ -220,6 +222,16 @@ interface ReactiveCassandraQueryExecution {
 
 			if (ClassUtils.isPrimitiveOrWrapper(returnedType.getReturnedType())) {
 				return source;
+			}
+
+			if (returnedType.getReturnedType().equals(Void.class)) {
+				if (source instanceof Mono) {
+					return ((Mono<?>) source).then();
+				}
+
+				if (source instanceof Publisher) {
+					return Flux.from((Publisher<?>) source).then();
+				}
 			}
 
 			if (returnedType.isInstance(source)) {

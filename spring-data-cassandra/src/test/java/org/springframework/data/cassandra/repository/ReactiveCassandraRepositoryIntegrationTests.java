@@ -15,19 +15,19 @@
  */
 package org.springframework.data.cassandra.repository;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import org.reactivestreams.Publisher;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
@@ -132,11 +132,10 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractKeyspac
 		repository.findByLastname(dave.getLastname()).as(StepVerifier::create).expectNextCount(2).verifyComplete();
 	}
 
-	@Test //DATACASS-529
+	@Test // DATACASS-529
 	public void shouldFindSliceByLastName() {
 		repository.findByLastname(carter.getLastname(), CassandraPageRequest.first(1)).as(StepVerifier::create)
-				.expectNextMatches(users -> users.getSize() == 1 && users.hasNext())
-				.verifyComplete();
+				.expectNextMatches(users -> users.getSize() == 1 && users.hasNext()).verifyComplete();
 	}
 
 	@Test // DATACASS-529
@@ -193,8 +192,7 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractKeyspac
 				.verifyComplete();
 
 		groupRepostitory.findByIdGroupnameAndIdHashPrefix("Simpsons", "hash", Sort.by("id.username").descending())
-				.as(StepVerifier::create)
-				.expectNext(new Group(key2), new Group(key1)) //
+				.as(StepVerifier::create).expectNext(new Group(key2), new Group(key1)) //
 				.verifyComplete();
 	}
 
@@ -206,6 +204,22 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractKeyspac
 
 		repository.countQueryByLastname("Matthews").as(StepVerifier::create).expectNext(2L).verifyComplete();
 		repository.countQueryByLastname("None").as(StepVerifier::create).expectNext(0L).verifyComplete();
+	}
+
+	@Test // DATACASS-611
+	public void shouldDeleteRecords() {
+
+		repository.deleteVoidById(dave.getId()).as(StepVerifier::create).verifyComplete();
+
+		repository.countByLastname("Matthews").as(StepVerifier::create).expectNext(1L).verifyComplete();
+	}
+
+	@Test // DATACASS-611
+	public void shouldDeleteRecordsReturingWasApplied() {
+
+		repository.deleteAllById(dave.getId()).as(StepVerifier::create).expectNext(true).verifyComplete();
+
+		repository.countByLastname("Matthews").as(StepVerifier::create).expectNext(1L).verifyComplete();
 	}
 
 	@Test // DATACASS-512
@@ -231,6 +245,10 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractKeyspac
 		Mono<User> findByLastname(Publisher<String> lastname);
 
 		Mono<Long> countByLastname(String lastname);
+
+		Mono<Boolean> deleteAllById(String lastname);
+
+		Mono<Void> deleteVoidById(String lastname);
 
 		Mono<Boolean> existsByLastname(String lastname);
 

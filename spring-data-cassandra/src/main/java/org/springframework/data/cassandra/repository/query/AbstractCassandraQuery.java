@@ -146,6 +146,8 @@ public abstract class AbstractCassandraQuery extends CassandraRepositoryQuerySup
 			return ((statement, type) -> new SingleEntityExecution(getOperations(), false).execute(statement, Long.class));
 		} else if (isExistsQuery()) {
 			return new ExistsExecution(getOperations());
+		} else if (isModifyingQuery()) {
+			return ((statement, type) -> getOperations().getCqlOperations().queryForResultSet(statement).wasApplied());
 		} else {
 			return new SingleEntityExecution(getOperations(), isLimiting());
 		}
@@ -174,4 +176,12 @@ public abstract class AbstractCassandraQuery extends CassandraRepositoryQuerySup
 	 * @since 2.0.4
 	 */
 	protected abstract boolean isLimiting();
+
+	/**
+	 * Returns whether the query is a modifying query.
+	 *
+	 * @return a boolean value indicating whether the query is a modifying query.
+	 * @since 2.2
+	 */
+	protected abstract boolean isModifyingQuery();
 }

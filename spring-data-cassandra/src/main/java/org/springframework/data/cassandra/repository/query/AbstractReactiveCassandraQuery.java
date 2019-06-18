@@ -20,6 +20,7 @@ import reactor.core.publisher.Mono;
 
 import org.reactivestreams.Publisher;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.cassandra.ReactiveResultSet;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
@@ -151,6 +152,9 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 					Long.class));
 		} else if (isExistsQuery()) {
 			return new ExistsExecution(getReactiveCassandraOperations());
+		} else if (isModifyingQuery()) {
+			return (statement, type) -> getReactiveCassandraOperations().getReactiveCqlOperations()
+					.queryForResultSet(statement).map(ReactiveResultSet::wasApplied);
 		} else {
 			return new SingleEntityExecution(getReactiveCassandraOperations(), isLimiting());
 		}
@@ -179,6 +183,14 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 	 * @since 2.0.4
 	 */
 	protected abstract boolean isLimiting();
+
+	/**
+	 * Returns whether the query is a modifying query.
+	 *
+	 * @return a boolean value indicating whether the query is a modifying query.
+	 * @since 2.2
+	 */
+	protected abstract boolean isModifyingQuery();
 
 	private static CassandraConverter getRequiredConverter(ReactiveCassandraOperations operations) {
 

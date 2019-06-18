@@ -282,6 +282,25 @@ lower / upper bounds (`>` / `>=` & `<` / `<=`) according to `Range`
 
 |===
 
+[[cassandra.repositories.queries.delete]]
+== Repository Delete Queries
+
+The keywords in the preceding table can be used in conjunction with `delete…By` to create queries that delete matching documents.
+
+====
+[source,java]
+----
+interface PersonRepository extends Repository<Person, String> {
+
+  void deleteWithoutResultByLastname(String lastname);
+
+  boolean deleteByLastname(String lastname);
+}
+----
+====
+
+Delete queries return whether the query was applied or terminate without returning a value using `void`.
+
 include::../{spring-data-commons-docs}/repository-projections.adoc[leveloffset=+2]
 
 [[cassandra.repositories.queries.options]]
@@ -297,6 +316,7 @@ The declared consistency level is applied to the query each time it is executed.
 The following example sets the consistency level to `ConsistencyLevel.LOCAL_ONE`:
 
 ====
+[source,java]
 ----
 public interface PersonRepository extends CrudRepository<Person, String> {
 

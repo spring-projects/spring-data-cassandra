@@ -140,4 +140,12 @@ public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandra
 	protected boolean isLimiting() {
 		return false;
 	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.repository.query.AbstractCassandraQuery#isModifyingQuery()
+	 */
+	@Override
+	protected boolean isModifyingQuery() {
+		return false;
+	}
 }

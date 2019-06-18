@@ -30,6 +30,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
@@ -215,6 +216,15 @@ public class PartTreeCassandraQueryUnitTests {
 		assertThat(statement.toString()).isEqualTo("SELECT COUNT(1) FROM person;");
 	}
 
+	@Test // DATACASS-611
+	public void shouldCreateDeleteQuery() {
+
+		Statement statement = deriveQueryFromMethod(Repo.class, "deleteAllByLastname", new Class[] { String.class },
+				"Walter");
+
+		assertThat(statement.toString()).isEqualTo("DELETE FROM person WHERE lastname='Walter';");
+	}
+
 	@Test // DATACASS-512
 	public void shouldCreateExistsQuery() {
 
@@ -294,6 +304,8 @@ public class PartTreeCassandraQueryUnitTests {
 		Person findByFirstnameIn(Collection<String> firstname);
 
 		long countBy();
+
+		boolean deleteAllByLastname(String lastname);
 
 		boolean existsBy();
 

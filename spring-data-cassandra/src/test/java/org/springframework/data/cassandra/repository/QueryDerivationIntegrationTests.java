@@ -343,6 +343,23 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 		assertThat(count).isEqualTo(3);
 	}
 
+	@Test // DATACASS-611
+	public void shouldDeleteRecords() {
+
+		personRepository.deleteByLastname("White");
+
+		assertThat(personRepository.countByLastname("White")).isZero();
+	}
+
+	@Test // DATACASS-611
+	public void shouldDeleteRecordsWithWasApplied() {
+
+		boolean deleted = personRepository.deleteByLastname("White");
+
+		assertThat(deleted).isTrue();
+		assertThat(personRepository.countByLastname("White")).isZero();
+	}
+
 	@Test // DATACASS-512
 	public void shouldApplyExistsProjection() {
 
@@ -382,6 +399,10 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 		Person findByNumberOfChildren(NumberOfChildren numberOfChildren);
 
 		long countByLastname(String lastname);
+
+		boolean deleteByLastname(String lastname);
+
+		void deleteVoidByLastname(String lastname);
 
 		boolean existsByLastname(String lastname);
 
