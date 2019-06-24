@@ -37,34 +37,34 @@ you must configure some parts of the library by using Spring.
 
 To learn more about Spring, you can refer to the comprehensive {spring-framework-docs}[documentation]
 that explains the Spring Framework in detail. There are a lot of articles, blog entries, and books on Spring.
-See the Spring Framework http://projects.spring.io/spring-framework/[home page] for more information.
+See the Spring Framework https://projects.spring.io/spring-framework/[home page] for more information.
 
 [[get-started:first-steps:nosql]]
 == Knowing NoSQL and Cassandra
 
 NoSQL stores have taken the storage world by storm. It is a vast domain with a plethora of solutions, terms, and patterns.
-(To make things worse, even the term itself has multiple http://www.google.com/search?q=nosoql+acronym[meanings].)
+(To make things worse, even the term itself has multiple https://www.google.com/search?q=nosoql+acronym[meanings].)
 While some of the principles are common, it is crucial that you be familiar to some degree with
 the Cassandra Columnar NoSQL Datastore supported by Spring Data for Apache Cassandra. The best way to get acquainted with Cassandra
 is to read the documentation and follow the examples.  It usually does not take more then 5-10 minutes to go through them,
 and, if you come from a RDBMS background, these exercises can often be an eye opener.
 
-The starting point for learning about Cassandra is http://cassandra.apache.org/[cassandra.apache.org]. Also, here is
+The starting point for learning about Cassandra is https://cassandra.apache.org/[cassandra.apache.org]. Also, here is
 a list of other useful resources:
 
-* The http://datastax.com/[DataStax] site offers http://www.datastax.com/what-we-offer/products-services/support[commercial support]
-and many resources, including, but not limited to, http://docs.datastax.com/en/landing_page/doc/landing_page/current.html[documentation],
-http://docs.datastax.com/en/landing_page/doc/landing_page/current.html[DataStax Academy], a http://www.datastax.com/dev/blog[Tech Blog],
+* The https://datastax.com/[DataStax] site offers https://www.datastax.com/what-we-offer/products-services/support[commercial support]
+and many resources, including, but not limited to, https://docs.datastax.com/en/landing_page/doc/landing_page/current.html[documentation],
+https://docs.datastax.com/en/landing_page/doc/landing_page/current.html[DataStax Academy], a https://www.datastax.com/dev/blog[Tech Blog],
 and so on.
 * The https://academy.datastax.com/resources/ds101-introduction-cassandra[DataStax Academy introduction to Cassandra].
-* The http://cassandra.apache.org/doc/latest/getting_started/index.html[Cassandra Quick Start Guide].
+* The https://cassandra.apache.org/doc/latest/getting_started/index.html[Cassandra Quick Start Guide].
 
 [[requirements]]
 == Requirements
 
-Spring Data for Apache Cassandra 2.x binaries require JDK level 8.0 and later and http://spring.io/docs[Spring Framework] {springVersion} and later.
+Spring Data for Apache Cassandra 2.x binaries require JDK level 8.0 and later and https://spring.io/docs[Spring Framework] {springVersion} and later.
 
-It requires http://cassandra.apache.org/[Cassandra] 2.0 or later.
+It requires https://cassandra.apache.org/[Cassandra] 2.0 or later.
 
 == Additional Help Resources
 
@@ -74,28 +74,28 @@ However, if you encounter issues or you need advice, feel free to use one of the
 
 [[get-started:help:community]]
 Community Forum::
-Spring Data on http://stackoverflow.com/questions/tagged/spring-data[Stack Overflow] is a
+Spring Data on https://stackoverflow.com/questions/tagged/spring-data[Stack Overflow] is a
 tag for all Spring Data (not just Cassandra) users to share information and help each other.
 Note that registration is needed only for posting. The two key tags to search for related answers to
-this project are http://stackoverflow.com/questions/tagged/spring-data[spring-data] and http://stackoverflow.com/questions/tagged/spring-data-cassandra[spring-data-cassandra].
+this project are https://stackoverflow.com/questions/tagged/spring-data[spring-data] and https://stackoverflow.com/questions/tagged/spring-data-cassandra[spring-data-cassandra].
 
 [[get-started:help:professional]]
 Professional Support::
 Professional, from-the-source support, with guaranteed response time, is available from
-http://pivotal.io/[Pivotal Sofware, Inc.], the company behind Spring Data and Spring.
+https://pivotal.io/[Pivotal Sofware, Inc.], the company behind Spring Data and Spring.
 
 [[get-started:up-to-date]]
 === Following Development
 
 For information on the Spring Data for Apache Cassandra source code repository, nightly builds, and snapshot artifacts
-see the http://projects.spring.io/spring-data-cassandra/[Spring Data for Apache Cassandra home page].
+see the https://projects.spring.io/spring-data-cassandra/[Spring Data for Apache Cassandra home page].
 You can help make Spring Data best serve the needs of the Spring community by interacting with developers
-through the community on http://stackoverflow.com/questions/tagged/spring-data[Stack Overflow].
+through the community on https://stackoverflow.com/questions/tagged/spring-data[Stack Overflow].
 To follow developer activity, look for the mailing list information on the Spring Data for Apache Cassandra home page.
 If you encounter a bug or want to suggest an improvement, please create a ticket on the Spring Data issue
 https://jira.spring.io/browse/DATACASS[tracker]. To stay up-to-date with the latest news and announcements
-in the Spring ecosystem, subscribe to the Spring Community http://spring.io[Portal].
-Finally, you can follow the Spring  http://spring.io/blog[blog] or the project team on Twitter (http://twitter.com/SpringData[SpringData]).
+in the Spring ecosystem, subscribe to the Spring Community https://spring.io[Portal].
+Finally, you can follow the Spring  https://spring.io/blog[blog] or the project team on Twitter (https://twitter.com/SpringData[SpringData]).
 
 
 [[get-started:project-metadata]]

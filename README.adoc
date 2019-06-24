@@ -55,7 +55,7 @@ If you would rather like the latest snapshots of the upcoming major version, use
 <repository>
   <id>spring-libs-snapshot</id>
   <name>Spring Snapshot Repository</name>
-  <url>http://repo.spring.io/libs-snapshot</url>
+  <url>https://repo.spring.io/libs-snapshot</url>
 </repository>
 ----
 
@@ -188,8 +188,8 @@ companies and individuals:
 * David Webb
 * Matthew Adams
 * John McPeek
-* http://www.prowaveconsulting.com[Prowave Consulting] - David Webb
-* http://www.scispike.com[SciSpike] - Matthew Adams
+* https://www.prowaveconsulting.com[Prowave Consulting] - David Webb
+* https://www.scispike.com[SciSpike] - Matthew Adams
 
 == Running CI tasks locally
 

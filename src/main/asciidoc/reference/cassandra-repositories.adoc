@@ -59,9 +59,9 @@ Next, in your Spring configuration, add the following (if you use XML for config
   xmlns:cassandra="http://www.springframework.org/schema/data/cassandra"
   xsi:schemaLocation="
     http://www.springframework.org/schema/data/cassandra
-    http://www.springframework.org/schema/data/cassandra/spring-cassandra.xsd
+    https://www.springframework.org/schema/data/cassandra/spring-cassandra.xsd
     http://www.springframework.org/schema/beans
-    http://www.springframework.org/schema/beans/spring-beans.xsd">
+    https://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <cassandra:cluster port="9042"/>
     <cassandra:session keyspace-name="keyspaceName"/>

@@ -38,7 +38,7 @@ import com.datastax.driver.core.DataType.Name;
  * the classpath.
  *
  * @author Mark Paluch
- * @see <a href="http://www.threeten.org/threetenbp">Threeten Backport</a>
+ * @see <a href="https://www.threeten.org/threetenbp">Threeten Backport</a>
  * @since 1.5
  */
 public abstract class CassandraThreeTenBackPortConverters {

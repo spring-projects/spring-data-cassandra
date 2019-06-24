@@ -28,7 +28,7 @@ import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
 /**
  * @author Mark Paluch
  * @see <a href=
- *      "http://www.datastax.com/dev/blog/basic-rules-of-cassandra-data-modeling">http://www.datastax.com/dev/blog/basic-rules-of-cassandra-data-modeling</a>
+ *      "https://www.datastax.com/dev/blog/basic-rules-of-cassandra-data-modeling">https://www.datastax.com/dev/blog/basic-rules-of-cassandra-data-modeling</a>
  */
 @PrimaryKeyClass
 @Data

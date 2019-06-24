@@ -298,7 +298,7 @@ public class CassandraAccessor implements InitializingBean {
 	 * @param ex the offending {@link DriverException}
 	 * @return the DataAccessException, wrapping the {@code DriverException}
 	 * @see <a href=
-	 *      "http://docs.spring.io/spring/docs/current/spring-framework-reference/data-access.html#dao-exceptions">Consistent
+	 *      "https://docs.spring.io/spring/docs/current/spring-framework-reference/data-access.html#dao-exceptions">Consistent
 	 *      exception hierarchy</a>
 	 * @see DataAccessException
 	 */
@@ -324,7 +324,7 @@ public class CassandraAccessor implements InitializingBean {
 	 * @return the DataAccessException, wrapping the {@code DriverException}
 	 * @see org.springframework.dao.DataAccessException#getRootCause()
 	 * @see <a href=
-	 *      "http://docs.spring.io/spring/docs/current/spring-framework-reference/data-access.html#dao-exceptions">Consistent
+	 *      "https://docs.spring.io/spring/docs/current/spring-framework-reference/data-access.html#dao-exceptions">Consistent
 	 *      exception hierarchy</a>
 	 */
 	protected DataAccessException translate(String task, @Nullable String cql, DriverException ex) {

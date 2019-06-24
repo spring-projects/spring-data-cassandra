@@ -10,8 +10,8 @@ Reactive usage is broken up into two phases: Composition and Execution.
 Calling repository methods lets you compose a reactive sequence by obtaining `Publisher` instances and applying operators.
 No I/O happens until you subscribe. Passing the reactive sequence to a reactive execution infrastructure,
 such as {spring-framework-docs}web.html#web-reactive[Spring WebFlux]
-or http://vertx.io/docs/vertx-reactive-streams/java/[Vert.x]), subscribes to the publisher and initiate
-the actual execution. See http://projectreactor.io/docs/core/release/reference/#reactive.subscribe[the Project reactor documentation] for more detail.
+or https://vertx.io/docs/vertx-reactive-streams/java/[Vert.x]), subscribes to the publisher and initiate
+the actual execution. See https://projectreactor.io/docs/core/release/reference/#reactive.subscribe[the Project reactor documentation] for more detail.
 
 
 [[cassandra.reactive.repositories.libraries]]
@@ -22,7 +22,7 @@ https://github.com/ReactiveX/RxJava[RxJava] and https://projectreactor.io/[Proje
 
 Spring Data for Apache Cassandra is built on top of the https://github.com/datastax/java-driver[DataStax Cassandra Driver].
 The driver is not reactive but the asynchronous capabilities allow us to adopt and expose the `Publisher` APIs
-to provide maximum interoperability by relying on the http://www.reactive-streams.org/[Reactive Streams] initiative.
+to provide maximum interoperability by relying on the https://www.reactive-streams.org/[Reactive Streams] initiative.
 Static APIs, such as `ReactiveCassandraOperations`, are provided by using Project Reactor's `Flux` and `Mono` types.
 Project Reactor offers various adapters to convert reactive wrapper types (`Flux` to `Observable` and back),
 but conversion can easily clutter your code.

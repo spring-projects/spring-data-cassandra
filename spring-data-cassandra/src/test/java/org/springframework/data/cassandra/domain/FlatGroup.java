@@ -24,7 +24,7 @@ import org.springframework.data.cassandra.core.mapping.Table;
 /**
  * @author Mark Paluch
  * @see <a href=
- *      "http://www.datastax.com/dev/blog/basic-rules-of-cassandra-data-modeling">http://www.datastax.com/dev/blog/basic-rules-of-cassandra-data-modeling</a>
+ *      "https://www.datastax.com/dev/blog/basic-rules-of-cassandra-data-modeling">https://www.datastax.com/dev/blog/basic-rules-of-cassandra-data-modeling</a>
  */
 @Table
 @Data
