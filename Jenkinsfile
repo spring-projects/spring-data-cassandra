@@ -37,6 +37,7 @@ pipeline {
         stage('Release to artifactory') {
             when {
                 branch 'issue/*'
+                not { triggeredBy 'UpstreamCause' }
             }
             agent {
                 docker {
