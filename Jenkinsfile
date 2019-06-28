@@ -12,6 +12,12 @@ pipeline {
 
     stages {
         stage("Test") {
+            when {
+                anyOf {
+                    branch '1.5.x'
+                    not { triggeredBy 'UpstreamCause' }
+                }
+            }
             parallel {
                 stage("test: baseline") {
                     agent {
