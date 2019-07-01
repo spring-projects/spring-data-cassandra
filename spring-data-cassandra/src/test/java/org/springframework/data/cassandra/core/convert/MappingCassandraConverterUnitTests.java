@@ -822,6 +822,20 @@ public class MappingCassandraConverterUnitTests {
 		assertThat(result.id.localDate).isEqualTo(java.time.LocalDate.of(2017, 1, 2));
 	}
 
+	@Test // DATACASS-672
+	public void shouldReadTypeCompositePrimaryKeyUsingEntityInstantiatorAndPropertyPopulationInKeyCorrectly() {
+
+		// condition, localDate
+		Row row = RowMockUtil.newRowMock(column("firstname", "Walter", DataType.varchar()),
+				column("lastname", "White", DataType.varchar()));
+
+		TableWithCompositeKeyViaConstructor result = mappingCassandraConverter
+				.read(TableWithCompositeKeyViaConstructor.class, row);
+
+		assertThat(result.key.firstname).isEqualTo("Walter");
+		assertThat(result.key.lastname).isEqualTo("White");
+	}
+
 	@Test // DATACASS-308
 	public void shouldWriteWhereConditionForTypeWithPkClassKeyUsingMapId() {
 
@@ -1134,6 +1148,20 @@ public class MappingCassandraConverterUnitTests {
 
 	public enum Condition {
 		MINT, USED
+	}
+
+	@PrimaryKeyClass
+	public static class CompositeKeyWithPropertyAccessors {
+
+		@PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED) String firstname;
+		@PrimaryKeyColumn String lastname;
+	}
+
+	@Table
+	@RequiredArgsConstructor
+	public static class TableWithCompositeKeyViaConstructor {
+
+		@PrimaryKey private final CompositeKeyWithPropertyAccessors key;
 	}
 
 	@Table
