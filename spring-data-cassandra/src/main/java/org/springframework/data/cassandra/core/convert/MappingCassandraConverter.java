@@ -174,13 +174,15 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 *         {@link CassandraPersistentEntity entity}.
 	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity
 	 */
-	private ConvertingPropertyAccessor newConvertingPropertyAccessor(Object source, CassandraPersistentEntity<?> entity) {
+	@SuppressWarnings("unchecked")
+	private <S> ConvertingPropertyAccessor<S> newConvertingPropertyAccessor(S source,
+			CassandraPersistentEntity<?> entity) {
 
 		PersistentPropertyAccessor propertyAccessor = source instanceof PersistentPropertyAccessor
 				? (PersistentPropertyAccessor) source
 				: entity.getPropertyAccessor(source);
 
-		return new ConvertingPropertyAccessor(propertyAccessor, getConversionService());
+		return new ConvertingPropertyAccessor<>(propertyAccessor, getConversionService());
 	}
 
 	private <S> PersistentEntityParameterValueProvider<CassandraPersistentProperty> newParameterValueProvider(
@@ -248,27 +250,32 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	}
 
 	private <S> S readEntityFromRow(CassandraPersistentEntity<S> entity, Row row) {
-		return doRead(entity, row, expressionEvaluator -> new BasicCassandraRowValueProvider(row, expressionEvaluator));
+		return doReadEntity(entity, row,
+				expressionEvaluator -> new BasicCassandraRowValueProvider(row, expressionEvaluator));
 	}
 
 	private <S> S readEntityFromTuple(CassandraPersistentEntity<S> entity, TupleValue tupleValue) {
 
-		return doRead(entity, tupleValue,
+		return doReadEntity(entity, tupleValue,
 				expressionEvaluator -> new CassandraTupleValueProvider(tupleValue, getCodecRegistry(), expressionEvaluator));
 	}
 
 	private <S> S readEntityFromUdt(CassandraPersistentEntity<S> entity, UDTValue udtValue) {
 
-		return doRead(entity, udtValue,
+		return doReadEntity(entity, udtValue,
 				expressionEvaluator -> new CassandraUDTValueProvider(udtValue, getCodecRegistry(), expressionEvaluator));
 	}
 
-	private <S, V> S doRead(CassandraPersistentEntity<S> entity, V value,
+	private <S> S doReadEntity(CassandraPersistentEntity<S> entity, Object value,
 			Function<SpELExpressionEvaluator, CassandraValueProvider> valueProviderSupplier) {
 
 		SpELExpressionEvaluator expressionEvaluator = new DefaultSpELExpressionEvaluator(value, this.spELContext);
-
 		CassandraValueProvider valueProvider = valueProviderSupplier.apply(expressionEvaluator);
+
+		return doReadEntity(entity, valueProvider);
+	}
+
+	private <S> S doReadEntity(CassandraPersistentEntity<S> entity, CassandraValueProvider valueProvider) {
 
 		PersistentEntityParameterValueProvider<CassandraPersistentProperty> parameterValueProvider = newParameterValueProvider(
 				entity, valueProvider);
@@ -277,10 +284,14 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 		S instance = instantiator.createInstance(entity, parameterValueProvider);
 
-		ConvertingPropertyAccessor propertyAccessor = newConvertingPropertyAccessor(instance, entity);
-		readProperties(entity, valueProvider, propertyAccessor);
+		if (entity.requiresPropertyPopulation()) {
+			ConvertingPropertyAccessor<S> propertyAccessor = newConvertingPropertyAccessor(instance, entity);
 
-		return (S) propertyAccessor.getBean();
+			readProperties(entity, valueProvider, propertyAccessor);
+			return propertyAccessor.getBean();
+		}
+
+		return instance;
 	}
 
 	private void readProperties(CassandraPersistentEntity<?> entity, CassandraValueProvider valueProvider,
@@ -299,38 +310,9 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			return;
 		}
 
-		if (property.isCompositePrimaryKey()) {
-
-			CassandraPersistentEntity<?> keyEntity = getMappingContext().getRequiredPersistentEntity(property);
-
-			Object key = propertyAccessor.getProperty(property);
-
-			if (key == null) {
-				key = instantiatePrimaryKey(keyEntity, property, valueProvider);
-			}
-
-			// now recurse on using the key this time
-			ConvertingPropertyAccessor pkPropertyAccessor = newConvertingPropertyAccessor(key, keyEntity);
-			readProperties(keyEntity, valueProvider, pkPropertyAccessor);
-
-			// now that the key's properties have been populated, set the key property on the entity
-			propertyAccessor.setProperty(property, pkPropertyAccessor.getBean());
-
-			return;
+		if (property.isCompositePrimaryKey() || valueProvider.hasProperty(property)) {
+			propertyAccessor.setProperty(property, getReadValue(valueProvider, property));
 		}
-
-		if (!valueProvider.hasProperty(property)) {
-			return;
-		}
-
-		propertyAccessor.setProperty(property, getReadValue(valueProvider, property));
-	}
-
-	private Object instantiatePrimaryKey(CassandraPersistentEntity<?> entity, CassandraPersistentProperty keyProperty,
-			CassandraValueProvider propertyProvider) {
-
-		return this.instantiators.getInstantiatorFor(entity).createInstance(entity,
-				newParameterValueProvider(entity, propertyProvider));
 	}
 
 	/* (non-Javadoc)
@@ -700,7 +682,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		}
 
 		// if the class doesn't have an id property, then it's using MapId
-		final MapId id = BasicMapId.id();
+		MapId id = BasicMapId.id();
 
 		for (CassandraPersistentProperty property : entity) {
 
@@ -966,8 +948,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		if (property.isCompositePrimaryKey()) {
 
 			CassandraPersistentEntity<?> keyEntity = getMappingContext().getRequiredPersistentEntity(property);
-
-			return instantiatePrimaryKey(keyEntity, property, valueProvider);
+			return doReadEntity(keyEntity, valueProvider);
 		}
 
 		if (!valueProvider.hasProperty(property)) {

@@ -67,7 +67,6 @@ import org.springframework.data.cassandra.domain.TypeWithMapId;
 import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.domain.UserToken;
 import org.springframework.data.cassandra.test.util.RowMockUtil;
-import org.springframework.data.util.Version;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import com.datastax.driver.core.DataType;
@@ -92,8 +91,6 @@ import com.datastax.driver.core.querybuilder.Update.Assignments;
  * @soundtrack Outlandich - Dont Leave Me Feat Cyt (Sun Kidz Electrocore Mix)
  */
 public class MappingCassandraConverterUnitTests {
-
-	private static final Version VERSION_4_3 = Version.parse("4.3");
 
 	@Rule public final ExpectedException expectedException = ExpectedException.none();
 
@@ -828,6 +825,20 @@ public class MappingCassandraConverterUnitTests {
 		assertThat(result.id.localDate).isEqualTo(java.time.LocalDate.of(2017, 1, 2));
 	}
 
+	@Test // DATACASS-672
+	public void shouldReadTypeCompositePrimaryKeyUsingEntityInstantiatorAndPropertyPopulationInKeyCorrectly() {
+
+		// condition, localDate
+		Row row = RowMockUtil.newRowMock(column("firstname", "Walter", DataType.varchar()),
+				column("lastname", "White", DataType.varchar()));
+
+		TableWithCompositeKeyViaConstructor result = mappingCassandraConverter
+				.read(TableWithCompositeKeyViaConstructor.class, row);
+
+		assertThat(result.key.firstname).isEqualTo("Walter");
+		assertThat(result.key.lastname).isEqualTo("White");
+	}
+
 	@Test // DATACASS-308
 	public void shouldWriteWhereConditionForTypeWithPkClassKeyUsingMapId() {
 
@@ -1183,6 +1194,20 @@ public class MappingCassandraConverterUnitTests {
 
 	public enum Condition {
 		MINT, USED
+	}
+
+	@PrimaryKeyClass
+	public static class CompositeKeyWithPropertyAccessors {
+
+		@PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED) String firstname;
+		@PrimaryKeyColumn String lastname;
+	}
+
+	@Table
+	@RequiredArgsConstructor
+	public static class TableWithCompositeKeyViaConstructor {
+
+		@PrimaryKey private final CompositeKeyWithPropertyAccessors key;
 	}
 
 	@Table
