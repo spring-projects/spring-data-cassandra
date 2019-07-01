@@ -395,9 +395,6 @@ public class LoginEvent {
 ----
 ====
 
-NOTE: `PrimaryKeyClass` must implement `Serializable` and should provide implementations of `equals()` and `hashCode()`.
-
-
 [[mapping.usage-annotations]]
 === Mapping Annotation Overview
 
