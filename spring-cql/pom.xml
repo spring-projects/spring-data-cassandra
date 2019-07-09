@@ -20,6 +20,7 @@
 
 	<properties>
 		<validation>1.0.0.GA</validation>
+		<project.root>${basedir}/..</project.root>
 	</properties>
 
 	<dependencies>
