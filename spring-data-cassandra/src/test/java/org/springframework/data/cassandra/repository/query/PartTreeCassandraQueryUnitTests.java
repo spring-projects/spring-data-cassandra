@@ -24,9 +24,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -62,8 +60,6 @@ import com.datastax.driver.core.UserType;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class PartTreeCassandraQueryUnitTests {
-
-	@Rule public ExpectedException exception = ExpectedException.none();
 
 	@Mock CassandraOperations mockCassandraOperations;
 	@Mock UserTypeResolver userTypeResolverMock;

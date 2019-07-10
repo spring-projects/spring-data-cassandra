@@ -29,9 +29,9 @@ import org.springframework.data.cassandra.core.cql.session.lookup.SingleSessionF
  */
 public class SingleSessionFactoryLookupUnitTests {
 
-	@Test(expected = IllegalArgumentException.class) // DATACASS-330
+	@Test // DATACASS-330
 	public void shouldRejectNullSessionFactory() {
-		new SingleSessionFactoryLookup(null);
+		assertThatIllegalArgumentException().isThrownBy(() -> new SingleSessionFactoryLookup(null));
 	}
 
 	@Test // DATACASS-330

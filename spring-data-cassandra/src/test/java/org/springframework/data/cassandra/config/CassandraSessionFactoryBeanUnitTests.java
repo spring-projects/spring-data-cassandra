@@ -15,19 +15,10 @@
  */
 package org.springframework.data.cassandra.config;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
-import static org.springframework.data.cassandra.config.CassandraSessionFactoryBean.DEFAULT_CREATE_IF_NOT_EXISTS;
-import static org.springframework.data.cassandra.config.CassandraSessionFactoryBean.DEFAULT_DROP_TABLES;
-import static org.springframework.data.cassandra.config.CassandraSessionFactoryBean.DEFAULT_DROP_UNUSED_TABLES;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.data.cassandra.config.CassandraSessionFactoryBean.*;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -89,19 +80,13 @@ public class CassandraSessionFactoryBeanUnitTests {
 		verify(factoryBean, times(1)).performSchemaAction();
 	}
 
-	@Test(expected = IllegalStateException.class) // DATACASS-219
-	public void afterPropertiesSetThrowsIllegalStateExceptionWhenConverterIsNull() throws Exception {
+	@Test // DATACASS-219
+	public void afterPropertiesSetThrowsIllegalStateExceptionWhenConverterIsNull() {
 
-		try {
-			factoryBean.setCluster(mockCluster);
-			factoryBean.afterPropertiesSet();
-		} catch (IllegalStateException expected) {
+		factoryBean.setCluster(mockCluster);
 
-			assertThat(expected).hasMessage("Converter was not properly initialized");
-			assertThat(expected).hasNoCause();
-
-			throw expected;
-		}
+		assertThatIllegalStateException().isThrownBy(() -> factoryBean.afterPropertiesSet())
+				.withMessageContaining("Converter was not properly initialized");
 	}
 
 	private void performSchemaActionCallsCreateTableWithArgumentsMatchingTheSchemaAction(SchemaAction schemaAction,
@@ -171,20 +156,6 @@ public class CassandraSessionFactoryBeanUnitTests {
 		verifyZeroInteractions(mockConverter);
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACASS-219
-	public void setConverterToNull() {
-
-		try {
-			factoryBean.setConverter(null);
-		} catch (IllegalArgumentException expected) {
-
-			assertThat(expected).hasMessage("CassandraConverter must not be null");
-			assertThat(expected).hasNoCause();
-
-			throw expected;
-		}
-	}
-
 	@Test // DATACASS-219
 	public void setAndGetSchemaAction() {
 
@@ -197,20 +168,6 @@ public class CassandraSessionFactoryBeanUnitTests {
 		factoryBean.setSchemaAction(SchemaAction.NONE);
 
 		assertThat(factoryBean.getSchemaAction()).isEqualTo(SchemaAction.NONE);
-	}
-
-	@Test(expected = IllegalArgumentException.class) // DATACASS-219
-	public void setSchemaActionToNullThrowsIllegalArgumentException() {
-
-		try {
-			factoryBean.setSchemaAction(null);
-		} catch (IllegalArgumentException expected) {
-
-			assertThat(expected).hasMessage("SchemaAction must not be null");
-			assertThat(expected).hasNoCause();
-
-			throw expected;
-		}
 	}
 
 	static class Person {}

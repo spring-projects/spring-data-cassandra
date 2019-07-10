@@ -73,19 +73,19 @@ public class ReactiveInsertOperationSupportIntegrationTests extends AbstractKeys
 		luke.id = "id-2";
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACASS-485
+	@Test // DATACASS-485
 	public void domainTypeIsRequired() {
-		this.template.insert((Class) null);
+		assertThatIllegalArgumentException().isThrownBy(() -> this.template.insert((Class) null));
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACASS-485
+	@Test // DATACASS-485
 	public void optionsIsRequiredOnSet() {
-		this.template.insert(Person.class).withOptions(null);
+		assertThatIllegalArgumentException().isThrownBy(() -> this.template.insert(Person.class).withOptions(null));
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACASS-485
+	@Test // DATACASS-485
 	public void tableIsRequiredOnSet() {
-		this.template.insert(Person.class).inTable((String) null);
+		assertThatIllegalArgumentException().isThrownBy(() -> this.template.insert(Person.class).inTable((String) null));
 	}
 
 	@Test // DATACASS-485, DATACASS-573

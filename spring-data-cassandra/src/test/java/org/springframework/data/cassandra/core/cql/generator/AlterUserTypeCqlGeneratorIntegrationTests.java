@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.core.cql.generator;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assume.*;
 import static org.springframework.data.cassandra.core.cql.generator.AlterUserTypeCqlGenerator.*;
 
@@ -86,13 +87,13 @@ public class AlterUserTypeCqlGeneratorIntegrationTests extends AbstractKeyspaceC
 		session.execute(toCql(spec));
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACASS-172
+	@Test // DATACASS-172
 	public void generationFailsIfNameIsNotSet() {
-		toCql(AlterUserTypeSpecification.alterType(null));
+		assertThatIllegalArgumentException().isThrownBy(() -> toCql(AlterUserTypeSpecification.alterType(null)));
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACASS-172
+	@Test // DATACASS-172
 	public void generationFailsWithoutFields() {
-		toCql(AlterUserTypeSpecification.alterType("hello"));
+		assertThatIllegalArgumentException().isThrownBy(() -> toCql(AlterUserTypeSpecification.alterType("hello")));
 	}
 }

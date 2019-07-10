@@ -67,9 +67,9 @@ public class ReactiveAuditingEntityCallbackUnitTests {
 		callback = new ReactiveAuditingEntityCallback(() -> handler);
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACASS-4
+	@Test // DATACASS-4
 	public void rejectsNullAuditingHandler() {
-		new AuditingEntityCallback(null);
+		assertThatIllegalArgumentException().isThrownBy(() -> new AuditingEntityCallback(null));
 	}
 
 	@Test // DATACASS-4

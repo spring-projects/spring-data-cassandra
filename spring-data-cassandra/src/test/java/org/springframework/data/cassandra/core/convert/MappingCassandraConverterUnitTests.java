@@ -44,9 +44,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
@@ -92,15 +90,13 @@ import com.datastax.driver.core.querybuilder.Update.Assignments;
  */
 public class MappingCassandraConverterUnitTests {
 
-	@Rule public final ExpectedException expectedException = ExpectedException.none();
-
 	Row rowMock;
 
 	CassandraMappingContext mappingContext;
 	MappingCassandraConverter mappingCassandraConverter;
 
 	@Before
-	public void setUp() throws Exception {
+	public void setUp() {
 
 		this.mappingContext = new CassandraMappingContext();
 

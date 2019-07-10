@@ -17,7 +17,7 @@ package org.springframework.data.cassandra.core.cql;
 
 import static edu.umd.cs.mtc.TestFramework.*;
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import edu.umd.cs.mtc.MultithreadedTestCase;
@@ -54,14 +54,14 @@ public class CachedPreparedStatementCreatorUnitTests {
 		when(sessionMock.prepare(anyString())).thenReturn(preparedStatement);
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACASS-253
+	@Test // DATACASS-253
 	public void shouldRejectEmptyCql() {
-		new CachedPreparedStatementCreator("");
+		assertThatIllegalArgumentException().isThrownBy(() -> new CachedPreparedStatementCreator(""));
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACASS-253
+	@Test // DATACASS-253
 	public void shouldRejectNullCql() {
-		new CachedPreparedStatementCreator(null);
+		assertThatIllegalArgumentException().isThrownBy(() -> new CachedPreparedStatementCreator(null));
 	}
 
 	@Test // DATACASS-253

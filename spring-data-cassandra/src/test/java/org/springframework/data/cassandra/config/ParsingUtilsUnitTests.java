@@ -19,9 +19,8 @@ package org.springframework.data.cassandra.config;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.cassandra.support.BeanDefinitionTestUtils.*;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
+
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -31,10 +30,7 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
  *
  * @author John Blum
  */
-// TODO: add more tests!
 public class ParsingUtilsUnitTests {
-
-	@Rule public ExpectedException exception = ExpectedException.none();
 
 	@Test // DATACASS-298
 	public void addOptionalReferencePropertyUsesDefault() {
@@ -98,11 +94,10 @@ public class ParsingUtilsUnitTests {
 	@Test // DATACASS-298
 	public void addRequiredReferencePropertyWithNoReferenceFails() {
 
-		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("value required for property reference [referenceProperty] on class [null]");
-
-		ParsingUtils.addProperty(BeanDefinitionBuilder.genericBeanDefinition(), "referenceProperty", null,
-				"defaultReference", true, true);
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> ParsingUtils.addProperty(BeanDefinitionBuilder.genericBeanDefinition(), "referenceProperty",
+						null, "defaultReference", true, true))
+				.withMessageContaining("value required for property reference [referenceProperty] on class [null]");
 	}
 
 	@Test // DATACASS-298
@@ -119,28 +114,25 @@ public class ParsingUtilsUnitTests {
 	@Test // DATACASS-298
 	public void addRequiredValuePropertyWithNoValueFails() {
 
-		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("value required for property [valueProperty] on class [null]");
-
-		ParsingUtils.addProperty(BeanDefinitionBuilder.genericBeanDefinition(), "valueProperty", null, "defaultValue", true,
-				false);
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> ParsingUtils.addProperty(BeanDefinitionBuilder.genericBeanDefinition(), "valueProperty", null,
+						"defaultValue", true, false))
+				.withMessageContaining("value required for property [valueProperty] on class [null]");
 	}
 
 	@Test // DATACASS-298
 	public void addPropertyThrowsIllegalArgumentExceptionForNullBuilder() {
 
-		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("BeanDefinitionBuilder must not be null");
-
-		ParsingUtils.addProperty(null, "propertyName", "value", "defaultValue", false, false);
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> ParsingUtils.addProperty(null, "propertyName", "value", "defaultValue", false, false))
+				.withMessageContaining("BeanDefinitionBuilder must not be null");
 	}
 
 	@Test // DATACASS-298
 	public void addPropertyThrowsIllegalArgumentExceptionForNullPropertyName() {
 
-		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("Property name must not be null");
-
-		ParsingUtils.addProperty(BeanDefinitionBuilder.genericBeanDefinition(), null, "value", "defaultValue", false, true);
+		assertThatIllegalArgumentException().isThrownBy(() -> ParsingUtils
+				.addProperty(BeanDefinitionBuilder.genericBeanDefinition(), null, "value", "defaultValue", false, true))
+				.withMessageContaining("Property name must not be null");
 	}
 }

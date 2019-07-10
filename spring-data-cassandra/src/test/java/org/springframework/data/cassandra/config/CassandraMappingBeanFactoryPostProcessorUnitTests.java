@@ -94,7 +94,6 @@ public class CassandraMappingBeanFactoryPostProcessorUnitTests {
 
 		GenericXmlApplicationContext context = new GenericXmlApplicationContext();
 		context.load(CassandraMappingBeanFactoryPostProcessorUnitTests.class, "multiple-mapping-contexts.xml");
-		context.refresh();
 
 		assertThatIllegalStateException().isThrownBy(context::refresh).withMessageContaining("found 2 beans of type")
 				.withMessageContaining("CassandraMappingContext");

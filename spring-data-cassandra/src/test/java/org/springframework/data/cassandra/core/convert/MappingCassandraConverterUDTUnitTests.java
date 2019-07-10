@@ -29,12 +29,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
@@ -58,7 +57,6 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
 @RunWith(MockitoJUnitRunner.Silent.class) // there are some unused stubbings in RowMockUtil but they're used in other
 public class MappingCassandraConverterUDTUnitTests {
 
-	@Rule public final ExpectedException expectedException = ExpectedException.none();
 	@Mock UserTypeResolver userTypeResolver;
 
 	UserType manufacturer = UserTypeBuilder.forName("manufacturer").withField("name", DataType.varchar())

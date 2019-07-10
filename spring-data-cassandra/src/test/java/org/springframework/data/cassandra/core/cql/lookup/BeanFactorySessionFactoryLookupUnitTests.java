@@ -39,9 +39,9 @@ public class BeanFactorySessionFactoryLookupUnitTests {
 	@Mock BeanFactory beanFactory;
 	@Mock SessionFactory sessionFactory;
 
-	@Test(expected = IllegalArgumentException.class) // DATACASS-330
+	@Test // DATACASS-330
 	public void shouldRejectNullBeanFactory() {
-		new BeanFactorySessionFactoryLookup(null);
+		assertThatIllegalArgumentException().isThrownBy(() -> new BeanFactorySessionFactoryLookup(null));
 	}
 
 	@Test // DATACASS-330

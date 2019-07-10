@@ -26,9 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.annotation.Id;
@@ -62,8 +60,6 @@ public class CassandraQueryCreatorUnitTests {
 
 	CassandraMappingContext context;
 	CassandraConverter converter;
-
-	@Rule public ExpectedException exception = ExpectedException.none();
 
 	@Before
 	public void setUp() {
@@ -288,9 +284,10 @@ public class CassandraQueryCreatorUnitTests {
 		assertThat(query).isEqualTo("SELECT * FROM key WHERE firstname='Walter';");
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACASS-7
+	@Test // DATACASS-7
 	public void createsFindByPrimaryKey2PartCorrectly() {
-		createQuery("findByKey", TypeWithCompositeId.class, new Key());
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> createQuery("findByKey", TypeWithCompositeId.class, new Key()));
 	}
 
 	private String createQuery(String source, Class<?> entityClass, Object... values) {

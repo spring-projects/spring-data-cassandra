@@ -84,19 +84,19 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 		admin.insert(luke);
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACASS-485
+	@Test // DATACASS-485
 	public void domainTypeIsRequired() {
-		this.template.query(null);
+		assertThatIllegalArgumentException().isThrownBy(() -> this.template.query(null));
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACASS-485
+	@Test // DATACASS-485
 	public void returnTypeIsRequiredOnSet() {
-		this.template.query(Person.class).as(null);
+		assertThatIllegalArgumentException().isThrownBy(() -> this.template.query(Person.class).as(null));
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACASS-485
+	@Test // DATACASS-485
 	public void tableIsRequiredOnSet() {
-		this.template.query(Person.class).inTable((String) null);
+		assertThatIllegalArgumentException().isThrownBy(() -> this.template.query(Person.class).inTable((String) null));
 	}
 
 	@Test // DATACASS-485

@@ -19,9 +19,7 @@ import static org.mockito.Mockito.*;
 
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -46,8 +44,6 @@ import com.datastax.driver.core.querybuilder.Using;
 @RunWith(MockitoJUnitRunner.class)
 @SuppressWarnings("unchecked")
 public class QueryOptionsUtilUnitTests {
-
-	@Rule public ExpectedException exception = ExpectedException.none();
 
 	@Mock Insert mockInsert;
 	@Mock PreparedStatement mockPreparedStatement;

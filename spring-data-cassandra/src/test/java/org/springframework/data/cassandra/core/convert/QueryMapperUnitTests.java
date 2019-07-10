@@ -15,9 +15,11 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+
+import lombok.AllArgsConstructor;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -26,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import lombok.AllArgsConstructor;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
 import org.junit.Before;
@@ -34,6 +35,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
@@ -340,8 +342,8 @@ public class QueryMapperUnitTests {
 		Filter mappedObject = this.queryMapper.getMappedObject(filter,
 				this.mappingContext.getRequiredPersistentEntity(Person.class));
 
-		TupleValue tupleValue = this.mappingContext.getRequiredPersistentEntity(MappedTuple.class)
-				.getTupleType().newValue();
+		TupleValue tupleValue = this.mappingContext.getRequiredPersistentEntity(MappedTuple.class).getTupleType()
+				.newValue();
 
 		tupleValue.setString(0, "foo");
 
@@ -359,11 +361,11 @@ public class QueryMapperUnitTests {
 		assertThat(mappedObject).contains(Criteria.where("localdate").gt(1000L));
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACASS-523
+	@Test // DATACASS-523
 	public void referencingTupleElementsInQueryShouldFail() {
-
-		this.queryMapper.getMappedObject(Filter.from(Criteria.where("tuple.zip").is("123")),
-				this.mappingContext.getRequiredPersistentEntity(Person.class));
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> this.queryMapper.getMappedObject(Filter.from(Criteria.where("tuple.zip").is("123")),
+						this.mappingContext.getRequiredPersistentEntity(Person.class)));
 	}
 
 	static class Person {

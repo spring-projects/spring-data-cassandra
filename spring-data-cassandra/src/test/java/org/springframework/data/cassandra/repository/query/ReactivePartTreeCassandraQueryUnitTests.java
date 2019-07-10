@@ -26,12 +26,11 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
@@ -56,8 +55,6 @@ import com.datastax.driver.core.Statement;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class ReactivePartTreeCassandraQueryUnitTests {
-
-	@Rule public ExpectedException exception = ExpectedException.none();
 
 	@Mock ReactiveCassandraOperations mockCassandraOperations;
 	@Mock UserTypeResolver userTypeResolver;

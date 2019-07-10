@@ -29,14 +29,14 @@ import org.junit.Test;
  */
 public class OptionUnitTests {
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void testOptionWithNullName() {
-		new DefaultOption(null, Object.class, true, true, true);
+		assertThatIllegalArgumentException().isThrownBy(() -> new DefaultOption(null, Object.class, true, true, true));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void testOptionWithEmptyName() {
-		new DefaultOption("", Object.class, true, true, true);
+		assertThatIllegalArgumentException().isThrownBy(() -> new DefaultOption("", Object.class, true, true, true));
 	}
 
 	@Test

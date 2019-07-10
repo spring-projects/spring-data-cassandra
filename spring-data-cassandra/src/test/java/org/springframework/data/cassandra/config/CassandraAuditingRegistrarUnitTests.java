@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.config;
 
+import static org.assertj.core.api.Assertions.*;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -36,13 +38,13 @@ public class CassandraAuditingRegistrarUnitTests {
 	@Mock AnnotationMetadata metadata;
 	@Mock BeanDefinitionRegistry registry;
 
-	@Test(expected = IllegalArgumentException.class) // DATACASS-4
+	@Test // DATACASS-4
 	public void rejectsNullAnnotationMetadata() {
-		registrar.registerBeanDefinitions(null, registry);
+		assertThatIllegalArgumentException().isThrownBy(() -> registrar.registerBeanDefinitions(null, registry));
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACASS-4
+	@Test // DATACASS-4
 	public void rejectsNullBeanDefinitionRegistry() {
-		registrar.registerBeanDefinitions(metadata, null);
+		assertThatIllegalArgumentException().isThrownBy(() -> registrar.registerBeanDefinitions(metadata, null));
 	}
 }

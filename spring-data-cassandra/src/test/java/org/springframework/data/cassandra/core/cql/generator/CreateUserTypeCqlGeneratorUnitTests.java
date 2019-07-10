@@ -61,8 +61,8 @@ public class CreateUserTypeCqlGeneratorUnitTests {
 		assertThat(toCql(spec)).isEqualTo("CREATE TYPE IF NOT EXISTS address (zip ascii, city varchar);");
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACASS-172
+	@Test // DATACASS-172
 	public void generationFailsWithoutFields() {
-		toCql(CreateUserTypeSpecification.createType("hello"));
+		assertThatIllegalArgumentException().isThrownBy(() -> toCql(CreateUserTypeSpecification.createType("hello")));
 	}
 }

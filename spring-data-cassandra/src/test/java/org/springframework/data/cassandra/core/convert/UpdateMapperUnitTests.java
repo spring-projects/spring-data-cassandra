@@ -15,8 +15,11 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 import java.time.LocalTime;
 import java.util.Collections;
@@ -24,9 +27,6 @@ import java.util.Currency;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -242,17 +242,17 @@ public class UpdateMapperUnitTests {
 	@Test // DATACASS-302
 	public void shouldMapTime() {
 
-		Update update = this.updateMapper.getMappedObject(Update.empty()
-				.set("localTime", LocalTime.of(1, 2, 3)),
+		Update update = this.updateMapper.getMappedObject(Update.empty().set("localTime", LocalTime.of(1, 2, 3)),
 				this.persistentEntity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update.toString()).isEqualTo("localtime = 3723000");
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACASS-523
+	@Test // DATACASS-523
 	public void referencingTupleElementsInQueryShouldFail() {
-		this.updateMapper.getMappedObject(Update.empty().set("tuple.zip", "bar"), this.persistentEntity);
+		assertThatIllegalArgumentException().isThrownBy(
+				() -> this.updateMapper.getMappedObject(Update.empty().set("tuple.zip", "bar"), this.persistentEntity));
 	}
 
 	static class Person {

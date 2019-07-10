@@ -17,24 +17,21 @@
 package org.springframework.data.cassandra.config;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.cassandra.core.cql.CqlOperations;
 
 import com.datastax.driver.core.Cluster;
@@ -49,8 +46,6 @@ import com.datastax.driver.core.Session;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class CassandraCqlSessionFactoryBeanUnitTests {
-
-	@Rule public ExpectedException exception = ExpectedException.none();
 
 	@Mock private Cluster mockCluster;
 
@@ -187,26 +182,10 @@ public class CassandraCqlSessionFactoryBeanUnitTests {
 	}
 
 	@Test // DATACASS-219
-	public void setClusterToNullThrowsIllegalArgumentException() {
-
-		try {
-			factoryBean.setCluster(null);
-			fail("Missing IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
-			assertThat(e).hasMessageContaining("Cluster must not be null");
-		}
-
-	}
-
-	@Test // DATACASS-219
 	public void getClusterWhenUninitializedThrowsIllegalStateException() {
 
-		try {
-			factoryBean.getCluster();
-			fail("Missing IllegalStateException");
-		} catch (IllegalStateException e) {
-			assertThat(e).hasMessageContaining("Cluster was not properly initialized");
-		}
+		assertThatIllegalStateException().isThrownBy(factoryBean::getCluster)
+				.withMessageContaining("Cluster was not properly initialized");
 	}
 
 	@Test // DATACASS-219
@@ -226,19 +205,14 @@ public class CassandraCqlSessionFactoryBeanUnitTests {
 
 		assertThat(factoryBean.getObject()).isNull();
 
-		try {
-			factoryBean.getSession();
-			fail("Missing IllegalStateException");
-		} catch (IllegalStateException e) {
-			assertThat(e).hasMessageContaining("Session was not properly initialized");
-		}
-
+		assertThatIllegalStateException().isThrownBy(factoryBean::getSession)
+				.withMessageContaining("Session was not properly initialized");
 	}
 
 	@Test // DATACASS-219
 	public void setAndGetStartupScripts() {
 
-		assertNonNullEmptyCollection(factoryBean.getStartupScripts());
+		assertThat(factoryBean.getStartupScripts()).isEmpty();
 
 		List<String> expectedStartupScripts = Arrays.asList("/path/to/schema.cql", "/path/to/data.cql");
 		factoryBean.setStartupScripts(expectedStartupScripts);
@@ -247,7 +221,7 @@ public class CassandraCqlSessionFactoryBeanUnitTests {
 		assertThat(actualStartupScripts).isNotSameAs(expectedStartupScripts).isEqualTo(expectedStartupScripts);
 
 		factoryBean.setStartupScripts(null);
-		assertNonNullEmptyCollection(factoryBean.getStartupScripts());
+		assertThat(factoryBean.getShutdownScripts()).isEmpty();
 	}
 
 	@Test // DATACASS-219
@@ -265,22 +239,20 @@ public class CassandraCqlSessionFactoryBeanUnitTests {
 
 		actualStartupScripts = factoryBean.getStartupScripts();
 
-		assertThat(actualStartupScripts).isNotEqualTo(startupScripts);
-		assertThat(actualStartupScripts).hasSize(1);
+		assertThat(actualStartupScripts).isNotEqualTo(startupScripts).hasSize(1);
 		assertThat(actualStartupScripts.get(0)).isEqualTo(startupScripts.get(0));
 
-		try {
-			exception.expect(UnsupportedOperationException.class);
-			actualStartupScripts.add("/path/to/yetAnother.cql");
-		} finally {
-			assertThat(actualStartupScripts).hasSize(1);
-		}
+		List<String> scriptsToUse = actualStartupScripts;
+		assertThatExceptionOfType(UnsupportedOperationException.class)
+				.isThrownBy(() -> scriptsToUse.add("/path/to/yetAnother.cql"));
+
+		assertThat(actualStartupScripts).hasSize(1);
 	}
 
 	@Test
 	public void setAndGetShutdownScripts() {
 
-		assertNonNullEmptyCollection(factoryBean.getShutdownScripts());
+		assertThat(factoryBean.getShutdownScripts()).isEmpty();
 
 		List<String> expectedShutdownScripts = Arrays.asList("/path/to/backup.cql", "/path/to/dropTables.cql");
 		factoryBean.setShutdownScripts(expectedShutdownScripts);
@@ -289,7 +261,7 @@ public class CassandraCqlSessionFactoryBeanUnitTests {
 		assertThat(actualShutdownScripts).isEqualTo(expectedShutdownScripts).isNotSameAs(expectedShutdownScripts);
 
 		factoryBean.setShutdownScripts(null);
-		assertNonNullEmptyCollection(factoryBean.getShutdownScripts());
+		assertThat(factoryBean.getShutdownScripts()).isEmpty();
 	}
 
 	@Test // DATACASS-219
@@ -308,17 +280,9 @@ public class CassandraCqlSessionFactoryBeanUnitTests {
 		assertThat(actualShutdownScripts).isNotEqualTo(shutdownScripts);
 		assertThat(actualShutdownScripts).hasSize(1);
 
-		try {
-			exception.expect(UnsupportedOperationException.class);
-			actualShutdownScripts.add("/path/to/blowUpCluster.cql");
-		} finally {
-			assertThat(actualShutdownScripts).hasSize(1);
-		}
-	}
-
-	private void assertNonNullEmptyCollection(Collection<?> collection) {
-
-		assertThat(collection).isNotNull();
-		assertThat(collection.isEmpty()).isTrue();
+		List<String> scriptsToUse = actualShutdownScripts;
+		assertThatExceptionOfType(UnsupportedOperationException.class)
+				.isThrownBy(() -> scriptsToUse.add("/path/to/blowUpCluster.cql"));
+		assertThat(actualShutdownScripts).hasSize(1);
 	}
 }

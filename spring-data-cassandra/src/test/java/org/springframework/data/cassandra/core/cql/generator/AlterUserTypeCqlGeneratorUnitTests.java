@@ -68,8 +68,8 @@ public class AlterUserTypeCqlGeneratorUnitTests {
 	}
 
 
-	@Test(expected = IllegalArgumentException.class) // DATACASS-172
+	@Test // DATACASS-172
 	public void generationFailsWithoutFields() {
-		toCql(AlterUserTypeSpecification.alterType("hello"));
+		assertThatIllegalArgumentException().isThrownBy(() -> toCql(AlterUserTypeSpecification.alterType("hello")));
 	}
 }

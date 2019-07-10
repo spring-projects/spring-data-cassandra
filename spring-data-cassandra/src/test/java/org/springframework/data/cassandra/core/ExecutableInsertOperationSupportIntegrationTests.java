@@ -15,11 +15,11 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.Collections;
+import static org.assertj.core.api.Assertions.*;
 
 import lombok.Data;
+
+import java.util.Collections;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -66,28 +66,25 @@ public class ExecutableInsertOperationSupportIntegrationTests extends AbstractKe
 		luke.id = "id-2";
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACASS-485
+	@Test // DATACASS-485
 	public void domainTypeIsRequired() {
-		this.template.insert((Class) null);
+		assertThatIllegalArgumentException().isThrownBy(() -> this.template.insert((Class) null));
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACASS-485
+	@Test // DATACASS-485
 	public void tableIsRequiredOnSet() {
-		this.template.insert(Person.class).inTable((String) null);
+		assertThatIllegalArgumentException().isThrownBy(() -> this.template.insert(Person.class).inTable((String) null));
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACASS-485
+	@Test // DATACASS-485
 	public void optionsIsRequiredOnSet() {
-		this.template.insert(Person.class).withOptions(null);
+		assertThatIllegalArgumentException().isThrownBy(() -> this.template.insert(Person.class).withOptions(null));
 	}
 
 	@Test // DATACASS-485
 	public void insertOne() {
 
-		WriteResult insertResult = this.template
-				.insert(Person.class)
-				.inTable("person")
-				.one(han);
+		WriteResult insertResult = this.template.insert(Person.class).inTable("person").one(han);
 
 		assertThat(insertResult.wasApplied()).isTrue();
 		assertThat(this.template.selectOneById(han.id, Person.class)).isEqualTo(han);
@@ -98,10 +95,8 @@ public class ExecutableInsertOperationSupportIntegrationTests extends AbstractKe
 
 		this.template.insert(Person.class).inTable("person").one(han);
 
-		WriteResult insertResult = this.template
-				.insert(Person.class).inTable("person")
-				.withOptions(InsertOptions.builder().withIfNotExists().build())
-				.one(han);
+		WriteResult insertResult = this.template.insert(Person.class).inTable("person")
+				.withOptions(InsertOptions.builder().withIfNotExists().build()).one(han);
 
 		assertThat(insertResult.wasApplied()).isFalse();
 		assertThat(template.selectOneById(han.id, Person.class)).isEqualTo(han);

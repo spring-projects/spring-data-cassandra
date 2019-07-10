@@ -18,9 +18,7 @@ package org.springframework.data.cassandra.core.cql;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -38,8 +36,6 @@ import com.datastax.driver.core.Session;
 public class CassandraAccessorUnitTests {
 
 	private CassandraAccessor cassandraAccessor;
-
-	@Rule public ExpectedException exception = ExpectedException.none();
 
 	@Mock private CassandraExceptionTranslator mockExceptionTranslator;
 	@Mock private Session mockSession;
