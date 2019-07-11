@@ -28,6 +28,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
@@ -35,6 +36,7 @@ import org.springframework.data.cassandra.repository.query.ConvertingParameterAc
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 
+import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.DataType;
 
 /**
@@ -57,13 +59,15 @@ public class ConvertingParameterAccessorUnitTests {
 
 		this.converter = new MappingCassandraConverter();
 		this.converter.afterPropertiesSet();
-		this.convertingParameterAccessor = new ConvertingParameterAccessor(converter, mockParameterAccessor);
+		this.convertingParameterAccessor = new ConvertingParameterAccessor(converter, mockParameterAccessor,
+				CodecRegistry.DEFAULT_INSTANCE);
 	}
 
 	@Test // DATACASS-296
 	public void shouldReturnNullBindableValue() {
 
-		ConvertingParameterAccessor accessor = new ConvertingParameterAccessor(converter, mockParameterAccessor);
+		ConvertingParameterAccessor accessor = new ConvertingParameterAccessor(converter, mockParameterAccessor,
+				CodecRegistry.DEFAULT_INSTANCE);
 
 		assertThat(accessor.getBindableValue(0)).isNull();
 	}
@@ -74,7 +78,8 @@ public class ConvertingParameterAccessorUnitTests {
 
 		when(mockParameterAccessor.getBindableValue(0)).thenReturn("hello");
 
-		ConvertingParameterAccessor accessor = new ConvertingParameterAccessor(converter, mockParameterAccessor);
+		ConvertingParameterAccessor accessor = new ConvertingParameterAccessor(converter, mockParameterAccessor,
+				CodecRegistry.DEFAULT_INSTANCE);
 
 		assertThat(accessor.getBindableValue(0)).isEqualTo((Object) "hello");
 	}

@@ -153,7 +153,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	}
 
 	private CodecRegistry getCodecRegistry() {
-		return CodecRegistry.DEFAULT_INSTANCE;
+		return getMappingContext().getCodecRegistry();
 	}
 
 	/* (non-Javadoc)
@@ -251,7 +251,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 	private <S> S readEntityFromRow(CassandraPersistentEntity<S> entity, Row row) {
 		return doReadEntity(entity, row,
-				expressionEvaluator -> new BasicCassandraRowValueProvider(row, expressionEvaluator));
+				expressionEvaluator -> new BasicCassandraRowValueProvider(row, getCodecRegistry(), expressionEvaluator));
 	}
 
 	private <S> S readEntityFromTuple(CassandraPersistentEntity<S> entity, TupleValue tupleValue) {

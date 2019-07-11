@@ -55,6 +55,7 @@ import org.springframework.data.repository.query.QueryCreationException;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.util.ReflectionUtils;
 
+import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.SimpleStatement;
@@ -326,7 +327,8 @@ public class StringBasedCassandraQueryUnitTests {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByCreatedDate", LocalDate.class);
 		CassandraParameterAccessor accessor = new ConvertingParameterAccessor(converter,
-				new CassandraParametersParameterAccessor(cassandraQuery.getQueryMethod(), LocalDate.of(2010, 7, 4)));
+				new CassandraParametersParameterAccessor(cassandraQuery.getQueryMethod(), LocalDate.of(2010, 7, 4)),
+				CodecRegistry.DEFAULT_INSTANCE);
 
 		SimpleStatement actual = cassandraQuery.createQuery(accessor);
 
@@ -345,7 +347,8 @@ public class StringBasedCassandraQueryUnitTests {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByMainAddress", AddressType.class);
 		CassandraParameterAccessor accessor = new ConvertingParameterAccessor(converter,
-				new CassandraParametersParameterAccessor(cassandraQuery.getQueryMethod(), new AddressType()));
+				new CassandraParametersParameterAccessor(cassandraQuery.getQueryMethod(), new AddressType()),
+				CodecRegistry.DEFAULT_INSTANCE);
 
 		SimpleStatement stringQuery = cassandraQuery.createQuery(accessor);
 
@@ -358,7 +361,8 @@ public class StringBasedCassandraQueryUnitTests {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByMainAddress", UDTValue.class);
 		CassandraParameterAccessor accessor = new ConvertingParameterAccessor(converter,
-				new CassandraParametersParameterAccessor(cassandraQuery.getQueryMethod(), udtValue));
+				new CassandraParametersParameterAccessor(cassandraQuery.getQueryMethod(), udtValue),
+				CodecRegistry.DEFAULT_INSTANCE);
 
 		SimpleStatement stringQuery = cassandraQuery.createQuery(accessor);
 

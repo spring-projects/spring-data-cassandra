@@ -33,6 +33,7 @@ import org.springframework.data.repository.query.ResultProcessor;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
+import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.Statement;
 
 /**
@@ -45,6 +46,8 @@ import com.datastax.driver.core.Statement;
 public abstract class AbstractCassandraQuery extends CassandraRepositoryQuerySupport {
 
 	private final CassandraOperations operations;
+
+	private final CodecRegistry codecRegistry;
 
 	private static CassandraConverter toConverter(CassandraOperations operations) {
 
@@ -69,6 +72,7 @@ public abstract class AbstractCassandraQuery extends CassandraRepositoryQuerySup
 		super(queryMethod, toMappingContext(operations));
 
 		this.operations = operations;
+		this.codecRegistry = operations.getConverter().getMappingContext().getCodecRegistry();
 	}
 
 	/**
@@ -89,7 +93,7 @@ public abstract class AbstractCassandraQuery extends CassandraRepositoryQuerySup
 	public Object execute(Object[] parameters) {
 
 		CassandraParameterAccessor parameterAccessor = new ConvertingParameterAccessor(toConverter(getOperations()),
-				new CassandraParametersParameterAccessor(getQueryMethod(), parameters));
+				new CassandraParametersParameterAccessor(getQueryMethod(), parameters), codecRegistry);
 
 		ResultProcessor resultProcessor = getQueryMethod().getResultProcessor().withDynamicProjection(parameterAccessor);
 

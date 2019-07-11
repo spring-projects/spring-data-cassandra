@@ -48,7 +48,8 @@ class StubParameterAccessor implements CassandraParameterAccessor {
 	 * @return
 	 */
 	public static ConvertingParameterAccessor getAccessor(CassandraConverter converter, Object... parameters) {
-		return new ConvertingParameterAccessor(converter, new StubParameterAccessor(parameters));
+		return new ConvertingParameterAccessor(converter, new StubParameterAccessor(parameters),
+				CodecRegistry.DEFAULT_INSTANCE);
 	}
 
 	@SuppressWarnings("unchecked")

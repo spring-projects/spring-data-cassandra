@@ -15,9 +15,8 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
-import static org.mockito.BDDMockito.when;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.BDDMockito.*;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -27,6 +26,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 
+import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.Row;
 
@@ -51,7 +51,7 @@ public class ColumnReaderUnitTests {
 	public void setup() {
 
 		when(row.getColumnDefinitions()).thenReturn(columnDefinitions);
-		underTest = new ColumnReader(row);
+		underTest = new ColumnReader(row, CodecRegistry.DEFAULT_INSTANCE);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -62,8 +62,7 @@ public class ColumnReaderUnitTests {
 		try {
 			underTest.get(NON_EXISTENT_COLUMN);
 			fail("Expected illegal argument exception");
-		}
-		catch (IllegalArgumentException expected) {
+		} catch (IllegalArgumentException expected) {
 
 			assertThat(expected).hasMessage("Column [%s] does not exist in table", NON_EXISTENT_COLUMN);
 			assertThat(expected).hasNoCause();
@@ -79,8 +78,7 @@ public class ColumnReaderUnitTests {
 
 		try {
 			underTest.get(CqlIdentifier.of(NON_EXISTENT_COLUMN));
-		}
-		catch (IllegalArgumentException expected) {
+		} catch (IllegalArgumentException expected) {
 
 			assertThat(expected).hasMessage("Column [%s] does not exist in table", NON_EXISTENT_COLUMN);
 			assertThat(expected).hasNoCause();
@@ -96,8 +94,7 @@ public class ColumnReaderUnitTests {
 
 		try {
 			underTest.get(CqlIdentifier.of(NON_EXISTENT_COLUMN), String.class);
-		}
-		catch (IllegalArgumentException expected) {
+		} catch (IllegalArgumentException expected) {
 
 			assertThat(expected).hasMessage("Column [%s] does not exist in table", NON_EXISTENT_COLUMN);
 			assertThat(expected).hasNoCause();

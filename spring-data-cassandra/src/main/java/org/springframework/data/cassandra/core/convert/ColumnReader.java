@@ -38,14 +38,16 @@ import com.datastax.driver.core.TypeCodec;
 public class ColumnReader {
 
 	private final Row row;
-	private final ColumnDefinitions columns;
+
 	private final CodecRegistry codecRegistry;
 
-	public ColumnReader(Row row) {
+	private final ColumnDefinitions columns;
+
+	public ColumnReader(Row row, CodecRegistry codecRegistry) {
 
 		this.row = row;
+		this.codecRegistry = codecRegistry;
 		this.columns = row.getColumnDefinitions();
-		this.codecRegistry = CodecRegistry.DEFAULT_INSTANCE;
 	}
 
 	/**

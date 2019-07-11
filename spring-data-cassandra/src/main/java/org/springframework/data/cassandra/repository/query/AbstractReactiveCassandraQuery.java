@@ -19,6 +19,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import org.reactivestreams.Publisher;
+
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.ReactiveResultSet;
 import org.springframework.data.cassandra.core.CassandraOperations;
@@ -36,6 +37,7 @@ import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.query.ResultProcessor;
 import org.springframework.util.Assert;
 
+import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.Statement;
 
 /**
@@ -50,6 +52,8 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 
 	private final ReactiveCassandraOperations operations;
 
+	private final CodecRegistry codecRegistry;
+
 	/**
 	 * Create a new {@link AbstractReactiveCassandraQuery} from the given {@link CassandraQueryMethod} and
 	 * {@link CassandraOperations}.
@@ -62,6 +66,7 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 		super(method, getRequiredMappingContext(operations));
 
 		this.operations = operations;
+		this.codecRegistry = operations.getConverter().getMappingContext().getCodecRegistry();
 	}
 
 	/*
@@ -96,7 +101,7 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 				parameters);
 
 		CassandraParameterAccessor convertingParameterAccessor = new ConvertingParameterAccessor(
-				getRequiredConverter(getReactiveCassandraOperations()), parameterAccessor);
+				getRequiredConverter(getReactiveCassandraOperations()), parameterAccessor, codecRegistry);
 
 		Statement statement = createQuery(convertingParameterAccessor);
 

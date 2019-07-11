@@ -48,6 +48,7 @@ import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
 import org.springframework.util.ClassUtils;
 
+import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.UDTValue;
@@ -248,7 +249,8 @@ public class PartTreeCassandraQueryUnitTests {
 		CassandraParameterAccessor accessor = new CassandraParametersParameterAccessor(partTreeQuery.getQueryMethod(),
 				args);
 
-		return partTreeQuery.createQuery(new ConvertingParameterAccessor(mockCassandraOperations.getConverter(), accessor));
+		return partTreeQuery.createQuery(new ConvertingParameterAccessor(mockCassandraOperations.getConverter(), accessor,
+				CodecRegistry.DEFAULT_INSTANCE));
 	}
 
 	private PartTreeCassandraQuery createQueryForMethod(Class<?> repositoryInterface, String methodName,

@@ -52,10 +52,14 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 
 	private final CassandraParameterAccessor delegate;
 
-	ConvertingParameterAccessor(CassandraConverter converter, CassandraParameterAccessor delegate) {
+	private final CodecRegistry codecRegistry;
+
+	ConvertingParameterAccessor(CassandraConverter converter, CassandraParameterAccessor delegate,
+			CodecRegistry codecRegistry) {
 
 		this.converter = converter;
 		this.delegate = delegate;
+		this.codecRegistry = codecRegistry;
 	}
 
 	/* (non-Javadoc)
@@ -170,7 +174,7 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 
 		if (this.delegate.findCassandraType(index) != null) {
 
-			TypeCodec<?> typeCodec = CodecRegistry.DEFAULT_INSTANCE.codecFor(getDataType(index, property));
+			TypeCodec<?> typeCodec = codecRegistry.codecFor(getDataType(index, property));
 
 			if (typeCodec.getJavaType().getType() instanceof Class<?>) {
 				return ClassTypeInformation.from((Class<?>) typeCodec.getJavaType().getType());

@@ -21,6 +21,7 @@ import org.springframework.data.mapping.model.SpELExpressionEvaluator;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
+import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.Row;
 
 /**
@@ -38,18 +39,21 @@ public class BasicCassandraRowValueProvider implements CassandraRowValueProvider
 	private final SpELExpressionEvaluator evaluator;
 
 	/**
-	 * Create a new {@link BasicCassandraRowValueProvider} with the given {@link Row} and {@link SpELExpressionEvaluator}.
+	 * Create a new {@link BasicCassandraRowValueProvider} with the given {@link Row}, {@link CodecRegistry} and
+	 * {@link SpELExpressionEvaluator}.
 	 *
 	 * @param source must not be {@literal null}.
+	 * @param codecRegistry must not be {@literal null}.
 	 * @param evaluator must not be {@literal null}.
 	 * @since 2.1
 	 */
-	public BasicCassandraRowValueProvider(Row source, SpELExpressionEvaluator evaluator) {
+	public BasicCassandraRowValueProvider(Row source, CodecRegistry codecRegistry, SpELExpressionEvaluator evaluator) {
 
 		Assert.notNull(source, "Source Row must not be null");
+		Assert.notNull(codecRegistry, "CodecRegistry must not be null");
 		Assert.notNull(evaluator, "SpELExpressionEvaluator must not be null");
 
-		this.reader = new ColumnReader(source);
+		this.reader = new ColumnReader(source, codecRegistry);
 		this.evaluator = evaluator;
 	}
 
@@ -59,11 +63,11 @@ public class BasicCassandraRowValueProvider implements CassandraRowValueProvider
 	 *
 	 * @param source must not be {@literal null}.
 	 * @param evaluator must not be {@literal null}.
-	 * @deprecated since 2.1, use {@link #BasicCassandraRowValueProvider(Row, SpELExpressionEvaluator)}
+	 * @deprecated since 2.1, use {@link #BasicCassandraRowValueProvider(Row, CodecRegistry, SpELExpressionEvaluator)}
 	 */
 	@Deprecated
 	public BasicCassandraRowValueProvider(Row source, DefaultSpELExpressionEvaluator evaluator) {
-		this(source, (SpELExpressionEvaluator) evaluator);
+		this(source, CodecRegistry.DEFAULT_INSTANCE, evaluator);
 	}
 
 	/* (non-Javadoc)

@@ -160,6 +160,7 @@ public abstract class AbstractCassandraConfiguration extends AbstractClusterConf
 
 		mappingContext.setCustomConversions(customConversions);
 		mappingContext.setSimpleTypeHolder(customConversions.getSimpleTypeHolder());
+		mappingContext.setCodecRegistry(cluster.getConfiguration().getCodecRegistry());
 
 		return mappingContext;
 	}

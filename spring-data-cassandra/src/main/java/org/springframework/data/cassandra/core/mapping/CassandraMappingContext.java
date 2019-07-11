@@ -47,6 +47,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
+import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.DataType.Name;
 import com.datastax.driver.core.TupleType;
@@ -80,6 +81,8 @@ public class CassandraMappingContext
 	private TupleTypeFactory tupleTypeFactory = CodecRegistryTupleTypeFactory.DEFAULT;
 
 	private @Nullable UserTypeResolver userTypeResolver;
+
+	private CodecRegistry codecRegistry = CodecRegistry.DEFAULT_INSTANCE;
 
 	// caches
 	private final Map<CqlIdentifier, Set<CassandraPersistentEntity<?>>> entitySetsByTableName = new HashMap<>();
@@ -135,7 +138,6 @@ public class CassandraMappingContext
 			}
 
 			processMappingOverrides(entity, entityMapping);
-
 		});
 	}
 
@@ -159,7 +161,7 @@ public class CassandraMappingContext
 
 		CassandraPersistentProperty property = entity.getRequiredPersistentProperty(mapping.getPropertyName());
 
-		boolean forceQuote = Boolean.valueOf(mapping.getForceQuote());
+		boolean forceQuote = Boolean.parseBoolean(mapping.getForceQuote());
 
 		property.setForceQuote(forceQuote);
 
@@ -224,6 +226,24 @@ public class CassandraMappingContext
 	 */
 	public Collection<CassandraPersistentEntity<?>> getUserDefinedTypeEntities() {
 		return Collections.unmodifiableSet(this.userDefinedTypes);
+	}
+
+	/**
+	 * Sets the {@link CodecRegistry}.
+	 *
+	 * @param codecRegistry must not be {@literal null}.
+	 * @since 2.2
+	 */
+	public void setCodecRegistry(CodecRegistry codecRegistry) {
+
+		Assert.notNull(codecRegistry, "CodecRegistry must not be null");
+
+		this.codecRegistry = codecRegistry;
+	}
+
+	@NonNull
+	public CodecRegistry getCodecRegistry() {
+		return this.codecRegistry;
 	}
 
 	/**
