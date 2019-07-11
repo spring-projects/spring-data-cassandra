@@ -132,6 +132,7 @@ public class CassandraClusterFactoryBean
 	private @Nullable AddressTranslator addressTranslator;
 	private @Nullable AuthProvider authProvider;
 	private @Nullable CompressionType compressionType;
+	private @Nullable CodecRegistry codecRegistry;
 	private @Nullable Host.StateListener hostStateListener;
 	private @Nullable LatencyTracker latencyTracker;
 	private @Nullable LoadBalancingPolicy loadBalancingPolicy;
@@ -179,6 +180,7 @@ public class CassandraClusterFactoryBean
 				.withMaxSchemaAgreementWaitSeconds(this.maxSchemaAgreementWaitSeconds).withPort(this.port);
 
 		Optional.ofNullable(this.addressTranslator).ifPresent(clusterBuilder::withAddressTranslator);
+		Optional.ofNullable(this.codecRegistry).ifPresent(clusterBuilder::withCodecRegistry);
 		Optional.ofNullable(this.loadBalancingPolicy).ifPresent(clusterBuilder::withLoadBalancingPolicy);
 		Optional.ofNullable(this.nettyOptions).ifPresent(clusterBuilder::withNettyOptions);
 		Optional.ofNullable(this.poolingOptions).ifPresent(clusterBuilder::withPoolingOptions);
@@ -408,6 +410,16 @@ public class CassandraClusterFactoryBean
 	 */
 	public void setCompressionType(@Nullable CompressionType compressionType) {
 		this.compressionType = compressionType;
+	}
+
+	/**
+	 * Set the {@link CodecRegistry}. Default uses {@link CodecRegistry#DEFAULT_INSTANCE}.
+	 *
+	 * @param codecRegistry the {@link CodecRegistry} used by the new cluster.
+	 * @since 2.2
+	 */
+	public void setCodecRegistry(@Nullable CodecRegistry codecRegistry) {
+		this.codecRegistry = codecRegistry;
 	}
 
 	/**
