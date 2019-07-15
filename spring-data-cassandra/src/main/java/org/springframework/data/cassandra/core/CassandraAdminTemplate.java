@@ -21,6 +21,7 @@ import java.util.Optional;
 import org.springframework.data.cassandra.SessionFactory;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import org.springframework.data.cassandra.core.cql.CqlOperations;
 import org.springframework.data.cassandra.core.cql.SessionCallback;
 import org.springframework.data.cassandra.core.cql.generator.CreateTableCqlGenerator;
 import org.springframework.data.cassandra.core.cql.generator.DropTableCqlGenerator;
@@ -50,6 +51,16 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 	 * Constructor used for a basic template configuration.
 	 *
 	 * @param session must not be {@literal null}.
+	 * @since 2.2
+	 */
+	public CassandraAdminTemplate(Session session) {
+		super(session);
+	}
+
+	/**
+	 * Constructor used for a basic template configuration.
+	 *
+	 * @param session must not be {@literal null}.
 	 * @param converter must not be {@literal null}.
 	 */
 	public CassandraAdminTemplate(Session session, CassandraConverter converter) {
@@ -64,6 +75,17 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 	 */
 	public CassandraAdminTemplate(SessionFactory sessionFactory, CassandraConverter converter) {
 		super(sessionFactory, converter);
+	}
+
+	/**
+	 * Constructor used for a basic template configuration.
+	 *
+	 * @param cqlOperations must not be {@literal null}.
+	 * @param converter must not be {@literal null}.
+	 * @since 2.2
+	 */
+	public CassandraAdminTemplate(CqlOperations cqlOperations, CassandraConverter converter) {
+		super(cqlOperations, converter);
 	}
 
 	/* (non-Javadoc)
