@@ -96,6 +96,9 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 			Map<String, Object> optionsByName) {
 
 		CassandraPersistentEntity<?> entity = getConverter().getMappingContext().getRequiredPersistentEntity(entityClass);
+		if (tableName != null) {
+			entity.setTableName(tableName);
+		}
 
 		CreateTableSpecification createTableSpecification = getConverter().getMappingContext()
 				.getCreateTableSpecificationFor(entity).ifNotExists(ifNotExists);
