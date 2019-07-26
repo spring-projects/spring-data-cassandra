@@ -172,12 +172,12 @@ public static class Config extends AbstractCassandraConfiguration {
   @Override
   public CustomConversions customConversions() {
 
-    List<Converter<?, ?>> converters = new ArrayList<Converter<?, ?>>();
+    List<Converter<?, ?>> converters = new ArrayList<>();
 
     converters.add(new PersonReadConverter());
     converters.add(new PersonWriteConverter());
 
-    return new CustomConversions(converters);
+    return new CassandraCustomConversions(converters);
   }
 
   @Override
