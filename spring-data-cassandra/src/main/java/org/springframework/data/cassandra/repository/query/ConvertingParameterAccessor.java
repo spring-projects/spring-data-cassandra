@@ -87,6 +87,15 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 	}
 
 	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.query.ParameterAccessor#findDynamicProjection()
+	 */
+	@Nullable
+	@Override
+	public Class<?> findDynamicProjection() {
+		return this.delegate.findDynamicProjection();
+	}
+
+	/* (non-Javadoc)
 	 * @see org.springframework.data.repository.query.ParameterAccessor#getBindableValue(int)
 	 */
 	@Override

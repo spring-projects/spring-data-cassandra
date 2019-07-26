@@ -88,6 +88,12 @@ class StubParameterAccessor implements CassandraParameterAccessor {
 		return Optional.empty();
 	}
 
+	@Nullable
+	@Override
+	public Class<?> findDynamicProjection() {
+		return null;
+	}
+
 	@Override
 	public Object getBindableValue(int index) {
 		return values[index];

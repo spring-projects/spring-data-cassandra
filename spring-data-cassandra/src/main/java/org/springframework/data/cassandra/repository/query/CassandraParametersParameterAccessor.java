@@ -15,9 +15,6 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
@@ -38,8 +35,6 @@ import com.datastax.driver.core.DataType;
 public class CassandraParametersParameterAccessor extends ParametersParameterAccessor
 		implements CassandraParameterAccessor {
 
-	private final List<Object> values;
-
 	/**
 	 * Create a new {@link CassandraParametersParameterAccessor}.
 	 *
@@ -49,8 +44,6 @@ public class CassandraParametersParameterAccessor extends ParametersParameterAcc
 	public CassandraParametersParameterAccessor(CassandraQueryMethod method, Object... values) {
 
 		super(method.getParameters(), values);
-
-		this.values = Arrays.asList(values);
 	}
 
 	/*
@@ -95,7 +88,7 @@ public class CassandraParametersParameterAccessor extends ParametersParameterAcc
 	 */
 	@Override
 	public Object[] getValues() {
-		return this.values.toArray();
+		return super.getValues();
 	}
 
 	/* (non-Javadoc)
