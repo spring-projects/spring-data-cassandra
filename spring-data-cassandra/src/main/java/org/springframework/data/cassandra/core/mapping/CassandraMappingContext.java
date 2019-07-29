@@ -430,12 +430,24 @@ public class CassandraMappingContext
 	 * Returns a {@link CreateTableSpecification} for the given entity, including all mapping information.
 	 *
 	 * @param entity must not be {@literal null}.
+	 * @return
 	 */
 	public CreateTableSpecification getCreateTableSpecificationFor(CassandraPersistentEntity<?> entity) {
+		return getCreateTableSpecificationFor(null, entity);
+	}
+
+	/**
+	 * Returns a {@link CreateTableSpecification} for the given entity, including all mapping information.
+	 *
+	 * @param tableName if {@literal null} then the table name will be derived from entity
+	 * @param entity must not be {@literal null}.
+	 * @return
+	 */
+	public CreateTableSpecification getCreateTableSpecificationFor(CqlIdentifier tableName, CassandraPersistentEntity<?> entity) {
 
 		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
 
-		CreateTableSpecification specification = createTable(entity.getTableName());
+		CreateTableSpecification specification = createTable(tableName != null ? tableName : entity.getTableName());
 
 		for (CassandraPersistentProperty property : entity) {
 

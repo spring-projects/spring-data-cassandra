@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -331,6 +332,28 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 
 		assertThat(getColumnType("mappedTuples", specification).toString())
 				.isEqualTo("list<frozen<tuple<mappedudt, human_udt, text>>>");
+	}
+
+	@Test // DATACASS-678
+	public void createTableSpecificationShouldHaveCustomTableName() {
+
+		final CqlIdentifier customTableName = CqlIdentifier.of("employee_" + UUID.randomUUID().toString().replace("-","_"));
+
+		final CassandraPersistentEntity<?> persistentEntity = ctx.getRequiredPersistentEntity(Employee.class);
+
+		assertThat(persistentEntity).isNotNull();
+
+		final CreateTableSpecification regularSpecification = ctx.getCreateTableSpecificationFor(persistentEntity);
+
+		assertThat(regularSpecification).isNotNull();
+		assertThat(persistentEntity.getTableName()).isEqualTo(regularSpecification.getName());
+		assertThat(customTableName).isNotEqualTo(regularSpecification.getName());
+
+		final CreateTableSpecification customSpecification = ctx.getCreateTableSpecificationFor(customTableName, persistentEntity);
+
+		assertThat(customSpecification).isNotNull();
+		assertThat(customTableName).isEqualTo(customSpecification.getName());
+		assertThat(customTableName).isNotEqualTo(persistentEntity.getTableName());
 	}
 
 	private CreateTableSpecification getCreateTableSpecificationFor(Class<?> persistentEntityClass) {

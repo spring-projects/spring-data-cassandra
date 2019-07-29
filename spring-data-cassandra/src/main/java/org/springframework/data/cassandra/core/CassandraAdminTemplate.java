@@ -98,7 +98,7 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 		CassandraPersistentEntity<?> entity = getConverter().getMappingContext().getRequiredPersistentEntity(entityClass);
 
 		CreateTableSpecification createTableSpecification = getConverter().getMappingContext()
-				.getCreateTableSpecificationFor(entity).ifNotExists(ifNotExists);
+				.getCreateTableSpecificationFor(tableName, entity).ifNotExists(ifNotExists);
 
 		getCqlOperations().execute(CreateTableCqlGenerator.toCql(createTableSpecification));
 	}
