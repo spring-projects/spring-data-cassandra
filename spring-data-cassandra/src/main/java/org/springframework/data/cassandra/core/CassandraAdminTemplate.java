@@ -41,6 +41,7 @@ import com.datastax.driver.core.TableMetadata;
  * @author Mark Paluch
  * @author Fabio J. Mendes
  * @author John Blum
+ * @author Vagif Zeynalov
  */
 public class CassandraAdminTemplate extends CassandraTemplate implements CassandraAdminOperations {
 

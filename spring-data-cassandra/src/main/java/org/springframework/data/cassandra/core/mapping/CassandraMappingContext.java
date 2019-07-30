@@ -62,6 +62,7 @@ import com.datastax.driver.core.UDTValue;
  * @author Mark Paluch
  * @author John Blum
  * @author Jens Schauder
+ * @author Vagif Zeynalov
  */
 public class CassandraMappingContext
 		extends AbstractMappingContext<BasicCassandraPersistentEntity<?>, CassandraPersistentProperty>
@@ -413,21 +414,28 @@ public class CassandraMappingContext
 	 * @return
 	 */
 	public CreateTableSpecification getCreateTableSpecificationFor(CassandraPersistentEntity<?> entity) {
-		return getCreateTableSpecificationFor(null, entity);
-	}
-
-	/**
-	 * Returns a {@link CreateTableSpecification} for the given entity, including all mapping information.
-	 *
-	 * @param tableName if {@literal null} then the table name will be derived from entity
-	 * @param entity must not be {@literal null}.
-	 * @return
-	 */
-	public CreateTableSpecification getCreateTableSpecificationFor(CqlIdentifier tableName, CassandraPersistentEntity<?> entity) {
 
 		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
 
-		CreateTableSpecification specification = createTable(tableName != null ? tableName : entity.getTableName());
+		return getCreateTableSpecificationFor(entity.getTableName(), entity);
+	}
+
+	/**
+	 * Returns a {@link CreateTableSpecification} for the given entity using {@code tableName}, including all mapping
+	 * information.
+	 *
+	 * @param tableName must not be {@literal null}.
+	 * @param entity must not be {@literal null}.
+	 * @return
+	 * @since 2.1.10
+	 */
+	public CreateTableSpecification getCreateTableSpecificationFor(CqlIdentifier tableName,
+			CassandraPersistentEntity<?> entity) {
+
+		Assert.notNull(tableName, "Table name must not be null");
+		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
+
+		CreateTableSpecification specification = createTable(tableName);
 
 		for (CassandraPersistentProperty property : entity) {
 
