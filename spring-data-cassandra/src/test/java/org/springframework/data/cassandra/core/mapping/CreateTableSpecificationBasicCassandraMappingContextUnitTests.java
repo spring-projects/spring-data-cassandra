@@ -15,9 +15,12 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,11 +28,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -57,6 +55,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * Unit tests for {@link CassandraMappingContext} targeted on {@link CreateTableSpecification}.
  *
  * @author Mark Paluch
+ * @author Vagif Zeynalov
  * @soundtrack Black Rose - Volbeat
  */
 public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
@@ -335,25 +334,15 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 	}
 
 	@Test // DATACASS-678
-	public void createTableSpecificationShouldHaveCustomTableName() {
+	public void createTableSpecificationShouldConsiderCustomTableName() {
 
-		final CqlIdentifier customTableName = CqlIdentifier.of("employee_" + UUID.randomUUID().toString().replace("-","_"));
+		CqlIdentifier customTableName = CqlIdentifier.of("my_custom_came");
 
-		final CassandraPersistentEntity<?> persistentEntity = ctx.getRequiredPersistentEntity(Employee.class);
+		CassandraPersistentEntity<?> persistentEntity = ctx.getRequiredPersistentEntity(Employee.class);
+		CreateTableSpecification specification = ctx.getCreateTableSpecificationFor(customTableName, persistentEntity);
 
-		assertThat(persistentEntity).isNotNull();
-
-		final CreateTableSpecification regularSpecification = ctx.getCreateTableSpecificationFor(persistentEntity);
-
-		assertThat(regularSpecification).isNotNull();
-		assertThat(persistentEntity.getTableName()).isEqualTo(regularSpecification.getName());
-		assertThat(customTableName).isNotEqualTo(regularSpecification.getName());
-
-		final CreateTableSpecification customSpecification = ctx.getCreateTableSpecificationFor(customTableName, persistentEntity);
-
-		assertThat(customSpecification).isNotNull();
-		assertThat(customTableName).isEqualTo(customSpecification.getName());
-		assertThat(customTableName).isNotEqualTo(persistentEntity.getTableName());
+		assertThat(specification).isNotNull();
+		assertThat(specification.getName()).isEqualTo(customTableName);
 	}
 
 	private CreateTableSpecification getCreateTableSpecificationFor(Class<?> persistentEntityClass) {
