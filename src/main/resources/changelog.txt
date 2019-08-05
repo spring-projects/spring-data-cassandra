@@ -1,6 +1,12 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 1.5.23.RELEASE (2019-08-05)
+----------------------------------------------
+* DATACASS-659 - Introduce Jenkins CI.
+* DATACASS-658 - Release 1.5.23 (Ingalls SR23).
+
+
 Changes in version 2.2.0.RC1 (2019-06-14)
 -----------------------------------------
 * DATACASS-663 - Replace StepVerifier.create(...) style with .as(StepVerifier::create) style.
