@@ -219,7 +219,7 @@ public class CassandraClusterFactoryBeanUnitTests {
 		bean.afterPropertiesSet();
 
 		assertThat(getConfiguration(bean).getProtocolOptions()).extracting("initialProtocolVersion")
-				.contains(ProtocolVersion.V2);
+				.isEqualTo(ProtocolVersion.V2);
 	}
 
 	@Test // DATACASS-226

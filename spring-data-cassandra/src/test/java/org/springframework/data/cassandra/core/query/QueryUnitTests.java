@@ -86,6 +86,6 @@ public class QueryUnitTests {
 		assertThat(query.getSort()).isEqualTo(Sort.by(asc("foo")));
 		assertThat(query.getPagingState()).contains(pagingState);
 		assertThat(query.getQueryOptions()).hasValueSatisfying(actual ->
-			assertThat(actual).extracting("fetchSize").contains(42));
+		assertThat(actual).extracting("fetchSize").isEqualTo(42));
 	}
 }

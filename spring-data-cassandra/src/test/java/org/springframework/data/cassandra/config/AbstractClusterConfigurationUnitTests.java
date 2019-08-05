@@ -194,7 +194,7 @@ public class AbstractClusterConfigurationUnitTests {
 
 		Cluster cluster = getCluster(clusterConfiguration);
 		assertThat(getConfiguration(cluster).getProtocolOptions()).extracting("initialProtocolVersion")
-				.contains(ProtocolVersion.V2);
+				.isEqualTo(ProtocolVersion.V2);
 	}
 
 	@Test // DATACASS-226
