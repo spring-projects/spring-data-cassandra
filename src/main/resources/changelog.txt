@@ -1,6 +1,25 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 2.2.0.RC2 (2019-08-05)
+-----------------------------------------
+* DATACASS-680 - Adapt to changes in AssertJ.
+* DATACASS-679 - Upgrade to Cassandra driver 3.7.2.
+* DATACASS-678 - Cannot create a table with a custom name using CassandraAdminTemplate.createTable().
+* DATACASS-677 - Adapt to API changes in Commons.
+* DATACASS-676 - Registering custom converter documentation is wrong.
+* DATACASS-675 - Add constructor to CassandraAdminTemplate accepting CqlOperations.
+* DATACASS-674 - Migrate tests to AssertJ.
+* DATACASS-673 - Revise readme for a consistent structure.
+* DATACASS-672 - PrimaryKeyClass properties not populated when initializing key in entity through constructor.
+* DATACASS-670 - Release 2.2 RC2 (Moore).
+* DATACASS-659 - Introduce Jenkins CI.
+* DATACASS-642 - QueryUtils.getTableName(…) fails using quoted identifiers.
+* DATACASS-611 - Add query derivation for delete queries.
+* DATACASS-454 - Extend @Query to declare idempotent CQL queries.
+* DATACASS-318 - Update CassandraCqlClusterFactoryBean with support for setting CodecRegistry.
+
+
 Changes in version 2.1.10.RELEASE (2019-08-05)
 ----------------------------------------------
 * DATACASS-678 - Cannot create a table with a custom name using CassandraAdminTemplate.createTable().
