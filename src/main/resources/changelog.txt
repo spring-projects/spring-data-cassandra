@@ -1,6 +1,17 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 2.1.10.RELEASE (2019-08-05)
+----------------------------------------------
+* DATACASS-678 - Cannot create a table with a custom name using CassandraAdminTemplate.createTable().
+* DATACASS-676 - Registering custom converter documentation is wrong.
+* DATACASS-672 - PrimaryKeyClass properties not populated when initializing key in entity through constructor.
+* DATACASS-671 - Fix NoHTTP errors.
+* DATACASS-669 - Release 2.1.10 (Lovelace SR10).
+* DATACASS-659 - Introduce Jenkins CI.
+* DATACASS-642 - QueryUtils.getTableName(…) fails using quoted identifiers.
+
+
 Changes in version 1.5.23.RELEASE (2019-08-05)
 ----------------------------------------------
 * DATACASS-659 - Introduce Jenkins CI.
