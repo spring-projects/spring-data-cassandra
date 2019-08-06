@@ -1,3 +1,6 @@
 http\://www.springframework.org/schema/cql/spring-cql-1.0.xsd=org/springframework/cassandra/config/spring-cql-1.0.xsd
 http\://www.springframework.org/schema/cql/spring-cql-1.5.xsd=org/springframework/cassandra/config/spring-cql-1.5.xsd
 http\://www.springframework.org/schema/cql/spring-cql.xsd=org/springframework/cassandra/config/spring-cql-1.5.xsd
+https\://www.springframework.org/schema/cql/spring-cql-1.0.xsd=org/springframework/cassandra/config/spring-cql-1.0.xsd
+https\://www.springframework.org/schema/cql/spring-cql-1.5.xsd=org/springframework/cassandra/config/spring-cql-1.5.xsd
+https\://www.springframework.org/schema/cql/spring-cql.xsd=org/springframework/cassandra/config/spring-cql-1.5.xsd
