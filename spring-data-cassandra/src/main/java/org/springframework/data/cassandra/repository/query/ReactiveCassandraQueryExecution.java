@@ -220,11 +220,8 @@ interface ReactiveCassandraQueryExecution {
 
 			ReturnedType returnedType = processor.getReturnedType();
 
-			if (ClassUtils.isPrimitiveOrWrapper(returnedType.getReturnedType())) {
-				return source;
-			}
-
 			if (returnedType.getReturnedType().equals(Void.class)) {
+
 				if (source instanceof Mono) {
 					return ((Mono<?>) source).then();
 				}
@@ -232,6 +229,10 @@ interface ReactiveCassandraQueryExecution {
 				if (source instanceof Publisher) {
 					return Flux.from((Publisher<?>) source).then();
 				}
+			}
+
+			if (ClassUtils.isPrimitiveOrWrapper(returnedType.getReturnedType())) {
+				return source;
 			}
 
 			if (returnedType.isInstance(source)) {
