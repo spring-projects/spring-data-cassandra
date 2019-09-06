@@ -1,6 +1,14 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 2.2.0.RC3 (2019-09-06)
+-----------------------------------------
+* DATACASS-686 - Adapt to changes in Spring Framework's ClassUtils.isPrimitiveOrWrapper.
+* DATACASS-685 - Upgrade to Kotlin Coroutines 1.3.0.
+* DATACASS-684 - Add HTTPS entries into spring.schemas.
+* DATACASS-683 - Release 2.2 RC3 (Moore).
+
+
 Changes in version 2.2.0.RC2 (2019-08-05)
 -----------------------------------------
 * DATACASS-680 - Adapt to changes in AssertJ.
