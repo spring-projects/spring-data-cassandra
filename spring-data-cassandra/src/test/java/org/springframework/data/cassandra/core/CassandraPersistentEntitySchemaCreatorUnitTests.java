@@ -15,8 +15,15 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.mockito.ArgumentMatchers.matches;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -25,8 +32,14 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.cql.CqlOperations;
+import org.springframework.data.cassandra.core.cql.keyspace.CreateUserTypeSpecification;
+import org.springframework.data.cassandra.core.cql.keyspace.UserTypeNameSpecification;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
+import org.springframework.data.cassandra.core.mapping.UserDefinedType;
 
 /**
  * Unit tests for {@link CassandraPersistentEntitySchemaCreator}.
@@ -54,14 +67,43 @@ public class CassandraPersistentEntitySchemaCreatorUnitTests extends CassandraPe
 		when(adminOperations.getCqlOperations()).thenReturn(operations);
 	}
 
+	@Test // DATACASS-687
+	public void shouldConsiderProperUdtOrdering() {
+
+		List<Class<?>> ordered = new ArrayList<>(Arrays.asList(Udt2.class, Udt1.class, RequiredByAll.class));
+
+		context = new CassandraMappingContext() {
+			@Override
+			public Collection<CassandraPersistentEntity<?>> getUserDefinedTypeEntities() {
+				return ordered.stream().map(this::getRequiredPersistentEntity).collect(Collectors.toList());
+			}
+		};
+
+		context.setUserTypeResolver(typeName -> {
+			// make sure that calls to this method pop up. Calling UserTypeResolver while resolving
+			// to be created user types isn't a good idea because they do not exist at resolution time.
+			throw new IllegalArgumentException(String.format("Type %s not found", typeName));
+		});
+
+		CassandraPersistentEntitySchemaCreator schemaCreator = new CassandraPersistentEntitySchemaCreator(context,
+				adminOperations);
+
+		List<CreateUserTypeSpecification> userTypeSpecifications = schemaCreator.createUserTypeSpecifications(false);
+
+		List<CqlIdentifier> collect = userTypeSpecifications.stream().map(UserTypeNameSpecification::getName)
+				.collect(Collectors.toList());
+
+		assertThat(collect).hasSize(3).startsWith(CqlIdentifier.of("requiredbyall"));
+	}
+
 	@Test // DATACASS-172, DATACASS-406
 	public void createsCorrectTypeForSimpleTypes() {
 
 		context.getPersistentEntity(MoonType.class);
 		context.getPersistentEntity(PlanetType.class);
 
-		CassandraPersistentEntitySchemaCreator schemaCreator =
-				new CassandraPersistentEntitySchemaCreator(context, adminOperations);
+		CassandraPersistentEntitySchemaCreator schemaCreator = new CassandraPersistentEntitySchemaCreator(context,
+				adminOperations);
 
 		schemaCreator.createUserTypes(false);
 
@@ -73,8 +115,8 @@ public class CassandraPersistentEntitySchemaCreatorUnitTests extends CassandraPe
 
 		context.getPersistentEntity(PlanetType.class);
 
-		CassandraPersistentEntitySchemaCreator schemaCreator =
-				new CassandraPersistentEntitySchemaCreator(context, adminOperations);
+		CassandraPersistentEntitySchemaCreator schemaCreator = new CassandraPersistentEntitySchemaCreator(context,
+				adminOperations);
 
 		schemaCreator.createUserTypes(false);
 
@@ -88,8 +130,8 @@ public class CassandraPersistentEntitySchemaCreatorUnitTests extends CassandraPe
 
 		context.getPersistentEntity(SpaceAgencyType.class);
 
-		CassandraPersistentEntitySchemaCreator schemaCreator =
-				new CassandraPersistentEntitySchemaCreator(context, adminOperations);
+		CassandraPersistentEntitySchemaCreator schemaCreator = new CassandraPersistentEntitySchemaCreator(context,
+				adminOperations);
 
 		schemaCreator.createUserTypes(false);
 
@@ -103,8 +145,8 @@ public class CassandraPersistentEntitySchemaCreatorUnitTests extends CassandraPe
 
 		context.getPersistentEntity(PlanetType.class);
 
-		CassandraPersistentEntitySchemaCreator schemaCreator =
-				new CassandraPersistentEntitySchemaCreator(context, adminOperations);
+		CassandraPersistentEntitySchemaCreator schemaCreator = new CassandraPersistentEntitySchemaCreator(context,
+				adminOperations);
 
 		schemaCreator.createUserTypes(false);
 
@@ -116,8 +158,8 @@ public class CassandraPersistentEntitySchemaCreatorUnitTests extends CassandraPe
 
 		context.getPersistentEntity(IndexedEntity.class);
 
-		CassandraPersistentEntitySchemaCreator schemaCreator =
-				new CassandraPersistentEntitySchemaCreator(context, adminOperations);
+		CassandraPersistentEntitySchemaCreator schemaCreator = new CassandraPersistentEntitySchemaCreator(context,
+				adminOperations);
 
 		schemaCreator.createIndexes(false);
 
@@ -131,5 +173,26 @@ public class CassandraPersistentEntitySchemaCreatorUnitTests extends CassandraPe
 		for (String typename : typenames) {
 			inOrder.verify(operations).execute(Mockito.contains("CREATE TYPE " + typename));
 		}
+	}
+
+	abstract static class AbstractModel {
+		private RequiredByAll attachments;
+	}
+
+	@UserDefinedType
+	static class RequiredByAll {
+		private String name;
+	}
+
+	@UserDefinedType
+	static class Udt1 {
+
+		private RequiredByAll attachment;
+	}
+
+	@UserDefinedType
+	static class Udt2 extends AbstractModel {
+
+		private Udt1 u1;
 	}
 }

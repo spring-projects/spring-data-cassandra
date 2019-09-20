@@ -19,11 +19,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.jetbrains.annotations.NotNull;
 
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.cql.generator.CreateIndexCqlGenerator;
@@ -36,6 +38,7 @@ import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentE
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
+import org.springframework.data.util.Streamable;
 import org.springframework.util.Assert;
 
 /**
@@ -152,41 +155,89 @@ public class CassandraPersistentEntitySchemaCreator {
 				.collect(Collectors.toMap(CassandraPersistentEntity::getTableName, entity -> entity));
 
 		List<CreateUserTypeSpecification> specifications = new ArrayList<>();
-
-		Set<CqlIdentifier> created = new HashSet<>();
+		UserDefinedTypeSet udts = new UserDefinedTypeSet();
 
 		entities.forEach(entity -> {
 
-			Set<CqlIdentifier> seen = new LinkedHashSet<>();
-
-			seen.add(entity.getTableName());
-			visitUserTypes(entity, seen);
-
-			List<CqlIdentifier> ordered = new ArrayList<>(seen);
-
-			Collections.reverse(ordered);
-
-			specifications.addAll(ordered
-					.stream().filter(created::add).map(identifier -> this.mappingContext
-							.getCreateUserTypeSpecificationFor(byTableName.get(identifier)).ifNotExists(ifNotExists))
-					.collect(Collectors.toList()));
+			udts.add(entity.getTableName());
+			visitUserTypes(entity, udts);
 		});
+
+		specifications
+				.addAll(udts
+						.stream().map(identifier -> this.mappingContext
+								.getCreateUserTypeSpecificationFor(byTableName.get(identifier)).ifNotExists(ifNotExists))
+						.collect(Collectors.toList()));
 
 		return specifications;
 	}
 
-	private void visitUserTypes(CassandraPersistentEntity<?> entity, final Set<CqlIdentifier> seen) {
+	private void visitUserTypes(CassandraPersistentEntity<?> entity, UserDefinedTypeSet udts) {
 
 		for (CassandraPersistentProperty property : entity) {
 
-			BasicCassandraPersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(property);
+			BasicCassandraPersistentEntity<?> propertyType = this.mappingContext.getPersistentEntity(property);
 
-			if (persistentEntity == null) {
+			if (propertyType == null) {
 				continue;
 			}
 
-			if (persistentEntity.isUserDefinedType() && seen.add(persistentEntity.getTableName())) {
-				visitUserTypes(persistentEntity, seen);
+			if (propertyType.isUserDefinedType()) {
+				if (udts.add(propertyType.getTableName())) {
+					visitUserTypes(propertyType, udts);
+				} else {
+					udts.updateDependency(entity.getTableName(), propertyType.getTableName());
+				}
+			}
+		}
+	}
+
+	/**
+	 * Object to record dependencies and report them in the order of creation.
+	 */
+	static class UserDefinedTypeSet implements Streamable<CqlIdentifier> {
+
+		private final Set<CqlIdentifier> seen = new HashSet<>();
+		private final List<CqlIdentifier> creationOrder = new ArrayList<>();
+
+		public boolean add(CqlIdentifier cqlIdentifier) {
+
+			if (seen.add(cqlIdentifier)) {
+				creationOrder.add(cqlIdentifier);
+				return true;
+			}
+
+			return false;
+		}
+
+		@NotNull
+		@Override
+		public Iterator<CqlIdentifier> iterator() {
+
+			List<CqlIdentifier> reverseCreationOrder = new ArrayList<>(creationOrder);
+			Collections.reverse(reverseCreationOrder);
+
+			return reverseCreationOrder.iterator();
+		}
+
+		/**
+		 * Checks the dependency order. {@code referent} depends on {@code reference} and we need to make sure that
+		 * {@code referent} gets created after {@code reference}.
+		 * <p>
+		 * This method therefore updates the dependency order.
+		 *
+		 * @param referent the client of {@code reference}.
+		 * @param reference the dependency required by {@code referent}.
+		 */
+		void updateDependency(CqlIdentifier referent, CqlIdentifier reference) {
+
+			int referentIndex = creationOrder.indexOf(referent);
+			int referenceIndex = creationOrder.indexOf(reference);
+
+			if (referentIndex > referenceIndex) {
+
+				creationOrder.remove(referent);
+				creationOrder.add(referenceIndex, referent);
 			}
 		}
 	}
