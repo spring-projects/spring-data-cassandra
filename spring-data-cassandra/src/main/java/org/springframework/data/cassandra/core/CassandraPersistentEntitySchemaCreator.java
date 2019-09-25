@@ -160,8 +160,6 @@ public class CassandraPersistentEntitySchemaCreator {
 			visitUserTypes(entity, udts);
 		});
 
-		System.out.println(udts.stream().collect(Collectors.toList()));
-
 		specifications
 				.addAll(udts
 						.stream().map(identifier -> this.mappingContext
@@ -264,7 +262,6 @@ public class CassandraPersistentEntitySchemaCreator {
 
 			void addDependency(CqlIdentifier dependsOn) {
 				this.dependsOn.add(dependsOn);
-
 			}
 
 			boolean dependsOn(CqlIdentifier identifier) {
