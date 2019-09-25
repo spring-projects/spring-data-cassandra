@@ -22,15 +22,15 @@ import static org.mockito.Mockito.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InOrder;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import org.springframework.data.cassandra.core.cql.CqlIdentifier;
@@ -113,7 +113,20 @@ public class CassandraPersistentEntitySchemaCreatorUnitTests extends CassandraPe
 	@Test // DATACASS-406
 	public void createsCorrectTypeForSets() {
 
-		context.getPersistentEntity(PlanetType.class);
+		List<Class<?>> ordered = new ArrayList<>(Arrays.asList(UniverseType.class, PlanetType.class, MoonType.class));
+
+		Collections.shuffle(ordered); // catch ordering issues
+		context = new CassandraMappingContext() {
+			@Override
+			public Collection<CassandraPersistentEntity<?>> getUserDefinedTypeEntities() {
+				return ordered.stream().map(this::getRequiredPersistentEntity).collect(Collectors.toList());
+			}
+		};
+		context.setUserTypeResolver(typeName -> {
+			// make sure that calls to this method pop up. Calling UserTypeResolver while resolving
+			// to be created user types isn't a good idea because they do not exist at resolution time.
+			throw new IllegalArgumentException(String.format("Type %s not found", typeName));
+		});
 
 		CassandraPersistentEntitySchemaCreator schemaCreator = new CassandraPersistentEntitySchemaCreator(context,
 				adminOperations);
@@ -168,10 +181,15 @@ public class CassandraPersistentEntitySchemaCreatorUnitTests extends CassandraPe
 
 	private void verifyTypesGetCreatedInOrderFor(String... typenames) {
 
-		InOrder inOrder = Mockito.inOrder(operations);
+		ArgumentCaptor<String> cql = ArgumentCaptor.forClass(String.class);
 
-		for (String typename : typenames) {
-			inOrder.verify(operations).execute(Mockito.contains("CREATE TYPE " + typename));
+		verify(operations, atLeast(typenames.length)).execute(cql.capture());
+
+		List<String> allValues = cql.getAllValues();
+
+		for (int i = 0; i < typenames.length; i++) {
+			assertThat(allValues.get(i)).describedAs("Actual: " + allValues + ", expected: " + Arrays.toString(typenames))
+					.contains("CREATE TYPE " + typenames[i]);
 		}
 	}
 

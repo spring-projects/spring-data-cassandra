@@ -16,8 +16,6 @@
 package org.springframework.data.cassandra.core;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -148,7 +146,7 @@ public class CassandraPersistentEntitySchemaCreator {
 	 */
 	protected List<CreateUserTypeSpecification> createUserTypeSpecifications(boolean ifNotExists) {
 
-		Collection<? extends CassandraPersistentEntity<?>> entities = new ArrayList<>(
+		List<? extends CassandraPersistentEntity<?>> entities = new ArrayList<>(
 				this.mappingContext.getUserDefinedTypeEntities());
 
 		Map<CqlIdentifier, CassandraPersistentEntity<?>> byTableName = entities.stream()
@@ -158,10 +156,11 @@ public class CassandraPersistentEntitySchemaCreator {
 		UserDefinedTypeSet udts = new UserDefinedTypeSet();
 
 		entities.forEach(entity -> {
-
 			udts.add(entity.getTableName());
 			visitUserTypes(entity, udts);
 		});
+
+		System.out.println(udts.stream().collect(Collectors.toList()));
 
 		specifications
 				.addAll(udts
@@ -185,9 +184,8 @@ public class CassandraPersistentEntitySchemaCreator {
 			if (propertyType.isUserDefinedType()) {
 				if (udts.add(propertyType.getTableName())) {
 					visitUserTypes(propertyType, udts);
-				} else {
-					udts.updateDependency(entity.getTableName(), propertyType.getTableName());
 				}
+				udts.addDependency(entity.getTableName(), propertyType.getTableName());
 			}
 		}
 	}
@@ -198,12 +196,12 @@ public class CassandraPersistentEntitySchemaCreator {
 	static class UserDefinedTypeSet implements Streamable<CqlIdentifier> {
 
 		private final Set<CqlIdentifier> seen = new HashSet<>();
-		private final List<CqlIdentifier> creationOrder = new ArrayList<>();
+		private final List<DependencyNode> creationOrder = new ArrayList<>();
 
 		public boolean add(CqlIdentifier cqlIdentifier) {
 
 			if (seen.add(cqlIdentifier)) {
-				creationOrder.add(cqlIdentifier);
+				creationOrder.add(new DependencyNode(cqlIdentifier));
 				return true;
 			}
 
@@ -214,30 +212,63 @@ public class CassandraPersistentEntitySchemaCreator {
 		@Override
 		public Iterator<CqlIdentifier> iterator() {
 
-			List<CqlIdentifier> reverseCreationOrder = new ArrayList<>(creationOrder);
-			Collections.reverse(reverseCreationOrder);
+			// Return items in creation order considering dependencies
+			return creationOrder.stream() //
+					.sorted((left, right) -> {
 
-			return reverseCreationOrder.iterator();
+						if (left.dependsOn(right.getIdentifier())) {
+							return 1;
+						}
+
+						if (right.dependsOn(left.getIdentifier())) {
+							return -1;
+						}
+
+						return 0;
+					}) //
+					.map(DependencyNode::getIdentifier) //
+					.iterator();
 		}
 
 		/**
-		 * Checks the dependency order. {@code referent} depends on {@code reference} and we need to make sure that
-		 * {@code referent} gets created after {@code reference}.
-		 * <p>
-		 * This method therefore updates the dependency order.
+		 * Updates the dependency order.
 		 *
-		 * @param referent the client of {@code reference}.
-		 * @param reference the dependency required by {@code referent}.
+		 * @param typeToCreate the client of {@code dependsOn}.
+		 * @param dependsOn the dependency required by {@code typeToCreate}.
 		 */
-		void updateDependency(CqlIdentifier referent, CqlIdentifier reference) {
+		void addDependency(CqlIdentifier typeToCreate, CqlIdentifier dependsOn) {
 
-			int referentIndex = creationOrder.indexOf(referent);
-			int referenceIndex = creationOrder.indexOf(reference);
+			for (DependencyNode toCreate : creationOrder) {
+				if (toCreate.matches(typeToCreate)) {
+					toCreate.addDependency(dependsOn);
+				}
+			}
+		}
 
-			if (referentIndex > referenceIndex) {
+		static class DependencyNode {
 
-				creationOrder.remove(referent);
-				creationOrder.add(referenceIndex, referent);
+			private final CqlIdentifier identifier;
+			private final List<CqlIdentifier> dependsOn = new ArrayList<>();
+
+			DependencyNode(CqlIdentifier identifier) {
+				this.identifier = identifier;
+			}
+
+			public CqlIdentifier getIdentifier() {
+				return identifier;
+			}
+
+			boolean matches(CqlIdentifier typeToCreate) {
+				return identifier.equals(typeToCreate);
+			}
+
+			void addDependency(CqlIdentifier dependsOn) {
+				this.dependsOn.add(dependsOn);
+
+			}
+
+			boolean dependsOn(CqlIdentifier identifier) {
+				return this.dependsOn.contains(identifier);
 			}
 		}
 	}
