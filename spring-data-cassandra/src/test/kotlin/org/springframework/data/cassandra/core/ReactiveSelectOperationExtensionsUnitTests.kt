@@ -18,7 +18,6 @@ package org.springframework.data.cassandra.core
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
@@ -220,7 +219,6 @@ class ReactiveSelectOperationExtensionsUnitTests {
 	}
 
 	@Test // DATACASS-648
-	@ExperimentalCoroutinesApi
 	fun terminatingFindAllAsFlow() {
 
 		val spec = mockk<ReactiveSelectOperation.TerminatingSelect<String>>()
