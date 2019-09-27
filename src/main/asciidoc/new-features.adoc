@@ -5,15 +5,15 @@ This chapter summarizes changes and new features for each release.
 
 [[new-features.2-2-0]]
 == What's new in Spring Data for Apache Cassandra 2.2
-* Read-only properties annotated with `@ReadOnlyProperty` to exclude non-writable properties from entity-bound `INSERT` and `UPDATE` operations.
-* Support for derived `Between` queries.
-* Kotlin Coroutine extensions for `ReactiveFluentCassandraOperations`.
-* Lightweight transaction support via `DeleteOptions` using the Template API.
 * Filter conditions for lightweight transaction update and delete (`UPDATE … IF <condition>`, `DELETE … IF <condition>`).
 * Optimistic Locking support.
 * Auditing via `@EnableCassandraAuditing`.
-* Idempotency support in `@Query` annotation.
+* Lightweight transaction support via `DeleteOptions` using the Template API.
+* Support for derived `Between` queries.
 * Query derivation for <<cassandra.repositories.queries.delete,`DELETE` queries>>.
+* <<kotlin.coroutines, Kotlin Coroutines support>> for `ReactiveFluentCassandraOperations`.
+* Idempotency support in `@Query` annotation.
+* Read-only properties annotated with `@ReadOnlyProperty` to exclude non-writable properties from entity-bound `INSERT` and `UPDATE` operations.
 
 [[new-features.2-1-0]]
 == What's new in Spring Data for Apache Cassandra 2.1
