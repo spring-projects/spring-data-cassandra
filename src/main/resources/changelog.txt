@@ -1,6 +1,13 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 2.1.11.RELEASE (2019-09-30)
+----------------------------------------------
+* DATACASS-687 - Creation of UDTs is sometimes not in the correct order.
+* DATACASS-684 - Add HTTPS entries into spring.schemas.
+* DATACASS-681 - Release 2.1.11 (Lovelace SR11).
+
+
 Changes in version 2.2.0.RC3 (2019-09-06)
 -----------------------------------------
 * DATACASS-686 - Adapt to changes in Spring Framework's ClassUtils.isPrimitiveOrWrapper.
