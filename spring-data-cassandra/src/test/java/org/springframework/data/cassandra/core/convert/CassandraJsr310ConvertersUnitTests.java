@@ -34,7 +34,7 @@ public class CassandraJsr310ConvertersUnitTests {
 	@Test // DATACASS-302
 	public void shouldConvertLongToLocalTime() {
 
-		assertThat(MillisOfDayToLocalTimeConverter.INSTANCE.convert(3723000L))
+		assertThat(MillisOfDayToLocalTimeConverter.INSTANCE.convert(3_723_000_000_000L))
 				.isEqualTo(LocalTime.of(1, 2, 3));
 	}
 
@@ -43,6 +43,6 @@ public class CassandraJsr310ConvertersUnitTests {
 
 		assertThat(LocalTimeToMillisOfDayConverter.INSTANCE.convert(LocalTime.MIDNIGHT)).isZero();
 		assertThat(LocalTimeToMillisOfDayConverter.INSTANCE.convert(LocalTime.of(1, 2, 3)))
-				.isEqualTo(3723000L);
+				.isEqualTo(3_723_000_000_000L);
 	}
 }
