@@ -106,7 +106,7 @@ public abstract class CassandraJsr310Converters {
 
 		@Override
 		public LocalTime convert(Long source) {
-			return LocalTime.ofNanoOfDay(TimeUnit.MILLISECONDS.toNanos(source));
+			return LocalTime.ofNanoOfDay(source);
 		}
 	}
 
@@ -124,7 +124,7 @@ public abstract class CassandraJsr310Converters {
 
 		@Override
 		public Long convert(LocalTime source) {
-			return source.getLong(ChronoField.MILLI_OF_DAY);
+			return source.getLong(ChronoField.NANO_OF_DAY);
 		}
 	}
 }

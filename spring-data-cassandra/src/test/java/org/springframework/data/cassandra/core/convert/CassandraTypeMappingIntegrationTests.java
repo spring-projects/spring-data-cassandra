@@ -22,15 +22,10 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.UUID;
+import java.time.LocalTime;
+import java.util.*;
 
+import com.datastax.driver.core.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -47,13 +42,6 @@ import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
 import org.springframework.data.cassandra.support.CassandraVersion;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.data.util.Version;
-
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.Duration;
-import com.datastax.driver.core.LocalDate;
-import com.datastax.driver.core.SimpleStatement;
-import com.datastax.driver.core.TupleType;
-import com.datastax.driver.core.TupleValue;
 
 /**
  * Integration tests for type mapping using {@link CassandraOperations}.
@@ -549,6 +537,35 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 		AllPossibleTypes loaded = load(entity);
 
 		assertThat(loaded.getLocalTime()).isEqualTo(entity.getLocalTime());
+	}
+
+	@Test
+	public void shouldReadLocalTimeFromDriver(){
+		assumeTrue(cassandraVersion.isGreaterThanOrEqualTo(VERSION_3_10));
+		AllPossibleTypes entity = new AllPossibleTypes("1");
+
+		entity.setLocalTime(java.time.LocalTime.of(1, 2, 3));
+
+		operations.insert(entity);
+
+		ResultSet resultSet = session.execute("SELECT localTime FROM AllPossibleTypes WHERE id = '1'");
+		Iterator<Row> rowIt = resultSet.iterator();
+		while (rowIt.hasNext()){
+			Row row = rowIt.next();
+			long timeNanos = row.getTime(0);
+			assertThat(timeNanos).isEqualTo(3_723_000_000_000L);
+		}
+	}
+
+	@Test
+	public void shouldWriteLocalTimeThroughDriver(){
+		assumeTrue(cassandraVersion.isGreaterThanOrEqualTo(VERSION_3_10));
+
+		session.execute("INSERT INTO AllPossibleTypes(id,localTime) VALUES('1','01:02:03.000')");
+
+		AllPossibleTypes entity = operations.selectOne("SELECT localTime FROM AllPossibleTypes WHERE id = '1'", AllPossibleTypes.class);
+
+		assertThat(entity).hasFieldOrProperty("localTime").isEqualTo(LocalTime.of(1, 2, 3));
 	}
 
 	@Test // DATACASS-296, DATACASS-563
