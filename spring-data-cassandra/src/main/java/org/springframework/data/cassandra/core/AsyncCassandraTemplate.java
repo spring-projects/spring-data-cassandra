@@ -350,9 +350,8 @@ public class AsyncCassandraTemplate
 	 */
 	@Override
 	public <T> ListenableFuture<T> selectOne(Statement statement, Class<T> entityClass) {
-
 		return new MappingListenableFutureAdapter<>(select(statement, entityClass),
-				list -> list.stream().findFirst().orElse(null));
+				list -> list.isEmpty() ? null : list.get(0));
 	}
 
 	/* (non-Javadoc)
