@@ -35,6 +35,7 @@ import com.datastax.driver.core.DataType.Name;
  * classpath.
  *
  * @author Mark Paluch
+ * @author Hurelhuyag
  * @since 1.5
  */
 public abstract class CassandraJsr310Converters {
