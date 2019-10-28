@@ -860,7 +860,9 @@ public class ReactiveCassandraTemplate
 
 			T result = (T) (targetType.isInterface() ? getProjectionFactory().createProjection(targetType, source) : source);
 
-			maybeEmitEvent(new AfterConvertEvent<>(row, result, tableName));
+			if (result != null) {
+				maybeEmitEvent(new AfterConvertEvent<>(row, result, tableName));
+			}
 
 			return result;
 		};

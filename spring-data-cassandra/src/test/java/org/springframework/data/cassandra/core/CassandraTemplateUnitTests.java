@@ -158,6 +158,16 @@ public class CassandraTemplateUnitTests {
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM users WHERE id='myid';");
 	}
 
+	@Test // DATACASS-696
+	public void selectOneShouldNull() {
+
+		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
+
+		String nullValue = template.selectOne("SELECT id FROM users WHERE id='myid';", String.class);
+
+		assertThat(nullValue).isNull();
+	}
+
 	@Test // DATACASS-292
 	public void selectOneByIdShouldReturnMappedResults() {
 

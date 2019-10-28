@@ -213,6 +213,16 @@ public class AsyncCassandraTemplateUnitTests {
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM users WHERE id='myid';");
 	}
 
+	@Test // DATACASS-696
+	public void selectOneShouldNull() {
+
+		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
+
+		ListenableFuture<String> future = template.selectOne("SELECT id FROM users WHERE id='myid';", String.class);
+
+		assertThat(getUninterruptibly(future)).isNull();
+	}
+
 	@Test // DATACASS-292
 	public void existsShouldReturnExistingElement() {
 

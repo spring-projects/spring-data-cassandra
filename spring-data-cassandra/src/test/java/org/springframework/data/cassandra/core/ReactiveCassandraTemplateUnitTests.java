@@ -178,6 +178,15 @@ public class ReactiveCassandraTemplateUnitTests {
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT firstname FROM users LIMIT 1;");
 	}
 
+	@Test // DATACASS-696
+	public void selectOneShouldNull() {
+
+		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
+
+		template.selectOne("SELECT id FROM users WHERE id='myid';", String.class).as(StepVerifier::create) //
+				.verifyComplete();
+	}
+
 	@Test // DATACASS-335
 	public void existsShouldReturnExistingElement() {
 

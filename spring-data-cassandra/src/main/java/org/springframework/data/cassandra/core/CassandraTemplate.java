@@ -343,7 +343,9 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	 */
 	@Override
 	public <T> T selectOne(Statement statement, Class<T> entityClass) {
-		return select(statement, entityClass).stream().findFirst().orElse(null);
+
+		List<T> result = select(statement, entityClass);
+		return result.isEmpty() ? null : result.get(0);
 	}
 
 	/* (non-Javadoc)
@@ -913,7 +915,9 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 
 			T result = (T) (targetType.isInterface() ? getProjectionFactory().createProjection(targetType, source) : source);
 
-			maybeEmitEvent(new AfterConvertEvent<>(row, result, tableName));
+			if (result != null) {
+				maybeEmitEvent(new AfterConvertEvent<>(row, result, tableName));
+			}
 
 			return result;
 		};
