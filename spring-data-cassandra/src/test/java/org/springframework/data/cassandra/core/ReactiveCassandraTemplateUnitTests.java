@@ -15,19 +15,15 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.Collections;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+
+import java.util.Collections;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -129,6 +125,15 @@ public class ReactiveCassandraTemplateUnitTests {
 
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM users WHERE id='myid';");
+	}
+
+	@Test // DATACASS-696
+	public void selectOneShouldNull() {
+
+		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
+
+		template.selectOne("SELECT id FROM users WHERE id='myid';", String.class).as(StepVerifier::create) //
+				.verifyComplete();
 	}
 
 	@Test // DATACASS-335

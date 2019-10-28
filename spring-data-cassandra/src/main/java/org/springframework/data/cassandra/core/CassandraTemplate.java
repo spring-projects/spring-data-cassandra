@@ -299,7 +299,9 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	 */
 	@Override
 	public <T> T selectOne(Statement statement, Class<T> entityClass) {
-		return select(statement, entityClass).stream().findFirst().orElse(null);
+
+		List<T> result = select(statement, entityClass);
+		return result.isEmpty() ? null : result.get(0);
 	}
 
 	// -------------------------------------------------------------------------

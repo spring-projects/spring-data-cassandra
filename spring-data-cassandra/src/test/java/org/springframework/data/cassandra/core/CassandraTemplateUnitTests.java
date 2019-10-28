@@ -95,7 +95,7 @@ public class CassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-292
-	public void selectShouldTranslateException() throws Exception {
+	public void selectShouldTranslateException() {
 
 		when(resultSet.iterator()).thenThrow(new NoHostAvailableException(Collections.emptyMap()));
 
@@ -128,6 +128,16 @@ public class CassandraTemplateUnitTests {
 		assertThat(user).isEqualTo(new User("myid", "Walter", "White"));
 		verify(session).execute(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM users WHERE id='myid';");
+	}
+
+	@Test // DATACASS-696
+	public void selectOneShouldNull() {
+
+		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
+
+		String nullValue = template.selectOne("SELECT id FROM users WHERE id='myid';", String.class);
+
+		assertThat(nullValue).isNull();
 	}
 
 	@Test // DATACASS-292

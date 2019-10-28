@@ -16,9 +16,7 @@
 package org.springframework.data.cassandra.core;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
@@ -36,6 +34,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.cassandra.CassandraConnectionFailureException;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.domain.User;
@@ -183,6 +182,16 @@ public class AsyncCassandraTemplateUnitTests {
 		assertThat(getUninterruptibly(future)).isEqualTo(new User("myid", "Walter", "White"));
 		verify(session).executeAsync(statementCaptor.capture());
 		assertThat(statementCaptor.getValue().toString()).isEqualTo("SELECT * FROM users WHERE id='myid';");
+	}
+
+	@Test // DATACASS-696
+	public void selectOneShouldNull() {
+
+		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
+
+		ListenableFuture<String> future = template.selectOne("SELECT id FROM users WHERE id='myid';", String.class);
+
+		assertThat(getUninterruptibly(future)).isNull();
 	}
 
 	@Test // DATACASS-292
