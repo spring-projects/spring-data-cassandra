@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import java.time.LocalTime;
 
@@ -28,21 +28,20 @@ import org.springframework.data.cassandra.core.convert.CassandraJsr310Converters
  * Unit tests for {@link CassandraJsr310Converters}.
  *
  * @author Mark Paluch
+ * @author Hurelhuyag
  */
 public class CassandraJsr310ConvertersUnitTests {
 
-	@Test // DATACASS-302
+	@Test // DATACASS-302, DATACASS-694
 	public void shouldConvertLongToLocalTime() {
 
-		assertThat(MillisOfDayToLocalTimeConverter.INSTANCE.convert(3_723_000_000_000L))
-				.isEqualTo(LocalTime.of(1, 2, 3));
+		assertThat(MillisOfDayToLocalTimeConverter.INSTANCE.convert(3_723_000_000_000L)).isEqualTo(LocalTime.of(1, 2, 3));
 	}
 
-	@Test // DATACASS-302
+	@Test // DATACASS-302, DATACASS-694
 	public void shouldConvertLocalTimeToLong() {
 
 		assertThat(LocalTimeToMillisOfDayConverter.INSTANCE.convert(LocalTime.MIDNIGHT)).isZero();
-		assertThat(LocalTimeToMillisOfDayConverter.INSTANCE.convert(LocalTime.of(1, 2, 3)))
-				.isEqualTo(3_723_000_000_000L);
+		assertThat(LocalTimeToMillisOfDayConverter.INSTANCE.convert(LocalTime.of(1, 2, 3))).isEqualTo(3_723_000_000_000L);
 	}
 }

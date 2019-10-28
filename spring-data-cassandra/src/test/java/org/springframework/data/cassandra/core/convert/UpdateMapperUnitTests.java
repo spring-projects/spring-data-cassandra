@@ -239,14 +239,14 @@ public class UpdateMapperUnitTests {
 		assertThat(update.toString()).isEqualTo("tuple = ('foo')");
 	}
 
-	@Test // DATACASS-302
+	@Test // DATACASS-302, DATACASS-694
 	public void shouldMapTime() {
 
 		Update update = this.updateMapper.getMappedObject(Update.empty().set("localTime", LocalTime.of(1, 2, 3)),
 				this.persistentEntity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
-		assertThat(update.toString()).isEqualTo("localtime = 3723000");
+		assertThat(update.toString()).isEqualTo("localtime = 3723000000000");
 	}
 
 	@Test // DATACASS-523
