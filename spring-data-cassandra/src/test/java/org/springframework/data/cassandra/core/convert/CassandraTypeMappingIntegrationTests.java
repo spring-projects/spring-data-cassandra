@@ -15,20 +15,26 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assume.assumeTrue;
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.Assume.*;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.time.LocalTime;
-import java.util.*;
-
-import com.datastax.driver.core.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -43,10 +49,20 @@ import org.springframework.data.cassandra.support.CassandraVersion;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.data.util.Version;
 
+import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.Duration;
+import com.datastax.driver.core.LocalDate;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
+import com.datastax.driver.core.SimpleStatement;
+import com.datastax.driver.core.TupleType;
+import com.datastax.driver.core.TupleValue;
+
 /**
  * Integration tests for type mapping using {@link CassandraOperations}.
  *
  * @author Mark Paluch
+ * @author Hurelhuyag
  * @soundtrack DJ THT meets Scarlet - Live 2 Dance (Extended Mix) (Zgin Remix)
  */
 @SuppressWarnings("Since15")
@@ -539,9 +555,11 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 		assertThat(loaded.getLocalTime()).isEqualTo(entity.getLocalTime());
 	}
 
-	@Test
-	public void shouldReadLocalTimeFromDriver(){
+	@Test // DATACASS-694
+	public void shouldReadLocalTimeFromDriver() {
+
 		assumeTrue(cassandraVersion.isGreaterThanOrEqualTo(VERSION_3_10));
+
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 
 		entity.setLocalTime(java.time.LocalTime.of(1, 2, 3));
@@ -549,23 +567,21 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 		operations.insert(entity);
 
 		ResultSet resultSet = session.execute("SELECT localTime FROM AllPossibleTypes WHERE id = '1'");
-		Iterator<Row> rowIt = resultSet.iterator();
-		while (rowIt.hasNext()){
-			Row row = rowIt.next();
-			long timeNanos = row.getTime(0);
-			assertThat(timeNanos).isEqualTo(3_723_000_000_000L);
-		}
+		Row row = resultSet.one();
+		assertThat(row.getTime(0)).isEqualTo(3_723_000_000_000L);
 	}
 
-	@Test
-	public void shouldWriteLocalTimeThroughDriver(){
+	@Test // DATACASS-694
+	public void shouldWriteLocalTimeThroughDriver() {
+
 		assumeTrue(cassandraVersion.isGreaterThanOrEqualTo(VERSION_3_10));
 
 		session.execute("INSERT INTO AllPossibleTypes(id,localTime) VALUES('1','01:02:03.000')");
 
-		AllPossibleTypes entity = operations.selectOne("SELECT localTime FROM AllPossibleTypes WHERE id = '1'", AllPossibleTypes.class);
+		AllPossibleTypes entity = operations.selectOne("SELECT localTime FROM AllPossibleTypes WHERE id = '1'",
+				AllPossibleTypes.class);
 
-		assertThat(entity).hasFieldOrProperty("localTime").isEqualTo(LocalTime.of(1, 2, 3));
+		assertThat(entity.getLocalTime()).isEqualTo(LocalTime.of(1, 2, 3, 0));
 	}
 
 	@Test // DATACASS-296, DATACASS-563
