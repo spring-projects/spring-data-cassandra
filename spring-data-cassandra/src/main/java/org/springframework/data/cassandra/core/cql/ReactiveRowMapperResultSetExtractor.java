@@ -15,9 +15,8 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
-import reactor.core.publisher.Mono;
-
 import org.reactivestreams.Publisher;
+
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.cassandra.ReactiveResultSet;
 import org.springframework.util.Assert;
@@ -61,15 +60,13 @@ public class ReactiveRowMapperResultSetExtractor<T> implements ReactiveResultSet
 	@Override
 	public Publisher<T> extractData(ReactiveResultSet resultSet) throws DriverException, DataAccessException {
 
-		return resultSet.rows().flatMap(row -> {
+		return resultSet.rows().handle((row, sink) -> {
 
 			T value = this.rowMapper.mapRow(row, 0);
 
-			if (value == null) {
-				return Mono.empty();
+			if (value != null) {
+				sink.next(value);
 			}
-
-			return Mono.just(value);
 		});
 	}
 }
