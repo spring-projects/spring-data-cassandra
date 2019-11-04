@@ -1,6 +1,13 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 2.2.1.RELEASE (2019-11-04)
+---------------------------------------------
+* DATACASS-696 - selectOne(…) and event publication fails if entity is null.
+* DATACASS-694 - java.time.LocalTime incorrectly mapped with cassandra time datatype.
+* DATACASS-691 - Release 2.2.1 (Moore SR1).
+
+
 Changes in version 2.1.12.RELEASE (2019-11-04)
 ----------------------------------------------
 * DATACASS-696 - selectOne(…) and event publication fails if entity is null.
