@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.core.mapping.event;
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -50,7 +51,7 @@ public class CassandraTemplateEventIntegrationTests extends EventListenerIntegra
 	@Test // DATACASS-106
 	public void streamShouldEmitEvents() {
 
-		template.stream("SELECT * FROM users;", User.class).count(); // Just load entire stream.
+		template.stream("SELECT * FROM users;", User.class).collect(Collectors.toList()); // Just load entire stream.
 
 		assertThat(getListener().getAfterLoad()).extracting(CassandraMappingEvent::getTableName)
 				.contains(CqlIdentifier.fromCql("users"));

@@ -15,17 +15,15 @@
  */
 package org.springframework.data.cassandra.core;
 
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.UpdateMapper;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
@@ -131,7 +129,7 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 			if (this.executed.compareAndSet(false, true)) {
 
 				return Flux.merge(this.batchMonos) //
-						.flatMapIterable(Function.identity()) //
+						.flatMap(Flux::fromIterable) //
 						.collectList() //
 						.flatMap(statements -> {
 
@@ -139,7 +137,8 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 
 							return this.operations.getReactiveCqlOperations().queryForResultSet(this.batch.build());
 
-						}).flatMap(resultSet -> resultSet.rows().collectList()
+						}) //
+						.flatMap(resultSet -> resultSet.rows().collectList()
 								.map(rows -> new WriteResult(resultSet.getAllExecutionInfo(), resultSet.wasApplied(), rows)));
 			}
 

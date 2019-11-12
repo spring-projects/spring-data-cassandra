@@ -29,6 +29,7 @@ import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -616,7 +617,8 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 
 		AllPossibleTypes loaded = load(entity);
 
-		assertThat(loaded.getInstant()).isEqualTo(entity.getInstant());
+		assertThat(loaded.getInstant().truncatedTo(ChronoUnit.MILLIS))
+				.isEqualTo(entity.getInstant().truncatedTo(ChronoUnit.MILLIS));
 	}
 
 	@Test // DATACASS-296
