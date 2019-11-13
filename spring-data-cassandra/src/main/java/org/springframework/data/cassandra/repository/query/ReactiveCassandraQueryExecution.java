@@ -32,6 +32,8 @@ import org.springframework.data.cassandra.core.mapping.CassandraPersistentProper
 import org.springframework.data.cassandra.core.query.CassandraPageRequest;
 import org.springframework.data.convert.EntityInstantiators;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.query.ResultProcessor;
 import org.springframework.data.repository.query.ReturnedType;
@@ -55,6 +57,7 @@ interface ReactiveCassandraQueryExecution {
 	 * {@link ReactiveCassandraQueryExecution} for a {@link org.springframework.data.domain.Slice}.
 	 *
 	 * @author Hleb Albau
+	 * @author Mark Paluch
 	 * @since 2.1
 	 */
 	@RequiredArgsConstructor
@@ -76,8 +79,18 @@ interface ReactiveCassandraQueryExecution {
 			if (pageable instanceof CassandraPageRequest) {
 				statementToUse = statementToUse.setPagingState(((CassandraPageRequest) pageable).getPagingState());
 			}
+			Mono<? extends Slice<?>> slice = operations.slice(statementToUse, type);
 
-			return operations.slice(statementToUse, type);
+			if (pageable.getSort().isUnsorted()) {
+				return slice;
+			}
+
+			return slice.map(it -> {
+
+				CassandraPageRequest cassandraPageRequest = (CassandraPageRequest) it.getPageable();
+				return new SliceImpl<>(it.getContent(), cassandraPageRequest.withSort(pageable.getSort()), it.hasNext());
+
+			});
 		}
 	}
 

@@ -17,11 +17,14 @@ package org.springframework.data.cassandra.repository.support;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -40,9 +43,12 @@ import org.springframework.data.cassandra.core.mapping.event.BeforeSaveEvent;
 import org.springframework.data.cassandra.core.mapping.event.CassandraMappingEvent;
 import org.springframework.data.cassandra.core.query.CassandraPageRequest;
 import org.springframework.data.cassandra.domain.User;
+import org.springframework.data.cassandra.domain.UserToken;
 import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.ExtensionAwareQueryMethodEvaluationContextProvider;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -179,6 +185,36 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 		assertThat(slice).hasSize(2);
 
 		assertThat(repository.findAll(slice.nextPageable())).hasSize(2);
+	}
+
+	@Test // DATACASS-700
+	public void findAllWithPagingAndSorting() {
+
+		UserTokenRepostitory repository = factory.getRepository(UserTokenRepostitory.class);
+		repository.deleteAll();
+
+		UUID id = UUID.randomUUID();
+		List<UserToken> users = IntStream.range(0, 100).mapToObj(value -> {
+
+			UserToken token = new UserToken();
+			token.setUserId(id);
+			token.setToken(UUID.randomUUID());
+
+			return token;
+		}).collect(Collectors.toList());
+
+		repository.saveAll(users);
+
+		List<UserToken> result = new ArrayList<>();
+		Slice<UserToken> slice = repository.findAllByUserId(id, CassandraPageRequest.first(10, Sort.by("token")));
+
+		while (!slice.isEmpty() || slice.hasNext()) {
+			result.addAll(slice.getContent());
+
+			slice = repository.findAllByUserId(id, slice.nextPageable());
+		}
+
+		assertThat(result).hasSize(100);
 	}
 
 	@Test // DATACASS-396
@@ -328,7 +364,11 @@ public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceC
 		assertThat(loaded).isEmpty();
 	}
 
-	interface UserRepostitory extends CassandraRepository<User, String> { }
+	interface UserRepostitory extends CassandraRepository<User, String> {}
+
+	interface UserTokenRepostitory extends CassandraRepository<UserToken, UUID> {
+		Slice<UserToken> findAllByUserId(UUID id, Pageable pageRequest);
+	}
 
 	static class CaptureEventListener extends AbstractCassandraEventListener<User> {
 

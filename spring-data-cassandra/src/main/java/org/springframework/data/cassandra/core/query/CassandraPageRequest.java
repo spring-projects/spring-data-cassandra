@@ -201,6 +201,20 @@ public class CassandraPageRequest extends PageRequest {
 		return new CassandraPageRequest(getPageNumber() + 1, getPageSize(), getSort(), this.pagingState, false);
 	}
 
+	/**
+	 * Create a new {@link CassandraPageRequest} associated with {@link Sort} sort order.
+	 *
+	 * @param sort must not be {@literal null}.
+	 * @return a new {@link CassandraPageRequest} associated with the given {@link Sort}.
+	 * @since 2.1.13
+	 */
+	public CassandraPageRequest withSort(Sort sort) {
+
+		Assert.notNull(sort, "Sort must not be null");
+
+		return new CassandraPageRequest(this.getPageNumber(), this.getPageSize(), sort, this.pagingState, this.nextAllowed);
+	}
+
 	/* (non-Javadoc)
 	 * @see org.springframework.data.domain.PageRequest#previous()
 	 */
