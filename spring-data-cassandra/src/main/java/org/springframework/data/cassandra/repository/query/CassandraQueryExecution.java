@@ -29,6 +29,8 @@ import org.springframework.data.cassandra.core.mapping.CassandraPersistentProper
 import org.springframework.data.cassandra.core.query.CassandraPageRequest;
 import org.springframework.data.convert.EntityInstantiators;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.query.ResultProcessor;
 import org.springframework.data.repository.query.ReturnedType;
@@ -96,7 +98,14 @@ interface CassandraQueryExecution {
 				statementToUse = statementToUse.setPagingState(((CassandraPageRequest) pageable).getPagingState());
 			}
 
-			return operations.slice(statementToUse, type);
+			Slice<?> slice = operations.slice(statementToUse, type);
+
+			if (pageable.getSort().isUnsorted()) {
+				return slice;
+			}
+
+			CassandraPageRequest cassandraPageRequest = (CassandraPageRequest) slice.getPageable();
+			return new SliceImpl<>(slice.getContent(), cassandraPageRequest.withSort(pageable.getSort()), slice.hasNext());
 		}
 	}
 
