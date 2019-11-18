@@ -1,6 +1,12 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 2.1.13.RELEASE (2019-11-18)
+----------------------------------------------
+* DATACASS-700 - Paging through Repository query methods do not retain Sort.
+* DATACASS-697 - Release 2.1.13 (Lovelace SR13).
+
+
 Changes in version 2.2.1.RELEASE (2019-11-04)
 ---------------------------------------------
 * DATACASS-696 - selectOne(…) and event publication fails if entity is null.
