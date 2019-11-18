@@ -1,6 +1,12 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 2.2.2.RELEASE (2019-11-18)
+---------------------------------------------
+* DATACASS-700 - Paging through Repository query methods do not retain Sort.
+* DATACASS-698 - Release 2.2.2 (Moore SR2).
+
+
 Changes in version 2.1.13.RELEASE (2019-11-18)
 ----------------------------------------------
 * DATACASS-700 - Paging through Repository query methods do not retain Sort.
