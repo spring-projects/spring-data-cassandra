@@ -21,6 +21,7 @@ import org.springframework.util.Assert;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.KeyspaceMetadata;
+import com.datastax.driver.core.Session;
 import com.datastax.driver.core.UserType;
 
 /**
@@ -35,6 +36,20 @@ public class SimpleUserTypeResolver implements UserTypeResolver {
 	private final String keyspaceName;
 
 	private final Cluster cluster;
+
+	/**
+	 * Create a new {@link SimpleUserTypeResolver}.
+	 *
+	 * @param session must not be {@literal null}.
+	 * @since 3.0
+	 */
+	public SimpleUserTypeResolver(Session session) {
+
+		Assert.notNull(session, "Serssion must not be null");
+
+		this.keyspaceName = session.getLoggedKeyspace();
+		this.cluster = session.getCluster();
+	}
 
 	/**
 	 * Create a new {@link SimpleUserTypeResolver}.

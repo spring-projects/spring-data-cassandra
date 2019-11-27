@@ -31,11 +31,11 @@ import org.springframework.util.Assert;
  */
 public class SessionFactoryInitializer implements InitializingBean, DisposableBean {
 
-	@Nullable private SessionFactory sessionFactory;
+	private @Nullable SessionFactory sessionFactory;
 
-	@Nullable private KeyspacePopulator keyspacePopulator;
+	private @Nullable KeyspacePopulator keyspacePopulator;
 
-	@Nullable private KeyspacePopulator keyspaceCleaner;
+	private @Nullable KeyspacePopulator keyspaceCleaner;
 
 	private boolean enabled = true;
 

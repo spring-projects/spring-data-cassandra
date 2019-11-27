@@ -9,27 +9,36 @@
 
 	<import resource="classpath:/config/spring-data-cassandra-basic.xml"/>
 
-	<cassandra:mapping entity-base-packages="org.springframework.data.cassandra.repository.forcequote.compositeprimarykey">
-		<cassandra:entity class="org.springframework.data.cassandra.repository.forcequote.compositeprimarykey.Implicit">
+	<cassandra:mapping
+			entity-base-packages="org.springframework.data.cassandra.repository.forcequote.compositeprimarykey">
+		<cassandra:entity
+				class="org.springframework.data.cassandra.repository.forcequote.compositeprimarykey.Implicit">
 			<cassandra:table force-quote="true"/>
 		</cassandra:entity>
-		<cassandra:entity class="org.springframework.data.cassandra.repository.forcequote.compositeprimarykey.Explicit">
+		<cassandra:entity
+				class="org.springframework.data.cassandra.repository.forcequote.compositeprimarykey.Explicit">
 			<cassandra:table name="XmlExplicitTable" force-quote="true"/>
-			<cassandra:property name="stringValue" force-quote="true" column-name="XmlExplicitStringValue"/>
+			<cassandra:property name="stringValue" force-quote="true"
+								column-name="XmlExplicitStringValue"/>
 		</cassandra:entity>
-		<cassandra:entity class="org.springframework.data.cassandra.repository.forcequote.compositeprimarykey.ExplicitKey">
-			<cassandra:property name="keyZero" force-quote="true" column-name="XmlExplicitKeyZero"/>
-			<cassandra:property name="keyOne" force-quote="true" column-name="XmlExplicitKeyOne"/>
+		<cassandra:entity
+				class="org.springframework.data.cassandra.repository.forcequote.compositeprimarykey.ExplicitKey">
+			<cassandra:property name="keyZero" force-quote="true"
+								column-name="XmlExplicitKeyZero"/>
+			<cassandra:property name="keyOne" force-quote="true"
+								column-name="XmlExplicitKeyOne"/>
 		</cassandra:entity>
 	</cassandra:mapping>
 
-	<cassandra:cluster port="${build.cassandra.native_transport_port}" netty-options-ref="nettyOptions">
-		<cassandra:keyspace name="#{randomKeyspaceName}" action="CREATE_DROP" durable-writes="true">
-		</cassandra:keyspace>
-	</cassandra:cluster>
+	<cassandra:session port="${build.cassandra.native_transport_port}"
+					   keyspace-name="#{randomKeyspaceName}"
+					   schema-action="RECREATE_DROP_UNUSED"
+					   cassandra-converter-ref="cassandraConverter">
+		<cassandra:keyspace name="#{randomKeyspaceName}" action="CREATE_DROP"
+							durable-writes="true"/>
+	</cassandra:session>
 
-	<cassandra:session keyspace-name="#{randomKeyspaceName}" schema-action="RECREATE_DROP_UNUSED"/>
-
-	<cassandra:repositories base-package="org.springframework.data.cassandra.repository.forcequote.compositeprimarykey"/>
+	<cassandra:repositories
+			base-package="org.springframework.data.cassandra.repository.forcequote.compositeprimarykey"/>
 
 </beans>

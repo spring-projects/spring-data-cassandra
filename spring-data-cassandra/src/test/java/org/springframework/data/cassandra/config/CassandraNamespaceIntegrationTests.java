@@ -52,49 +52,6 @@ public class CassandraNamespaceIntegrationTests extends AbstractSpringDataEmbedd
 	@Autowired
 	private ApplicationContext applicationContext;
 
-	@Test // DATACASS-271
-	public void clusterShouldHaveCompressionSet() {
-
-		Cluster cluster = this.applicationContext.getBean(Cluster.class);
-
-		Configuration configuration = cluster.getConfiguration();
-
-		assertThat(configuration.getProtocolOptions().getCompression()).isEqualTo(Compression.SNAPPY);
-	}
-
-	@Test // DATACASS-271
-	public void clusterShouldHavePoolingOptionsConfigured() {
-
-		Cluster cluster = this.applicationContext.getBean(Cluster.class);
-
-		PoolingOptions poolingOptions = cluster.getConfiguration().getPoolingOptions();
-
-		assertThat(poolingOptions.getMaxRequestsPerConnection(HostDistance.LOCAL)).isEqualTo(101);
-		assertThat(poolingOptions.getMaxRequestsPerConnection(HostDistance.REMOTE)).isEqualTo(100);
-
-		assertThat(poolingOptions.getCoreConnectionsPerHost(HostDistance.LOCAL)).isEqualTo(3);
-		assertThat(poolingOptions.getCoreConnectionsPerHost(HostDistance.REMOTE)).isEqualTo(1);
-
-		assertThat(poolingOptions.getMaxConnectionsPerHost(HostDistance.LOCAL)).isEqualTo(9);
-		assertThat(poolingOptions.getMaxConnectionsPerHost(HostDistance.REMOTE)).isEqualTo(2);
-	}
-
-	@Test // DATACASS-271
-	public void clusterShouldHaveSocketOptionsConfigured() {
-
-		Cluster cluster = this.applicationContext.getBean(Cluster.class);
-
-		SocketOptions socketOptions = cluster.getConfiguration().getSocketOptions();
-
-		assertThat(socketOptions.getConnectTimeoutMillis()).isEqualTo(5000);
-		assertThat(socketOptions.getKeepAlive()).isTrue();
-		assertThat(socketOptions.getReuseAddress()).isTrue();
-		assertThat(socketOptions.getTcpNoDelay()).isTrue();
-		assertThat(socketOptions.getSoLinger()).isEqualTo(60);
-		assertThat(socketOptions.getReceiveBufferSize()).isEqualTo(65536);
-		assertThat(socketOptions.getSendBufferSize()).isEqualTo(65536);
-	}
-
 	@Test // DATACASS-172
 	public void mappingContextShouldHaveUserTypeResolverConfigured() {
 

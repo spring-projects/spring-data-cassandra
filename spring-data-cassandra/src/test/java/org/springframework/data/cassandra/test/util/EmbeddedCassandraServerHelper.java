@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.test.util;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.*;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -32,11 +32,12 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.cassandra.config.DatabaseDescriptor;
 import org.apache.cassandra.db.commitlog.CommitLog;
-import org.apache.cassandra.io.util.FileUtils;
 import org.apache.cassandra.service.CassandraDaemon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.util.FileCopyUtils;
+import org.springframework.util.FileSystemUtils;
 
 /**
  * Imported Embedded Cassandra server startup helper.
@@ -228,7 +229,7 @@ class EmbeddedCassandraServerHelper {
 	 */
 	private static void copy(String resource, File targetDirectory) throws IOException {
 
-		FileUtils.createDirectory(targetDirectory);
+		targetDirectory.mkdirs();
 
 		File file = new File(targetDirectory, new File(resource).getName());
 		InputStream is = EmbeddedCassandraServerHelper.class.getClassLoader().getResourceAsStream(resource);
@@ -253,8 +254,6 @@ class EmbeddedCassandraServerHelper {
 
 	private static void rmdirs(File... fileOrDirectories) throws IOException {
 
-		Arrays.stream(fileOrDirectories)
-				.filter(File::exists)
-				.forEach(FileUtils::deleteRecursive);
+		Arrays.stream(fileOrDirectories).filter(File::exists).forEach(FileSystemUtils::deleteRecursively);
 	}
 }

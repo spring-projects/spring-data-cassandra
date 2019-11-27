@@ -12,9 +12,8 @@
 	<context:property-placeholder
 			location="classpath:/config/cassandra-connection.properties"/>
 
-	<cassandra:cluster port="${build.cassandra.native_transport_port}"/>
-
-	<cassandra:session keyspace-name="system"/>
+	<cassandra:session port="${build.cassandra.native_transport_port}"
+					   keyspace-name="system"/>
 
 	<cassandra:auditing/>
 

@@ -69,6 +69,8 @@ class CassandraTemplateParser extends AbstractSingleBeanDefinitionParser {
 			addOptionalPropertyReference(builder, "session", element, "session-ref", DefaultBeanNames.SESSION);
 		}
 
-		addOptionalPropertyReference(builder, "converter", element, "cassandra-converter-ref", DefaultBeanNames.CONVERTER);
+		if (element.hasAttribute("cassandra-converter-ref")) {
+			addRequiredPropertyReference(builder, "converter", element, "cassandra-converter-ref");
+		}
 	}
 }

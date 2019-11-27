@@ -13,32 +13,40 @@
 		<cassandra:entity class="org.springframework.data.cassandra.repository.forcequote.config.Implicit">
 			<cassandra:table force-quote="true" />
 		</cassandra:entity>
-		<cassandra:entity class="org.springframework.data.cassandra.repository.forcequote.config.Explicit">
+		<cassandra:entity
+				class="org.springframework.data.cassandra.repository.forcequote.config.Explicit">
 			<!-- this value must match those in
 			org.springframework.data.cassandra.test.integration.forcequote.config.ForceQuotedRepositoryXmlConfigIntegrationTests
 			testExplicit() -->
 			<cassandra:table name="Zz" force-quote="true"/>
 		</cassandra:entity>
-		<cassandra:entity class="org.springframework.data.cassandra.repository.forcequote.config.ImplicitProperties">
-			<cassandra:property name="primaryKey" force-quote="true" />
-			<cassandra:property name="stringValue" force-quote="true" />
+		<cassandra:entity
+				class="org.springframework.data.cassandra.repository.forcequote.config.ImplicitProperties">
+			<cassandra:property name="primaryKey" force-quote="true"/>
+			<cassandra:property name="stringValue" force-quote="true"/>
 		</cassandra:entity>
-		<cassandra:entity class="org.springframework.data.cassandra.repository.forcequote.config.ExplicitProperties">
+		<cassandra:entity
+				class="org.springframework.data.cassandra.repository.forcequote.config.ExplicitProperties">
 			<!-- these values must match those in
 			org.springframework.data.cassandra.test.integration.forcequote.config.ForceQuotedRepositoryXmlConfigIntegrationTests
 			testExplicitPropertiesWithXmlValues() -->
-			<cassandra:property name="primaryKey" force-quote="true" column-name="XmlPrimaryKey"/>
-			<cassandra:property name="stringValue" force-quote="true" column-name="XmlStringValue"/>
+			<cassandra:property name="primaryKey" force-quote="true"
+								column-name="XmlPrimaryKey"/>
+			<cassandra:property name="stringValue" force-quote="true"
+								column-name="XmlStringValue"/>
 		</cassandra:entity>
 	</cassandra:mapping>
 
-	<cassandra:cluster port="${build.cassandra.native_transport_port}" netty-options-ref="nettyOptions">
-		<cassandra:keyspace name="ForceQuoteRepositoryXmlConfigIntegrationTests" action="CREATE_DROP" durable-writes="true">
+	<cassandra:session port="${build.cassandra.native_transport_port}"
+					   keyspace-name="ForceQuoteRepositoryXmlConfigIntegrationTests"
+					   schema-action="RECREATE_DROP_UNUSED"
+					   cassandra-converter-ref="cassandraConverter">
+		<cassandra:keyspace name="ForceQuoteRepositoryXmlConfigIntegrationTests"
+							action="CREATE_DROP" durable-writes="true">
 		</cassandra:keyspace>
-	</cassandra:cluster>
+	</cassandra:session>
 
-	<cassandra:session keyspace-name="ForceQuoteRepositoryXmlConfigIntegrationTests" schema-action="RECREATE_DROP_UNUSED"/>
-
-	<cassandra:repositories base-package="org.springframework.data.cassandra.repository.forcequote.config"/>
+	<cassandra:repositories
+			base-package="org.springframework.data.cassandra.repository.forcequote.config"/>
 
 </beans>
