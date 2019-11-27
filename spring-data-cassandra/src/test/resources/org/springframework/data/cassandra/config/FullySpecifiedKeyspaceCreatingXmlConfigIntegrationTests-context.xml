@@ -1,20 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	   xmlns:cassandra="http://www.springframework.org/schema/cql"
+	   xmlns:cassandra="http://www.springframework.org/schema/data/cassandra"
 	   xmlns:context="http://www.springframework.org/schema/context"
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	   xsi:schemaLocation="
-	   	http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
-	   	http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd
-	   	http://www.springframework.org/schema/cql https://www.springframework.org/schema/cql/spring-cql.xsd
+	http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd
+	http://www.springframework.org/schema/data/cassandra https://www.springframework.org/schema/data/cassandra/spring-cassandra.xsd
 ">
 
 	<context:property-placeholder
-		location="classpath:/config/cassandra-connection.properties,classpath:/org/springframework/data/cassandra/config/FullySpecifiedKeyspaceCreatingXmlConfigIntegrationTests.properties"/>
+			location="classpath:/config/cassandra-connection.properties,classpath:/org/springframework/data/cassandra/config/FullySpecifiedKeyspaceCreatingXmlConfigIntegrationTests.properties"/>
 
-	<bean id="nettyOptions" class="org.springframework.data.cassandra.support.IntegrationTestNettyOptions"/>
-
-	<cassandra:cluster port="${build.cassandra.native_transport_port}" compression="LZ4" netty-options-ref="nettyOptions">
+	<cassandra:session port="${build.cassandra.native_transport_port}"
+					   keyspace-name="full1">
 		<cassandra:keyspace action="CREATE_DROP" durable-writes="true" name="full1">
 			<cassandra:replication class="SIMPLE_STRATEGY">
 				<cassandra:data-center name="foo" replication-factor="1"/>
@@ -22,11 +21,11 @@
 			</cassandra:replication>
 		</cassandra:keyspace>
 		<cassandra:keyspace action="CREATE_DROP" durable-writes="false"
-					   name="full2">
+							name="full2">
 			<cassandra:replication class="SIMPLE_STRATEGY" replication-factor="2"/>
 		</cassandra:keyspace>
 		<cassandra:keyspace action="ALTER" durable-writes="true"
-					   name="full2">
+							name="full2">
 			<cassandra:replication class="NETWORK_TOPOLOGY_STRATEGY">
 				<cassandra:data-center name="foo" replication-factor="4"/>
 				<cassandra:data-center name="bar" replication-factor="4"/>
@@ -44,8 +43,6 @@ DROP KEYSPACE script1;
 		<cassandra:shutdown-cql><![CDATA[
 DROP KEYSPACE script2;
 		]]></cassandra:shutdown-cql>
-	</cassandra:cluster>
-
-	<cassandra:session keyspace-name="full1"/>
+	</cassandra:session>
 
 </beans>

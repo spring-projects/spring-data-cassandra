@@ -38,18 +38,6 @@ import com.datastax.driver.core.Session;
 public class CassandraMappingBeanFactoryPostProcessorUnitTests {
 
 	@Test // DATACASS-290, DATACASS-401
-	public void clusterRegistrationTriggersDefaultBeanRegistration() {
-
-		GenericXmlApplicationContext context = new GenericXmlApplicationContext();
-		context.load(CassandraMappingBeanFactoryPostProcessorUnitTests.class, "cluster-and-mock-session.xml");
-		context.refresh();
-
-		assertThat(context.getBeanNamesForType(CassandraOperations.class)).contains(DefaultBeanNames.DATA_TEMPLATE);
-		assertThat(context.getBeanNamesForType(CassandraMappingContext.class)).contains(DefaultBeanNames.CONTEXT);
-		assertThat(context.getBeanNamesForType(CassandraConverter.class)).contains(DefaultBeanNames.CONVERTER);
-	}
-
-	@Test // DATACASS-290, DATACASS-401
 	public void MappingAndConverterRegistrationTriggersDefaultBeanRegistration() {
 
 		GenericXmlApplicationContext context = new GenericXmlApplicationContext();
@@ -70,23 +58,14 @@ public class CassandraMappingBeanFactoryPostProcessorUnitTests {
 	}
 
 	@Test // DATACASS-290
-	public void defaultBeanRegistrationShouldFailWithMultipleSessions() {
+	public void shouldNotFailFailWithMultipleSessions() {
 
 		GenericXmlApplicationContext context = new GenericXmlApplicationContext();
 		context.load(CassandraMappingBeanFactoryPostProcessorUnitTests.class, "multiple-sessions.xml");
 
-		assertThatIllegalStateException().isThrownBy(context::refresh).withMessageContaining("found 2 beans of type")
-				.withMessageContaining("Session");
-	}
+		context.refresh();
 
-	@Test // DATACASS-290
-	public void defaultBeanRegistrationShouldFailWithMultipleSessionFactories() {
-
-		GenericXmlApplicationContext context = new GenericXmlApplicationContext();
-		context.load(CassandraMappingBeanFactoryPostProcessorUnitTests.class, "multiple-session-factories.xml");
-
-		assertThatIllegalStateException().isThrownBy(context::refresh).withMessageContaining("found 2 beans of type")
-				.withMessageContaining("Session");
+		assertThat(context.getBeanNamesForType(Session.class)).hasSize(2);
 	}
 
 	@Test // DATACASS-290

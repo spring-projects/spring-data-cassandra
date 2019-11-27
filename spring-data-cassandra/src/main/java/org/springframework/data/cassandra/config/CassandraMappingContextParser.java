@@ -146,10 +146,16 @@ class CassandraMappingContextParser extends AbstractSingleBeanDefinitionParser {
 
 	private BeanDefinition parseUserTypeResolver(Element entity) {
 
+		String sessionRef = entity.getAttribute("session-ref");
+
+		if (StringUtils.hasText(sessionRef)) {
+			BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(SimpleUserTypeResolver.class);
+			builder.addConstructorArgReference(sessionRef);
+			return builder.getBeanDefinition();
+		}
+
 		String keyspaceName = entity.getAttribute("keyspace-name");
-
 		Assert.state(StringUtils.hasText(keyspaceName), "keyspace-name attribute must not be null or empty");
-
 		String clusterRef = entity.getAttribute("cluster-ref");
 
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(SimpleUserTypeResolver.class);

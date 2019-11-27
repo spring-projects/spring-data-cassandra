@@ -2,45 +2,34 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 	   xmlns:cassandra="http://www.springframework.org/schema/data/cassandra"
 	   xmlns:context="http://www.springframework.org/schema/context"
-	   xmlns:cql="http://www.springframework.org/schema/cql"
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	   xsi:schemaLocation="
 		http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
 	   	http://www.springframework.org/schema/data/cassandra https://www.springframework.org/schema/data/cassandra/spring-cassandra.xsd
 		http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd
-		http://www.springframework.org/schema/cql https://www.springframework.org/schema/cql/spring-cql.xsd
 ">
 
-	<bean id="nettyOptions" class="org.springframework.data.cassandra.support.IntegrationTestNettyOptions"/>
+	<bean id="nettyOptions"
+		  class="org.springframework.data.cassandra.support.IntegrationTestNettyOptions"/>
 
 	<context:property-placeholder
 			location="classpath:/config/cassandra-connection.properties,classpath:/org/springframework/data/cassandra/config/cassandra.properties"/>
 
-	<cassandra:cluster contact-points="${build.cassandra.host}"
-				  port="${build.cassandra.native_transport_port}" compression="SNAPPY" netty-options-ref="nettyOptions">
-		<cassandra:local-pooling-options
-				min-simultaneous-requests="26" max-simultaneous-requests="101"
-				core-connections="3" max-connections="9"/>
-		<cassandra:remote-pooling-options
-				min-simultaneous-requests="25" max-simultaneous-requests="100"
-				core-connections="1" max-connections="2"/>
-		<cassandra:socket-options connect-timeout-millis="5000"
-							 keep-alive="true" reuse-address="true" so-linger="60" tcp-no-delay="true"
-							 receive-buffer-size="65536" send-buffer-size="65536"/>
+	<cassandra:session contact-points="${build.cassandra.host}"
+					   port="${build.cassandra.native_transport_port}"
+					   keyspace-name="${cassandra.keyspace}"
+					   schema-action="NONE">
 		<cassandra:keyspace name="${cassandra.keyspace}" action="CREATE_DROP"
-					   durable-writes="true"/>
-	</cassandra:cluster>
+							durable-writes="true"/>
+	</cassandra:session>
 
 	<cassandra:mapping>
-		<cassandra:user-type-resolver keyspace-name="${cassandra.keyspace}"/>
+		<cassandra:user-type-resolver session-ref="cassandraSession"/>
 	</cassandra:mapping>
 
 	<cassandra:converter/>
 
-	<cassandra:session keyspace-name="${cassandra.keyspace}"
-				  schema-action="NONE"/>
-
-	<cql:template id="foo-template"/>
+	<cassandra:cql-template id="foo-template"/>
 	<cassandra:template cql-template-ref="foo-template"/>
 
 </beans>

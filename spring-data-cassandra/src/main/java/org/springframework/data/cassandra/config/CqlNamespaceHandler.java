@@ -31,8 +31,7 @@ public class CqlNamespaceHandler extends NamespaceHandlerSupport {
 	@Override
 	public void init() {
 
-		registerBeanDefinitionParser("cluster", new CassandraCqlClusterParser());
-		registerBeanDefinitionParser("session", new CassandraCqlSessionParser());
+		registerBeanDefinitionParser("session", new CqlSessionParser());
 		registerBeanDefinitionParser("template", new CassandraCqlTemplateParser());
 	}
 }

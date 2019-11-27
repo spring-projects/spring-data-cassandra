@@ -7,8 +7,6 @@
 	   	http://www.springframework.org/schema/data/cassandra https://www.springframework.org/schema/data/cassandra/spring-cassandra.xsd
 ">
 
-	<cassandra:cluster/>
-
 	<bean id="keyspace-1" class="org.springframework.data.cassandra.config.CassandraMappingBeanFactoryPostProcessorUnitTests.MockSessionFactory"/>
 	<bean id="keyspace-2" class="org.springframework.data.cassandra.config.CassandraMappingBeanFactoryPostProcessorUnitTests.MockSessionFactory"/>
 

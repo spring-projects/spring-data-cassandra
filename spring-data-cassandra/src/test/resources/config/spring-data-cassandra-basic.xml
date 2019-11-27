@@ -10,15 +10,18 @@
 ">
 
 	<bean name="randomKeyspaceName" class="java.lang.String">
-		<constructor-arg value="#{T(org.springframework.data.cassandra.support.RandomKeyspaceName).create()}"/>
+		<constructor-arg
+				value="#{T(org.springframework.data.cassandra.support.RandomKeyspaceName).create()}"/>
 	</bean>
 
-	<bean id="nettyOptions" class="org.springframework.data.cassandra.support.IntegrationTestNettyOptions"/>
+	<bean id="nettyOptions"
+		  class="org.springframework.data.cassandra.support.IntegrationTestNettyOptions"/>
 
-	<context:property-placeholder location="classpath:/config/cassandra-connection.properties"/>
+	<context:property-placeholder
+			location="classpath:/config/cassandra-connection.properties"/>
 
 	<cassandra:converter mapping-ref="cassandraMapping"/>
 
-	<cassandra:template/>
+	<cassandra:template cassandra-converter-ref="cassandraConverter"/>
 
 </beans>

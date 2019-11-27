@@ -23,6 +23,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.cql.CqlOperations;
 import org.springframework.data.cassandra.support.KeyspaceTestUtils;
 import org.springframework.data.cassandra.test.util.AbstractEmbeddedCassandraIntegrationTest;
@@ -61,7 +62,7 @@ public class MinimalXmlConfigIntegrationTests extends AbstractEmbeddedCassandraI
 
 		KeyspaceTestUtils.assertKeyspaceExists(KEYSPACE, session);
 
-		CqlOperations cqlOperations = context.getBean(CqlOperations.class);
-		assertThat(cqlOperations.describeRing()).isNotEmpty();
+		CassandraOperations cassandraOperations = context.getBean(CassandraOperations.class);
+		assertThat(cassandraOperations.getCqlOperations().describeRing()).isNotEmpty();
 	}
 }

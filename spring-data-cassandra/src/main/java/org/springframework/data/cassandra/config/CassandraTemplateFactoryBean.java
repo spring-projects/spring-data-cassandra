@@ -20,6 +20,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.cassandra.SessionFactory;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
+import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.CqlOperations;
 import org.springframework.data.cassandra.core.cql.session.DefaultSessionFactory;
 import org.springframework.lang.Nullable;
@@ -52,7 +53,9 @@ public class CassandraTemplateFactoryBean implements FactoryBean<CassandraTempla
 			throw new IllegalArgumentException("Either Session/SessionFactory or CqlOperations must be set");
 		}
 
-		Assert.notNull(converter, "Converter must not be null");
+		if (converter == null) {
+			converter = new MappingCassandraConverter();
+		}
 	}
 
 	/*
