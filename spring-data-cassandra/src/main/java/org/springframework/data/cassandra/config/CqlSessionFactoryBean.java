@@ -282,6 +282,10 @@ public class CqlSessionFactoryBean implements FactoryBean<Session>, Initializing
 
 	/**
 	 * Sets CQL scripts to be executed immediately after the session is connected.
+	 *
+	 * @deprecated Use {@link org.springframework.data.cassandra.core.cql.session.init.SessionFactoryInitializer} or
+	 *             {@link SessionFactoryFactoryBean} with
+	 *             {@link org.springframework.data.cassandra.core.cql.session.init.KeyspacePopulator} instead.
 	 */
 	public void setStartupScripts(@Nullable List<String> scripts) {
 		this.startupScripts = (scripts != null ? new ArrayList<>(scripts) : Collections.emptyList());
@@ -289,21 +293,36 @@ public class CqlSessionFactoryBean implements FactoryBean<Session>, Initializing
 
 	/**
 	 * Returns an unmodifiable list of startup scripts.
+	 *
+	 * @deprecated Use {@link org.springframework.data.cassandra.core.cql.session.init.SessionFactoryInitializer} or
+	 *             {@link SessionFactoryFactoryBean} with
+	 *             {@link org.springframework.data.cassandra.core.cql.session.init.KeyspacePopulator} instead.
 	 */
+	@Deprecated
 	public List<String> getStartupScripts() {
 		return Collections.unmodifiableList(this.startupScripts);
 	}
 
 	/**
 	 * Sets CQL scripts to be executed immediately before the session is shutdown.
+	 *
+	 * @deprecated Use {@link org.springframework.data.cassandra.core.cql.session.init.SessionFactoryInitializer} or
+	 *             {@link SessionFactoryFactoryBean} with
+	 *             {@link org.springframework.data.cassandra.core.cql.session.init.KeyspacePopulator} instead.
 	 */
+	@Deprecated
 	public void setShutdownScripts(@Nullable List<String> scripts) {
 		this.shutdownScripts = scripts != null ? new ArrayList<>(scripts) : Collections.emptyList();
 	}
 
 	/**
 	 * Returns an unmodifiable list of shutdown scripts.
+	 *
+	 * @deprecated Use {@link org.springframework.data.cassandra.core.cql.session.init.SessionFactoryInitializer} or
+	 *             {@link SessionFactoryFactoryBean} with
+	 *             {@link org.springframework.data.cassandra.core.cql.session.init.KeyspacePopulator} instead.
 	 */
+	@Deprecated
 	public List<String> getShutdownScripts() {
 		return Collections.unmodifiableList(this.shutdownScripts);
 	}
@@ -313,7 +332,10 @@ public class CqlSessionFactoryBean implements FactoryBean<Session>, Initializing
 	 * {@link CassandraMappingContext} inside {@code converter}.
 	 *
 	 * @param converter must not be {@literal null}.
+	 * @deprecated Use {@link CassandraSessionFactoryBean} with
+	 *             {@link CassandraSessionFactoryBean#setConverter(CassandraConverter)} instead.
 	 */
+	@Deprecated
 	public void setConverter(CassandraConverter converter) {
 
 		Assert.notNull(converter, "CassandraConverter must not be null");
@@ -345,7 +367,10 @@ public class CqlSessionFactoryBean implements FactoryBean<Session>, Initializing
 	 * Set the {@link SchemaAction}.
 	 *
 	 * @param schemaAction must not be {@literal null}.
+	 * @deprecated Use {@link CassandraSessionFactoryBean} with
+	 *             {@link CassandraSessionFactoryBean#setSchemaAction(SchemaAction)} instead.
 	 */
+	@Deprecated
 	public void setSchemaAction(SchemaAction schemaAction) {
 
 		Assert.notNull(schemaAction, "SchemaAction must not be null");

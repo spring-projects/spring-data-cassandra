@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,22 +23,22 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.util.StringUtils;
+
 import org.w3c.dom.Element;
 
 /**
- * Parser for &lt;template&gt; definitions.
+ * Parser for &lt;session-factory&gt; definitions.
  *
- * @author David Webb
- * @author Matthew T. Adams
+ * @author Mark Paluch
  */
-class CassandraCqlTemplateParser extends AbstractSingleBeanDefinitionParser {
+class SessionFactoryBeanDefinitionParser extends AbstractSingleBeanDefinitionParser {
 
 	/* (non-Javadoc)
 	 * @see org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser#getBeanClass(org.w3c.dom.Element)
 	 */
 	@Override
 	protected Class<?> getBeanClass(Element element) {
-		return CassandraCqlTemplateFactoryBean.class;
+		return SessionFactoryFactoryBean.class;
 	}
 
 	/* (non-Javadoc)
@@ -49,7 +49,8 @@ class CassandraCqlTemplateParser extends AbstractSingleBeanDefinitionParser {
 			throws BeanDefinitionStoreException {
 
 		String id = super.resolveId(element, definition, parserContext);
-		return StringUtils.hasText(id) ? id : DefaultCqlBeanNames.TEMPLATE;
+
+		return StringUtils.hasText(id) ? id : DefaultBeanNames.SESSION_FACTORY;
 	}
 
 	/* (non-Javadoc)
@@ -58,11 +59,10 @@ class CassandraCqlTemplateParser extends AbstractSingleBeanDefinitionParser {
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 
-		if (element.hasAttribute("session-factory-ref")) {
-			addOptionalPropertyReference(builder, "sessionFactory", element, "session-factory-ref",
-					DefaultCqlBeanNames.SESSION);
-		} else {
-			addOptionalPropertyReference(builder, "session", element, "session-ref", DefaultCqlBeanNames.SESSION);
-		}
+		addOptionalPropertyReference(builder, "session", element, "session-ref", DefaultBeanNames.SESSION);
+		addOptionalPropertyReference(builder, "converter", element, "cassandra-converter-ref", DefaultBeanNames.CONVERTER);
+		addOptionalPropertyValue(builder, "schemaAction", element, "schema-action", SchemaAction.NONE.name());
+
+		InitializeKeyspaceBeanDefinitionParser.parseKeyspacePopulator(element, builder);
 	}
 }

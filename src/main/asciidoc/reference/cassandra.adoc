@@ -610,8 +610,6 @@ NOTE: Keyspace creation allows rapid bootstrapping without the need of external 
 for certain scenarios but should be used with care. Dropping a keyspace on application shutdown removes the keyspace
 and all data from the tables in the keyspace.
 
-
-
 [[cassandra.schema-management.initializing]]
 === Initializing a `SessionFactory`
 

@@ -45,7 +45,7 @@ public class SimpleUserTypeResolver implements UserTypeResolver {
 	 */
 	public SimpleUserTypeResolver(Session session) {
 
-		Assert.notNull(session, "Serssion must not be null");
+		Assert.notNull(session, "Session must not be null");
 
 		this.keyspaceName = session.getLoggedKeyspace();
 		this.cluster = session.getCluster();

@@ -17,11 +17,15 @@
 
 	<cassandra:session contact-points="${build.cassandra.host}"
 					   port="${build.cassandra.native_transport_port}"
-					   keyspace-name="${cassandra.keyspace}"
-					   schema-action="NONE">
+					   keyspace-name="${cassandra.keyspace}">
 		<cassandra:keyspace name="${cassandra.keyspace}" action="CREATE_DROP"
 							durable-writes="true"/>
 	</cassandra:session>
+
+	<cassandra:session-factory>
+		<cassandra:script
+				location="classpath:/org/springframework/data/cassandra/config/schema.cql"/>
+	</cassandra:session-factory>
 
 	<cassandra:mapping>
 		<cassandra:user-type-resolver session-ref="cassandraSession"/>

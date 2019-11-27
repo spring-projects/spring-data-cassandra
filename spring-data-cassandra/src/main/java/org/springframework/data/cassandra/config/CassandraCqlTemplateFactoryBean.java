@@ -17,7 +17,9 @@ package org.springframework.data.cassandra.config;
 
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.data.cassandra.SessionFactory;
 import org.springframework.data.cassandra.core.cql.CqlTemplate;
+import org.springframework.data.cassandra.core.cql.session.DefaultSessionFactory;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -33,7 +35,7 @@ public class CassandraCqlTemplateFactoryBean implements FactoryBean<CqlTemplate>
 
 	private @Nullable CqlTemplate template;
 
-	private @Nullable Session session;
+	private @Nullable SessionFactory sessionFactory;
 
 	/* (non-Javadoc)
 	 * @see org.springframework.beans.factory.FactoryBean#getObject()
@@ -65,9 +67,9 @@ public class CassandraCqlTemplateFactoryBean implements FactoryBean<CqlTemplate>
 	@Override
 	public void afterPropertiesSet() throws Exception {
 
-		Assert.notNull(session, "Session must not be null");
+		Assert.notNull(sessionFactory, "SessionFactory must not be null");
 
-		this.template = new CqlTemplate(session);
+		this.template = new CqlTemplate(sessionFactory);
 	}
 
 	/**
@@ -81,6 +83,22 @@ public class CassandraCqlTemplateFactoryBean implements FactoryBean<CqlTemplate>
 
 		Assert.notNull(session, "Session must not be null");
 
-		this.session = session;
+		setSessionFactory(new DefaultSessionFactory(session));
+	}
+
+	/**
+	 * Sets the Cassandra {@link SessionFactory} to use. The {@link CqlTemplate} will use the logged keyspace of the
+	 * underlying {@link SessionFactory}. Don't change the keyspace using CQL but use an appropriate
+	 * {@link SessionFactory}.
+	 *
+	 * @param sessionFactory must not be {@literal null}.
+	 * @see SessionFactory
+	 * @see org.springframework.data.cassandra.core.cql.session.lookup.AbstractRoutingSessionFactory
+	 */
+	public void setSessionFactory(SessionFactory sessionFactory) {
+
+		Assert.notNull(sessionFactory, "SessionFactory must not be null");
+
+		this.sessionFactory = sessionFactory;
 	}
 }
