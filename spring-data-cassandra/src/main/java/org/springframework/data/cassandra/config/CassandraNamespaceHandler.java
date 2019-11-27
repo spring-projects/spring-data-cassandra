@@ -40,5 +40,6 @@ public class CassandraNamespaceHandler extends NamespaceHandlerSupport {
 		registerBeanDefinitionParser("auditing", new CassandraAuditingBeanDefinitionParser());
 		registerBeanDefinitionParser("converter", new CassandraMappingConverterParser());
 		registerBeanDefinitionParser("mapping", new CassandraMappingContextParser());
+		registerBeanDefinitionParser("initialize-keyspace", new InitializeKeyspaceBeanDefinitionParser());
 	}
 }
