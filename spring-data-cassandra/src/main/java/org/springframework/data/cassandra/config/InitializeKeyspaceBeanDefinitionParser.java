@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.config;
 
+import static org.springframework.data.cassandra.config.ParsingUtils.*;
+
 import java.util.List;
 
 import org.springframework.beans.BeanMetadataElement;
@@ -36,8 +38,8 @@ import org.w3c.dom.Element;
 
 /**
  * {@link org.springframework.beans.factory.xml.BeanDefinitionParser} that parses an {@code initialize-keyspace} element
- * and creates a {@link BeanDefinition} of type {@link DataSourceInitializer}. Picks up nested {@code script} elements
- * and configures a {@link ResourceKeyspacePopulator} for them.
+ * and creates a {@link BeanDefinition} of type {@link SessionFactoryInitializer}. Picks up nested {@code script}
+ * elements and configures a {@link ResourceKeyspacePopulator} for them.
  *
  * @author Mark Paluch
  * @since 3.0
@@ -48,7 +50,11 @@ class InitializeKeyspaceBeanDefinitionParser extends AbstractBeanDefinitionParse
 	protected AbstractBeanDefinition parseInternal(Element element, ParserContext parserContext) {
 
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(SessionFactoryInitializer.class);
-		builder.addPropertyReference("sessionFactory", element.getAttribute("session-factory"));
+
+		if (element.hasAttribute("session-factory-ref")) {
+			addRequiredPropertyReference(builder, "session", element, "session-factory-ref");
+		}
+
 		builder.addPropertyValue("enabled", element.getAttribute("enabled"));
 
 		parseKeyspacePopulator(element, builder);
@@ -64,7 +70,9 @@ class InitializeKeyspaceBeanDefinitionParser extends AbstractBeanDefinitionParse
 	}
 
 	public static void parseKeyspacePopulator(Element element, BeanDefinitionBuilder builder) {
+
 		List<Element> scripts = DomUtils.getChildElementsByTagName(element, "script");
+
 		if (!scripts.isEmpty()) {
 			builder.addPropertyValue("keyspacePopulator", createKeyspacePopulator(element, scripts, "INIT"));
 			builder.addPropertyValue("keyspaceCleaner", createKeyspacePopulator(element, scripts, "DESTROY"));

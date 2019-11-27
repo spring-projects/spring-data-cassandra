@@ -627,7 +627,7 @@ If you want to initialize a database and you can provide a reference to a `Sessi
 ====
 [source,xml,indent=0,subs="verbatim,quotes"]
 ----
-<cassandra:initialize-keyspace session-factory="sessionFactory">
+<cassandra:initialize-keyspace session-factory-ref="sessionFactory">
     <cassandra:script location="classpath:com/foo/cql/db-schema.cql"/>
     <cassandra:script location="classpath:com/foo/cql/db-test-data.cql"/>
 </cassandra:initialize-keyspace>
@@ -652,7 +652,7 @@ The following example gets a value from a system property:
 ====
 [source,xml,indent=0,subs="verbatim,quotes"]
 ----
-<cassandra:initialize-keyspace session-factory="sessionFactory"
+<cassandra:initialize-keyspace session-factory-ref="sessionFactory"
     enabled="#{systemProperties.INITIALIZE_KEYSPACE}">    <1>
     <cassandra:script location="..."/>
 </cassandra:initialize-database>
@@ -667,7 +667,7 @@ To this end, you can control the ability of the initializer to ignore certain er
 ====
 [source,xml,indent=0,subs="verbatim,quotes"]
 ----
-<cassandra:initialize-keyspace session-factory="sessionFactory" ignore-failures="DROPS">
+<cassandra:initialize-keyspace session-factory-ref="sessionFactory" ignore-failures="DROPS">
     <cassandra:script location="..."/>
 </cassandra:initialize-database>
 ----
@@ -686,7 +686,7 @@ You can control that globally or script by script, as the following example show
 ====
 [source,xml,indent=0,subs="verbatim,quotes"]
 ----
-<cassandra:initialize-keyspace session-factory="sessionFactory" separator="@@">        <1>
+<cassandra:initialize-keyspace session-factory-ref="sessionFactory" separator="@@">        <1>
     <cassandra:script location="classpath:com/myapp/cql/db-schema.cql" separator=";"/> <2>
     <cassandra:script location="classpath:com/myapp/cql/db-test-data-1.cql"/>
     <cassandra:script location="classpath:com/myapp/cql/db-test-data-2.cql"/>
