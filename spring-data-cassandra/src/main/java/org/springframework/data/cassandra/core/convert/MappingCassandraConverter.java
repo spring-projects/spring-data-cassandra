@@ -233,8 +233,18 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			return (R) row;
 		}
 
+		if (com.datastax.oss.driver.api.core.cql.Row.class.isAssignableFrom(rawType)) {
+			return (R) row;
+		}
+
 		if (getCustomConversions().hasCustomReadTarget(Row.class, rawType)
 				|| getConversionService().canConvert(Row.class, rawType)) {
+
+			return getConversionService().convert(row, rawType);
+		}
+
+		if (getCustomConversions().hasCustomReadTarget(com.datastax.oss.driver.api.core.cql.Row.class, rawType)
+				|| getConversionService().canConvert(com.datastax.oss.driver.api.core.cql.Row.class, rawType)) {
 
 			return getConversionService().convert(row, rawType);
 		}
@@ -246,7 +256,15 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		CassandraPersistentEntity<R> persistentEntity = (CassandraPersistentEntity<R>) getMappingContext()
 				.getRequiredPersistentEntity(typeInfo);
 
-		return readEntityFromRow(persistentEntity, row);
+		if (row instanceof Row) {
+			return readEntityFromRow(persistentEntity, row);
+		}
+
+		return readEntityFromRow(persistentEntity, (com.datastax.oss.driver.api.core.cql.Row) row);
+	}
+
+	private <S> S readEntityFromRow(CassandraPersistentEntity<S> entity, com.datastax.oss.driver.api.core.cql.Row row) {
+		return doReadEntity(entity, row, expressionEvaluator -> new RowValueProvider(row, expressionEvaluator));
 	}
 
 	private <S> S readEntityFromRow(CassandraPersistentEntity<S> entity, Row row) {

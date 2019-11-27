@@ -17,6 +17,8 @@
 package org.springframework.data.cassandra.core.convert;
 
 import java.net.InetAddress;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -31,8 +33,7 @@ import org.springframework.data.convert.ReadingConverter;
 import org.springframework.util.Assert;
 import org.springframework.util.NumberUtils;
 
-import com.datastax.driver.core.LocalDate;
-import com.datastax.driver.core.Row;
+import com.datastax.oss.driver.api.core.cql.Row;
 
 /**
  * Wrapper class to contain useful converters for the usage with Cassandra.
@@ -56,6 +57,7 @@ abstract class CassandraConverters {
 
 		converters.add(RowToCassandraLocalDateConverter.INSTANCE);
 		converters.add(RowToBooleanConverter.INSTANCE);
+		converters.add(RowToInstantConverter.INSTANCE);
 		converters.add(RowToDateConverter.INSTANCE);
 		converters.add(RowToInetAddressConverter.INSTANCE);
 		converters.add(RowToListConverter.INSTANCE);
@@ -74,7 +76,7 @@ abstract class CassandraConverters {
 
 		@Override
 		public Boolean convert(Row row) {
-			return row.getBool(0);
+			return row.getBoolean(0);
 		}
 	}
 
@@ -90,7 +92,23 @@ abstract class CassandraConverters {
 
 		@Override
 		public Date convert(Row row) {
-			return row.getTimestamp(0);
+			return Date.from(row.getInstant(0));
+		}
+	}
+
+	/**
+	 * Simple singleton to convert {@link Row}s to their {@link Instant} representation.
+	 *
+	 * @author Mark Paluch
+	 */
+	@ReadingConverter
+	public enum RowToInstantConverter implements Converter<Row, Instant> {
+
+		INSTANCE;
+
+		@Override
+		public Instant convert(Row row) {
+			return row.getInstant(0);
 		}
 	}
 
@@ -106,7 +124,7 @@ abstract class CassandraConverters {
 
 		@Override
 		public InetAddress convert(Row row) {
-			return row.getInet(0);
+			return row.getInetAddress(0);
 		}
 	}
 
@@ -182,7 +200,7 @@ abstract class CassandraConverters {
 
 		@Override
 		public UUID convert(Row row) {
-			return row.getUUID(0);
+			return row.getUuid(0);
 		}
 	}
 
@@ -198,7 +216,7 @@ abstract class CassandraConverters {
 
 		@Override
 		public LocalDate convert(Row row) {
-			return row.getDate(0);
+			return row.getLocalDate(0);
 		}
 	}
 }

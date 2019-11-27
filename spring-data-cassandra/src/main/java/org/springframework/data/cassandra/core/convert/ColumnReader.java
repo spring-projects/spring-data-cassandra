@@ -170,4 +170,8 @@ public class ColumnReader {
 	public Row getRow() {
 		return row;
 	}
+
+	public boolean contains(CqlIdentifier columnName) {
+		return row.getColumnDefinitions().contains(columnName.toCql());
+	}
 }

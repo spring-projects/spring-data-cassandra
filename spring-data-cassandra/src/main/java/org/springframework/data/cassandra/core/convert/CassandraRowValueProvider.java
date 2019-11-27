@@ -25,8 +25,4 @@ import com.datastax.driver.core.Row;
  */
 public interface CassandraRowValueProvider extends CassandraValueProvider {
 
-	/**
-	 * @return the underlying {@link Row}.
-	 */
-	Row getRow();
 }

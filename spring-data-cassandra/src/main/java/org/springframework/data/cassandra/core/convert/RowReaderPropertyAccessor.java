@@ -20,7 +20,7 @@ import org.springframework.expression.PropertyAccessor;
 import org.springframework.expression.TypedValue;
 import org.springframework.lang.Nullable;
 
-import com.datastax.driver.core.Row;
+import com.datastax.oss.driver.api.core.cql.Row;
 
 /**
  * {@link PropertyAccessor} to read values from a {@link Row}.
