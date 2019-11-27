@@ -16,7 +16,9 @@
 
 	<name>Spring Data for Apache Cassandra Core</name>
 	<description>Cassandra support for Spring Data</description>
-	<url>https://github.com/spring-projects/spring-data-cassandra/tree/master/spring-data-cassandra</url>
+	<url>
+		https://github.com/spring-projects/spring-data-cassandra/tree/master/spring-data-cassandra
+	</url>
 
 	<properties>
 		<validation>1.1.0.Final</validation>
@@ -75,6 +77,11 @@
 		<dependency>
 			<groupId>com.datastax.cassandra</groupId>
 			<artifactId>cassandra-driver-core</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.datastax.oss</groupId>
+			<artifactId>java-driver-core</artifactId>
 		</dependency>
 
 		<!-- Reactor -->

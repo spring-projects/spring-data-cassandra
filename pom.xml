@@ -122,6 +122,12 @@
 				<version>${cassandra-driver.version}</version>
 			</dependency>
 
+			<dependency>
+				<groupId>com.datastax.oss</groupId>
+				<artifactId>java-driver-core</artifactId>
+				<version>4.2.0</version>
+			</dependency>
+
 			<!-- CDI -->
 			<dependency>
 				<groupId>javax.enterprise</groupId>

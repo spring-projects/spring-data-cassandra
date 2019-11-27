@@ -16,6 +16,7 @@
 
 package org.springframework.data.cassandra.config;
 
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -32,12 +33,9 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.cassandra.core.CassandraAdminOperations;
-import org.springframework.data.cassandra.core.CassandraAdminTemplate;
 import org.springframework.data.cassandra.core.CassandraPersistentEntitySchemaCreator;
 import org.springframework.data.cassandra.core.CassandraPersistentEntitySchemaDropper;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
-import org.springframework.data.cassandra.core.cql.CqlOperations;
-import org.springframework.data.cassandra.core.cql.CqlTemplate;
 import org.springframework.data.cassandra.core.cql.generator.AlterKeyspaceCqlGenerator;
 import org.springframework.data.cassandra.core.cql.generator.CreateKeyspaceCqlGenerator;
 import org.springframework.data.cassandra.core.cql.generator.DropKeyspaceCqlGenerator;
@@ -52,8 +50,8 @@ import org.springframework.util.ClassUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.CqlSessionBuilder;
 
 /**
  * Factory for creating and configuring a Cassandra {@link Session}, which is a thread-safe singleton. As such, it is
@@ -65,7 +63,7 @@ import com.datastax.driver.core.Session;
  * @author Mark Paluch
  * @since 3.0
  */
-public class CqlSessionFactoryBean implements FactoryBean<Session>, InitializingBean, DisposableBean {
+public class CqlSessionFactoryBean implements FactoryBean<CqlSession>, InitializingBean, DisposableBean {
 
 	public static final int DEFAULT_PORT = 9042;
 	public static final String DEFAULT_CONTACT_POINTS = "localhost";
@@ -76,8 +74,8 @@ public class CqlSessionFactoryBean implements FactoryBean<Session>, Initializing
 	private static final boolean DEFAULT_DROP_TABLES = false;
 	private static final boolean DEFAULT_DROP_UNUSED_TABLES = false;
 
-	private @Nullable Cluster cluster;
-	private @Nullable Session session;
+	private @Nullable CqlSession systemSession;
+	private @Nullable CqlSession session;
 
 	private String contactPoints = DEFAULT_CONTACT_POINTS;
 	private int port = DEFAULT_PORT;
@@ -171,7 +169,7 @@ public class CqlSessionFactoryBean implements FactoryBean<Session>, Initializing
 	 */
 	public boolean isConnected() {
 
-		Session session = getObject();
+		CqlSession session = getObject();
 
 		return !(session == null || session.isClosed());
 	}
@@ -183,9 +181,9 @@ public class CqlSessionFactoryBean implements FactoryBean<Session>, Initializing
 	 * @throws IllegalStateException if the Cassandra {@link Session} was not properly initialized.
 	 * @see Session
 	 */
-	protected Session getSession() {
+	protected CqlSession getSession() {
 
-		Session session = getObject();
+		CqlSession session = getObject();
 
 		Assert.state(session != null, "Session was not properly initialized");
 
@@ -392,12 +390,16 @@ public class CqlSessionFactoryBean implements FactoryBean<Session>, Initializing
 	@Override
 	public void afterPropertiesSet() {
 
-		Cluster cluster = buildCluster();
-		this.cluster = cluster;
-		initializeCluster(cluster);
+		CqlSessionBuilder sessionBuilder = buildBuilder();
+		this.systemSession = sessionBuilder.build();
 
-		this.session = StringUtils.hasText(getKeyspaceName()) ? this.cluster.connect(getKeyspaceName())
-				: this.cluster.connect();
+		initializeCluster(this.systemSession);
+
+		if (StringUtils.hasText(getKeyspaceName())) {
+			sessionBuilder.withKeyspace(getKeyspaceName());
+		}
+
+		this.session = sessionBuilder.build();
 
 		executeScripts(getStartupScripts().stream(), this.session);
 		performSchemaAction();
@@ -412,31 +414,30 @@ public class CqlSessionFactoryBean implements FactoryBean<Session>, Initializing
 		if (session != null) {
 
 			executeScripts(getShutdownScripts().stream(), this.session);
-			getSession().close();
-		}
 
-		if (cluster != null) {
-
-			executeSpecsAndScripts(keyspaceDrops, keyspaceShutdownScripts, this.cluster);
-			cluster.close();
-			cluster = null;
+			executeSpecsAndScripts(keyspaceDrops, keyspaceShutdownScripts, this.systemSession);
+			systemSession.close();
+			session.close();
 		}
 	}
 
-	private Cluster buildCluster() {
+	private CqlSessionBuilder buildBuilder() {
+
 		Assert.hasText(this.contactPoints, "At least one server is required");
 
-		Cluster.Builder clusterBuilder = Cluster.builder()
-				.addContactPoints(StringUtils.commaDelimitedListToStringArray(this.contactPoints)).withPort(this.port);
+		CqlSessionBuilder builder = CqlSession.builder();
+		StringUtils.commaDelimitedListToSet(this.contactPoints).stream().forEach(host -> {
+			builder.addContactPoint(InetSocketAddress.createUnresolved(host, this.port));
+		});
 
 		if (StringUtils.hasText(this.username)) {
-			clusterBuilder = clusterBuilder.withCredentials(this.username, this.password);
+			builder.withAuthCredentials(this.username, this.password);
 		}
 
-		return clusterBuilder.build();
+		return builder;
 	}
 
-	private void initializeCluster(Cluster cluster) {
+	private void initializeCluster(CqlSession session) {
 
 		generateSpecificationsFromFactoryDeclarations();
 
@@ -446,20 +447,17 @@ public class CqlSessionFactoryBean implements FactoryBean<Session>, Initializing
 		startupSpecifications.addAll(this.keyspaceCreations);
 		startupSpecifications.addAll(this.keyspaceAlterations);
 
-		executeSpecsAndScripts(startupSpecifications, this.keyspaceStartupScripts, cluster);
+		executeSpecsAndScripts(startupSpecifications, this.keyspaceStartupScripts, session);
 	}
 
 	private void executeSpecsAndScripts(List<? extends KeyspaceActionSpecification> keyspaceActionSpecifications,
-			List<String> scripts, Cluster cluster) {
+			List<String> scripts, CqlSession session) {
 
 		if (!CollectionUtils.isEmpty(keyspaceActionSpecifications) || !CollectionUtils.isEmpty(scripts)) {
 
-			try (Session session = cluster.connect()) {
+			Stream<String> keyspaceActions = keyspaceActionSpecifications.stream().map(this::toCql);
 
-				Stream<String> keyspaceActions = keyspaceActionSpecifications.stream().map(this::toCql);
-
-				executeScripts(Stream.concat(keyspaceActions, scripts.stream()), session);
-			}
+			executeScripts(Stream.concat(keyspaceActions, scripts.stream()), session);
 		}
 	}
 
@@ -502,8 +500,9 @@ public class CqlSessionFactoryBean implements FactoryBean<Session>, Initializing
 	 *          statement.
 	 */
 	protected void createTables(boolean drop, boolean dropUnused, boolean ifNotExists) {
-		CassandraAdminTemplate adminTemplate = new CassandraAdminTemplate(this.session, converter);
-		performSchemaActions(drop, dropUnused, ifNotExists, adminTemplate);
+		// TODO
+		/*CassandraAdminTemplate adminTemplate = new CassandraAdminTemplate(this.session, converter);
+		performSchemaActions(drop, dropUnused, ifNotExists, adminTemplate);*/
 	}
 
 	private void performSchemaActions(boolean drop, boolean dropUnused, boolean ifNotExists,
@@ -531,7 +530,7 @@ public class CqlSessionFactoryBean implements FactoryBean<Session>, Initializing
 	 * @see org.springframework.beans.factory.FactoryBean#getObject()
 	 */
 	@Override
-	public Session getObject() {
+	public CqlSession getObject() {
 		return this.session;
 	}
 
@@ -540,8 +539,8 @@ public class CqlSessionFactoryBean implements FactoryBean<Session>, Initializing
 	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
 	 */
 	@Override
-	public Class<? extends Session> getObjectType() {
-		return this.session != null ? this.session.getClass() : Session.class;
+	public Class<? extends CqlSession> getObjectType() {
+		return CqlSession.class;
 	}
 
 	/*
@@ -556,13 +555,11 @@ public class CqlSessionFactoryBean implements FactoryBean<Session>, Initializing
 	/**
 	 * Executes the given Cassandra CQL scripts. The {@link Session} must be connected when this method is called.
 	 */
-	private void executeScripts(Stream<String> scripts, Session session) {
-
-		CqlOperations template = new CqlTemplate(session);
+	private void executeScripts(Stream<String> scripts, CqlSession session) {
 
 		scripts.forEach(script -> {
 			logger.info("executing raw CQL [{}]", script);
-			template.execute(script);
+			session.execute(script);
 		});
 	}
 

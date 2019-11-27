@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra;
 
 import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlSession;
 
 /**
  * A factory for Apache Cassandra sessions.
@@ -42,5 +43,17 @@ public interface SessionFactory {
 	 * @return a {@link Session} to Apache Cassandra.
 	 */
 	Session getSession();
+
+	/**
+	 * Attempts to establish a {@link Session} with the connection infrastructure that this {@link SessionFactory} object
+	 * represents.
+	 *
+	 * @return a {@link Session} to Apache Cassandra.
+	 */
+	default CqlSession getCqlSession() {
+
+		// TODO
+		return null;
+	}
 
 }
