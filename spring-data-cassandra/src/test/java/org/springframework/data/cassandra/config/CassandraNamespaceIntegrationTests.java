@@ -15,7 +15,10 @@
  */
 package org.springframework.data.cassandra.config;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
+
+import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,13 +34,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.Configuration;
-import com.datastax.driver.core.HostDistance;
-import com.datastax.driver.core.PoolingOptions;
-import com.datastax.driver.core.ProtocolOptions.Compression;
-import com.datastax.driver.core.SocketOptions;
-
 /**
  * Integration tests for XML-based Cassandra configuration using the Cassandra namespace parsed with
  * {@link CqlNamespaceHandler}.
@@ -49,16 +45,25 @@ import com.datastax.driver.core.SocketOptions;
 @SuppressWarnings("unused")
 public class CassandraNamespaceIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
 
-	@Autowired
-	private ApplicationContext applicationContext;
+	@Autowired private ApplicationContext applicationContext;
+
+	@Test // DATACASS-705
+	public void keyspaceShouldBeInitialized() {
+
+		CqlTemplate cqlTemplate = this.applicationContext.getBean(CqlTemplate.class);
+
+		List<Map<String, Object>> result = cqlTemplate.queryForList("SELECT * FROM mytable1");
+
+		assertThat(result).isEmpty();
+	}
 
 	@Test // DATACASS-172
 	public void mappingContextShouldHaveUserTypeResolverConfigured() {
 
 		CassandraMappingContext mappingContext = this.applicationContext.getBean(CassandraMappingContext.class);
 
-		SimpleUserTypeResolver userTypeResolver =
-				(SimpleUserTypeResolver) ReflectionTestUtils.getField(mappingContext, "userTypeResolver");
+		SimpleUserTypeResolver userTypeResolver = (SimpleUserTypeResolver) ReflectionTestUtils.getField(mappingContext,
+				"userTypeResolver");
 
 		assertThat(userTypeResolver).isNotNull();
 	}

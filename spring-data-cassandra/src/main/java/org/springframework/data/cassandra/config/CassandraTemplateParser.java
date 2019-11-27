@@ -63,8 +63,10 @@ class CassandraTemplateParser extends AbstractSingleBeanDefinitionParser {
 
 		super.doParse(element, parserContext, builder);
 
-		if (StringUtils.hasText(element.getAttribute("cql-template-ref"))) {
+		if (element.hasAttribute("cql-template-ref")) {
 			addRequiredPropertyReference(builder, "cqlOperations", element, "cql-template-ref");
+		} else if (element.hasAttribute("session-factory-ref")) {
+			addRequiredPropertyReference(builder, "sessionFactory", element, "session-factory-ref");
 		} else {
 			addOptionalPropertyReference(builder, "session", element, "session-ref", DefaultBeanNames.SESSION);
 		}

@@ -330,7 +330,9 @@ public abstract class AbstractClusterConfiguration {
 	 * {@link com.datastax.driver.core.Cluster} initialization.
 	 *
 	 * @return the list of startup scripts, may be empty but never {@link null}
+	 * @deprecated Use {@link org.springframework.data.cassandra.core.cql.session.init.SessionFactoryInitializer}.
 	 */
+	@Deprecated
 	protected List<String> getStartupScripts() {
 		return Collections.emptyList();
 	}
@@ -340,7 +342,9 @@ public abstract class AbstractClusterConfiguration {
 	 * {@link com.datastax.driver.core.Cluster} shutdown.
 	 *
 	 * @return the list of shutdown scripts, may be empty but never {@link null}
+	 * @deprecated Use {@link org.springframework.data.cassandra.core.cql.session.init.SessionFactoryInitializer}.
 	 */
+	@Deprecated
 	protected List<String> getShutdownScripts() {
 		return Collections.emptyList();
 	}

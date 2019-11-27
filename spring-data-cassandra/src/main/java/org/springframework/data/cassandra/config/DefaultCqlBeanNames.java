@@ -19,10 +19,12 @@ package org.springframework.data.cassandra.config;
  * @author Alex Shvid
  * @author David Webb
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 public interface DefaultCqlBeanNames {
 
 	String CLUSTER = "cassandraCluster";
 	String SESSION = "cassandraSession";
+	String SESSION_FACTORY = "cassandraSessionFactory";
 	String TEMPLATE = "cqlTemplate";
 }
