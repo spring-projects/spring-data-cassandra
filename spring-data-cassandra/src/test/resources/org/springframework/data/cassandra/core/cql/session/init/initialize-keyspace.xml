@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:cassandra="http://www.springframework.org/schema/data/cassandra"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/data/cassandra https://www.springframework.org/schema/data/cassandra/spring-cassandra.xsd">
+
+	<bean id="sessionFactory"
+		  class="org.springframework.data.cassandra.core.cql.session.init.SessionFactoryInitializerTests.MockSessionFactoryFactoryBean"/>
+
+	<cassandra:initialize-keyspace>
+		<cassandra:script location="org/springframework/data/cassandra/core/cql/session/init/schema.cql"/>
+	</cassandra:initialize-keyspace>
+
+</beans>

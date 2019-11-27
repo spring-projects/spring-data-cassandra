@@ -1,0 +1,19 @@
+
+-- The next comment line has no text after the '--' prefix.
+--
+-- The next comment line starts with a space.
+ -- x, y, z...
+
+insert into customer (id, name)
+values	(1, 'Walter; White'), (2, 'Hank Schrader');
+-- This is also a comment.
+insert into orders(id, order_date, customer_id)
+values (1, '2008-01-02', 2);
+# A comment with a different prefix
+insert into orders(id, order_date, customer_id) values (1, '2008-01-02', 2);
+INSERT INTO persons( person_id--
+                   , name)
+^ A comment with yet another different prefix
+VALUES( 1      -- person_id
+      , 'Name' --name
+);--
