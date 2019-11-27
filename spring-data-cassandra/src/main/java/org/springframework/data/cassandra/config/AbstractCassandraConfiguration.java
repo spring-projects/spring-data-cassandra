@@ -102,6 +102,31 @@ public abstract class AbstractCassandraConfiguration extends AbstractClusterConf
 	}
 
 	/**
+	 * Creates a {@link CassandraCqlSessionFactoryBean} that provides a Cassandra
+	 * {@link com.datastax.oss.driver.api.core.CqlSession}. The lifecycle of {@link CassandraSessionFactoryBean}
+	 * initializes the {@link #getSchemaAction() schema} in the {@link #getKeyspaceName() configured keyspace}.
+	 *
+	 * @return the {@link CassandraSessionFactoryBean}.
+	 * @see #cluster()
+	 * @see #cassandraConverter()
+	 * @see #getKeyspaceName()
+	 * @see #getSchemaAction()
+	 * @see #getStartupScripts()
+	 * @see #getShutdownScripts()
+	 */
+	@Bean
+	public CqlSessionFactoryBean cassandraSession() {
+
+		CqlSessionFactoryBean session = new CqlSessionFactoryBean();
+
+		session.setContactPoints(getContactPoints());
+		session.setPort(getPort());
+		session.setKeyspaceName(getKeyspaceName());
+
+		return session;
+	}
+
+	/**
 	 * Creates a {@link DefaultSessionFactory} using the configured {@link #session()} to be used with
 	 * {@link org.springframework.data.cassandra.core.CassandraTemplate}.
 	 *
