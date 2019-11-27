@@ -84,10 +84,6 @@ public class BasicCassandraRowValueProvider implements CassandraRowValueProvider
 				: (T) this.reader.get(property.getRequiredColumnName());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.convert.CassandraRowValueProvider#getRow()
-	 */
-	@Override
 	public Row getRow() {
 		return this.reader.getRow();
 	}
@@ -100,6 +96,6 @@ public class BasicCassandraRowValueProvider implements CassandraRowValueProvider
 
 		Assert.notNull(property, "CassandraPersistentProperty must not be null");
 
-		return getRow().getColumnDefinitions().contains(property.getRequiredColumnName().toCql());
+		return this.reader.contains(property.getRequiredColumnName());
 	}
 }

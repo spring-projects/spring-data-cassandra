@@ -19,6 +19,7 @@ import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.lang.Nullable;
 
 import com.datastax.driver.core.UserType;
+import com.datastax.oss.driver.api.core.type.UserDefinedType;
 
 /**
  * Strategy interface to resolve {@link UserType} by {@link String name}.
@@ -41,5 +42,18 @@ public interface UserTypeResolver {
 	 */
 	@Nullable
 	UserType resolveType(CqlIdentifier typeName);
+
+	/**
+	 * Resolve a {@link UserType} by {@link String name}.
+	 *
+	 * @param typeName {@link String name} of the {@link UserType} to resolve; must not be {@literal null}.
+	 * @return the resolved {@link UserType} or {@literal null} if not found.
+	 * @see UserDefinedType
+	 */
+	@Nullable
+	default UserDefinedType resolveType(com.datastax.oss.driver.api.core.CqlIdentifier typeName) {
+		// TODO
+		return null;
+	}
 
 }

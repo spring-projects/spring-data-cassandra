@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.core.cql.converter;
 
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
+import org.springframework.core.convert.support.GenericConversionService;
 
 /**
  * Thin wrapper that allows subclasses to delegate conversion of the given value to a {@link DefaultConversionService}.
@@ -26,5 +27,5 @@ import org.springframework.core.convert.support.DefaultConversionService;
  */
 public abstract class AbstractResultSetToBasicFixedTypeConverter<T> extends AbstractResultSetConverter<T> {
 
-	protected static final ConversionService CONVERTER = new DefaultConversionService();
+	protected static final ConversionService CONVERTER = DefaultConversionService.getSharedInstance();
 }

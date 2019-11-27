@@ -36,7 +36,9 @@ import com.datastax.driver.core.TableMetadata;
  * @author John Blum
  * @see #toCql()
  * @see #toString()
+ * @deprecated since 3.0, use {@link com.datastax.oss.driver.api.core.CqlIdentifier} instead.
  */
+@Deprecated
 public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializable {
 
 	private static final long serialVersionUID = -974441606330912437L;
