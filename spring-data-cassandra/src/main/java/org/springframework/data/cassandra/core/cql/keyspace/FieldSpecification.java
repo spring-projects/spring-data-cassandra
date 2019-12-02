@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.DataType;
@@ -50,7 +50,7 @@ public class FieldSpecification {
 	 * @param type must not be {@literal null}.
 	 */
 	public static FieldSpecification of(String name, DataType type) {
-		return new FieldSpecification(CqlIdentifier.of(name), type);
+		return new FieldSpecification(CqlIdentifier.fromCql(name), type);
 	}
 
 	/**

@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * Value object representing a specification to drop a column.
@@ -35,7 +35,7 @@ public class DropColumnSpecification extends ColumnChangeSpecification {
 	 * @param name must not be {@literal null} or empty.
 	 */
 	public static DropColumnSpecification dropColumn(String name) {
-		return dropColumn(CqlIdentifier.of(name));
+		return dropColumn(CqlIdentifier.fromCql(name));
 	}
 
 	/**

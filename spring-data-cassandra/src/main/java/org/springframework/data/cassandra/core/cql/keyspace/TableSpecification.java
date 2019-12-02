@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
-import static org.springframework.data.cassandra.core.cql.CqlIdentifier.*;
+import static com.datastax.oss.driver.api.core.CqlIdentifier.*;
 import static org.springframework.data.cassandra.core.cql.PrimaryKeyType.*;
 
 import java.util.ArrayList;
@@ -23,7 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 import org.springframework.data.cassandra.core.cql.Ordering;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.util.Assert;
@@ -138,7 +138,7 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 
 		Assert.notNull(ordering, "Ordering must not be null");
 
-		return column(CqlIdentifier.of(name), type, Optional.of(CLUSTERED), Optional.of(ordering));
+		return column(CqlIdentifier.fromCql(name), type, Optional.of(CLUSTERED), Optional.of(ordering));
 	}
 
 	/**

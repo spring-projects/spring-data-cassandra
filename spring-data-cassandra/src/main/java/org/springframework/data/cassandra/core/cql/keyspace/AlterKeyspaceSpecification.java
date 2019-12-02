@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 import lombok.EqualsAndHashCode;
 
 import org.springframework.data.cassandra.core.cql.KeyspaceIdentifier;
@@ -27,7 +28,7 @@ import org.springframework.data.cassandra.core.cql.KeyspaceIdentifier;
 @EqualsAndHashCode(callSuper = true)
 public class AlterKeyspaceSpecification extends KeyspaceOptionsSpecification<AlterKeyspaceSpecification> {
 
-	private AlterKeyspaceSpecification(KeyspaceIdentifier name) {
+	private AlterKeyspaceSpecification(CqlIdentifier name) {
 		super(name);
 	}
 
@@ -39,7 +40,7 @@ public class AlterKeyspaceSpecification extends KeyspaceOptionsSpecification<Alt
 	 * @return a new {@link AlterKeyspaceSpecification}.
 	 */
 	public static AlterKeyspaceSpecification alterKeyspace(String name) {
-		return alterKeyspace(KeyspaceIdentifier.of(name));
+		return alterKeyspace(CqlIdentifier.fromCql(name));
 	}
 
 	/**
@@ -49,7 +50,7 @@ public class AlterKeyspaceSpecification extends KeyspaceOptionsSpecification<Alt
 	 * @param name must not be {@literal null} or empty.
 	 * @return a new {@link AlterKeyspaceSpecification}.
 	 */
-	public static AlterKeyspaceSpecification alterKeyspace(KeyspaceIdentifier name) {
+	public static AlterKeyspaceSpecification alterKeyspace(CqlIdentifier name) {
 		return new AlterKeyspaceSpecification(name);
 	}
 }

@@ -16,14 +16,13 @@
 package org.springframework.data.cassandra.core.cql.generator;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.springframework.data.cassandra.core.cql.CqlIdentifier.*;
 import static org.springframework.data.cassandra.core.cql.generator.CreateTableCqlGenerator.*;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.junit.Test;
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+
 import org.springframework.data.cassandra.core.cql.Ordering;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.Option;
@@ -34,6 +33,7 @@ import org.springframework.data.cassandra.core.cql.keyspace.TableOption.Compress
 import org.springframework.data.cassandra.core.cql.keyspace.TableOption.KeyCachingOption;
 
 import com.datastax.driver.core.DataType;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * Unit tests for {@link CreateTableCqlGenerator}.
@@ -47,9 +47,9 @@ public class CreateTableCqlGeneratorUnitTests {
 	@Test
 	public void shouldGenerateCorrectCQL() {
 
-		CqlIdentifier name = of("mytable");
+		CqlIdentifier name = CqlIdentifier.fromCql("mytable");
 		DataType partitionKeyType0 = DataType.text();
-		CqlIdentifier partitionKey0 = of("partitionKey0");
+		CqlIdentifier partitionKey0 = CqlIdentifier.fromCql("partitionKey0");
 		DataType columnType1 = DataType.text();
 		String column1 = "column1";
 
@@ -59,18 +59,18 @@ public class CreateTableCqlGeneratorUnitTests {
 		String cql = toCql(table);
 		assertPreamble(name, cql);
 		assertColumns(String.format("%s %s, %s %s", partitionKey0, partitionKeyType0, column1, columnType1), cql);
-		assertPrimaryKey(partitionKey0.toCql(), cql);
+		assertPrimaryKey(partitionKey0.toString(), cql);
 	}
 
 	@Test
 	public void shouldGenerateCompositePrimaryKey() {
 
-		CqlIdentifier name = of("composite_partition_key_table");
+		CqlIdentifier name = CqlIdentifier.fromCql("composite_partition_key_table");
 		DataType partKeyType0 = DataType.text();
-		CqlIdentifier partKey0 = of("partKey0");
+		CqlIdentifier partKey0 = CqlIdentifier.fromCql("partKey0");
 		DataType partKeyType1 = DataType.text();
-		CqlIdentifier partKey1 = of("partKey1");
-		CqlIdentifier column0 = of("column0");
+		CqlIdentifier partKey1 = CqlIdentifier.fromCql("partKey1");
+		CqlIdentifier column0 = CqlIdentifier.fromCql("column0");
 		DataType columnType0 = DataType.text();
 
 		CreateTableSpecification table = CreateTableSpecification.createTable(name)
@@ -89,13 +89,13 @@ public class CreateTableCqlGeneratorUnitTests {
 	@Test
 	public void shouldGenerateTableOptions() {
 
-		CqlIdentifier name = of("mytable");
+		CqlIdentifier name = CqlIdentifier.fromCql("mytable");
 		DataType partitionKeyType0 = DataType.text();
-		CqlIdentifier partitionKey0 = of("partitionKey0");
+		CqlIdentifier partitionKey0 = CqlIdentifier.fromCql("partitionKey0");
 		DataType partitionKeyType1 = DataType.timestamp();
-		CqlIdentifier partitionKey1 = of("create_timestamp");
+		CqlIdentifier partitionKey1 = CqlIdentifier.fromCql("create_timestamp");
 		DataType columnType1 = DataType.text();
-		CqlIdentifier column1 = of("column1");
+		CqlIdentifier column1 = CqlIdentifier.fromCql("column1");
 		Double readRepairChance = 0.5;
 
 		CreateTableSpecification table = CreateTableSpecification.createTable(name)
@@ -114,13 +114,13 @@ public class CreateTableCqlGeneratorUnitTests {
 	@Test
 	public void shouldGenerateMultipleOptions() {
 
-		CqlIdentifier name = of("timeseries_table");
+		CqlIdentifier name = CqlIdentifier.fromCql("timeseries_table");
 		DataType partitionKeyType0 = DataType.timeuuid();
-		CqlIdentifier partitionKey0 = of("tid");
+		CqlIdentifier partitionKey0 = CqlIdentifier.fromCql("tid");
 		DataType partitionKeyType1 = DataType.timestamp();
-		CqlIdentifier partitionKey1 = of("create_timestamp");
+		CqlIdentifier partitionKey1 = CqlIdentifier.fromCql("create_timestamp");
 		DataType columnType1 = DataType.text();
-		CqlIdentifier column1 = of("data_point");
+		CqlIdentifier column1 = CqlIdentifier.fromCql("data_point");
 		Double readRepairChance = 0.5;
 		Double dcLocalReadRepairChance = 0.7;
 		Double bloomFilterFpChance = 0.001;

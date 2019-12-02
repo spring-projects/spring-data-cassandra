@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * Value object representing a {@code DROP INDEX} specification.
@@ -37,7 +37,7 @@ public class DropIndexSpecification extends IndexNameSpecification<DropIndexSpec
 	 * @return a new {@link DropIndexSpecification}.
 	 */
 	public static DropIndexSpecification dropIndex(String indexName) {
-		return dropIndex(CqlIdentifier.of(indexName));
+		return dropIndex(CqlIdentifier.fromCql(indexName));
 	}
 
 	/**

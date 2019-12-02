@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.core.cql.keyspace;
 
 import static org.springframework.data.cassandra.core.cql.keyspace.CqlStringUtils.*;
 
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 import lombok.EqualsAndHashCode;
 
 import java.util.Collections;
@@ -45,7 +46,7 @@ public abstract class KeyspaceOptionsSpecification<T extends KeyspaceOptionsSpec
 
 	protected Map<String, Object> options = new LinkedHashMap<>();
 
-	protected KeyspaceOptionsSpecification(KeyspaceIdentifier name) {
+	protected KeyspaceOptionsSpecification(CqlIdentifier name) {
 		super(name);
 	}
 

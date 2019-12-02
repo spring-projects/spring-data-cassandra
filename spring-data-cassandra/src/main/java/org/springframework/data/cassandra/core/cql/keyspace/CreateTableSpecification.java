@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 import org.springframework.lang.Nullable;
 
 /**
@@ -40,7 +40,7 @@ public class CreateTableSpecification extends TableSpecification<CreateTableSpec
 	 * @return a new {@link CreateTableSpecification}.
 	 */
 	public static CreateTableSpecification createTable(String tableName) {
-		return new CreateTableSpecification(CqlIdentifier.of(tableName));
+		return new CreateTableSpecification(CqlIdentifier.fromCql(tableName));
 	}
 
 	/**
