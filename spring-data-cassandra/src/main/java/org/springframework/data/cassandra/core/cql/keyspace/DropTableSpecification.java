@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * Object to configure a {@code DROP TABLE} specification.
@@ -39,7 +39,7 @@ public class DropTableSpecification extends TableNameSpecification {
 	 * @return a new {@link DropTableSpecification}.
 	 */
 	public static DropTableSpecification dropTable(String tableName) {
-		return dropTable(CqlIdentifier.of(tableName));
+		return dropTable(CqlIdentifier.fromCql(tableName));
 	}
 
 	/**

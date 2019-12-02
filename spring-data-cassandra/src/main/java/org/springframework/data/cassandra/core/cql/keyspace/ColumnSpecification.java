@@ -15,17 +15,16 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
-import static org.springframework.data.cassandra.core.cql.CqlIdentifier.*;
 import static org.springframework.data.cassandra.core.cql.Ordering.*;
 import static org.springframework.data.cassandra.core.cql.PrimaryKeyType.*;
 
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.cql.Ordering;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.DataType;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * Object to configure a CQL column specification.
@@ -65,7 +64,7 @@ public class ColumnSpecification {
 	 * @return a new {@link ColumnSpecification} for {@code name}.
 	 */
 	public static ColumnSpecification name(String name) {
-		return name(of(name));
+		return name(CqlIdentifier.fromCql(name));
 	}
 
 	/**

@@ -15,14 +15,14 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
-import static org.springframework.data.cassandra.core.cql.CqlIdentifier.*;
+import static com.datastax.oss.driver.api.core.CqlIdentifier.*;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -73,7 +73,7 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 	 * @return a new {@link CreateIndexSpecification}.
 	 */
 	public static CreateIndexSpecification createIndex(String indexName) {
-		return createIndex(CqlIdentifier.of(indexName));
+		return createIndex(CqlIdentifier.fromCql(indexName));
 	}
 
 	/**

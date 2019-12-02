@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 import com.datastax.driver.core.DataType;
 
@@ -47,7 +47,7 @@ public class AlterUserTypeSpecification extends UserTypeNameSpecification {
 	 * @return a new {@link AlterUserTypeSpecification}.
 	 */
 	public static AlterUserTypeSpecification alterType(String typeName) {
-		return alterType(CqlIdentifier.of(typeName));
+		return alterType(CqlIdentifier.fromCql(typeName));
 	}
 
 	/**
@@ -69,7 +69,7 @@ public class AlterUserTypeSpecification extends UserTypeNameSpecification {
 	 * @return {@code this} {@link AlterUserTypeSpecification}.
 	 */
 	public AlterUserTypeSpecification add(String field, DataType type) {
-		return add(CqlIdentifier.of(field), type);
+		return add(CqlIdentifier.fromCql(field), type);
 	}
 
 	/**
@@ -91,7 +91,7 @@ public class AlterUserTypeSpecification extends UserTypeNameSpecification {
 	 * @return {@code this} {@link AlterUserTypeSpecification}.
 	 */
 	public AlterUserTypeSpecification alter(String field, DataType type) {
-		return alter(CqlIdentifier.of(field), type);
+		return alter(CqlIdentifier.fromCql(field), type);
 	}
 
 	/**
@@ -113,7 +113,7 @@ public class AlterUserTypeSpecification extends UserTypeNameSpecification {
 	 * @return {@code this} {@link AlterUserTypeSpecification}.
 	 */
 	public AlterUserTypeSpecification rename(String from, String to) {
-		return rename(CqlIdentifier.of(from), CqlIdentifier.of(to));
+		return rename(CqlIdentifier.fromCql(from), CqlIdentifier.fromCql(to));
 	}
 
 	/**

@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * Object to configure a {@code CREATE TYPE} specification.
@@ -41,7 +41,7 @@ public class CreateUserTypeSpecification extends UserTypeSpecification<CreateUse
 	 * @return a new {@link CreateUserTypeSpecification}.
 	 */
 	public static CreateUserTypeSpecification createType(String name) {
-		return new CreateUserTypeSpecification(CqlIdentifier.of(name));
+		return new CreateUserTypeSpecification(CqlIdentifier.fromCql(name));
 	}
 
 	/**

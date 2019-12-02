@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 import com.datastax.driver.core.DataType;
 
@@ -56,7 +56,7 @@ public class AlterTableSpecification extends TableOptionsSpecification<AlterTabl
 	 * @return a new {@link AlterTableSpecification}.
 	 */
 	public static AlterTableSpecification alterTable(String tableName) {
-		return alterTable(CqlIdentifier.of(tableName));
+		return alterTable(CqlIdentifier.fromCql(tableName));
 	}
 
 	/**
@@ -78,7 +78,7 @@ public class AlterTableSpecification extends TableOptionsSpecification<AlterTabl
 	 * @return {@literal this} {@link AlterTableSpecification}.
 	 */
 	public AlterTableSpecification add(String column, DataType type) {
-		return add(CqlIdentifier.of(column), type);
+		return add(CqlIdentifier.fromCql(column), type);
 	}
 
 	/**
@@ -100,7 +100,7 @@ public class AlterTableSpecification extends TableOptionsSpecification<AlterTabl
 	 * @return {@literal this} {@link AlterTableSpecification}.
 	 */
 	public AlterTableSpecification drop(String column) {
-		return drop(CqlIdentifier.of(column));
+		return drop(CqlIdentifier.fromCql(column));
 	}
 
 	/*
@@ -122,7 +122,7 @@ public class AlterTableSpecification extends TableOptionsSpecification<AlterTabl
 	 * @return {@literal this} {@link AlterTableSpecification}.
 	 */
 	public AlterTableSpecification rename(String from, String to) {
-		return rename(CqlIdentifier.of(from), CqlIdentifier.of(to));
+		return rename(CqlIdentifier.fromCql(from), CqlIdentifier.fromCql(to));
 	}
 
 	/**
@@ -145,7 +145,7 @@ public class AlterTableSpecification extends TableOptionsSpecification<AlterTabl
 	 * @return {@literal this} {@link AlterTableSpecification}.
 	 */
 	public AlterTableSpecification alter(String column, DataType type) {
-		return alter(CqlIdentifier.of(column), type);
+		return alter(CqlIdentifier.fromCql(column), type);
 	}
 
 	/**

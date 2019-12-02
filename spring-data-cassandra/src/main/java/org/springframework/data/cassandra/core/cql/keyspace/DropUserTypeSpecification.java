@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * Object to configure a {@code DROP TYPE} specification.
@@ -41,7 +41,7 @@ public class DropUserTypeSpecification extends UserTypeNameSpecification {
 	 * @return a new {@link DropUserTypeSpecification}.
 	 */
 	public static DropUserTypeSpecification dropType(String name) {
-		return new DropUserTypeSpecification(CqlIdentifier.of(name));
+		return new DropUserTypeSpecification(CqlIdentifier.fromCql(name));
 	}
 
 	/**

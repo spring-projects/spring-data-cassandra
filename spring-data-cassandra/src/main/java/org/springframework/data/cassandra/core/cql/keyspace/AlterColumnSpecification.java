@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 import com.datastax.driver.core.DataType;
 
@@ -41,7 +41,7 @@ public class AlterColumnSpecification extends ColumnTypeChangeSpecification {
 	 * @return a new {@link AlterColumnSpecification}.
 	 */
 	public static AlterColumnSpecification alterColumn(String name, DataType type) {
-		return alterColumn(CqlIdentifier.of(name), type);
+		return alterColumn(CqlIdentifier.fromCql(name), type);
 	}
 
 	/**

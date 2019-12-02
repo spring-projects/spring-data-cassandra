@@ -17,8 +17,9 @@ package org.springframework.data.cassandra.core.cql.keyspace;
 
 import lombok.EqualsAndHashCode;
 
-import org.springframework.data.cassandra.core.cql.KeyspaceIdentifier;
 import org.springframework.util.Assert;
+
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * Base value object to support the construction of keyspace specifications.
@@ -33,16 +34,16 @@ public abstract class KeyspaceActionSpecification {
 	/**
 	 * The name of the keyspace.
 	 */
-	private final KeyspaceIdentifier name;
+	private final CqlIdentifier name;
 
-	protected KeyspaceActionSpecification(KeyspaceIdentifier name) {
+	protected KeyspaceActionSpecification(CqlIdentifier name) {
 
-		Assert.notNull(name, "KeyspaceIdentifier must not be null");
+		Assert.notNull(name, "CqlIdentifier must not be null");
 
 		this.name = name;
 	}
 
-	public KeyspaceIdentifier getName() {
+	public CqlIdentifier getName() {
 		return name;
 	}
 }

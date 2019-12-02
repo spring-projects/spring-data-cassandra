@@ -18,7 +18,7 @@ package org.springframework.data.cassandra.core.cql.keyspace;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * Describes a table.
