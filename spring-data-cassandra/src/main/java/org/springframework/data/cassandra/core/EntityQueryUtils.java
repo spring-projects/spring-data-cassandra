@@ -35,6 +35,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.Statement;
 
 /**
@@ -121,7 +122,7 @@ class EntityQueryUtils {
 	 */
 	static CqlIdentifier getTableName(Statement<?> statement) {
 
-		String cql = statement.toString();
+		String cql = statement instanceof SimpleStatement ? ((SimpleStatement) statement).getQuery() : statement.toString();
 		Matcher matcher = FROM_REGEX.matcher(cql);
 
 		if (matcher.find()) {
@@ -131,10 +132,14 @@ class EntityQueryUtils {
 			int separator = cqlTableName.indexOf('.');
 
 			if (separator != -1) {
+				cqlTableName = cqlTableName.substring(separator + 1);
+			}
+
+			if (cqlTableName.startsWith("\"") || cqlTableName.endsWith("\"")) {
 				return CqlIdentifier.fromCql(cqlTableName.substring(separator + 1));
 			}
 
-			return CqlIdentifier.fromCql(cqlTableName);
+			return CqlIdentifier.fromInternal(cqlTableName);
 		}
 
 		return CqlIdentifier.fromCql("unknown");

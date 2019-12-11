@@ -56,7 +56,6 @@ public class CassandraPersistentEntityOrderPropertiesUnitTests {
 		entity.doWithProperties((PropertyHandler<CassandraPersistentProperty>) actual::add);
 
 		assertThat(actual).isEqualTo(expected);
-
 	}
 
 	@Test

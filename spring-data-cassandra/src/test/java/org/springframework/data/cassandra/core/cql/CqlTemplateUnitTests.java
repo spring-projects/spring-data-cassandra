@@ -513,7 +513,7 @@ public class CqlTemplateUnitTests {
 
 		when(session.execute(boundStatement)).thenReturn(resultSet);
 		when(resultSet.iterator()).thenAnswer(it -> Collections.singleton(row).iterator());
-		when(resultSet.spliterator()).thenCallRealMethod();
+		when(resultSet.spliterator()).thenAnswer(it -> Collections.singleton(row).spliterator());
 
 		ResultSet resultSet = template.query(session -> preparedStatement, ps -> {
 			ps.bind("a", "b");

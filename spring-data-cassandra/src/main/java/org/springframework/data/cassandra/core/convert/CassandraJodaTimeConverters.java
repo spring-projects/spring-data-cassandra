@@ -19,7 +19,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
 
 import org.springframework.core.convert.converter.Converter;
@@ -60,7 +62,12 @@ public abstract class CassandraJodaTimeConverters {
 		List<Converter<?, ?>> converters = new ArrayList<>();
 
 		converters.add(MillisOfDayToLocalTimeConverter.INSTANCE);
-		converters.add(LocalTimeToMillisOfDayConverter.INSTANCE);
+
+		converters.add(FromJodaLocalTimeConverter.INSTANCE);
+		converters.add(ToJodaLocalTimeConverter.INSTANCE);
+
+		converters.add(FromJodaLocalDateConverter.INSTANCE);
+		converters.add(ToJodaLocalDateConverter.INSTANCE);
 
 		return converters;
 	}
@@ -86,8 +93,6 @@ public abstract class CassandraJodaTimeConverters {
 	 *
 	 * @author Mark Paluch
 	 */
-	@WritingConverter
-	@CassandraType(type = CassandraSimpleTypeHolder.Name.TIME)
 	public enum LocalTimeToMillisOfDayConverter implements Converter<LocalTime, Long> {
 
 		INSTANCE;
@@ -95,6 +100,72 @@ public abstract class CassandraJodaTimeConverters {
 		@Override
 		public Long convert(LocalTime source) {
 			return (long) source.getMillisOfDay();
+		}
+	}
+
+	/**
+	 * Simple singleton to convert {@link LocalTime}s to their {@link java.time.LocalTime} representation.
+	 *
+	 * @author Mark Paluch
+	 */
+	@WritingConverter
+	@CassandraType(type = CassandraSimpleTypeHolder.Name.TIME)
+	public enum FromJodaLocalTimeConverter implements Converter<LocalTime, java.time.LocalTime> {
+
+		INSTANCE;
+
+		@Override
+		public java.time.LocalTime convert(LocalTime source) {
+			return java.time.LocalTime.ofNanoOfDay(TimeUnit.NANOSECONDS.toMillis(source.getMillisOfDay()));
+		}
+	}
+
+	/**
+	 * Simple singleton to convert {@link java.time.LocalTime}s to their {@link LocalTime} representation.
+	 *
+	 * @author Mark Paluch
+	 */
+	@ReadingConverter
+	public enum ToJodaLocalTimeConverter implements Converter<java.time.LocalTime, LocalTime> {
+
+		INSTANCE;
+
+		@Override
+		public LocalTime convert(java.time.LocalTime source) {
+			return LocalTime.fromMillisOfDay(TimeUnit.NANOSECONDS.toMillis(source.toNanoOfDay()));
+		}
+	}
+
+	/**
+	 * Simple singleton to convert {@link LocalTime}s to their {@link java.time.LocalDate} representation.
+	 *
+	 * @author Mark Paluch
+	 */
+	@WritingConverter
+	@CassandraType(type = CassandraSimpleTypeHolder.Name.DATE)
+	public enum FromJodaLocalDateConverter implements Converter<LocalDate, java.time.LocalDate> {
+
+		INSTANCE;
+
+		@Override
+		public java.time.LocalDate convert(LocalDate date) {
+			return java.time.LocalDate.of(date.getYear(), date.getMonthOfYear(), date.getDayOfMonth());
+		}
+	}
+
+	/**
+	 * Simple singleton to convert {@link java.time.LocalTime}s to their {@link LocalDate} representation.
+	 *
+	 * @author Mark Paluch
+	 */
+	@ReadingConverter
+	public enum ToJodaLocalDateConverter implements Converter<java.time.LocalDate, LocalDate> {
+
+		INSTANCE;
+
+		@Override
+		public LocalDate convert(java.time.LocalDate date) {
+			return new LocalDate(date.getYear(), date.getMonthValue(), date.getDayOfMonth());
 		}
 	}
 }

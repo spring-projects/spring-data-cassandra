@@ -134,7 +134,7 @@ public class PartTreeCassandraQueryUnitTests {
 	public void shouldDeriveFieldInCollectionQuery() {
 
 		String query = deriveQueryFromMethod(Repo.class, "findByFirstnameIn", new Class[] { Collection.class },
-				Arrays.asList("Hank", "Walter")).toString();
+				Arrays.asList("Hank", "Walter")).getQuery();
 
 		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname IN ('Hank','Walter')");
 	}
@@ -153,7 +153,8 @@ public class PartTreeCassandraQueryUnitTests {
 	@Test // DATACASS-172
 	public void shouldDeriveSimpleQueryWithUDTValue() {
 
-		String query = deriveQueryFromMethod("findByMainAddress", udtValueMock);
+		String query = deriveQueryFromMethod(Repo.class, "findByMainAddress", new Class[] { UdtValue.class }, udtValueMock)
+				.getQuery();
 
 		assertThat(query).isEqualTo("SELECT * FROM person WHERE mainaddress={}");
 	}
@@ -191,7 +192,7 @@ public class PartTreeCassandraQueryUnitTests {
 		SimpleStatement statement = deriveQueryFromMethod(Repo.class, "findByFirstname",
 				new Class[] { QueryOptions.class, String.class }, queryOptions, "Walter");
 
-		assertThat(statement.toString()).isEqualTo("SELECT * FROM person WHERE firstname='Walter'");
+		assertThat(statement.getQuery()).isEqualTo("SELECT * FROM person WHERE firstname='Walter'");
 		assertThat(statement.getPageSize()).isEqualTo(777);
 	}
 
@@ -200,7 +201,7 @@ public class PartTreeCassandraQueryUnitTests {
 
 		SimpleStatement statement = deriveQueryFromMethod(Repo.class, "findPersonBy", new Class[0]);
 
-		assertThat(statement.toString()).isEqualTo("SELECT * FROM person");
+		assertThat(statement.getQuery()).isEqualTo("SELECT * FROM person");
 		assertThat(statement.getConsistencyLevel()).isEqualTo(DefaultConsistencyLevel.LOCAL_ONE);
 	}
 
@@ -209,7 +210,7 @@ public class PartTreeCassandraQueryUnitTests {
 
 		SimpleStatement statement = deriveQueryFromMethod(Repo.class, "countBy", new Class[0]);
 
-		assertThat(statement.toString()).isEqualTo("SELECT COUNT(1) FROM person");
+		assertThat(statement.getQuery()).isEqualTo("SELECT count(1) FROM person");
 	}
 
 	@Test // DATACASS-611
@@ -218,7 +219,7 @@ public class PartTreeCassandraQueryUnitTests {
 		SimpleStatement statement = deriveQueryFromMethod(Repo.class, "deleteAllByLastname", new Class[] { String.class },
 				"Walter");
 
-		assertThat(statement.toString()).isEqualTo("DELETE FROM person WHERE lastname='Walter'");
+		assertThat(statement.getQuery()).isEqualTo("DELETE FROM person WHERE lastname='Walter'");
 	}
 
 	@Test // DATACASS-512
@@ -226,7 +227,7 @@ public class PartTreeCassandraQueryUnitTests {
 
 		SimpleStatement statement = deriveQueryFromMethod(Repo.class, "existsBy", new Class[0]);
 
-		assertThat(statement.toString()).isEqualTo("SELECT * FROM person LIMIT 1");
+		assertThat(statement.getQuery()).isEqualTo("SELECT * FROM person LIMIT 1");
 	}
 
 	private String deriveQueryFromMethod(String method, Object... args) {
@@ -237,7 +238,7 @@ public class PartTreeCassandraQueryUnitTests {
 			types[i] = ClassUtils.getUserClass(args[i].getClass());
 		}
 
-		return deriveQueryFromMethod(Repo.class, method, types, args).toString();
+		return deriveQueryFromMethod(Repo.class, method, types, args).getQuery();
 	}
 
 	private SimpleStatement deriveQueryFromMethod(Class<?> repositoryInterface, String method, Class<?>[] types,

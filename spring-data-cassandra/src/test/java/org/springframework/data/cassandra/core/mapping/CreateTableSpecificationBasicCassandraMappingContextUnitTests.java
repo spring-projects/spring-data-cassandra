@@ -62,7 +62,7 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 	private CassandraMappingContext ctx = new CassandraMappingContext();
 
 	@Before
-	public void setUp() throws Exception {
+	public void setUp() {
 
 		List<Converter<?, ?>> converters = new ArrayList<>();
 		converters.add(new PersonReadConverter());

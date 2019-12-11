@@ -290,13 +290,25 @@ public class MappingCassandraConverterUnitTests {
 	@Test // DATACASS-280, DATACASS-271
 	public void shouldReadTimestampCorrectly() {
 
-		Date date = new Date(1);
+		Instant instant = Instant.now();
 
-		rowMock = RowMockUtil.newRowMock(column("foo", date, DataTypes.TIMESTAMP));
+		rowMock = RowMockUtil.newRowMock(column("foo", instant, DataTypes.TIMESTAMP));
 
 		Date result = mappingCassandraConverter.readRow(Date.class, rowMock);
 
-		assertThat(result).isEqualTo(date);
+		assertThat(result).isEqualTo(Date.from(instant));
+	}
+
+	@Test // DATACASS-280, DATACASS-271
+	public void shouldReadInstantTimestampCorrectly() {
+
+		Instant instant = Instant.now();
+
+		rowMock = RowMockUtil.newRowMock(column("foo", instant, DataTypes.TIMESTAMP));
+
+		Instant result = mappingCassandraConverter.readRow(Instant.class, rowMock);
+
+		assertThat(result).isEqualTo(instant);
 	}
 
 	@Test // DATACASS-271

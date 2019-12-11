@@ -38,7 +38,7 @@ public class CreateUserTypeCqlGeneratorUnitTests {
 				.createType("address") //
 				.field("city", DataTypes.TEXT);
 
-		assertThat(toCql(spec)).isEqualTo("CREATE TYPE address (city varchar);");
+		assertThat(toCql(spec)).isEqualTo("CREATE TYPE address (city text);");
 	}
 
 	@Test // DATACASS-172
@@ -49,7 +49,7 @@ public class CreateUserTypeCqlGeneratorUnitTests {
 				.field("zip", DataTypes.ASCII) //
 				.field("city", DataTypes.TEXT);
 
-		assertThat(toCql(spec)).isEqualTo("CREATE TYPE address (zip ascii, city varchar);");
+		assertThat(toCql(spec)).isEqualTo("CREATE TYPE address (zip ascii, city text);");
 	}
 
 	@Test // DATACASS-172
@@ -59,7 +59,7 @@ public class CreateUserTypeCqlGeneratorUnitTests {
 				.createType("address").ifNotExists().field("zip", DataTypes.ASCII) //
 				.field("city", DataTypes.TEXT);
 
-		assertThat(toCql(spec)).isEqualTo("CREATE TYPE IF NOT EXISTS address (zip ascii, city varchar);");
+		assertThat(toCql(spec)).isEqualTo("CREATE TYPE IF NOT EXISTS address (zip ascii, city text);");
 	}
 
 	@Test // DATACASS-172

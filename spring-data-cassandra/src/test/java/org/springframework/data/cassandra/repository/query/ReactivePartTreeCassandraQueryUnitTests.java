@@ -118,7 +118,7 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 		SimpleStatement statement = deriveQueryFromMethod(Repo.class, "findByFirstname",
 				new Class[] { QueryOptions.class, String.class }, queryOptions, "Walter");
 
-		assertThat(statement.toString()).isEqualTo("SELECT * FROM person WHERE firstname='Walter'");
+		assertThat(statement.getQuery()).isEqualTo("SELECT * FROM person WHERE firstname='Walter'");
 		assertThat(statement.getPageSize()).isEqualTo(777);
 	}
 
@@ -127,7 +127,7 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 
 		SimpleStatement statement = deriveQueryFromMethod(Repo.class, "findPersonBy", new Class[0]);
 
-		assertThat(statement.toString()).isEqualTo("SELECT * FROM person");
+		assertThat(statement.getQuery()).isEqualTo("SELECT * FROM person");
 		assertThat(statement.getConsistencyLevel()).isEqualTo(DefaultConsistencyLevel.LOCAL_ONE);
 	}
 
@@ -137,7 +137,7 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 		SimpleStatement statement = deriveQueryFromMethod(PartTreeCassandraQueryUnitTests.Repo.class, "countBy",
 				new Class[0]);
 
-		assertThat(statement.toString()).isEqualTo("SELECT COUNT(1) FROM person");
+		assertThat(statement.getQuery()).isEqualTo("SELECT count(1) FROM person");
 	}
 
 	@Test // DATACASS-611
@@ -146,7 +146,7 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 		SimpleStatement statement = deriveQueryFromMethod(PartTreeCassandraQueryUnitTests.Repo.class, "deleteAllByLastname",
 				new Class[] { String.class }, "Walter");
 
-		assertThat(statement.toString()).isEqualTo("DELETE FROM person WHERE lastname='Walter'");
+		assertThat(statement.getQuery()).isEqualTo("DELETE FROM person WHERE lastname='Walter'");
 	}
 
 	@Test // DATACASS-512
@@ -155,7 +155,7 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 		SimpleStatement statement = deriveQueryFromMethod(PartTreeCassandraQueryUnitTests.Repo.class, "existsBy",
 				new Class[0]);
 
-		assertThat(statement.toString()).isEqualTo("SELECT * FROM person LIMIT 1");
+		assertThat(statement.getQuery()).isEqualTo("SELECT * FROM person LIMIT 1");
 	}
 
 	private String deriveQueryFromMethod(String method, Object... args) {

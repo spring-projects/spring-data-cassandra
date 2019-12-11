@@ -110,7 +110,7 @@ public class UpdateMapperUnitTests {
 		Update update = updateMapper.getMappedObject(Update.empty().set("manufacturers", map), persistentEntity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
-		assertThat(update.toString()).isEqualTo("manufacturers = {{name:'foobar'}:'Euro'}");
+		assertThat(update.toString()).isEqualTo("manufacturers = { {name:'foobar'} : 'Euro' }");
 	}
 
 	@Test // DATACASS-343
@@ -161,7 +161,7 @@ public class UpdateMapperUnitTests {
 				persistentEntity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
-		assertThat(update.toString()).isEqualTo("manufacturers = manufacturers + {{name:'foobar'}:'Euro'}");
+		assertThat(update.toString()).isEqualTo("manufacturers = manufacturers + { {name:'foobar'} : 'Euro' }");
 	}
 
 	@Test // DATACASS-343

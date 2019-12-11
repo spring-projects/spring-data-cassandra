@@ -76,7 +76,7 @@ public class BasicCassandraPersistentPropertyUnitTests {
 		CassandraPersistentProperty persistentProperty = getPropertyFor(TypeWithComposedPrimaryKeyAnnotation.class,
 				"column");
 
-		assertThat(persistentProperty.getRequiredColumnName()).isEqualTo(CqlIdentifier.fromCql("primary-key"));
+		assertThat(persistentProperty.getRequiredColumnName()).isEqualTo(CqlIdentifier.fromInternal("primary-key"));
 		assertThat(persistentProperty.isIdProperty()).isTrue();
 	}
 

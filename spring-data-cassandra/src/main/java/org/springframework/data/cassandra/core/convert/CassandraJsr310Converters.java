@@ -15,10 +15,13 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
+import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.core.convert.converter.Converter;
@@ -51,6 +54,9 @@ public abstract class CassandraJsr310Converters {
 		converters.add(MillisOfDayToLocalTimeConverter.INSTANCE);
 		converters.add(LocalTimeToMillisOfDayConverter.INSTANCE);
 
+		converters.add(DateToInstantConverter.INSTANCE);
+		converters.add(LocalDateConverter.INSTANCE);
+
 		return converters;
 	}
 
@@ -77,8 +83,6 @@ public abstract class CassandraJsr310Converters {
 	 * @author Mark Paluch
 	 * @since 2.1
 	 */
-	@WritingConverter
-	@CassandraType(type = CassandraSimpleTypeHolder.Name.TIME)
 	public enum LocalTimeToMillisOfDayConverter implements Converter<LocalTime, Long> {
 
 		INSTANCE;
@@ -86,6 +90,41 @@ public abstract class CassandraJsr310Converters {
 		@Override
 		public Long convert(LocalTime source) {
 			return source.getLong(ChronoField.NANO_OF_DAY);
+		}
+	}
+
+	/**
+	 * Simple singleton to convert {@link Date}s to their Cassandra {@link Instant} representation for the CQL Timestamp
+	 * type. Used for Cassandra 3.x to 4.x driver migration where
+	 *
+	 * @since 3.0
+	 */
+	@ReadingConverter
+	@CassandraType(type = CassandraSimpleTypeHolder.Name.TIMESTAMP)
+	public enum DateToInstantConverter implements Converter<Date, Instant> {
+
+		INSTANCE;
+
+		@Override
+		public Instant convert(Date date) {
+			return date.toInstant();
+		}
+	}
+
+	/**
+	 * Force {@link LocalDate} to remain a {@link LocalDate}.
+	 *
+	 * @since 3.0
+	 */
+	@WritingConverter
+	@CassandraType(type = CassandraSimpleTypeHolder.Name.DATE)
+	enum LocalDateConverter implements Converter<LocalDate, LocalDate> {
+
+		INSTANCE;
+
+		@Override
+		public LocalDate convert(LocalDate date) {
+			return date;
 		}
 	}
 }

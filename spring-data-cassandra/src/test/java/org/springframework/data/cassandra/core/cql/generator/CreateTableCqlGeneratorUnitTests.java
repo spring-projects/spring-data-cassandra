@@ -59,7 +59,7 @@ public class CreateTableCqlGeneratorUnitTests {
 
 		String cql = toCql(table);
 		assertPreamble(name, cql);
-		assertColumns(String.format("%s %s, %s %s", partitionKey0, partitionKeyType0, column1, columnType1), cql);
+		assertColumns("partitionkey0 text, column1 text", cql);
 		assertPrimaryKey(partitionKey0.toString(), cql);
 	}
 
@@ -81,9 +81,7 @@ public class CreateTableCqlGeneratorUnitTests {
 		String cql = toCql(table);
 
 		assertPreamble(name, cql);
-		assertColumns(
-				String.format("%s %s, %s %s, %s %s", partKey0, partKeyType0, partKey1, partKeyType1, column0, columnType0),
-				cql);
+		assertColumns("partkey0 text, partkey1 text, column0 text", cql);
 		assertPrimaryKey(String.format("(%s, %s)", partKey0, partKey1), cql);
 	}
 
@@ -106,8 +104,7 @@ public class CreateTableCqlGeneratorUnitTests {
 		String cql = toCql(table);
 
 		assertPreamble(name, cql);
-		assertColumns(String.format("%s %s, %s %s, %s %s", partitionKey0, partitionKeyType0, partitionKey1,
-				partitionKeyType1, column1, columnType1), cql);
+		assertColumns("partitionkey0 text, create_timestamp timestamp, column1 text", cql);
 		assertPrimaryKey(String.format("(%s, %s)", partitionKey0, partitionKey1), cql);
 		assertDoubleOption(TableOption.READ_REPAIR_CHANCE.getName(), readRepairChance, cql);
 	}
@@ -155,8 +152,7 @@ public class CreateTableCqlGeneratorUnitTests {
 		String cql = toCql(table);
 
 		assertPreamble(name, cql);
-		assertColumns(String.format("%s %s, %s %s, %s %s", partitionKey0, partitionKeyType0, partitionKey1,
-				partitionKeyType1, column1, columnType1), cql);
+		assertColumns("tid timeuuid, create_timestamp timestamp, data_point text", cql);
 		assertPrimaryKey(String.format("(%s, %s)", partitionKey0, partitionKey1), cql);
 		assertNullOption(TableOption.COMPACT_STORAGE.getName(), cql);
 		assertDoubleOption(TableOption.READ_REPAIR_CHANCE.getName(), readRepairChance, cql);
@@ -196,7 +192,7 @@ public class CreateTableCqlGeneratorUnitTests {
 	 * Asserts that the preamble is first & correctly formatted in the given CQL string.
 	 */
 	private static void assertPreamble(CqlIdentifier tableName, String cql) {
-		assertThat(cql.startsWith("CREATE TABLE " + tableName + " ")).isTrue();
+		assertThat(cql).startsWith("CREATE TABLE " + tableName + " ");
 	}
 
 	/**
@@ -205,7 +201,7 @@ public class CreateTableCqlGeneratorUnitTests {
 	 * @param primaryKeyString IE, "foo", "foo, bar, baz", "(foo, bar), baz", etc
 	 */
 	private static void assertPrimaryKey(String primaryKeyString, String cql) {
-		assertThat(cql.contains(", PRIMARY KEY (" + primaryKeyString + "))")).isTrue();
+		assertThat(cql).contains(", PRIMARY KEY (" + primaryKeyString + "))");
 	}
 
 	/**
@@ -214,31 +210,31 @@ public class CreateTableCqlGeneratorUnitTests {
 	 * @param columnSpec IE, "foo text, bar blob"
 	 */
 	private static void assertColumns(String columnSpec, String cql) {
-		assertThat(cql.contains("(" + columnSpec + ",")).isTrue();
+		assertThat(cql).contains("(" + columnSpec + ",");
 	}
 
 	/**
 	 * Asserts that the read repair change is set properly
 	 */
 	private static void assertStringOption(String name, String value, String cql) {
-		assertThat(cql.contains(name + " = '" + value + "'")).isTrue();
+		assertThat(cql).contains(name + " = '" + value + "'");
 	}
 
 	/**
 	 * Asserts that the option is set
 	 */
 	private static void assertDoubleOption(String name, Double value, String cql) {
-		assertThat(cql.contains(name + " = " + value)).isTrue();
+		assertThat(cql).contains(name + " = " + value);
 	}
 
 	private static void assertLongOption(String name, Long value, String cql) {
-		assertThat(cql.contains(name + " = " + value)).isTrue();
+		assertThat(cql).contains(name + " = " + value);
 	}
 
 	/**
 	 * Asserts that the read repair change is set properly
 	 */
 	private static void assertNullOption(String name, String cql) {
-		assertThat(cql.contains(" " + name + " ")).isTrue();
+		assertThat(cql).contains(" " + name + " ");
 	}
 }

@@ -61,7 +61,7 @@ public class AlterTableCqlGeneratorUnitTests {
 
 		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily").add("gravesite", DataTypes.TEXT);
 
-		assertThat(toCql(spec)).isEqualTo("ALTER TABLE addamsfamily ADD gravesite varchar;");
+		assertThat(toCql(spec)).isEqualTo("ALTER TABLE addamsfamily ADD gravesite text;");
 	}
 
 	@Test // DATACASS-192

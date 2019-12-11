@@ -115,8 +115,16 @@ public class MappingCassandraConverterUDTUnitTests {
 
 		mappingCassandraConverter.write(supplier, insert);
 
-		assertThat(insert.toString())
-				.contains("VALUES ({{name:'a good one',displayname:NULL}:[{currency:'EUR'},{currency:'USD'}]}");
+		Map<UdtValue, List<UdtValue>> acceptedcurrencies = (Map) insert.get(CqlIdentifier.fromCql("acceptedcurrencies"));
+
+		assertThat(acceptedcurrencies).hasSize(1);
+
+		Map.Entry<UdtValue, List<UdtValue>> entry = acceptedcurrencies.entrySet().iterator().next();
+
+		assertThat(entry.getKey().getFormattedContents()).contains("{name:'a good one',displayname:NULL}");
+		assertThat(entry.getValue()).hasSize(2) //
+				.extracting(UdtValue::getFormattedContents) //
+				.contains("{currency:'EUR'}", "{currency:'USD'}");
 	}
 
 	@UserDefinedType

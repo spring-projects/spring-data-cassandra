@@ -366,7 +366,7 @@ public class StringBasedCassandraQueryUnitTests {
 		SimpleStatement actual = cassandraQuery.createQuery(accessor);
 
 		assertThat(actual.getQuery()).isEqualTo("SELECT * FROM person WHERE address=?;");
-		assertThat(actual.getPositionalValues().get(0).toString()).isEqualTo("UdtValue");
+		assertThat(actual.getPositionalValues().get(0).toString()).isEqualTo("udtValue");
 	}
 
 	@Test // DATACASS-146

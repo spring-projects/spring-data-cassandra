@@ -171,8 +171,7 @@ public class ForceQuotedPropertiesSimpleUnitTests {
 		CassandraPersistentProperty stringOne = key.getRequiredPersistentProperty("stringOne");
 
 		assertThat(stringZero.getColumnName()) //
-				.isEqualTo(CqlIdentifier.fromCql("TheFirstKeyField")) //
-				.isNotEqualTo(CqlIdentifier.fromCql("TheFirstKeyField"));
+				.isEqualTo(CqlIdentifier.fromInternal("TheFirstKeyField"));
 
 		assertThat(stringZero.getColumnName().asCql(false)).isEqualTo("\"" + EXPLICIT_KEY_0 + "\"");
 		assertThat(stringOne.getColumnName().asCql(false)).isEqualTo("\"" + EXPLICIT_KEY_1 + "\"");

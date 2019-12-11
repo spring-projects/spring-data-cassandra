@@ -69,7 +69,7 @@ public class FieldSpecification {
 	}
 
 	public StringBuilder toCql(StringBuilder cql) {
-		return cql.append(name).append(" ").append(type);
+		return cql.append(name).append(" ").append(type.asCql(true, true));
 	}
 
 	/*

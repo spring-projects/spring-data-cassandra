@@ -19,8 +19,6 @@ import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
 
-import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
-
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
@@ -33,35 +31,33 @@ import com.datastax.oss.driver.api.querybuilder.select.Select;
  */
 public class EntityQueryUtilsUnitTests {
 
-	private final MappingCassandraConverter converter = new MappingCassandraConverter();
-
 	@Test // DATACASS-106
 	public void shouldRetrieveTableNameFromSelect() {
 
-		Select select = QueryBuilder.selectFrom("keyspace", "table").all().where();
+		Select select = QueryBuilder.selectFrom("ks", "tbl").all().where();
 
 		CqlIdentifier tableName = EntityQueryUtils.getTableName(select.build());
 
-		assertThat(tableName).isEqualTo(CqlIdentifier.fromCql("table"));
+		assertThat(tableName).isEqualTo(CqlIdentifier.fromInternal("tbl"));
 	}
 
 	@Test // DATACASS-642
 	public void shouldRetrieveQuotedTableNameFromSelect() {
 
-		Select select = QueryBuilder.selectFrom("keyspace", "\"table\"").all().where();
+		Select select = QueryBuilder.selectFrom(CqlIdentifier.fromCql("\"table\"")).all().where();
 
 		CqlIdentifier tableName = EntityQueryUtils.getTableName(select.build());
 
-		assertThat(tableName).isEqualTo(CqlIdentifier.fromCql("table"));
+		assertThat(tableName).isEqualTo(CqlIdentifier.fromInternal("table"));
 	}
 
 	@Test // DATACASS-106
 	public void shouldRetrieveTableNameFromSimpleStatement() {
 
 		assertThat(EntityQueryUtils.getTableName(SimpleStatement.newInstance("SELECT * FROM table")))
-				.isEqualTo(CqlIdentifier.fromCql("table"));
+				.isEqualTo(CqlIdentifier.fromInternal("table"));
 		assertThat(EntityQueryUtils.getTableName(SimpleStatement.newInstance("SELECT * FROM foo.table where")))
-				.isEqualTo(CqlIdentifier.fromCql("table"));
+				.isEqualTo(CqlIdentifier.fromInternal("table"));
 	}
 
 	@Test // DATACASS-106
@@ -69,6 +65,6 @@ public class EntityQueryUtilsUnitTests {
 
 		CqlIdentifier tableName = EntityQueryUtils.getTableName(SimpleStatement.newInstance("SELECT * from \"table\""));
 
-		assertThat(tableName).isEqualTo(CqlIdentifier.fromCql("table"));
+		assertThat(tableName).isEqualTo(CqlIdentifier.fromInternal("table"));
 	}
 }

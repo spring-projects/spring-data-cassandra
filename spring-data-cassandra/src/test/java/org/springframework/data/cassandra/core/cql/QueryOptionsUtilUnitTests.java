@@ -37,7 +37,7 @@ import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 @RunWith(MockitoJUnitRunner.class)
 public class QueryOptionsUtilUnitTests {
 
-	@Mock(stubOnly = true) SimpleStatement simpleStatement;
+	@Mock SimpleStatement simpleStatement;
 
 	@Test // DATACASS-202
 	public void addPreparedStatementOptionsShouldAddDriverQueryOptions() {
@@ -63,6 +63,10 @@ public class QueryOptionsUtilUnitTests {
 
 	@Test // DATACASS-202
 	public void addStatementQueryOptionsShouldAddGenericQueryOptions() {
+
+		when(simpleStatement.setPageSize(anyInt())).thenReturn(simpleStatement);
+		when(simpleStatement.setTimeout(any())).thenReturn(simpleStatement);
+		when(simpleStatement.setTracing(anyBoolean())).thenReturn(simpleStatement);
 
 		QueryOptions queryOptions = QueryOptions.builder() //
 				.pageSize(10) //

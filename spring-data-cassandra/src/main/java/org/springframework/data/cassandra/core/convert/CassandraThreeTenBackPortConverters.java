@@ -29,6 +29,7 @@ import org.springframework.data.convert.ThreeTenBackPortConverters;
 import org.springframework.data.convert.WritingConverter;
 import org.springframework.util.ClassUtils;
 
+import org.threeten.bp.LocalDate;
 import org.threeten.bp.LocalTime;
 import org.threeten.bp.temporal.ChronoField;
 
@@ -67,6 +68,12 @@ public abstract class CassandraThreeTenBackPortConverters {
 		converters.add(MillisOfDayToLocalTimeConverter.INSTANCE);
 		converters.add(LocalTimeToMillisOfDayConverter.INSTANCE);
 
+		converters.add(FromBpLocalTimeConverter.INSTANCE);
+		converters.add(ToBpLocalTimeConverter.INSTANCE);
+
+		converters.add(FromBpLocalDateConverter.INSTANCE);
+		converters.add(ToBpLocalDateConverter.INSTANCE);
+
 		return converters;
 	}
 
@@ -93,8 +100,6 @@ public abstract class CassandraThreeTenBackPortConverters {
 	 * @author Mark Paluch
 	 * @since 2.1
 	 */
-	@WritingConverter
-	@CassandraType(type = CassandraSimpleTypeHolder.Name.TIME)
 	public enum LocalTimeToMillisOfDayConverter implements Converter<LocalTime, Long> {
 
 		INSTANCE;
@@ -102,6 +107,72 @@ public abstract class CassandraThreeTenBackPortConverters {
 		@Override
 		public Long convert(LocalTime source) {
 			return source.getLong(ChronoField.MILLI_OF_DAY);
+		}
+	}
+
+	/**
+	 * Simple singleton to convert {@link LocalTime}s to their {@link java.time.LocalTime} representation.
+	 *
+	 * @since 3.0
+	 */
+	@WritingConverter
+	@CassandraType(type = CassandraSimpleTypeHolder.Name.TIME)
+	public enum FromBpLocalTimeConverter implements Converter<LocalTime, java.time.LocalTime> {
+
+		INSTANCE;
+
+		@Override
+		public java.time.LocalTime convert(LocalTime source) {
+			return java.time.LocalTime.ofNanoOfDay(source.toNanoOfDay());
+		}
+	}
+
+	/**
+	 * Simple singleton to convert {@link java.time.LocalTime}s to their {@link LocalTime} representation.
+	 *
+	 * @since 3.0
+	 */
+	@ReadingConverter
+	public enum ToBpLocalTimeConverter implements Converter<java.time.LocalTime, LocalTime> {
+
+		INSTANCE;
+
+		@Override
+		public LocalTime convert(java.time.LocalTime source) {
+			return LocalTime.ofNanoOfDay(source.toNanoOfDay());
+		}
+	}
+
+	/**
+	 * Simple singleton to convert {@link LocalTime}s to their {@link java.time.LocalDate} representation.
+	 *
+	 * @since 3.0
+	 */
+	@WritingConverter
+	@CassandraType(type = CassandraSimpleTypeHolder.Name.DATE)
+	public enum FromBpLocalDateConverter implements Converter<LocalDate, java.time.LocalDate> {
+
+		INSTANCE;
+
+		@Override
+		public java.time.LocalDate convert(LocalDate date) {
+			return java.time.LocalDate.of(date.getYear(), date.getMonthValue(), date.getDayOfMonth());
+		}
+	}
+
+	/**
+	 * Simple singleton to convert {@link java.time.LocalTime}s to their {@link LocalDate} representation.
+	 *
+	 * @since 3.0
+	 */
+	@ReadingConverter
+	public enum ToBpLocalDateConverter implements Converter<java.time.LocalDate, LocalDate> {
+
+		INSTANCE;
+
+		@Override
+		public LocalDate convert(java.time.LocalDate date) {
+			return LocalDate.of(date.getYear(), date.getMonthValue(), date.getDayOfMonth());
 		}
 	}
 }

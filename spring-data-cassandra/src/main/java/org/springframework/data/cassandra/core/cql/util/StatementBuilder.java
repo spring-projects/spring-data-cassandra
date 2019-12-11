@@ -20,6 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 import org.springframework.util.Assert;
@@ -106,11 +107,11 @@ public class StatementBuilder<S extends BuildableQuery> {
 	 * @param action the builder function to be applied to the statement.
 	 * @return {@code this} {@link StatementBuilder}.
 	 */
-	public StatementBuilder<S> apply(UnaryOperator<S> action) {
+	public <R extends BuildableQuery> StatementBuilder<S> apply(Function<S, R> action) {
 
 		Assert.notNull(action, "BindFunction must not be null");
 
-		queryActions.add((source, termFactory) -> action.apply(source));
+		queryActions.add((source, termFactory) -> (S) action.apply(source));
 		return this;
 	}
 

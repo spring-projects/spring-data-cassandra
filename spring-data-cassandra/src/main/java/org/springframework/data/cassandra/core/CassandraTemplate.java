@@ -76,6 +76,7 @@ import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.Statement;
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
 import com.datastax.oss.driver.api.querybuilder.delete.Delete;
+import com.datastax.oss.driver.api.querybuilder.insert.Insert;
 import com.datastax.oss.driver.api.querybuilder.insert.RegularInsert;
 import com.datastax.oss.driver.api.querybuilder.select.Select;
 import com.datastax.oss.driver.api.querybuilder.truncate.Truncate;
@@ -565,11 +566,9 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		Assert.notNull(entityClass, "Entity type must not be null");
 
 		CassandraPersistentEntity<?> entity = getRequiredPersistentEntity(entityClass);
+		StatementBuilder<Select> select = getStatementFactory().selectOneById(id, entity, entity.getTableName());
 
-		StatementBuilder<Select> select = getStatementFactory().selectOneById(id,
-				(source, sink) -> getConverter().write(source, sink, entity), entity.getTableName());
-
-		return getCqlOperations().queryForResultSet(select.build()).iterator().hasNext();
+		return getCqlOperations().queryForResultSet(select.build()).one() != null;
 	}
 
 	/* (non-Javadoc)
@@ -589,7 +588,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		StatementBuilder<Select> select = getStatementFactory().select(query.limit(1),
 				getRequiredPersistentEntity(entityClass), tableName);
 
-		return getCqlOperations().queryForResultSet(select.build()).iterator().hasNext();
+		return getCqlOperations().queryForResultSet(select.build()).one() != null;
 	}
 
 	/* (non-Javadoc)
@@ -603,8 +602,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 
 		CassandraPersistentEntity<?> entity = getRequiredPersistentEntity(entityClass);
 		CqlIdentifier tableName = entity.getTableName();
-		StatementBuilder<Select> select = getStatementFactory().selectOneById(id,
-				(source, sink) -> getConverter().write(source, sink, entity), tableName);
+		StatementBuilder<Select> select = getStatementFactory().selectOneById(id, entity, tableName);
 		Function<Row, T> mapper = getMapper(entityClass, entityClass, tableName);
 		List<T> result = getCqlOperations().query(select.build(), (row, rowNum) -> mapper.apply(row));
 
@@ -640,10 +638,14 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 
 		StatementBuilder<RegularInsert> builder = getStatementFactory().insert(entityToUse, options,
 				source.getPersistentEntity(), tableName);
-		SimpleStatement insert = builder.build();
 
-		return source.isVersionedEntity() ? doInsertVersioned(insert, entityToUse, source, tableName)
-				: doInsert(insert, entityToUse, tableName);
+		if (source.isVersionedEntity()) {
+
+			builder.apply(Insert::ifNotExists);
+			return doInsertVersioned(builder.build(), entityToUse, source, tableName);
+		}
+
+		return doInsert(builder.build(), entityToUse, tableName);
 	}
 
 	private <T> EntityWriteResult<T> doInsertVersioned(SimpleStatement insert, T entity, AdaptibleEntity<T> source,
@@ -699,8 +701,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		T toSave = source.incrementVersion();
 
 		StatementBuilder<Update> builder = getStatementFactory().update(toSave, options, persistentEntity, tableName);
-		source.appendVersionCondition(builder, previousVersion);
-		SimpleStatement update = builder.build();
+		SimpleStatement update = source.appendVersionCondition(builder, previousVersion).build();
 
 		return executeSave(toSave, tableName, update, result -> {
 
@@ -742,11 +743,11 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		CqlIdentifier tableName = persistentEntity.getTableName();
 
 		StatementBuilder<Delete> builder = getStatementFactory().delete(entity, options, getConverter(), tableName);
-		source.appendVersionCondition(builder);
-		SimpleStatement delete = builder.build();
 
-		return source.isVersionedEntity() ? doDeleteVersioned(delete, entity, source, tableName)
-				: doDelete(delete, entity, tableName);
+		return source.isVersionedEntity()
+				? doDeleteVersioned(source.appendVersionCondition(builder).build(), entity, source, tableName)
+				: doDelete(builder.build(), entity, tableName);
+
 	}
 
 	private WriteResult doDeleteVersioned(Statement<?> statement, Object entity, AdaptibleEntity<Object> source,

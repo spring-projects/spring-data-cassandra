@@ -191,7 +191,8 @@ public class QueryMapperUnitTests {
 
 		assertThat(mappedCriteriaDefinition.getPredicate().getOperator()).isEqualTo(Operators.EQ);
 		assertThat(mappedCriteriaDefinition.getPredicate().getValue()).isInstanceOf(UdtValue.class);
-		assertThat(mappedCriteriaDefinition.getPredicate().getValue().toString()).isEqualTo("{street:'21 Jump-Street'}");
+		assertThat(((UdtValue) mappedCriteriaDefinition.getPredicate().getValue()).getFormattedContents())
+				.isEqualTo("{street:'21 Jump-Street'}");
 	}
 
 	@Test // DATACASS-343
@@ -203,9 +204,11 @@ public class QueryMapperUnitTests {
 
 		CriteriaDefinition mappedCriteriaDefinition = mappedObject.iterator().next();
 
-		assertThat(mappedCriteriaDefinition.getPredicate().getOperator()).isEqualTo(Operators.IN);
-		assertThat(mappedCriteriaDefinition.getPredicate().getValue()).isInstanceOf(Collection.class);
-		assertThat(mappedCriteriaDefinition.getPredicate().getValue().toString()).isEqualTo("[{street:'21 Jump-Street'}]");
+		CriteriaDefinition.Predicate predicate = mappedCriteriaDefinition.getPredicate();
+
+		assertThat(predicate.getOperator()).isEqualTo(Operators.IN);
+		assertThat(predicate.getValue()).isInstanceOf(Collection.class);
+		assertThat(predicate.getValue().toString()).isEqualTo("[{street:'21 Jump-Street'}]");
 	}
 
 	@Test // DATACASS-343
@@ -216,10 +219,11 @@ public class QueryMapperUnitTests {
 		Filter mappedObject = queryMapper.getMappedObject(query, persistentEntity);
 
 		CriteriaDefinition mappedCriteriaDefinition = mappedObject.iterator().next();
+		CriteriaDefinition.Predicate predicate = mappedCriteriaDefinition.getPredicate();
 
-		assertThat(mappedCriteriaDefinition.getPredicate().getOperator()).isEqualTo(Operators.IN);
-		assertThat(mappedCriteriaDefinition.getPredicate().getValue()).isInstanceOf(Collection.class);
-		assertThat(mappedCriteriaDefinition.getPredicate().getValue().toString()).isEqualTo("[{street:'21 Jump-Street'}]");
+		assertThat(predicate.getOperator()).isEqualTo(Operators.IN);
+		assertThat(predicate.getValue()).isInstanceOf(Collection.class);
+		assertThat(predicate.getValue().toString()).isEqualTo("[{street:'21 Jump-Street'}]");
 	}
 
 	@Test // DATACASS-487
@@ -233,7 +237,8 @@ public class QueryMapperUnitTests {
 
 		assertThat(mappedCriteriaDefinition.getPredicate().getOperator()).isEqualTo(Operators.CONTAINS_KEY);
 		assertThat(mappedCriteriaDefinition.getPredicate().getValue()).isInstanceOf(UdtValue.class);
-		assertThat(mappedCriteriaDefinition.getPredicate().getValue().toString()).isEqualTo("{street:'21 Jump-Street'}");
+		assertThat(((UdtValue) mappedCriteriaDefinition.getPredicate().getValue()).getFormattedContents())
+				.isEqualTo("{street:'21 Jump-Street'}");
 	}
 
 	@Test // DATACASS-487
@@ -247,7 +252,8 @@ public class QueryMapperUnitTests {
 
 		assertThat(mappedCriteriaDefinition.getPredicate().getOperator()).isEqualTo(Operators.CONTAINS);
 		assertThat(mappedCriteriaDefinition.getPredicate().getValue()).isInstanceOf(UdtValue.class);
-		assertThat(mappedCriteriaDefinition.getPredicate().getValue().toString()).isEqualTo("{street:'21 Jump-Street'}");
+		assertThat(((UdtValue) mappedCriteriaDefinition.getPredicate().getValue()).getFormattedContents())
+				.isEqualTo("{street:'21 Jump-Street'}");
 	}
 
 	@Test // DATACASS-343
