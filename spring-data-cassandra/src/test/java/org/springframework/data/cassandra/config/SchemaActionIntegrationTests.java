@@ -16,8 +16,7 @@
 
 package org.springframework.data.cassandra.config;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -29,17 +28,14 @@ import org.junit.Test;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.core.cql.SessionCallback;
 import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.Metadata;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.TableMetadata;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;
+import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
 
 /**
  * Integration test testing various {@link SchemaAction SchemaActions} on startup of a Spring configured,
@@ -71,19 +67,18 @@ public class SchemaActionIntegrationTests extends AbstractKeyspaceCreatingIntegr
 	protected <T> T doInSessionWithConfiguration(Class<?> annotatedClass, SessionCallback<T> sessionCallback) {
 
 		try (ConfigurableApplicationContext applicationContext = newApplicationContext(annotatedClass)) {
-			return sessionCallback.doInSession(applicationContext.getBean(Session.class));
+			return sessionCallback.doInSession(applicationContext.getBean(CqlSession.class));
 		}
 	}
 
 	@SuppressWarnings("all")
-	protected void assertTableWithColumnsExists(Session session, String tableName, String... columns) {
+	protected void assertTableWithColumnsExists(CqlSession session, String tableName, String... columns) {
 
-		Metadata clusterMetadata = session.getCluster().getMetadata();
-		KeyspaceMetadata keyspaceMetadata = clusterMetadata.getKeyspace(getKeyspace());
+		KeyspaceMetadata keyspaceMetadata = session.getMetadata().getKeyspace(session.getKeyspace().get()).orElse(null);
 
 		assertThat(keyspaceMetadata).isNotNull();
 
-		TableMetadata tableMetadata = keyspaceMetadata.getTable(tableName);
+		TableMetadata tableMetadata = keyspaceMetadata.getTable(tableName).orElse(null);
 
 		assertThat(tableMetadata).isNotNull();
 		assertThat(tableMetadata.getColumns()).hasSize(columns.length);
@@ -98,7 +93,7 @@ public class SchemaActionIntegrationTests extends AbstractKeyspaceCreatingIntegr
 	@Before
 	public void setup() {
 
-		Session session = getSession();
+		CqlSession session = getSession();
 
 		session.execute(DROP_PERSON_TABLE_CQL);
 		session.execute(DROP_ADDRESS_TYPE_CQL);
@@ -233,24 +228,6 @@ public class SchemaActionIntegrationTests extends AbstractKeyspaceCreatingIntegr
 
 	@Configuration
 	static abstract class CassandraConfiguration extends AbstractCassandraConfiguration {
-
-		@Bean
-		@Override
-		public CassandraClusterFactoryBean cluster() {
-
-			return new CassandraClusterFactoryBean() {
-
-				@Override
-				public void afterPropertiesSet() throws Exception {
-					// avoid Cassandra Cluster creation; use embedded
-				}
-
-				@Override
-				public Cluster getObject() {
-					return cassandraEnvironment.getCluster();
-				}
-			};
-		}
 
 		@Override
 		protected Set<Class<?>> getInitialEntitySet() {

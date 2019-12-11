@@ -23,7 +23,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlSession;
 
 /**
  * The CassandraAccessorUnitTests class is a test suite of test cases testing the contract and functionality of the
@@ -38,7 +38,7 @@ public class CassandraAccessorUnitTests {
 	private CassandraAccessor cassandraAccessor;
 
 	@Mock private CassandraExceptionTranslator mockExceptionTranslator;
-	@Mock private Session mockSession;
+	@Mock private CqlSession mockSession;
 
 	@Before
 	public void setup() {

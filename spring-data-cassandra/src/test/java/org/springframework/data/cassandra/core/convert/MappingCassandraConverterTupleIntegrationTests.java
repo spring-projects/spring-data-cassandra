@@ -35,28 +35,30 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.config.SchemaAction;
+import org.springframework.data.cassandra.core.StatementFactory;
+import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.data.cassandra.core.cql.generator.CreateUserTypeCqlGenerator;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateUserTypeSpecification;
+import org.springframework.data.cassandra.core.cql.util.StatementBuilder;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.Element;
+import org.springframework.data.cassandra.core.mapping.SimpleTupleTypeFactory;
 import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.core.mapping.Tuple;
 import org.springframework.data.cassandra.core.mapping.UserDefinedType;
 import org.springframework.data.cassandra.domain.AllPossibleTypes;
 import org.springframework.data.cassandra.repository.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.data.cassandra.repository.support.IntegrationTestConfig;
-import org.springframework.data.convert.CustomConversions;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.TupleType;
-import com.datastax.driver.core.TupleValue;
-import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.data.TupleValue;
+import com.datastax.oss.driver.api.core.type.DataTypes;
+import com.datastax.oss.driver.api.core.type.TupleType;
+import com.datastax.oss.driver.api.querybuilder.insert.RegularInsert;
 
 /**
  * Integration tests for mapped tuple values through {@link MappingCassandraConverter}.
@@ -83,14 +85,14 @@ public class MappingCassandraConverterTupleIntegrationTests extends AbstractSpri
 		}
 
 		@Override
-		public CustomConversions customConversions() {
+		public CassandraCustomConversions customConversions() {
 			return new CassandraCustomConversions(
 					Arrays.asList(new StringToCurrencyConverter(), new CurrencyToStringConverter()));
 		}
 	}
 
 	@Autowired MappingCassandraConverter converter;
-	@Autowired Session session;
+	@Autowired CqlSession session;
 
 	@Before
 	public void setUp() {
@@ -122,17 +124,18 @@ public class MappingCassandraConverterTupleIntegrationTests extends AbstractSpri
 	@Test // DATACASS-651
 	public void shouldInsertRowWithTuple() {
 
-		TupleType tupleType = this.session.getCluster().getMetadata().newTupleType(DataType.varchar(), DataType.cint());
+		TupleType tupleType = SimpleTupleTypeFactory.DEFAULT.create(DataTypes.TEXT, DataTypes.INT);
 
 		Person person = new Person();
 
 		person.setId("foo");
 		person.setTupleValue(tupleType.newValue("hello", 42));
 
-		Insert insert = QueryBuilder.insertInto("person");
+		StatementFactory statementFactory = new StatementFactory(new UpdateMapper(converter));
 
-		this.converter.write(person, insert);
-		this.session.execute(insert);
+		StatementBuilder<RegularInsert> insert = statementFactory.insert(person, WriteOptions.empty());
+
+		this.session.execute(insert.build());
 
 		ResultSet rows = this.session.execute("SELECT * FROM person");
 		Row row = rows.one();
@@ -160,10 +163,11 @@ public class MappingCassandraConverterTupleIntegrationTests extends AbstractSpri
 		person.setMappedTuple(tuple);
 		person.setMappedTuples(Collections.singletonList(tuple));
 
-		Insert insert = QueryBuilder.insertInto("person");
+		StatementFactory statementFactory = new StatementFactory(new UpdateMapper(converter));
 
-		this.converter.write(person, insert);
-		this.session.execute(insert);
+		StatementBuilder<RegularInsert> insert = statementFactory.insert(person, WriteOptions.empty());
+
+		this.session.execute(insert.build());
 	}
 
 	@Test // DATACASS-523
@@ -200,13 +204,14 @@ public class MappingCassandraConverterTupleIntegrationTests extends AbstractSpri
 
 		person.setMapOfTuples(Collections.singletonMap("foo", tuple));
 
-		TupleType tupleType = this.session.getCluster().getMetadata().newTupleType(DataType.varchar(), DataType.cint());
+		TupleType tupleType = SimpleTupleTypeFactory.DEFAULT.create(DataTypes.TEXT, DataTypes.INT);
 		person.setMapOfTupleValues(Collections.singletonMap("mykey", tupleType.newValue("hello", 42)));
 
-		Insert insert = QueryBuilder.insertInto("person");
+		StatementFactory statementFactory = new StatementFactory(new UpdateMapper(converter));
 
-		this.converter.write(person, insert);
-		this.session.execute(insert);
+		StatementBuilder<RegularInsert> insert = statementFactory.insert(person, WriteOptions.empty());
+
+		this.session.execute(insert.build());
 
 		ResultSet rows = this.session.execute("SELECT * FROM person");
 		Row row = rows.one();

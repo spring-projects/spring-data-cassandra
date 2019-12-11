@@ -21,10 +21,11 @@ import static org.mockito.Mockito.*;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
-import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.Queue;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -32,20 +33,17 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.cassandra.ReactiveResultSet;
 import org.springframework.data.cassandra.core.cql.session.DefaultBridgedReactiveSession;
+import org.springframework.scheduling.annotation.AsyncResult;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.ResultSetFuture;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.SimpleStatement;
-import com.datastax.driver.core.Statement;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.cql.Statement;
 
 /**
  * Unit tests for {@link DefaultBridgedReactiveSession}.
@@ -55,9 +53,10 @@ import com.google.common.util.concurrent.ListenableFuture;
 @RunWith(MockitoJUnitRunner.Silent.class)
 public class DefaultBridgedReactiveSessionUnitTests {
 
-	@Mock Session sessionMock;
-	@Mock ResultSetFuture future;
-	@Mock ListenableFuture<PreparedStatement> preparedStatementFuture;
+	@Mock CqlSession sessionMock;
+
+	CompletableFuture<AsyncResultSet> future = new CompletableFuture<>();
+	CompletableFuture<PreparedStatement> preparedStatementFuture = new CompletableFuture<>();
 
 	private DefaultBridgedReactiveSession reactiveSession;
 
@@ -67,24 +66,12 @@ public class DefaultBridgedReactiveSessionUnitTests {
 		reactiveSession = new DefaultBridgedReactiveSession(sessionMock);
 
 		when(sessionMock.executeAsync(any(Statement.class))).thenReturn(future);
-		when(sessionMock.prepareAsync(any(RegularStatement.class))).thenReturn(preparedStatementFuture);
-
-		doAnswer(invocation -> {
-
-			Runnable listener = invocation.getArgument(0);
-
-			listener.run();
-
-			return null;
-		}).when(future).addListener(any(), any());
-
-		when(future.isDone()).thenReturn(true);
 	}
 
 	@Test // DATACASS-335
 	public void executeStatementShouldForwardStatementToSession() {
 
-		SimpleStatement statement = new SimpleStatement("SELECT *");
+		Statement<?> statement = SimpleStatement.newInstance("SELECT *");
 
 		reactiveSession.execute(statement).subscribe();
 
@@ -96,7 +83,7 @@ public class DefaultBridgedReactiveSessionUnitTests {
 
 		reactiveSession.execute("SELECT *").subscribe();
 
-		verify(sessionMock).executeAsync(eq(new SimpleStatement("SELECT *")));
+		verify(sessionMock).executeAsync(eq(SimpleStatement.newInstance("SELECT *")));
 	}
 
 	@Test // DATACASS-335
@@ -104,7 +91,7 @@ public class DefaultBridgedReactiveSessionUnitTests {
 
 		reactiveSession.execute("SELECT * WHERE a = ? and b = ?", "A", "B").subscribe();
 
-		verify(sessionMock).executeAsync(eq(new SimpleStatement("SELECT * WHERE a = ? and b = ?", "A", "B")));
+		verify(sessionMock).executeAsync(eq(SimpleStatement.newInstance("SELECT * WHERE a = ? and b = ?", "A", "B")));
 	}
 
 	@Test // DATACASS-335
@@ -113,21 +100,25 @@ public class DefaultBridgedReactiveSessionUnitTests {
 		reactiveSession.execute("SELECT * WHERE a = ?", Collections.singletonMap("a", "value")).subscribe();
 
 		verify(sessionMock)
-				.executeAsync(eq(new SimpleStatement("SELECT * WHERE a = ?", Collections.singletonMap("a", "value"))));
+				.executeAsync(eq(SimpleStatement.newInstance("SELECT * WHERE a = ?", Collections.singletonMap("a", "value"))));
 	}
 
 	@Test // DATACASS-335
 	public void testPrepareQuery() {
 
+		when(sessionMock.prepareAsync(any(SimpleStatement.class))).thenReturn(preparedStatementFuture);
+
 		reactiveSession.prepare("SELECT *").subscribe();
 
-		verify(sessionMock).prepareAsync(eq(new SimpleStatement("SELECT *")));
+		verify(sessionMock).prepareAsync(eq(SimpleStatement.newInstance("SELECT *")));
 	}
 
 	@Test // DATACASS-335
 	public void testPrepareStatement() {
 
-		SimpleStatement statement = new SimpleStatement("SELECT *");
+		when(sessionMock.prepareAsync(any(SimpleStatement.class))).thenReturn(preparedStatementFuture);
+
+		SimpleStatement statement = SimpleStatement.newInstance("SELECT *");
 		reactiveSession.prepare(statement).subscribe();
 
 		verify(sessionMock).prepareAsync(statement);
@@ -152,128 +143,70 @@ public class DefaultBridgedReactiveSessionUnitTests {
 		verify(sessionMock).isClosed();
 	}
 
-	@Test // DATACASS-335
-	public void testGetCluster() {
-
-		Cluster clusterMock = mock(Cluster.class);
-		when(sessionMock.getCluster()).thenReturn(clusterMock);
-
-		Cluster result = reactiveSession.getCluster();
-
-		assertThat(result).isSameAs(clusterMock);
-	}
-
 	@Test // DATACASS-509
-	public void shouldNotReadMoreThanAvailable() throws Exception {
+	public void shouldNotReadMoreThanAvailable() {
 
-		Iterator<Row> rows = mockIterator();
+		AsyncResultSet resultSet = mock(AsyncResultSet.class);
 
-		ResultSet resultSet = mock(ResultSet.class);
+		when(resultSet.remaining()).thenReturn(10);
+		when(resultSet.currentPage())
+				.thenReturn(IntStream.range(0, 10).mapToObj(value -> mock(Row.class)).collect(Collectors.toList()));
 
-		when(resultSet.getAvailableWithoutFetching()).thenReturn(10);
-		when(resultSet.iterator()).thenReturn(rows);
+		future.complete(resultSet);
+		when(resultSet.hasMorePages()).thenReturn(false);
 
-		when(future.get()).thenReturn(resultSet);
-		when(resultSet.isFullyFetched()).thenReturn(true);
+		reactiveSession.execute(SimpleStatement.newInstance("")).flatMapMany(ReactiveResultSet::rows).collectList()
+				.subscribe();
 
-		reactiveSession.execute(new SimpleStatement("")).flatMapMany(ReactiveResultSet::rows).collectList().subscribe();
-
-		verify(rows, times(10)).next();
-		verify(resultSet, never()).fetchMoreResults();
+		verify(resultSet, never()).fetchNextPage();
 	}
 
 	@Test // DATACASS-529
-	public void shouldReadAvailableResults() throws Exception {
+	public void shouldReadAvailableResults() {
 
-		Iterator<Row> rows = mockIterator();
+		AsyncResultSet resultSet = mock(AsyncResultSet.class);
+		when(resultSet.remaining()).thenReturn(10);
+		when(resultSet.currentPage())
+				.thenReturn(IntStream.range(0, 10).mapToObj(value -> mock(Row.class)).collect(Collectors.toList()));
+		future.complete(resultSet);
 
-		ResultSet resultSet = mock(ResultSet.class);
-		when(resultSet.iterator()).thenReturn(rows);
-		when(resultSet.getAvailableWithoutFetching()).thenReturn(10);
-		when(future.get()).thenReturn(resultSet);
-
-		Flux<Row> flux = reactiveSession.execute(new SimpleStatement("")).flatMapMany(ReactiveResultSet::availableRows);
+		Flux<Row> flux = reactiveSession.execute(SimpleStatement.newInstance(""))
+				.flatMapMany(ReactiveResultSet::availableRows);
 
 		flux.as(StepVerifier::create).expectNextCount(10).verifyComplete();
 
-		verify(rows, times(10)).next();
-		verify(future, times(1)).addListener(any(), any());
-		verify(resultSet, never()).fetchMoreResults();
+		verify(resultSet, never()).fetchNextPage();
 	}
 
 	@Test // DATACASS-509
-	public void shouldFetchMore() throws Exception {
+	public void shouldFetchMore() {
 
 		Iterator<Row> rows = mockIterator();
 
-		ResultSet resultSet = mock(ResultSet.class);
+		AsyncResultSet resultSet = mock(AsyncResultSet.class);
 
-		when(resultSet.getAvailableWithoutFetching()).thenReturn(10);
-		when(resultSet.iterator()).thenReturn(rows);
+		when(resultSet.remaining()).thenReturn(10);
+		when(resultSet.currentPage())
+				.thenReturn(IntStream.range(0, 10).mapToObj(value -> mock(Row.class)).collect(Collectors.toList()));
 
-		ResultSet emptyResultSet = mock(ResultSet.class);
+		AsyncResultSet emptyResultSet = mock(AsyncResultSet.class);
 
-		when(emptyResultSet.iterator()).thenReturn(Collections.emptyIterator());
-		when(emptyResultSet.isFullyFetched()).thenReturn(true);
+		when(emptyResultSet.currentPage()).thenReturn(Collections.emptyList());
+		when(emptyResultSet.hasMorePages()).thenReturn(false);
 
-		when(future.get()).thenReturn(resultSet);
-		when(resultSet.isFullyFetched()).thenReturn(false, true);
-		when(resultSet.fetchMoreResults()).thenReturn(Futures.immediateFuture(emptyResultSet));
+		future.complete(resultSet);
+		when(resultSet.hasMorePages()).thenReturn(true, false);
+		when(resultSet.fetchNextPage()).thenReturn(new AsyncResult<>(emptyResultSet).completable());
 
-		Flux<Row> flux = reactiveSession.execute(new SimpleStatement("")).flatMapMany(ReactiveResultSet::rows);
+		Flux<Row> flux = reactiveSession.execute(SimpleStatement.newInstance("")).flatMapMany(ReactiveResultSet::rows);
 
 		StepVerifier.create(flux, 0).thenRequest(10).expectNextCount(10).then(() -> {
-
-			verify(rows, times(10)).next();
-			verify(resultSet).fetchMoreResults();
+			verify(resultSet).fetchNextPage();
 		}).thenRequest(10).verifyComplete();
-	}
 
-	@Test // DATACASS-509
-	public void shouldFetchDependingOnCompletion() throws Exception {
-
-		Iterator<Row> rows = mockIterator();
-
-		Queue<Runnable> runnables = new ArrayDeque<>();
-
-		ResultSet resultSet = mock(ResultSet.class);
-
-		when(resultSet.getAvailableWithoutFetching()).thenReturn(10);
-		when(resultSet.iterator()).thenReturn(rows);
-
-		reset(future);
-		doAnswer(invocation -> {
-			runnables.offer(invocation.getArgument(0));
-			return null;
-		}).when(future).addListener(any(), any());
-
-		when(future.isDone()).thenReturn(true);
-		when(future.get()).thenReturn(resultSet);
-		when(resultSet.isFullyFetched()).thenReturn(false, false, true);
-		when(resultSet.fetchMoreResults()).thenReturn(future);
-
-		Flux<Row> flux = reactiveSession.execute(new SimpleStatement("")).flatMapMany(ReactiveResultSet::rows);
-
-		StepVerifier.create(flux, 0) //
-				.then(() -> runnables.poll().run()) // complete the first future from executeAsync()
-				.thenRequest(9).expectNextCount(9).then(() -> {
-					// feed the 9 elements from the initial ResultSet
-					verify(resultSet, never()).fetchMoreResults();
-				}).thenRequest(1).expectNextCount(1).then(() -> {
-
-					// initial ResultSet exhausted, fetch next chunk
-					verify(resultSet).fetchMoreResults();
-					runnables.poll().run();
-				}).thenRequest(1).expectNextCount(1).then(() -> {
-
-					// first element from the second ResultSet received, no subsequent fetch
-					assertThat(runnables).isEmpty();
-				}).thenRequest(19).expectNextCount(9).then(() -> {
-
-					// second ResultSet exhausted
-					assertThat(runnables).hasSize(1);
-					runnables.poll().run();
-				}).thenRequest(10).expectNextCount(10).verifyComplete();
+		verify(emptyResultSet).hasMorePages();
+		verify(emptyResultSet).currentPage();
+		verifyNoMoreInteractions(emptyResultSet);
 	}
 
 	@SuppressWarnings("unchecked")

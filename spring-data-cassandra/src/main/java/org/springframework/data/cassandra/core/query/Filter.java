@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.core.query;
 import java.util.Arrays;
 import java.util.Iterator;
 
+import org.springframework.data.util.Streamable;
 import org.springframework.util.Assert;
 
 /**
@@ -28,7 +29,7 @@ import org.springframework.util.Assert;
  * @since 2.0
  */
 @FunctionalInterface
-public interface Filter extends Iterable<CriteriaDefinition> {
+public interface Filter extends Streamable<CriteriaDefinition> {
 
 	/**
 	 * @return the {@link CriteriaDefinition}s.

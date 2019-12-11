@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import static org.springframework.data.cassandra.core.cql.CqlIdentifier.*;
-
 import java.util.Comparator;
 import java.util.Optional;
 
@@ -25,7 +23,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.expression.BeanFactoryAccessor;
 import org.springframework.context.expression.BeanFactoryResolver;
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.util.SpelUtils;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.AssociationHandler;
@@ -37,8 +34,8 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import com.datastax.driver.core.TupleType;
-import com.datastax.driver.core.UserType;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.type.TupleType;
 
 /**
  * Cassandra specific {@link BasicPersistentEntity} implementation that adds Cassandra specific metadata.
@@ -110,20 +107,20 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 			return determineName(annotation.value(), annotation.forceQuote());
 		}
 
-		return of(getType().getSimpleName(), false);
+		return CqlIdentifier.fromCql(getType().getSimpleName());
 	}
 
 	CqlIdentifier determineName(String value, boolean forceQuote) {
 
 		if (!StringUtils.hasText(value)) {
-			return of(getType().getSimpleName(), forceQuote);
+			return IdentifierFactory.create(getType().getSimpleName(), forceQuote);
 		}
 
 		String name = Optional.ofNullable(this.spelContext).map(it -> SpelUtils.evaluate(value, it)).orElse(value);
 
 		Assert.state(name != null, () -> String.format("Cannot determine default name for %s", this));
 
-		return CqlIdentifier.of(name, forceQuote);
+		return IdentifierFactory.create(name, forceQuote);
 	}
 
 	/* (non-Javadoc)
@@ -188,7 +185,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 		this.forceQuote = forceQuote;
 
 		if (changed) {
-			setTableName(of(getTableName().getUnquoted(), forceQuote));
+			setTableName(IdentifierFactory.create(getTableName().asInternal(), forceQuote));
 		}
 	}
 
@@ -256,7 +253,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	 */
 	@Override
 	@Nullable
-	public UserType getUserType() {
+	public com.datastax.oss.driver.api.core.type.UserDefinedType getUserType() {
 		return null;
 	}
 }

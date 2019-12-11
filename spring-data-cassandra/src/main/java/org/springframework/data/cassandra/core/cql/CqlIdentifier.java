@@ -20,9 +20,6 @@ import java.util.regex.Pattern;
 
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.TableMetadata;
-
 /**
  * This encapsulates the logic for CQL quoted and unquoted identifiers.
  * <p>
@@ -268,5 +265,15 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 	@Override
 	public String toString() {
 		return toCql();
+	}
+
+	/**
+	 * Create a Cassandra driver {@link com.datastax.oss.driver.api.core.CqlIdentifier} from this {@link CqlIdentifier}.
+	 *
+	 * @return the {@link com.datastax.oss.driver.api.core.CqlIdentifier} from this {@link CqlIdentifierIdentifier}.
+	 * @since 3.0
+	 */
+	public com.datastax.oss.driver.api.core.CqlIdentifier toCqlIdentifier() {
+		return com.datastax.oss.driver.api.core.CqlIdentifier.fromCql(this.identifier);
 	}
 }

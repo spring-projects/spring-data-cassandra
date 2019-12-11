@@ -23,7 +23,7 @@ import org.springframework.data.cassandra.SessionFactory;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlSession;
 
 /**
  * Abstract {@link SessionFactory} implementation that routes {@link #getSession()} calls to one of various target
@@ -122,7 +122,7 @@ public abstract class AbstractRoutingSessionFactory implements SessionFactory, I
 	 * @see org.springframework.data.cassandra.core.cql.session.SessionFactory#getSession()
 	 */
 	@Override
-	public Session getSession() {
+	public CqlSession getSession() {
 		return determineTargetSessionFactory().getSession();
 	}
 

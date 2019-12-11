@@ -27,8 +27,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import com.datastax.driver.core.CodecRegistry;
-import com.datastax.driver.core.SimpleStatement;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 
 /**
  * String-based Query abstracting a CQL query with parameter bindings.
@@ -105,7 +104,7 @@ class StringBasedQuery {
 		public SimpleStatement bind(String input, List<Object> parameters) {
 
 			if (parameters.isEmpty()) {
-				return new SimpleStatement(input);
+				return SimpleStatement.newInstance(input);
 			}
 
 			StringBuilder result = new StringBuilder();
@@ -133,7 +132,7 @@ class StringBasedQuery {
 
 			String bindableStatement = result.append(input.subSequence(currentPosition, input.length())).toString();
 
-			return new SimpleStatement(bindableStatement, parameters.subList(0, parameterIndex).toArray());
+			return SimpleStatement.newInstance(bindableStatement, parameters.subList(0, parameterIndex).toArray());
 		}
 	}
 

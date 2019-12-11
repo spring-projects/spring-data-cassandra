@@ -32,6 +32,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.reactivestreams.Publisher;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Configuration;
@@ -45,9 +46,9 @@ import org.springframework.stereotype.Repository;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.TableMetadata;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
 
 /**
  * Test for {@link ReactiveCassandraRepository} using reactive wrapper type conversion.
@@ -70,7 +71,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 		}
 	}
 
-	@Autowired Session session;
+	@Autowired CqlSession session;
 	@Autowired MixedUserRepository reactiveRepository;
 	@Autowired UserRepostitory reactiveUserRepostitory;
 	@Autowired RxJava1UserRepository rxJava1UserRepository;
@@ -81,11 +82,11 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	@Before
 	public void setUp() throws Exception {
 
-		KeyspaceMetadata keyspace = session.getCluster().getMetadata().getKeyspace(session.getLoggedKeyspace());
-		TableMetadata person = keyspace.getTable("person");
+		TableMetadata users = session.getKeyspace().flatMap(it -> session.getMetadata().getKeyspace(it))
+				.flatMap(it -> it.getTable(CqlIdentifier.fromCql("users"))).get();
 
-		if (person.getIndex("IX_person_lastname") == null) {
-			session.execute("CREATE INDEX IX_person_lastname ON person (lastname);");
+		if (users.getIndexes().containsKey(CqlIdentifier.fromCql("IX_lastname"))) {
+			session.execute("CREATE INDEX IX_lastname ON users (lastname);");
 			Thread.sleep(500);
 		}
 

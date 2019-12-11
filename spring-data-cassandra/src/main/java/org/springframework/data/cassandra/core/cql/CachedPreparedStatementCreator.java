@@ -20,11 +20,13 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.exceptions.DriverException;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.DriverException;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 
 /**
  * This {@link PreparedStatementCreator} maintains a static cache of all prepared statements for the duration of the JVM
@@ -43,7 +45,7 @@ import com.datastax.driver.core.exceptions.DriverException;
 @Deprecated
 public class CachedPreparedStatementCreator implements PreparedStatementCreator {
 
-	private static final Map<Session, Map<String, PreparedStatement>> CACHE = new ConcurrentHashMap<>();
+	private static final Map<CqlSession, Map<String, PreparedStatement>> CACHE = new ConcurrentHashMap<>();
 
 	protected final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -74,11 +76,12 @@ public class CachedPreparedStatementCreator implements PreparedStatementCreator 
 	 * @see org.springframework.data.cassandra.core.cql.PreparedStatementCreator#createPreparedStatement(com.datastax.driver.core.Session)
 	 */
 	@Override
-	public PreparedStatement createPreparedStatement(Session session) throws DriverException {
+	public PreparedStatement createPreparedStatement(CqlSession session) throws DriverException {
 
-		String cacheKey = String.valueOf(session.getLoggedKeyspace()).concat("|").concat(this.cql);
+		CqlIdentifier keyspace = session.getKeyspace().orElse(CqlIdentifier.fromCql("unknown"));
+		String cacheKey = keyspace.asInternal().concat("|").concat(this.cql);
 
-		log.debug("Cacheable PreparedStatement in Keyspace {}", session.getLoggedKeyspace());
+		log.debug("Cacheable PreparedStatement in Keyspace {}", keyspace.asCql(true));
 
 		Map<String, PreparedStatement> sessionCache = getOrCreateSessionLocalCache(session);
 
@@ -86,7 +89,7 @@ public class CachedPreparedStatementCreator implements PreparedStatementCreator 
 	}
 
 	@SuppressWarnings("all")
-	private Map<String, PreparedStatement> getOrCreateSessionLocalCache(Session session) {
+	private Map<String, PreparedStatement> getOrCreateSessionLocalCache(CqlSession session) {
 
 		Map<String, PreparedStatement> sessionMap = CACHE.get(session);
 
@@ -107,7 +110,7 @@ public class CachedPreparedStatementCreator implements PreparedStatementCreator 
 	}
 
 	@SuppressWarnings("all")
-	private PreparedStatement getOrPrepareStatement(Session session, String cacheKey,
+	private PreparedStatement getOrPrepareStatement(CqlSession session, String cacheKey,
 			Map<String, PreparedStatement> sessionCache) {
 
 		PreparedStatement preparedStatement = sessionCache.get(cacheKey);

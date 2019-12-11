@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.cassandra.core.cql.keyspace.ColumnSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
@@ -33,7 +34,7 @@ import org.springframework.data.mapping.model.Property;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.util.ReflectionUtils;
 
-import com.datastax.driver.core.DataType;
+import com.datastax.oss.driver.api.core.type.DataTypes;
 
 /**
  * Unit tests for {@link BasicCassandraPersistentProperty} with a composite primary key class.
@@ -72,16 +73,16 @@ public class CassandraCompositePrimaryKeyUnitTests {
 		List<ColumnSpecification> partitionKeyColumns = spec.getPartitionKeyColumns();
 		assertThat(partitionKeyColumns).hasSize(1);
 		ColumnSpecification partitionKeyColumn = partitionKeyColumns.get(0);
-		assertThat(partitionKeyColumn.getName().toCql()).isEqualTo("z");
+		assertThat(partitionKeyColumn.getName()).hasToString("z");
 		assertThat(partitionKeyColumn.getKeyType()).isEqualTo(PrimaryKeyType.PARTITIONED);
-		assertThat(partitionKeyColumn.getType()).isEqualTo(DataType.text());
+		assertThat(partitionKeyColumn.getType()).isEqualTo(DataTypes.TEXT);
 
 		List<ColumnSpecification> clusteredKeyColumns = spec.getClusteredKeyColumns();
 		assertThat(clusteredKeyColumns).hasSize(1);
 		ColumnSpecification clusteredKeyColumn = clusteredKeyColumns.get(0);
-		assertThat(clusteredKeyColumn.getName().toCql()).isEqualTo("a");
+		assertThat(clusteredKeyColumn.getName()).hasToString("a");
 		assertThat(clusteredKeyColumn.getKeyType()).isEqualTo(PrimaryKeyType.CLUSTERED);
-		assertThat(partitionKeyColumn.getType()).isEqualTo(DataType.text());
+		assertThat(partitionKeyColumn.getType()).isEqualTo(DataTypes.TEXT);
 	}
 
 	@PrimaryKeyClass

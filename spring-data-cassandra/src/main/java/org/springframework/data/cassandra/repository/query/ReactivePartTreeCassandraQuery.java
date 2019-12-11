@@ -25,7 +25,7 @@ import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.query.parser.PartTree;
 
-import com.datastax.driver.core.Statement;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 
 /**
  * Reactive PartTree {@link RepositoryQuery} implementation for Cassandra.
@@ -94,7 +94,7 @@ public class ReactivePartTreeCassandraQuery extends AbstractReactiveCassandraQue
 	 * @see org.springframework.data.cassandra.repository.query.AbstractCassandraQuery#createQuery(org.springframework.data.cassandra.repository.query.CassandraParameterAccessor, boolean)
 	 */
 	@Override
-	protected Statement createQuery(CassandraParameterAccessor parameterAccessor) {
+	protected SimpleStatement createQuery(CassandraParameterAccessor parameterAccessor) {
 
 		if (isCountQuery()) {
 			return getQueryStatementCreator().count(getStatementFactory(), getTree(), parameterAccessor);

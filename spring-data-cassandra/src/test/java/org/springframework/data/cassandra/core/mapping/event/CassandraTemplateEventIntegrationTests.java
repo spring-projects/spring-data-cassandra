@@ -21,12 +21,13 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.data.cassandra.core.CassandraTemplate;
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.domain.User;
 
-import com.datastax.driver.core.Statement;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 
 /**
  * Integration test for mapping events via {@link CassandraTemplate}.
@@ -52,7 +53,7 @@ public class CassandraTemplateEventIntegrationTests extends EventListenerIntegra
 		template.stream("SELECT * FROM users;", User.class).count(); // Just load entire stream.
 
 		assertThat(getListener().getAfterLoad()).extracting(CassandraMappingEvent::getTableName)
-				.contains(CqlIdentifier.of("users"));
+				.contains(CqlIdentifier.fromCql("users"));
 		assertThat(getListener().getAfterConvert()).extracting(CassandraMappingEvent::getSource).containsOnly(firstUser);
 	}
 
@@ -62,7 +63,7 @@ public class CassandraTemplateEventIntegrationTests extends EventListenerIntegra
 		template.slice(Query.empty(), User.class).getSize(); // Force load entire collection.
 
 		assertThat(getListener().getAfterLoad()).extracting(CassandraMappingEvent::getTableName)
-				.contains(CqlIdentifier.of("users"));
+				.contains(CqlIdentifier.fromCql("users"));
 		assertThat(getListener().getAfterConvert()).extracting(CassandraMappingEvent::getSource).containsOnly(firstUser);
 	}
 
@@ -111,7 +112,7 @@ public class CassandraTemplateEventIntegrationTests extends EventListenerIntegra
 			}
 
 			@Override
-			public <T> List<T> select(Statement statement, Class<T> entityClass) {
+			public <T> List<T> select(SimpleStatement statement, Class<T> entityClass) {
 				return template.select(statement, entityClass);
 			}
 		};

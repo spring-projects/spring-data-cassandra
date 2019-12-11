@@ -20,8 +20,8 @@ import java.util.List;
 
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.TupleType;
+import com.datastax.oss.driver.api.core.type.DataType;
+import com.datastax.oss.driver.api.core.type.TupleType;
 
 /**
  * Factory to create {@link TupleType} given {@link DataType tuple element types}. Primarily internal use.

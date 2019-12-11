@@ -23,10 +23,10 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.lang.Nullable;
 
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Statement;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.cql.Statement;
 
 /**
  * Interface specifying a basic set of CQL operations. Implemented by {@link CqlTemplate}. Not often used directly, but
@@ -40,14 +40,14 @@ import com.datastax.driver.core.Statement;
 public interface CqlOperations {
 
 	// -------------------------------------------------------------------------
-	// Methods dealing with a plain com.datastax.driver.core.Session
+	// Methods dealing with a plain com.datastax.oss.driver.api.core.CqlSession
 	// -------------------------------------------------------------------------
 
 	/**
 	 * Execute a CQL data access operation, implemented as callback action working on a
 	 * {@link com.datastax.driver.core.Session}. This allows for implementing arbitrary data access operations, within
-	 * Spring's managed CQL environment: that is, converting CQL
-	 * {@link com.datastax.driver.core.exceptions.DriverException}s into Spring's {@link DataAccessException} hierarchy.
+	 * Spring's managed CQL environment: that is, converting CQL {@link com.datastax.oss.driver.api.core.DriverException}s
+	 * into Spring's {@link DataAccessException} hierarchy.
 	 * <p>
 	 * The callback action can return a result object, for example a domain object or a collection of domain objects.
 	 *
@@ -101,7 +101,7 @@ public interface CqlOperations {
 	 * Execute a CQL data access operation, implemented as callback action working on a CQL {@link PreparedStatement}.
 	 * This allows for implementing arbitrary data access operations on a single Statement, within Spring's managed CQL
 	 * environment: that is, participating in Spring-managed transactions and converting CQL
-	 * {@link com.datastax.driver.core.exceptions.DriverException}s into Spring's {@link DataAccessException} hierarchy.
+	 * {@link com.datastax.oss.driver.api.core.DriverException}s into Spring's {@link DataAccessException} hierarchy.
 	 * <p>
 	 * The callback action can return a result object, for example a domain object or a collection of domain objects.
 	 *
@@ -482,7 +482,7 @@ public interface CqlOperations {
 	Iterable<Row> queryForRows(String cql, Object... args) throws DataAccessException;
 
 	// -------------------------------------------------------------------------
-	// Methods dealing with com.datastax.driver.core.Statement
+	// Methods dealing with com.datastax.oss.driver.api.core.cql.Statement
 	// -------------------------------------------------------------------------
 
 	/**
@@ -492,7 +492,7 @@ public interface CqlOperations {
 	 * @return boolean value whether the statement was applied.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	boolean execute(Statement statement) throws DataAccessException;
+	boolean execute(Statement<?> statement) throws DataAccessException;
 
 	/**
 	 * Execute a query given static CQL, reading the {@link ResultSet} with a {@link ResultSetExtractor}.
@@ -507,7 +507,7 @@ public interface CqlOperations {
 	 * @see #query(String, ResultSetExtractor, Object...)
 	 */
 	@Nullable
-	<T> T query(Statement statement, ResultSetExtractor<T> resultSetExtractor) throws DataAccessException;
+	<T> T query(Statement<?> statement, ResultSetExtractor<T> resultSetExtractor) throws DataAccessException;
 
 	/**
 	 * Execute a query given static CQL, reading the {@link ResultSet} on a per-row basis with a
@@ -521,7 +521,7 @@ public interface CqlOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #query(String, RowCallbackHandler, Object[])
 	 */
-	void query(Statement statement, RowCallbackHandler rowCallbackHandler) throws DataAccessException;
+	void query(Statement<?> statement, RowCallbackHandler rowCallbackHandler) throws DataAccessException;
 
 	/**
 	 * Execute a query given static CQL, mapping each row to a Java object via a {@link RowMapper}.
@@ -535,7 +535,7 @@ public interface CqlOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #query(String, RowMapper, Object[])
 	 */
-	<T> List<T> query(Statement statement, RowMapper<T> rowMapper) throws DataAccessException;
+	<T> List<T> query(Statement<?> statement, RowMapper<T> rowMapper) throws DataAccessException;
 
 	/**
 	 * Execute a query for a result {@link List}, given static CQL.
@@ -552,7 +552,7 @@ public interface CqlOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #queryForList(String, Object[])
 	 */
-	List<Map<String, Object>> queryForList(Statement statement) throws DataAccessException;
+	List<Map<String, Object>> queryForList(Statement<?> statement) throws DataAccessException;
 
 	/**
 	 * Execute a query for a result {@link List}, given static CQL.
@@ -571,7 +571,7 @@ public interface CqlOperations {
 	 * @see #queryForList(String, Class, Object[])
 	 * @see SingleColumnRowMapper
 	 */
-	<T> List<T> queryForList(Statement statement, Class<T> elementType) throws DataAccessException;
+	<T> List<T> queryForList(Statement<?> statement, Class<T> elementType) throws DataAccessException;
 
 	/**
 	 * Execute a query for a result Map, given static CQL.
@@ -590,7 +590,7 @@ public interface CqlOperations {
 	 * @see #queryForMap(String, Object[])
 	 * @see ColumnMapRowMapper
 	 */
-	Map<String, Object> queryForMap(Statement statement) throws DataAccessException;
+	Map<String, Object> queryForMap(Statement<?> statement) throws DataAccessException;
 
 	/**
 	 * Execute a query for a result object, given static CQL.
@@ -610,7 +610,7 @@ public interface CqlOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #queryForObject(String, Class, Object[])
 	 */
-	<T> T queryForObject(Statement statement, Class<T> requiredType) throws DataAccessException;
+	<T> T queryForObject(Statement<?> statement, Class<T> requiredType) throws DataAccessException;
 
 	/**
 	 * Execute a query given static CQL, mapping a single result row to a Java object via a {@link RowMapper}.
@@ -626,7 +626,7 @@ public interface CqlOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #queryForObject(String, RowMapper, Object[])
 	 */
-	<T> T queryForObject(Statement statement, RowMapper<T> rowMapper) throws DataAccessException;
+	<T> T queryForObject(Statement<?> statement, RowMapper<T> rowMapper) throws DataAccessException;
 
 	/**
 	 * Execute a query for a ResultSet, given static CQL.
@@ -642,7 +642,7 @@ public interface CqlOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #queryForResultSet(String, Object[])
 	 */
-	ResultSet queryForResultSet(Statement statement) throws DataAccessException;
+	ResultSet queryForResultSet(Statement<?> statement) throws DataAccessException;
 
 	/**
 	 * Execute a query for Rows, given static CQL.
@@ -658,10 +658,10 @@ public interface CqlOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #queryForResultSet(String, Object[])
 	 */
-	Iterable<Row> queryForRows(Statement statement) throws DataAccessException;
+	Iterable<Row> queryForRows(Statement<?> statement) throws DataAccessException;
 
 	// -------------------------------------------------------------------------
-	// Methods dealing with com.datastax.driver.core.PreparedStatement
+	// Methods dealing with com.datastax.oss.driver.api.core.cql.PreparedStatement
 	// -------------------------------------------------------------------------
 
 	/**
@@ -672,14 +672,13 @@ public interface CqlOperations {
 	 * @return boolean value whether the statement was applied.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	// TODO: Interferes with execute(session callback lambda)
 	boolean execute(PreparedStatementCreator psc) throws DataAccessException;
 
 	/**
 	 * Execute a CQL data access operation, implemented as callback action working on a CQL {@link PreparedStatement}.
 	 * This allows for implementing arbitrary data access operations on a single {@link PreparedStatement}, within
 	 * Spring's managed CQL environment: that is, participating in Spring-managed transactions and converting CQL
-	 * {@link com.datastax.driver.core.exceptions.DriverException}s into Spring's {@link DataAccessException} hierarchy.
+	 * {@link com.datastax.oss.driver.api.core.DriverException}s into Spring's {@link DataAccessException} hierarchy.
 	 * <p>
 	 * The callback action can return a result object, for example a domain object or a collection of domain objects.
 	 *

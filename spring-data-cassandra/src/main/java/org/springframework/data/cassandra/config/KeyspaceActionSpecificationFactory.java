@@ -33,6 +33,8 @@ import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceOption;
 import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceOption.ReplicationStrategy;
 import org.springframework.data.cassandra.core.cql.keyspace.Option;
 
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+
 /**
  * Factory to create {@link CreateKeyspaceSpecification} and {@link DropKeyspaceSpecification}.
  *
@@ -42,7 +44,7 @@ import org.springframework.data.cassandra.core.cql.keyspace.Option;
 @RequiredArgsConstructor
 class KeyspaceActionSpecificationFactory {
 
-	private final KeyspaceIdentifier name;
+	private final CqlIdentifier name;
 
 	private final List<DataCenterReplication> replications;
 
@@ -60,7 +62,7 @@ class KeyspaceActionSpecificationFactory {
 	 * @return the new {@link KeyspaceActionSpecificationFactoryBuilder} for {@code keyspaceName}.
 	 */
 	public static KeyspaceActionSpecificationFactoryBuilder builder(String keyspaceName) {
-		return builder(KeyspaceIdentifier.of(keyspaceName));
+		return builder(CqlIdentifier.fromCql(keyspaceName));
 	}
 
 	/**
@@ -69,8 +71,22 @@ class KeyspaceActionSpecificationFactory {
 	 *
 	 * @param keyspaceName must not be {@literal null} or empty.
 	 * @return the new {@link KeyspaceActionSpecificationFactoryBuilder} for {@code keyspaceName}.
+	 * @deprecated since 3.0, use {@link #builder(CqlIdentifier)}.
 	 */
+	@Deprecated
 	public static KeyspaceActionSpecificationFactoryBuilder builder(KeyspaceIdentifier keyspaceName) {
+		return builder(keyspaceName.toCqlIdentifier());
+	}
+
+	/**
+	 * Create a new {@link KeyspaceActionSpecificationFactoryBuilder} to configure a new
+	 * {@link KeyspaceActionSpecificationFactory}.
+	 *
+	 * @param keyspaceName must not be {@literal null} or empty.
+	 * @return the new {@link KeyspaceActionSpecificationFactoryBuilder} for {@code keyspaceName}.
+	 * @since 3.0
+	 */
+	public static KeyspaceActionSpecificationFactoryBuilder builder(CqlIdentifier keyspaceName) {
 		return new KeyspaceActionSpecificationFactoryBuilder(keyspaceName);
 	}
 
@@ -170,7 +186,7 @@ class KeyspaceActionSpecificationFactory {
 
 	static class KeyspaceActionSpecificationFactoryBuilder {
 
-		private final KeyspaceIdentifier name;
+		private final CqlIdentifier name;
 
 		private final List<DataCenterReplication> replications = new ArrayList<>();
 
@@ -180,7 +196,7 @@ class KeyspaceActionSpecificationFactory {
 
 		private boolean durableWrites = false;
 
-		private KeyspaceActionSpecificationFactoryBuilder(KeyspaceIdentifier name) {
+		private KeyspaceActionSpecificationFactoryBuilder(CqlIdentifier name) {
 			this.name = name;
 		}
 

@@ -26,12 +26,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.cassandra.core.cql.session.DefaultSessionFactory;
 import org.springframework.data.cassandra.core.cql.session.lookup.AbstractRoutingSessionFactory;
 import org.springframework.data.cassandra.core.cql.session.lookup.MapSessionFactoryLookup;
 import org.springframework.data.cassandra.core.cql.session.lookup.SessionFactoryLookupFailureException;
 
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlSession;
 
 /**
  * Unit tests for {@link AbstractRoutingSessionFactory}.
@@ -41,8 +42,8 @@ import com.datastax.driver.core.Session;
 @RunWith(MockitoJUnitRunner.class)
 public class AbstractRoutingSessionFactoryUnitTests {
 
-	@Mock Session defaultSession;
-	@Mock Session routedSession;
+	@Mock CqlSession defaultSession;
+	@Mock CqlSession routedSession;
 
 	StubbedRoutingSessionFactory sut;
 

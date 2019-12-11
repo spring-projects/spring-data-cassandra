@@ -17,15 +17,15 @@ package org.springframework.data.cassandra.core.cql.keyspace;
 
 import static org.springframework.data.cassandra.core.cql.keyspace.CqlStringUtils.*;
 
-import com.datastax.oss.driver.api.core.CqlIdentifier;
 import lombok.EqualsAndHashCode;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.springframework.data.cassandra.core.cql.KeyspaceIdentifier;
 import org.springframework.lang.Nullable;
+
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * Abstract builder class to support the construction of table specifications that have table options, that is, those

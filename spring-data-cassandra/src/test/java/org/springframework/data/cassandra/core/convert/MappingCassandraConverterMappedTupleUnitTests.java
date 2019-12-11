@@ -15,11 +15,14 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.data.cassandra.test.util.RowMockUtil.column;
+import static org.assertj.core.api.Assertions.*;
+import static org.springframework.data.cassandra.test.util.RowMockUtil.*;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -32,11 +35,10 @@ import org.springframework.data.cassandra.core.mapping.Element;
 import org.springframework.data.cassandra.core.mapping.Tuple;
 import org.springframework.data.cassandra.test.util.RowMockUtil;
 
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.TupleValue;
-import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.data.TupleValue;
+import com.datastax.oss.driver.api.core.type.DataTypes;
 
 /**
  * Unit tests for mapped tuples through {@link MappingCassandraConverter}.
@@ -68,7 +70,7 @@ public class MappingCassandraConverterMappedTupleUnitTests {
 		TupleValue value = entity.getTupleType().newValue("hello", 1);
 
 		this.rowMock = RowMockUtil.newRowMock(
-			column("name", "Jon Doe", DataType.text()),
+				column("name", "Jon Doe", DataTypes.TEXT),
 			column("tuple", value, entity.getTupleType())
 		);
 
@@ -89,7 +91,7 @@ public class MappingCassandraConverterMappedTupleUnitTests {
 		MappedTuple tuple = new MappedTuple("hello", 1);
 		Person person = new Person("Jon Doe", tuple);
 
-		Insert insert = QueryBuilder.insertInto("table");
+		Map<CqlIdentifier, Object> insert = new LinkedHashMap<>();
 
 		this.mappingCassandraConverter.write(person, insert);
 

@@ -29,6 +29,7 @@ import java.util.stream.Stream;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Configuration;
@@ -42,7 +43,7 @@ import org.springframework.data.cassandra.repository.support.IntegrationTestConf
 import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.datastax.driver.core.ResultSet;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
 
 /**
  * Integration tests for use with {@link PersonRepositoryWithNamedQueries}.

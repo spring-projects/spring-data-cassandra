@@ -15,9 +15,8 @@
  */
 package org.springframework.data.cassandra.core.mapping.event;
 
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
-
-import com.datastax.driver.core.Statement;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.cql.Statement;
 
 /**
  * Event thrown before a row or a set of rows is deleted.
@@ -37,7 +36,7 @@ public class BeforeDeleteEvent<T> extends AbstractDeleteEvent<T> {
 	 * @param type must not be {@literal null}.
 	 * @param tableName must not be {@literal null}.
 	 */
-	public BeforeDeleteEvent(Statement source, Class<T> type, CqlIdentifier tableName) {
+	public BeforeDeleteEvent(Statement<?> source, Class<T> type, CqlIdentifier tableName) {
 		super(source, type, tableName);
 	}
 }

@@ -33,6 +33,7 @@ public class CassandraReadTimeoutException extends QueryTimeoutException {
 		this.wasDataReceived = wasDataReceived;
 	}
 
+	// TODO: Rename wasDataPresent
 	public boolean getWasDataReceived() {
 		return wasDataReceived;
 	}

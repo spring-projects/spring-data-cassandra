@@ -15,9 +15,9 @@
  */
 package org.springframework.data.cassandra.core.cql
 
-import com.datastax.driver.core.ResultSet
-import com.datastax.driver.core.Row
-import com.datastax.driver.core.Statement
+import com.datastax.oss.driver.api.core.cql.ResultSet
+import com.datastax.oss.driver.api.core.cql.Row
+import com.datastax.oss.driver.api.core.cql.Statement
 import kotlin.reflect.KClass
 
 /**
@@ -63,13 +63,13 @@ fun <T : Any> CqlOperations.queryForObject(cql: String, vararg args: Any, functi
  * Extension for [CqlOperations.queryForObject] providing a [KClass] based variant.
  */
 @Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("queryForObject<T>(statement)"))
-fun <T : Any> CqlOperations.queryForObject(statement: Statement, entityClass: KClass<T>): T? =
+fun <T : Any> CqlOperations.queryForObject(statement: Statement<*>, entityClass: KClass<T>): T? =
 		queryForObject(statement, entityClass.java)
 
 /**
  * Extension for [CqlOperations.queryForObject] leveraging reified type parameters.
  */
-inline fun <reified T : Any> CqlOperations.queryForObject(statement: Statement): T? =
+inline fun <reified T : Any> CqlOperations.queryForObject(statement: Statement<*>): T? =
 		queryForObject(statement, T::class.java)
 
 /**
@@ -90,14 +90,14 @@ inline fun <reified T : Any> CqlOperations.queryForList(cql: String, vararg args
  * Extension for [CqlOperations.queryForList] providing a [KClass] based variant.
  */
 @Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("queryForList<T>(statement)"))
-fun <T : Any> CqlOperations.queryForList(statement: Statement, entityClass: KClass<T>): List<T> =
+fun <T : Any> CqlOperations.queryForList(statement: Statement<*>, entityClass: KClass<T>): List<T> =
 		queryForList(statement, entityClass.java)
 
 /**
  * Extension for [CqlOperations.queryForList] leveraging reified type parameters.
  */
 @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
-inline fun <reified T : Any> CqlOperations.queryForList(statement: Statement): List<T> =
+inline fun <reified T : Any> CqlOperations.queryForList(statement: Statement<*>): List<T> =
 		queryForList(statement, T::class.java)
 
 /**

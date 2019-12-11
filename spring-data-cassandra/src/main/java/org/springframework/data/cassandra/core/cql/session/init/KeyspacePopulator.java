@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.cql.session.init;
 
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlSession;
 
 /**
  * Strategy used to populate, initialize, or clean up a Cassandra keyspace.
@@ -23,7 +23,6 @@ import com.datastax.driver.core.Session;
  * @author Mark Paluch
  * @since 3.0
  * @see ResourceKeyspacePopulator
- * @see KeyspacePopulatorUtils
  * @see SessionFactoryInitializer
  */
 @FunctionalInterface
@@ -34,13 +33,11 @@ public interface KeyspacePopulator {
 	 * <p>
 	 * Concrete implementations <em>may</em> throw a {@link RuntimeException} if an error is encountered but are
 	 * <em>strongly encouraged</em> to throw a specific {@link ScriptException} instead. For example, Spring's
-	 * {@link ResourceKeyspacePopulator} and {@link KeyspacePopulatorUtils} wrap all exceptions in
-	 * {@code ScriptExceptions}.
+	 * {@link ResourceKeyspacePopulator} wrap all exceptions in {@code ScriptExceptions}.
 	 *
-	 * @param session the CQL {@link Session} to use to populate the keyspace; already configured and ready to use; never
-	 *          {@literal null}
+	 * @param session the CQL {@link CqlSession} to use to populate the keyspace; already configured and ready to use;
+	 *          never {@literal null}
 	 * @throws ScriptException in all other error cases
-	 * @see KeyspacePopulatorUtils#execute
 	 */
-	void populate(Session session) throws ScriptException;
+	void populate(CqlSession session) throws ScriptException;
 }

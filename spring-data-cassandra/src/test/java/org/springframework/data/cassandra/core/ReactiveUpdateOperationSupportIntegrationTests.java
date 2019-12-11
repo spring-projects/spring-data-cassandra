@@ -31,13 +31,14 @@ import org.junit.Test;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.cql.session.DefaultBridgedReactiveSession;
 import org.springframework.data.cassandra.core.mapping.Column;
 import org.springframework.data.cassandra.core.mapping.Indexed;
 import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
+
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * Integration tests for {@link ReactiveUpdateOperationSupport}.
@@ -59,8 +60,8 @@ public class ReactiveUpdateOperationSupportIntegrationTests extends AbstractKeys
 		admin = new CassandraAdminTemplate(session, new MappingCassandraConverter());
 		template = new ReactiveCassandraTemplate(new DefaultBridgedReactiveSession(session));
 
-		admin.dropTable(true, CqlIdentifier.of("person"));
-		admin.createTable(false, CqlIdentifier.of("person"), Person.class, Collections.emptyMap());
+		admin.dropTable(true, CqlIdentifier.fromCql("person"));
+		admin.createTable(false, CqlIdentifier.fromCql("person"), Person.class, Collections.emptyMap());
 
 		han = new Person();
 		han.firstname = "han";

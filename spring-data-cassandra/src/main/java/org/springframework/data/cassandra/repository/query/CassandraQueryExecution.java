@@ -37,9 +37,9 @@ import org.springframework.data.repository.query.ReturnedType;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Statement;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.cql.Statement;
 
 /**
  * Query executions for Cassandra.
@@ -51,7 +51,7 @@ import com.datastax.driver.core.Statement;
 interface CassandraQueryExecution {
 
 	@Nullable
-	Object execute(Statement statement, Class<?> type);
+	Object execute(Statement<?> statement, Class<?> type);
 
 	/**
 	 * {@link CassandraQueryExecution} for a Stream.
@@ -68,7 +68,7 @@ interface CassandraQueryExecution {
 		 * @see org.springframework.data.cassandra.repository.query.CassandraQueryExecution#execute(java.lang.String, java.lang.Class)
 		 */
 		@Override
-		public Object execute(Statement statement, Class<?> type) {
+		public Object execute(Statement<?> statement, Class<?> type) {
 			return operations.stream(statement, type).map(resultProcessing::convert);
 		}
 	}
@@ -88,11 +88,11 @@ interface CassandraQueryExecution {
 		 * @see org.springframework.data.cassandra.repository.query.CassandraQueryExecution#execute(java.lang.String, java.lang.Class)
 		 */
 		@Override
-		public Object execute(Statement statement, Class<?> type) {
+		public Object execute(Statement<?> statement, Class<?> type) {
 
 			CassandraPageRequest.validatePageable(pageable);
 
-			Statement statementToUse = statement.setFetchSize(pageable.getPageSize());
+			Statement<?> statementToUse = statement.setPageSize(pageable.getPageSize());
 
 			if (pageable instanceof CassandraPageRequest) {
 				statementToUse = statementToUse.setPagingState(((CassandraPageRequest) pageable).getPagingState());
@@ -123,7 +123,7 @@ interface CassandraQueryExecution {
 		 * @see org.springframework.data.cassandra.repository.query.CassandraQueryExecution#execute(java.lang.String, java.lang.Class)
 		 */
 		@Override
-		public Object execute(Statement statement, Class<?> type) {
+		public Object execute(Statement<?> statement, Class<?> type) {
 			return operations.select(statement, type);
 		}
 	}
@@ -144,7 +144,7 @@ interface CassandraQueryExecution {
 		 */
 		@Override
 		@SuppressWarnings("unchecked")
-		public Object execute(Statement statement, Class<?> type) {
+		public Object execute(Statement<?> statement, Class<?> type) {
 
 			List<Object> objects = operations.select(statement, (Class) type);
 
@@ -175,7 +175,7 @@ interface CassandraQueryExecution {
 		 * @see org.springframework.data.cassandra.repository.query.CassandraQueryExecution#execute(java.lang.String, java.lang.Class)
 		 */
 		@Override
-		public Object execute(Statement statement, Class<?> type) {
+		public Object execute(Statement<?> statement, Class<?> type) {
 
 			ResultSet resultSet = this.operations.getCqlOperations().queryForResultSet(statement);
 
@@ -213,7 +213,7 @@ interface CassandraQueryExecution {
 		 * @see org.springframework.data.cassandra.repository.query.CassandraQueryExecution#execute(java.lang.String, java.lang.Class)
 		 */
 		@Override
-		public Object execute(Statement statement, Class<?> type) {
+		public Object execute(Statement<?> statement, Class<?> type) {
 			return operations.getCqlOperations().queryForResultSet(statement);
 		}
 	}
@@ -234,7 +234,7 @@ interface CassandraQueryExecution {
 		 */
 		@Nullable
 		@Override
-		public Object execute(Statement statement, Class<?> type) {
+		public Object execute(Statement<?> statement, Class<?> type) {
 
 			Object result = delegate.execute(statement, type);
 

@@ -38,9 +38,10 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.auditing.IsNewAwareAuditingHandler;
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
+
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * Unit tests for {@link ReactiveAuditingEntityCallback}.
@@ -76,7 +77,7 @@ public class ReactiveAuditingEntityCallbackUnitTests {
 	public void triggersCreationMarkForObjectWithEmptyId() {
 
 		Sample sample = new Sample();
-		callback.onBeforeConvert(sample, CqlIdentifier.of("foo"));
+		callback.onBeforeConvert(sample, CqlIdentifier.fromCql("foo"));
 
 		verify(handler, times(1)).markCreated(sample);
 		verify(handler, times(0)).markModified(any());
@@ -87,7 +88,7 @@ public class ReactiveAuditingEntityCallbackUnitTests {
 
 		Sample sample = new Sample();
 		sample.id = "id";
-		callback.onBeforeConvert(sample, CqlIdentifier.of("foo"));
+		callback.onBeforeConvert(sample, CqlIdentifier.fromCql("foo"));
 
 		verify(handler, times(0)).markCreated(any());
 		verify(handler, times(1)).markModified(sample);
@@ -110,7 +111,7 @@ public class ReactiveAuditingEntityCallbackUnitTests {
 		doReturn(newSample).when(handler).markAudited(eq(sample));
 
 		ReactiveAuditingEntityCallback listener = new ReactiveAuditingEntityCallback(() -> handler);
-		Object result = listener.onBeforeConvert(sample, CqlIdentifier.of("foo")).block();
+		Object result = listener.onBeforeConvert(sample, CqlIdentifier.fromCql("foo")).block();
 
 		assertThat(result).isSameAs(newSample);
 	}

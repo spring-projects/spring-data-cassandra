@@ -16,8 +16,7 @@
 package org.springframework.data.cassandra.core.cql;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
@@ -32,23 +31,24 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.cassandra.CassandraConnectionFailureException;
 import org.springframework.data.cassandra.CassandraInvalidQueryException;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.ColumnDefinitions;
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.SimpleStatement;
-import com.datastax.driver.core.Statement;
-import com.datastax.driver.core.exceptions.InvalidQueryException;
-import com.datastax.driver.core.exceptions.NoHostAvailableException;
-import com.datastax.driver.core.policies.DowngradingConsistencyRetryPolicy;
+import com.datastax.oss.driver.api.core.ConsistencyLevel;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
+import com.datastax.oss.driver.api.core.NoNodeAvailableException;
+import com.datastax.oss.driver.api.core.cql.BoundStatement;
+import com.datastax.oss.driver.api.core.cql.ColumnDefinitions;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.cql.Statement;
+import com.datastax.oss.driver.api.core.servererrors.InvalidQueryException;
 
 /**
  * Unit tests for {@link CqlTemplate}.
@@ -58,7 +58,7 @@ import com.datastax.driver.core.policies.DowngradingConsistencyRetryPolicy;
 @RunWith(MockitoJUnitRunner.class)
 public class CqlTemplateUnitTests {
 
-	@Mock Session session;
+	@Mock CqlSession session;
 	@Mock ResultSet resultSet;
 	@Mock Row row;
 	@Mock PreparedStatement preparedStatement;
@@ -75,7 +75,7 @@ public class CqlTemplateUnitTests {
 	}
 
 	// -------------------------------------------------------------------------
-	// Tests dealing with a plain com.datastax.driver.core.Session
+	// Tests dealing with a plain com.datastax.oss.driver.api.core.CqlSession
 	// -------------------------------------------------------------------------
 
 	@Test // DATACASS-292
@@ -83,7 +83,7 @@ public class CqlTemplateUnitTests {
 
 		try {
 			template.execute((SessionCallback<String>) session -> {
-				throw new InvalidQueryException("wrong query");
+				throw new InvalidQueryException(null, "wrong query");
 			});
 
 			fail("Missing CassandraInvalidQueryException");
@@ -95,13 +95,13 @@ public class CqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void executeCqlShouldTranslateExceptions() {
 
-		when(session.execute(any(Statement.class))).thenThrow(new NoHostAvailableException(Collections.emptyMap()));
+		when(session.execute(any(Statement.class))).thenThrow(new NoNodeAvailableException());
 
 		try {
 			template.execute("UPDATE user SET a = 'b';");
 			fail("Missing CassandraConnectionFailureException");
 		} catch (CassandraConnectionFailureException e) {
-			assertThat(e).hasMessageContaining("tried for query failed");
+			assertThat(e).hasMessageContaining("No node was available");
 		}
 	}
 
@@ -112,7 +112,7 @@ public class CqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void executeCqlShouldCallExecution() {
 
-		doTestStrings(null, null, null, cqlTemplate -> {
+		doTestStrings(null, null, cqlTemplate -> {
 
 			cqlTemplate.execute("SELECT * from USERS");
 
@@ -123,7 +123,7 @@ public class CqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void executeCqlWithArgumentsShouldCallExecution() {
 
-		doTestStrings(5, ConsistencyLevel.ONE, DowngradingConsistencyRetryPolicy.INSTANCE, cqlTemplate -> {
+		doTestStrings(5, DefaultConsistencyLevel.ONE, cqlTemplate -> {
 
 			cqlTemplate.execute("SELECT * from USERS");
 
@@ -134,7 +134,7 @@ public class CqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryForResultSetShouldCallExecution() {
 
-		doTestStrings(null, null, null, cqlTemplate -> {
+		doTestStrings(null, null, cqlTemplate -> {
 
 			ResultSet resultSet = cqlTemplate.queryForResultSet("SELECT * from USERS");
 
@@ -146,7 +146,7 @@ public class CqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryWithResultSetExtractorShouldCallExecution() {
 
-		doTestStrings(null, null, null, cqlTemplate -> {
+		doTestStrings(null, null, cqlTemplate -> {
 
 			List<String> rows = cqlTemplate.query("SELECT * from USERS", (row, index) -> row.getString(0));
 
@@ -158,7 +158,7 @@ public class CqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryWithResultSetExtractorWithArgumentsShouldCallExecution() {
 
-		doTestStrings(5, ConsistencyLevel.ONE, DowngradingConsistencyRetryPolicy.INSTANCE, cqlTemplate -> {
+		doTestStrings(5, ConsistencyLevel.ONE, cqlTemplate -> {
 
 			List<String> rows = cqlTemplate.query("SELECT * from USERS", (row, index) -> row.getString(0));
 
@@ -170,13 +170,13 @@ public class CqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryCqlShouldTranslateExceptions() {
 
-		when(session.execute(any(Statement.class))).thenThrow(new NoHostAvailableException(Collections.emptyMap()));
+		when(session.execute(any(Statement.class))).thenThrow(new NoNodeAvailableException());
 
 		try {
 			template.query("UPDATE user SET a = 'b';", ResultSet::wasApplied);
 			fail("Missing CassandraConnectionFailureException");
 		} catch (CassandraConnectionFailureException e) {
-			assertThat(e).hasMessageContaining("tried for query failed");
+			assertThat(e).hasMessageContaining("No node was available");
 		}
 	}
 
@@ -268,15 +268,15 @@ public class CqlTemplateUnitTests {
 	}
 
 	// -------------------------------------------------------------------------
-	// Tests dealing with com.datastax.driver.core.Statement
+	// Tests dealing with com.datastax.oss.driver.api.core.cql.Statement
 	// -------------------------------------------------------------------------
 
 	@Test // DATACASS-292
 	public void executeStatementShouldCallExecution() {
 
-		doTestStrings(null, null, null, cqlTemplate -> {
+		doTestStrings(null, null, cqlTemplate -> {
 
-			cqlTemplate.execute(new SimpleStatement("SELECT * from USERS"));
+			cqlTemplate.execute(SimpleStatement.newInstance("SELECT * from USERS"));
 
 			verify(session).execute(any(Statement.class));
 		});
@@ -285,9 +285,9 @@ public class CqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void executeStatementWithArgumentsShouldCallExecution() {
 
-		doTestStrings(5, ConsistencyLevel.ONE, DowngradingConsistencyRetryPolicy.INSTANCE, cqlTemplate -> {
+		doTestStrings(5, ConsistencyLevel.ONE, cqlTemplate -> {
 
-			cqlTemplate.execute(new SimpleStatement("SELECT * from USERS"));
+			cqlTemplate.execute(SimpleStatement.newInstance("SELECT * from USERS"));
 
 			verify(session).execute(any(Statement.class));
 		});
@@ -296,9 +296,9 @@ public class CqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryForResultStatementSetShouldCallExecution() {
 
-		doTestStrings(null, null, null, cqlTemplate -> {
+		doTestStrings(null, null, cqlTemplate -> {
 
-			ResultSet resultSet = cqlTemplate.queryForResultSet(new SimpleStatement("SELECT * from USERS"));
+			ResultSet resultSet = cqlTemplate.queryForResultSet(SimpleStatement.newInstance("SELECT * from USERS"));
 
 			assertThat(resultSet).hasSize(3);
 			verify(session).execute(any(Statement.class));
@@ -308,9 +308,9 @@ public class CqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryWithResultSetStatementExtractorShouldCallExecution() {
 
-		doTestStrings(null, null, null, cqlTemplate -> {
+		doTestStrings(null, null, cqlTemplate -> {
 
-			List<String> result = cqlTemplate.query(new SimpleStatement("SELECT * from USERS"),
+			List<String> result = cqlTemplate.query(SimpleStatement.newInstance("SELECT * from USERS"),
 					(row, index) -> row.getString(0));
 
 			assertThat(result).hasSize(3).contains("Walter", "Hank", " Jesse");
@@ -321,9 +321,9 @@ public class CqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryWithResultSetStatementExtractorWithArgumentsShouldCallExecution() {
 
-		doTestStrings(5, ConsistencyLevel.ONE, DowngradingConsistencyRetryPolicy.INSTANCE, cqlTemplate -> {
+		doTestStrings(5, ConsistencyLevel.ONE, cqlTemplate -> {
 
-			List<String> result = cqlTemplate.query(new SimpleStatement("SELECT * from USERS"),
+			List<String> result = cqlTemplate.query(SimpleStatement.newInstance("SELECT * from USERS"),
 					(row, index) -> row.getString(0));
 
 			assertThat(result).hasSize(3).contains("Walter", "Hank", " Jesse");
@@ -334,14 +334,14 @@ public class CqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryStatementShouldTranslateExceptions() {
 
-		when(session.execute(any(Statement.class))).thenThrow(new NoHostAvailableException(Collections.emptyMap()));
+		when(session.execute(any(Statement.class))).thenThrow(new NoNodeAvailableException());
 
 		try {
-			template.query(new SimpleStatement("UPDATE user SET a = 'b';"), ResultSet::wasApplied);
+			template.query(SimpleStatement.newInstance("UPDATE user SET a = 'b';"), ResultSet::wasApplied);
 
 			fail("Missing CassandraConnectionFailureException");
 		} catch (CassandraConnectionFailureException e) {
-			assertThat(e).hasMessageContaining("tried for query failed");
+			assertThat(e).hasMessageContaining("No node was available");
 		}
 	}
 
@@ -352,7 +352,7 @@ public class CqlTemplateUnitTests {
 		when(resultSet.iterator()).thenReturn(Collections.emptyIterator());
 
 		try {
-			template.queryForObject(new SimpleStatement("SELECT * FROM user"), (row, rowNum) -> "OK");
+			template.queryForObject(SimpleStatement.newInstance("SELECT * FROM user"), (row, rowNum) -> "OK");
 
 			fail("Missing IncorrectResultSizeDataAccessException");
 		} catch (IncorrectResultSizeDataAccessException e) {
@@ -366,7 +366,7 @@ public class CqlTemplateUnitTests {
 		when(session.execute(any(Statement.class))).thenReturn(resultSet);
 		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
 
-		String result = template.queryForObject(new SimpleStatement("SELECT * FROM user"), (row, rowNum) -> "OK");
+		String result = template.queryForObject(SimpleStatement.newInstance("SELECT * FROM user"), (row, rowNum) -> "OK");
 		assertThat(result).isEqualTo("OK");
 	}
 
@@ -376,7 +376,7 @@ public class CqlTemplateUnitTests {
 		when(session.execute(any(Statement.class))).thenReturn(resultSet);
 		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
 
-		String result = template.queryForObject(new SimpleStatement("SELECT * FROM user"), (row, rowNum) -> null);
+		String result = template.queryForObject(SimpleStatement.newInstance("SELECT * FROM user"), (row, rowNum) -> null);
 		assertThat(result).isNull();
 	}
 
@@ -387,7 +387,7 @@ public class CqlTemplateUnitTests {
 		when(resultSet.iterator()).thenReturn(Arrays.asList(row, row).iterator());
 
 		try {
-			template.queryForObject(new SimpleStatement("SELECT * FROM user"), (row, rowNum) -> "OK");
+			template.queryForObject(SimpleStatement.newInstance("SELECT * FROM user"), (row, rowNum) -> "OK");
 
 			fail("Missing IncorrectResultSizeDataAccessException");
 		} catch (IncorrectResultSizeDataAccessException e) {
@@ -404,7 +404,7 @@ public class CqlTemplateUnitTests {
 		when(columnDefinitions.size()).thenReturn(1);
 		when(row.getString(0)).thenReturn("OK");
 
-		String result = template.queryForObject(new SimpleStatement("SELECT * FROM user"), String.class);
+		String result = template.queryForObject(SimpleStatement.newInstance("SELECT * FROM user"), String.class);
 
 		assertThat(result).isEqualTo("OK");
 	}
@@ -418,7 +418,7 @@ public class CqlTemplateUnitTests {
 		when(columnDefinitions.size()).thenReturn(1);
 		when(row.getString(0)).thenReturn("OK", "NOT OK");
 
-		List<String> result = template.queryForList(new SimpleStatement("SELECT * FROM user"), String.class);
+		List<String> result = template.queryForList(SimpleStatement.newInstance("SELECT * FROM user"), String.class);
 
 		assertThat(result).contains("OK", "NOT OK");
 	}
@@ -429,7 +429,7 @@ public class CqlTemplateUnitTests {
 		when(session.execute(any(Statement.class))).thenReturn(resultSet);
 		when(resultSet.wasApplied()).thenReturn(true);
 
-		boolean applied = template.execute(new SimpleStatement("UPDATE user SET a = 'b';"));
+		boolean applied = template.execute(SimpleStatement.newInstance("UPDATE user SET a = 'b';"));
 
 		assertThat(applied).isTrue();
 	}
@@ -441,7 +441,7 @@ public class CqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryPreparedStatementWithCallbackShouldCallExecution() {
 
-		doTestStrings(null, null, null, cqlTemplate -> {
+		doTestStrings(null, null, cqlTemplate -> {
 
 			ResultSet resultSet = cqlTemplate.execute("SELECT * from USERS", (session, ps) -> session.execute(ps.bind("A")));
 
@@ -456,7 +456,7 @@ public class CqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void executePreparedStatementWithCallbackShouldCallExecution() {
 
-		doTestStrings(null, null, null, cqlTemplate -> {
+		doTestStrings(null, null, cqlTemplate -> {
 
 			when(this.preparedStatement.bind("White")).thenReturn(this.boundStatement);
 			when(this.resultSet.wasApplied()).thenReturn(true);
@@ -472,12 +472,12 @@ public class CqlTemplateUnitTests {
 
 		try {
 			template.execute(session -> {
-				throw new NoHostAvailableException(Collections.emptyMap());
+				throw new NoNodeAvailableException();
 			}, (session, ps) -> session.execute(boundStatement));
 
 			fail("Missing CassandraConnectionFailureException");
 		} catch (CassandraConnectionFailureException e) {
-			assertThat(e).hasMessageContaining("tried for query");
+			assertThat(e).hasMessageContaining("No node was available");
 		}
 	}
 
@@ -486,12 +486,12 @@ public class CqlTemplateUnitTests {
 
 		try {
 			template.execute(session -> preparedStatement, (session, ps) -> {
-				throw new NoHostAvailableException(Collections.emptyMap());
+				throw new NoNodeAvailableException();
 			});
 
 			fail("Missing CassandraConnectionFailureException");
 		} catch (CassandraConnectionFailureException e) {
-			assertThat(e).hasMessageContaining("tried for query");
+			assertThat(e).hasMessageContaining("No node was available");
 		}
 	}
 
@@ -512,7 +512,7 @@ public class CqlTemplateUnitTests {
 	public void queryPreparedStatementCreatorAndBinderShouldReturnResult() {
 
 		when(session.execute(boundStatement)).thenReturn(resultSet);
-		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
+		when(resultSet.iterator()).thenAnswer(it -> Collections.singleton(row).iterator());
 		when(resultSet.spliterator()).thenCallRealMethod();
 
 		ResultSet resultSet = template.query(session -> preparedStatement, ps -> {
@@ -529,7 +529,7 @@ public class CqlTemplateUnitTests {
 
 		try {
 			template.query(session -> {
-				throw new NoHostAvailableException(Collections.emptyMap());
+				throw new NoNodeAvailableException();
 			}, ps -> {
 				ps.bind("a", "b");
 				return boundStatement;
@@ -537,7 +537,7 @@ public class CqlTemplateUnitTests {
 
 			fail("Missing CassandraConnectionFailureException");
 		} catch (CassandraConnectionFailureException e) {
-			assertThat(e).hasCauseInstanceOf(NoHostAvailableException.class);
+			assertThat(e).hasCauseInstanceOf(NoNodeAvailableException.class);
 		}
 	}
 
@@ -546,19 +546,19 @@ public class CqlTemplateUnitTests {
 
 		try {
 			template.query(session -> preparedStatement, ps -> {
-				throw new NoHostAvailableException(Collections.emptyMap());
+				throw new NoNodeAvailableException();
 			}, rs -> rs);
 
 			fail("Missing CassandraConnectionFailureException");
 		} catch (CassandraConnectionFailureException e) {
-			assertThat(e).hasCauseInstanceOf(NoHostAvailableException.class);
+			assertThat(e).hasCauseInstanceOf(NoNodeAvailableException.class);
 		}
 	}
 
 	@Test // DATACASS-292
 	public void queryPreparedStatementCreatorAndBinderShouldTranslateExecutionExceptions() {
 
-		when(session.execute(boundStatement)).thenThrow(new NoHostAvailableException(Collections.emptyMap()));
+		when(session.execute(boundStatement)).thenThrow(new NoNodeAvailableException());
 
 		try {
 			template.query(session -> preparedStatement, ps -> {
@@ -568,7 +568,7 @@ public class CqlTemplateUnitTests {
 
 			fail("Missing CassandraConnectionFailureException");
 		} catch (CassandraConnectionFailureException e) {
-			assertThat(e).hasCauseInstanceOf(NoHostAvailableException.class);
+			assertThat(e).hasCauseInstanceOf(NoNodeAvailableException.class);
 		}
 	}
 
@@ -679,7 +679,7 @@ public class CqlTemplateUnitTests {
 	}
 
 	private <T> void doTestStrings(Integer fetchSize, ConsistencyLevel consistencyLevel,
-			com.datastax.driver.core.policies.RetryPolicy retryPolicy, Consumer<CqlTemplate> cqlTemplateConsumer) {
+			Consumer<CqlTemplate> cqlTemplateConsumer) {
 
 		String[] results = { "Walter", "Hank", " Jesse" };
 
@@ -696,9 +696,7 @@ public class CqlTemplateUnitTests {
 		if (fetchSize != null) {
 			template.setFetchSize(fetchSize);
 		}
-		if (retryPolicy != null) {
-			template.setRetryPolicy(retryPolicy);
-		}
+
 		if (consistencyLevel != null) {
 			template.setConsistencyLevel(consistencyLevel);
 		}
@@ -713,11 +711,7 @@ public class CqlTemplateUnitTests {
 		if (statement instanceof PreparedStatement || statement instanceof BoundStatement) {
 
 			if (fetchSize != null) {
-				verify(statement).setFetchSize(fetchSize.intValue());
-			}
-
-			if (retryPolicy != null) {
-				verify(statement).setRetryPolicy(retryPolicy);
+				verify(statement).setPageSize(fetchSize.intValue());
 			}
 
 			if (consistencyLevel != null) {
@@ -726,11 +720,7 @@ public class CqlTemplateUnitTests {
 		} else {
 
 			if (fetchSize != null) {
-				assertThat(statement.getFetchSize()).isEqualTo(fetchSize.intValue());
-			}
-
-			if (retryPolicy != null) {
-				assertThat(statement.getRetryPolicy()).isEqualTo(retryPolicy);
+				assertThat(statement.getPageSize()).isEqualTo(fetchSize.intValue());
 			}
 
 			if (consistencyLevel != null) {

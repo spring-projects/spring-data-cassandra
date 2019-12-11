@@ -17,8 +17,9 @@ package org.springframework.data.cassandra.core;
 
 import reactor.core.publisher.Mono;
 
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.util.Assert;
+
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * The {@link ReactiveInsertOperation} interface allows creation and execution of Cassandra {@code INSERT} operations in
@@ -73,7 +74,7 @@ public interface ReactiveInsertOperation {
 
 			Assert.hasText(table, "Table must not be null or empty");
 
-			return inTable(CqlIdentifier.of(table));
+			return inTable(CqlIdentifier.fromCql(table));
 		}
 
 		/**

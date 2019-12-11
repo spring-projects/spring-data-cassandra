@@ -39,8 +39,8 @@ import org.springframework.data.repository.query.ResultProcessor;
 import org.springframework.data.repository.query.ReturnedType;
 import org.springframework.util.ClassUtils;
 
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Statement;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.cql.Statement;
 
 /**
  * Reactive query executions for Cassandra.
@@ -51,7 +51,7 @@ import com.datastax.driver.core.Statement;
 @FunctionalInterface
 interface ReactiveCassandraQueryExecution {
 
-	Object execute(Statement statement, Class<?> type);
+	Object execute(Statement<?> statement, Class<?> type);
 
 	/**
 	 * {@link ReactiveCassandraQueryExecution} for a {@link org.springframework.data.domain.Slice}.
@@ -70,11 +70,11 @@ interface ReactiveCassandraQueryExecution {
 		 * @see org.springframework.data.cassandra.repository.query.CassandraQueryExecution#execute(java.lang.String, java.lang.Class)
 		 */
 		@Override
-		public Object execute(Statement statement, Class<?> type) {
+		public Object execute(Statement<?> statement, Class<?> type) {
 
 			CassandraPageRequest.validatePageable(pageable);
 
-			Statement statementToUse = statement.setFetchSize(pageable.getPageSize());
+			Statement<?> statementToUse = statement.setPageSize(pageable.getPageSize());
 
 			if (pageable instanceof CassandraPageRequest) {
 				statementToUse = statementToUse.setPagingState(((CassandraPageRequest) pageable).getPagingState());
@@ -109,7 +109,7 @@ interface ReactiveCassandraQueryExecution {
 		 * @see org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution#execute(java.lang.String, java.lang.Class)
 		 */
 		@Override
-		public Object execute(Statement statement, Class<?> type) {
+		public Object execute(Statement<?> statement, Class<?> type) {
 			return operations.select(statement, type);
 		}
 	}
@@ -130,7 +130,7 @@ interface ReactiveCassandraQueryExecution {
 		 * @see org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution#execute(java.lang.String, java.lang.Class)
 		 */
 		@Override
-		public Object execute(Statement statement, Class<?> type) {
+		public Object execute(Statement<?> statement, Class<?> type) {
 
 			return operations.select(statement, type).buffer(2).map(objects -> {
 
@@ -160,10 +160,10 @@ interface ReactiveCassandraQueryExecution {
 		private final @NonNull ReactiveCassandraOperations operations;
 
 		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution#execute(com.datastax.driver.core.Statement, java.lang.Class)
+		 * @see org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution#execute(com.datastax.oss.driver.api.core.cql.Statement, java.lang.Class)
 		 */
 		@Override
-		public Object execute(Statement statement, Class<?> type) {
+		public Object execute(Statement<?> statement, Class<?> type) {
 
 			Mono<List<Row>> rows = this.operations.getReactiveCqlOperations().queryForRows(statement).buffer(2).next();
 
@@ -207,7 +207,7 @@ interface ReactiveCassandraQueryExecution {
 		 * @see org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution#execute(java.lang.String, java.lang.Class)
 		 */
 		@Override
-		public Object execute(Statement statement, Class<?> type) {
+		public Object execute(Statement<?> statement, Class<?> type) {
 			return converter.convert(delegate.execute(statement, type));
 		}
 	}

@@ -19,7 +19,7 @@ import java.net.InetAddress;
 
 import org.springframework.core.convert.converter.Converter;
 
-import com.datastax.driver.core.ResultSet;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
 
 /**
  * {@link Converter} from {@link ResultSet} to a single {@link InetAddress} value.

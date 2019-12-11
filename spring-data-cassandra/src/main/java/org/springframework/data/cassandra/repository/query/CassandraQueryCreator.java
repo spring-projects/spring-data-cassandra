@@ -42,8 +42,6 @@ import org.springframework.data.repository.query.parser.Part.Type;
 import org.springframework.data.repository.query.parser.PartTree;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.querybuilder.Clause;
-
 /**
  * Custom query creator to create Cassandra criteria.
  *
@@ -292,7 +290,8 @@ class CassandraQueryCreator extends AbstractQueryCreator<Query, Filter> {
 	}
 
 	/**
-	 * Where clause builder. Collects {@link Clause clauses} and builds the where-clause depending on the WHERE type.
+	 * Where clause builder. Collects {@link CriteriaDefinition clauses} and builds the where-clause depending on the
+	 * WHERE type.
 	 *
 	 * @author Mark Paluch
 	 */

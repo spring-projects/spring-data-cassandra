@@ -19,9 +19,9 @@ import static org.assertj.core.api.Assertions.*;
 
 import org.springframework.data.cassandra.core.cql.keyspace.IndexDescriptor;
 
-import com.datastax.driver.core.IndexMetadata;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.TableMetadata;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.metadata.schema.IndexMetadata;
+import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
 
 /**
  * @author David Webb
@@ -37,14 +37,14 @@ public class CqlIndexSpecificationAssertions {
 	 * @param keyspace
 	 * @param session
 	 */
-	public static void assertIndex(IndexDescriptor expected, String keyspace, Session session) {
-		TableMetadata tableMetadata = session.getCluster().getMetadata().getKeyspace(keyspace.toLowerCase())
-				.getTable(expected.getTableName().toCql());
+	public static void assertIndex(IndexDescriptor expected, String keyspace, CqlSession session) {
+		TableMetadata tableMetadata = session.getMetadata().getKeyspace(keyspace.toLowerCase())
+				.flatMap(it -> it.getTable(expected.getTableName())).get();
 
-		IndexMetadata indexMetadata = tableMetadata.getIndex(expected.getName().toCql());
+		IndexMetadata indexMetadata = tableMetadata.getIndexes().get(expected.getName());
 
 		assertThat(indexMetadata).isNotNull();
-		assertThat(indexMetadata.getName()).isEqualTo(expected.getName().toCql());
+		assertThat(indexMetadata.getName()).isEqualTo(expected.getName());
 	}
 
 	/**
@@ -54,11 +54,11 @@ public class CqlIndexSpecificationAssertions {
 	 * @param keyspace
 	 * @param session
 	 */
-	public static void assertNoIndex(IndexDescriptor expected, String keyspace, Session session) {
-		TableMetadata tableMetadata = session.getCluster().getMetadata().getKeyspace(keyspace.toLowerCase())
-				.getTable(expected.getTableName().toCql());
+	public static void assertNoIndex(IndexDescriptor expected, String keyspace, CqlSession session) {
+		TableMetadata tableMetadata = session.getMetadata().getKeyspace(keyspace.toLowerCase())
+				.flatMap(it -> it.getTable(expected.getTableName())).get();
 
-		IndexMetadata indexMetadata = tableMetadata.getIndex(expected.getName().toCql());
+		IndexMetadata indexMetadata = tableMetadata.getIndexes().get(expected.getName());
 
 		assertThat(indexMetadata).isNull();
 	}

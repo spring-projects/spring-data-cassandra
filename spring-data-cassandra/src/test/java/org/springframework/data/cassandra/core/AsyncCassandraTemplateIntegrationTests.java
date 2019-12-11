@@ -25,6 +25,7 @@ import java.util.concurrent.Future;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.AsyncCqlTemplate;
 import org.springframework.data.cassandra.core.query.CassandraPageRequest;
@@ -39,7 +40,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.util.concurrent.ListenableFuture;
 
-import com.datastax.driver.core.utils.UUIDs;
+import com.datastax.oss.driver.api.core.uuid.Uuids;
 
 /**
  * Integration tests for {@link AsyncCassandraTemplate}.
@@ -67,13 +68,13 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 	public void shouldSelectByQueryWithSorting() {
 
 		UserToken token1 = new UserToken();
-		token1.setUserId(UUIDs.endOf(System.currentTimeMillis()));
-		token1.setToken(UUIDs.startOf(System.currentTimeMillis()));
+		token1.setUserId(Uuids.endOf(System.currentTimeMillis()));
+		token1.setToken(Uuids.startOf(System.currentTimeMillis()));
 		token1.setUserComment("foo");
 
 		UserToken token2 = new UserToken();
 		token2.setUserId(token1.getUserId());
-		token2.setToken(UUIDs.endOf(System.currentTimeMillis() + 100));
+		token2.setToken(Uuids.endOf(System.currentTimeMillis() + 100));
 		token2.setUserComment("bar");
 
 		getUninterruptibly(template.insert(token1));
@@ -88,8 +89,8 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 	public void shouldSelectOneByQuery() {
 
 		UserToken token1 = new UserToken();
-		token1.setUserId(UUIDs.endOf(System.currentTimeMillis()));
-		token1.setToken(UUIDs.startOf(System.currentTimeMillis()));
+		token1.setUserId(Uuids.endOf(System.currentTimeMillis()));
+		token1.setToken(Uuids.startOf(System.currentTimeMillis()));
 		token1.setUserComment("foo");
 
 		getUninterruptibly(template.insert(token1));

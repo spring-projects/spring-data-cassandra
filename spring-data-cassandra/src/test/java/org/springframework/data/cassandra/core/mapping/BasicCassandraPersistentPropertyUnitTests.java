@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -29,12 +29,12 @@ import java.util.UUID;
 import org.junit.Test;
 
 import org.springframework.core.annotation.AliasFor;
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.mapping.model.Property;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.util.ReflectionUtils;
 
-import com.datastax.driver.core.DataType.Name;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.protocol.internal.ProtocolConstants;
 
 /**
  * Unit tests for {@link BasicCassandraPersistentProperty}.
@@ -46,7 +46,7 @@ public class BasicCassandraPersistentPropertyUnitTests {
 
 	@Test
 	public void usesAnnotatedColumnName() {
-		assertThat(getPropertyFor(Timeline.class, "text").getRequiredColumnName().toCql()).isEqualTo("message");
+		assertThat(getPropertyFor(Timeline.class, "text").getRequiredColumnName()).hasToString("message");
 	}
 
 	@Test
@@ -59,7 +59,7 @@ public class BasicCassandraPersistentPropertyUnitTests {
 
 	@Test
 	public void returnsPropertyNameForUnannotatedProperty() {
-		assertThat(getPropertyFor(Timeline.class, "time").getRequiredColumnName().toCql()).isEqualTo("time");
+		assertThat(getPropertyFor(Timeline.class, "time").getRequiredColumnName()).hasToString("time");
 	}
 
 	@Test // DATACASS-259
@@ -67,7 +67,7 @@ public class BasicCassandraPersistentPropertyUnitTests {
 
 		CassandraPersistentProperty persistentProperty = getPropertyFor(TypeWithComposedColumnAnnotation.class, "column");
 
-		assertThat(persistentProperty.getRequiredColumnName()).isEqualTo(CqlIdentifier.of("mycolumn", true));
+		assertThat(persistentProperty.getRequiredColumnName()).isEqualTo(CqlIdentifier.fromCql("mycolumn"));
 	}
 
 	@Test // DATACASS-259
@@ -76,7 +76,7 @@ public class BasicCassandraPersistentPropertyUnitTests {
 		CassandraPersistentProperty persistentProperty = getPropertyFor(TypeWithComposedPrimaryKeyAnnotation.class,
 				"column");
 
-		assertThat(persistentProperty.getRequiredColumnName()).isEqualTo(CqlIdentifier.of("primary-key", true));
+		assertThat(persistentProperty.getRequiredColumnName()).isEqualTo(CqlIdentifier.fromCql("primary-key"));
 		assertThat(persistentProperty.isIdProperty()).isTrue();
 	}
 
@@ -86,7 +86,7 @@ public class BasicCassandraPersistentPropertyUnitTests {
 		CassandraPersistentProperty persistentProperty = getPropertyFor(TypeWithComposedPrimaryKeyColumnAnnotation.class,
 				"column");
 
-		assertThat(persistentProperty.getRequiredColumnName()).isEqualTo(CqlIdentifier.of("mycolumn", true));
+		assertThat(persistentProperty.getRequiredColumnName()).isEqualTo(CqlIdentifier.fromCql("mycolumn"));
 		assertThat(persistentProperty.isPrimaryKeyColumn()).isTrue();
 	}
 
@@ -96,18 +96,18 @@ public class BasicCassandraPersistentPropertyUnitTests {
 		CassandraPersistentProperty persistentProperty = getPropertyFor(TypeWithComposedCassandraTypeAnnotation.class,
 				"column");
 
-		assertThat(persistentProperty.getDataType().getName()).isEqualTo(Name.COUNTER);
+		assertThat(persistentProperty.getDataType().getProtocolCode()).isEqualTo(ProtocolConstants.DataType.COUNTER);
 		assertThat(persistentProperty.findAnnotation(CassandraType.class)).isNotNull();
 	}
 
 	@Test // DATACASS-375
-	public void uuidShouldMapToUUIDByDefault() {
+	public void UuidshouldMapToUUIDByDefault() {
 
 		CassandraPersistentProperty uuidProperty = getPropertyFor(TypeWithUUIDColumn.class, "uuid");
 		CassandraPersistentProperty timeUUIDProperty = getPropertyFor(TypeWithUUIDColumn.class, "timeUUID");
 
-		assertThat(uuidProperty.getDataType().getName()).isEqualTo(Name.UUID);
-		assertThat(timeUUIDProperty.getDataType().getName()).isEqualTo(Name.TIMEUUID);
+		assertThat(uuidProperty.getDataType().getProtocolCode()).isEqualTo(ProtocolConstants.DataType.UUID);
+		assertThat(timeUUIDProperty.getDataType().getProtocolCode()).isEqualTo(ProtocolConstants.DataType.TIMEUUID);
 	}
 
 	@Test // DATACASS-568
@@ -143,6 +143,7 @@ public class BasicCassandraPersistentPropertyUnitTests {
 		return new BasicCassandraPersistentProperty(Property.of(ClassTypeInformation.from(type), field), getEntity(type),
 				CassandraSimpleTypeHolder.HOLDER);
 	}
+
 	private <T> BasicCassandraPersistentEntity<T> getEntity(Class<T> type) {
 		return new BasicCassandraPersistentEntity<>(ClassTypeInformation.from(type));
 	}
@@ -184,7 +185,7 @@ public class BasicCassandraPersistentPropertyUnitTests {
 	}
 
 	@Retention(RetentionPolicy.RUNTIME)
-	@CassandraType(type = Name.COUNTER)
+	@CassandraType(type = CassandraSimpleTypeHolder.Name.COUNTER)
 	@interface ComposedCassandraTypeAnnotation {
 	}
 
@@ -208,7 +209,7 @@ public class BasicCassandraPersistentPropertyUnitTests {
 
 		UUID uuid;
 
-		@CassandraType(type = Name.TIMEUUID) UUID timeUUID;
+		@CassandraType(type = CassandraSimpleTypeHolder.Name.TIMEUUID) UUID timeUUID;
 	}
 
 	static class TypeWithMaps {

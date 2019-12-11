@@ -20,8 +20,7 @@ import org.junit.rules.ExternalResource;
 import org.springframework.data.cassandra.support.RandomKeyspaceName;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlSession;
 
 /**
  * Class rule to prepare a keyspace to give tests a keyspace context. This rule uses {@link CassandraRule} to obtain a
@@ -39,8 +38,7 @@ import com.datastax.driver.core.Session;
  */
 public class KeyspaceRule extends ExternalResource {
 
-	static final String CREATE_KEYSPACE_CQL =
-		"CREATE KEYSPACE %s WITH durable_writes = false AND replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};";
+	static final String CREATE_KEYSPACE_CQL = "CREATE KEYSPACE %s WITH durable_writes = false AND replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};";
 
 	static final String DROP_KEYSPACE_CQL = "DROP KEYSPACE %s;";
 	static final String DROP_KEYSPACE_IF_EXISTS_CQL = String.format(DROP_KEYSPACE_CQL, "IF EXISTS %s");
@@ -48,13 +46,13 @@ public class KeyspaceRule extends ExternalResource {
 
 	private final CassandraRule cassandraRule;
 
-	private Session session;
+	private CqlSession session;
 
 	private final String keyspaceName;
 
 	/**
-	 * Constructs a new instance of {@link KeyspaceRule} initialized with a {@link CassandraRule}
-	 * to create a Cassandra Keyspace using a random name.
+	 * Constructs a new instance of {@link KeyspaceRule} initialized with a {@link CassandraRule} to create a Cassandra
+	 * Keyspace using a random name.
 	 *
 	 * @param cassandraRule {@link CassandraRule} used to setup the Cassandra environment.
 	 * @throws IllegalArgumentException if {@link CassandraRule} is {@literal null}.
@@ -66,13 +64,12 @@ public class KeyspaceRule extends ExternalResource {
 	}
 
 	/**
-	 * Constructs a new instance of {@link KeyspaceRule} initialized with a {@link CassandraRule}
-	 * to create a Cassandra Keyspace with the given {@code keyspaceName}.
+	 * Constructs a new instance of {@link KeyspaceRule} initialized with a {@link CassandraRule} to create a Cassandra
+	 * Keyspace with the given {@code keyspaceName}.
 	 *
 	 * @param cassandraRule {@link CassandraRule} used to setup the Cassandra environment.
 	 * @param keyspaceName {@link String name} of the Cassandra Keyspace to use in tests.
-	 * @throws IllegalArgumentException if {@link CassandraRule} is {@literal null}
-	 * or the Keyspace name is not specified.
+	 * @throws IllegalArgumentException if {@link CassandraRule} is {@literal null} or the Keyspace name is not specified.
 	 * @see org.springframework.data.cassandra.test.util.CassandraRule
 	 * @see org.springframework.data.cassandra.test.util.CassandraRule
 	 */
@@ -100,20 +97,19 @@ public class KeyspaceRule extends ExternalResource {
 	}
 
 	/**
-	 * Returns the {@link Session}.
-	 *
-	 * The {@link Session} state can be initialized and pointing to a Keyspace other than {@code system}.
+	 * Returns the {@link Session}. The {@link Session} state can be initialized and pointing to a Keyspace other than
+	 * {@code system}.
 	 *
 	 * @return the current Cassandr {@link Session}.
 	 * @see com.datastax.driver.core.Session
 	 */
-	public Session getSession() {
+	public CqlSession getSession() {
 		return this.session;
 	}
 
-	private Session resolveSession() {
+	private CqlSession resolveSession() {
 
-		Session session = getSession();
+		CqlSession session = getSession();
 
 		this.session = session != null ? session : this.cassandraRule.getSession();
 
@@ -125,7 +121,7 @@ public class KeyspaceRule extends ExternalResource {
 	@Override
 	protected void before() {
 
-		Session session = resolveSession();
+		CqlSession session = resolveSession();
 
 		session.execute(String.format(CREATE_KEYSPACE_CQL, this.keyspaceName));
 		session.execute(String.format(USE_KEYSPACE_CQL, this.keyspaceName));
@@ -134,7 +130,7 @@ public class KeyspaceRule extends ExternalResource {
 	@Override
 	protected void after() {
 
-		Session session = getSession();
+		CqlSession session = getSession();
 
 		session.execute(String.format(USE_KEYSPACE_CQL, "system"));
 		session.execute(String.format(DROP_KEYSPACE_CQL, this.keyspaceName));

@@ -21,7 +21,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.data.cassandra.ReactiveResultSet;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.exceptions.DriverException;
+import com.datastax.oss.driver.api.core.DriverException;
 
 /**
  * Adapter implementation of the {@link ReactiveResultSetExtractor} interface that delegates to a {@link RowMapper}

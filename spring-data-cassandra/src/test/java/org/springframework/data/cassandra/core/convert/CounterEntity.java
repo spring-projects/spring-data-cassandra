@@ -20,11 +20,10 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.core.mapping.PrimaryKey;
 import org.springframework.data.cassandra.core.mapping.Table;
-
-import com.datastax.driver.core.DataType.Name;
 
 /**
  * @author Mark Paluch
@@ -36,5 +35,5 @@ import com.datastax.driver.core.DataType.Name;
 public class CounterEntity {
 
 	@PrimaryKey @NonNull private String id;
-	@CassandraType(type = Name.COUNTER) private long count;
+	@CassandraType(type = CassandraSimpleTypeHolder.Name.COUNTER) private long count;
 }

@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.core.query;
 
+import java.nio.ByteBuffer;
+
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -22,28 +24,26 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.PagingState;
-
 /**
- * Cassandra-specific {@link PageRequest} implementation providing access to {@link PagingState}. This class allows
- * creation of the first page request and represents through Cassandra paging is based on the progress of fetched pages
- * and allows forward-only navigation. Accessing a particular page requires fetching of all pages until the desired page
- * is reached.
+ * Cassandra-specific {@link PageRequest} implementation providing access to {@link ByteBuffer paging state}. This class
+ * allows creation of the first page request and represents through Cassandra paging is based on the progress of fetched
+ * pages and allows forward-only navigation. Accessing a particular page requires fetching of all pages until the
+ * desired page is reached.
  * <p/>
- * The fetching progress is represented as {@link PagingState}. Query {@link com.datastax.driver.core.ResultSet results}
- * are associated with a {@link com.datastax.driver.core.ExecutionInfo#getPagingState paging state} that is used on the
- * next query as input parameter to continue page fetching.
+ * The fetching progress is represented as {@link ByteBuffer paging state}. Query results are associated with a
+ * {@link com.datastax.oss.driver.api.core.cql.ExecutionInfo#getPagingState paging state} that is used on the next query
+ * as input parameter to continue page fetching.
  *
  * @author Mark Paluch
  * @since 2.0
  */
 public class CassandraPageRequest extends PageRequest {
 
-	private final @Nullable PagingState pagingState;
+	private final @Nullable ByteBuffer pagingState;
 
 	private final boolean nextAllowed;
 
-	private CassandraPageRequest(int page, int size, Sort sort, @Nullable PagingState pagingState, boolean nextAllowed) {
+	private CassandraPageRequest(int page, int size, Sort sort, @Nullable ByteBuffer pagingState, boolean nextAllowed) {
 
 		super(page, size, sort);
 
@@ -106,7 +106,7 @@ public class CassandraPageRequest extends PageRequest {
 	 * @param pagingState the paging state associated with the current {@link Pageable}. Can be {@literal null} if there
 	 *          is no paging state associated.
 	 */
-	public static CassandraPageRequest of(Pageable current, @Nullable PagingState pagingState) {
+	public static CassandraPageRequest of(Pageable current, @Nullable ByteBuffer pagingState) {
 		return new CassandraPageRequest(current.getPageNumber(), current.getPageSize(), current.getSort(), pagingState,
 				pagingState != null);
 	}
@@ -146,7 +146,7 @@ public class CassandraPageRequest extends PageRequest {
 	 * <ul>
 	 * <li>Unpaged</li>
 	 * <li>Request the first page</li>
-	 * <li>{@link CassandraPageRequest} with a {@link PagingState}</li>
+	 * <li>{@link CassandraPageRequest} with a {@link ByteBuffer paging state}</li>
 	 * </ul>
 	 *
 	 * @param pageable
@@ -172,11 +172,11 @@ public class CassandraPageRequest extends PageRequest {
 	}
 
 	/**
-	 * @return the {@link PagingState} for the current {@link CassandraPageRequest} or {@literal null} if the current
-	 *         {@link Pageable} represents the last page.
+	 * @return the {@link ByteBuffer paging state} for the current {@link CassandraPageRequest} or {@literal null} if the
+	 *         current {@link Pageable} represents the last page.
 	 */
 	@Nullable
-	public PagingState getPagingState() {
+	public ByteBuffer getPagingState() {
 		return this.pagingState;
 	}
 

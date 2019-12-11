@@ -15,8 +15,8 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Method;
 
@@ -44,10 +44,8 @@ import org.springframework.data.repository.query.ExtensionAwareQueryMethodEvalua
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.util.ReflectionUtils;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.Configuration;
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.SimpleStatement;
+import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 
 /**
  * Unit tests for {@link StringBasedCassandraQuery}.
@@ -59,8 +57,6 @@ public class ReactiveStringBasedCassandraQueryUnitTests {
 
 	private static final SpelExpressionParser PARSER = new SpelExpressionParser();
 
-	@Mock private Cluster cluster;
-	@Mock private Configuration configuration;
 	@Mock private ReactiveCassandraOperations operations;
 	@Mock private ReactiveCqlOperations cqlOperations;
 	@Mock private ReactiveSession reactiveSession;
@@ -89,28 +85,28 @@ public class ReactiveStringBasedCassandraQueryUnitTests {
 		CassandraParametersParameterAccessor accessor = new CassandraParametersParameterAccessor(
 				cassandraQuery.getQueryMethod(), "White");
 
-		SimpleStatement stringQuery = cassandraQuery.createQuery(accessor);
+		SimpleStatement actual = cassandraQuery.createQuery(accessor);
 
-		assertThat(stringQuery.toString()).isEqualTo("SELECT * FROM person WHERE lastname=?;");
-		assertThat(stringQuery.getObject(0)).isEqualTo("White");
+		assertThat(actual.getQuery()).isEqualTo("SELECT * FROM person WHERE lastname=?;");
+		assertThat(actual.getPositionalValues().get(0)).isEqualTo("White");
 	}
 
 	@Test // DATACASS-146
 	public void shouldApplyQueryOptions() {
 
-		QueryOptions queryOptions = QueryOptions.builder().fetchSize(777).build();
+		QueryOptions queryOptions = QueryOptions.builder().pageSize(777).build();
 
-		ReactiveStringBasedCassandraQuery cassandraQuery =
-				getQueryMethod("findByLastname", QueryOptions.class, String.class);
+		ReactiveStringBasedCassandraQuery cassandraQuery = getQueryMethod("findByLastname", QueryOptions.class,
+				String.class);
 
-		CassandraParametersParameterAccessor parameterAccessor =
-				new CassandraParametersParameterAccessor(cassandraQuery.getQueryMethod(), queryOptions, "White");
+		CassandraParametersParameterAccessor parameterAccessor = new CassandraParametersParameterAccessor(
+				cassandraQuery.getQueryMethod(), queryOptions, "White");
 
 		SimpleStatement actual = cassandraQuery.createQuery(parameterAccessor);
 
-		assertThat(actual.toString()).isEqualTo("SELECT * FROM person WHERE lastname=?;");
-		assertThat(actual.getObject(0)).isEqualTo("White");
-		assertThat(actual.getFetchSize()).isEqualTo(777);
+		assertThat(actual.getQuery()).isEqualTo("SELECT * FROM person WHERE lastname=?;");
+		assertThat(actual.getPositionalValues().get(0)).isEqualTo("White");
+		assertThat(actual.getPageSize()).isEqualTo(777);
 	}
 
 	@Test // DATACASS-146
@@ -118,22 +114,22 @@ public class ReactiveStringBasedCassandraQueryUnitTests {
 
 		ReactiveStringBasedCassandraQuery cassandraQuery = getQueryMethod("findByLastname", String.class);
 
-		CassandraParametersParameterAccessor parameterAccessor =
-				new CassandraParametersParameterAccessor(cassandraQuery.getQueryMethod(), "Matthews");
+		CassandraParametersParameterAccessor parameterAccessor = new CassandraParametersParameterAccessor(
+				cassandraQuery.getQueryMethod(), "Matthews");
 
 		SimpleStatement actual = cassandraQuery.createQuery(parameterAccessor);
 
-		assertThat(actual.toString()).isEqualTo("SELECT * FROM person WHERE lastname=?;");
-		assertThat(actual.getObject(0)).isEqualTo("Matthews");
-		assertThat(actual.getConsistencyLevel()).isEqualTo(ConsistencyLevel.LOCAL_ONE);
+		assertThat(actual.getQuery()).isEqualTo("SELECT * FROM person WHERE lastname=?;");
+		assertThat(actual.getPositionalValues().get(0)).isEqualTo("Matthews");
+		assertThat(actual.getConsistencyLevel()).isEqualTo(DefaultConsistencyLevel.LOCAL_ONE);
 	}
 
 	private ReactiveStringBasedCassandraQuery getQueryMethod(String name, Class<?>... args) {
 
 		Method method = ReflectionUtils.findMethod(SampleRepository.class, name, args);
 
-		ReactiveCassandraQueryMethod queryMethod =
-				new ReactiveCassandraQueryMethod(method, metadata, factory, converter.getMappingContext());
+		ReactiveCassandraQueryMethod queryMethod = new ReactiveCassandraQueryMethod(method, metadata, factory,
+				converter.getMappingContext());
 
 		return new ReactiveStringBasedCassandraQuery(queryMethod, operations, PARSER,
 				ExtensionAwareQueryMethodEvaluationContextProvider.DEFAULT);
@@ -143,7 +139,7 @@ public class ReactiveStringBasedCassandraQueryUnitTests {
 	private interface SampleRepository extends Repository<Person, String> {
 
 		@Query("SELECT * FROM person WHERE lastname=?0;")
-		@Consistency(ConsistencyLevel.LOCAL_ONE)
+		@Consistency(DefaultConsistencyLevel.LOCAL_ONE)
 		Person findByLastname(String lastname);
 
 		@Query("SELECT * FROM person WHERE lastname=?0;")

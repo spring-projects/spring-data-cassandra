@@ -24,8 +24,10 @@ import java.util.Map.Entry;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 
-import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
+import com.datastax.oss.driver.api.querybuilder.insert.Insert;
+import com.datastax.oss.driver.api.querybuilder.insert.RegularInsert;
 
 /**
  * Utility to create {@link com.datastax.driver.core.querybuilder.Insert} statements for repository use.
@@ -51,10 +53,10 @@ class InsertUtil {
 
 		converter.write(entity, toInsert, persistentEntity);
 
-		Insert insert = QueryBuilder.insertInto(persistentEntity.getTableName().toCql());
+		RegularInsert insert = (RegularInsert) QueryBuilder.insertInto(persistentEntity.getTableName());
 
 		for (Entry<String, Object> entry : toInsert.entrySet()) {
-			insert.value(entry.getKey(), entry.getValue());
+			insert = insert.value(CqlIdentifier.fromCql(entry.getKey()), QueryBuilder.literal(entry.getValue()));
 		}
 
 		return insert;

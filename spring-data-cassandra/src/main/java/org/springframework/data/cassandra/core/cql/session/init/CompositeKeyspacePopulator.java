@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlSession;
 
 /**
  * Composite {@link KeyspacePopulator} that delegates to a list of given {@link KeyspacePopulator} implementations,
@@ -75,7 +75,7 @@ public class CompositeKeyspacePopulator implements KeyspacePopulator {
 	}
 
 	@Override
-	public void populate(Session session) throws ScriptException {
+	public void populate(CqlSession session) throws ScriptException {
 
 		for (KeyspacePopulator populator : this.populators) {
 			populator.populate(session);

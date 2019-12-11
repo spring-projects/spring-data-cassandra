@@ -20,9 +20,10 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.NumberUtils;
 
-import com.datastax.driver.core.ColumnDefinitions;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.exceptions.DriverException;
+import com.datastax.oss.driver.api.core.DriverException;
+import com.datastax.oss.driver.api.core.cql.ColumnDefinition;
+import com.datastax.oss.driver.api.core.cql.ColumnDefinitions;
+import com.datastax.oss.driver.api.core.cql.Row;
 
 /**
  * {@link RowMapper} implementation that converts a single column into a single result value per row. Expects to operate
@@ -102,9 +103,12 @@ public class SingleColumnRowMapper<T> implements RowMapper<T> {
 			try {
 				return (T) convertValueToRequiredType(result, this.requiredType);
 			} catch (IllegalArgumentException ex) {
+
+				ColumnDefinition columnDefinition = definitions.get(0);
+
 				throw new TypeMismatchDataAccessException(
 						String.format("Type mismatch affecting row number %d and column type '%s': %s", rowNum,
-								definitions.getType(0), ex.getMessage()));
+								columnDefinition.getType(), ex.getMessage()));
 			}
 		}
 

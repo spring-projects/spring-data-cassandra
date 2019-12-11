@@ -22,7 +22,7 @@ import org.junit.Rule;
 
 import org.springframework.data.cassandra.support.CqlDataSet;
 
-import com.datastax.driver.core.Cluster;
+import com.datastax.oss.driver.api.core.CqlSession;
 
 /**
  * Abstract base integration test class that starts an embedded Cassandra instance. Test clients can use the
@@ -58,22 +58,22 @@ public abstract class AbstractEmbeddedCassandraIntegrationTest {
 	 */
 	@Rule
 	public final CassandraRule cassandraRule = cassandraEnvironment.testInstance().before(session -> {
-		AbstractEmbeddedCassandraIntegrationTest.this.cluster = session.getCluster();
+		AbstractEmbeddedCassandraIntegrationTest.this.system = session;
 		return null;
 	});
 
 	/**
-	 * The {@link Cluster} connected to Cassandra.
+	 * The {@link CqlSession} connected to Cassandra.
 	 */
-	protected Cluster cluster;
+	protected CqlSession system;
 
 	/**
-	 * Returns the {@link Cluster} instance.
+	 * Returns the {@link CqlSession} instance.
 	 *
-	 * @return an instance of {@link Cluster} connected to Cassandra.
+	 * @return an instance of {@link CqlSession} connected to Cassandra.
 	 */
-	public Cluster getCluster() {
-		return this.cluster;
+	public CqlSession getSystemSession() {
+		return this.system;
 	}
 
 	/**

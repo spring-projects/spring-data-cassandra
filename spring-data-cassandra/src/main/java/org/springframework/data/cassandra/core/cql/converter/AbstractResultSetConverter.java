@@ -21,7 +21,7 @@ import java.util.Map;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.Nullable;
 
-import com.datastax.driver.core.ResultSet;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
 
 /**
  * Convenient converter that can be used to convert a single-row-single-column, single-row-multi-column, or multi-row
@@ -76,7 +76,7 @@ public abstract class AbstractResultSetConverter<T> implements Converter<ResultS
 	@Override
 	public T convert(ResultSet source) {
 
-		if (source.isExhausted()) {
+		if (source.getAvailableWithoutFetching() == 0 && source.isFullyFetched()) {
 			return getExhaustedResultSetValue();
 		}
 

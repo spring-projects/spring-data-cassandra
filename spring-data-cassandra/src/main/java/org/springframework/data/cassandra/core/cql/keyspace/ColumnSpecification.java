@@ -23,8 +23,8 @@ import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.DataType;
 import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.type.DataType;
 
 /**
  * Object to configure a CQL column specification.

@@ -23,8 +23,8 @@ import org.junit.Test;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
 
 /**
  * Unit tests for {@link ResourceKeyspacePopulator}.
@@ -115,7 +115,7 @@ public class ResourceKeyspacePopulatorUnitTests {
 		ResourceKeyspacePopulator keyspacePopulator = new ResourceKeyspacePopulator();
 		keyspacePopulator.setScripts(new ByteArrayResource("drop table;create table;".getBytes()));
 
-		Session sessionMock = mock(Session.class);
+		CqlSession sessionMock = mock(CqlSession.class);
 		when(sessionMock.execute("drop table")).thenThrow(new IllegalStateException("Boom!"));
 
 		assertThatExceptionOfType(ScriptStatementFailedException.class)
@@ -132,7 +132,7 @@ public class ResourceKeyspacePopulatorUnitTests {
 		keyspacePopulator.setIgnoreFailedDrops(true);
 		keyspacePopulator.setScripts(new ByteArrayResource("drop table;create table;".getBytes()));
 
-		Session sessionMock = mock(Session.class);
+		CqlSession sessionMock = mock(CqlSession.class);
 		when(sessionMock.execute("drop table")).thenThrow(new IllegalStateException("Boom!"));
 
 		when(sessionMock.execute("create table")).thenReturn(mock(ResultSet.class));

@@ -29,9 +29,9 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import com.datastax.driver.core.ExecutionInfo;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.ExecutionInfo;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
 
 /**
  * Generic utility methods for working with CQL scripts.
@@ -59,7 +59,7 @@ public abstract class ScriptUtils {
 	 * End of file (EOF) CQL statement separator: {@code "^^^ END OF SCRIPT ^^^"}.
 	 * <p>
 	 * This value may be supplied as the {@code separator} to
-	 * {@link #executeCqlScript(Session, EncodedResource, boolean, boolean, String, String, String, String)} to denote
+	 * {@link #executeCqlScript(CqlSession, EncodedResource, boolean, boolean, String, String, String, String)} to denote
 	 * that an CQL script contains a single statement (potentially spanning multiple lines) with no explicit statement
 	 * separator. Note that such a script should not actually contain this value; it is merely a <em>virtual</em>
 	 * statement separator.
@@ -414,16 +414,16 @@ public abstract class ScriptUtils {
 	 * Statement separators and comments will be removed before executing individual statements within the supplied
 	 * script.
 	 *
-	 * @param session the CQL {@link Session} to use to execute the script; already configured and ready to use.
+	 * @param session the CQL {@link CqlSession} to use to execute the script; already configured and ready to use.
 	 * @param resource the resource to load the CQL script from; encoded with the current platform's default encoding.
 	 * @throws ScriptException if an error occurred while executing the CQL script
-	 * @see #executeCqlScript(Session, EncodedResource, boolean, boolean, String, String, String, String)
+	 * @see #executeCqlScript(CqlSession, EncodedResource, boolean, boolean, String, String, String, String)
 	 * @see #DEFAULT_STATEMENT_SEPARATOR
 	 * @see #DEFAULT_COMMENT_PREFIX
 	 * @see #DEFAULT_BLOCK_COMMENT_START_DELIMITER
 	 * @see #DEFAULT_BLOCK_COMMENT_END_DELIMITER
 	 */
-	public static void executeCqlScript(Session session, Resource resource) throws ScriptException {
+	public static void executeCqlScript(CqlSession session, Resource resource) throws ScriptException {
 		executeCqlScript(session, new EncodedResource(resource));
 	}
 
@@ -434,16 +434,16 @@ public abstract class ScriptUtils {
 	 * Statement separators and comments will be removed before executing individual statements within the supplied
 	 * script.
 	 *
-	 * @param session the CQL {@link Session} to use to execute the script; already configured and ready to use.
+	 * @param session the CQL {@link CqlSession} to use to execute the script; already configured and ready to use.
 	 * @param resource the resource (potentially associated with a specific encoding) to load the CQL script from.
 	 * @throws ScriptException if an error occurred while executing the CQL script
-	 * @see #executeCqlScript(Session, EncodedResource, boolean, boolean, String, String, String, String)
+	 * @see #executeCqlScript(CqlSession, EncodedResource, boolean, boolean, String, String, String, String)
 	 * @see #DEFAULT_STATEMENT_SEPARATOR
 	 * @see #DEFAULT_COMMENT_PREFIX
 	 * @see #DEFAULT_BLOCK_COMMENT_START_DELIMITER
 	 * @see #DEFAULT_BLOCK_COMMENT_END_DELIMITER
 	 */
-	public static void executeCqlScript(Session session, EncodedResource resource) throws ScriptException {
+	public static void executeCqlScript(CqlSession session, EncodedResource resource) throws ScriptException {
 		executeCqlScript(session, resource, false, false, DEFAULT_COMMENT_PREFIX, DEFAULT_STATEMENT_SEPARATOR,
 				DEFAULT_BLOCK_COMMENT_START_DELIMITER, DEFAULT_BLOCK_COMMENT_END_DELIMITER);
 	}
@@ -454,7 +454,7 @@ public abstract class ScriptUtils {
 	 * Statement separators and comments will be removed before executing individual statements within the supplied
 	 * script.
 	 *
-	 * @param session the CQL {@link Session} to use to execute the script; already configured and ready to use.
+	 * @param session the CQL {@link CqlSession} to use to execute the script; already configured and ready to use.
 	 * @param resource the resource (potentially associated with a specific encoding) to load the CQL script from.
 	 * @param continueOnError whether or not to continue without throwing an exception in the event of an error.
 	 * @param ignoreFailedDrops whether or not to continue in the event of specifically an error on a {@code DROP}
@@ -471,7 +471,7 @@ public abstract class ScriptUtils {
 	 * @see #FALLBACK_STATEMENT_SEPARATOR
 	 * @see #EOF_STATEMENT_SEPARATOR
 	 */
-	public static void executeCqlScript(Session session, EncodedResource resource, boolean continueOnError,
+	public static void executeCqlScript(CqlSession session, EncodedResource resource, boolean continueOnError,
 			boolean ignoreFailedDrops, String commentPrefix, @Nullable String separator, String blockCommentStartDelimiter,
 			String blockCommentEndDelimiter) throws ScriptException {
 
@@ -485,7 +485,7 @@ public abstract class ScriptUtils {
 	 * Statement separators and comments will be removed before executing individual statements within the supplied
 	 * script.
 	 *
-	 * @param session the CQL {@link Session} to use to execute the script; already configured and ready to use.
+	 * @param session the CQL {@link CqlSession} to use to execute the script; already configured and ready to use.
 	 * @param resource the resource (potentially associated with a specific encoding) to load the CQL script from.
 	 * @param continueOnError whether or not to continue without throwing an exception in the event of an error.
 	 * @param ignoreFailedDrops whether or not to continue in the event of specifically an error on a {@code DROP}
@@ -502,7 +502,7 @@ public abstract class ScriptUtils {
 	 * @see #FALLBACK_STATEMENT_SEPARATOR
 	 * @see #EOF_STATEMENT_SEPARATOR
 	 */
-	public static void executeCqlScript(Session session, EncodedResource resource, boolean continueOnError,
+	public static void executeCqlScript(CqlSession session, EncodedResource resource, boolean continueOnError,
 			boolean ignoreFailedDrops, String[] commentPrefixes, @Nullable String separator,
 			String blockCommentStartDelimiter, String blockCommentEndDelimiter) throws ScriptException {
 

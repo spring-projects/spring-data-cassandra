@@ -50,8 +50,9 @@ public @interface Query {
 	boolean allowFiltering() default false;
 
 	/**
-	 * Specifies whether the {@link #value() CQL query} is {@link com.datastax.driver.core.Statement#isIdempotent}.
-	 * {@code SELECT} statements are considered {@link Idempotency#IDEMPOTENT idempotent} by default.
+	 * Specifies whether the {@link #value() CQL query} is
+	 * {@link com.datastax.oss.driver.api.core.cql.Statement#isIdempotent}. {@code SELECT} statements are considered
+	 * {@link Idempotency#IDEMPOTENT idempotent} by default.
 	 *
 	 * @since 2.2
 	 */
@@ -80,7 +81,7 @@ public @interface Query {
 
 		/**
 		 * Undefined state (default for all non-{@code SELECT} statements. Leaves
-		 * {@link com.datastax.driver.core.Statement#setIdempotent(boolean)} state unchanged.
+		 * {@link com.datastax.oss.driver.api.core.cql.Statement#setIdempotent(boolean)} state unchanged.
 		 */
 		UNDEFINED,
 
@@ -90,8 +91,8 @@ public @interface Query {
 		IDEMPOTENT,
 
 		/**
-		 * Statement considered non-idempotent. Sets {@link com.datastax.driver.core.Statement#setIdempotent(boolean)} to
-		 * {@code false}.
+		 * Statement considered non-idempotent. Sets
+		 * {@link com.datastax.oss.driver.api.core.cql.Statement#setIdempotent(boolean)} to {@code false}.
 		 */
 		NON_IDEMPOTENT
 	}

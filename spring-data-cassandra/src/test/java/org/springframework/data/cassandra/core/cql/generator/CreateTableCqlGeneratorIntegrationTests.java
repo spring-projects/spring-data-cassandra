@@ -19,13 +19,14 @@ import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.data.cassandra.core.cql.Ordering;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.TableOption;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
 
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.TableMetadata;
+import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
+import com.datastax.oss.driver.api.core.type.DataTypes;
 
 /**
  * Integration tests for {@link CreateTableCqlGenerator}.
@@ -47,9 +48,9 @@ public class CreateTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCre
 	public void shouldGenerateSimpleTable() {
 
 		CreateTableSpecification table = CreateTableSpecification.createTable("person") //
-				.partitionKeyColumn("id", DataType.ascii()) //
-				.clusteredKeyColumn("date_of_birth", DataType.date()) //
-				.column("name", DataType.ascii());
+				.partitionKeyColumn("id", DataTypes.ASCII) //
+				.clusteredKeyColumn("date_of_birth", DataTypes.DATE) //
+				.column("name", DataTypes.ASCII);
 
 		session.execute(CreateTableCqlGenerator.toCql(table));
 	}
@@ -58,15 +59,15 @@ public class CreateTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCre
 	public void shouldGenerateTableWithClusterKeyOrdering() {
 
 		CreateTableSpecification table = CreateTableSpecification.createTable("person") //
-				.partitionKeyColumn("id", DataType.ascii()) //
-				.partitionKeyColumn("country", DataType.ascii()) //
-				.clusteredKeyColumn("date_of_birth", DataType.date(), Ordering.ASCENDING) //
-				.clusteredKeyColumn("age", DataType.smallint()) //
-				.column("name", DataType.ascii());
+				.partitionKeyColumn("id", DataTypes.ASCII) //
+				.partitionKeyColumn("country", DataTypes.ASCII) //
+				.clusteredKeyColumn("date_of_birth", DataTypes.DATE, Ordering.ASCENDING) //
+				.clusteredKeyColumn("age", DataTypes.SMALLINT) //
+				.column("name", DataTypes.ASCII);
 
 		session.execute(CreateTableCqlGenerator.toCql(table));
 
-		TableMetadata person = cluster.getMetadata().getKeyspace(getKeyspace()).getTable("person");
+		TableMetadata person = session.getMetadata().getKeyspace(getKeyspace()).flatMap(it -> it.getTable("person")).get();
 		assertThat(person.getPartitionKey()).hasSize(2);
 		assertThat(person.getClusteringColumns()).hasSize(2);
 	}
@@ -75,13 +76,13 @@ public class CreateTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCre
 	public void shouldGenerateTableWithClusterKeyAndOptions() {
 
 		CreateTableSpecification table = CreateTableSpecification.createTable("person") //
-				.partitionKeyColumn("id", DataType.ascii()) //
-				.clusteredKeyColumn("date_of_birth", DataType.date(), Ordering.ASCENDING) //
-				.column("name", DataType.ascii()).with(TableOption.COMPACT_STORAGE);
+				.partitionKeyColumn("id", DataTypes.ASCII) //
+				.clusteredKeyColumn("date_of_birth", DataTypes.DATE, Ordering.ASCENDING) //
+				.column("name", DataTypes.ASCII).with(TableOption.COMPACT_STORAGE);
 
 		session.execute(CreateTableCqlGenerator.toCql(table));
 
-		TableMetadata person = cluster.getMetadata().getKeyspace(getKeyspace()).getTable("person");
+		TableMetadata person = session.getMetadata().getKeyspace(getKeyspace()).flatMap(it -> it.getTable("person")).get();
 		assertThat(person.getPartitionKey()).hasSize(1);
 		assertThat(person.getClusteringColumns()).hasSize(1);
 	}

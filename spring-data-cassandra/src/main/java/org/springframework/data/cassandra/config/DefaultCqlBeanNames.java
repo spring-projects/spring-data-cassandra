@@ -23,7 +23,10 @@ package org.springframework.data.cassandra.config;
  */
 public interface DefaultCqlBeanNames {
 
-	String CLUSTER = "cassandraCluster";
+	/**
+	 * @deprecated since 3.0. Cassandra driver 4 no longer provides a {@code Cluster} type.
+	 */
+	@Deprecated String CLUSTER = "cassandraCluster";
 	String SESSION = "cassandraSession";
 	String SESSION_FACTORY = "cassandraSessionFactory";
 	String TEMPLATE = "cqlTemplate";

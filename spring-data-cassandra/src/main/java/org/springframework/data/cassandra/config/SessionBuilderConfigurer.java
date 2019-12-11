@@ -15,25 +15,25 @@
  */
 package org.springframework.data.cassandra.config;
 
-import com.datastax.driver.core.Cluster;
+import com.datastax.oss.driver.api.core.session.SessionBuilder;
 
 /**
- * Configuration callback class to allow a user to apply additional configuration logic to the {@link Cluster.Builder}.
+ * Configuration callback class to allow a user to apply additional configuration logic to the {@link SessionBuilder}.
  *
  * @author John Blum
  * @author Mark Paluch
  * @since 1.5
- * @see com.datastax.driver.core.Cluster
+ * @see com.datastax.oss.driver.api.core.CqlSession
  */
 @FunctionalInterface
-public interface ClusterBuilderConfigurer {
+public interface SessionBuilderConfigurer {
 
 	/**
-	 * Apply addition configuration to the {@link com.datastax.driver.core.Cluster.Builder}.
+	 * Apply addition configuration to the {@link SessionBuilder}.
 	 *
-	 * @param clusterBuilder {@link Cluster.Builder} to configure.
-	 * @return the argument to the {@code clusterBuilder} parameter.
-	 * @see com.datastax.driver.core.Cluster.Builder
+	 * @param sessionBuilder {@link SessionBuilder} to configure.
+	 * @return the argument to the {@code sessionBuilder} parameter.
+	 * @see SessionBuilder
 	 */
-	Cluster.Builder configure(Cluster.Builder clusterBuilder);
+	SessionBuilder configure(SessionBuilder sessionBuilder);
 }

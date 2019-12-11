@@ -23,7 +23,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
@@ -48,6 +47,8 @@ import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * Map {@link org.springframework.data.cassandra.core.query.Query} to CQL-specific data types.
@@ -85,7 +86,7 @@ public class QueryMapper {
 	 * @return the configured {@link CassandraConverter}.
 	 * @see org.springframework.data.cassandra.core.convert.CassandraConverter
 	 */
-	protected CassandraConverter getConverter() {
+	public CassandraConverter getConverter() {
 		return this.converter;
 	}
 
@@ -185,7 +186,7 @@ public class QueryMapper {
 				CassandraPersistentEntity<?> primaryKeyEntity = mappingContext.getRequiredPersistentEntity(property);
 				addColumns(primaryKeyEntity, selectors);
 			} else {
-				selectors.add(ColumnSelector.from(property.getRequiredColumnName().toCql()));
+				selectors.add(ColumnSelector.from(property.getRequiredColumnName()));
 			}
 		});
 	}
@@ -234,7 +235,7 @@ public class QueryMapper {
 	 * @param entity must not be {@literal null}.
 	 * @return the mapped column names.
 	 */
-	public List<String> getMappedColumnNames(Columns columns, CassandraPersistentEntity<?> entity) {
+	public List<CqlIdentifier> getMappedColumnNames(Columns columns, CassandraPersistentEntity<?> entity) {
 
 		Assert.notNull(columns, "Columns must not be null");
 		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
@@ -243,7 +244,7 @@ public class QueryMapper {
 			return Collections.emptyList();
 		}
 
-		List<String> columnNames = new ArrayList<>();
+		List<CqlIdentifier> columnNames = new ArrayList<>();
 
 		Set<PersistentProperty<?>> seen = new HashSet<>();
 
@@ -254,7 +255,7 @@ public class QueryMapper {
 			field.getProperty().ifPresent(seen::add);
 
 			columns.getSelector(column).filter(selector -> selector instanceof ColumnSelector).ifPresent(
-					columnSelector -> getCqlIdentifier(column, field).map(CqlIdentifier::toCql).ifPresent(columnNames::add));
+					columnSelector -> getCqlIdentifier(column, field).ifPresent(columnNames::add));
 		}
 
 		if (columns.isEmpty()) {
@@ -266,7 +267,7 @@ public class QueryMapper {
 				}
 
 				if (seen.add(property)) {
-					columnNames.add(property.getRequiredColumnName().toCql());
+					columnNames.add(property.getRequiredColumnName());
 				}
 			});
 		}
@@ -292,7 +293,7 @@ public class QueryMapper {
 			Field field = createPropertyField(entity, columnName);
 
 			Order mappedOrder = getCqlIdentifier(columnName, field)
-					.map(cqlIdentifier -> new Order(order.getDirection(), cqlIdentifier.toCql())).orElse(order);
+					.map(cqlIdentifier -> new Order(order.getDirection(), cqlIdentifier.toString())).orElse(order);
 
 			mappedOrders.add(mappedOrder);
 		}
@@ -317,7 +318,7 @@ public class QueryMapper {
 			}
 
 			if (column.getColumnName().isPresent()) {
-				return column.getColumnName().map(CqlIdentifier::of);
+				return column.getColumnName().map(CqlIdentifier::fromCql);
 			}
 
 			return column.getCqlIdentifier();

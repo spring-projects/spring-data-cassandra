@@ -30,6 +30,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Configuration;
@@ -57,7 +58,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlSession;
 
 /**
  * Integration tests for query derivation through {@link PersonRepository}.
@@ -86,7 +87,7 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 	}
 
 	@Autowired CassandraOperations template;
-	@Autowired Session session;
+	@Autowired CqlSession session;
 	@Autowired PersonRepository personRepository;
 
 	private Person walter;
@@ -198,8 +199,8 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 
 		Collection<PersonProjection> collection = personRepository.findPersonProjectedBy();
 
-		assertThat(collection).hasSize(3).extracting("firstname").contains(flynn.getFirstname(),
-				skyler.getFirstname(), walter.getFirstname());
+		assertThat(collection).hasSize(3).extracting("firstname").contains(flynn.getFirstname(), skyler.getFirstname(),
+				walter.getFirstname());
 	}
 
 	@Test // DATACASS-359
@@ -207,8 +208,8 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 
 		Collection<PersonDto> collection = personRepository.findPersonDtoBy();
 
-		assertThat(collection).hasSize(3).extracting("firstname").contains(flynn.getFirstname(),
-				skyler.getFirstname(), walter.getFirstname());
+		assertThat(collection).hasSize(3).extracting("firstname").contains(flynn.getFirstname(), skyler.getFirstname(),
+				walter.getFirstname());
 	}
 
 	@Test // DATACASS-359

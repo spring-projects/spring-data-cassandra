@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
+import java.util.Optional;
+
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.cql.SessionCallback;
 import org.springframework.data.cassandra.core.cql.generator.CreateTableCqlGenerator;
@@ -22,7 +24,7 @@ import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecifica
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 
-import com.datastax.driver.core.KeyspaceMetadata;
+import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
 
 /**
  * {@link SchemaTestUtils} is a collection of reflection-based utility methods for use in unit and integration testing
@@ -45,8 +47,10 @@ public class SchemaTestUtils {
 
 		operations.getCqlOperations().execute((SessionCallback<Object>) session -> {
 
-			KeyspaceMetadata keyspace = session.getCluster().getMetadata().getKeyspace(session.getLoggedKeyspace());
-			if (keyspace.getTable(persistentEntity.getTableName().toCql()) == null) {
+			Optional<TableMetadata> table = session.getKeyspace().flatMap(it -> session.getMetadata().getKeyspace(it))
+					.flatMap(it -> it.getTable(persistentEntity.getTableName()));
+
+			if (table.isPresent()) {
 				CreateTableSpecification tableSpecification = mappingContext.getCreateTableSpecificationFor(persistentEntity);
 				operations.getCqlOperations().execute(new CreateTableCqlGenerator(tableSpecification).toCql());
 			}

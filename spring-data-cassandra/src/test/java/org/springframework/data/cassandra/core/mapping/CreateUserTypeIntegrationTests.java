@@ -21,12 +21,12 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,9 +37,9 @@ import org.springframework.data.convert.CustomConversions;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.UserType;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;
 
 /**
  * Integration tests for creation of UDT types through {@link CassandraMappingContext}.
@@ -54,7 +54,7 @@ public class CreateUserTypeIntegrationTests extends AbstractSpringDataEmbeddedCa
 	public static class Config extends IntegrationTestConfig {
 
 		@Bean
-		public CassandraMappingContext cassandraMapping() throws ClassNotFoundException {
+		public CassandraMappingContext cassandraMapping() {
 
 			CassandraMappingContext mappingContext = new CassandraMappingContext();
 
@@ -64,22 +64,21 @@ public class CreateUserTypeIntegrationTests extends AbstractSpringDataEmbeddedCa
 
 			mappingContext.setCustomConversions(customConversions);
 			mappingContext.setSimpleTypeHolder(customConversions.getSimpleTypeHolder());
-			mappingContext.setUserTypeResolver(new SimpleUserTypeResolver(cluster().getObject(), getKeyspaceName()));
+			mappingContext.setUserTypeResolver(new SimpleUserTypeResolver(getRequiredSession()));
 
 			return mappingContext;
 		}
 	}
 
-	@Autowired Session session;
+	@Autowired CqlSession session;
 
 	@Test // DATACASS-424
 	public void shouldCreateUserTypes() {
 
-		KeyspaceMetadata keyspace = session.getCluster().getMetadata().getKeyspace(session.getLoggedKeyspace());
+		KeyspaceMetadata keyspace = session.getMetadata().getKeyspace(session.getKeyspace().get()).get();
 
-		Collection<UserType> userTypes = keyspace.getUserTypes();
-
-		assertThat(userTypes).extracting("typeName").contains("engine", "manufacturer");
+		assertThat(keyspace.getUserDefinedTypes()).containsKeys(CqlIdentifier.fromCql("engine"),
+				CqlIdentifier.fromCql("manufacturer"));
 	}
 
 	@Table

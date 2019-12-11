@@ -17,14 +17,13 @@ package org.springframework.data.cassandra.core.cql.support;
 
 import org.springframework.data.cassandra.core.cql.PreparedStatementCreator;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
-import org.springframework.data.cassandra.core.cql.QueryOptionsUtil;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.SimpleStatement;
-import com.datastax.driver.core.exceptions.DriverException;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.DriverException;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.cql.Statement;
 
 /**
  * {@link PreparedStatementCreator} implementation using caching of prepared statements.
@@ -41,7 +40,7 @@ public class CachedPreparedStatementCreator implements PreparedStatementCreator 
 
 	private final PreparedStatementCache cache;
 
-	private final RegularStatement statement;
+	private final SimpleStatement statement;
 
 	/**
 	 * Create a new {@link CachedPreparedStatementCreator}.
@@ -49,7 +48,7 @@ public class CachedPreparedStatementCreator implements PreparedStatementCreator 
 	 * @param cache must not be {@literal null}.
 	 * @param statement must not be {@literal null}.
 	 */
-	protected CachedPreparedStatementCreator(PreparedStatementCache cache, RegularStatement statement) {
+	protected CachedPreparedStatementCreator(PreparedStatementCache cache, SimpleStatement statement) {
 
 		Assert.notNull(cache, "Cache must not be null");
 
@@ -59,14 +58,14 @@ public class CachedPreparedStatementCreator implements PreparedStatementCreator 
 
 	/**
 	 * Create a new {@link CachedPreparedStatementCreator} given {@link PreparedStatementCache} and
-	 * {@link RegularStatement} to prepare. Subsequent calls require the a {@link RegularStatement} object with the same
-	 * CQL test for a cache hit. Otherwise, the statement is likely to be re-prepared.
+	 * {@link SimpleStatement} to prepare. Subsequent calls require the a {@link SimpleStatement} object with the same CQL
+	 * test for a cache hit. Otherwise, the statement is likely to be re-prepared.
 	 *
 	 * @param cache must not be {@literal null}.
 	 * @param statement must not be {@literal null}.
-	 * @return the {@link CachedPreparedStatementCreator} for {@link RegularStatement}.
+	 * @return the {@link CachedPreparedStatementCreator} for {@link Statement}.
 	 */
-	public static CachedPreparedStatementCreator of(PreparedStatementCache cache, RegularStatement statement) {
+	public static CachedPreparedStatementCreator of(PreparedStatementCache cache, SimpleStatement statement) {
 
 		Assert.notNull(cache, "Cache must not be null");
 		Assert.notNull(statement, "Statement must not be null");
@@ -88,14 +87,14 @@ public class CachedPreparedStatementCreator implements PreparedStatementCreator 
 		Assert.notNull(cache, "Cache must not be null");
 		Assert.hasText(cql, "CQL statement is required");
 
-		return new CachedPreparedStatementCreator(cache, new SimpleStatement(cql));
+		return new CachedPreparedStatementCreator(cache, SimpleStatement.newInstance(cql));
 	}
 
 	/**
 	 * Create a new {@link CachedPreparedStatementCreator} given {@link PreparedStatementCache} and {@code cql} to
-	 * prepare. This method applies {@link QueryOptions} to the {@link com.datastax.driver.core.Statement} before
-	 * preparing it. Subsequent calls require the a CQL statement that {@link String#equals(Object) are equal} to the
-	 * previously used CQL string for a cache hit. Otherwise, the statement is likely to be re-prepared.
+	 * prepare. This method applies {@link QueryOptions} to the {@link SimpleStatement} before preparing it. Subsequent
+	 * calls require the a CQL statement that {@link String#equals(Object) are equal} to the previously used CQL string
+	 * for a cache hit. Otherwise, the statement is likely to be re-prepared.
 	 *
 	 * @param cache must not be {@literal null}.
 	 * @param cql must not be {@literal null} or empty.
@@ -108,8 +107,7 @@ public class CachedPreparedStatementCreator implements PreparedStatementCreator 
 		Assert.hasText(cql, "CQL statement is required");
 		Assert.notNull(queryOptions, "QueryOptions must not be null");
 
-		return new CachedPreparedStatementCreator(cache,
-				QueryOptionsUtil.addQueryOptions(new SimpleStatement(cql), queryOptions));
+		return new CachedPreparedStatementCreator(cache, SimpleStatement.newInstance(cql));
 	}
 
 	/**
@@ -123,7 +121,7 @@ public class CachedPreparedStatementCreator implements PreparedStatementCreator 
 	 * @see org.springframework.data.cassandra.core.cql.PreparedStatementCreator#createPreparedStatement(com.datastax.driver.core.Session)
 	 */
 	@Override
-	public PreparedStatement createPreparedStatement(Session session) throws DriverException {
+	public PreparedStatement createPreparedStatement(CqlSession session) throws DriverException {
 		return getCache().getPreparedStatement(session, this.statement);
 	}
 }

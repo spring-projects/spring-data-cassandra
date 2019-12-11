@@ -21,10 +21,11 @@ import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.core.Ordered;
 import org.springframework.data.auditing.AuditingHandler;
 import org.springframework.data.auditing.IsNewAwareAuditingHandler;
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.mapping.callback.EntityCallback;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.util.Assert;
+
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * Reactive {@link EntityCallback} to populate auditing related fields on an entity about to be saved.
@@ -48,9 +49,9 @@ public class ReactiveAuditingEntityCallback implements ReactiveBeforeConvertCall
 		this.auditingHandlerFactory = auditingHandlerFactory;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.event.ReactiveBeforeConvertCallback#onBeforeConvert(java.lang.Object, org.springframework.data.cassandra.core.cql.CqlIdentifier)
+	 * @see org.springframework.data.cassandra.core.mapping.event.ReactiveBeforeConvertCallback#onBeforeConvert(java.lang.Object, com.datastax.oss.driver.api.core.CqlIdentifier)
 	 */
 	@Override
 	public Mono<Object> onBeforeConvert(Object entity, CqlIdentifier tableName) {

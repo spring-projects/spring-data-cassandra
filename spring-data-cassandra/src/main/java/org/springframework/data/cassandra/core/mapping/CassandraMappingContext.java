@@ -28,11 +28,9 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.core.convert.CassandraCustomConversions;
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateUserTypeSpecification;
-import org.springframework.data.cassandra.core.mapping.UserTypeUtil.FrozenLiteralDataType;
 import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.context.AbstractMappingContext;
@@ -47,12 +45,14 @@ import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
-import com.datastax.driver.core.CodecRegistry;
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.DataType.Name;
-import com.datastax.driver.core.TupleType;
-import com.datastax.driver.core.TupleValue;
-import com.datastax.driver.core.UDTValue;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.data.TupleValue;
+import com.datastax.oss.driver.api.core.data.UdtValue;
+import com.datastax.oss.driver.api.core.type.DataType;
+import com.datastax.oss.driver.api.core.type.DataTypes;
+import com.datastax.oss.driver.api.core.type.TupleType;
+import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
+import com.datastax.oss.driver.internal.core.metadata.schema.ShallowUserDefinedType;
 
 /**
  * Default implementation of a {@link MappingContext} for Cassandra using {@link CassandraPersistentEntity} and
@@ -79,11 +79,11 @@ public class CassandraMappingContext
 
 	private Mapping mapping = new Mapping();
 
-	private TupleTypeFactory tupleTypeFactory = CodecRegistryTupleTypeFactory.DEFAULT;
+	private TupleTypeFactory tupleTypeFactory = SimpleTupleTypeFactory.DEFAULT;
 
 	private @Nullable UserTypeResolver userTypeResolver;
 
-	private CodecRegistry codecRegistry = CodecRegistry.DEFAULT_INSTANCE;
+	private CodecRegistry codecRegistry = CodecRegistry.DEFAULT;
 
 	// caches
 	private final Map<CqlIdentifier, Set<CassandraPersistentEntity<?>>> entitySetsByTableName = new HashMap<>();
@@ -135,7 +135,7 @@ public class CassandraMappingContext
 			String entityTableName = entityMapping.getTableName();
 
 			if (StringUtils.hasText(entityTableName)) {
-				entity.setTableName(CqlIdentifier.of(entityTableName, Boolean.valueOf(entityMapping.getForceQuote())));
+				entity.setTableName(IdentifierFactory.create(entityTableName, Boolean.valueOf(entityMapping.getForceQuote())));
 			}
 
 			processMappingOverrides(entity, entityMapping);
@@ -167,7 +167,7 @@ public class CassandraMappingContext
 		property.setForceQuote(forceQuote);
 
 		if (StringUtils.hasText(mapping.getColumnName())) {
-			property.setColumnName(CqlIdentifier.of(mapping.getColumnName(), forceQuote));
+			property.setColumnName(IdentifierFactory.create(mapping.getColumnName(), forceQuote));
 		}
 	}
 
@@ -423,7 +423,9 @@ public class CassandraMappingContext
 
 		return getPersistentEntities().stream().flatMap(entity -> StreamSupport.stream(entity.spliterator(), false))
 				.flatMap(it -> Optionals.toStream(Optional.ofNullable(it.findAnnotation(CassandraType.class))))
-				.map(CassandraType::userTypeName).filter(StringUtils::hasText).map(CqlIdentifier::of)
+				.map(CassandraType::userTypeName) //
+				.filter(StringUtils::hasText) //
+				.map(CqlIdentifier::fromCql) //
 				.anyMatch(identifier::equals);
 	}
 
@@ -449,8 +451,8 @@ public class CassandraMappingContext
 	 * @return
 	 * @since 2.2
 	 */
-	public CreateTableSpecification getCreateTableSpecificationFor(CqlIdentifier tableName,
-			CassandraPersistentEntity<?> entity) {
+	public CreateTableSpecification getCreateTableSpecificationFor(
+			com.datastax.oss.driver.api.core.CqlIdentifier tableName, CassandraPersistentEntity<?> entity) {
 
 		Assert.notNull(tableName, "Table name must not be null");
 		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
@@ -583,7 +585,7 @@ public class CassandraMappingContext
 
 			CassandraType annotation = property.getRequiredAnnotation(CassandraType.class);
 
-			if (annotation.type() == Name.TUPLE) {
+			if (annotation.type() == CassandraSimpleTypeHolder.Name.TUPLE) {
 
 				DataType[] dataTypes = Arrays.stream(annotation.typeArguments()).map(CassandraSimpleTypeHolder::getDataTypeFor)
 						.toArray(DataType[]::new);
@@ -591,9 +593,10 @@ public class CassandraMappingContext
 				return getTupleTypeFactory().create(dataTypes);
 			}
 
-			if (annotation.type() == Name.UDT) {
+			if (annotation.type() == CassandraSimpleTypeHolder.Name.UDT) {
 
-				CqlIdentifier userTypeName = CqlIdentifier.of(annotation.userTypeName());
+				com.datastax.oss.driver.api.core.CqlIdentifier userTypeName = com.datastax.oss.driver.api.core.CqlIdentifier
+						.fromCql(annotation.userTypeName());
 
 				DataType userType = dataTypeProvider.getUserType(userTypeName, resolveUserTypeResolver());
 
@@ -617,9 +620,9 @@ public class CassandraMappingContext
 					property.getName(), property.getOwner().getName()));
 		}
 
-		if (UDTValue.class.isAssignableFrom(property.getType())) {
+		if (UdtValue.class.isAssignableFrom(property.getType())) {
 			throw new MappingException(String.format(
-					"Unsupported raw UDTValue to DataType for property [%s] in entity [%s]; Consider adding @CassandraType.",
+					"Unsupported raw UdtValue to DataType for property [%s] in entity [%s]; Consider adding @CassandraType.",
 					property.getName(), property.getOwner().getName()));
 		}
 
@@ -655,11 +658,11 @@ public class CassandraMappingContext
 
 						if (typeInformation.isCollectionLike()) {
 							if (List.class.isAssignableFrom(typeInformation.getType())) {
-								return DataType.list(doGetDataType(propertyType, it));
+								return DataTypes.listOf(doGetDataType(propertyType, it));
 							}
 
 							if (Set.class.isAssignableFrom(typeInformation.getType())) {
-								return DataType.set(doGetDataType(propertyType, it));
+								return DataTypes.setOf(doGetDataType(propertyType, it));
 							}
 						}
 
@@ -679,11 +682,11 @@ public class CassandraMappingContext
 			TypeInformation<?> typeToUse = persistentEntity != null ? persistentEntity.getTypeInformation() : componentType;
 
 			if (List.class.isAssignableFrom(typeInformation.getType())) {
-				return DataType.list(getDataTypeWithUserTypeFactory(typeToUse, dataTypeProvider, fallback));
+				return DataTypes.listOf(getDataTypeWithUserTypeFactory(typeToUse, dataTypeProvider, fallback));
 			}
 
 			if (Set.class.isAssignableFrom(typeInformation.getType())) {
-				return DataType.set(getDataTypeWithUserTypeFactory(typeToUse, dataTypeProvider, fallback));
+				return DataTypes.setOf(getDataTypeWithUserTypeFactory(typeToUse, dataTypeProvider, fallback));
 			}
 
 			throw new IllegalArgumentException("Unsupported collection type: " + typeInformation);
@@ -748,7 +751,7 @@ public class CassandraMappingContext
 			if (conversions.isNativeTimeTypeMarker(converted)
 					|| (conversions.isNativeTimeTypeMarker(propertyType) && Long.class.equals(converted))) {
 
-				return DataType.time();
+				return DataTypes.TIME;
 			}
 		}
 
@@ -794,7 +797,7 @@ public class CassandraMappingContext
 			throw new MappingException("Cannot resolve value type for " + typeInformation + ".");
 		});
 
-		return DataType.map(keyType, valueType);
+		return DataTypes.mapOf(keyType, valueType);
 	}
 
 	@Nullable
@@ -803,11 +806,11 @@ public class CassandraMappingContext
 		if (property.isCollectionLike()) {
 
 			if (List.class.isAssignableFrom(property.getType())) {
-				return DataType.list(elementType);
+				return DataTypes.listOf(elementType);
 			}
 
 			if (Set.class.isAssignableFrom(property.getType())) {
-				return DataType.set(elementType);
+				return DataTypes.setOf(elementType);
 			}
 		}
 
@@ -829,7 +832,8 @@ public class CassandraMappingContext
 			}
 
 			@Override
-			DataType getUserType(CqlIdentifier userTypeName, UserTypeResolver userTypeResolver) {
+			DataType getUserType(com.datastax.oss.driver.api.core.CqlIdentifier userTypeName,
+					UserTypeResolver userTypeResolver) {
 				return userTypeResolver.resolveType(userTypeName);
 			}
 		},
@@ -838,12 +842,15 @@ public class CassandraMappingContext
 
 			@Override
 			public DataType getDataType(CassandraPersistentEntity<?> entity) {
-				return new FrozenLiteralDataType(entity.getTableName());
+				return new ShallowUserDefinedType(com.datastax.oss.driver.api.core.CqlIdentifier.fromCql("system"),
+						entity.getTableName(), true);
 			}
 
 			@Override
-			DataType getUserType(CqlIdentifier userTypeName, UserTypeResolver userTypeResolver) {
-				return new FrozenLiteralDataType(userTypeName);
+			DataType getUserType(com.datastax.oss.driver.api.core.CqlIdentifier userTypeName,
+					UserTypeResolver userTypeResolver) {
+				return new ShallowUserDefinedType(com.datastax.oss.driver.api.core.CqlIdentifier.fromCql("system"),
+						userTypeName, true);
 			}
 		};
 
@@ -865,7 +872,8 @@ public class CassandraMappingContext
 		 * @since 2.0.1
 		 */
 		@Nullable
-		abstract DataType getUserType(CqlIdentifier userTypeName, UserTypeResolver userTypeResolver);
+		abstract DataType getUserType(com.datastax.oss.driver.api.core.CqlIdentifier userTypeName,
+				UserTypeResolver userTypeResolver);
 
 	}
 }

@@ -32,7 +32,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
@@ -48,11 +47,12 @@ import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
 import org.springframework.util.ClassUtils;
 
-import com.datastax.driver.core.CodecRegistry;
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.Statement;
-import com.datastax.driver.core.UDTValue;
-import com.datastax.driver.core.UserType;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.data.UdtValue;
+import com.datastax.oss.driver.api.core.type.UserDefinedType;
+import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
 
 /**
  * Unit tests for {@link PartTreeCassandraQuery}.
@@ -64,8 +64,8 @@ public class PartTreeCassandraQueryUnitTests {
 
 	@Mock CassandraOperations mockCassandraOperations;
 	@Mock UserTypeResolver userTypeResolverMock;
-	@Mock UserType userTypeMock;
-	@Mock UDTValue udtValueMock;
+	@Mock UserDefinedType userTypeMock;
+	@Mock UdtValue udtValueMock;
 
 	CassandraMappingContext mappingContext;
 	CassandraConverter converter;
@@ -80,7 +80,6 @@ public class PartTreeCassandraQueryUnitTests {
 
 		when(mockCassandraOperations.getConverter()).thenReturn(converter);
 		when(udtValueMock.getType()).thenReturn(userTypeMock);
-		when(userTypeMock.iterator()).thenReturn(Collections.emptyIterator());
 	}
 
 	@Test // DATACASS-7
@@ -88,7 +87,7 @@ public class PartTreeCassandraQueryUnitTests {
 
 		String query = deriveQueryFromMethod("findByLastname", "foo");
 
-		assertThat(query).isEqualTo("SELECT * FROM person WHERE lastname='foo';");
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE lastname='foo'");
 	}
 
 	@Test // DATACASS-511
@@ -96,7 +95,7 @@ public class PartTreeCassandraQueryUnitTests {
 
 		String query = deriveQueryFromMethod("findTop3By");
 
-		assertThat(query).isEqualTo("SELECT * FROM person LIMIT 3;");
+		assertThat(query).isEqualTo("SELECT * FROM person LIMIT 3");
 	}
 
 	@Test // DATACASS-7
@@ -104,7 +103,7 @@ public class PartTreeCassandraQueryUnitTests {
 
 		String query = deriveQueryFromMethod("findPersonBy");
 
-		assertThat(query).isEqualTo("SELECT * FROM person;");
+		assertThat(query).isEqualTo("SELECT * FROM person");
 	}
 
 	@Test // DATACASS-7
@@ -112,7 +111,7 @@ public class PartTreeCassandraQueryUnitTests {
 
 		String query = deriveQueryFromMethod("findByFirstnameAndLastname", "foo", "bar");
 
-		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname='foo' AND lastname='bar';");
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname='foo' AND lastname='bar'");
 	}
 
 	@Test // DATACASS-7, DATACASS-313
@@ -120,7 +119,7 @@ public class PartTreeCassandraQueryUnitTests {
 
 		String query = deriveQueryFromMethod("findDynamicallyProjectedBy", PersonProjection.class);
 
-		assertThat(query).isEqualTo("SELECT lastname,firstname FROM person;");
+		assertThat(query).isEqualTo("SELECT lastname,firstname FROM person");
 	}
 
 	@Test // DATACASS-479, DATACASS-313
@@ -128,7 +127,7 @@ public class PartTreeCassandraQueryUnitTests {
 
 		String query = deriveQueryFromMethod("findPersonProjectedByNickname", "foo");
 
-		assertThat(query).isEqualTo("SELECT lastname,firstname FROM person WHERE nickname='foo';");
+		assertThat(query).isEqualTo("SELECT lastname,firstname FROM person WHERE nickname='foo'");
 	}
 
 	@Test // DATACASS-357
@@ -137,18 +136,18 @@ public class PartTreeCassandraQueryUnitTests {
 		String query = deriveQueryFromMethod(Repo.class, "findByFirstnameIn", new Class[] { Collection.class },
 				Arrays.asList("Hank", "Walter")).toString();
 
-		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname IN ('Hank','Walter');");
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname IN ('Hank','Walter')");
 	}
 
 	@Test // DATACASS-172
 	public void shouldDeriveSimpleQueryWithMappedUDT() {
 
-		when(userTypeResolverMock.resolveType(CqlIdentifier.of("address"))).thenReturn(userTypeMock);
+		when(userTypeResolverMock.resolveType(CqlIdentifier.fromCql("address"))).thenReturn(userTypeMock);
 		when(userTypeMock.newValue()).thenReturn(udtValueMock);
 
 		String query = deriveQueryFromMethod("findByMainAddress", new AddressType());
 
-		assertThat(query).isEqualTo("SELECT * FROM person WHERE mainaddress={};");
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE mainaddress={}");
 	}
 
 	@Test // DATACASS-172
@@ -156,7 +155,7 @@ public class PartTreeCassandraQueryUnitTests {
 
 		String query = deriveQueryFromMethod("findByMainAddress", udtValueMock);
 
-		assertThat(query).isEqualTo("SELECT * FROM person WHERE mainaddress={};");
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE mainaddress={}");
 	}
 
 	@Test // DATACASS-357
@@ -165,69 +164,69 @@ public class PartTreeCassandraQueryUnitTests {
 		String query = deriveQueryFromMethod(Repo.class, "findByMainAddressIn", new Class[] { Collection.class },
 				Collections.singleton(udtValueMock)).toString();
 
-		assertThat(query).isEqualTo("SELECT * FROM person WHERE mainaddress IN ({});");
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE mainaddress IN ({})");
 	}
 
 	@Test // DATACASS-343
 	public void shouldRenderMappedColumnNamesForCompositePrimaryKey() {
 
-		Statement query = deriveQueryFromMethod(GroupRepository.class, "findByIdHashPrefix", new Class[] { String.class },
-				"foo");
+		SimpleStatement query = deriveQueryFromMethod(GroupRepository.class, "findByIdHashPrefix",
+				new Class[] { String.class }, "foo");
 
-		assertThat(query.toString()).isEqualTo("SELECT * FROM group WHERE hash_prefix='foo';");
+		assertThat(query.getQuery()).isEqualTo("SELECT * FROM group WHERE hash_prefix='foo'");
 	}
 
 	@Test // DATACASS-376
 	public void shouldAllowFiltering() {
 
-		Statement query = deriveQueryFromMethod(Repo.class, "findByFirstname", new Class[] { String.class }, "foo");
+		SimpleStatement query = deriveQueryFromMethod(Repo.class, "findByFirstname", new Class[] { String.class }, "foo");
 
-		assertThat(query.toString()).isEqualTo("SELECT * FROM person WHERE firstname='foo' ALLOW FILTERING;");
+		assertThat(query.getQuery()).isEqualTo("SELECT * FROM person WHERE firstname='foo' ALLOW FILTERING");
 	}
 
 	@Test // DATACASS-146
 	public void shouldApplyQueryOptions() {
 
-		QueryOptions queryOptions = QueryOptions.builder().fetchSize(777).build();
-		Statement statement = deriveQueryFromMethod(Repo.class, "findByFirstname",
+		QueryOptions queryOptions = QueryOptions.builder().pageSize(777).build();
+		SimpleStatement statement = deriveQueryFromMethod(Repo.class, "findByFirstname",
 				new Class[] { QueryOptions.class, String.class }, queryOptions, "Walter");
 
-		assertThat(statement.toString()).isEqualTo("SELECT * FROM person WHERE firstname='Walter';");
-		assertThat(statement.getFetchSize()).isEqualTo(777);
+		assertThat(statement.toString()).isEqualTo("SELECT * FROM person WHERE firstname='Walter'");
+		assertThat(statement.getPageSize()).isEqualTo(777);
 	}
 
 	@Test // DATACASS-146
 	public void shouldApplyConsistencyLevel() {
 
-		Statement statement = deriveQueryFromMethod(Repo.class, "findPersonBy", new Class[0]);
+		SimpleStatement statement = deriveQueryFromMethod(Repo.class, "findPersonBy", new Class[0]);
 
-		assertThat(statement.toString()).isEqualTo("SELECT * FROM person;");
-		assertThat(statement.getConsistencyLevel()).isEqualTo(ConsistencyLevel.LOCAL_ONE);
+		assertThat(statement.toString()).isEqualTo("SELECT * FROM person");
+		assertThat(statement.getConsistencyLevel()).isEqualTo(DefaultConsistencyLevel.LOCAL_ONE);
 	}
 
 	@Test // DATACASS-512
 	public void shouldCreateCountQuery() {
 
-		Statement statement = deriveQueryFromMethod(Repo.class, "countBy", new Class[0]);
+		SimpleStatement statement = deriveQueryFromMethod(Repo.class, "countBy", new Class[0]);
 
-		assertThat(statement.toString()).isEqualTo("SELECT COUNT(1) FROM person;");
+		assertThat(statement.toString()).isEqualTo("SELECT COUNT(1) FROM person");
 	}
 
 	@Test // DATACASS-611
 	public void shouldCreateDeleteQuery() {
 
-		Statement statement = deriveQueryFromMethod(Repo.class, "deleteAllByLastname", new Class[] { String.class },
+		SimpleStatement statement = deriveQueryFromMethod(Repo.class, "deleteAllByLastname", new Class[] { String.class },
 				"Walter");
 
-		assertThat(statement.toString()).isEqualTo("DELETE FROM person WHERE lastname='Walter';");
+		assertThat(statement.toString()).isEqualTo("DELETE FROM person WHERE lastname='Walter'");
 	}
 
 	@Test // DATACASS-512
 	public void shouldCreateExistsQuery() {
 
-		Statement statement = deriveQueryFromMethod(Repo.class, "existsBy", new Class[0]);
+		SimpleStatement statement = deriveQueryFromMethod(Repo.class, "existsBy", new Class[0]);
 
-		assertThat(statement.toString()).isEqualTo("SELECT * FROM person LIMIT 1;");
+		assertThat(statement.toString()).isEqualTo("SELECT * FROM person LIMIT 1");
 	}
 
 	private String deriveQueryFromMethod(String method, Object... args) {
@@ -241,7 +240,7 @@ public class PartTreeCassandraQueryUnitTests {
 		return deriveQueryFromMethod(Repo.class, method, types, args).toString();
 	}
 
-	private Statement deriveQueryFromMethod(Class<?> repositoryInterface, String method, Class<?>[] types,
+	private SimpleStatement deriveQueryFromMethod(Class<?> repositoryInterface, String method, Class<?>[] types,
 			Object... args) {
 
 		PartTreeCassandraQuery partTreeQuery = createQueryForMethod(repositoryInterface, method, types);
@@ -249,8 +248,8 @@ public class PartTreeCassandraQueryUnitTests {
 		CassandraParameterAccessor accessor = new CassandraParametersParameterAccessor(partTreeQuery.getQueryMethod(),
 				args);
 
-		return partTreeQuery.createQuery(new ConvertingParameterAccessor(mockCassandraOperations.getConverter(), accessor,
-				CodecRegistry.DEFAULT_INSTANCE));
+		return partTreeQuery.createQuery(
+				new ConvertingParameterAccessor(mockCassandraOperations.getConverter(), accessor, CodecRegistry.DEFAULT));
 	}
 
 	private PartTreeCassandraQuery createQueryForMethod(Class<?> repositoryInterface, String methodName,
@@ -290,12 +289,12 @@ public class PartTreeCassandraQueryUnitTests {
 
 		Person findByFirstname(QueryOptions queryOptions, String firstname);
 
-		@Consistency(ConsistencyLevel.LOCAL_ONE)
+		@Consistency(DefaultConsistencyLevel.LOCAL_ONE)
 		Person findPersonBy();
 
 		Person findByMainAddress(AddressType address);
 
-		Person findByMainAddress(UDTValue udtValue);
+		Person findByMainAddress(UdtValue udtValue);
 
 		Person findByMainAddressIn(Collection<AddressType> address);
 

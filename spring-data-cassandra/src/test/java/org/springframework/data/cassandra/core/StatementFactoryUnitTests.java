@@ -22,10 +22,12 @@ import java.util.Map;
 import java.util.Set;
 
 import org.junit.Test;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.convert.UpdateMapper;
+import org.springframework.data.cassandra.core.cql.util.StatementBuilder;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.Column;
 import org.springframework.data.cassandra.core.query.Columns;
@@ -35,7 +37,8 @@ import org.springframework.data.cassandra.core.query.Update;
 import org.springframework.data.cassandra.domain.Group;
 import org.springframework.data.domain.Sort;
 
-import com.datastax.driver.core.Statement;
+import com.datastax.oss.driver.api.querybuilder.delete.Delete;
+import com.datastax.oss.driver.api.querybuilder.select.Select;
 
 /**
  * Unit tests for {@link StatementFactory}.
@@ -56,10 +59,10 @@ public class StatementFactoryUnitTests {
 	@Test // DATACASS-343
 	public void shouldMapSimpleSelectQuery() {
 
-		Statement select = statementFactory.select(Query.empty(),
+		StatementBuilder<Select> select = statementFactory.select(Query.empty(),
 				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
 
-		assertThat(select.toString()).isEqualTo("SELECT * FROM group;");
+		assertThat(select.build().toString()).isEqualTo("SELECT * FROM group;");
 	}
 
 	@Test // DATACASS-343
@@ -67,9 +70,9 @@ public class StatementFactoryUnitTests {
 
 		Query query = Query.query(Criteria.where("foo").is("bar")).columns(Columns.from("age"));
 
-		Statement select = statementFactory.select(query, groupEntity);
+		StatementBuilder<Select> select = statementFactory.select(query, groupEntity);
 
-		assertThat(select.toString()).isEqualTo("SELECT age FROM group WHERE foo='bar';");
+		assertThat(select.build().toString()).isEqualTo("SELECT age FROM group WHERE foo='bar';");
 	}
 
 	@Test // DATACASS-549
@@ -77,9 +80,9 @@ public class StatementFactoryUnitTests {
 
 		Query query = Query.query(Criteria.where("foo").ne("bar")).columns(Columns.from("age"));
 
-		Statement select = statementFactory.select(query, groupEntity);
+		StatementBuilder<Select> select = statementFactory.select(query, groupEntity);
 
-		assertThat(select.toString()).isEqualTo("SELECT age FROM group WHERE foo!='bar';");
+		assertThat(select.build().toString()).isEqualTo("SELECT age FROM group WHERE foo!='bar';");
 	}
 
 	@Test // DATACASS-549
@@ -87,9 +90,9 @@ public class StatementFactoryUnitTests {
 
 		Query query = Query.query(Criteria.where("foo").isNotNull()).columns(Columns.from("age"));
 
-		Statement select = statementFactory.select(query, groupEntity);
+		StatementBuilder<Select> select = statementFactory.select(query, groupEntity);
 
-		assertThat(select.toString()).isEqualTo("SELECT age FROM group WHERE foo IS NOT NULL;");
+		assertThat(select.build().toString()).isEqualTo("SELECT age FROM group WHERE foo IS NOT NULL;");
 	}
 
 	@Test // DATACASS-343
@@ -97,7 +100,7 @@ public class StatementFactoryUnitTests {
 
 		Query query = Query.empty().columns(Columns.empty().ttl("email"));
 
-		Statement select = statementFactory.select(query,
+		StatementBuilder<Select> select = statementFactory.select(query,
 				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
 
 		assertThat(select.toString()).isEqualTo("SELECT TTL(email) FROM group;");
@@ -108,10 +111,11 @@ public class StatementFactoryUnitTests {
 
 		Query query = Query.empty().sort(Sort.by("id.hashPrefix")).limit(10).withAllowFiltering();
 
-		Statement select = statementFactory.select(query,
+		StatementBuilder<Select> select = statementFactory.select(query,
 				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
 
-		assertThat(select.toString()).isEqualTo("SELECT * FROM group ORDER BY hash_prefix ASC LIMIT 10 ALLOW FILTERING;");
+		assertThat(select.build().toString())
+				.isEqualTo("SELECT * FROM group ORDER BY hash_prefix ASC LIMIT 10 ALLOW FILTERING;");
 	}
 
 	@Test // DATACASS-343
@@ -119,10 +123,10 @@ public class StatementFactoryUnitTests {
 
 		Query query = Query.empty().columns(Columns.from("age"));
 
-		Statement delete = statementFactory.delete(query,
+		StatementBuilder<Delete> delete = statementFactory.delete(query,
 				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
 
-		assertThat(delete.toString()).isEqualTo("DELETE age FROM group;");
+		assertThat(delete.build().toString()).isEqualTo("DELETE age FROM group;");
 	}
 
 	@Test // DATACASS-343
@@ -130,10 +134,10 @@ public class StatementFactoryUnitTests {
 
 		Query query = Query.query(Criteria.where("foo").is("bar"));
 
-		Statement delete = statementFactory.delete(query,
+		StatementBuilder<Delete> delete = statementFactory.delete(query,
 				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
 
-		assertThat(delete.toString()).isEqualTo("DELETE FROM group WHERE foo='bar';");
+		assertThat(delete.build().toString()).isEqualTo("DELETE FROM group WHERE foo='bar';");
 	}
 
 	@Test // DATACASS-343
@@ -141,53 +145,53 @@ public class StatementFactoryUnitTests {
 
 		Query query = Query.query(Criteria.where("foo").is("bar"));
 
-		Statement update = statementFactory.update(query, Update.empty().set("firstName", "baz").set("boo", "baa"),
-				personEntity);
+		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory.update(query,
+				Update.empty().set("firstName", "baz").set("boo", "baa"), personEntity);
 
-		assertThat(update.toString()).isEqualTo("UPDATE person SET first_name='baz',boo='baa' WHERE foo='bar';");
+		assertThat(update.build().toString()).isEqualTo("UPDATE person SET first_name='baz',boo='baa' WHERE foo='bar';");
 	}
 
 	@Test // DATACASS-343
 	public void shouldCreateSetAtIndexUpdate() {
 
-		Statement update = statementFactory.update(Query.empty(), Update.empty().set("list").atIndex(10).to("Euro"),
-				personEntity);
+		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory
+				.update(Query.empty(), Update.empty().set("list").atIndex(10).to("Euro"), personEntity);
 
-		assertThat(update.toString()).isEqualTo("UPDATE person SET list[10]='Euro';");
+		assertThat(update.build().toString()).isEqualTo("UPDATE person SET list[10]='Euro';");
 	}
 
 	@Test // DATACASS-343
 	public void shouldCreateSetAtKeyUpdate() {
 
-		Statement update = statementFactory.update(Query.empty(), Update.empty().set("map").atKey("baz").to("Euro"),
-				personEntity);
+		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory
+				.update(Query.empty(), Update.empty().set("map").atKey("baz").to("Euro"), personEntity);
 
-		assertThat(update.toString()).isEqualTo("UPDATE person SET map['baz']='Euro';");
+		assertThat(update.build().toString()).isEqualTo("UPDATE person SET map['baz']='Euro';");
 	}
 
 	@Test // DATACASS-343
 	public void shouldAddToMap() {
 
-		Statement update = statementFactory.update(Query.empty(), Update.empty().addTo("map").entry("foo", "Euro"),
-				personEntity);
+		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory
+				.update(Query.empty(), Update.empty().addTo("map").entry("foo", "Euro"), personEntity);
 
-		assertThat(update.toString()).isEqualTo("UPDATE person SET map=map+{'foo':'Euro'};");
+		assertThat(update.build().toString()).isEqualTo("UPDATE person SET map=map+{'foo':'Euro'};");
 	}
 
 	@Test // DATACASS-343
 	public void shouldPrependAllToList() {
 
-		Statement update = statementFactory.update(Query.empty(), Update.empty().addTo("list").prependAll("foo", "Euro"),
-				personEntity);
+		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory
+				.update(Query.empty(), Update.empty().addTo("list").prependAll("foo", "Euro"), personEntity);
 
-		assertThat(update.toString()).isEqualTo("UPDATE person SET list=['foo','Euro']+list;");
+		assertThat(update.build().toString()).isEqualTo("UPDATE person SET list=['foo','Euro']+list;");
 	}
 
 	@Test // DATACASS-343
 	public void shouldAppendAllToList() {
 
-		Statement update = statementFactory.update(Query.empty(), Update.empty().addTo("list").appendAll("foo", "Euro"),
-				personEntity);
+		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory
+				.update(Query.empty(), Update.empty().addTo("list").appendAll("foo", "Euro"), personEntity);
 
 		assertThat(update.toString()).isEqualTo("UPDATE person SET list=list+['foo','Euro'];");
 	}
@@ -195,58 +199,64 @@ public class StatementFactoryUnitTests {
 	@Test // DATACASS-343
 	public void shouldRemoveFromList() {
 
-		Statement update = statementFactory.update(Query.empty(), Update.empty().remove("list", "Euro"), personEntity);
+		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory
+				.update(Query.empty(), Update.empty().remove("list", "Euro"), personEntity);
 
-		assertThat(update.toString()).isEqualTo("UPDATE person SET list=list-['Euro'];");
+		assertThat(update.build().toString()).isEqualTo("UPDATE person SET list=list-['Euro'];");
 	}
 
 	@Test // DATACASS-343
 	public void shouldClearList() {
 
-		Statement update = statementFactory.update(Query.empty(), Update.empty().clear("list"), personEntity);
+		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory
+				.update(Query.empty(), Update.empty().clear("list"), personEntity);
 
-		assertThat(update.toString()).isEqualTo("UPDATE person SET list=[];");
+		assertThat(update.build().toString()).isEqualTo("UPDATE person SET list=[];");
 	}
 
 	@Test // DATACASS-343
 	public void shouldAddAllToSet() {
 
-		Statement update = statementFactory.update(Query.empty(), Update.empty().addTo("set").appendAll("foo", "Euro"),
-				personEntity);
+		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory
+				.update(Query.empty(), Update.empty().addTo("set").appendAll("foo", "Euro"), personEntity);
 
-		assertThat(update.toString()).isEqualTo("UPDATE person SET set_col=set_col+{'foo','Euro'};");
+		assertThat(update.build().toString()).isEqualTo("UPDATE person SET set_col=set_col+{'foo','Euro'};");
 	}
 
 	@Test // DATACASS-343
 	public void shouldRemoveFromSet() {
 
-		Statement update = statementFactory.update(Query.empty(), Update.empty().remove("set", "Euro"), personEntity);
+		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory
+				.update(Query.empty(), Update.empty().remove("set", "Euro"), personEntity);
 
-		assertThat(update.toString()).isEqualTo("UPDATE person SET set_col=set_col-{'Euro'};");
+		assertThat(update.build().toString()).isEqualTo("UPDATE person SET set_col=set_col-{'Euro'};");
 	}
 
 	@Test // DATACASS-343
 	public void shouldClearSet() {
 
-		Statement update = statementFactory.update(Query.empty(), Update.empty().clear("set"), personEntity);
+		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory
+				.update(Query.empty(), Update.empty().clear("set"), personEntity);
 
-		assertThat(update.toString()).isEqualTo("UPDATE person SET set_col={};");
+		assertThat(update.build().toString()).isEqualTo("UPDATE person SET set_col={};");
 	}
 
 	@Test // DATACASS-343
 	public void shouldCreateIncrementUpdate() {
 
-		Statement update = statementFactory.update(Query.empty(), Update.empty().increment("number"), personEntity);
+		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory
+				.update(Query.empty(), Update.empty().increment("number"), personEntity);
 
-		assertThat(update.toString()).isEqualTo("UPDATE person SET number=number+1;");
+		assertThat(update.build().toString()).isEqualTo("UPDATE person SET number=number+1;");
 	}
 
 	@Test // DATACASS-343
 	public void shouldCreateDecrementUpdate() {
 
-		Statement update = statementFactory.update(Query.empty(), Update.empty().decrement("number"), personEntity);
+		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory
+				.update(Query.empty(), Update.empty().decrement("number"), personEntity);
 
-		assertThat(update.toString()).isEqualTo("UPDATE person SET number=number-1;");
+		assertThat(update.build().toString()).isEqualTo("UPDATE person SET number=number-1;");
 	}
 
 	@Test // DATACASS-569
@@ -255,9 +265,10 @@ public class StatementFactoryUnitTests {
 		Query query = Query.query(Criteria.where("foo").is("bar"))
 				.queryOptions(UpdateOptions.builder().withIfExists().build());
 
-		Statement update = statementFactory.update(query, Update.empty().set("firstName", "baz"), personEntity);
+		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory.update(query,
+				Update.empty().set("firstName", "baz"), personEntity);
 
-		assertThat(update.toString()).isEqualTo("UPDATE person SET first_name='baz' WHERE foo='bar' IF EXISTS;");
+		assertThat(update.build().toString()).isEqualTo("UPDATE person SET first_name='baz' WHERE foo='bar' IF EXISTS;");
 	}
 
 	@Test // DATACASS-512
@@ -265,10 +276,10 @@ public class StatementFactoryUnitTests {
 
 		Query query = Query.query(Criteria.where("foo").is("bar"));
 
-		Statement count = statementFactory.count(query,
+		StatementBuilder<Select> count = statementFactory.count(query,
 				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
 
-		assertThat(count.toString()).isEqualTo("SELECT COUNT(1) FROM group WHERE foo='bar';");
+		assertThat(count.build().toString()).isEqualTo("SELECT COUNT(1) FROM group WHERE foo='bar';");
 	}
 
 	static class Person {

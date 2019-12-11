@@ -75,13 +75,13 @@
 
 		<!-- Cassandra driver -->
 		<dependency>
-			<groupId>com.datastax.cassandra</groupId>
-			<artifactId>cassandra-driver-core</artifactId>
+			<groupId>com.datastax.oss</groupId>
+			<artifactId>java-driver-core</artifactId>
 		</dependency>
 
 		<dependency>
 			<groupId>com.datastax.oss</groupId>
-			<artifactId>java-driver-core</artifactId>
+			<artifactId>java-driver-query-builder</artifactId>
 		</dependency>
 
 		<!-- Reactor -->

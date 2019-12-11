@@ -28,7 +28,7 @@ import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.core.query.Update;
 import org.springframework.data.domain.Slice;
 
-import com.datastax.driver.core.Statement;
+import com.datastax.oss.driver.api.core.cql.Statement;
 
 /**
  * Interface specifying a basic set of reactive Cassandra operations. Implemented by {@link ReactiveCassandraTemplate}.
@@ -98,7 +98,7 @@ public interface ReactiveCassandraOperations extends ReactiveFluentCassandraOper
 	<T> Mono<T> selectOne(String cql, Class<T> entityClass) throws DataAccessException;
 
 	// -------------------------------------------------------------------------
-	// Methods dealing with com.datastax.driver.core.Statement
+	// Methods dealing with com.datastax.oss.driver.api.core.cql.Statement
 	// -------------------------------------------------------------------------
 
 	/**
@@ -109,7 +109,7 @@ public interface ReactiveCassandraOperations extends ReactiveFluentCassandraOper
 	 * @return the result objects returned by the action.
 	 * @throws DataAccessException if there is any problem issuing the execution.
 	 */
-	<T> Flux<T> select(Statement statement, Class<T> entityClass) throws DataAccessException;
+	<T> Flux<T> select(Statement<?> statement, Class<T> entityClass) throws DataAccessException;
 
 	/**
 	 * Execute a {@code SELECT} query with paging and convert the result set to a {@link Slice} of entities. A sliced
@@ -121,7 +121,7 @@ public interface ReactiveCassandraOperations extends ReactiveFluentCassandraOper
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @since 2.1
 	 */
-	<T> Mono<Slice<T>> slice(Statement statement, Class<T> entityClass) throws DataAccessException;
+	<T> Mono<Slice<T>> slice(Statement<?> statement, Class<T> entityClass) throws DataAccessException;
 
 	/**
 	 * Execute a {@code SELECT} query and convert the resulting item to an entity.
@@ -131,7 +131,7 @@ public interface ReactiveCassandraOperations extends ReactiveFluentCassandraOper
 	 * @return the result object returned by the action or {@link Mono#empty()}
 	 * @throws DataAccessException if there is any problem issuing the execution.
 	 */
-	<T> Mono<T> selectOne(Statement statement, Class<T> entityClass) throws DataAccessException;
+	<T> Mono<T> selectOne(Statement<?> statement, Class<T> entityClass) throws DataAccessException;
 
 	// -------------------------------------------------------------------------
 	// Methods dealing with org.springframework.data.cassandra.core.query.Query

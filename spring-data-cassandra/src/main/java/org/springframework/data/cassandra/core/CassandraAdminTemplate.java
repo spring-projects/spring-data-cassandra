@@ -20,7 +20,6 @@ import java.util.Optional;
 
 import org.springframework.data.cassandra.SessionFactory;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.cql.CqlOperations;
 import org.springframework.data.cassandra.core.cql.SessionCallback;
 import org.springframework.data.cassandra.core.cql.generator.CreateTableCqlGenerator;
@@ -32,9 +31,10 @@ import org.springframework.data.cassandra.core.cql.keyspace.DropUserTypeSpecific
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.TableMetadata;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;
+import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
 
 /**
  * Default implementation of {@link CassandraAdminOperations}.
@@ -54,7 +54,7 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 	 * @param session must not be {@literal null}.
 	 * @since 2.2
 	 */
-	public CassandraAdminTemplate(Session session) {
+	public CassandraAdminTemplate(CqlSession session) {
 		super(session);
 	}
 
@@ -64,7 +64,7 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 	 * @param session must not be {@literal null}.
 	 * @param converter must not be {@literal null}.
 	 */
-	public CassandraAdminTemplate(Session session, CassandraConverter converter) {
+	public CassandraAdminTemplate(CqlSession session, CassandraConverter converter) {
 		super(session, converter);
 	}
 
@@ -145,16 +145,18 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#getTableMetadata(java.lang.String, org.springframework.data.cassandra.core.cql.CqlIdentifier)
+	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#getTableMetadata(com.datastax.oss.driver.api.core.CqlIdentifier, com.datastax.oss.driver.api.core.CqlIdentifier)
 	 */
 	@Override
-	public Optional<TableMetadata> getTableMetadata(String keyspace, CqlIdentifier tableName) {
+	public Optional<TableMetadata> getTableMetadata(CqlIdentifier keyspace, CqlIdentifier tableName) {
 
-		Assert.hasText(keyspace, "Keyspace name must not be empty");
+		Assert.notNull(keyspace, "Keyspace name must not be null");
 		Assert.notNull(tableName, "Table name must not be null");
 
-		return Optional.ofNullable(getCqlOperations().execute((SessionCallback<TableMetadata>) session -> session
-				.getCluster().getMetadata().getKeyspace(keyspace).getTable(tableName.toCql())));
+		// noinspection ConstantConditions
+		return getCqlOperations().execute((SessionCallback<Optional<TableMetadata>>) session -> {
+			return session.getMetadata().getKeyspace(keyspace).flatMap(it -> it.getTable(tableName));
+		});
 	}
 
 	/* (non-Javadoc)
@@ -166,12 +168,9 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 		// noinspection ConstantConditions
 		return getCqlOperations().execute((SessionCallback<KeyspaceMetadata>) session -> {
 
-			KeyspaceMetadata keyspaceMetadata = session.getCluster().getMetadata().getKeyspace(session.getLoggedKeyspace());
-
-			Assert.state(keyspaceMetadata != null,
-					String.format("Metadata for keyspace [%s] not available", session.getLoggedKeyspace()));
-
-			return keyspaceMetadata;
+			return session.getKeyspace().flatMap(it -> session.getMetadata().getKeyspace(it)).orElseThrow(() -> {
+				return new IllegalStateException("Metadata for keyspace not available");
+			});
 		});
 	}
 }

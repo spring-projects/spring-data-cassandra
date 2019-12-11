@@ -33,13 +33,14 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.cql.CqlOperations;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateUserTypeSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.UserTypeNameSpecification;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.UserDefinedType;
+
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * Unit tests for {@link CassandraPersistentEntitySchemaCreator}.
@@ -93,7 +94,7 @@ public class CassandraPersistentEntitySchemaCreatorUnitTests extends CassandraPe
 		List<CqlIdentifier> collect = userTypeSpecifications.stream().map(UserTypeNameSpecification::getName)
 				.collect(Collectors.toList());
 
-		assertThat(collect).hasSize(3).startsWith(CqlIdentifier.of("requiredbyall"));
+		assertThat(collect).hasSize(3).startsWith(CqlIdentifier.fromCql("requiredbyall"));
 	}
 
 	@Test // DATACASS-172, DATACASS-406

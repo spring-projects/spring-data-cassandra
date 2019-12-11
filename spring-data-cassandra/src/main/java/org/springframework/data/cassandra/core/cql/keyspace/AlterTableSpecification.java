@@ -20,8 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
-
-import com.datastax.driver.core.DataType;
+import com.datastax.oss.driver.api.core.type.DataType;
 
 /**
  * Object to configure a {@code ALTER TABLE} specification.

@@ -28,6 +28,8 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+
 /**
  * Update object representing representing a set of update operations. {@link Update} objects can be created in a fluent
  * style. Each construction operation creates a new immutable {@link Update} object.
@@ -402,7 +404,7 @@ public class Update {
 
 		/**
 		 * Create a {@link SetValueBuilder} to set a value at a numeric {@code index}. Used for
-		 * {@link com.datastax.driver.core.DataType.Name#LIST} type columns.
+		 * {@link com.datastax.oss.driver.api.core.type.ListType} type columns.
 		 *
 		 * @param index positional index.
 		 * @return a {@link SetValueBuilder} to set a value at {@code index}
@@ -411,7 +413,7 @@ public class Update {
 
 		/**
 		 * Create a {@link SetValueBuilder} to set a value at {@code index}. Used for
-		 * {@link com.datastax.driver.core.DataType.Name#MAP} type columns.
+		 * {@link com.datastax.oss.driver.api.core.type.MapType} type columns.
 		 *
 		 * @param key must not be {@literal null}.
 		 * @return a {@link SetValueBuilder} to set a value at {@code index}
@@ -479,6 +481,13 @@ public class Update {
 		 */
 		public ColumnName getColumnName() {
 			return this.columnName;
+		}
+
+		/**
+		 * @return the {@link ColumnName}.
+		 */
+		public CqlIdentifier toCqlIdentifier() {
+			return this.columnName.getCqlIdentifier().orElseGet(() -> CqlIdentifier.fromCql(this.columnName.toCql()));
 		}
 	}
 

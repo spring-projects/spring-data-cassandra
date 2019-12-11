@@ -17,8 +17,9 @@ package org.springframework.data.cassandra.core.query;
 
 import java.util.Optional;
 
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.util.Assert;
+
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * Value object representing a column name. Column names can be expressed either through {@link CqlIdentifier} or a
@@ -29,7 +30,7 @@ import org.springframework.util.Assert;
  * Implementing classes must provide either {@link #getColumnName()} or {@link #getCqlIdentifier()}.
  *
  * @author Mark Paluch
- * @see org.springframework.data.cassandra.core.cql.CqlIdentifier
+ * @see com.datastax.oss.driver.api.core.CqlIdentifier
  * @since 2.0
  */
 public abstract class ColumnName {
@@ -189,7 +190,7 @@ public abstract class ColumnName {
 		 */
 		@Override
 		public String toCql() {
-			return this.cqlIdentifier.toCql();
+			return this.cqlIdentifier.toString();
 		}
 
 		/* (non-Javadoc)

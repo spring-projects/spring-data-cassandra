@@ -33,9 +33,9 @@ public class ForceQuotedEntitiesSimpleUnitTests {
 		BasicCassandraPersistentEntity<ImplicitTableNameForceQuoted> entity = new BasicCassandraPersistentEntity<>(
 				ClassTypeInformation.from(ImplicitTableNameForceQuoted.class));
 
-		assertThat(entity.getTableName().toCql())
+		assertThat(entity.getTableName().asCql(false))
 				.isEqualTo("\"" + ImplicitTableNameForceQuoted.class.getSimpleName() + "\"");
-		assertThat(entity.getTableName().getUnquoted()).isEqualTo(ImplicitTableNameForceQuoted.class.getSimpleName());
+		assertThat(entity.getTableName().asInternal()).isEqualTo(ImplicitTableNameForceQuoted.class.getSimpleName());
 	}
 
 	@Table(forceQuote = true)
@@ -48,8 +48,8 @@ public class ForceQuotedEntitiesSimpleUnitTests {
 		BasicCassandraPersistentEntity<ExplicitTableNameForceQuoted> entity = new BasicCassandraPersistentEntity<>(
 				ClassTypeInformation.from(ExplicitTableNameForceQuoted.class));
 
-		assertThat(entity.getTableName().toCql()).isEqualTo("\"" + EXPLICIT_TABLE_NAME + "\"");
-		assertThat(entity.getTableName().getUnquoted()).isEqualTo(EXPLICIT_TABLE_NAME);
+		assertThat(entity.getTableName().asCql(false)).isEqualTo("\"" + EXPLICIT_TABLE_NAME + "\"");
+		assertThat(entity.getTableName().asInternal()).isEqualTo(EXPLICIT_TABLE_NAME);
 	}
 
 	@Table(value = EXPLICIT_TABLE_NAME, forceQuote = true)
@@ -60,9 +60,9 @@ public class ForceQuotedEntitiesSimpleUnitTests {
 		BasicCassandraPersistentEntity<DefaultTableNameForceQuoted> entity = new BasicCassandraPersistentEntity<>(
 				ClassTypeInformation.from(DefaultTableNameForceQuoted.class));
 
-		assertThat(entity.getTableName().toCql())
+		assertThat(entity.getTableName().asCql(false))
 				.isEqualTo(DefaultTableNameForceQuoted.class.getSimpleName().toLowerCase());
-		assertThat(entity.getTableName().getUnquoted())
+		assertThat(entity.getTableName().asInternal())
 				.isEqualTo(DefaultTableNameForceQuoted.class.getSimpleName().toLowerCase());
 	}
 

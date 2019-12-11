@@ -21,10 +21,9 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.core.mapping.Table;
-
-import com.datastax.driver.core.DataType.Name;
 
 /**
  * @author Mark Paluch
@@ -39,9 +38,10 @@ class Contact {
 	Address address;
 	List<Address> addresses;
 
-	@CassandraType(type = Name.UDT, userTypeName = "phone") Phone mainPhone;
+	@CassandraType(type = CassandraSimpleTypeHolder.Name.UDT, userTypeName = "phone") Phone mainPhone;
 
-	@CassandraType(type = Name.LIST, typeArguments = Name.UDT, userTypeName = "phone") List<Phone> alternativePhones;
+	@CassandraType(type = CassandraSimpleTypeHolder.Name.LIST, typeArguments = CassandraSimpleTypeHolder.Name.UDT,
+			userTypeName = "phone") List<Phone> alternativePhones;
 
 	public Contact(String id) {
 		this.id = id;

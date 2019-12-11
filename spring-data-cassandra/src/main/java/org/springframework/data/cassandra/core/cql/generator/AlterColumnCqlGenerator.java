@@ -31,7 +31,6 @@ public class AlterColumnCqlGenerator extends ColumnChangeCqlGenerator<AlterColum
 	}
 
 	public StringBuilder toCql(StringBuilder cql) {
-		return cql.append("ALTER ").append(spec().getName()).append(" TYPE ")
-				.append(spec().getType().asFunctionParameterString());
+		return cql.append("ALTER ").append(spec().getName()).append(" TYPE ").append(spec().getType().asCql(true, true));
 	}
 }

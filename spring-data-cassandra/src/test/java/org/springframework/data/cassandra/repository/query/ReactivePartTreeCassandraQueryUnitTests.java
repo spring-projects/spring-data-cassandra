@@ -45,9 +45,9 @@ import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
 import org.springframework.util.ClassUtils;
 
-import com.datastax.driver.core.CodecRegistry;
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.Statement;
+import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
 
 /**
  * Unit tests for {@link ReactivePartTreeCassandraQuery}.
@@ -76,7 +76,7 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 
 		String query = deriveQueryFromMethod("findByLastname", "foo");
 
-		assertThat(query).isEqualTo("SELECT * FROM person WHERE lastname='foo';");
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE lastname='foo'");
 	}
 
 	@Test // DATACASS-335
@@ -84,7 +84,7 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 
 		String query = deriveQueryFromMethod("findPersonBy");
 
-		assertThat(query).isEqualTo("SELECT * FROM person;");
+		assertThat(query).isEqualTo("SELECT * FROM person");
 	}
 
 	@Test // DATACASS-335
@@ -92,7 +92,7 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 
 		String query = deriveQueryFromMethod("findByFirstnameAndLastname", "foo", "bar");
 
-		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname='foo' AND lastname='bar';");
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname='foo' AND lastname='bar'");
 	}
 
 	@Test // DATACASS-376
@@ -100,7 +100,7 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 
 		String query = deriveQueryFromMethod("findPersonByFirstname", "foo");
 
-		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname='foo' ALLOW FILTERING;");
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname='foo' ALLOW FILTERING");
 	}
 
 	@Test // DATACASS-335, DATACASS-313
@@ -108,52 +108,54 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 
 		String query = deriveQueryFromMethod("findDynamicallyProjectedBy", PersonProjection.class);
 
-		assertThat(query).isEqualTo("SELECT lastname,firstname FROM person;");
+		assertThat(query).isEqualTo("SELECT lastname,firstname FROM person");
 	}
 
 	@Test // DATACASS-146
 	public void shouldApplyQueryOptions() {
 
-		QueryOptions queryOptions = QueryOptions.builder().fetchSize(777).build();
-		Statement statement = deriveQueryFromMethod(Repo.class, "findByFirstname",
+		QueryOptions queryOptions = QueryOptions.builder().pageSize(777).build();
+		SimpleStatement statement = deriveQueryFromMethod(Repo.class, "findByFirstname",
 				new Class[] { QueryOptions.class, String.class }, queryOptions, "Walter");
 
-		assertThat(statement.toString()).isEqualTo("SELECT * FROM person WHERE firstname='Walter';");
-		assertThat(statement.getFetchSize()).isEqualTo(777);
+		assertThat(statement.toString()).isEqualTo("SELECT * FROM person WHERE firstname='Walter'");
+		assertThat(statement.getPageSize()).isEqualTo(777);
 	}
 
 	@Test // DATACASS-146
 	public void shouldApplyConsistencyLevel() {
 
-		Statement statement = deriveQueryFromMethod(Repo.class, "findPersonBy", new Class[0]);
+		SimpleStatement statement = deriveQueryFromMethod(Repo.class, "findPersonBy", new Class[0]);
 
-		assertThat(statement.toString()).isEqualTo("SELECT * FROM person;");
-		assertThat(statement.getConsistencyLevel()).isEqualTo(ConsistencyLevel.LOCAL_ONE);
+		assertThat(statement.toString()).isEqualTo("SELECT * FROM person");
+		assertThat(statement.getConsistencyLevel()).isEqualTo(DefaultConsistencyLevel.LOCAL_ONE);
 	}
 
 	@Test // DATACASS-512
 	public void shouldCreateCountQuery() {
 
-		Statement statement = deriveQueryFromMethod(PartTreeCassandraQueryUnitTests.Repo.class, "countBy", new Class[0]);
+		SimpleStatement statement = deriveQueryFromMethod(PartTreeCassandraQueryUnitTests.Repo.class, "countBy",
+				new Class[0]);
 
-		assertThat(statement.toString()).isEqualTo("SELECT COUNT(1) FROM person;");
+		assertThat(statement.toString()).isEqualTo("SELECT COUNT(1) FROM person");
 	}
 
 	@Test // DATACASS-611
 	public void shouldCreateDeleteQuery() {
 
-		Statement statement = deriveQueryFromMethod(PartTreeCassandraQueryUnitTests.Repo.class, "deleteAllByLastname",
+		SimpleStatement statement = deriveQueryFromMethod(PartTreeCassandraQueryUnitTests.Repo.class, "deleteAllByLastname",
 				new Class[] { String.class }, "Walter");
 
-		assertThat(statement.toString()).isEqualTo("DELETE FROM person WHERE lastname='Walter';");
+		assertThat(statement.toString()).isEqualTo("DELETE FROM person WHERE lastname='Walter'");
 	}
 
 	@Test // DATACASS-512
 	public void shouldCreateExistsQuery() {
 
-		Statement statement = deriveQueryFromMethod(PartTreeCassandraQueryUnitTests.Repo.class, "existsBy", new Class[0]);
+		SimpleStatement statement = deriveQueryFromMethod(PartTreeCassandraQueryUnitTests.Repo.class, "existsBy",
+				new Class[0]);
 
-		assertThat(statement.toString()).isEqualTo("SELECT * FROM person LIMIT 1;");
+		assertThat(statement.toString()).isEqualTo("SELECT * FROM person LIMIT 1");
 	}
 
 	private String deriveQueryFromMethod(String method, Object... args) {
@@ -164,10 +166,10 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 			types[i] = ClassUtils.getUserClass(args[i].getClass());
 		}
 
-		return deriveQueryFromMethod(Repo.class, method, types, args).toString();
+		return deriveQueryFromMethod(Repo.class, method, types, args).getQuery();
 	}
 
-	private Statement deriveQueryFromMethod(Class<?> repositoryInterface, String method, Class<?>[] types,
+	private SimpleStatement deriveQueryFromMethod(Class<?> repositoryInterface, String method, Class<?>[] types,
 			Object... args) {
 
 		ReactivePartTreeCassandraQuery partTreeQuery = createQueryForMethod(repositoryInterface, method, types);
@@ -176,7 +178,7 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 				args);
 
 		return partTreeQuery.createQuery(new ConvertingParameterAccessor(mockCassandraOperations.getConverter(), accessor,
-				CodecRegistry.DEFAULT_INSTANCE));
+				CodecRegistry.DEFAULT));
 	}
 
 	private ReactivePartTreeCassandraQuery createQueryForMethod(Class<?> repositoryInterface, String methodName,
@@ -214,7 +216,7 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 
 		Mono<Boolean> existsBy();
 
-		@Consistency(ConsistencyLevel.LOCAL_ONE)
+		@Consistency(DefaultConsistencyLevel.LOCAL_ONE)
 		Flux<Person> findPersonBy();
 
 		@Query(allowFiltering = true)

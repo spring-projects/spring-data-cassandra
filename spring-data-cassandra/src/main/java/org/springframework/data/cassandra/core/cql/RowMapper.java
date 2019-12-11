@@ -17,8 +17,8 @@ package org.springframework.data.cassandra.core.cql;
 
 import org.springframework.lang.Nullable;
 
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.exceptions.DriverException;
+import com.datastax.oss.driver.api.core.DriverException;
+import com.datastax.oss.driver.api.core.cql.Row;
 
 /**
  * An interface used by {@link CqlTemplate} for mapping rows of a {@link com.datastax.driver.core.ResultSet} on a

@@ -36,7 +36,7 @@ import org.springframework.data.cassandra.core.convert.MappingCassandraConverter
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.util.StringUtils;
 
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.session.Session;
 
 /**
  * {@link BeanFactoryPostProcessor} that does its best to register any missing Spring Data Cassandra beans that can be
@@ -57,9 +57,10 @@ import com.datastax.driver.core.Session;
  * {@link CassandraMappingContext} definition present, then it will be used in the {@link CassandraMappingContext} bean
  * definition.
  * <p/>
- * It requires that a single {@link Session} or {@link CassandraSessionFactoryBean} definition be present. As described
- * above, multiple {@link Session} definitions, multiple {@link CassandraSessionFactoryBean} definitions, or both a
- * {@link Session} and {@link CassandraSessionFactoryBean} will cause an {@link IllegalStateException} to be thrown.
+ * It requires that a single {@link CqlSession} or {@link CassandraSessionFactoryBean} definition be present. As
+ * described above, multiple {@link CqlSession} definitions, multiple {@link CassandraSessionFactoryBean} definitions,
+ * or both a {@link CqlSession} and {@link CassandraSessionFactoryBean} will cause an {@link IllegalStateException} to
+ * be thrown.
  *
  * @author Matthew T. Adams
  * @author Mark Paluch

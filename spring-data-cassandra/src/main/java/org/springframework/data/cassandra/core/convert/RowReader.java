@@ -15,38 +15,40 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import java.util.List;
-
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.CodecRegistry;
-import com.datastax.driver.core.ColumnDefinitions;
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.DataType.Name;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.TypeCodec;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.cql.ColumnDefinition;
+import com.datastax.oss.driver.api.core.cql.ColumnDefinitions;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.type.DataType;
+import com.datastax.oss.driver.api.core.type.ListType;
+import com.datastax.oss.driver.api.core.type.MapType;
+import com.datastax.oss.driver.api.core.type.SetType;
+import com.datastax.oss.driver.api.core.type.TupleType;
+import com.datastax.oss.driver.api.core.type.UserDefinedType;
+import com.datastax.oss.driver.api.core.type.codec.TypeCodec;
+import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
 
 /**
  * Helpful class to read a column's value from a row, with possible type conversion.
  *
- * @author Matthew T. Adams
- * @author Antoine Toulme
  * @author Mark Paluch
+ * @since 3.0
  */
-public class ColumnReader {
+class RowReader {
 
-	private final Row row;
+	private final com.datastax.oss.driver.api.core.cql.Row row;
 
 	private final CodecRegistry codecRegistry;
 
 	private final ColumnDefinitions columns;
 
-	public ColumnReader(Row row, CodecRegistry codecRegistry) {
+	public RowReader(Row row) {
 
 		this.row = row;
-		this.codecRegistry = codecRegistry;
+		this.codecRegistry = row.codecRegistry();
 		this.columns = row.getColumnDefinitions();
 	}
 
@@ -55,7 +57,7 @@ public class ColumnReader {
 	 */
 	@Nullable
 	public Object get(CqlIdentifier columnName) {
-		return get(columnName.toCql());
+		return get(columnName.toString());
 	}
 
 	/**
@@ -79,18 +81,18 @@ public class ColumnReader {
 			return null;
 		}
 
-		DataType type = columns.getType(columnIndex);
+		ColumnDefinition type = columns.get(columnIndex);
 
-		if (type.isCollection()) {
-			return getCollection(columnIndex, type);
+		if (type.getType() instanceof ListType || type.getType() instanceof SetType || type.getType() instanceof MapType) {
+			return getCollection(columnIndex, type.getType());
 		}
 
-		if (Name.TUPLE.equals(type.getName())) {
+		if (type instanceof TupleType) {
 			return row.getTupleValue(columnIndex);
 		}
 
-		if (Name.UDT.equals(type.getName())) {
-			return row.getUDTValue(columnIndex);
+		if (type instanceof UserDefinedType) {
+			return row.getUdtValue(columnIndex);
 		}
 
 		return row.getObject(columnIndex);
@@ -103,7 +105,7 @@ public class ColumnReader {
 	 */
 	@Nullable
 	public <T> T get(CqlIdentifier columnName, Class<T> requestedType) {
-		return get(columnName.toCql(), requestedType);
+		return get(columnName.toString(), requestedType);
 	}
 
 	/**
@@ -132,26 +134,27 @@ public class ColumnReader {
 	@Nullable
 	private Object getCollection(int index, DataType type) {
 
-		List<DataType> collectionTypes = type.getTypeArguments();
+		if (type instanceof ListType) {
 
-		// List/Set
-		if (collectionTypes.size() == 1) {
-
-			DataType valueType = collectionTypes.get(0);
-
+			ListType listType = (ListType) type;
+			DataType valueType = listType.getElementType();
 			TypeCodec<Object> typeCodec = codecRegistry.codecFor(valueType);
 
-			if (type.equals(DataType.list(valueType))) {
-				return row.getList(index, typeCodec.getJavaType().getRawType());
-			}
+			return row.getList(index, typeCodec.getJavaType().getRawType());
+		}
 
-			if (type.equals(DataType.set(valueType))) {
-				return row.getSet(index, typeCodec.getJavaType().getRawType());
-			}
+		if (type instanceof SetType) {
+
+			SetType setType = (SetType) type;
+			DataType valueType = setType.getElementType();
+			TypeCodec<Object> typeCodec = codecRegistry.codecFor(valueType);
+
+			return row.getList(index, typeCodec.getJavaType().getRawType());
 		}
 
 		// Map
-		if (type.getName() == Name.MAP) {
+		if (type instanceof MapType) {
+
 			return row.getObject(index);
 		}
 
@@ -160,7 +163,7 @@ public class ColumnReader {
 
 	private int getColumnIndex(String columnName) {
 
-		int index = columns.getIndexOf(columnName);
+		int index = columns.firstIndexOf(columnName);
 
 		Assert.isTrue(index > -1, String.format("Column [%s] does not exist in table", columnName));
 
@@ -172,6 +175,6 @@ public class ColumnReader {
 	}
 
 	public boolean contains(CqlIdentifier columnName) {
-		return row.getColumnDefinitions().contains(columnName.toCql());
+		return row.getColumnDefinitions().contains(columnName);
 	}
 }

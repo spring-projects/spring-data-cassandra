@@ -31,10 +31,13 @@ import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 
-import com.datastax.driver.core.CodecRegistry;
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.DataType.CollectionType;
-import com.datastax.driver.core.TypeCodec;
+import com.datastax.oss.driver.api.core.type.DataType;
+import com.datastax.oss.driver.api.core.type.DataTypes;
+import com.datastax.oss.driver.api.core.type.ListType;
+import com.datastax.oss.driver.api.core.type.MapType;
+import com.datastax.oss.driver.api.core.type.SetType;
+import com.datastax.oss.driver.api.core.type.codec.TypeCodec;
+import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
 
 /**
  * Custom {@link org.springframework.data.repository.query.ParameterAccessor} that uses a {@link CassandraConverter} to
@@ -231,30 +234,33 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 		DataType dataType = mappingContext.getDataType(property);
 
 		if (property.isCollectionLike() && !typeInformation.isCollectionLike()) {
-			if (dataType instanceof CollectionType) {
-				CollectionType collectionType = (CollectionType) dataType;
+			if (dataType instanceof ListType) {
 
-				if (collectionType.getTypeArguments().size() == 1) {
-					return collectionType.getTypeArguments().get(0);
-				}
+				ListType collectionType = (ListType) dataType;
+				return collectionType.getElementType();
+			}
+
+			if (dataType instanceof SetType) {
+
+				SetType collectionType = (SetType) dataType;
+				return collectionType.getElementType();
 			}
 		}
 
 		if (!property.isCollectionLike() && typeInformation.isCollectionLike()) {
+
 			if (typeInformation.isAssignableFrom(SET)) {
-				return DataType.set(dataType);
+				return DataTypes.setOf(dataType);
 			}
 
-			return DataType.list(dataType);
+			return DataTypes.listOf(dataType);
 		}
 
 		if (property.isMap()) {
-			if (dataType instanceof CollectionType) {
-				CollectionType collectionType = (CollectionType) dataType;
+			if (dataType instanceof MapType) {
 
-				if (collectionType.getTypeArguments().size() == 2) {
-					return collectionType.getTypeArguments().get(0);
-				}
+				MapType collectionType = (MapType) dataType;
+				return collectionType.getKeyType();
 			}
 		}
 

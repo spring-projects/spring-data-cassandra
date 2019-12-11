@@ -22,6 +22,8 @@ import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceOption.Repli
 import org.springframework.data.cassandra.util.MapBuilder;
 import org.springframework.lang.Nullable;
 
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+
 /**
  * Object to configure a {@code CREATE KEYSPACE} specification.
  *
@@ -33,7 +35,7 @@ public class CreateKeyspaceSpecification extends KeyspaceOptionsSpecification<Cr
 
 	private boolean ifNotExists = false;
 
-	private CreateKeyspaceSpecification(KeyspaceIdentifier name) {
+	private CreateKeyspaceSpecification(CqlIdentifier name) {
 		super(name);
 	}
 
@@ -45,7 +47,7 @@ public class CreateKeyspaceSpecification extends KeyspaceOptionsSpecification<Cr
 	 * @return a new {@link CreateKeyspaceSpecification}.
 	 */
 	public static CreateKeyspaceSpecification createKeyspace(String name) {
-		return new CreateKeyspaceSpecification(KeyspaceIdentifier.of(name));
+		return new CreateKeyspaceSpecification(CqlIdentifier.fromCql(name));
 	}
 
 	/**
@@ -54,8 +56,22 @@ public class CreateKeyspaceSpecification extends KeyspaceOptionsSpecification<Cr
 	 *
 	 * @param name must not be {@literal null}.
 	 * @return a new {@link CreateKeyspaceSpecification}.
+	 * @deprecated since 3.0, use {@link #createKeyspace(CqlIdentifier)}
 	 */
+	@Deprecated
 	public static CreateKeyspaceSpecification createKeyspace(KeyspaceIdentifier name) {
+		return new CreateKeyspaceSpecification(CqlIdentifier.fromCql(name.toCql()));
+	}
+
+	/**
+	 * Entry point into the {@link CreateKeyspaceSpecification}'s fluent API given {@code name} to create a keyspace.
+	 * Convenient if imported statically.
+	 *
+	 * @param name must not be {@literal null}.
+	 * @return a new {@link CreateKeyspaceSpecification}.
+	 * @since 3.0
+	 */
+	public static CreateKeyspaceSpecification createKeyspace(CqlIdentifier name) {
 		return new CreateKeyspaceSpecification(name);
 	}
 

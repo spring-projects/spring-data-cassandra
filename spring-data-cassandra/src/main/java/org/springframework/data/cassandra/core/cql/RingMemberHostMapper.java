@@ -21,8 +21,8 @@ import java.util.stream.StreamSupport;
 
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.Host;
-import com.datastax.driver.core.exceptions.DriverException;
+import com.datastax.oss.driver.api.core.DriverException;
+import com.datastax.oss.driver.api.core.metadata.Node;
 
 /**
  * {@link HostMapper} to to map hosts into {@link RingMember} objects.
@@ -38,7 +38,7 @@ public enum RingMemberHostMapper implements HostMapper<RingMember> {
 	 * @see org.springframework.data.cassandra.core.cql.HostMapper#mapHosts(java.util.Iterable)
 	 */
 	@Override
-	public Collection<RingMember> mapHosts(Iterable<Host> hosts) throws DriverException {
+	public Collection<RingMember> mapHosts(Iterable<Node> hosts) throws DriverException {
 
 		Assert.notNull(hosts, "Hosts must not be null");
 

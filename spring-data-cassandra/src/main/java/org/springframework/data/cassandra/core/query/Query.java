@@ -15,15 +15,16 @@
  */
 package org.springframework.data.cassandra.core.query;
 
-import static java.util.stream.StreamSupport.*;
 import static org.springframework.util.ObjectUtils.*;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.domain.PageRequest;
@@ -32,11 +33,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.PagingState;
-
 /**
- * Query object representing {@link CriteriaDefinition}s, {@link Columns}, {@link Sort}, {@link PagingState} and
- * {@link QueryOptions} for a CQL query. {@link Query} is created with a fluent API creating immutable objects.
+ * Query object representing {@link CriteriaDefinition}s, {@link Columns}, {@link Sort}, {@link ByteBuffer paging state}
+ * and {@link QueryOptions} for a CQL query. {@link Query} is created with a fluent API creating immutable objects.
  *
  * @author Mark Paluch
  * @see org.springframework.data.cassandra.core.query.Filter
@@ -56,14 +55,14 @@ public class Query implements Filter {
 
 	private final Optional<Long> limit;
 
-	private final Optional<PagingState> pagingState;
+	private final Optional<ByteBuffer> pagingState;
 
 	private final Optional<QueryOptions> queryOptions;
 
 	private final Sort sort;
 
 	private Query(List<CriteriaDefinition> criteriaDefinitions, Columns columns, Sort sort,
-			Optional<PagingState> pagingState, Optional<QueryOptions> queryOptions, Optional<Long> limit,
+			Optional<ByteBuffer> pagingState, Optional<QueryOptions> queryOptions, Optional<Long> limit,
 			boolean allowFiltering) {
 
 		this.criteriaDefinitions = criteriaDefinitions;
@@ -107,7 +106,8 @@ public class Query implements Filter {
 
 		Assert.notNull(criteriaDefinitions, "CriteriaDefinitions must not be null");
 
-		List<CriteriaDefinition> collect = stream(criteriaDefinitions.spliterator(), false).collect(Collectors.toList());
+		List<CriteriaDefinition> collect = StreamSupport.stream(criteriaDefinitions.spliterator(), false)
+				.collect(Collectors.toList());
 
 		return new Query(collect, Columns.empty(), Sort.unsorted(), Optional.empty(), Optional.empty(), Optional.empty(),
 				false);
@@ -196,7 +196,7 @@ public class Query implements Filter {
 	/**
 	 * Create a {@link Query} initialized with a {@link PageRequest} to fetch the first page of results or advance in
 	 * paging along with sorting. Reads (and overrides, if set) {@link Pageable#getPageSize() page size} into
-	 * {@link QueryOptions#getFetchSize()} and sets {@link PagingState} and {@link Sort}.
+	 * {@link QueryOptions#getPageSize()} and sets {@link PagingState} and {@link Sort}.
 	 *
 	 * @param pageable must not be {@literal null}.
 	 * @return a new {@link Query} object containing the former settings with {@link PageRequest} applied.
@@ -208,26 +208,26 @@ public class Query implements Filter {
 
 		CassandraPageRequest.validatePageable(pageable);
 
-		PagingState pagingState = this.pagingState.orElse(null);
+		ByteBuffer pagingState = this.pagingState.orElse(null);
 
 		if (pageable instanceof CassandraPageRequest) {
 			pagingState = ((CassandraPageRequest) pageable).getPagingState();
 		}
 
 		QueryOptions queryOptions = this.queryOptions.map(QueryOptions::mutate).orElse(QueryOptions.builder())
-				.fetchSize(pageable.getPageSize()).build();
+				.pageSize(pageable.getPageSize()).build();
 
 		return new Query(this.criteriaDefinitions, this.columns, this.sort.and(pageable.getSort()),
 				Optional.ofNullable(pagingState), Optional.of(queryOptions), this.limit, this.allowFiltering);
 	}
 
 	/**
-	 * Set the {@link PagingState} to skip rows.
+	 * Set the {@link ByteBuffer paging state} to skip rows.
 	 *
 	 * @param pagingState must not be {@literal null}.
-	 * @return a new {@link Query} object containing the former settings with {@link PagingState} applied.
+	 * @return a new {@link Query} object containing the former settings with {@link ByteBuffer paging state} applied.
 	 */
-	public Query pagingState(PagingState pagingState) {
+	public Query pagingState(ByteBuffer pagingState) {
 
 		Assert.notNull(pagingState, "PagingState must not be null");
 
@@ -238,7 +238,7 @@ public class Query implements Filter {
 	/**
 	 * @return the optional {@link PagingState}.
 	 */
-	public Optional<PagingState> getPagingState() {
+	public Optional<ByteBuffer> getPagingState() {
 		return this.pagingState;
 	}
 
@@ -360,7 +360,7 @@ public class Query implements Filter {
 	@Override
 	public String toString() {
 
-		String query = stream(this.spliterator(), false).map(SerializationUtils::serializeToCqlSafely)
+		String query = StreamSupport.stream(this.spliterator(), false).map(SerializationUtils::serializeToCqlSafely)
 				.collect(Collectors.joining(" AND "));
 
 		return String.format("Query: %s, Columns: %s, Sort: %s, Limit: %d", query, getColumns(), getSort(), getLimit());

@@ -15,18 +15,18 @@
  */
 package org.springframework.data.cassandra.core.cql.support;
 
-import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
 
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
 
 /**
  * Integration tests for {@link CachedPreparedStatementCreator}.
@@ -50,15 +50,16 @@ public class CachedPreparedStatementCreatorIntegrationTest extends AbstractKeysp
 	@Test // DATACASS-403
 	public void shouldRetainIdempotencyFlag() {
 
-		Insert insert = QueryBuilder.insertInto("user").value("id", bindMarker()).value("username", bindMarker());
+		SimpleStatement insert = QueryBuilder.insertInto("user").value("id", QueryBuilder.bindMarker())
+				.value("username", QueryBuilder.bindMarker()).build();
 
 		assertThat(insert.isIdempotent()).isTrue();
 
 		PreparedStatementCache cache = PreparedStatementCache.create();
 
-		PreparedStatement preparedStatement =
-			CachedPreparedStatementCreator.of(cache, insert).createPreparedStatement(session);
+		PreparedStatement preparedStatement = CachedPreparedStatementCreator.of(cache, insert)
+				.createPreparedStatement(session);
 
-		assertThat(preparedStatement.isIdempotent()).isTrue();
+		assertThat(preparedStatement.bind(1, 2).isIdempotent()).isTrue();
 	}
 }

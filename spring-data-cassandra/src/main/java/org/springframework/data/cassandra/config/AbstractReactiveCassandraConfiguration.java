@@ -15,15 +15,19 @@
  */
 package org.springframework.data.cassandra.config;
 
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.cassandra.ReactiveSession;
 import org.springframework.data.cassandra.ReactiveSessionFactory;
 import org.springframework.data.cassandra.core.CassandraAdminTemplate;
 import org.springframework.data.cassandra.core.ReactiveCassandraTemplate;
+import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.cql.ReactiveCqlOperations;
 import org.springframework.data.cassandra.core.cql.ReactiveCqlTemplate;
 import org.springframework.data.cassandra.core.cql.session.DefaultBridgedReactiveSession;
 import org.springframework.data.cassandra.core.cql.session.DefaultReactiveSessionFactory;
+import org.springframework.lang.Nullable;
 
 /**
  * Extension to {@link AbstractCassandraConfiguration} providing Spring Data Cassandra configuration for Spring Data's
@@ -33,6 +37,8 @@ import org.springframework.data.cassandra.core.cql.session.DefaultReactiveSessio
  * @since 2.0
  */
 public abstract class AbstractReactiveCassandraConfiguration extends AbstractCassandraConfiguration {
+
+	private @Nullable BeanFactory beanFactory;
 
 	/**
 	 * Creates a {@link ReactiveSession} object. This wraps a {@link com.datastax.driver.core.Session} to expose Cassandra
@@ -57,7 +63,7 @@ public abstract class AbstractReactiveCassandraConfiguration extends AbstractCas
 	 */
 	@Bean
 	public ReactiveSessionFactory reactiveSessionFactory() {
-		return new DefaultReactiveSessionFactory(reactiveSession());
+		return new DefaultReactiveSessionFactory(beanFactory.getBean(ReactiveSession.class));
 	}
 
 	/**
@@ -69,7 +75,8 @@ public abstract class AbstractReactiveCassandraConfiguration extends AbstractCas
 	 */
 	@Bean
 	public ReactiveCassandraTemplate reactiveCassandraTemplate() {
-		return new ReactiveCassandraTemplate(reactiveSessionFactory(), cassandraConverter());
+		return new ReactiveCassandraTemplate(beanFactory.getBean(ReactiveSessionFactory.class),
+				beanFactory.getBean(CassandraConverter.class));
 	}
 
 	/**
@@ -80,6 +87,11 @@ public abstract class AbstractReactiveCassandraConfiguration extends AbstractCas
 	 */
 	@Bean
 	public ReactiveCqlTemplate reactiveCqlTemplate() {
-		return new ReactiveCqlTemplate(reactiveSessionFactory());
+		return new ReactiveCqlTemplate(beanFactory.getBean(ReactiveSessionFactory.class));
+	}
+
+	@Override
+	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+		this.beanFactory = beanFactory;
 	}
 }

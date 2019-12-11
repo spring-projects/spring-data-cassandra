@@ -50,7 +50,7 @@ public class CassandraQueryMethodUnitTests {
 		CassandraEntityMetadata<?> metadata = queryMethod.getEntityInformation();
 
 		assertThat(metadata.getJavaType()).isAssignableFrom(User.class);
-		assertThat(metadata.getTableName().toCql()).isEqualTo("users");
+		assertThat(metadata.getTableName().toString()).isEqualTo("users");
 	}
 
 	@Test(expected = IllegalArgumentException.class) // DATACASS-7

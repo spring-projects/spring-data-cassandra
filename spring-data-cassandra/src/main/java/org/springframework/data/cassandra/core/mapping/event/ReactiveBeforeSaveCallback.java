@@ -17,10 +17,10 @@ package org.springframework.data.cassandra.core.mapping.event;
 
 import org.reactivestreams.Publisher;
 
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.mapping.callback.EntityCallback;
 
-import com.datastax.driver.core.Statement;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.cql.Statement;
 
 /**
  * Entity callback triggered before save of a row.
@@ -31,7 +31,7 @@ import com.datastax.driver.core.Statement;
  */
 @FunctionalInterface
 public interface ReactiveBeforeSaveCallback<T> extends EntityCallback<T> {
-
+	// TODO: Mutable statements
 	/**
 	 * Entity callback method invoked before a domain object is saved. Can return either the same of a modified instance
 	 * of the domain object and can modify {@link Statement} contents. This method is called after converting the
@@ -42,5 +42,5 @@ public interface ReactiveBeforeSaveCallback<T> extends EntityCallback<T> {
 	 * @param statement {@link Statement} representing the {@code entity} operation.
 	 * @return a {@link Publisher} emitting the domain object to be persisted.
 	 */
-	Publisher<T> onBeforeSave(T entity, CqlIdentifier tableName, Statement statement);
+	Publisher<T> onBeforeSave(T entity, CqlIdentifier tableName, Statement<?> statement);
 }

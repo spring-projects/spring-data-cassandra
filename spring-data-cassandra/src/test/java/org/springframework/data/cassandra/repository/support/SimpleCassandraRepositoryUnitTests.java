@@ -15,20 +15,15 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.io.Serializable;
+import static org.mockito.Mockito.*;
 
 import lombok.Data;
+
+import java.io.Serializable;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
@@ -48,8 +43,7 @@ import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.domain.Sort.Direction;
 
-import com.datastax.driver.core.UserType;
-import com.datastax.driver.core.querybuilder.Insert;
+import com.datastax.oss.driver.api.core.type.UserDefinedType;
 
 /**
  * Unit tests for {@link SimpleCassandraRepository}.
@@ -68,11 +62,9 @@ public class SimpleCassandraRepositoryUnitTests {
 
 	@Mock CassandraOperations cassandraOperations;
 	@Mock CqlOperations cqlOperations;
-	@Mock UserType userType;
+	@Mock UserDefinedType userType;
 	@Mock UserTypeResolver userTypeResolver;
 	@Mock EntityWriteResult writeResult;
-
-	@Captor ArgumentCaptor<Insert> insertCaptor;
 
 	@Before
 	public void before() {
@@ -201,7 +193,7 @@ public class SimpleCassandraRepositoryUnitTests {
 		repository.findAll(pageRequest);
 
 		verify(cassandraOperations).slice(
-				Query.empty().sort(pageRequest.getSort()).queryOptions(QueryOptions.builder().fetchSize(10).build()),
+				Query.empty().sort(pageRequest.getSort()).queryOptions(QueryOptions.builder().pageSize(10).build()),
 				SimplePerson.class);
 	}
 

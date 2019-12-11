@@ -40,8 +40,10 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.DataType.Name;
+import com.datastax.oss.driver.api.core.type.DataType;
+import com.datastax.oss.driver.api.core.type.ListType;
+import com.datastax.oss.driver.api.core.type.SetType;
+import com.datastax.oss.protocol.internal.ProtocolConstants;
 
 /**
  * Map {@link org.springframework.data.cassandra.core.query.Update} to CQL-specific data types.
@@ -167,10 +169,10 @@ public class UpdateMapper extends QueryMapper {
 
 			if (collection.isEmpty()) {
 
-				DataType.Name dataType = field.getProperty().map(property -> getMappingContext().getDataType(property))
-						.map(DataType::getName).orElse(Name.LIST);
+				int protocolCode = field.getProperty().map(property -> getMappingContext().getDataType(property))
+						.map(DataType::getProtocolCode).orElse(ProtocolConstants.DataType.LIST);
 
-				if (dataType == Name.SET) {
+				if (protocolCode == ProtocolConstants.DataType.SET) {
 					return new SetOp(field.getMappedKey(), Collections.emptySet());
 				}
 
@@ -203,13 +205,13 @@ public class UpdateMapper extends QueryMapper {
 
 			DataType dataType = getMappingContext().getDataType(field.getProperty().get());
 
-			if (dataType.getName() == Name.SET && !(mappedValue instanceof Set)) {
+			if (dataType instanceof SetType && !(mappedValue instanceof Set)) {
 				Collection<Object> collection = new HashSet<>();
 				collection.addAll(mappedValue);
 				mappedValue = collection;
 			}
 
-			if (dataType.getName() == Name.LIST && !(mappedValue instanceof List)) {
+			if (dataType instanceof ListType && !(mappedValue instanceof List)) {
 				Collection<Object> collection = new ArrayList<>();
 				collection.addAll(mappedValue);
 				mappedValue = collection;

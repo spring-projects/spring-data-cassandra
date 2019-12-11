@@ -15,9 +15,9 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.exceptions.DriverException;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.DriverException;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 
 /**
  * One of the two central callback interfaces used by the {@link CqlTemplate} class. This interface creates a
@@ -38,10 +38,10 @@ public interface PreparedStatementCreator {
 	/**
 	 * Create a statement in this session. Allows implementations to use {@link PreparedStatement}.
 	 *
-	 * @param session {@link Session} to use to create statement.
+	 * @param session {@link CqlSession} to use to create statement.
 	 * @return a prepared statement.
 	 * @throws DriverException there is no need to catch {@link DriverException} that may be thrown in the implementation
 	 *           of this method. The {@link CqlTemplate} class will handle them.
 	 */
-	PreparedStatement createPreparedStatement(Session session) throws DriverException;
+	PreparedStatement createPreparedStatement(CqlSession session) throws DriverException;
 }

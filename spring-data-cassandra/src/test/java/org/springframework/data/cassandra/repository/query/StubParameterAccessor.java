@@ -27,8 +27,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.lang.Nullable;
 
-import com.datastax.driver.core.CodecRegistry;
-import com.datastax.driver.core.DataType;
+import com.datastax.oss.driver.api.core.type.DataType;
+import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
 
 /**
  * Simple {@link ParameterAccessor} that returns the given parameters unfiltered.
@@ -49,7 +49,7 @@ class StubParameterAccessor implements CassandraParameterAccessor {
 	 */
 	public static ConvertingParameterAccessor getAccessor(CassandraConverter converter, Object... parameters) {
 		return new ConvertingParameterAccessor(converter, new StubParameterAccessor(parameters),
-				CodecRegistry.DEFAULT_INSTANCE);
+				CodecRegistry.DEFAULT);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -59,7 +59,7 @@ class StubParameterAccessor implements CassandraParameterAccessor {
 
 	@Override
 	public DataType getDataType(int index) {
-		return CodecRegistry.DEFAULT_INSTANCE.codecFor(values[index]).getCqlType();
+		return CodecRegistry.DEFAULT.codecFor(values[index]).getCqlType();
 	}
 
 	@Override

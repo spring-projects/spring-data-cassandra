@@ -15,8 +15,8 @@
  */
 package org.springframework.data.cassandra.core.cql
 
-import com.datastax.driver.core.Row
-import com.datastax.driver.core.Statement
+import com.datastax.oss.driver.api.core.cql.Row
+import com.datastax.oss.driver.api.core.cql.Statement
 import org.reactivestreams.Publisher
 import org.springframework.data.cassandra.ReactiveResultSet
 import reactor.core.publisher.Flux
@@ -66,13 +66,13 @@ fun <T : Any> ReactiveCqlOperations.queryForObject(cql: String, vararg args: Any
  * Extension for [ReactiveCqlOperations.queryForObject] providing a [KClass] based variant.
  */
 @Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("queryForObject<T>(statement)"))
-fun <T : Any> ReactiveCqlOperations.queryForObject(statement: Statement, entityClass: KClass<T>): Mono<T> =
+fun <T : Any> ReactiveCqlOperations.queryForObject(statement: Statement<*>, entityClass: KClass<T>): Mono<T> =
 		queryForObject(statement, entityClass.java)
 
 /**
  * Extension for [ReactiveCqlOperations.queryForObject] leveraging reified type parameters.
  */
-inline fun <reified T : Any> ReactiveCqlOperations.queryForObject(statement: Statement): Mono<T> =
+inline fun <reified T : Any> ReactiveCqlOperations.queryForObject(statement: Statement<*>): Mono<T> =
 		queryForObject(statement, T::class.java)
 
 /**
@@ -93,14 +93,14 @@ inline fun <reified T : Any> ReactiveCqlOperations.queryForFlux(cql: String, var
  * Extension for [ReactiveCqlOperations.queryForFlux] providing a [KClass] based variant.
  */
 @Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("queryForFlux<T>(statement)"))
-fun <T : Any> ReactiveCqlOperations.queryForFlux(statement: Statement, entityClass: KClass<T>): Flux<T> =
+fun <T : Any> ReactiveCqlOperations.queryForFlux(statement: Statement<*>, entityClass: KClass<T>): Flux<T> =
 		queryForFlux(statement, entityClass.java)
 
 /**
  * Extension for [ReactiveCqlOperations.queryForFlux] leveraging reified type parameters.
  */
 @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
-inline fun <reified T : Any> ReactiveCqlOperations.queryForFlux(statement: Statement): Flux<T> =
+inline fun <reified T : Any> ReactiveCqlOperations.queryForFlux(statement: Statement<*>): Flux<T> =
 		queryForFlux(statement, T::class.java)
 
 /**

@@ -24,9 +24,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
 
-import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 
 /**
  * Integration tests for {@link CqlTemplate}.
@@ -39,14 +40,13 @@ public class CqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegra
 	CqlTemplate template;
 
 	@Before
-	public void before() throws Exception {
+	public void before() {
 
 		if (initialized.compareAndSet(false, true)) {
-			getSession().execute("CREATE TABLE IF NOT EXISTS user (id text PRIMARY KEY, username text);");
-		} else {
-			session.execute("TRUNCATE user;");
+			session.execute("CREATE TABLE IF NOT EXISTS user (id text PRIMARY KEY, username text);");
 		}
 
+		session.execute("TRUNCATE user;");
 		session.execute("INSERT INTO user (id, username) VALUES ('WHITE', 'Walter');");
 
 		template = new CqlTemplate();
@@ -54,7 +54,7 @@ public class CqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegra
 	}
 
 	@Test // DATACASS-292
-	public void executeShouldRemoveRecords() throws Exception {
+	public void executeShouldRemoveRecords() {
 
 		template.execute("DELETE FROM user WHERE id = 'WHITE'");
 
@@ -62,7 +62,7 @@ public class CqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegra
 	}
 
 	@Test // DATACASS-292
-	public void queryShouldInvokeCallback() throws Exception {
+	public void queryShouldInvokeCallback() {
 
 		List<String> result = new ArrayList<>();
 		template.query("SELECT id FROM user;", row -> {
@@ -73,7 +73,7 @@ public class CqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegra
 	}
 
 	@Test // DATACASS-292
-	public void queryForObjectShouldReturnFirstColumn() throws Exception {
+	public void queryForObjectShouldReturnFirstColumn() {
 
 		String id = template.queryForObject("SELECT id FROM user;", String.class);
 
@@ -81,7 +81,7 @@ public class CqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegra
 	}
 
 	@Test // DATACASS-292
-	public void queryForObjectShouldReturnMap() throws Exception {
+	public void queryForObjectShouldReturnMap() {
 
 		Map<String, Object> map = template.queryForMap("SELECT * FROM user;");
 
@@ -89,18 +89,18 @@ public class CqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegra
 	}
 
 	@Test // DATACASS-292
-	public void executeStatementShouldRemoveRecords() throws Exception {
+	public void executeStatementShouldRemoveRecords() {
 
-		template.execute(QueryBuilder.delete().from("user").where(QueryBuilder.eq("id", "WHITE")));
+		template.execute(SimpleStatement.newInstance("DELETE FROM user WHERE id = 'WHITE'"));
 
 		assertThat(session.execute("SELECT * FROM user").one()).isNull();
 	}
 
 	@Test // DATACASS-292
-	public void queryStatementShouldInvokeCallback() throws Exception {
+	public void queryStatementShouldInvokeCallback() {
 
 		List<String> result = new ArrayList<>();
-		template.query(QueryBuilder.select("id").from("user"), row -> {
+		template.query(SimpleStatement.newInstance("SELECT id FROM user"), row -> {
 			result.add(row.getString(0));
 		});
 
@@ -108,23 +108,23 @@ public class CqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegra
 	}
 
 	@Test // DATACASS-292
-	public void queryForObjectStatementShouldReturnFirstColumn() throws Exception {
+	public void queryForObjectStatementShouldReturnFirstColumn() {
 
-		String id = template.queryForObject(QueryBuilder.select("id").from("user"), String.class);
+		String id = template.queryForObject(SimpleStatement.newInstance("SELECT id FROM user"), String.class);
 
 		assertThat(id).isEqualTo("WHITE");
 	}
 
 	@Test // DATACASS-292
-	public void queryForObjectStatementShouldReturnMap() throws Exception {
+	public void queryForObjectStatementShouldReturnMap() {
 
-		Map<String, Object> map = template.queryForMap(QueryBuilder.select().from("user"));
+		Map<String, Object> map = template.queryForMap(SimpleStatement.newInstance("SELECT * FROM user"));
 
 		assertThat(map).containsEntry("id", "WHITE").containsEntry("username", "Walter");
 	}
 
 	@Test // DATACASS-292
-	public void executeWithArgsShouldRemoveRecords() throws Exception {
+	public void executeWithArgsShouldRemoveRecords() {
 
 		template.execute("DELETE FROM user WHERE id = ?", "WHITE");
 
@@ -132,7 +132,7 @@ public class CqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegra
 	}
 
 	@Test // DATACASS-292
-	public void queryPreparedStatementShouldInvokeCallback() throws Exception {
+	public void queryPreparedStatementShouldInvokeCallback() {
 
 		List<String> result = new ArrayList<>();
 		template.query("SELECT id FROM user WHERE id = ?;", row -> {
@@ -143,7 +143,7 @@ public class CqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegra
 	}
 
 	@Test // DATACASS-292
-	public void queryPreparedStatementCreatorShouldInvokeCallback() throws Exception {
+	public void queryPreparedStatementCreatorShouldInvokeCallback() {
 
 		List<String> result = new ArrayList<>();
 		template.query(session -> session.prepare("SELECT id FROM user WHERE id = ?;"), ps -> ps.bind("WHITE"), row -> {
@@ -154,7 +154,7 @@ public class CqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegra
 	}
 
 	@Test // DATACASS-292
-	public void queryForObjectWithArgsShouldReturnFirstColumn() throws Exception {
+	public void queryForObjectWithArgsShouldReturnFirstColumn() {
 
 		String id = template.queryForObject("SELECT id FROM user WHERE id = ?;", String.class, "WHITE");
 
@@ -162,7 +162,7 @@ public class CqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegra
 	}
 
 	@Test // DATACASS-292
-	public void queryForObjectWithArgsShouldReturnMap() throws Exception {
+	public void queryForObjectWithArgsShouldReturnMap() {
 
 		Map<String, Object> map = template.queryForMap("SELECT * FROM user WHERE id = ?;", "WHITE");
 

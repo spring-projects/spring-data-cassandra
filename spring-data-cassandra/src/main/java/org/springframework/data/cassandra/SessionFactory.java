@@ -15,18 +15,17 @@
  */
 package org.springframework.data.cassandra;
 
-import com.datastax.driver.core.Session;
+
 import com.datastax.oss.driver.api.core.CqlSession;
 
 /**
  * A factory for Apache Cassandra sessions.
  * <p>
- * An alternative to the {@link com.datastax.driver.core.Cluster} facility, a {@link SessionFactory} object is the
- * preferred means of getting a connection. The {@link SessionFactory} interface is implemented by a {@link Session}
- * provider.
+ * A {@link SessionFactory} object is the preferred means of getting a connection. The {@link SessionFactory} interface
+ * is implemented by a {@link CqlSession} provider.
  * <p>
  * A {@link SessionFactory} object can have properties that can be modified when necessary. For example, if the
- * {@link Session} is moved to a different server, the property for the server can be changed. The benefit is that
+ * {@link CqlSession} is moved to a different server, the property for the server can be changed. The benefit is that
  * because the data source's properties can be changed, any code accessing that {@link SessionFactory} does not need to
  * be changed.
  *
@@ -37,23 +36,11 @@ import com.datastax.oss.driver.api.core.CqlSession;
 public interface SessionFactory {
 
 	/**
-	 * Attempts to establish a {@link Session} with the connection infrastructure that this {@link SessionFactory} object
-	 * represents.
+	 * Attempts to establish a {@link CqlSession} with the connection infrastructure that this {@link SessionFactory}
+	 * object represents.
 	 *
-	 * @return a {@link Session} to Apache Cassandra.
+	 * @return a {@link CqlSession} to Apache Cassandra.
 	 */
-	Session getSession();
-
-	/**
-	 * Attempts to establish a {@link Session} with the connection infrastructure that this {@link SessionFactory} object
-	 * represents.
-	 *
-	 * @return a {@link Session} to Apache Cassandra.
-	 */
-	default CqlSession getCqlSession() {
-
-		// TODO
-		return null;
-	}
+	CqlSession getSession();
 
 }

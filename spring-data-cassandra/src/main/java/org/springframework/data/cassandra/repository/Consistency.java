@@ -23,7 +23,8 @@ import java.lang.annotation.Target;
 
 import org.springframework.data.annotation.QueryAnnotation;
 
-import com.datastax.driver.core.ConsistencyLevel;
+import com.datastax.oss.driver.api.core.ConsistencyLevel;
+import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
 
 /**
  * Annotation to declare a {@link ConsistencyLevel} for CQL queries executed through query methods.
@@ -42,6 +43,6 @@ public @interface Consistency {
 	/**
 	 * @return the {@link ConsistencyLevel} applied to the query executed using a Repository query method.
 	 */
-	ConsistencyLevel value();
+	DefaultConsistencyLevel value();
 
 }

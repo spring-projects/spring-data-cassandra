@@ -18,15 +18,13 @@ package org.springframework.data.cassandra.core;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
-import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
-import org.springframework.data.cassandra.domain.User;
 
-import com.datastax.driver.core.SimpleStatement;
-import com.datastax.driver.core.querybuilder.Delete;
-import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
+import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
+
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
+import com.datastax.oss.driver.api.querybuilder.select.Select;
 
 /**
  * Unit tests for {@link EntityQueryUtils}.
@@ -40,60 +38,37 @@ public class EntityQueryUtilsUnitTests {
 	@Test // DATACASS-106
 	public void shouldRetrieveTableNameFromSelect() {
 
-		Select select = QueryBuilder.select().from("keyspace", "table");
+		Select select = QueryBuilder.selectFrom("keyspace", "table").all().where();
 
-		CqlIdentifier tableName = EntityQueryUtils.getTableName(select);
+		CqlIdentifier tableName = EntityQueryUtils.getTableName(select.build());
 
-		assertThat(tableName).isEqualTo(CqlIdentifier.of("table"));
+		assertThat(tableName).isEqualTo(CqlIdentifier.fromCql("table"));
 	}
 
 	@Test // DATACASS-642
 	public void shouldRetrieveQuotedTableNameFromSelect() {
 
-		Select select = QueryBuilder.select().from("keyspace", "\"table\"");
+		Select select = QueryBuilder.selectFrom("keyspace", "\"table\"").all().where();
 
-		CqlIdentifier tableName = EntityQueryUtils.getTableName(select);
+		CqlIdentifier tableName = EntityQueryUtils.getTableName(select.build());
 
-		assertThat(tableName).isEqualTo(CqlIdentifier.quoted("table"));
+		assertThat(tableName).isEqualTo(CqlIdentifier.fromCql("table"));
 	}
 
 	@Test // DATACASS-106
 	public void shouldRetrieveTableNameFromSimpleStatement() {
 
-		assertThat(EntityQueryUtils.getTableName(new SimpleStatement("SELECT * FROM table")))
-				.isEqualTo(CqlIdentifier.of("table"));
-		assertThat(EntityQueryUtils.getTableName(new SimpleStatement("SELECT * FROM foo.table where")))
-				.isEqualTo(CqlIdentifier.of("table"));
+		assertThat(EntityQueryUtils.getTableName(SimpleStatement.newInstance("SELECT * FROM table")))
+				.isEqualTo(CqlIdentifier.fromCql("table"));
+		assertThat(EntityQueryUtils.getTableName(SimpleStatement.newInstance("SELECT * FROM foo.table where")))
+				.isEqualTo(CqlIdentifier.fromCql("table"));
 	}
 
 	@Test // DATACASS-106
 	public void shouldRetrieveQuotedTableNameFromSimpleStatement() {
 
-		CqlIdentifier tableName = EntityQueryUtils.getTableName(new SimpleStatement("SELECT * from \"table\""));
+		CqlIdentifier tableName = EntityQueryUtils.getTableName(SimpleStatement.newInstance("SELECT * from \"table\""));
 
-		assertThat(tableName).isEqualTo(CqlIdentifier.of("table"));
-	}
-
-	@Test // DATACASS-569
-	public void shouldCreateInsertQuery() {
-
-		User user = new User("heisenberg", "Walter", "White");
-		Insert insert = EntityQueryUtils.createInsertQuery("user", user, InsertOptions.builder().withIfNotExists().build(),
-				converter, converter.getMappingContext().getRequiredPersistentEntity(User.class));
-
-		assertThat(insert.toString())
-				.isEqualTo("INSERT INTO user (firstname,id,lastname) VALUES ('Walter','heisenberg','White') IF NOT EXISTS;");
-	}
-
-	@Test // DATACASS-606
-	public void shouldConsiderDeleteIfExists() {
-
-		User user = new User("heisenberg", "Walter", "White");
-
-		DeleteOptions options = DeleteOptions.builder().withIfExists().build();
-
-		Delete delete = EntityQueryUtils.createDeleteQuery("foo", user, options, converter);
-
-		assertThat(delete.toString()).isEqualTo("DELETE FROM foo WHERE id='heisenberg' IF EXISTS;");
+		assertThat(tableName).isEqualTo(CqlIdentifier.fromCql("table"));
 	}
 }

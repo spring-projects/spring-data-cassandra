@@ -17,9 +17,9 @@ package org.springframework.data.cassandra.core.cql.support;
 
 import java.util.function.Supplier;
 
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 
 /**
  * Cache interface to synchronously prepare CQL statements.
@@ -44,24 +44,24 @@ public interface PreparedStatementCache {
 	}
 
 	/**
-	 * Obtain a {@link PreparedStatement} by {@link Session} and {@link RegularStatement}.
+	 * Obtain a {@link PreparedStatement} by {@link CqlSession} and {@link SimpleStatement}.
 	 *
 	 * @param session must not be {@literal null}.
 	 * @param statement must not be {@literal null}.
 	 * @return the {@link PreparedStatement}.
 	 */
-	default PreparedStatement getPreparedStatement(Session session, RegularStatement statement) {
+	default PreparedStatement getPreparedStatement(CqlSession session, SimpleStatement statement) {
 		return getPreparedStatement(session, statement, () -> session.prepare(statement));
 	}
 
 	/**
-	 * Obtain a {@link PreparedStatement} by {@link Session} and {@link RegularStatement}.
+	 * Obtain a {@link PreparedStatement} by {@link CqlSession} and {@link SimpleStatement}.
 	 *
 	 * @param session must not be {@literal null}.
 	 * @param statement must not be {@literal null}.
 	 * @param preparer must not be {@literal null}.
 	 * @return the {@link PreparedStatement}.
 	 */
-	PreparedStatement getPreparedStatement(Session session, RegularStatement statement,
+	PreparedStatement getPreparedStatement(CqlSession session, SimpleStatement statement,
 			Supplier<PreparedStatement> preparer);
 }

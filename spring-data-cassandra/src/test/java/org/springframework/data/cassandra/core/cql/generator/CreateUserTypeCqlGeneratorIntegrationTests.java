@@ -20,12 +20,14 @@ import static org.springframework.data.cassandra.core.cql.generator.CreateUserTy
 
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.data.cassandra.core.cql.keyspace.CreateUserTypeSpecification;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
 
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.UserType;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;
+import com.datastax.oss.driver.api.core.type.DataTypes;
+import com.datastax.oss.driver.api.core.type.UserDefinedType;
 
 /**
  * Integration tests for {@link CreateUserTypeCqlGenerator}.
@@ -46,45 +48,45 @@ public class CreateUserTypeCqlGeneratorIntegrationTests extends AbstractKeyspace
 
 		CreateUserTypeSpecification spec = CreateUserTypeSpecification //
 				.createType("address") //
-				.field("zip", DataType.ascii()) //
-				.field("city", DataType.varchar());
+				.field("zip", DataTypes.ASCII) //
+				.field("city", DataTypes.TEXT);
 
 		session.execute(toCql(spec));
 
-		KeyspaceMetadata keyspace = session.getCluster().getMetadata().getKeyspace(session.getLoggedKeyspace());
-		UserType address = keyspace.getUserType("address");
-		assertThat(address.getFieldNames()).contains("zip", "city");
+		KeyspaceMetadata keyspace = session.getMetadata().getKeyspace(session.getKeyspace().get()).get();
+		UserDefinedType address = keyspace.getUserDefinedType("address").get();
+		assertThat(address.getFieldNames()).contains(CqlIdentifier.fromCql("zip"), CqlIdentifier.fromCql("city"));
 	}
 
 	@Test // DATACASS-172
 	public void createUserTypeIfNotExists() {
 
 		CreateUserTypeSpecification spec = CreateUserTypeSpecification //
-				.createType("address").ifNotExists().field("zip", DataType.ascii()) //
-				.field("city", DataType.varchar());
+				.createType("address").ifNotExists().field("zip", DataTypes.ASCII) //
+				.field("city", DataTypes.TEXT);
 
 		session.execute(toCql(spec));
 
-		KeyspaceMetadata keyspace = session.getCluster().getMetadata().getKeyspace(session.getLoggedKeyspace());
-		UserType address = keyspace.getUserType("address");
-		assertThat(address.getFieldNames()).contains("zip", "city");
+		KeyspaceMetadata keyspace = session.getMetadata().getKeyspace(session.getKeyspace().get()).get();
+		UserDefinedType address = keyspace.getUserDefinedType("address").get();
+		assertThat(address.getFieldNames()).contains(CqlIdentifier.fromCql("zip"), CqlIdentifier.fromCql("city"));
 	}
 
 	@Test // DATACASS-172, DATACASS-424
 	public void createNestedUserType() {
 
 		CreateUserTypeSpecification addressSpec = CreateUserTypeSpecification //
-				.createType("address").ifNotExists().field("zip", DataType.ascii()) //
-				.field("city", DataType.varchar());
+				.createType("address").ifNotExists().field("zip", DataTypes.ASCII) //
+				.field("city", DataTypes.TEXT);
 
 		session.execute(toCql(addressSpec));
 
-		KeyspaceMetadata keyspace = session.getCluster().getMetadata().getKeyspace(session.getLoggedKeyspace());
-		UserType address = keyspace.getUserType("address");
+		KeyspaceMetadata keyspace = session.getMetadata().getKeyspace(session.getKeyspace().get()).get();
+		UserDefinedType address = keyspace.getUserDefinedType("address").get();
 
 		CreateUserTypeSpecification personSpec = CreateUserTypeSpecification //
 				.createType("person").ifNotExists().field("address", address.copy(true)) //
-				.field("city", DataType.varchar());
+				.field("city", DataTypes.TEXT);
 
 		session.execute(toCql(personSpec));
 	}

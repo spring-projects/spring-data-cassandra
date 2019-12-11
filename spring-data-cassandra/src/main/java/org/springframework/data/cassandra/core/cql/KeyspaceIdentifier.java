@@ -19,6 +19,8 @@ import java.util.regex.Pattern;
 
 import org.springframework.util.Assert;
 
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+
 /**
  * This encapsulates the logic for keyspace identifiers.
  * <p/>
@@ -28,7 +30,9 @@ import org.springframework.util.Assert;
  * @see #toCql()
  * @see #toString()
  * @author Matthew T. Adams
+ * @deprecated since 3.0, use {@link com.datastax.oss.driver.api.core.CqlIdentifier}.
  */
+@Deprecated
 public final class KeyspaceIdentifier implements Comparable<KeyspaceIdentifier> {
 
 	public static final String REGEX = "(?i)[a-z][\\w]{0,47}";
@@ -136,5 +140,15 @@ public final class KeyspaceIdentifier implements Comparable<KeyspaceIdentifier> 
 	@Override
 	public int compareTo(KeyspaceIdentifier that) {
 		return this.identifier.compareTo(that.identifier);
+	}
+
+	/**
+	 * Create a {@link CqlIdentifier} from this {@link KeyspaceIdentifier}.
+	 *
+	 * @return the {@link CqlIdentifier} from this {@link KeyspaceIdentifier}.
+	 * @since 3.0
+	 */
+	public CqlIdentifier toCqlIdentifier() {
+		return CqlIdentifier.fromCql(this.identifier);
 	}
 }

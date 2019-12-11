@@ -25,13 +25,15 @@ import java.util.Collections;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.cql.session.DefaultBridgedReactiveSession;
 import org.springframework.data.cassandra.core.mapping.Indexed;
 import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
+
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * Integration tests for {@link ReactiveInsertOperationSupport}.
@@ -53,12 +55,11 @@ public class ReactiveInsertOperationSupportIntegrationTests extends AbstractKeys
 		admin = new CassandraAdminTemplate(session, new MappingCassandraConverter());
 		template = new ReactiveCassandraTemplate(new DefaultBridgedReactiveSession(session));
 
-		admin.dropTable(true, CqlIdentifier.of("person"));
-		admin.createTable(true, CqlIdentifier.of("person"), Person.class, Collections.emptyMap());
+		admin.dropTable(true, CqlIdentifier.fromCql("person"));
+		admin.createTable(true, CqlIdentifier.fromCql("person"), Person.class, Collections.emptyMap());
 
 		initPersons();
 	}
-
 
 	private void initPersons() {
 
@@ -107,10 +108,8 @@ public class ReactiveInsertOperationSupportIntegrationTests extends AbstractKeys
 
 		this.template.insert(Person.class).inTable("person").one(han);
 
-		Mono<EntityWriteResult<Person>> writeResult = this.template
-				.insert(Person.class).inTable("person")
-				.withOptions(InsertOptions.builder().withIfNotExists().build())
-				.one(han);
+		Mono<EntityWriteResult<Person>> writeResult = this.template.insert(Person.class).inTable("person")
+				.withOptions(InsertOptions.builder().withIfNotExists().build()).one(han);
 
 		writeResult.as(StepVerifier::create).assertNext(it -> assertThat(it.wasApplied()).isTrue()).verifyComplete();
 		template.selectOneById(han.id, Person.class).as(StepVerifier::create).expectNext(han).verifyComplete();

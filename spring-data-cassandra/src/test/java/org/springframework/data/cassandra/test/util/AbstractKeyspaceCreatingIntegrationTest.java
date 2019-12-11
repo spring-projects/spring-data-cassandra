@@ -19,7 +19,8 @@ import org.junit.ClassRule;
 
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.CqlSession;
 
 /**
  * Abstract base integration test class that provides a keyspace during the test runtime.
@@ -39,16 +40,15 @@ import com.datastax.driver.core.Session;
 public abstract class AbstractKeyspaceCreatingIntegrationTest extends AbstractEmbeddedCassandraIntegrationTest {
 
 	/**
-	 * Class rule to prepare a Cassandra Keyspace giving tests a Keyspace context.
-	 * The Keyspace name is random and changes per test.
+	 * Class rule to prepare a Cassandra Keyspace giving tests a Keyspace context. The Keyspace name is random and changes
+	 * per test.
 	 */
-	@ClassRule
-	public static final KeyspaceRule keyspaceRule = new KeyspaceRule(cassandraEnvironment);
+	@ClassRule public static final KeyspaceRule keyspaceRule = new KeyspaceRule(cassandraEnvironment);
 
 	/**
 	 * The Session that's connected to the Cassandra Keyspace used in tests.
 	 */
-	protected Session session;
+	protected CqlSession session;
 
 	/**
 	 * The name of the Cassanda Keyspace to use for this test.
@@ -71,7 +71,7 @@ public abstract class AbstractKeyspaceCreatingIntegrationTest extends AbstractEm
 
 		this.cassandraRule.before(session -> {
 
-			if (!keyspace.equals(session.getLoggedKeyspace())) {
+			if (!keyspace.equals(session.getKeyspace().map(CqlIdentifier::toString).orElse("system"))) {
 				session.execute(String.format(KeyspaceRule.USE_KEYSPACE_CQL, keyspace));
 			}
 
@@ -89,14 +89,12 @@ public abstract class AbstractKeyspaceCreatingIntegrationTest extends AbstractEm
 	}
 
 	/**
-	 * Returns the configured {@link Session}.
-	 *
-	 * The {@link Session} is logged into the {@link #getKeyspace()}.
+	 * Returns the configured {@link CqlSession}. The {@link CqlSession} is logged into the {@link #getKeyspace()}.
 	 *
 	 * @return the configured {@link Session}.
 	 * @see com.datastax.driver.core.Session
 	 */
-	public Session getSession() {
+	public CqlSession getSession() {
 		return this.session;
 	}
 

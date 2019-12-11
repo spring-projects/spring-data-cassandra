@@ -22,7 +22,7 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlSession;
 
 /**
  * Unit tests for {@link CompositeKeyspacePopulator}.
@@ -31,7 +31,7 @@ import com.datastax.driver.core.Session;
  */
 public class CompositeKeyspacePopulatorUnitTests {
 
-	private final Session mockedConnection = mock(Session.class);
+	private final CqlSession mockedConnection = mock(CqlSession.class);
 
 	private final KeyspacePopulator mockedKeyspacePopulator1 = mock(KeyspacePopulator.class);
 

@@ -33,8 +33,9 @@ import org.springframework.data.repository.query.ResultProcessor;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.CodecRegistry;
-import com.datastax.driver.core.Statement;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.cql.Statement;
+import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
 
 /**
  * Base class for {@link RepositoryQuery} implementations for Cassandra.
@@ -97,7 +98,7 @@ public abstract class AbstractCassandraQuery extends CassandraRepositoryQuerySup
 
 		ResultProcessor resultProcessor = getQueryMethod().getResultProcessor().withDynamicProjection(parameterAccessor);
 
-		Statement statement = createQuery(parameterAccessor);
+		Statement<?> statement = createQuery(parameterAccessor);
 
 		CassandraQueryExecution queryExecution = getExecution(parameterAccessor,
 				new ResultProcessingConverter(resultProcessor, toMappingContext(getOperations()), getEntityInstantiators()));
@@ -120,7 +121,7 @@ public abstract class AbstractCassandraQuery extends CassandraRepositoryQuerySup
 	 *
 	 * @param accessor must not be {@literal null}.
 	 */
-	protected abstract Statement createQuery(CassandraParameterAccessor accessor);
+	protected abstract SimpleStatement createQuery(CassandraParameterAccessor accessor);
 
 	/**
 	 * Returns the execution instance to use.

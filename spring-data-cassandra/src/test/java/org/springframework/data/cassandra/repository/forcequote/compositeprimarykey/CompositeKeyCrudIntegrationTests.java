@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
@@ -31,10 +32,10 @@ import org.springframework.data.cassandra.repository.forcequote.compositeprimary
 import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
 
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.policies.DowngradingConsistencyRetryPolicy;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
+import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
+import com.datastax.oss.driver.api.querybuilder.relation.Relation;
+import com.datastax.oss.driver.api.querybuilder.select.Select;
 
 /**
  * @author Mark Paluch
@@ -70,20 +71,20 @@ public class CompositeKeyCrudIntegrationTests extends AbstractKeyspaceCreatingIn
 		operations.insert(correlationEntity1);
 		operations.insert(correlationEntity2);
 
-		Select select = QueryBuilder.select().from("identity_correlations");
-		select.where(QueryBuilder.eq("type", "a")).and(QueryBuilder.eq("value", "b"));
-		select.setRetryPolicy(DowngradingConsistencyRetryPolicy.INSTANCE);
-		select.setConsistencyLevel(ConsistencyLevel.ONE);
-		List<CorrelationEntity> correlationEntities = operations.select(select, CorrelationEntity.class);
+		Select select = QueryBuilder.selectFrom("identity_correlations").all().where(
+				Relation.column("type").isEqualTo(QueryBuilder.literal("a")),
+				Relation.column("value").isEqualTo(QueryBuilder.literal("b")));
+
+		List<CorrelationEntity> correlationEntities = operations.select(select.build(), CorrelationEntity.class);
 
 		assertThat(correlationEntities).hasSize(2);
 
-		QueryOptions queryOptions = QueryOptions.builder().consistencyLevel(ConsistencyLevel.ONE).build();
+		QueryOptions queryOptions = QueryOptions.builder().consistencyLevel(DefaultConsistencyLevel.ONE).build();
 
 		operations.delete(correlationEntity1, queryOptions);
 		operations.delete(correlationEntity2, queryOptions);
 
-		correlationEntities = operations.select(select, CorrelationEntity.class);
+		correlationEntities = operations.select(select.build(), CorrelationEntity.class);
 
 		assertThat(correlationEntities).isEmpty();
 	}

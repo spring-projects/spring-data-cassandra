@@ -510,6 +510,13 @@ The name of a Cassandra Keyspace.  No default; for the system keyspace, use the 
 				]]></xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
+		<xsd:attribute name="local-datacenter" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The name of the local data center.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
 		<xsd:attribute name="password" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation><![CDATA[

@@ -17,14 +17,13 @@ package org.springframework.data.cassandra.core.cql;
 
 import java.util.Collection;
 
-import com.datastax.driver.core.Host;
-import com.datastax.driver.core.exceptions.DriverException;
+import com.datastax.oss.driver.api.core.DriverException;
+import com.datastax.oss.driver.api.core.metadata.Node;
 
 /**
- * An interface used by {@link CqlTemplate} for mapping {@link Host}s of a {@link com.datastax.driver.core.Metadata} on
- * a per-item basis.. Implementations of this interface perform the actual work of mapping each host to a result object,
- * but don't need to worry about exception handling. {@link DriverException} will be caught and handled by the calling
- * {@link CqlTemplate}.
+ * An interface used by {@link CqlTemplate} for mapping {@link Node}s of metadata on a per-item basis.. Implementations
+ * of this interface perform the actual work of mapping each host to a result object, but don't need to worry about
+ * exception handling. {@link DriverException} will be caught and handled by the calling {@link CqlTemplate}.
  *
  * @author Matthew T. Adams
  * @author Mark Paluch
@@ -34,13 +33,12 @@ import com.datastax.driver.core.exceptions.DriverException;
 public interface HostMapper<T> {
 
 	/**
-	 * Implementations must implement this method to map each {@link Host} in the
-	 * {@link com.datastax.driver.core.Metadata}.
+	 * Implementations must implement this method to map each {@link Node}.
 	 *
-	 * @param hosts the {@link Iterable} of {@link Host}s to map, must not be {@literal null}.
+	 * @param hosts the {@link Iterable} of {@link Node}s to map, must not be {@literal null}.
 	 * @return the result objects for the given hosts.
 	 * @throws DriverException if a {@link DriverException} is encountered mapping values (that is, there's no need to
 	 *           catch {@link DriverException}).
 	 */
-	Collection<T> mapHosts(Iterable<Host> hosts) throws DriverException;
+	Collection<T> mapHosts(Iterable<Node> hosts) throws DriverException;
 }

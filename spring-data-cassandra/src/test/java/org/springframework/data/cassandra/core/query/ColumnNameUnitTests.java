@@ -18,7 +18,8 @@ package org.springframework.data.cassandra.core.query;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * Unit tests for {@link ColumnName}.
@@ -46,10 +47,10 @@ public class ColumnNameUnitTests {
 	@Test // DATACASS-343
 	public void cqlBasedShouldEqual() {
 
-		ColumnName first = ColumnName.from(CqlIdentifier.of("foo"));
-		ColumnName second = ColumnName.from(CqlIdentifier.of("Foo"));
+		ColumnName first = ColumnName.from(CqlIdentifier.fromCql("foo"));
+		ColumnName second = ColumnName.from(CqlIdentifier.fromCql("Foo"));
 
-		ColumnName different = ColumnName.from(CqlIdentifier.of("Foo", true));
+		ColumnName different = ColumnName.from(CqlIdentifier.fromCql("Foo"));
 
 		assertThat(first).isEqualTo(second);
 		assertThat(first.equals(second)).isTrue();
@@ -64,8 +65,8 @@ public class ColumnNameUnitTests {
 	public void stringAndCqlComparisonShouldEqual() {
 
 		ColumnName first = ColumnName.from("foo");
-		ColumnName second = ColumnName.from(CqlIdentifier.of("foo"));
-		ColumnName different = ColumnName.from(CqlIdentifier.of("one", true));
+		ColumnName second = ColumnName.from(CqlIdentifier.fromCql("foo"));
+		ColumnName different = ColumnName.from(CqlIdentifier.fromCql("one"));
 
 		assertThat(first).isEqualTo(second);
 		assertThat(first.equals(second)).isTrue();

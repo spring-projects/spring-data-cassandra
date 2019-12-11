@@ -23,7 +23,7 @@ import org.springframework.data.cassandra.core.cql.session.DefaultSessionFactory
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlSession;
 
 /**
  * Factory for configuring a {@link CqlTemplate}.
@@ -73,13 +73,13 @@ public class CassandraCqlTemplateFactoryBean implements FactoryBean<CqlTemplate>
 	}
 
 	/**
-	 * Sets the Cassandra {@link Session} to use. The {@link CqlTemplate} will use the logged keyspace of the underlying
-	 * {@link Session}. Don't change the keyspace using CQL but use multiple {@link Session} and {@link CqlTemplate}
-	 * beans.
+	 * Sets the Cassandra {@link CqlSession} to use. The {@link CqlTemplate} will use the logged keyspace of the
+	 * underlying {@link CqlSession}. Don't change the keyspace using CQL but use multiple {@link CqlSession} and
+	 * {@link CqlTemplate} beans.
 	 *
 	 * @param session must not be {@literal null}.
 	 */
-	public void setSession(Session session) {
+	public void setSession(CqlSession session) {
 
 		Assert.notNull(session, "Session must not be null");
 

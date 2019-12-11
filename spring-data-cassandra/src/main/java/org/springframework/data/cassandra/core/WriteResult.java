@@ -21,9 +21,9 @@ import java.util.List;
 
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.ExecutionInfo;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
+import com.datastax.oss.driver.api.core.cql.ExecutionInfo;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
 
 /**
  * The result of a write operation.
@@ -49,7 +49,7 @@ public class WriteResult {
 
 	WriteResult(ResultSet resultSet) {
 
-		this.executionInfo = resultSet.getAllExecutionInfo();
+		this.executionInfo = resultSet.getExecutionInfos();
 		this.wasApplied = resultSet.wasApplied();
 
 		int limit = resultSet.getAvailableWithoutFetching();

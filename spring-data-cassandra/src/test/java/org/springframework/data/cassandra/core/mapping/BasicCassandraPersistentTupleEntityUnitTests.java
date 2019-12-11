@@ -15,11 +15,8 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.anyList;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,10 +31,8 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mapping.MappingException;
 
-import com.datastax.driver.core.CodecRegistry;
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.ProtocolVersion;
-import com.datastax.driver.core.TupleType;
+import com.datastax.oss.driver.api.core.type.DataTypes;
+import com.datastax.oss.driver.internal.core.type.DefaultTupleType;
 
 /**
  * Unit tests for {@link BasicCassandraPersistentTupleEntity}.
@@ -83,8 +78,8 @@ public class BasicCassandraPersistentTupleEntityUnitTests {
 	@Test // DATACASS-523
 	public void shouldCreateTupleType() {
 
-		when(this.tupleTypeFactory.create(anyList())).thenReturn(TupleType.of(ProtocolVersion.NEWEST_SUPPORTED,
-				CodecRegistry.DEFAULT_INSTANCE, DataType.text(), DataType.text(), DataType.cint()));
+		when(this.tupleTypeFactory.create(anyList()))
+				.thenReturn(new DefaultTupleType(Arrays.asList(DataTypes.TEXT, DataTypes.TEXT, DataTypes.INT)));
 
 		BasicCassandraPersistentEntity<?> entity = this.mappingContext.getRequiredPersistentEntity(Address.class);
 
@@ -92,7 +87,7 @@ public class BasicCassandraPersistentTupleEntityUnitTests {
 
 		entity.getTupleType();
 
-		verify(tupleTypeFactory).create(Arrays.asList(DataType.text(), DataType.text(), DataType.cint()));
+		verify(tupleTypeFactory).create(Arrays.asList(DataTypes.TEXT, DataTypes.TEXT, DataTypes.INT));
 	}
 
 	@Test // DATACASS-523

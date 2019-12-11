@@ -37,7 +37,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.Column;
@@ -54,15 +53,15 @@ import org.springframework.data.cassandra.core.query.CriteriaDefinition.Operator
 import org.springframework.data.cassandra.core.query.Filter;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.domain.TypeWithKeyClass;
-import org.springframework.data.cassandra.support.UserTypeBuilder;
+import org.springframework.data.cassandra.support.UserDefinedTypeBuilder;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
 
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.TupleValue;
-import com.datastax.driver.core.UDTValue;
-import com.datastax.driver.core.UserType;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.data.TupleValue;
+import com.datastax.oss.driver.api.core.data.UdtValue;
+import com.datastax.oss.driver.api.core.type.DataTypes;
 
 /**
  * Unit tests for {@link QueryMapper}.
@@ -80,7 +79,8 @@ public class QueryMapperUnitTests {
 
 	QueryMapper queryMapper;
 
-	UserType userType = UserTypeBuilder.forName("address").withField("street", DataType.varchar()).build();
+	com.datastax.oss.driver.api.core.type.UserDefinedType userType = UserDefinedTypeBuilder.forName("address")
+			.withField("street", DataTypes.TEXT).build();
 
 	@Mock UserTypeResolver userTypeResolver;
 
@@ -190,7 +190,7 @@ public class QueryMapperUnitTests {
 		CriteriaDefinition mappedCriteriaDefinition = mappedObject.iterator().next();
 
 		assertThat(mappedCriteriaDefinition.getPredicate().getOperator()).isEqualTo(Operators.EQ);
-		assertThat(mappedCriteriaDefinition.getPredicate().getValue()).isInstanceOf(UDTValue.class);
+		assertThat(mappedCriteriaDefinition.getPredicate().getValue()).isInstanceOf(UdtValue.class);
 		assertThat(mappedCriteriaDefinition.getPredicate().getValue().toString()).isEqualTo("{street:'21 Jump-Street'}");
 	}
 
@@ -232,7 +232,7 @@ public class QueryMapperUnitTests {
 		CriteriaDefinition mappedCriteriaDefinition = mappedObject.iterator().next();
 
 		assertThat(mappedCriteriaDefinition.getPredicate().getOperator()).isEqualTo(Operators.CONTAINS_KEY);
-		assertThat(mappedCriteriaDefinition.getPredicate().getValue()).isInstanceOf(UDTValue.class);
+		assertThat(mappedCriteriaDefinition.getPredicate().getValue()).isInstanceOf(UdtValue.class);
 		assertThat(mappedCriteriaDefinition.getPredicate().getValue().toString()).isEqualTo("{street:'21 Jump-Street'}");
 	}
 
@@ -246,7 +246,7 @@ public class QueryMapperUnitTests {
 		CriteriaDefinition mappedCriteriaDefinition = mappedObject.iterator().next();
 
 		assertThat(mappedCriteriaDefinition.getPredicate().getOperator()).isEqualTo(Operators.CONTAINS);
-		assertThat(mappedCriteriaDefinition.getPredicate().getValue()).isInstanceOf(UDTValue.class);
+		assertThat(mappedCriteriaDefinition.getPredicate().getValue()).isInstanceOf(UdtValue.class);
 		assertThat(mappedCriteriaDefinition.getPredicate().getValue().toString()).isEqualTo("{street:'21 Jump-Street'}");
 	}
 
@@ -259,7 +259,8 @@ public class QueryMapperUnitTests {
 
 		CriteriaDefinition mappedCriteriaDefinition = mappedObject.iterator().next();
 
-		assertThat(mappedCriteriaDefinition.getColumnName()).isEqualTo(ColumnName.from(CqlIdentifier.of("first_name")));
+		assertThat(mappedCriteriaDefinition.getColumnName())
+				.isEqualTo(ColumnName.from(CqlIdentifier.fromCql("first_name")));
 		assertThat(mappedCriteriaDefinition.getColumnName().toString()).isEqualTo("first_name");
 	}
 
@@ -285,10 +286,10 @@ public class QueryMapperUnitTests {
 	@Test // DATACASS-343
 	public void shouldIncludeColumnsSelectExpressionWithTTL() {
 
-		List<String> selectors = queryMapper.getMappedColumnNames(Columns.from("number", "foo").ttl("firstName"),
+		List<CqlIdentifier> selectors = queryMapper.getMappedColumnNames(Columns.from("number", "foo").ttl("firstName"),
 				persistentEntity);
 
-		assertThat(selectors).contains("number").contains("foo").hasSize(2);
+		assertThat(selectors).contains(CqlIdentifier.fromCql("number"), CqlIdentifier.fromCql("foo")).hasSize(2);
 	}
 
 	@Test // DATACASS-343
@@ -326,10 +327,10 @@ public class QueryMapperUnitTests {
 
 		Columns columnNames = Columns.from("key.firstname");
 
-		List<String> mappedObject = queryMapper.getMappedColumnNames(columnNames,
+		List<CqlIdentifier> mappedObject = queryMapper.getMappedColumnNames(columnNames,
 				mappingContext.getRequiredPersistentEntity(TypeWithKeyClass.class));
 
-		assertThat(mappedObject).contains("first_name");
+		assertThat(mappedObject).contains(CqlIdentifier.fromCql("first_name"));
 	}
 
 	@Test // DATACASS-523

@@ -15,8 +15,9 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.repository.core.EntityMetadata;
+
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * Extension of {@link EntityMetadata} to additionally expose the table name an entity shall be persisted to.

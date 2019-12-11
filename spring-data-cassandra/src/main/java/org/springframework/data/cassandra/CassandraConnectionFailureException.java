@@ -15,12 +15,13 @@
  */
 package org.springframework.data.cassandra;
 
-import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.dao.DataAccessResourceFailureException;
+
+import com.datastax.oss.driver.api.core.metadata.Node;
 
 /**
  * Spring data access exception for Cassandra when no host is available.
@@ -31,14 +32,14 @@ public class CassandraConnectionFailureException extends DataAccessResourceFailu
 
 	private static final long serialVersionUID = 6299912054261646552L;
 
-	private final Map<InetSocketAddress, Throwable> messagesByHost = new HashMap<>();
+	private final Map<Node, Throwable> messagesByHost = new HashMap<>();
 
-	public CassandraConnectionFailureException(Map<InetSocketAddress, Throwable> map, String msg, Throwable cause) {
+	public CassandraConnectionFailureException(Map<Node, Throwable> map, String msg, Throwable cause) {
 		super(msg, cause);
 		this.messagesByHost.putAll(map);
 	}
 
-	public Map<InetSocketAddress, Throwable> getMessagesByHost() {
+	public Map<Node, Throwable> getMessagesByHost() {
 		return Collections.unmodifiableMap(messagesByHost);
 	}
 }

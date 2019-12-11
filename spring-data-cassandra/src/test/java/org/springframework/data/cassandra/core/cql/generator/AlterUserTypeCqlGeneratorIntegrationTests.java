@@ -21,12 +21,13 @@ import static org.springframework.data.cassandra.core.cql.generator.AlterUserTyp
 
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.data.cassandra.core.cql.keyspace.AlterUserTypeSpecification;
 import org.springframework.data.cassandra.support.CassandraVersion;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.data.util.Version;
 
-import com.datastax.driver.core.DataType;
+import com.datastax.oss.driver.api.core.type.DataTypes;
 
 /**
  * Integration tests for {@link AlterUserTypeCqlGenerator}.
@@ -52,7 +53,7 @@ public class AlterUserTypeCqlGeneratorIntegrationTests extends AbstractKeyspaceC
 	public void alterTypeShouldAddField() {
 
 		AlterUserTypeSpecification spec = AlterUserTypeSpecification.alterType("address")//
-				.add("street", DataType.varchar());
+				.add("street", DataTypes.TEXT);
 
 		session.execute(toCql(spec));
 	}
@@ -63,7 +64,7 @@ public class AlterUserTypeCqlGeneratorIntegrationTests extends AbstractKeyspaceC
 		assumeTrue(cassandraVersion.isLessThan(CASSANDRA_3_10));
 
 		AlterUserTypeSpecification spec = AlterUserTypeSpecification.alterType("address")//
-				.alter("zip", DataType.varchar());
+				.alter("zip", DataTypes.TEXT);
 
 		session.execute(toCql(spec));
 	}

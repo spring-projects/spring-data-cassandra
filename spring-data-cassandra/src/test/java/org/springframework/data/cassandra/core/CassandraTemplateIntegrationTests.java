@@ -32,7 +32,6 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -61,7 +60,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.util.Version;
 
-import com.datastax.driver.core.utils.UUIDs;
+import com.datastax.oss.driver.api.core.uuid.Uuids;
 
 /**
  * Integration tests for {@link CassandraTemplate}.
@@ -103,8 +102,8 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 		assumeTrue(cassandraVersion.isGreaterThanOrEqualTo(CASSANDRA_3));
 
 		UserToken userToken = new UserToken();
-		userToken.setUserId(UUIDs.endOf(System.currentTimeMillis()));
-		userToken.setToken(UUIDs.startOf(System.currentTimeMillis()));
+		userToken.setUserId(Uuids.endOf(System.currentTimeMillis()));
+		userToken.setToken(Uuids.startOf(System.currentTimeMillis()));
 		userToken.setUserComment("cook");
 
 		template.insert(userToken);
@@ -121,13 +120,13 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 	public void shouldSelectByQueryWithSorting() {
 
 		UserToken token1 = new UserToken();
-		token1.setUserId(UUIDs.endOf(System.currentTimeMillis()));
-		token1.setToken(UUIDs.startOf(System.currentTimeMillis()));
+		token1.setUserId(Uuids.endOf(System.currentTimeMillis()));
+		token1.setToken(Uuids.startOf(System.currentTimeMillis()));
 		token1.setUserComment("foo");
 
 		UserToken token2 = new UserToken();
 		token2.setUserId(token1.getUserId());
-		token2.setToken(UUIDs.endOf(System.currentTimeMillis() + 100));
+		token2.setToken(Uuids.endOf(System.currentTimeMillis() + 100));
 		token2.setUserComment("bar");
 
 		template.insert(token1);
@@ -182,8 +181,8 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 	public void shouldSelectOneByQuery() {
 
 		UserToken token1 = new UserToken();
-		token1.setUserId(UUIDs.endOf(System.currentTimeMillis()));
-		token1.setToken(UUIDs.startOf(System.currentTimeMillis()));
+		token1.setUserId(Uuids.endOf(System.currentTimeMillis()));
+		token1.setToken(Uuids.startOf(System.currentTimeMillis()));
 		token1.setUserComment("foo");
 
 		template.insert(token1);
@@ -501,8 +500,8 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 	public void shouldUseSpecifiedColumnNamesForSingleEntityModifyingOperations() {
 
 		UserToken userToken = new UserToken();
-		userToken.setToken(UUIDs.startOf(System.currentTimeMillis()));
-		userToken.setUserId(UUIDs.endOf(System.currentTimeMillis()));
+		userToken.setToken(Uuids.startOf(System.currentTimeMillis()));
+		userToken.setUserId(Uuids.endOf(System.currentTimeMillis()));
 
 		template.insert(userToken);
 

@@ -26,11 +26,7 @@ import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateKeyspaceSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.DropKeyspaceSpecification;
 import org.springframework.data.cassandra.support.CassandraConnectionProperties;
-import org.springframework.data.cassandra.support.IntegrationTestNettyOptions;
 import org.springframework.data.cassandra.support.RandomKeyspaceName;
-
-import com.datastax.driver.core.NettyOptions;
-import com.datastax.driver.core.QueryOptions;
 
 /**
  * Setup any spring configuration for unit tests
@@ -60,19 +56,6 @@ public class IntegrationTestConfig extends AbstractReactiveCassandraConfiguratio
 	@Override
 	protected String getKeyspaceName() {
 		return keyspaceName;
-	}
-
-	@Override
-	protected NettyOptions getNettyOptions() {
-		return IntegrationTestNettyOptions.INSTANCE;
-	}
-
-	@Override
-	protected QueryOptions getQueryOptions() {
-
-		QueryOptions queryOptions = new QueryOptions();
-		queryOptions.setRefreshSchemaIntervalMillis(0);
-		return queryOptions;
 	}
 
 	@Override

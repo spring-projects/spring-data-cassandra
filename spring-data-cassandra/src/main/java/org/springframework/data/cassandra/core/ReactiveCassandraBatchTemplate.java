@@ -35,13 +35,11 @@ import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
-import com.datastax.driver.core.Statement;
-import com.datastax.driver.core.querybuilder.Batch;
-import com.datastax.driver.core.querybuilder.BuiltStatement;
-import com.datastax.driver.core.querybuilder.Delete;
-import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Update;
+import com.datastax.oss.driver.api.core.cql.BatchStatement;
+import com.datastax.oss.driver.api.core.cql.BatchStatementBuilder;
+import com.datastax.oss.driver.api.core.cql.BatchType;
+import com.datastax.oss.driver.api.core.cql.BatchableStatement;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 
 /**
  * Default implementation for {@link ReactiveCassandraBatchOperations}.
@@ -54,13 +52,13 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 
 	private final AtomicBoolean executed = new AtomicBoolean();
 
-	private final Batch batch = QueryBuilder.batch();
+	private final BatchStatementBuilder batch = BatchStatement.builder(BatchType.LOGGED);
 
 	private final CassandraConverter converter;
 
 	private final CassandraMappingContext mappingContext;
 
-	private final List<Mono<Collection<? extends BuiltStatement>>> batchMonos = new CopyOnWriteArrayList<>();
+	private final List<Mono<Collection<? extends BatchableStatement<?>>>> batchMonos = new CopyOnWriteArrayList<>();
 
 	private final ReactiveCassandraOperations operations;
 
@@ -78,7 +76,7 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 		this.operations = operations;
 		this.converter = operations.getConverter();
 		this.mappingContext = this.converter.getMappingContext();
-		this.statementFactory = new StatementFactory(new UpdateMapper(this.converter));
+		this.statementFactory = new StatementFactory(new UpdateMapper(converter));
 	}
 
 	private void assertNotExecuted() {
@@ -137,9 +135,9 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 						.collectList() //
 						.flatMap(statements -> {
 
-							statements.forEach(this.batch::add);
+							this.batch.addStatements(statements);
 
-							return this.operations.getReactiveCqlOperations().queryForResultSet(this.batch);
+							return this.operations.getReactiveCqlOperations().queryForResultSet(this.batch.build());
 
 						}).flatMap(resultSet -> resultSet.rows().collectList()
 								.map(rows -> new WriteResult(resultSet.getAllExecutionInfo(), resultSet.wasApplied(), rows)));
@@ -157,7 +155,7 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 
 		assertNotExecuted();
 
-		this.batch.using(QueryBuilder.timestamp(timestamp));
+		this.batch.setQueryTimestamp(timestamp);
 
 		return this;
 	}
@@ -221,11 +219,10 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 		return this;
 	}
 
-	private Collection<? extends BuiltStatement> doInsert(Iterable<?> entities, WriteOptions options) {
+	private Collection<SimpleStatement> doInsert(Iterable<?> entities, WriteOptions options) {
 
-		CassandraConverter converter = getConverter();
 		CassandraMappingContext mappingContext = getMappingContext();
-		List<Insert> insertQueries = new ArrayList<>();
+		List<SimpleStatement> insertQueries = new ArrayList<>();
 
 		for (Object entity : entities) {
 
@@ -234,8 +231,8 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 			BasicCassandraPersistentEntity<?> persistentEntity = mappingContext
 					.getRequiredPersistentEntity(entity.getClass());
 
-			Insert insertQuery = EntityQueryUtils.createInsertQuery(persistentEntity.getTableName().toCql(), entity, options,
-					converter, persistentEntity);
+			SimpleStatement insertQuery = getStatementFactory()
+					.insert(entity, options, persistentEntity, persistentEntity.getTableName()).build();
 
 			insertQueries.add(insertQuery);
 		}
@@ -302,10 +299,9 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 		return this;
 	}
 
-	private Collection<? extends BuiltStatement> doUpdate(Iterable<?> entities, WriteOptions options) {
+	private Collection<SimpleStatement> doUpdate(Iterable<?> entities, WriteOptions options) {
 
-		CassandraConverter converter = getConverter();
-		List<Update> updateQueries = new ArrayList<>();
+		List<SimpleStatement> updateQueries = new ArrayList<>();
 
 		for (Object entity : entities) {
 
@@ -313,8 +309,8 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 
 			CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
 
-			Update update = getStatementFactory().update(entity, options, converter, persistentEntity,
-					persistentEntity.getTableName());
+			SimpleStatement update = getStatementFactory()
+					.update(entity, options, persistentEntity, persistentEntity.getTableName()).build();
 
 			updateQueries.add(update);
 		}
@@ -381,10 +377,9 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 		return this;
 	}
 
-	private Collection<? extends BuiltStatement> doDelete(Iterable<?> entities, WriteOptions options) {
+	private Collection<SimpleStatement> doDelete(Iterable<?> entities, WriteOptions options) {
 
-		CassandraConverter converter = getConverter();
-		List<Delete> deleteQueries = new ArrayList<>();
+		List<SimpleStatement> deleteQueries = new ArrayList<>();
 
 		for (Object entity : entities) {
 
@@ -392,8 +387,8 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 
 			CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
 
-			Delete delete = getStatementFactory().delete(entity, options, converter, persistentEntity,
-					persistentEntity.getTableName());
+			SimpleStatement delete = getStatementFactory()
+					.delete(entity, options, getConverter(), persistentEntity.getTableName()).build();
 
 			deleteQueries.add(delete);
 		}

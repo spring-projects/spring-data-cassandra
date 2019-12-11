@@ -18,12 +18,12 @@ package org.springframework.data.cassandra.core.cql.session;
 import org.springframework.data.cassandra.SessionFactory;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlSession;
 
 /**
  * Default {@link SessionFactory} implementation.
  * <p>
- * This class uses a singleton {@link Session} and returns the same instances.
+ * This class uses a singleton {@link CqlSession} and returns the same instances.
  *
  * @author Mark Paluch
  * @since 2.0
@@ -32,14 +32,14 @@ import com.datastax.driver.core.Session;
  */
 public class DefaultSessionFactory implements SessionFactory {
 
-	private final Session session;
+	private final CqlSession session;
 
 	/**
-	 * Constructs a new {@link DefaultSessionFactory} given {@link Session}.
+	 * Constructs a new {@link DefaultSessionFactory} given {@link CqlSession}.
 	 *
-	 * @param session the {@link Session} to be used in {@link #getSession()}.
+	 * @param session the {@link CqlSession} to be used in {@link #getSession()}.
 	 */
-	public DefaultSessionFactory(Session session) {
+	public DefaultSessionFactory(CqlSession session) {
 
 		Assert.notNull(session, "Session must not be null");
 
@@ -50,7 +50,7 @@ public class DefaultSessionFactory implements SessionFactory {
 	 * @see org.springframework.data.cassandra.session.SessionFactory#getSession()
 	 */
 	@Override
-	public Session getSession() {
+	public CqlSession getSession() {
 		return session;
 	}
 }
