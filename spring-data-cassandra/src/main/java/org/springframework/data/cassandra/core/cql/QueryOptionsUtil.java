@@ -17,12 +17,11 @@ package org.springframework.data.cassandra.core.cql;
 
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.Statement;
-import com.datastax.driver.core.querybuilder.Delete;
-import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Update;
+import com.datastax.oss.driver.api.core.cql.SimpleStatementBuilder;
+import com.datastax.oss.driver.api.core.cql.Statement;
+import com.datastax.oss.driver.api.querybuilder.delete.Delete;
+import com.datastax.oss.driver.api.querybuilder.insert.Insert;
+import com.datastax.oss.driver.api.querybuilder.update.Update;
 
 /**
  * Utility class to associate {@link QueryOptions} and {@link WriteOptions} with QueryBuilder {@link Statement}s.
@@ -34,62 +33,74 @@ import com.datastax.driver.core.querybuilder.Update;
 public abstract class QueryOptionsUtil {
 
 	/**
-	 * Add common {@link QueryOptions} to Cassandra {@link PreparedStatement}s.
-	 *
-	 * @param preparedStatement the Cassandra {@link PreparedStatement}, must not be {@literal null}.
-	 * @param queryOptions query options (e.g. consistency level) to add to the Cassandra {@link PreparedStatement}.
-	 */
-	public static PreparedStatement addPreparedStatementOptions(PreparedStatement preparedStatement,
-			QueryOptions queryOptions) {
-
-		Assert.notNull(preparedStatement, "PreparedStatement must not be null");
-
-		if (queryOptions.getConsistencyLevel() != null) {
-			preparedStatement.setConsistencyLevel(queryOptions.getConsistencyLevel());
-		}
-		if (queryOptions.getRetryPolicy() != null) {
-			preparedStatement.setRetryPolicy(queryOptions.getRetryPolicy());
-		}
-
-		return preparedStatement;
-	}
-
-	/**
 	 * Add common {@link QueryOptions} to all types of queries.
 	 *
 	 * @param statement CQL {@link Statement}, must not be {@literal null}.
 	 * @param queryOptions query options (e.g. consistency level) to add to the CQL statement.
 	 * @return the given {@link Statement}.
 	 */
-	public static <T extends Statement> T addQueryOptions(T statement, QueryOptions queryOptions) {
+	public static <T extends Statement<?>> T addQueryOptions(T statement, QueryOptions queryOptions) {
 
 		Assert.notNull(statement, "Statement must not be null");
+		Statement<?> statementToUse = statement;
 
 		if (queryOptions.getConsistencyLevel() != null) {
-			statement.setConsistencyLevel(queryOptions.getConsistencyLevel());
+			statementToUse = statementToUse.setConsistencyLevel(queryOptions.getConsistencyLevel());
 		}
 
-		if (queryOptions.getRetryPolicy() != null) {
-			statement.setRetryPolicy(queryOptions.getRetryPolicy());
-		}
-
-		if (queryOptions.getFetchSize() != null) {
-			statement.setFetchSize(queryOptions.getFetchSize());
+		if (queryOptions.getPageSize() != null) {
+			statementToUse = statementToUse.setPageSize(queryOptions.getPageSize());
 		}
 
 		if (!queryOptions.getReadTimeout().isNegative()) {
-			statement.setReadTimeoutMillis(Math.toIntExact(queryOptions.getReadTimeout().toMillis()));
+			statementToUse = statementToUse.setTimeout(queryOptions.getReadTimeout());
 		}
 
 		if (queryOptions.getTracing() != null) {
 			if (queryOptions.getTracing()) {
-				statement.enableTracing();
+				statementToUse = statementToUse.setTracing(true);
 			} else {
-				statement.disableTracing();
+				statementToUse = statementToUse.setTracing(false);
 			}
 		}
 
-		return statement;
+		return (T) statementToUse;
+	}
+
+	/**
+	 * Add common {@link QueryOptions} to all types of queries.
+	 *
+	 * @param statement a {@link SimpleStatementBuilder}, must not be {@literal null}.
+	 * @param queryOptions query options (e.g. consistency level) to add to the CQL statement.
+	 */
+	public static void addQueryOptions(SimpleStatementBuilder statementBuilder, QueryOptions queryOptions) {
+
+		Assert.notNull(statementBuilder, "SimpleStatementBuilder must not be null");
+
+		if (queryOptions.getConsistencyLevel() != null) {
+			statementBuilder.setConsistencyLevel(queryOptions.getConsistencyLevel());
+		}
+
+		// TODO:
+		/*if (queryOptions.getRetryPolicy() != null) {
+			statementToUse = statementToUse.setRetryPolicy(queryOptions.getRetryPolicy());
+		} */
+
+		if (queryOptions.getPageSize() != null) {
+			statementBuilder.setPageSize(queryOptions.getPageSize());
+		}
+
+		if (!queryOptions.getReadTimeout().isNegative()) {
+			statementBuilder.setTimeout(queryOptions.getReadTimeout());
+		}
+
+		if (queryOptions.getTracing() != null) {
+			if (queryOptions.getTracing()) {
+				statementBuilder.setTracing(true);
+			} else {
+				statementBuilder.setTracing(false);
+			}
+		}
 	}
 
 	/**
@@ -102,18 +113,19 @@ public abstract class QueryOptionsUtil {
 	public static Insert addWriteOptions(Insert insert, WriteOptions writeOptions) {
 
 		Assert.notNull(insert, "Insert must not be null");
+		Assert.notNull(writeOptions, "WriteOptions must not be null");
 
-		addQueryOptions(insert, writeOptions);
+		Insert insertToUse = insert;
 
 		if (!writeOptions.getTtl().isNegative()) {
-			insert.using(QueryBuilder.ttl(Math.toIntExact(writeOptions.getTtl().getSeconds())));
+			insertToUse = insertToUse.usingTtl(Math.toIntExact(writeOptions.getTtl().getSeconds()));
 		}
 
 		if (writeOptions.getTimestamp() != null) {
-			insert.using(QueryBuilder.timestamp(writeOptions.getTimestamp()));
+			insertToUse = insertToUse.usingTimestamp(writeOptions.getTimestamp());
 		}
 
-		return insert;
+		return insertToUse;
 	}
 
 	/**
@@ -127,12 +139,9 @@ public abstract class QueryOptionsUtil {
 	public static Delete addWriteOptions(Delete delete, WriteOptions writeOptions) {
 
 		Assert.notNull(delete, "Delete must not be null");
+		Assert.notNull(writeOptions, "WriteOptions must not be null");
 
-		addQueryOptions(delete, writeOptions);
-
-		if (writeOptions.getTimestamp() != null) {
-			delete.using(QueryBuilder.timestamp(writeOptions.getTimestamp()));
-		}
+		// TODO: Timestamp? TTL
 
 		return delete;
 	}
@@ -147,15 +156,9 @@ public abstract class QueryOptionsUtil {
 	public static Update addWriteOptions(Update update, WriteOptions writeOptions) {
 
 		Assert.notNull(update, "Update must not be null");
+		Assert.notNull(writeOptions, "WriteOptions must not be null");
 
-		addQueryOptions(update, writeOptions);
-
-		if (!writeOptions.getTtl().isNegative()) {
-			update.using(QueryBuilder.ttl(Math.toIntExact(writeOptions.getTtl().getSeconds())));
-		}
-		if (writeOptions.getTimestamp() != null) {
-			update.using(QueryBuilder.timestamp(writeOptions.getTimestamp()));
-		}
+		// TODO: Timestamp, TTL?
 
 		return update;
 	}

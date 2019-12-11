@@ -15,17 +15,13 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import java.time.Duration;
 
 import org.junit.Test;
 
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.policies.DefaultRetryPolicy;
-import com.datastax.driver.core.policies.DowngradingConsistencyRetryPolicy;
-import com.datastax.driver.core.policies.FallthroughRetryPolicy;
-import com.datastax.driver.core.policies.LoggingRetryPolicy;
+import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
 
 /**
  * Unit tests for {@link QueryOptions}.
@@ -37,62 +33,30 @@ public class QueryOptionsUnitTests {
 	@Test // DATACASS-202
 	public void buildQueryOptions() {
 
-		QueryOptions queryOptions = QueryOptions.builder()
-				.consistencyLevel(ConsistencyLevel.ANY)
-				.retryPolicy(FallthroughRetryPolicy.INSTANCE)
-				.readTimeout(Duration.ofSeconds(1))
-				.fetchSize(10)
-				.tracing(true)
-				.build();
+		QueryOptions queryOptions = QueryOptions.builder().consistencyLevel(DefaultConsistencyLevel.ANY)
+				.timeout(Duration.ofSeconds(1)).pageSize(10).tracing(true).build();
 
 		assertThat(queryOptions.getClass()).isEqualTo(QueryOptions.class);
-		assertThat(queryOptions.getRetryPolicy()).isEqualTo(FallthroughRetryPolicy.INSTANCE);
-		assertThat(queryOptions.getConsistencyLevel()).isEqualTo(ConsistencyLevel.ANY);
+		assertThat(queryOptions.getConsistencyLevel()).isEqualTo(DefaultConsistencyLevel.ANY);
 		assertThat(queryOptions.getReadTimeout()).isEqualTo(Duration.ofSeconds(1));
-		assertThat(queryOptions.getFetchSize()).isEqualTo(10);
+		assertThat(queryOptions.getPageSize()).isEqualTo(10);
 		assertThat(queryOptions.getTracing()).isTrue();
-	}
-
-	@Test // DATACASS-202
-	public void buildQueryOptionsWithDriverRetryPolicy() {
-
-		QueryOptions writeOptions = QueryOptions.builder()
-				.retryPolicy(new LoggingRetryPolicy(DefaultRetryPolicy.INSTANCE))
-				.build();
-
-		assertThat(writeOptions.getRetryPolicy()).isInstanceOf(LoggingRetryPolicy.class);
-	}
-
-	@Test // DATACASS-202
-	public void buildQueryOptionsWithRetryPolicy() {
-
-		QueryOptions writeOptions = QueryOptions.builder()
-				.retryPolicy(DowngradingConsistencyRetryPolicy.INSTANCE)
-				.build();
-
-		assertThat(writeOptions.getRetryPolicy()).isEqualTo(DowngradingConsistencyRetryPolicy.INSTANCE);
 	}
 
 	@Test // DATACASS-56
 	public void buildQueryOptionsMutate() {
 
-		QueryOptions queryOptions = QueryOptions.builder()
-				.consistencyLevel(ConsistencyLevel.ANY)
-				.retryPolicy(FallthroughRetryPolicy.INSTANCE)
-				.readTimeout(Duration.ofSeconds(1))
-				.fetchSize(10)
-				.tracing(true)
-				.build();
+		QueryOptions queryOptions = QueryOptions.builder().consistencyLevel(DefaultConsistencyLevel.ANY)
+				.timeout(Duration.ofSeconds(1)).pageSize(10).tracing(true).build();
 
-		QueryOptions mutated = queryOptions.mutate().readTimeout(Duration.ofSeconds(5)).build();
+		QueryOptions mutated = queryOptions.mutate().timeout(Duration.ofSeconds(5)).build();
 
 		assertThat(mutated).isNotNull();
 		assertThat(mutated).isNotSameAs(queryOptions);
 		assertThat(mutated.getClass()).isEqualTo(QueryOptions.class);
-		assertThat(mutated.getRetryPolicy()).isEqualTo(FallthroughRetryPolicy.INSTANCE);
-		assertThat(mutated.getConsistencyLevel()).isEqualTo(ConsistencyLevel.ANY);
+		assertThat(mutated.getConsistencyLevel()).isEqualTo(DefaultConsistencyLevel.ANY);
 		assertThat(mutated.getReadTimeout()).isEqualTo(Duration.ofSeconds(5));
-		assertThat(mutated.getFetchSize()).isEqualTo(10);
+		assertThat(mutated.getPageSize()).isEqualTo(10);
 		assertThat(mutated.getTracing()).isTrue();
 	}
 }

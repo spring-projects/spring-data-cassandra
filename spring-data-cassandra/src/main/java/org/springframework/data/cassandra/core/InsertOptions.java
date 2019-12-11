@@ -24,8 +24,8 @@ import java.util.concurrent.TimeUnit;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.lang.Nullable;
 
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.policies.RetryPolicy;
+import com.datastax.oss.driver.api.core.ConsistencyLevel;
+import com.datastax.oss.driver.api.core.retry.RetryPolicy;
 
 /**
  * Extension to {@link WriteOptions} for use with {@code INSERT} operations.
@@ -124,7 +124,7 @@ public class InsertOptions extends WriteOptions {
 		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#consistencyLevel(com.datastax.driver.core.ConsistencyLevel)
 		 */
 		@Override
-		public InsertOptionsBuilder consistencyLevel(com.datastax.driver.core.ConsistencyLevel consistencyLevel) {
+		public InsertOptionsBuilder consistencyLevel(ConsistencyLevel consistencyLevel) {
 
 			super.consistencyLevel(consistencyLevel);
 			return this;
@@ -134,7 +134,8 @@ public class InsertOptions extends WriteOptions {
 		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#retryPolicy(com.datastax.driver.core.policies.RetryPolicy)
 		 */
 		@Override
-		public InsertOptionsBuilder retryPolicy(com.datastax.driver.core.policies.RetryPolicy driverRetryPolicy) {
+		@Deprecated
+		public InsertOptionsBuilder retryPolicy(RetryPolicy driverRetryPolicy) {
 
 			super.retryPolicy(driverRetryPolicy);
 			return this;
@@ -144,14 +145,24 @@ public class InsertOptions extends WriteOptions {
 		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#fetchSize(int)
 		 */
 		@Override
+		@Deprecated
 		public InsertOptionsBuilder fetchSize(int fetchSize) {
 			return (InsertOptionsBuilder) super.fetchSize(fetchSize);
+		}
+
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#pageSize(int)
+		 */
+		@Override
+		public InsertOptionsBuilder pageSize(int pageSize) {
+			return (InsertOptionsBuilder) super.pageSize(pageSize);
 		}
 
 		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#readTimeout(long)
 		 */
 		@Override
+		@Deprecated
 		public InsertOptionsBuilder readTimeout(long readTimeout) {
 
 			super.readTimeout(readTimeout);
@@ -173,9 +184,9 @@ public class InsertOptions extends WriteOptions {
 		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#readTimeout(java.time.Duration)
 		 */
 		@Override
-		public InsertOptionsBuilder readTimeout(Duration readTimeout) {
+		public InsertOptionsBuilder timeout(Duration timeout) {
 
-			super.readTimeout(readTimeout);
+			super.timeout(timeout);
 			return this;
 		}
 
@@ -295,7 +306,7 @@ public class InsertOptions extends WriteOptions {
 		 * @return a new {@link InsertOptions} with the configured values
 		 */
 		public InsertOptions build() {
-			return new InsertOptions(this.consistencyLevel, this.retryPolicy, this.tracing, this.fetchSize, this.readTimeout,
+			return new InsertOptions(this.consistencyLevel, this.retryPolicy, this.tracing, this.pageSize, this.timeout,
 					this.ttl, this.timestamp, this.ifNotExists, this.insertNulls);
 		}
 	}

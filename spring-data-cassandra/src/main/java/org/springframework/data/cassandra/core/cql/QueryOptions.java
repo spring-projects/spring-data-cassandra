@@ -23,9 +23,8 @@ import java.util.concurrent.TimeUnit;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.SocketOptions;
-import com.datastax.driver.core.policies.RetryPolicy;
+import com.datastax.oss.driver.api.core.ConsistencyLevel;
+import com.datastax.oss.driver.api.core.retry.RetryPolicy;
 
 /**
  * Cassandra Query Options for queries. {@link QueryOptions} allow tuning of various query options on a per-request
@@ -45,7 +44,7 @@ public class QueryOptions {
 
 	private final Duration readTimeout;
 
-	private final @Nullable Integer fetchSize;
+	private final @Nullable Integer pageSize;
 
 	private final @Nullable RetryPolicy retryPolicy;
 
@@ -55,7 +54,7 @@ public class QueryOptions {
 		this.consistencyLevel = consistencyLevel;
 		this.retryPolicy = retryPolicy;
 		this.tracing = tracing;
-		this.fetchSize = fetchSize;
+		this.pageSize = fetchSize;
 		this.readTimeout = readTimeout;
 	}
 
@@ -72,7 +71,7 @@ public class QueryOptions {
 		this.consistencyLevel = consistencyLevel;
 		this.retryPolicy = retryPolicy;
 		this.tracing = false;
-		this.fetchSize = null;
+		this.pageSize = null;
 		this.readTimeout = Duration.ofMillis(-1);
 	}
 
@@ -120,8 +119,8 @@ public class QueryOptions {
 	 * @since 1.5
 	 */
 	@Nullable
-	protected Integer getFetchSize() {
-		return this.fetchSize;
+	protected Integer getPageSize() {
+		return this.pageSize;
 	}
 
 	/**
@@ -161,9 +160,9 @@ public class QueryOptions {
 
 		protected @Nullable ConsistencyLevel consistencyLevel;
 
-		protected Duration readTimeout = Duration.ofMillis(-1);
+		protected Duration timeout = Duration.ofMillis(-1);
 
-		protected @Nullable Integer fetchSize;
+		protected @Nullable Integer pageSize;
 
 		protected @Nullable RetryPolicy retryPolicy;
 
@@ -172,8 +171,8 @@ public class QueryOptions {
 		QueryOptionsBuilder(QueryOptions queryOptions) {
 
 			this.consistencyLevel = queryOptions.consistencyLevel;
-			this.fetchSize = queryOptions.fetchSize;
-			this.readTimeout = queryOptions.readTimeout;
+			this.pageSize = queryOptions.pageSize;
+			this.timeout = queryOptions.readTimeout;
 			this.retryPolicy = queryOptions.retryPolicy;
 			this.tracing = queryOptions.tracing;
 		}
@@ -199,7 +198,9 @@ public class QueryOptions {
 		 *
 		 * @param retryPolicy must not be {@literal null}.
 		 * @return {@code this} {@link QueryOptionsBuilder}
+		 * @deprecated since 3.0, use execution profiles instead.
 		 */
+		@Deprecated
 		public QueryOptionsBuilder retryPolicy(RetryPolicy retryPolicy) {
 
 			Assert.notNull(retryPolicy, "RetryPolicy must not be null");
@@ -210,7 +211,7 @@ public class QueryOptions {
 		}
 
 		/**
-		 * Sets the query fetch size for {@link com.datastax.driver.core.ResultSet} chunks.
+		 * Sets the query fetch size for {@link com.datastax.oss.driver.api.core.cql.ResultSet} chunks.
 		 * <p>
 		 * The fetch size controls how much resulting rows will be retrieved simultaneously (the goal being to avoid loading
 		 * too much results in memory for queries yielding large results). Please note that while value as low as 1 can be
@@ -219,14 +220,29 @@ public class QueryOptions {
 		 * @param fetchSize the number of rows to fetch per chunking request. To disable chunking of the result set, use
 		 *          {@code fetchSize == Integer.MAX_VALUE}. Negative values are not allowed.
 		 * @return {@code this} {@link QueryOptionsBuilder}
-		 * @see com.datastax.driver.core.QueryOptions#getFetchSize()
-		 * @see com.datastax.driver.core.Cluster.Builder#withQueryOptions(com.datastax.driver.core.QueryOptions)
+		 * @deprecated since 3.0, use {@link #pageSize(int)}.
 		 */
+		@Deprecated
 		public QueryOptionsBuilder fetchSize(int fetchSize) {
+			return pageSize(fetchSize);
+		}
 
-			Assert.isTrue(fetchSize >= 0, "FetchSize must be greater than equal to zero");
+		/**
+		 * Sets the query fetch size for {@link com.datastax.oss.driver.api.core.cql.ResultSet} chunks.
+		 * <p>
+		 * The fetch size controls how much resulting rows will be retrieved simultaneously (the goal being to avoid loading
+		 * too much results in memory for queries yielding large results). Please note that while value as low as 1 can be
+		 * used, it is *highly* discouraged to use such a low value in practice as it will yield very poor performance.
+		 *
+		 * @param pageSize the number of rows to fetch per chunking request. To disable chunking of the result set, use
+		 *          {@code pageSize == Integer.MAX_VALUE}. Negative values are not allowed.
+		 * @return {@code this} {@link QueryOptionsBuilder}
+		 */
+		public QueryOptionsBuilder pageSize(int pageSize) {
 
-			this.fetchSize = fetchSize;
+			Assert.isTrue(pageSize >= 0, "Page size must be greater than equal to zero");
+
+			this.pageSize = pageSize;
 
 			return this;
 		}
@@ -237,11 +253,12 @@ public class QueryOptions {
 		 * @param readTimeout the read timeout in milliseconds. Negative values are not allowed. If it is {@code 0}, the
 		 *          read timeout will be disabled for this statement.
 		 * @return {@code this} {@link QueryOptionsBuilder}
-		 * @see SocketOptions#getReadTimeoutMillis()
-		 * @see com.datastax.driver.core.Cluster.Builder#withSocketOptions(SocketOptions)
+		 * @see com.datastax.oss.driver.api.core.cql.SimpleStatement#setTimeout(Duration)
+		 * @deprecated since 3.0, use {@link #timeout(Duration)}
 		 */
+		@Deprecated
 		public QueryOptionsBuilder readTimeout(long readTimeout) {
-			return readTimeout(Duration.ofMillis(readTimeout));
+			return timeout(Duration.ofMillis(readTimeout));
 		}
 
 		/**
@@ -251,9 +268,8 @@ public class QueryOptions {
 		 *          will be disabled for this statement.
 		 * @param timeUnit the {@link TimeUnit} for the supplied timeout; must not be {@literal null}.
 		 * @return {@code this} {@link QueryOptionsBuilder}
-		 * @see SocketOptions#getReadTimeoutMillis()
-		 * @see com.datastax.driver.core.Cluster.Builder#withSocketOptions(SocketOptions)
-		 * @deprecated since 2.0, use {@link #readTimeout(Duration)}.
+		 * @see com.datastax.oss.driver.api.core.cql.SimpleStatement#setTimeout(Duration)
+		 * @deprecated since 2.0, use {@link #timeout(Duration)}.
 		 */
 		@Deprecated
 		public QueryOptionsBuilder readTimeout(long readTimeout, TimeUnit timeUnit) {
@@ -261,7 +277,7 @@ public class QueryOptions {
 			Assert.isTrue(readTimeout >= 0, "ReadTimeout must be greater than equal to zero");
 			Assert.notNull(timeUnit, "TimeUnit must not be null");
 
-			return readTimeout(Duration.ofMillis(timeUnit.toMillis(readTimeout)));
+			return timeout(Duration.ofMillis(timeUnit.toMillis(readTimeout)));
 		}
 
 		/**
@@ -270,16 +286,35 @@ public class QueryOptions {
 		 * @param readTimeout the read timeout. Negative values are not allowed. If it is {@code 0}, the read timeout will
 		 *          be disabled for this statement.
 		 * @return {@code this} {@link QueryOptionsBuilder}
-		 * @see SocketOptions#getReadTimeoutMillis()
-		 * @see com.datastax.driver.core.Cluster.Builder#withSocketOptions(SocketOptions)
+		 * @see com.datastax.oss.driver.api.core.cql.SimpleStatement#setTimeout(Duration)
 		 * @since 2.0
+		 * @deprecated since 3.0, use {@link #timeout(Duration)}
 		 */
+		@Deprecated
 		public QueryOptionsBuilder readTimeout(Duration readTimeout) {
 
 			Assert.isTrue(!readTimeout.isZero() && !readTimeout.isNegative(),
 					"ReadTimeout must be greater than equal to zero");
 
-			this.readTimeout = readTimeout;
+			this.timeout = readTimeout;
+
+			return this;
+		}
+
+		/**
+		 * Sets the request timeout. Overrides the default timeout.
+		 *
+		 * @param timeout the read timeout. Negative values are not allowed. If it is {@code 0}, the read timeout will be
+		 *          disabled for this statement.
+		 * @return {@code this} {@link QueryOptionsBuilder}
+		 * @see com.datastax.oss.driver.api.core.cql.SimpleStatement#setTimeout(Duration)
+		 * @since 3.0
+		 */
+		public QueryOptionsBuilder timeout(Duration timeout) {
+
+			Assert.isTrue(!timeout.isZero() && !timeout.isNegative(), "ReadTimeout must be greater than equal to zero");
+
+			this.timeout = timeout;
 
 			return this;
 		}
@@ -312,7 +347,7 @@ public class QueryOptions {
 		 * @return a new {@link QueryOptions} with the configured values
 		 */
 		public QueryOptions build() {
-			return new QueryOptions(this.consistencyLevel, this.retryPolicy, this.tracing, this.fetchSize, this.readTimeout);
+			return new QueryOptions(this.consistencyLevel, this.retryPolicy, this.tracing, this.pageSize, this.timeout);
 		}
 	}
 }
