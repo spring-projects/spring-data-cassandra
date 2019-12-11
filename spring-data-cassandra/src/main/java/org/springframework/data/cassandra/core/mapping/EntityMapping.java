@@ -43,8 +43,11 @@ public class EntityMapping {
 
 	/**
 	 * Whether to force the table name to be quoted.
+	 *
+	 * @deprecated since 3.0. The table name gets converted into {@link com.datastax.oss.driver.api.core.CqlIdentifier}
+	 *             hence it no longer requires an indication whether the name should be quoted.
 	 */
-	private String forceQuote = "false";
+	private @Deprecated String forceQuote = "false";
 
 	/**
 	 * The name of the table to which the entity is mapped.
@@ -73,10 +76,17 @@ public class EntityMapping {
 		this.entityClassName = entityClassName;
 	}
 
+	/**
+	 * @return
+	 * @deprecated since 3.0. The type name gets converted into {@link com.datastax.oss.driver.api.core.CqlIdentifier}
+	 *             hence it no longer requires an indication whether the name should be quoted.
+	 */
+	@Deprecated
 	public String getForceQuote() {
 		return this.forceQuote;
 	}
 
+	@Deprecated
 	public void setForceQuote(String forceQuote) {
 
 		Assert.notNull(forceQuote, "Force quote must not be null or empty");

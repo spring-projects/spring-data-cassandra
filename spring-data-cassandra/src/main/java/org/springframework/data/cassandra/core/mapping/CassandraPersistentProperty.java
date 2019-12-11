@@ -41,6 +41,23 @@ public interface CassandraPersistentProperty
 		extends PersistentProperty<CassandraPersistentProperty>, ApplicationContextAware {
 
 	/**
+	 * If this property is mapped with a single column, set the column name to the given
+	 * {@link org.springframework.data.cassandra.core.cql.CqlIdentifier}. If this property is not mapped by a single
+	 * column, throws {@link IllegalStateException}. If the given column name is null, {@link IllegalArgumentException} is
+	 * thrown.
+	 *
+	 * @param columnName must not be {@literal null}.
+	 * @deprecated since 3.0, use {@link #setColumnName(CqlIdentifier)}.
+	 */
+	@Deprecated
+	default void setColumnName(org.springframework.data.cassandra.core.cql.CqlIdentifier columnName) {
+
+		Assert.notNull(columnName, "Column name must not be null");
+
+		setColumnName(columnName.toCqlIdentifier());
+	}
+
+	/**
 	 * If this property is mapped with a single column, set the column name to the given {@link CqlIdentifier}. If this
 	 * property is not mapped by a single column, throws {@link IllegalStateException}. If the given column name is null,
 	 * {@link IllegalArgumentException} is thrown.
@@ -85,7 +102,11 @@ public interface CassandraPersistentProperty
 	 *
 	 * @param forceQuote {@literal true} to enforce quoting.
 	 * @see CassandraPersistentProperty#getColumnName()
+	 * @deprecated since 3.0. The column name gets converted into {@link com.datastax.oss.driver.api.core.CqlIdentifier}
+	 *             hence it no longer requires an indication whether the name should be quoted.
+	 * @see com.datastax.oss.driver.api.core.CqlIdentifier#fromInternal(String)
 	 */
+	@Deprecated
 	void setForceQuote(boolean forceQuote);
 
 	/**

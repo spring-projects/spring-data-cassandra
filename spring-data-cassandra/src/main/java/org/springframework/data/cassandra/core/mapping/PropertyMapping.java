@@ -32,6 +32,11 @@ public class PropertyMapping {
 
 	private @Nullable String columnName;
 
+	/**
+	 * @deprecated since 3.0. The column name gets converted into {@link com.datastax.oss.driver.api.core.CqlIdentifier}
+	 *             hence it no longer requires an indication whether the name should be quoted.
+	 * @see com.datastax.oss.driver.api.core.CqlIdentifier#fromInternal(String)
+	 */
 	private @Nullable String forceQuote;
 
 	private String propertyName;
@@ -70,10 +75,12 @@ public class PropertyMapping {
 	}
 
 	@Nullable
+	@Deprecated
 	public String getForceQuote() {
 		return this.forceQuote;
 	}
 
+	@Deprecated
 	public void setForceQuote(String forceQuote) {
 		this.forceQuote = forceQuote;
 	}

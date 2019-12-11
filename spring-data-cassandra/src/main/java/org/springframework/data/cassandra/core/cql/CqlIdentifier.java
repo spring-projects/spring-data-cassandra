@@ -270,10 +270,10 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 	/**
 	 * Create a Cassandra driver {@link com.datastax.oss.driver.api.core.CqlIdentifier} from this {@link CqlIdentifier}.
 	 *
-	 * @return the {@link com.datastax.oss.driver.api.core.CqlIdentifier} from this {@link CqlIdentifierIdentifier}.
+	 * @return the {@link com.datastax.oss.driver.api.core.CqlIdentifier} from this {@link CqlIdentifier}.
 	 * @since 3.0
 	 */
 	public com.datastax.oss.driver.api.core.CqlIdentifier toCqlIdentifier() {
-		return com.datastax.oss.driver.api.core.CqlIdentifier.fromCql(this.identifier);
+		return com.datastax.oss.driver.api.core.CqlIdentifier.fromInternal(this.unquoted);
 	}
 }

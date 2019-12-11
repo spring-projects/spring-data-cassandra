@@ -72,6 +72,11 @@ public @interface PrimaryKeyColumn {
 
 	/**
 	 * Whether to cause the column name to be force-quoted.
+	 *
+	 * @deprecated since 3.0. The column name gets converted into {@link com.datastax.oss.driver.api.core.CqlIdentifier}
+	 *             hence it no longer requires an indication whether the name should be quoted.
+	 * @see com.datastax.oss.driver.api.core.CqlIdentifier#fromInternal(String)
 	 */
+	@Deprecated
 	boolean forceQuote() default false;
 }
