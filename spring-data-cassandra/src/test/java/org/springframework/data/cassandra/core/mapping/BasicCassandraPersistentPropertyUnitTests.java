@@ -50,6 +50,17 @@ public class BasicCassandraPersistentPropertyUnitTests {
 	}
 
 	@Test
+	public void usesReservedColumnName() {
+		assertThat(getPropertyFor(Timeline.class, "keyspace").getRequiredColumnName().asCql(true))
+				.isEqualTo("\"keyspace\"");
+	}
+
+	@Test
+	public void usesReservedAnnotatedColumnName() {
+		assertThat(getPropertyFor(Timeline.class, "table").getRequiredColumnName().asCql(true)).isEqualTo("\"table\"");
+	}
+
+	@Test
 	public void checksIdProperty() {
 
 		CassandraPersistentProperty property = getPropertyFor(Timeline.class, "id");
@@ -155,6 +166,10 @@ public class BasicCassandraPersistentPropertyUnitTests {
 		Date time;
 
 		@Column("message") String text;
+
+		String keyspace;
+
+		@Column("table") String table;
 	}
 
 	@Retention(RetentionPolicy.RUNTIME)

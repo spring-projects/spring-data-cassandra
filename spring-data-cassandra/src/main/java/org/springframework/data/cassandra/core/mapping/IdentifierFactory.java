@@ -35,6 +35,6 @@ class IdentifierFactory {
 			return CqlIdentifier.fromCql("\"" + simpleName.toLowerCase() + "\"");
 		}
 
-		return CqlIdentifier.fromCql(simpleName.toLowerCase());
+		return CqlIdentifier.fromInternal(simpleName.toLowerCase());
 	}
 }
