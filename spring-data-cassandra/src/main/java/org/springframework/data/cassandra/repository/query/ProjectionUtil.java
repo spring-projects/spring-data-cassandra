@@ -21,9 +21,10 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.datastax.driver.core.ColumnDefinitions;
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.Row;
+import com.datastax.oss.driver.api.core.cql.ColumnDefinitions;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.type.DataType;
+import com.datastax.oss.driver.api.core.type.DataTypes;
 
 /**
  * Utility methods for projections.
@@ -34,8 +35,8 @@ import com.datastax.driver.core.Row;
 @UtilityClass
 class ProjectionUtil {
 
-	private final static Set<DataType> NUMERIC_TYPES = new HashSet<>(Arrays.asList(DataType.bigint(), DataType.varint(),
-			DataType.smallint(), DataType.cint(), DataType.counter(), DataType.tinyint()));
+	private final static Set<DataType> NUMERIC_TYPES = new HashSet<>(Arrays.asList(DataTypes.BIGINT, DataTypes.VARINT,
+			DataTypes.SMALLINT, DataTypes.INT, DataTypes.COUNTER, DataTypes.TINYINT));
 
 	/**
 	 * Determine whether multiple {@code boolean} flags are set. Allowed is at most a single {@literal true} value.
@@ -58,6 +59,6 @@ class ProjectionUtil {
 
 		ColumnDefinitions columnDefinitions = row.getColumnDefinitions();
 
-		return columnDefinitions.size() == 1 && NUMERIC_TYPES.contains(columnDefinitions.getType(0));
+		return columnDefinitions.size() == 1 && NUMERIC_TYPES.contains(columnDefinitions.get(0).getType());
 	}
 }

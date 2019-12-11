@@ -54,8 +54,8 @@ import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.CqlSessionBuilder;
 
 /**
- * Factory for creating and configuring a Cassandra {@link Session}, which is a thread-safe singleton. As such, it is
- * sufficient to have one {@link Session} per application and keyspace.
+ * Factory for creating and configuring a Cassandra {@link CqlSession}, which is a thread-safe singleton. As such, it is
+ * sufficient to have one {@link CqlSession} per application and keyspace.
  *
  * @author Alex Shvid
  * @author Matthew T. Adams
@@ -83,6 +83,7 @@ public class CqlSessionFactoryBean implements FactoryBean<CqlSession>, Initializ
 	private @Nullable String username;
 
 	private @Nullable String keyspaceName;
+	private @Nullable String localDatacenter;
 
 	private List<KeyspaceActions> keyspaceActions = new ArrayList<>();
 	private Set<KeyspaceActionSpecification> keyspaceSpecifications = new HashSet<>();
@@ -100,6 +101,20 @@ public class CqlSessionFactoryBean implements FactoryBean<CqlSession>, Initializ
 	private @Nullable CassandraConverter converter;
 
 	private SchemaAction schemaAction = SchemaAction.NONE;
+
+	/**
+	 * Null-safe operation to determine whether the Cassandra {@link CqlSession} is connected or not.
+	 *
+	 * @return a boolean value indicating whether the Cassandra {@link CqlSession} is connected.
+	 * @see Session#isClosed()
+	 * @see #getObject()
+	 */
+	public boolean isConnected() {
+
+		CqlSession session = getObject();
+
+		return !(session == null || session.isClosed());
+	}
 
 	/**
 	 * Set a comma-delimited string of the contact points (hosts) to connect to. Default is {@code localhost}; see
@@ -158,36 +173,6 @@ public class CqlSessionFactoryBean implements FactoryBean<CqlSession>, Initializ
 	@Nullable
 	protected String getKeyspaceName() {
 		return this.keyspaceName;
-	}
-
-	/**
-	 * Null-safe operation to determine whether the Cassandra {@link Session} is connected or not.
-	 *
-	 * @return a boolean value indicating whether the Cassandra {@link Session} is connected.
-	 * @see Session#isClosed()
-	 * @see #getObject()
-	 */
-	public boolean isConnected() {
-
-		CqlSession session = getObject();
-
-		return !(session == null || session.isClosed());
-	}
-
-	/**
-	 * Returns a reference to the connected Cassandra {@link Session}.
-	 *
-	 * @return a reference to the connected Cassandra {@link Session}.
-	 * @throws IllegalStateException if the Cassandra {@link Session} was not properly initialized.
-	 * @see Session
-	 */
-	protected CqlSession getSession() {
-
-		CqlSession session = getObject();
-
-		Assert.state(session != null, "Session was not properly initialized");
-
-		return session;
 	}
 
 	/**
@@ -276,6 +261,31 @@ public class CqlSessionFactoryBean implements FactoryBean<CqlSession>, Initializ
 	 */
 	public Set<KeyspaceActionSpecification> getKeyspaceSpecifications() {
 		return Collections.unmodifiableSet(this.keyspaceSpecifications);
+	}
+
+	/**
+	 * Sets the name of the local datacenter.
+	 *
+	 * @param localDatacenter a String indicating the name of the local datacenter.
+	 */
+	public void setLocalDatacenter(@Nullable String localDatacenter) {
+		this.localDatacenter = localDatacenter;
+	}
+
+	/**
+	 * Returns a reference to the connected Cassandra {@link CqlSession}.
+	 *
+	 * @return a reference to the connected Cassandra {@link CqlSession}.
+	 * @throws IllegalStateException if the Cassandra {@link CqlSession} was not properly initialized.
+	 * @see Session
+	 */
+	protected CqlSession getSession() {
+
+		CqlSession session = getObject();
+
+		Assert.state(session != null, "Session was not properly initialized");
+
+		return session;
 	}
 
 	/**
@@ -434,6 +444,10 @@ public class CqlSessionFactoryBean implements FactoryBean<CqlSession>, Initializ
 			builder.withAuthCredentials(this.username, this.password);
 		}
 
+		if (StringUtils.hasText(this.localDatacenter)) {
+			builder.withLocalDatacenter(this.localDatacenter);
+		}
+
 		return builder;
 	}
 
@@ -553,7 +567,7 @@ public class CqlSessionFactoryBean implements FactoryBean<CqlSession>, Initializ
 	}
 
 	/**
-	 * Executes the given Cassandra CQL scripts. The {@link Session} must be connected when this method is called.
+	 * Executes the given Cassandra CQL scripts. The {@link CqlSession} must be connected when this method is called.
 	 */
 	private void executeScripts(Stream<String> scripts, CqlSession session) {
 

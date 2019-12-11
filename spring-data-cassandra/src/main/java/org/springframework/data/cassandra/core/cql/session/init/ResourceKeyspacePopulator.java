@@ -26,7 +26,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlSession;
 
 /**
  * Populates, initializes, or cleans up a keyspace using CQL scripts defined in external resources.
@@ -242,7 +242,7 @@ public class ResourceKeyspacePopulator implements KeyspacePopulator {
 	}
 
 	@Override
-	public void populate(Session session) throws ScriptException {
+	public void populate(CqlSession session) throws ScriptException {
 
 		Assert.notNull(session, "session must not be null");
 

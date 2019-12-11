@@ -15,8 +15,8 @@
  */
 package org.springframework.data.cassandra.core.cql
 
-import com.datastax.driver.core.Row
-import com.datastax.driver.core.SimpleStatement
+import com.datastax.oss.driver.api.core.cql.Row
+import com.datastax.oss.driver.api.core.cql.SimpleStatement
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.Ignore
@@ -70,7 +70,7 @@ class CqlOperationsExtensionsUnitTests {
 	@Test // DATACASS-484
 	fun `queryForObject(Statement, KClass) extension should call its Java counterpart`() {
 
-		val statement = SimpleStatement("SELECT * FROM person")
+		val statement = SimpleStatement.newInstance("SELECT * FROM person")
 
 		operations.queryForObject(statement, Person::class)
 		verify { operations.queryForObject(statement, Person::class.java) }
@@ -79,7 +79,7 @@ class CqlOperationsExtensionsUnitTests {
 	@Test // DATACASS-484
 	fun `queryForObject(Statement) extension should call its Java counterpart`() {
 
-		val statement = SimpleStatement("SELECT * FROM person")
+		val statement = SimpleStatement.newInstance("SELECT * FROM person")
 
 		operations.queryForObject<Person>(statement)
 		verify { operations.queryForObject(statement, Person::class.java) }
@@ -110,7 +110,7 @@ class CqlOperationsExtensionsUnitTests {
 	@Test // DATACASS-484
 	fun `queryForList(Statement, KClass) extension should call its Java counterpart`() {
 
-		val statement = SimpleStatement("SELECT * FROM person")
+		val statement = SimpleStatement.newInstance("SELECT * FROM person")
 
 		operations.queryForList(statement, Person::class)
 		verify { operations.queryForList(statement, Person::class.java) }
@@ -119,7 +119,7 @@ class CqlOperationsExtensionsUnitTests {
 	@Test // DATACASS-484
 	fun `queryForList(Statement) extension should call its Java counterpart`() {
 
-		val statement = SimpleStatement("SELECT * FROM person")
+		val statement = SimpleStatement.newInstance("SELECT * FROM person")
 
 		operations.queryForList<Person>(statement)
 		verify { operations.queryForList(statement, Person::class.java) }

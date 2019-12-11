@@ -21,14 +21,16 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
+
 import org.springframework.data.annotation.AccessType;
 import org.springframework.data.annotation.AccessType.Type;
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification.ColumnFunction;
 import org.springframework.data.cassandra.core.mapping.SASI.NonTokenizingAnalyzed;
 import org.springframework.data.cassandra.core.mapping.SASI.Normalization;
 import org.springframework.data.cassandra.core.mapping.SASI.StandardAnalyzed;
+
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * Unit tests for {@link IndexSpecificationFactory}.
@@ -44,14 +46,14 @@ public class IndexSpecificationFactoryUnitTests {
 
 		CreateIndexSpecification firstname = createIndexFor(IndexedType.class, "firstname");
 
-		assertThat(firstname.getColumnName()).isEqualTo(CqlIdentifier.of("first_name"));
+		assertThat(firstname.getColumnName()).isEqualTo(CqlIdentifier.fromInternal("first_name"));
 		assertThat(firstname.getTableName()).isNull();
-		assertThat(firstname.getName()).isEqualTo(CqlIdentifier.of("my_index"));
+		assertThat(firstname.getName()).isEqualTo(CqlIdentifier.fromInternal("my_index"));
 		assertThat(firstname.getColumnFunction()).isEqualTo(ColumnFunction.NONE);
 
 		CreateIndexSpecification entries = createIndexFor(IndexedType.class, "entries");
 
-		assertThat(entries.getColumnName()).isEqualTo(CqlIdentifier.of("entries"));
+		assertThat(entries.getColumnName()).isEqualTo(CqlIdentifier.fromInternal("entries"));
 		assertThat(entries.getTableName()).isNull();
 		assertThat(entries.getName()).isNull();
 		assertThat(entries.getColumnFunction()).isEqualTo(ColumnFunction.ENTRIES);
@@ -62,7 +64,7 @@ public class IndexSpecificationFactoryUnitTests {
 
 		CreateIndexSpecification entries = createIndexFor(IndexedMapKeyProperty.class, "entries");
 
-		assertThat(entries.getColumnName()).isEqualTo(CqlIdentifier.of("entries"));
+		assertThat(entries.getColumnName()).isEqualTo(CqlIdentifier.fromInternal("entries"));
 		assertThat(entries.getTableName()).isNull();
 		assertThat(entries.getName()).isNull();
 		assertThat(entries.getColumnFunction()).isEqualTo(ColumnFunction.KEYS);
@@ -73,7 +75,7 @@ public class IndexSpecificationFactoryUnitTests {
 
 		CreateIndexSpecification entries = createIndexFor(MapValueIndexProperty.class, "entries");
 
-		assertThat(entries.getColumnName()).isEqualTo(CqlIdentifier.of("entries"));
+		assertThat(entries.getColumnName()).isEqualTo(CqlIdentifier.fromInternal("entries"));
 		assertThat(entries.getTableName()).isNull();
 		assertThat(entries.getName()).isNull();
 		assertThat(entries.getColumnFunction()).isEqualTo(ColumnFunction.VALUES);
@@ -84,7 +86,7 @@ public class IndexSpecificationFactoryUnitTests {
 
 		CreateIndexSpecification simpleSasi = createIndexFor(IndexedType.class, "simpleSasi");
 
-		assertThat(simpleSasi.getColumnName()).isEqualTo(CqlIdentifier.of("simplesasi"));
+		assertThat(simpleSasi.getColumnName()).isEqualTo(CqlIdentifier.fromInternal("simplesasi"));
 		assertThat(simpleSasi.getTableName()).isNull();
 		assertThat(simpleSasi.isCustom()).isTrue();
 		assertThat(simpleSasi.getUsing()).isEqualTo("org.apache.cassandra.index.sasi.SASIIndex");

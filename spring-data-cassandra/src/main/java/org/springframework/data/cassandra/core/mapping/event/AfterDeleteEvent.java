@@ -15,9 +15,8 @@
  */
 package org.springframework.data.cassandra.core.mapping.event;
 
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
-
-import com.datastax.driver.core.Statement;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.cql.Statement;
 
 /**
  * Event being thrown after a single or a set of rows has/have been deleted.
@@ -37,7 +36,7 @@ public class AfterDeleteEvent<T> extends AbstractDeleteEvent<T> {
 	 * @param type must not be {@literal null}.
 	 * @param tableName must not be {@literal null}.
 	 */
-	public AfterDeleteEvent(Statement source, Class<T> type, CqlIdentifier tableName) {
+	public AfterDeleteEvent(Statement<?> source, Class<T> type, CqlIdentifier tableName) {
 		super(source, type, tableName);
 	}
 }

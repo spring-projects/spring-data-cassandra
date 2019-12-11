@@ -23,16 +23,16 @@ import java.util.function.Supplier;
 
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 
 /**
  * {@link PreparedStatementCache} backed by a {@link Map} cache. Defaults to simple {@link ConcurrentHashMap} caching.
  * <p/>
- * Statements are cached with a key consisting of {@link Cluster}, {@code keyspace} and the {@code cql} text. Statement
- * options (idempotency, timeouts) apply from the statement that was initially prepared.
+ * Statements are cached with a key consisting of {@link CqlSession#getName() session name}, {@code keyspace} and the
+ * {@code cql} text. Statement options (idempotency, timeouts) apply from the statement that was initially prepared.
  *
  * @author Mark Paluch
  * @since 2.0
@@ -79,10 +79,10 @@ public class MapPreparedStatementCache implements PreparedStatementCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.support.PrepatedStatementCache#getPreparedStatement(com.datastax.driver.core.RegularStatement, com.datastax.driver.core.Session, java.util.function.Supplier)
+	 * @see org.springframework.data.cassandra.core.cql.support.PrepatedStatementCache#getPreparedStatement(com.datastax.oss.driver.api.core.CqlSession, com.datastax.oss.driver.api.core.cql.SimpleStatement, java.util.function.Supplier)
 	 */
 	@Override
-	public PreparedStatement getPreparedStatement(Session session, RegularStatement statement,
+	public PreparedStatement getPreparedStatement(CqlSession session, SimpleStatement statement,
 			Supplier<PreparedStatement> preparer) {
 
 		CacheKey cacheKey = new CacheKey(session, statement.toString());
@@ -96,14 +96,14 @@ public class MapPreparedStatementCache implements PreparedStatementCache {
 	@EqualsAndHashCode
 	protected static class CacheKey {
 
-		final Cluster cluster;
+		final String sessionName;
 		final String keyspace;
 		final String cql;
 
-		CacheKey(Session session, String cql) {
+		CacheKey(CqlSession session, String cql) {
 
-			this.cluster = session.getCluster();
-			this.keyspace = session.getLoggedKeyspace();
+			this.sessionName = session.getName();
+			this.keyspace = session.getKeyspace().orElse(CqlIdentifier.fromCql("system")).asInternal();
 			this.cql = cql;
 		}
 	}

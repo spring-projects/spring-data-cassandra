@@ -21,16 +21,17 @@ import java.util.Collection;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.cql.generator.DropTableCqlGenerator;
 import org.springframework.data.cassandra.core.cql.keyspace.DropTableSpecification;
 import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
 
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.Metadata;
-import com.datastax.driver.core.TableMetadata;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.metadata.Metadata;
+import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;
+import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
 
 /**
  * Integration tests for {@link CassandraAdminTemplate}.
@@ -47,7 +48,7 @@ public class CassandraAdminTemplateIntegrationTests extends AbstractKeyspaceCrea
 		cassandraAdminTemplate = new CassandraAdminTemplate(session, new MappingCassandraConverter());
 
 		KeyspaceMetadata keyspace = getKeyspaceMetadata();
-		Collection<TableMetadata> tables = keyspace.getTables();
+		Collection<TableMetadata> tables = keyspace.getTables().values();
 		for (TableMetadata table : tables) {
 			cassandraAdminTemplate.getCqlOperations()
 					.execute(DropTableCqlGenerator.toCql(DropTableSpecification.dropTable(table.getName())));
@@ -55,8 +56,8 @@ public class CassandraAdminTemplateIntegrationTests extends AbstractKeyspaceCrea
 	}
 
 	private KeyspaceMetadata getKeyspaceMetadata() {
-		Metadata metadata = getSession().getCluster().getMetadata();
-		return metadata.getKeyspace(getSession().getLoggedKeyspace());
+		Metadata metadata = getSession().getMetadata();
+		return getSession().getKeyspace().flatMap(metadata::getKeyspace).get();
 	}
 
 	@Test // DATACASS-173
@@ -64,24 +65,24 @@ public class CassandraAdminTemplateIntegrationTests extends AbstractKeyspaceCrea
 
 		assertThat(getKeyspaceMetadata().getTables()).hasSize(0);
 
-		cassandraAdminTemplate.createTable(true, CqlIdentifier.of("users"), User.class, null);
+		cassandraAdminTemplate.createTable(true, CqlIdentifier.fromCql("users"), User.class, null);
 		assertThat(getKeyspaceMetadata().getTables()).hasSize(1);
 
-		cassandraAdminTemplate.createTable(true, CqlIdentifier.of("users"), User.class, null);
+		cassandraAdminTemplate.createTable(true, CqlIdentifier.fromCql("users"), User.class, null);
 		assertThat(getKeyspaceMetadata().getTables()).hasSize(1);
 	}
 
 	@Test
 	public void testDropTable() {
 
-		cassandraAdminTemplate.createTable(true, CqlIdentifier.of("users"), User.class, null);
+		cassandraAdminTemplate.createTable(true, CqlIdentifier.fromCql("users"), User.class, null);
 		assertThat(getKeyspaceMetadata().getTables()).hasSize(1);
 
 		cassandraAdminTemplate.dropTable(User.class);
 		assertThat(getKeyspaceMetadata().getTables()).hasSize(0);
 
-		cassandraAdminTemplate.createTable(true, CqlIdentifier.of("users"), User.class, null);
-		cassandraAdminTemplate.dropTable(CqlIdentifier.of("users"));
+		cassandraAdminTemplate.createTable(true, CqlIdentifier.fromCql("users"), User.class, null);
+		cassandraAdminTemplate.dropTable(CqlIdentifier.fromCql("users"));
 
 		assertThat(getKeyspaceMetadata().getTables()).hasSize(0);
 	}

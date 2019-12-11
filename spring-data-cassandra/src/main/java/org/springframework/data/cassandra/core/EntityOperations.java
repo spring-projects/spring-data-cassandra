@@ -21,7 +21,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.core.convert.ConversionService;
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import org.springframework.data.cassandra.core.cql.util.StatementBuilder;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
@@ -31,10 +31,10 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
-import com.datastax.driver.core.Statement;
-import com.datastax.driver.core.querybuilder.Delete;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Update;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.querybuilder.condition.Condition;
+import com.datastax.oss.driver.api.querybuilder.delete.Delete;
+import com.datastax.oss.driver.api.querybuilder.update.Update;
 
 /**
  * Common data access operations performed on an entity using a {@link MappingContext} containing mapping metadata.
@@ -86,8 +86,8 @@ class EntityOperations {
 	 * @return the {@link MappingContext} used by this entity data access operations class.
 	 * @see org.springframework.data.cassandra.core.mapping.CassandraMappingContext
 	 */
-	CassandraPersistentEntity<?> getRequiredPersistentEntity(Class<?> entityType) {
-		return getMappingContext().getRequiredPersistentEntity(ClassUtils.getUserClass(entityType));
+	CassandraPersistentEntity<?> getRequiredPersistentEntity(Class<?> entityClass) {
+		return getMappingContext().getRequiredPersistentEntity(ClassUtils.getUserClass(entityClass));
 	}
 
 	/**
@@ -151,7 +151,7 @@ class EntityOperations {
 		 * @param currentVersionNumber previous version number.
 		 * @return the altered {@link Update} containing the {@code IF} condition for optimistic locking.
 		 */
-		Statement appendVersionCondition(Update update, Number currentVersionNumber);
+		void appendVersionCondition(StatementBuilder<Update> update, Number currentVersionNumber);
 
 		/**
 		 * Appends a {@code IF} condition to an {@link Delete} statement for optimistic locking to perform the delete only
@@ -162,7 +162,7 @@ class EntityOperations {
 		 * @return the altered {@link Delete} containing the {@code IF} condition for optimistic locking.
 		 * @see #getVersion()
 		 */
-		Statement appendVersionCondition(Delete delete);
+		void appendVersionCondition(StatementBuilder<Delete> delete);
 
 		/**
 		 * Initializes the version property of the of the current entity if available.
@@ -186,6 +186,14 @@ class EntityOperations {
 		 */
 		@Nullable
 		Number getVersion();
+
+		/**
+		 * Returns the {@link CassandraPersistentEntity}.
+		 *
+		 * @return the {@link CassandraPersistentEntity}.
+		 */
+		CassandraPersistentEntity<?> getPersistentEntity();
+
 	}
 
 	@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
@@ -262,21 +270,25 @@ class EntityOperations {
 		}
 
 		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.EntityOperations.AdaptibleEntity#appendVersionCondition(com.datastax.driver.core.querybuilder.Update, java.lang.Number)
+		 * @see org.springframework.data.cassandra.core.EntityOperations.AdaptibleEntity#appendVersionCondition(com.datastax.oss.driver.api.querybuilder.update.Update, java.lang.Number)
 		 */
 		@Override
-		public Statement appendVersionCondition(com.datastax.driver.core.querybuilder.Update update,
-				Number currentVersionNumber) {
+		public void appendVersionCondition(StatementBuilder<Update> update, Number currentVersionNumber) {
 
-			return update.onlyIf(QueryBuilder.eq(getVersionColumnName().toCql(), currentVersionNumber));
+			update.bind((statement, factory) -> {
+				return statement.if_(Condition.column(getVersionColumnName()).isEqualTo(factory.create(currentVersionNumber)));
+			});
 		}
 
 		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.EntityOperations.AdaptibleEntity#appendVersionCondition(com.datastax.driver.core.querybuilder.Delete)
+		 * @see org.springframework.data.cassandra.core.EntityOperations.AdaptibleEntity#appendVersionCondition(com.datastax.oss.driver.api.querybuilder.delete.Delete)
 		 */
 		@Override
-		public Statement appendVersionCondition(Delete delete) {
-			return delete.onlyIf(QueryBuilder.eq(getVersionColumnName().toCql(), getVersion()));
+		public void appendVersionCondition(StatementBuilder<Delete> delete) {
+
+			delete.bind((statement, factory) -> {
+				return statement.if_(Condition.column(getVersionColumnName()).isEqualTo(factory.create(getVersion())));
+			});
 		}
 
 		/* (non-Javadoc)
@@ -321,6 +333,14 @@ class EntityOperations {
 			CassandraPersistentProperty versionProperty = this.entity.getRequiredVersionProperty();
 
 			return this.propertyAccessor.getProperty(versionProperty, Number.class);
+		}
+
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.EntityOperations.AdaptibleEntity#getPersistentEntity()
+		 */
+		@Override
+		public CassandraPersistentEntity<?> getPersistentEntity() {
+			return this.entity;
 		}
 
 		private CqlIdentifier getVersionColumnName() {

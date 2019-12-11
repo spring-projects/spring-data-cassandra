@@ -15,43 +15,27 @@
  */
 package org.springframework.data.cassandra.core;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.springframework.beans.DirectFieldAccessor;
-import org.springframework.data.cassandra.core.convert.CassandraConverter;
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
-import org.springframework.data.cassandra.core.cql.QueryOptions;
-import org.springframework.data.cassandra.core.cql.QueryOptionsUtil;
 import org.springframework.data.cassandra.core.cql.RowMapper;
-import org.springframework.data.cassandra.core.cql.WriteOptions;
-import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.query.CassandraPageRequest;
-import org.springframework.data.convert.EntityWriter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.lang.Nullable;
-import org.springframework.util.Assert;
 
-import com.datastax.driver.core.PagingState;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Statement;
-import com.datastax.driver.core.querybuilder.Delete;
-import com.datastax.driver.core.querybuilder.Delete.Where;
-import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
-import com.datastax.driver.core.querybuilder.Update;
-import com.google.common.collect.Iterators;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.cql.Statement;
 
 /**
  * Simple utility class for working with the QueryBuilder API using mapped entities.
@@ -67,107 +51,6 @@ class EntityQueryUtils {
 			Pattern.CASE_INSENSITIVE);
 
 	/**
-	 * Creates a Query Object for an insert.
-	 *
-	 * @param tableName the table name, must not be empty and not {@literal null}.
-	 * @param objectToInsert the object to save, must not be {@literal null}.
-	 * @param options optional {@link WriteOptions} to apply to the {@link Insert} statement, may be {@literal null}.
-	 * @param entityWriter the {@link EntityWriter} to write insert values.
-	 * @param entity must not be {@literal null}.
-	 * @return The Query object to run with session.execute();
-	 */
-	static Insert createInsertQuery(String tableName, Object objectToInsert, WriteOptions options,
-			CassandraConverter entityWriter, CassandraPersistentEntity<?> entity) {
-
-		Assert.hasText(tableName, "TableName must not be empty");
-		Assert.notNull(objectToInsert, "Object to insert must not be null");
-		Assert.notNull(entityWriter, "CassandraConverter must not be null");
-		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
-
-		Insert insert = addWriteOptions(QueryBuilder.insertInto(tableName), options);
-
-		boolean insertNulls = false;
-		if (options instanceof InsertOptions) {
-
-			InsertOptions insertOptions = (InsertOptions) options;
-
-			insertNulls = insertOptions.isInsertNulls();
-		}
-
-		if (insertNulls) {
-
-			Map<String, Object> toInsert = new LinkedHashMap<>();
-
-			entityWriter.write(objectToInsert, toInsert, entity);
-
-			for (Entry<String, Object> entry : toInsert.entrySet()) {
-				insert.value(entry.getKey(), entry.getValue());
-			}
-		} else {
-			entityWriter.write(objectToInsert, insert);
-		}
-
-		return insert;
-	}
-
-	/**
-	 * Creates a Query Object for an Update. The {@link Update} uses the identity and values from the given
-	 * {@code objectsToUpdate}.
-	 *
-	 * @param tableName the table name, must not be empty and not {@literal null}.
-	 * @param objectToUpdate the object to update, must not be {@literal null}.
-	 * @param options optional {@link WriteOptions} to apply to the {@link Update} statement.
-	 * @param entityWriter the {@link EntityWriter} to write update assignments and where clauses.
-	 * @return The Query object to run with session.execute();
-	 */
-	static Update createUpdateQuery(String tableName, Object objectToUpdate, WriteOptions options,
-			EntityWriter<Object, Object> entityWriter) {
-
-		Assert.hasText(tableName, "TableName must not be empty");
-		Assert.notNull(objectToUpdate, "Object to update must not be null");
-		Assert.notNull(entityWriter, "EntityWriter must not be null");
-
-		Update update = addWriteOptions(QueryBuilder.update(tableName), options);
-
-		entityWriter.write(objectToUpdate, update);
-
-		return update;
-	}
-
-	/**
-	 * Creates a Delete Query Object from an annotated POJO. The {@link Delete} uses the identity from the given
-	 * {@code objectToDelete}.
-	 *
-	 * @param tableName the table name, must not be empty and not {@literal null}.
-	 * @param objectToDelete the object to delete, must not be {@literal null}.
-	 * @param options optional {@link QueryOptions} to apply to the {@link Delete} statement.
-	 * @param entityWriter the {@link EntityWriter} to write delete where clauses.
-	 * @return The Query object to run with session.execute();
-	 */
-	static Delete createDeleteQuery(String tableName, Object objectToDelete, QueryOptions options,
-			EntityWriter<Object, Object> entityWriter) {
-
-		Assert.hasText(tableName, "TableName must not be empty");
-		Assert.notNull(objectToDelete, "Object to delete must not be null");
-		Assert.notNull(entityWriter, "EntityWriter must not be null");
-
-		Delete.Selection deleteSelection = QueryBuilder.delete();
-		Delete delete = deleteSelection.from(tableName);
-
-		if (options instanceof WriteOptions) {
-			addWriteOptions(delete, (WriteOptions) options);
-		} else {
-			QueryOptionsUtil.addQueryOptions(delete, options);
-		}
-
-		Where where = delete.where();
-
-		entityWriter.write(objectToDelete, where);
-
-		return delete;
-	}
-
-	/**
 	 * Read a {@link Slice} of data from the {@link ResultSet} for a {@link Pageable}.
 	 *
 	 * @param resultSet must not be {@literal null}.
@@ -180,8 +63,24 @@ class EntityQueryUtils {
 
 		int toRead = resultSet.getAvailableWithoutFetching();
 
-		return readSlice(() -> Iterators.limit(resultSet.iterator(), toRead), resultSet.getExecutionInfo().getPagingState(),
-				mapper, page, pageSize);
+		return readSlice(() -> limit(resultSet.iterator(), toRead), resultSet.getExecutionInfo().getPagingState(), mapper,
+				page, pageSize);
+	}
+
+	/**
+	 * Read a {@link Slice} of data from the {@link ResultSet} for a {@link Pageable}.
+	 *
+	 * @param resultSet must not be {@literal null}.
+	 * @param mapper must not be {@literal null}.
+	 * @param page
+	 * @param pageSize
+	 * @return the resulting {@link Slice}.
+	 * @since 3.0
+	 */
+	static <T> Slice<T> readSlice(AsyncResultSet resultSet, RowMapper<T> mapper, int page, int pageSize) {
+
+		return readSlice(() -> limit(resultSet.currentPage().iterator(), resultSet.remaining()),
+				resultSet.getExecutionInfo().getPagingState(), mapper, page, pageSize);
 	}
 
 	/**
@@ -195,7 +94,7 @@ class EntityQueryUtils {
 	 * @return the resulting {@link Slice}.
 	 * @since 2.1
 	 */
-	static <T> Slice<T> readSlice(Iterable<Row> rows, @Nullable PagingState pagingState, RowMapper<T> mapper, int page,
+	static <T> Slice<T> readSlice(Iterable<Row> rows, @Nullable ByteBuffer pagingState, RowMapper<T> mapper, int page,
 			int pageSize) {
 
 		List<T> result = new ArrayList<>(pageSize);
@@ -220,19 +119,7 @@ class EntityQueryUtils {
 	 * @return
 	 * @since 2.1
 	 */
-	static CqlIdentifier getTableName(Statement statement) {
-
-		if (statement instanceof Select) {
-
-			Select select = (Select) statement;
-
-			DirectFieldAccessor accessor = new DirectFieldAccessor(select);
-			String table = (String) accessor.getPropertyValue("table");
-
-			if (table != null) {
-				return CqlIdentifier.isQuotedIdentifier(table) ? CqlIdentifier.quoted(unquote(table)) : CqlIdentifier.of(table);
-			}
-		}
+	static CqlIdentifier getTableName(Statement<?> statement) {
 
 		String cql = statement.toString();
 		Matcher matcher = FROM_REGEX.matcher(cql);
@@ -240,103 +127,52 @@ class EntityQueryUtils {
 		if (matcher.find()) {
 
 			String cqlTableName = matcher.group(1);
-			if (CqlIdentifier.isQuotedIdentifier(cqlTableName)) {
-				return CqlIdentifier.quoted(unquote(cqlTableName));
-			}
 
 			int separator = cqlTableName.indexOf('.');
 
 			if (separator != -1) {
-				return CqlIdentifier.of(cqlTableName.substring(separator + 1));
+				return CqlIdentifier.fromCql(cqlTableName.substring(separator + 1));
 			}
 
-			return CqlIdentifier.of(cqlTableName);
+			return CqlIdentifier.fromCql(cqlTableName);
 		}
 
-		return CqlIdentifier.of("unknown");
+		return CqlIdentifier.fromCql("unknown");
 	}
 
 	/**
-	 * Add common {@link WriteOptions} options to {@link Insert} CQL statements.
+	 * Returns a view containing the first {@code limitSize} elements of {@code iterator}. If {@code
+	 * iterator} contains fewer than {@code limitSize} elements, the returned view contains all of its elements. The
+	 * returned iterator supports {@code remove()} if {@code iterator} does.
 	 *
-	 * @param insert {@link Insert} CQL statement, must not be {@literal null}.
-	 * @param writeOptions write options (e.g. consistency level) to add to the CQL statement.
-	 * @return the given {@link Insert}.
-	 * @see #addWriteOptions(Insert, WriteOptions)
-	 * @since 2.1
+	 * @param iterator the iterator to limit
+	 * @param limitSize the maximum number of elements in the returned iterator
+	 * @throws IllegalArgumentException if {@code limitSize} is negative
+	 * @since 3.0
 	 */
-	static Insert addWriteOptions(Insert insert, WriteOptions writeOptions) {
+	private static <T> Iterator<T> limit(Iterator<T> iterator, int limitSize) {
 
-		Assert.notNull(insert, "Insert must not be null");
+		return new Iterator<T>() {
+			private int count;
 
-		if (writeOptions instanceof InsertOptions) {
-
-			InsertOptions insertOptions = (InsertOptions) writeOptions;
-
-			if (insertOptions.isIfNotExists()) {
-				insert = insert.ifNotExists();
+			@Override
+			public boolean hasNext() {
+				return count < limitSize && iterator.hasNext();
 			}
-		}
 
-		QueryOptionsUtil.addWriteOptions(insert, writeOptions);
-
-		return insert;
-	}
-
-	/**
-	 * Add common {@link WriteOptions} options to {@link Update} CQL statements.
-	 *
-	 * @param update {@link Update} CQL statement, must not be {@literal null}.
-	 * @param writeOptions write options (e.g. consistency level) to add to the CQL statement.
-	 * @return the given {@link Update}.
-	 * @see QueryOptionsUtil#addWriteOptions(Update, WriteOptions)
-	 * @since 2.1
-	 */
-	static Update addWriteOptions(Update update, WriteOptions writeOptions) {
-
-		Assert.notNull(update, "Update must not be null");
-
-		QueryOptionsUtil.addWriteOptions(update, writeOptions);
-
-		if (writeOptions instanceof UpdateOptions) {
-
-			UpdateOptions updateOptions = (UpdateOptions) writeOptions;
-
-			if (updateOptions.isIfExists()) {
-				update.where().ifExists();
+			@Override
+			public T next() {
+				if (!hasNext()) {
+					throw new NoSuchElementException();
+				}
+				count++;
+				return iterator.next();
 			}
-		}
 
-		return update;
-	}
-
-	/**
-	 * Add common {@link WriteOptions} options to {@link Delete} CQL statements.
-	 *
-	 * @param delete {@link Delete} CQL statement, must not be {@literal null}.
-	 * @param writeOptions write options (e.g. consistency level) to add to the CQL statement.
-	 * @return the given {@link Delete}.
-	 * @since 2.1
-	 */
-	static Delete addWriteOptions(Delete delete, WriteOptions writeOptions) {
-
-		Assert.notNull(delete, "Delete must not be null");
-
-		QueryOptionsUtil.addWriteOptions(delete, writeOptions);
-
-		if (writeOptions instanceof DeleteOptions) {
-
-			DeleteOptions deleteOptions = (DeleteOptions) writeOptions;
-
-			if (deleteOptions.isIfExists()) {
-				delete.where().ifExists();
+			@Override
+			public void remove() {
+				iterator.remove();
 			}
-		}
-
-		return delete;
-	}
-
-	private static String unquote(String identifier) {
-		return identifier.substring(1, identifier.length() - 1);
+		};
 	}
 }

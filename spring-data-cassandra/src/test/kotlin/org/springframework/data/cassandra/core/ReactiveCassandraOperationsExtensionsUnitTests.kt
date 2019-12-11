@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core
 
-import com.datastax.driver.core.SimpleStatement
+import com.datastax.oss.driver.api.core.cql.SimpleStatement
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.Test
@@ -65,13 +65,13 @@ class ReactiveCassandraOperationsExtensionsUnitTests {
 	}
 
 	// -------------------------------------------------------------------------
-	// Methods dealing with com.datastax.driver.core.Statement
+	// Methods dealing with com.datastax.oss.driver.api.core.cql.Statement
 	// -------------------------------------------------------------------------
 
 	@Test // DATACASS-484
 	fun `select(Statement, KClass) extension should call its Java counterpart`() {
 
-		val statement = SimpleStatement("SELECT * FROM person")
+		val statement = SimpleStatement.newInstance("SELECT * FROM person")
 
 		operations.select(statement, Person::class)
 		verify { operations.select(statement, Person::class.java) }
@@ -80,7 +80,7 @@ class ReactiveCassandraOperationsExtensionsUnitTests {
 	@Test // DATACASS-484
 	fun `select(Statement) with reified type parameter extension should call its Java counterpart`() {
 
-		val statement = SimpleStatement("SELECT * FROM person")
+		val statement = SimpleStatement.newInstance("SELECT * FROM person")
 		operations.select<Person>(statement)
 		verify { operations.select(statement, Person::class.java) }
 	}
@@ -88,7 +88,7 @@ class ReactiveCassandraOperationsExtensionsUnitTests {
 	@Test // DATACASS-484
 	fun `selectOne(Statement, KClass) extension should call its Java counterpart`() {
 
-		val statement = SimpleStatement("SELECT * FROM person")
+		val statement = SimpleStatement.newInstance("SELECT * FROM person")
 
 		operations.selectOne(statement, Person::class)
 		verify { operations.selectOne(statement, Person::class.java) }
@@ -97,7 +97,7 @@ class ReactiveCassandraOperationsExtensionsUnitTests {
 	@Test // DATACASS-484
 	fun `selectOne(Statement) with reified type parameter extension should call its Java counterpart`() {
 
-		val statement = SimpleStatement("SELECT * FROM person")
+		val statement = SimpleStatement.newInstance("SELECT * FROM person")
 
 		operations.selectOne<Person>(statement)
 		verify { operations.selectOne(statement, Person::class.java) }

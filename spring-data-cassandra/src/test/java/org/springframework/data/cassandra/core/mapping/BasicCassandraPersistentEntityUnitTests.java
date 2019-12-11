@@ -32,10 +32,11 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.AliasFor;
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.AssociationHandler;
 import org.springframework.data.util.ClassTypeInformation;
+
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * Unit tests for {@link BasicCassandraPersistentEntity}.
@@ -53,21 +54,21 @@ public class BasicCassandraPersistentEntityUnitTests {
 	@Test
 	public void subclassInheritsAtDocumentAnnotation() {
 
-		BasicCassandraPersistentEntity<Notification> entity =
-				new BasicCassandraPersistentEntity<>(ClassTypeInformation.from(Notification.class));
+		BasicCassandraPersistentEntity<Notification> entity = new BasicCassandraPersistentEntity<>(
+				ClassTypeInformation.from(Notification.class));
 
-		assertThat(entity.getTableName().toCql()).isEqualTo("messages");
+		assertThat(entity.getTableName()).hasToString("messages");
 	}
 
 	@Test
 	public void evaluatesSpELExpression() {
 
-		BasicCassandraPersistentEntity<Area> entity =
-				new BasicCassandraPersistentEntity<>(ClassTypeInformation.from(Area.class));
+		BasicCassandraPersistentEntity<Area> entity = new BasicCassandraPersistentEntity<>(
+				ClassTypeInformation.from(Area.class));
 
 		entity.setApplicationContext(this.context);
 
-		assertThat(entity.getTableName().toCql()).isEqualTo("a123");
+		assertThat(entity.getTableName()).hasToString("a123");
 	}
 
 	@Test
@@ -83,18 +84,18 @@ public class BasicCassandraPersistentEntityUnitTests {
 				ClassTypeInformation.from(UserLine.class));
 		entity.setApplicationContext(context);
 
-		assertThat(entity.getTableName().toCql()).isEqualTo(bean.tableName);
+		assertThat(entity.getTableName()).hasToString(bean.tableName);
 	}
 
 	@Test
 	public void setForceQuoteCallsSetTableName() {
 
-		BasicCassandraPersistentEntity<Message> entitySpy =
-				spy(new BasicCassandraPersistentEntity<>(ClassTypeInformation.from(Message.class)));
+		BasicCassandraPersistentEntity<Message> entitySpy = spy(
+				new BasicCassandraPersistentEntity<>(ClassTypeInformation.from(Message.class)));
 
 		DirectFieldAccessor directFieldAccessor = new DirectFieldAccessor(entitySpy);
 
-		entitySpy.setTableName(CqlIdentifier.of("Messages", false));
+		entitySpy.setTableName(CqlIdentifier.fromCql("Messages"));
 
 		assertThat(directFieldAccessor.getPropertyValue("forceQuote")).isNull();
 
@@ -108,8 +109,8 @@ public class BasicCassandraPersistentEntityUnitTests {
 	@Test
 	public void setForceQuoteDoesNothing() {
 
-		BasicCassandraPersistentEntity<Message> entitySpy =
-				spy(new BasicCassandraPersistentEntity<>(ClassTypeInformation.from(Message.class)));
+		BasicCassandraPersistentEntity<Message> entitySpy = spy(
+				new BasicCassandraPersistentEntity<>(ClassTypeInformation.from(Message.class)));
 
 		DirectFieldAccessor directFieldAccessor = new DirectFieldAccessor(entitySpy);
 
@@ -124,8 +125,8 @@ public class BasicCassandraPersistentEntityUnitTests {
 	@Test // DATACASS-172
 	public void isUserDefinedTypeShouldReturnFalse() {
 
-		BasicCassandraPersistentEntity<UserLine> entity =
-				new BasicCassandraPersistentEntity<>(ClassTypeInformation.from(UserLine.class));
+		BasicCassandraPersistentEntity<UserLine> entity = new BasicCassandraPersistentEntity<>(
+				ClassTypeInformation.from(UserLine.class));
 
 		assertThat(entity.isUserDefinedType()).isFalse();
 	}
@@ -133,17 +134,17 @@ public class BasicCassandraPersistentEntityUnitTests {
 	@Test // DATACASS-259
 	public void shouldConsiderComposedTableAnnotation() {
 
-		BasicCassandraPersistentEntity<TableWithComposedAnnotation> entity =
-				new BasicCassandraPersistentEntity<>(ClassTypeInformation.from(TableWithComposedAnnotation.class));
+		BasicCassandraPersistentEntity<TableWithComposedAnnotation> entity = new BasicCassandraPersistentEntity<>(
+				ClassTypeInformation.from(TableWithComposedAnnotation.class));
 
-		assertThat(entity.getTableName()).isEqualTo(CqlIdentifier.of("mytable", true));
+		assertThat(entity.getTableName()).isEqualTo(CqlIdentifier.fromCql("mytable"));
 	}
 
 	@Test // DATACASS-259
 	public void shouldConsiderComposedPrimaryKeyClassAnnotation() {
 
-		BasicCassandraPersistentEntity<PrimaryKeyClassWithComposedAnnotation> entity =
-				new BasicCassandraPersistentEntity<>(ClassTypeInformation.from(PrimaryKeyClassWithComposedAnnotation.class));
+		BasicCassandraPersistentEntity<PrimaryKeyClassWithComposedAnnotation> entity = new BasicCassandraPersistentEntity<>(
+				ClassTypeInformation.from(PrimaryKeyClassWithComposedAnnotation.class));
 
 		assertThat(entity.isCompositePrimaryKey()).isTrue();
 	}

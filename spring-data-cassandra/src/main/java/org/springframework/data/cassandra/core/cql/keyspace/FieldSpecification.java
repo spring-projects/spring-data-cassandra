@@ -15,10 +15,10 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
-import com.datastax.oss.driver.api.core.CqlIdentifier;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.DataType;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.type.DataType;
 
 /**
  * Base value object class to specify user type fields.

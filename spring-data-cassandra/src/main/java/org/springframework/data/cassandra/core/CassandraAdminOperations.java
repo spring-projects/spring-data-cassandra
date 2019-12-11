@@ -18,11 +18,11 @@ package org.springframework.data.cassandra.core;
 import java.util.Map;
 import java.util.Optional;
 
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.mapping.Table;
 
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.TableMetadata;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;
+import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
 
 /**
  * Operations for managing a Cassandra keyspace.
@@ -96,6 +96,17 @@ public interface CassandraAdminOperations extends CassandraOperations {
 	 * @param tableName must not be {@literal null}.
 	 * @return the {@link TableMetadata} or {@literal null}.
 	 */
-	Optional<TableMetadata> getTableMetadata(String keyspace, CqlIdentifier tableName);
+	default Optional<TableMetadata> getTableMetadata(String keyspace, CqlIdentifier tableName) {
+		return getTableMetadata(CqlIdentifier.fromCql(keyspace), tableName);
+	}
 
+	/**
+	 * Lookup {@link TableMetadata}.
+	 *
+	 * @param keyspace must not be {@literal null}.
+	 * @param tableName must not be {@literal null}.
+	 * @return the {@link TableMetadata} or {@literal null}.
+	 * @since 3.0
+	 */
+	Optional<TableMetadata> getTableMetadata(CqlIdentifier keyspace, CqlIdentifier tableName);
 }

@@ -18,7 +18,8 @@ package org.springframework.data.cassandra.core.query;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.Test;
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * Unit tests for {@link Columns}.
@@ -54,7 +55,7 @@ public class ColumnsUnitTests {
 	@Test // DATACASS-343
 	public void shouldCreateFromCqlIdentifiers() {
 
-		Columns columns = Columns.from(CqlIdentifier.of("Foo", true), CqlIdentifier.of("bar"));
+		Columns columns = Columns.from(CqlIdentifier.fromCql("Foo"), CqlIdentifier.fromCql("bar"));
 
 		assertThat(columns.toString()).contains("\"Foo\"").contains("bar");
 	}

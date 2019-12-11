@@ -15,8 +15,8 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assume.assumeTrue;
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.Assume.*;
 
 import java.util.List;
 import java.util.Map;
@@ -34,7 +34,8 @@ import org.springframework.data.cassandra.support.CassandraVersion;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.data.util.Version;
 
-import com.datastax.driver.core.TableMetadata;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
 
 /**
  * Integration tests usin {@link CassandraMappingContext} and {@link CreateIndexSpecification} to integratively verify
@@ -67,10 +68,10 @@ public class IndexCreationIntegrationTests extends AbstractKeyspaceCreatingInteg
 
 		Thread.sleep(500); // index creation is async so we do poor man's sync to await completion
 
-		TableMetadata metadata = getMetadata(createTable.getName().toCql());
+		TableMetadata metadata = getMetadata(createTable.getName());
 
-		assertThat(metadata.getIndex("firstname_index")).isNotNull();
-		assertThat(metadata.getIndex("withsecondaryindex_map_idx")).isNotNull();
+		assertThat(metadata.getIndexes().get("firstname_index")).isNotNull();
+		assertThat(metadata.getIndexes().get("withsecondaryindex_map_idx")).isNotNull();
 	}
 
 	@Test
@@ -85,13 +86,13 @@ public class IndexCreationIntegrationTests extends AbstractKeyspaceCreatingInteg
 
 		Thread.sleep(500); // index creation is async so we do poor man's sync to await completion
 
-		TableMetadata metadata = getMetadata(createTable.getName().toCql());
+		TableMetadata metadata = getMetadata(createTable.getName());
 
-		assertThat(metadata.getIndex("withsasiindex_firstname_idx")).isNotNull();
+		assertThat(metadata.getIndexes().get("withsasiindex_firstname_idx")).isNotNull();
 	}
 
-	private TableMetadata getMetadata(String tableName) {
-		return session.getCluster().getMetadata().getKeyspace(session.getLoggedKeyspace()).getTable(tableName);
+	private TableMetadata getMetadata(CqlIdentifier tableName) {
+		return session.getMetadata().getKeyspace(session.getKeyspace().get()).flatMap(it -> it.getTable(tableName)).get();
 	}
 
 	static class WithSecondaryIndex {

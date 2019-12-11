@@ -20,15 +20,14 @@ import static org.assertj.core.api.Assertions.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.core.cql.CqlTemplate;
-import org.springframework.data.cassandra.support.IntegrationTestNettyOptions;
 import org.springframework.data.cassandra.test.util.AbstractEmbeddedCassandraIntegrationTest;
 
-import com.datastax.driver.core.NettyOptions;
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlSession;
 
 /**
  * Integration tests for {@link AbstractCqlTemplateConfiguration}.
@@ -52,20 +51,16 @@ public class CqlTemplateConfigIntegrationTests extends AbstractEmbeddedCassandra
 			return cassandraEnvironment.getPort();
 		}
 
-		@Override
-		protected NettyOptions getNettyOptions() {
-			return IntegrationTestNettyOptions.INSTANCE;
-		}
 	}
 
-	Session session;
+	CqlSession session;
 	ConfigurableApplicationContext context;
 
 	@Before
 	public void setUp() {
 
 		this.context = new AnnotationConfigApplicationContext(Config.class);
-		this.session = context.getBean(Session.class);
+		this.session = context.getBean(CqlSession.class);
 	}
 
 	@After

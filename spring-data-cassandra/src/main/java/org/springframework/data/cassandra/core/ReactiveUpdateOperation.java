@@ -17,10 +17,11 @@ package org.springframework.data.cassandra.core;
 
 import reactor.core.publisher.Mono;
 
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.core.query.Update;
 import org.springframework.util.Assert;
+
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * The {@link ReactiveUpdateOperation} interface allows creation and execution of Cassandra {@code UPDATE} operations in
@@ -81,7 +82,7 @@ public interface ReactiveUpdateOperation {
 
 			Assert.hasText(table, "Table name must not be null or empty");
 
-			return inTable(CqlIdentifier.of(table));
+			return inTable(CqlIdentifier.fromCql(table));
 		}
 
 		/**

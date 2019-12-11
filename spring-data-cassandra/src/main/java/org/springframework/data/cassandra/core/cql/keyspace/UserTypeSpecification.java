@@ -15,15 +15,12 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
-import static com.datastax.oss.driver.api.core.CqlIdentifier.*;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
-
-import com.datastax.driver.core.DataType;
+import com.datastax.oss.driver.api.core.type.DataType;
 
 /**
  * Object to support the configuration of user type specifications that have columns. This class can also be used as a
@@ -50,7 +47,7 @@ public class UserTypeSpecification<T extends UserTypeSpecification<T>> extends U
 	 * @return {@code this} specification.
 	 */
 	public T field(String name, DataType type) {
-		return field(of(name), type);
+		return field(CqlIdentifier.fromCql(name), type);
 	}
 
 	/**

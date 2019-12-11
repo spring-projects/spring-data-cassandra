@@ -16,10 +16,12 @@
 package org.springframework.data.cassandra.core.cql;
 
 import java.io.Serializable;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.Host;
+import com.datastax.oss.driver.api.core.metadata.Node;
 
 /**
  * Domain object representing a Cassandra host.
@@ -48,16 +50,17 @@ public final class RingMember implements Serializable {
 	 * @param host
 	 * @return
 	 */
-	public static RingMember from(Host host) {
+	public static RingMember from(Node host) {
 		return new RingMember(host);
 	}
 
-	private RingMember(Host host) {
+	private RingMember(Node host) {
 
 		Assert.notNull(host, "Host must not be null");
 
-		this.hostName = host.getAddress().getHostName();
-		this.address = host.getAddress().getHostAddress();
+		this.hostName = host.getListenAddress().map(InetSocketAddress::getHostName).orElse("unknown");
+		this.address = host.getListenAddress().map(InetSocketAddress::getAddress).map(InetAddress::getHostAddress)
+				.orElse("unknown");
 		this.dc = host.getDatacenter();
 		this.rack = host.getRack();
 	}

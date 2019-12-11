@@ -15,16 +15,15 @@
  */
 package org.springframework.data.cassandra.core.cql.session;
 
-import io.netty.util.concurrent.ImmediateExecutor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoProcessor;
-import reactor.core.publisher.MonoSink;
 import reactor.core.scheduler.Scheduler;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.CompletionStage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,27 +32,24 @@ import org.springframework.data.cassandra.ReactiveResultSet;
 import org.springframework.data.cassandra.ReactiveSession;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.ColumnDefinitions;
-import com.datastax.driver.core.ExecutionInfo;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.SimpleStatement;
-import com.datastax.driver.core.Statement;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.context.DriverContext;
+import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
+import com.datastax.oss.driver.api.core.cql.ColumnDefinitions;
+import com.datastax.oss.driver.api.core.cql.ExecutionInfo;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.cql.Statement;
 
 /**
- * Default implementation of a {@link ReactiveSession}. This implementation bridges asynchronous {@link Session} methods
- * to reactive execution patterns.
+ * Default implementation of a {@link ReactiveSession}. This implementation bridges asynchronous {@link CqlSession}
+ * methods to reactive execution patterns.
  * <p>
  * Calls are deferred until a subscriber subscribes to the resulting {@link org.reactivestreams.Publisher}. The calls
  * are executed by subscribing to {@link ListenableFuture} and returning the result as calls complete.
  * <p>
- * Elements are emitted on netty EventLoop threads. {@link ResultSet} allows {@link ResultSet#fetchMoreResults()
+ * Elements are emitted on netty EventLoop threads. {@link AsyncResultSet} allows {@link AsyncResultSet#fetchNextPage()}
  * asynchronous requesting} of subsequent pages. The next page is requested after emitting all elements of the previous
  * page. However, this is an intermediate solution until Datastax can provide a fully reactive driver.
  * <p>
@@ -73,15 +69,15 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
-	private final Session session;
+	private final CqlSession session;
 
 	/**
-	 * Create a new {@link DefaultBridgedReactiveSession} for a {@link Session}.
+	 * Create a new {@link DefaultBridgedReactiveSession} for a {@link CqlSession}.
 	 *
 	 * @param session must not be {@literal null}.
 	 * @since 2.1
 	 */
-	public DefaultBridgedReactiveSession(Session session) {
+	public DefaultBridgedReactiveSession(CqlSession session) {
 
 		Assert.notNull(session, "Session must not be null");
 
@@ -89,15 +85,15 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 	}
 
 	/**
-	 * Create a new {@link DefaultBridgedReactiveSession} for a {@link Session} and {@link Scheduler}.
+	 * Create a new {@link DefaultBridgedReactiveSession} for a {@link CqlSession} and {@link Scheduler}.
 	 *
 	 * @param session must not be {@literal null}.
 	 * @param scheduler must not be {@literal null}.
-	 * @deprecated since 2.1. Use {@link #DefaultBridgedReactiveSession(Session)} as a {@link Scheduler} is no longer
-	 *             required to off-load {@link ResultSet}'s blocking behavior.
+	 * @deprecated since 2.1. Use {@link #DefaultBridgedReactiveSession(CqlSession)} as a {@link Scheduler} is no longer
+	 *             required to off-load {@link AsyncResultSet}'s blocking behavior.
 	 */
 	@Deprecated
-	public DefaultBridgedReactiveSession(Session session, Scheduler scheduler) {
+	public DefaultBridgedReactiveSession(CqlSession session, Scheduler scheduler) {
 		this(session);
 	}
 
@@ -110,11 +106,11 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.ReactiveSession#getCluster()
+	 * @see org.springframework.data.cassandra.ReactiveSession#getContext()
 	 */
 	@Override
-	public Cluster getCluster() {
-		return this.session.getCluster();
+	public DriverContext getContext() {
+		return this.session.getContext();
 	}
 
 	/* (non-Javadoc)
@@ -125,7 +121,7 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 
 		Assert.hasText(query, "Query must not be empty");
 
-		return execute(new SimpleStatement(query));
+		return execute(SimpleStatement.newInstance(query));
 	}
 
 	/* (non-Javadoc)
@@ -136,7 +132,7 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 
 		Assert.hasText(query, "Query must not be empty");
 
-		return execute(new SimpleStatement(query, values));
+		return execute(SimpleStatement.newInstance(query, values));
 	}
 
 	/* (non-Javadoc)
@@ -147,34 +143,25 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 
 		Assert.hasText(query, "Query must not be empty");
 
-		return execute(new SimpleStatement(query, values));
+		return execute(SimpleStatement.newInstance(query, values));
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.ReactiveSession#execute(com.datastax.driver.core.Statement)
+	 * @see org.springframework.data.cassandra.ReactiveSession#execute(com.datastax.oss.driver.api.core.cql.Statement)
 	 */
 	@Override
-	public Mono<ReactiveResultSet> execute(Statement statement) {
+	public Mono<ReactiveResultSet> execute(Statement<?> statement) {
 
 		Assert.notNull(statement, "Statement must not be null");
 
-		return Mono.create(sink -> {
+		return Mono.fromCompletionStage(() -> {
 
-			try {
-				if (logger.isDebugEnabled()) {
-					logger.debug("Executing Statement [{}]", statement);
-				}
-
-				ListenableFuture<ResultSet> future = this.session.executeAsync(statement);
-
-				ListenableFuture<ReactiveResultSet> resultSetFuture = Futures.transform(future, DefaultReactiveResultSet::new,
-						ImmediateExecutor.INSTANCE);
-
-				adaptFuture(resultSetFuture, sink);
-			} catch (Exception cause) {
-				sink.error(cause);
+			if (logger.isDebugEnabled()) {
+				logger.debug("Executing Statement [{}]", statement);
 			}
-		});
+
+			return this.session.executeAsync(statement);
+		}).map(DefaultReactiveResultSet::new);
 	}
 
 	/* (non-Javadoc)
@@ -185,30 +172,24 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 
 		Assert.hasText(query, "Query must not be empty");
 
-		return prepare(new SimpleStatement(query));
+		return prepare(SimpleStatement.newInstance(query));
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.ReactiveSession#prepare(com.datastax.driver.core.RegularStatement)
+	 * @see org.springframework.data.cassandra.ReactiveSession#prepare(com.datastax.oss.driver.api.core.cql.SimpleStatement)
 	 */
 	@Override
-	public Mono<PreparedStatement> prepare(RegularStatement statement) {
+	public Mono<PreparedStatement> prepare(SimpleStatement statement) {
 
 		Assert.notNull(statement, "Statement must not be null");
 
-		return Mono.create(sink -> {
+		return Mono.fromCompletionStage(() -> {
 
-			try {
-				if (logger.isDebugEnabled()) {
-					logger.debug("Preparing Statement [{}]", statement);
-				}
-
-				ListenableFuture<PreparedStatement> resultSetFuture = this.session.prepareAsync(statement);
-
-				adaptFuture(resultSetFuture, sink);
-			} catch (Exception cause) {
-				sink.error(cause);
+			if (logger.isDebugEnabled()) {
+				logger.debug("Preparing Statement [{}]", statement);
 			}
+
+			return this.session.prepareAsync(statement);
 		});
 	}
 
@@ -220,33 +201,11 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 		this.session.close();
 	}
 
-	/**
-	 * Adapt {@link ListenableFuture} signals (completion, error) and propagate these to {@link MonoSink}.
-	 *
-	 * @param future the originating future.
-	 * @param sink the sink receiving signals.
-	 */
-	private static <T> void adaptFuture(ListenableFuture<T> future, MonoSink<T> sink) {
-
-		future.addListener(() -> {
-
-			if (future.isDone()) {
-				try {
-					sink.success(future.get());
-				} catch (ExecutionException cause) {
-					sink.error(cause.getCause());
-				} catch (Exception cause) {
-					sink.error(cause);
-				}
-			}
-		}, Runnable::run);
-	}
-
 	static class DefaultReactiveResultSet implements ReactiveResultSet {
 
-		private final ResultSet resultSet;
+		private final AsyncResultSet resultSet;
 
-		DefaultReactiveResultSet(ResultSet resultSet) {
+		DefaultReactiveResultSet(AsyncResultSet resultSet) {
 			this.resultSet = resultSet;
 		}
 
@@ -266,44 +225,39 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 			return toRows(this.resultSet);
 		}
 
-		private Flux<Row> getRows(Mono<ResultSet> nextResults) {
+		private Flux<Row> getRows(Mono<AsyncResultSet> nextResults) {
 
 			return nextResults.flatMapMany(it -> {
 
 				Flux<Row> rows = toRows(it);
 
-				if (it.isFullyFetched()) {
+				if (!it.hasMorePages()) {
 					return rows;
 				}
 
-				MonoProcessor<ResultSet> processor = MonoProcessor.create();
+				MonoProcessor<AsyncResultSet> processor = MonoProcessor.create();
 
-				return rows.doOnComplete(() -> fetchMore(it.fetchMoreResults(), processor)).concatWith(getRows(processor));
+				return rows.doOnComplete(() -> fetchMore(it.fetchNextPage(), processor)).concatWith(getRows(processor));
 			});
 		}
 
-		static Flux<Row> toRows(ResultSet resultSet) {
-
-			int prefetch = Math.max(0, resultSet.getAvailableWithoutFetching());
-
-			return Flux.fromIterable(resultSet).take(prefetch);
+		static Flux<Row> toRows(AsyncResultSet resultSet) {
+			return Flux.fromIterable(resultSet.currentPage());
 		}
 
-		static void fetchMore(ListenableFuture<ResultSet> future, MonoProcessor<ResultSet> sink) {
+		static void fetchMore(CompletionStage<AsyncResultSet> future, MonoProcessor<AsyncResultSet> sink) {
 
 			try {
 
-				future.addListener(() -> {
+				future.whenComplete((rs, err) -> {
 
-					try {
-						sink.onNext(future.get());
+					if (err != null) {
+						sink.onError(err);
+					} else {
+						sink.onNext(rs);
 						sink.onComplete();
-					} catch (ExecutionException cause) {
-						sink.onError(cause.getCause());
-					} catch (Exception cause) {
-						sink.onError(cause);
 					}
-				}, Runnable::run);
+				});
 
 			} catch (Exception cause) {
 				sink.onError(cause);
@@ -339,7 +293,7 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 		 */
 		@Override
 		public List<ExecutionInfo> getAllExecutionInfo() {
-			return this.resultSet.getAllExecutionInfo();
+			return Collections.singletonList(getExecutionInfo());
 		}
 	}
 }

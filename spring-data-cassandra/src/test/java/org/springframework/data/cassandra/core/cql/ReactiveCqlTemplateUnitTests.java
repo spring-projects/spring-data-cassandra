@@ -16,15 +16,13 @@
 package org.springframework.data.cassandra.core.cql;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.util.Collections;
 import java.util.function.Consumer;
 
 import org.junit.Before;
@@ -33,6 +31,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.cassandra.CassandraConnectionFailureException;
 import org.springframework.data.cassandra.CassandraInvalidQueryException;
@@ -41,16 +40,16 @@ import org.springframework.data.cassandra.ReactiveSession;
 import org.springframework.data.cassandra.ReactiveSessionFactory;
 import org.springframework.data.cassandra.core.cql.session.DefaultReactiveSessionFactory;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.ColumnDefinitions;
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.SimpleStatement;
-import com.datastax.driver.core.Statement;
-import com.datastax.driver.core.exceptions.InvalidQueryException;
-import com.datastax.driver.core.exceptions.NoHostAvailableException;
-import com.datastax.driver.core.policies.DowngradingConsistencyRetryPolicy;
+import com.datastax.oss.driver.api.core.ConsistencyLevel;
+import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
+import com.datastax.oss.driver.api.core.NoNodeAvailableException;
+import com.datastax.oss.driver.api.core.cql.BoundStatement;
+import com.datastax.oss.driver.api.core.cql.ColumnDefinitions;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.cql.Statement;
+import com.datastax.oss.driver.api.core.servererrors.InvalidQueryException;
 
 /**
  * Unit tests for {@link ReactiveCqlTemplate}.
@@ -99,7 +98,7 @@ public class ReactiveCqlTemplateUnitTests {
 	public void executeCallbackShouldTranslateExceptions() {
 
 		Flux<String> flux = template.execute((ReactiveSessionCallback<String>) session -> {
-			throw new InvalidQueryException("wrong query");
+			throw new InvalidQueryException(null, "wrong query");
 		});
 
 		flux.as(StepVerifier::create).expectError(CassandraInvalidQueryException.class).verify();
@@ -122,7 +121,7 @@ public class ReactiveCqlTemplateUnitTests {
 	@Test // DATACASS-335
 	public void executeCqlShouldTranslateExceptions() {
 
-		when(session.execute(any(Statement.class))).thenThrow(new NoHostAvailableException(Collections.emptyMap()));
+		when(session.execute(any(Statement.class))).thenThrow(new NoNodeAvailableException());
 
 		Mono<Boolean> mono = template.execute("UPDATE user SET a = 'b';");
 
@@ -136,7 +135,7 @@ public class ReactiveCqlTemplateUnitTests {
 	@Test // DATACASS-335
 	public void executeCqlShouldCallExecution() {
 
-		doTestStrings(null, null, null, reactiveCqlTemplate -> {
+		doTestStrings(null, null, reactiveCqlTemplate -> {
 
 			reactiveCqlTemplate.execute("SELECT * from USERS").as(StepVerifier::create).expectNextCount(1).verifyComplete();
 
@@ -147,7 +146,7 @@ public class ReactiveCqlTemplateUnitTests {
 	@Test // DATACASS-335
 	public void executeCqlWithArgumentsShouldCallExecution() {
 
-		doTestStrings(5, ConsistencyLevel.ONE, DowngradingConsistencyRetryPolicy.INSTANCE, reactiveCqlTemplate -> {
+		doTestStrings(5, DefaultConsistencyLevel.ONE, reactiveCqlTemplate -> {
 
 			reactiveCqlTemplate.execute("SELECT * from USERS").as(StepVerifier::create) //
 					.expectNextCount(1) //
@@ -160,7 +159,7 @@ public class ReactiveCqlTemplateUnitTests {
 	@Test // DATACASS-335
 	public void queryForResultSetShouldCallExecution() {
 
-		doTestStrings(null, null, null, reactiveCqlTemplate -> {
+		doTestStrings(null, null, reactiveCqlTemplate -> {
 
 			Mono<ReactiveResultSet> mono = reactiveCqlTemplate.queryForResultSet("SELECT * from USERS");
 
@@ -173,7 +172,7 @@ public class ReactiveCqlTemplateUnitTests {
 	@Test // DATACASS-335
 	public void queryWithResultSetExtractorShouldCallExecution() {
 
-		doTestStrings(null, null, null, reactiveCqlTemplate -> {
+		doTestStrings(null, null, reactiveCqlTemplate -> {
 
 			Flux<String> flux = reactiveCqlTemplate.query("SELECT * from USERS", (row, index) -> row.getString(0));
 
@@ -186,7 +185,7 @@ public class ReactiveCqlTemplateUnitTests {
 	@Test // DATACASS-335
 	public void queryWithResultSetExtractorWithArgumentsShouldCallExecution() {
 
-		doTestStrings(5, ConsistencyLevel.ONE, DowngradingConsistencyRetryPolicy.INSTANCE, reactiveCqlTemplate -> {
+		doTestStrings(5, ConsistencyLevel.ONE, reactiveCqlTemplate -> {
 
 			Flux<String> flux = reactiveCqlTemplate.query("SELECT * from USERS", (row, index) -> row.getString(0));
 
@@ -214,7 +213,7 @@ public class ReactiveCqlTemplateUnitTests {
 	@Test // DATACASS-335
 	public void queryCqlShouldTranslateExceptions() {
 
-		when(session.execute(any(Statement.class))).thenThrow(new NoHostAvailableException(Collections.emptyMap()));
+		when(session.execute(any(Statement.class))).thenThrow(new NoNodeAvailableException());
 
 		Flux<Boolean> flux = template.query("UPDATE user SET a = 'b';", resultSet -> Mono.just(resultSet.wasApplied()));
 
@@ -331,15 +330,15 @@ public class ReactiveCqlTemplateUnitTests {
 	}
 
 	// -------------------------------------------------------------------------
-	// Tests dealing with com.datastax.driver.core.Statement
+	// Tests dealing with com.datastax.oss.driver.api.core.cql.Statement
 	// -------------------------------------------------------------------------
 
 	@Test // DATACASS-335
 	public void executeStatementShouldCallExecution() {
 
-		doTestStrings(null, null, null, reactiveCqlTemplate -> {
+		doTestStrings(null, null, reactiveCqlTemplate -> {
 
-			reactiveCqlTemplate.execute(new SimpleStatement("SELECT * from USERS")).as(StepVerifier::create) //
+			reactiveCqlTemplate.execute(SimpleStatement.newInstance("SELECT * from USERS")).as(StepVerifier::create) //
 					.expectNextCount(1) //
 					.verifyComplete();
 
@@ -350,9 +349,9 @@ public class ReactiveCqlTemplateUnitTests {
 	@Test // DATACASS-335
 	public void executeStatementWithArgumentsShouldCallExecution() {
 
-		doTestStrings(5, ConsistencyLevel.ONE, DowngradingConsistencyRetryPolicy.INSTANCE, reactiveCqlTemplate -> {
+		doTestStrings(5, ConsistencyLevel.ONE, reactiveCqlTemplate -> {
 
-			reactiveCqlTemplate.execute(new SimpleStatement("SELECT * from USERS")).as(StepVerifier::create) //
+			reactiveCqlTemplate.execute(SimpleStatement.newInstance("SELECT * from USERS")).as(StepVerifier::create) //
 					.expectNextCount(1) //
 					.verifyComplete();
 
@@ -363,9 +362,9 @@ public class ReactiveCqlTemplateUnitTests {
 	@Test // DATACASS-335
 	public void queryForResultStatementSetShouldCallExecution() {
 
-		doTestStrings(null, null, null, reactiveCqlTemplate -> {
+		doTestStrings(null, null, reactiveCqlTemplate -> {
 
-			reactiveCqlTemplate.queryForResultSet(new SimpleStatement("SELECT * from USERS"))
+			reactiveCqlTemplate.queryForResultSet(SimpleStatement.newInstance("SELECT * from USERS"))
 					.flatMapMany(ReactiveResultSet::rows).as(StepVerifier::create) //
 					.expectNextCount(3) //
 					.verifyComplete();
@@ -377,9 +376,9 @@ public class ReactiveCqlTemplateUnitTests {
 	@Test // DATACASS-335
 	public void queryWithResultSetStatementExtractorShouldCallExecution() {
 
-		doTestStrings(null, null, null, reactiveCqlTemplate -> {
+		doTestStrings(null, null, reactiveCqlTemplate -> {
 
-			Flux<String> flux = reactiveCqlTemplate.query(new SimpleStatement("SELECT * from USERS"),
+			Flux<String> flux = reactiveCqlTemplate.query(SimpleStatement.newInstance("SELECT * from USERS"),
 					(row, index) -> row.getString(0));
 
 			flux.as(StepVerifier::create).expectNext("Walter", "Hank", " Jesse").verifyComplete();
@@ -391,9 +390,9 @@ public class ReactiveCqlTemplateUnitTests {
 	@Test // DATACASS-335
 	public void queryWithResultSetStatementExtractorWithArgumentsShouldCallExecution() {
 
-		doTestStrings(5, ConsistencyLevel.ONE, DowngradingConsistencyRetryPolicy.INSTANCE, reactiveCqlTemplate -> {
+		doTestStrings(5, ConsistencyLevel.ONE, reactiveCqlTemplate -> {
 
-			Flux<String> flux = reactiveCqlTemplate.query(new SimpleStatement("SELECT * from USERS"),
+			Flux<String> flux = reactiveCqlTemplate.query(SimpleStatement.newInstance("SELECT * from USERS"),
 					(row, index) -> row.getString(0));
 
 			flux.collectList().as(StepVerifier::create).consumeNextWith(rows -> {
@@ -411,7 +410,7 @@ public class ReactiveCqlTemplateUnitTests {
 		when(reactiveResultSet.wasApplied()).thenReturn(true);
 		when(session.execute(any(Statement.class))).thenReturn(Mono.just(reactiveResultSet));
 
-		Flux<Boolean> flux = template.query(new SimpleStatement("UPDATE user SET a = 'b';"),
+		Flux<Boolean> flux = template.query(SimpleStatement.newInstance("UPDATE user SET a = 'b';"),
 				resultSet -> Mono.just(resultSet.wasApplied()));
 
 		verifyZeroInteractions(session);
@@ -422,9 +421,9 @@ public class ReactiveCqlTemplateUnitTests {
 	@Test // DATACASS-335
 	public void queryStatementShouldTranslateExceptions() {
 
-		when(session.execute(any(Statement.class))).thenThrow(new NoHostAvailableException(Collections.emptyMap()));
+		when(session.execute(any(Statement.class))).thenThrow(new NoNodeAvailableException());
 
-		Flux<Boolean> flux = template.query(new SimpleStatement("UPDATE user SET a = 'b';"),
+		Flux<Boolean> flux = template.query(SimpleStatement.newInstance("UPDATE user SET a = 'b';"),
 				resultSet -> Mono.just(resultSet.wasApplied()));
 
 		flux.as(StepVerifier::create).expectError(CassandraConnectionFailureException.class).verify();
@@ -436,7 +435,8 @@ public class ReactiveCqlTemplateUnitTests {
 		when(session.execute(any(Statement.class))).thenReturn(Mono.just(reactiveResultSet));
 		when(reactiveResultSet.rows()).thenReturn(Flux.empty());
 
-		Mono<String> mono = template.queryForObject(new SimpleStatement("SELECT * FROM user"), (row, rowNum) -> "OK");
+		Mono<String> mono = template.queryForObject(SimpleStatement.newInstance("SELECT * FROM user"),
+				(row, rowNum) -> "OK");
 
 		mono.as(StepVerifier::create).verifyComplete();
 	}
@@ -447,7 +447,8 @@ public class ReactiveCqlTemplateUnitTests {
 		when(session.execute(any(Statement.class))).thenReturn(Mono.just(reactiveResultSet));
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
 
-		Mono<String> mono = template.queryForObject(new SimpleStatement("SELECT * FROM user"), (row, rowNum) -> "OK");
+		Mono<String> mono = template.queryForObject(SimpleStatement.newInstance("SELECT * FROM user"),
+				(row, rowNum) -> "OK");
 
 		mono.as(StepVerifier::create).expectNext("OK").verifyComplete();
 	}
@@ -458,7 +459,8 @@ public class ReactiveCqlTemplateUnitTests {
 		when(session.execute(any(Statement.class))).thenReturn(Mono.just(reactiveResultSet));
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
 
-		Mono<String> mono = template.queryForObject(new SimpleStatement("SELECT * FROM user"), (row, rowNum) -> null);
+		Mono<String> mono = template.queryForObject(SimpleStatement.newInstance("SELECT * FROM user"),
+				(row, rowNum) -> null);
 
 		mono.as(StepVerifier::create).verifyComplete();
 	}
@@ -469,7 +471,8 @@ public class ReactiveCqlTemplateUnitTests {
 		when(session.execute(any(Statement.class))).thenReturn(Mono.just(reactiveResultSet));
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row, row));
 
-		Mono<String> mono = template.queryForObject(new SimpleStatement("SELECT * FROM user"), (row, rowNum) -> "OK");
+		Mono<String> mono = template.queryForObject(SimpleStatement.newInstance("SELECT * FROM user"),
+				(row, rowNum) -> "OK");
 
 		mono.as(StepVerifier::create).expectError(IncorrectResultSizeDataAccessException.class).verify();
 	}
@@ -483,7 +486,7 @@ public class ReactiveCqlTemplateUnitTests {
 		when(columnDefinitions.size()).thenReturn(1);
 		when(row.getString(0)).thenReturn("OK");
 
-		Mono<String> mono = template.queryForObject(new SimpleStatement("SELECT * FROM user"), String.class);
+		Mono<String> mono = template.queryForObject(SimpleStatement.newInstance("SELECT * FROM user"), String.class);
 
 		mono.as(StepVerifier::create).expectNext("OK").verifyComplete();
 	}
@@ -497,7 +500,7 @@ public class ReactiveCqlTemplateUnitTests {
 		when(columnDefinitions.size()).thenReturn(1);
 		when(row.getString(0)).thenReturn("OK", "NOT OK");
 
-		Flux<String> flux = template.queryForFlux(new SimpleStatement("SELECT * FROM user"), String.class);
+		Flux<String> flux = template.queryForFlux(SimpleStatement.newInstance("SELECT * FROM user"), String.class);
 
 		flux.as(StepVerifier::create).expectNext("OK", "NOT OK").verifyComplete();
 	}
@@ -508,7 +511,7 @@ public class ReactiveCqlTemplateUnitTests {
 		when(session.execute(any(Statement.class))).thenReturn(Mono.just(reactiveResultSet));
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row, row));
 
-		Flux<Row> flux = template.queryForRows(new SimpleStatement("SELECT * FROM user"));
+		Flux<Row> flux = template.queryForRows(SimpleStatement.newInstance("SELECT * FROM user"));
 
 		flux.as(StepVerifier::create).expectNext(row, row).verifyComplete();
 	}
@@ -519,7 +522,7 @@ public class ReactiveCqlTemplateUnitTests {
 		when(session.execute(any(Statement.class))).thenReturn(Mono.just(reactiveResultSet));
 		when(reactiveResultSet.wasApplied()).thenReturn(true);
 
-		template.execute(new SimpleStatement("UPDATE user SET a = 'b';")).as(StepVerifier::create).expectNext(true)
+		template.execute(SimpleStatement.newInstance("UPDATE user SET a = 'b';")).as(StepVerifier::create).expectNext(true)
 				.verifyComplete();
 	}
 
@@ -530,7 +533,7 @@ public class ReactiveCqlTemplateUnitTests {
 	@Test // DATACASS-335
 	public void queryPreparedStatementWithCallbackShouldCallExecution() {
 
-		doTestStrings(null, null, null, reactiveCqlTemplate -> {
+		doTestStrings(null, null, reactiveCqlTemplate -> {
 
 			Flux<Row> flux = reactiveCqlTemplate.execute("SELECT * from USERS", (session, ps) -> {
 
@@ -544,7 +547,7 @@ public class ReactiveCqlTemplateUnitTests {
 	@Test // DATACASS-335
 	public void executePreparedStatementWithCallbackShouldCallExecution() {
 
-		doTestStrings(null, null, null, reactiveCqlTemplate -> {
+		doTestStrings(null, null, reactiveCqlTemplate -> {
 
 			Mono<Boolean> applied = reactiveCqlTemplate.execute("UPDATE users SET name = ?", "White");
 			when(this.preparedStatement.bind("White")).thenReturn(this.boundStatement);
@@ -591,7 +594,7 @@ public class ReactiveCqlTemplateUnitTests {
 	public void executePreparedStatementCreatorShouldTranslateStatementCreationExceptions() {
 
 		Flux<ReactiveResultSet> flux = template.execute(session -> {
-			throw new NoHostAvailableException(Collections.emptyMap());
+			throw new NoNodeAvailableException();
 		}, (session, ps) -> session.execute(boundStatement));
 
 		flux.as(StepVerifier::create).expectError(CassandraConnectionFailureException.class).verify();
@@ -601,7 +604,7 @@ public class ReactiveCqlTemplateUnitTests {
 	public void executePreparedStatementCreatorShouldTranslateStatementCallbackExceptions() {
 
 		Flux<ReactiveResultSet> flux = template.execute(session -> Mono.just(preparedStatement), (session, ps) -> {
-			throw new NoHostAvailableException(Collections.emptyMap());
+			throw new NoNodeAvailableException();
 		});
 
 		flux.as(StepVerifier::create).expectError(CassandraConnectionFailureException.class).verify();
@@ -776,8 +779,8 @@ public class ReactiveCqlTemplateUnitTests {
 		verify(session, times(2)).execute(boundStatement);
 	}
 
-	private <T> void doTestStrings(Integer fetchSize, com.datastax.driver.core.ConsistencyLevel consistencyLevel,
-			com.datastax.driver.core.policies.RetryPolicy retryPolicy, Consumer<ReactiveCqlTemplate> cqlTemplateConsumer) {
+	private <T> void doTestStrings(Integer fetchSize, ConsistencyLevel consistencyLevel,
+			Consumer<ReactiveCqlTemplate> cqlTemplateConsumer) {
 
 		String[] results = { "Walter", "Hank", " Jesse" };
 
@@ -793,9 +796,7 @@ public class ReactiveCqlTemplateUnitTests {
 		if (fetchSize != null) {
 			template.setFetchSize(fetchSize);
 		}
-		if (retryPolicy != null) {
-			template.setRetryPolicy(retryPolicy);
-		}
+
 		if (consistencyLevel != null) {
 			template.setConsistencyLevel(consistencyLevel);
 		}
@@ -810,11 +811,7 @@ public class ReactiveCqlTemplateUnitTests {
 		if (statement instanceof PreparedStatement || statement instanceof BoundStatement) {
 
 			if (fetchSize != null) {
-				verify(statement).setFetchSize(fetchSize.intValue());
-			}
-
-			if (retryPolicy != null) {
-				verify(statement).setRetryPolicy(retryPolicy);
+				verify(statement).setPageSize(fetchSize.intValue());
 			}
 
 			if (consistencyLevel != null) {
@@ -823,11 +820,7 @@ public class ReactiveCqlTemplateUnitTests {
 		} else {
 
 			if (fetchSize != null) {
-				assertThat(statement.getFetchSize()).isEqualTo(fetchSize.intValue());
-			}
-
-			if (retryPolicy != null) {
-				assertThat(statement.getRetryPolicy()).isEqualTo(retryPolicy);
+				assertThat(statement.getPageSize()).isEqualTo(fetchSize.intValue());
 			}
 
 			if (consistencyLevel != null) {

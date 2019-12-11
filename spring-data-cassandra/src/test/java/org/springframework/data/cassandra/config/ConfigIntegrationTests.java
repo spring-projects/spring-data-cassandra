@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.config;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.support.AbstractTestJavaConfig;
@@ -24,7 +25,7 @@ import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingInte
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlSession;
 
 /**
  * @author Matthew T. Adams
@@ -43,7 +44,7 @@ public class ConfigIntegrationTests extends AbstractKeyspaceCreatingIntegrationT
 		}
 	}
 
-	@Autowired Session session;
+	@Autowired CqlSession session;
 
 	@Test
 	public void test() {

@@ -15,15 +15,14 @@
  */
 package org.springframework.data.cassandra.core.cql.converter;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;
 
-import com.datastax.driver.core.ColumnDefinitions;
-import com.datastax.driver.core.ColumnDefinitions.Definition;
-import com.datastax.driver.core.Row;
+import com.datastax.oss.driver.api.core.cql.ColumnDefinitions;
+import com.datastax.oss.driver.api.core.cql.Row;
 
 /**
  * Converter to convert {@link Row}s to a {@link List} of {@link Object} representation.
@@ -45,8 +44,13 @@ public enum RowToListConverter implements Converter<Row, List<Object>> {
 	public List<Object> convert(Row row) {
 
 		ColumnDefinitions cols = row.getColumnDefinitions();
-		return cols.asList().stream() //
-				.map(Definition::getName).map(name -> row.isNull(name) ? null : row.getObject(name)) //
-				.collect(Collectors.toList());
+		List<Object> objects = new ArrayList<>();
+
+		cols.forEach(columnDefinition -> {
+			objects.add(row.isNull(columnDefinition.getName()) ? null : row.getObject(columnDefinition.getName()));
+
+		});
+
+		return objects;
 	}
 }

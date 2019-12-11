@@ -60,20 +60,15 @@ import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
 
-import com.datastax.driver.core.CodecRegistry;
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.TupleType;
-import com.datastax.driver.core.TupleValue;
-import com.datastax.driver.core.TypeCodec;
-import com.datastax.driver.core.UDTValue;
-import com.datastax.driver.core.UserType;
-import com.datastax.driver.core.querybuilder.Clause;
-import com.datastax.driver.core.querybuilder.Delete;
-import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
-import com.datastax.driver.core.querybuilder.Update;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.data.TupleValue;
+import com.datastax.oss.driver.api.core.data.UdtValue;
+import com.datastax.oss.driver.api.core.type.DataType;
+import com.datastax.oss.driver.api.core.type.TupleType;
+import com.datastax.oss.driver.api.core.type.UserDefinedType;
+import com.datastax.oss.driver.api.core.type.codec.TypeCodec;
+import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
 
 /**
  * {@link CassandraConverter} that uses a {@link MappingContext} to do sophisticated mapping of domain objects to
@@ -178,11 +173,11 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	private <S> ConvertingPropertyAccessor<S> newConvertingPropertyAccessor(S source,
 			CassandraPersistentEntity<?> entity) {
 
-		PersistentPropertyAccessor propertyAccessor = source instanceof PersistentPropertyAccessor
+		PersistentPropertyAccessor<S> propertyAccessor = source instanceof PersistentPropertyAccessor
 				? (PersistentPropertyAccessor) source
 				: entity.getPropertyAccessor(source);
 
-		return new ConvertingPropertyAccessor<>(propertyAccessor, getConversionService());
+		return new ConvertingPropertyAccessor<S>(propertyAccessor, getConversionService());
 	}
 
 	private <S> PersistentEntityParameterValueProvider<CassandraPersistentProperty> newParameterValueProvider(
@@ -233,10 +228,6 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			return (R) row;
 		}
 
-		if (com.datastax.oss.driver.api.core.cql.Row.class.isAssignableFrom(rawType)) {
-			return (R) row;
-		}
-
 		if (getCustomConversions().hasCustomReadTarget(Row.class, rawType)
 				|| getConversionService().canConvert(Row.class, rawType)) {
 
@@ -256,32 +247,23 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		CassandraPersistentEntity<R> persistentEntity = (CassandraPersistentEntity<R>) getMappingContext()
 				.getRequiredPersistentEntity(typeInfo);
 
-		if (row instanceof Row) {
-			return readEntityFromRow(persistentEntity, row);
-		}
+		return readEntityFromRow(persistentEntity, row);
 
-		return readEntityFromRow(persistentEntity, (com.datastax.oss.driver.api.core.cql.Row) row);
-	}
-
-	private <S> S readEntityFromRow(CassandraPersistentEntity<S> entity, com.datastax.oss.driver.api.core.cql.Row row) {
-		return doReadEntity(entity, row, expressionEvaluator -> new RowValueProvider(row, expressionEvaluator));
 	}
 
 	private <S> S readEntityFromRow(CassandraPersistentEntity<S> entity, Row row) {
-		return doReadEntity(entity, row,
-				expressionEvaluator -> new BasicCassandraRowValueProvider(row, getCodecRegistry(), expressionEvaluator));
+		return doReadEntity(entity, row, expressionEvaluator -> new RowValueProvider(row, expressionEvaluator));
 	}
 
 	private <S> S readEntityFromTuple(CassandraPersistentEntity<S> entity, TupleValue tupleValue) {
 
 		return doReadEntity(entity, tupleValue,
-				expressionEvaluator -> new CassandraTupleValueProvider(tupleValue, getCodecRegistry(), expressionEvaluator));
+				expressionEvaluator -> new TupleValueProvider(tupleValue, expressionEvaluator));
 	}
 
-	private <S> S readEntityFromUdt(CassandraPersistentEntity<S> entity, UDTValue udtValue) {
+	private <S> S readEntityFromUdt(CassandraPersistentEntity<S> entity, UdtValue udtValue) {
 
-		return doReadEntity(entity, udtValue,
-				expressionEvaluator -> new CassandraUDTValueProvider(udtValue, getCodecRegistry(), expressionEvaluator));
+		return doReadEntity(entity, udtValue, expressionEvaluator -> new UdtValueProvider(udtValue, expressionEvaluator));
 	}
 
 	private <S> S doReadEntity(CassandraPersistentEntity<S> entity, Object value,
@@ -376,26 +358,20 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			throw new MappingException("No mapping metadata found for " + source.getClass());
 		}
 
-		if (sink instanceof Map) {
-			writeMapFromWrapper(newConvertingPropertyAccessor(source, entity), (Map<String, Object>) sink, entity);
-		} else if (sink instanceof Insert) {
-			writeInsertFromWrapper(newConvertingPropertyAccessor(source, entity), (Insert) sink, entity);
-		} else if (sink instanceof Update) {
-			writeUpdateFromWrapper(newConvertingPropertyAccessor(source, entity), (Update) sink, entity);
-		} else if (sink instanceof Select.Where) {
-			writeSelectWhereFromObject(source, (Select.Where) sink, entity);
-		} else if (sink instanceof Delete.Where) {
-			writeDeleteWhereFromObject(source, (Delete.Where) sink, entity);
+		if (sink instanceof Where) {
+			writeWhereFromObject(source, (Where) sink, entity);
+		} else if (sink instanceof Map) {
+			writeMapFromWrapper(newConvertingPropertyAccessor(source, entity), (Map<CqlIdentifier, Object>) sink, entity);
 		} else if (sink instanceof TupleValue) {
 			writeTupleValue(newConvertingPropertyAccessor(source, entity), (TupleValue) sink, entity);
-		} else if (sink instanceof UDTValue) {
-			writeUDTValue(newConvertingPropertyAccessor(source, entity), (UDTValue) sink, entity);
+		} else if (sink instanceof UdtValue) {
+			writeUDTValue(newConvertingPropertyAccessor(source, entity), (UdtValue) sink, entity);
 		} else {
 			throw new MappingException(String.format("Unknown write target [%s]", ObjectUtils.nullSafeClassName(sink)));
 		}
 	}
 
-	private void writeMapFromWrapper(ConvertingPropertyAccessor accessor, Map<String, Object> insert,
+	private void writeMapFromWrapper(ConvertingPropertyAccessor<?> accessor, Map<CqlIdentifier, Object> sink,
 			CassandraPersistentEntity<?> entity) {
 
 		for (CassandraPersistentProperty property : entity) {
@@ -406,44 +382,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 				log.debug("doWithProperties Property.type {}, Property.value {}", property.getType().getName(), value);
 			}
 
-			if (property.isCompositePrimaryKey()) {
-
-				if (log.isDebugEnabled()) {
-					log.debug("Property is a compositeKey");
-				}
-
-				if (value == null) {
-					continue;
-				}
-
-				CassandraPersistentEntity<?> compositePrimaryKey = getMappingContext().getRequiredPersistentEntity(property);
-
-				writeMapFromWrapper(newConvertingPropertyAccessor(value, compositePrimaryKey), insert, compositePrimaryKey);
-
-				continue;
-			}
-
-			if (log.isDebugEnabled()) {
-				log.debug("Adding map.entry [{}] - [{}]", property.getRequiredColumnName().toCql(), value);
-			}
-
-			insert.put(property.getRequiredColumnName().toCql(), value);
-		}
-	}
-
-	private void writeInsertFromWrapper(ConvertingPropertyAccessor propertyAccessor, Insert insert,
-			CassandraPersistentEntity<?> entity) {
-
-		for (CassandraPersistentProperty property : entity) {
-
 			if (!property.isWritable()) {
 				continue;
-			}
-
-			Object value = getWriteValue(property, propertyAccessor);
-
-			if (log.isDebugEnabled()) {
-				log.debug("doWithProperties Property.type {}, Property.value {}", property.getType().getName(), value);
 			}
 
 			if (property.isCompositePrimaryKey()) {
@@ -458,88 +398,20 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 				CassandraPersistentEntity<?> compositePrimaryKey = getMappingContext().getRequiredPersistentEntity(property);
 
-				writeInsertFromWrapper(newConvertingPropertyAccessor(value, compositePrimaryKey), insert, compositePrimaryKey);
+				writeMapFromWrapper(newConvertingPropertyAccessor(value, compositePrimaryKey), sink, compositePrimaryKey);
 
-				continue;
-			}
-
-			if (value == null) {
 				continue;
 			}
 
 			if (log.isDebugEnabled()) {
-				log.debug("Adding insert.value [{}] - [{}]", property.getRequiredColumnName().toCql(), value);
+				log.debug("Adding map.entry [{}] - [{}]", property.getRequiredColumnName(), value);
 			}
 
-			insert.value(property.getRequiredColumnName().toCql(), value);
+			sink.put(property.getRequiredColumnName(), value);
 		}
 	}
 
-	private void writeUpdateFromWrapper(ConvertingPropertyAccessor propertyAccessor, Update update,
-			CassandraPersistentEntity<?> entity) {
-
-		for (CassandraPersistentProperty property : entity) {
-
-			if (!property.isWritable()) {
-				continue;
-			}
-
-			Object value = getWriteValue(property, propertyAccessor);
-
-			if (property.isCompositePrimaryKey()) {
-
-				CassandraPersistentEntity<?> compositePrimaryKey = getMappingContext().getRequiredPersistentEntity(property);
-
-				if (value == null) {
-					continue;
-				}
-
-				writeUpdateFromWrapper(newConvertingPropertyAccessor(value, compositePrimaryKey), update, compositePrimaryKey);
-
-				continue;
-			}
-
-			if (isPrimaryKeyPart(property)) {
-				update.where(QueryBuilder.eq(property.getRequiredColumnName().toCql(), value));
-			} else {
-				update.with(QueryBuilder.set(property.getRequiredColumnName().toCql(), value));
-			}
-		}
-	}
-
-	/**
-	 * Returns whether the property is part of the primary key.
-	 *
-	 * @param property {@link CassandraPersistentProperty} to evaluate.
-	 * @return a boolean value indicating whether the given property is party of a primary key.
-	 */
-	private boolean isPrimaryKeyPart(CassandraPersistentProperty property) {
-		return property.isCompositePrimaryKey() || property.isPrimaryKeyColumn() || property.isIdProperty();
-	}
-
-	private void writeSelectWhereFromObject(Object object, Select.Where where, CassandraPersistentEntity<?> entity) {
-		getWhereClauses(object, entity).forEach(where::and);
-	}
-
-	private void writeDeleteWhereFromObject(Object object, Delete.Where where, CassandraPersistentEntity<?> entity) {
-		getWhereClauses(object, entity).forEach(where::and);
-	}
-
-	@Nullable
-	private Object extractId(Object source, CassandraPersistentEntity<?> entity) {
-
-		if (ClassUtils.isAssignableValue(entity.getType(), source)) {
-			return getId(source, entity);
-		} else if (source instanceof MapId) {
-			return source;
-		} else if (source instanceof MapIdentifiable) {
-			return ((MapIdentifiable) source).getMapId();
-		}
-
-		return source;
-	}
-
-	private Collection<Clause> getWhereClauses(Object source, CassandraPersistentEntity<?> entity) {
+	private void writeWhereFromObject(Object source, Where sink, CassandraPersistentEntity<?> entity) {
 
 		Assert.notNull(source, "Id source must not be null");
 
@@ -560,7 +432,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 					? getMappingContext().getRequiredPersistentEntity(compositeIdProperty)
 					: entity;
 
-			return getWhereClauses(MapId.class.cast(id), whereEntity);
+			writeWhere(MapId.class.cast(id), sink, whereEntity);
+			return;
 		}
 
 		if (idProperty == null) {
@@ -578,20 +451,32 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			CassandraPersistentEntity<?> compositePrimaryKey = getMappingContext()
 					.getRequiredPersistentEntity(compositeIdProperty);
 
-			return getWhereClauses(newConvertingPropertyAccessor(id, compositePrimaryKey), compositePrimaryKey);
+			writeWhere(newConvertingPropertyAccessor(id, compositePrimaryKey), sink, compositePrimaryKey);
+			return;
 		}
 
 		Class<?> targetType = getTargetType(idProperty);
 
-		return Collections.singleton(QueryBuilder.eq(idProperty.getRequiredColumnName().toCql(),
-				getPotentiallyConvertedSimpleValue(id, targetType)));
+		sink.put(idProperty.getRequiredColumnName(), getPotentiallyConvertedSimpleValue(id, targetType));
 	}
 
-	private Collection<Clause> getWhereClauses(MapId id, CassandraPersistentEntity<?> entity) {
+	@Nullable
+	private Object extractId(Object source, CassandraPersistentEntity<?> entity) {
+
+		if (ClassUtils.isAssignableValue(entity.getType(), source)) {
+			return getId(source, entity);
+		} else if (source instanceof MapId) {
+			return source;
+		} else if (source instanceof MapIdentifiable) {
+			return ((MapIdentifiable) source).getMapId();
+		}
+
+		return source;
+	}
+
+	private void writeWhere(MapId id, Where sink, CassandraPersistentEntity<?> entity) {
 
 		Assert.notNull(id, "MapId must not be null");
-
-		Collection<Clause> clauses = new ArrayList<>();
 
 		for (Entry<String, Object> entry : id.entrySet()) {
 
@@ -604,29 +489,23 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 			Object writeValue = getWriteValue(entry.getValue(), persistentProperty.getTypeInformation());
 
-			clauses.add(QueryBuilder.eq(persistentProperty.getRequiredColumnName().toCql(), writeValue));
+			sink.put(persistentProperty.getRequiredColumnName(), writeValue);
 		}
-
-		return clauses;
 	}
 
-	private Collection<Clause> getWhereClauses(ConvertingPropertyAccessor accessor, CassandraPersistentEntity<?> entity) {
+	private void writeWhere(ConvertingPropertyAccessor<?> accessor, Where sink, CassandraPersistentEntity<?> entity) {
 
 		Assert.isTrue(entity.isCompositePrimaryKey(),
 				String.format("Entity [%s] is not a composite primary key", entity.getName()));
 
-		Collection<Clause> clauses = new ArrayList<>();
-
 		for (CassandraPersistentProperty property : entity) {
 			TypeCodec<Object> codec = getCodec(property);
 			Object value = accessor.getProperty(property, codec.getJavaType().getRawType());
-			clauses.add(QueryBuilder.eq(property.getRequiredColumnName().toCql(), value));
+			sink.put(property.getRequiredColumnName(), value);
 		}
-
-		return clauses;
 	}
 
-	private void writeTupleValue(ConvertingPropertyAccessor propertyAccessor, TupleValue tupleValue,
+	private void writeTupleValue(ConvertingPropertyAccessor<?> propertyAccessor, TupleValue tupleValue,
 			CassandraPersistentEntity<?> entity) {
 
 		for (CassandraPersistentProperty property : entity) {
@@ -647,7 +526,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		}
 	}
 
-	private void writeUDTValue(ConvertingPropertyAccessor propertyAccessor, UDTValue udtValue,
+	private void writeUDTValue(ConvertingPropertyAccessor<?> propertyAccessor, UdtValue udtValue,
 			CassandraPersistentEntity<?> entity) {
 
 		for (CassandraPersistentProperty property : entity) {
@@ -664,12 +543,12 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			}
 
 			if (log.isDebugEnabled()) {
-				log.debug("Adding udt.value [{}] - [{}]", property.getRequiredColumnName().toCql(), value);
+				log.debug("Adding udt.value [{}] - [{}]", property.getRequiredColumnName(), value);
 			}
 
 			TypeCodec<Object> typeCodec = getCodec(property);
 
-			udtValue.set(property.getRequiredColumnName().toCql(), value, typeCodec);
+			udtValue.set(property.getRequiredColumnName().toString(), value, typeCodec);
 		}
 	}
 
@@ -680,7 +559,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		Assert.notNull(object, "Object instance must not be null");
 		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
 
-		ConvertingPropertyAccessor propertyAccessor = newConvertingPropertyAccessor(object, entity);
+		ConvertingPropertyAccessor<?> propertyAccessor = newConvertingPropertyAccessor(object, entity);
 
 		Assert.isTrue(entity.getType().isAssignableFrom(object.getClass()),
 				String.format("Given instance of type [%s] is not compatible with expected type [%s]",
@@ -739,7 +618,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		}
 
 		DataType dataType = getMappingContext().getDataType(property);
-		if (dataType instanceof UserType || dataType instanceof TupleType) {
+		if (dataType instanceof UserDefinedType || dataType instanceof TupleType) {
 			return property.getType();
 		}
 
@@ -830,7 +709,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 			if (entity.isUserDefinedType()) {
 
-				UDTValue udtValue = entity.getUserType().newValue();
+				UdtValue udtValue = entity.getUserType().newValue();
 
 				write(value, udtValue, entity);
 
@@ -999,13 +878,13 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			}
 		}
 
-		if (value instanceof UDTValue) {
+		if (value instanceof UdtValue) {
 
 			BasicCassandraPersistentEntity<?> udtEntity = getMappingContext()
 					.getPersistentEntity(typeInformation.getRequiredActualType());
 
 			if (udtEntity != null && udtEntity.isUserDefinedType()) {
-				return readEntityFromUdt(udtEntity, (UDTValue) value);
+				return readEntityFromUdt(udtEntity, (UdtValue) value);
 			}
 		}
 
@@ -1039,7 +918,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 		if (entity != null && entity.isUserDefinedType()) {
 			for (Object element : source) {
-				collection.add(readEntityFromUdt(entity, (UDTValue) element));
+				collection.add(readEntityFromUdt(entity, (UdtValue) element));
 			}
 
 		} else if (entity != null && entity.isTupleType()) {
@@ -1076,7 +955,6 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 * @param targetType must not be {@literal null}.
 	 * @return the converted {@link Collection} or array, will never be {@literal null}.
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private Object readMapInternal(Map<Object, Object> source, TypeInformation<?> targetType) {
 
 		Assert.notNull(targetType, "Target type must not be null");

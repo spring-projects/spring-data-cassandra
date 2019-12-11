@@ -19,9 +19,10 @@ import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.cassandra.core.cql.generator.CreateUserTypeCqlGenerator.*;
 
 import org.junit.Test;
+
 import org.springframework.data.cassandra.core.cql.keyspace.CreateUserTypeSpecification;
 
-import com.datastax.driver.core.DataType;
+import com.datastax.oss.driver.api.core.type.DataTypes;
 
 /**
  * Unit tests for {@link CreateUserTypeCqlGenerator}.
@@ -35,7 +36,7 @@ public class CreateUserTypeCqlGeneratorUnitTests {
 
 		CreateUserTypeSpecification spec = CreateUserTypeSpecification //
 				.createType("address") //
-				.field("city", DataType.varchar());
+				.field("city", DataTypes.TEXT);
 
 		assertThat(toCql(spec)).isEqualTo("CREATE TYPE address (city varchar);");
 	}
@@ -45,8 +46,8 @@ public class CreateUserTypeCqlGeneratorUnitTests {
 
 		CreateUserTypeSpecification spec = CreateUserTypeSpecification //
 				.createType("address") //
-				.field("zip", DataType.ascii()) //
-				.field("city", DataType.varchar());
+				.field("zip", DataTypes.ASCII) //
+				.field("city", DataTypes.TEXT);
 
 		assertThat(toCql(spec)).isEqualTo("CREATE TYPE address (zip ascii, city varchar);");
 	}
@@ -55,8 +56,8 @@ public class CreateUserTypeCqlGeneratorUnitTests {
 	public void createUserTypeIfNotExists() {
 
 		CreateUserTypeSpecification spec = CreateUserTypeSpecification //
-				.createType("address").ifNotExists().field("zip", DataType.ascii()) //
-				.field("city", DataType.varchar());
+				.createType("address").ifNotExists().field("zip", DataTypes.ASCII) //
+				.field("city", DataTypes.TEXT);
 
 		assertThat(toCql(spec)).isEqualTo("CREATE TYPE IF NOT EXISTS address (zip ascii, city varchar);");
 	}

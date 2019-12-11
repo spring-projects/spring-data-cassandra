@@ -20,8 +20,9 @@ import java.util.Map;
 import org.springframework.lang.Nullable;
 import org.springframework.util.LinkedCaseInsensitiveMap;
 
-import com.datastax.driver.core.ColumnDefinitions;
-import com.datastax.driver.core.Row;
+import com.datastax.oss.driver.api.core.cql.ColumnDefinition;
+import com.datastax.oss.driver.api.core.cql.ColumnDefinitions;
+import com.datastax.oss.driver.api.core.cql.Row;
 
 /**
  * {@link RowMapper} implementation that creates a {@code java.util.Map} for each row, representing all columns as
@@ -53,7 +54,8 @@ public class ColumnMapRowMapper implements RowMapper<Map<String, Object>> {
 		Map<String, Object> mapOfColValues = createColumnMap(columnCount);
 
 		for (int i = 0; i < columnCount; i++) {
-			String key = getColumnKey(columnDefinitions.getName(i));
+			ColumnDefinition columnDefinition = columnDefinitions.get(i);
+			String key = getColumnKey(columnDefinition.getName().toString());
 			Object obj = getColumnValue(rs, i);
 			mapOfColValues.put(key, obj);
 		}

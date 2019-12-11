@@ -22,7 +22,9 @@ import java.util.Comparator;
  *
  * @author Matthew T. Adams
  * @author Mark Paluch
+ * @deprecated since 3.0 without replacement.
  */
+@Deprecated
 public enum CassandraColumnAnnotationComparator implements Comparator<Column> {
 
 	/**

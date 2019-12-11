@@ -22,6 +22,7 @@ import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.data.cassandra.core.StatementFactory;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.cql.QueryOptionsUtil;
@@ -36,9 +37,8 @@ import org.springframework.data.repository.query.ResultProcessor;
 import org.springframework.data.repository.query.ReturnedType;
 import org.springframework.data.repository.query.parser.PartTree;
 
-import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.SimpleStatement;
-import com.datastax.driver.core.Statement;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.cql.Statement;
 
 /**
  * Creates {@link Statement}s for {@link CassandraQueryMethod query methods} based on {@link PartTree} and
@@ -56,7 +56,7 @@ class QueryStatementCreator {
 
 	private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
 
-	private CassandraPersistentEntity<?> requirePersistentEntity() {
+	private CassandraPersistentEntity<?> getPersistentEntity() {
 		return this.mappingContext.getRequiredPersistentEntity(this.queryMethod.getDomainClass());
 	}
 
@@ -68,10 +68,10 @@ class QueryStatementCreator {
 	 * @param parameterAccessor must not be {@literal null}.
 	 * @return the {@literal SELECT} {@link Statement}.
 	 */
-	Statement select(StatementFactory statementFactory, PartTree tree, CassandraParameterAccessor parameterAccessor,
+	SimpleStatement select(StatementFactory statementFactory, PartTree tree, CassandraParameterAccessor parameterAccessor,
 			ResultProcessor processor) {
 
-		Function<Query, Statement> function = query -> {
+		Function<Query, SimpleStatement> function = query -> {
 
 			ReturnedType returnedType = processor.withDynamicProjection(parameterAccessor).getReturnedType();
 
@@ -81,7 +81,7 @@ class QueryStatementCreator {
 				query = query.columns(columns);
 			}
 
-			RegularStatement statement = statementFactory.select(query, requirePersistentEntity());
+			SimpleStatement statement = statementFactory.select(query, getPersistentEntity()).build();
 
 			if (LOG.isDebugEnabled()) {
 				LOG.debug(String.format("Created query [%s].", statement));
@@ -102,11 +102,12 @@ class QueryStatementCreator {
 	 * @return the {@literal SELECT} {@link Statement}.
 	 * @since 2.1
 	 */
-	Statement count(StatementFactory statementFactory, PartTree tree, CassandraParameterAccessor parameterAccessor) {
+	SimpleStatement count(StatementFactory statementFactory, PartTree tree,
+			CassandraParameterAccessor parameterAccessor) {
 
-		Function<Query, Statement> function = query -> {
+		Function<Query, SimpleStatement> function = query -> {
 
-			RegularStatement statement = statementFactory.count(query, requirePersistentEntity());
+			SimpleStatement statement = statementFactory.count(query, getPersistentEntity()).build();
 
 			if (LOG.isDebugEnabled()) {
 				LOG.debug(String.format("Created query [%s].", statement));
@@ -128,11 +129,12 @@ class QueryStatementCreator {
 	 * @return the {@literal DELETE} {@link Statement}.
 	 * @since 2.2
 	 */
-	Statement delete(StatementFactory statementFactory, PartTree tree, CassandraParameterAccessor parameterAccessor) {
+	SimpleStatement delete(StatementFactory statementFactory, PartTree tree,
+			CassandraParameterAccessor parameterAccessor) {
 
-		Function<Query, Statement> function = query -> {
+		Function<Query, SimpleStatement> function = query -> {
 
-			RegularStatement statement = statementFactory.delete(query, requirePersistentEntity());
+			SimpleStatement statement = statementFactory.delete(query, getPersistentEntity()).build();
 
 			if (LOG.isDebugEnabled()) {
 				LOG.debug(String.format("Created query [%s].", statement));
@@ -154,11 +156,12 @@ class QueryStatementCreator {
 	 * @return the {@literal SELECT} {@link Statement}.
 	 * @since 2.1
 	 */
-	Statement exists(StatementFactory statementFactory, PartTree tree, CassandraParameterAccessor parameterAccessor) {
+	SimpleStatement exists(StatementFactory statementFactory, PartTree tree,
+			CassandraParameterAccessor parameterAccessor) {
 
-		Function<Query, Statement> function = query -> {
+		Function<Query, SimpleStatement> function = query -> {
 
-			RegularStatement statement = statementFactory.select(query.limit(1), requirePersistentEntity());
+			SimpleStatement statement = statementFactory.select(query.limit(1), getPersistentEntity()).build();
 
 			if (LOG.isDebugEnabled()) {
 				LOG.debug(String.format("Created query [%s].", statement));
@@ -211,7 +214,6 @@ class QueryStatementCreator {
 	}
 
 	private boolean allowsFiltering() {
-
 		return this.queryMethod.getQueryAnnotation()
 				.map(org.springframework.data.cassandra.repository.Query::allowFiltering).orElse(false);
 	}
@@ -237,12 +239,12 @@ class QueryStatementCreator {
 				queryToUse = Optional.ofNullable(parameterAccessor.getQueryOptions())
 						.map(it -> QueryOptionsUtil.addQueryOptions(boundQuery, it)).orElse(boundQuery);
 			} else if (this.queryMethod.hasConsistencyLevel()) {
-				queryToUse.setConsistencyLevel(this.queryMethod.getRequiredAnnotatedConsistencyLevel());
+				queryToUse = queryToUse.setConsistencyLevel(this.queryMethod.getRequiredAnnotatedConsistencyLevel());
 			}
 
 			Idempotency idempotency = this.queryMethod.getIdempotency();
 			if (idempotency != Idempotency.UNDEFINED) {
-				queryToUse.setIdempotent(idempotency == Idempotency.IDEMPOTENT);
+				queryToUse = queryToUse.setIdempotent(idempotency == Idempotency.IDEMPOTENT);
 			}
 
 			if (LOG.isDebugEnabled()) {

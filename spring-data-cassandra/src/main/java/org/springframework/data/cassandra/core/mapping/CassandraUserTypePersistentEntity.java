@@ -15,13 +15,12 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.UserType;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * {@link org.springframework.data.mapping.PersistentEntity} for a mapped user-defined type (UDT). A mapped UDT consists
@@ -37,7 +36,7 @@ public class CassandraUserTypePersistentEntity<T> extends BasicCassandraPersiste
 
 	private final Object lock = new Object();
 
-	private volatile @Nullable UserType userType;
+	private volatile @Nullable com.datastax.oss.driver.api.core.type.UserDefinedType userType;
 
 	/**
 	 * Create a new {@link CassandraUserTypePersistentEntity}.
@@ -83,14 +82,14 @@ public class CassandraUserTypePersistentEntity<T> extends BasicCassandraPersiste
 	 * @see org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity#getUserType()
 	 */
 	@Override
-	public UserType getUserType() {
+	public com.datastax.oss.driver.api.core.type.UserDefinedType getUserType() {
 
 		if (userType == null) {
 			synchronized (lock) {
 				if (userType == null) {
 
 					CqlIdentifier identifier = determineTableName();
-					UserType userType = resolver.resolveType(identifier);
+					com.datastax.oss.driver.api.core.type.UserDefinedType userType = resolver.resolveType(identifier);
 
 					if (userType == null) {
 						throw new MappingException(String.format("User type [%s] not found", identifier));

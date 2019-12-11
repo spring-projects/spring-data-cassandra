@@ -17,9 +17,12 @@ package org.springframework.data.cassandra.core;
 
 import lombok.Value;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -32,19 +35,17 @@ import org.springframework.data.cassandra.SessionFactory;
 import org.springframework.data.cassandra.core.EntityOperations.AdaptibleEntity;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
-import org.springframework.data.cassandra.core.convert.QueryMapper;
-import org.springframework.data.cassandra.core.convert.UpdateMapper;
 import org.springframework.data.cassandra.core.cql.AsyncCqlOperations;
 import org.springframework.data.cassandra.core.cql.AsyncCqlTemplate;
 import org.springframework.data.cassandra.core.cql.AsyncSessionCallback;
 import org.springframework.data.cassandra.core.cql.CassandraAccessor;
 import org.springframework.data.cassandra.core.cql.CqlExceptionTranslator;
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.cql.CqlProvider;
-import org.springframework.data.cassandra.core.cql.GuavaListenableFutureAdapter;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.data.cassandra.core.cql.session.DefaultSessionFactory;
+import org.springframework.data.cassandra.core.cql.util.CassandraFutureAdapter;
+import org.springframework.data.cassandra.core.cql.util.StatementBuilder;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.event.AfterConvertEvent;
 import org.springframework.data.cassandra.core.mapping.event.AfterDeleteEvent;
@@ -65,19 +66,20 @@ import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
 
-import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.SimpleStatement;
-import com.datastax.driver.core.Statement;
-import com.datastax.driver.core.exceptions.DriverException;
-import com.datastax.driver.core.querybuilder.Delete;
-import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
-import com.datastax.driver.core.querybuilder.Truncate;
-import com.datastax.driver.core.querybuilder.Update;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.DriverException;
+import com.datastax.oss.driver.api.core.config.DefaultDriverOption;
+import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.cql.Statement;
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
+import com.datastax.oss.driver.api.querybuilder.delete.Delete;
+import com.datastax.oss.driver.api.querybuilder.insert.RegularInsert;
+import com.datastax.oss.driver.api.querybuilder.select.Select;
+import com.datastax.oss.driver.api.querybuilder.truncate.Truncate;
+import com.datastax.oss.driver.api.querybuilder.update.Update;
 
 /**
  * Primary implementation of {@link AsyncCassandraOperations}. It simplifies the use of asynchronous Cassandra usage and
@@ -85,11 +87,11 @@ import com.datastax.driver.core.querybuilder.Update;
  * initiating iteration over {@link ResultSet} and catching Cassandra exceptions and translating them to the generic,
  * more informative exception hierarchy defined in the {@code org.springframework.dao} package.
  * <p>
- * Can be used within a service implementation via direct instantiation with a {@link Session} reference, or get
+ * Can be used within a service implementation via direct instantiation with a {@link CqlSession} reference, or get
  * prepared in an application context and given to services as bean reference.
  * <p>
- * Note: The {@link Session} should always be configured as a bean in the application context, in the first case given
- * to the service directly, in the second case to the prepared template.
+ * Note: The {@link CqlSession} should always be configured as a bean in the application context, in the first case
+ * given to the service directly, in the second case to the prepared template.
  *
  * @author Mark Paluch
  * @author John Blum
@@ -116,28 +118,28 @@ public class AsyncCassandraTemplate
 	private @Nullable EntityCallbacks entityCallbacks;
 
 	/**
-	 * Creates an instance of {@link AsyncCassandraTemplate} initialized with the given {@link Session} and a default
+	 * Creates an instance of {@link AsyncCassandraTemplate} initialized with the given {@link CqlSession} and a default
 	 * {@link MappingCassandraConverter}.
 	 *
-	 * @param session {@link Session} used to interact with Cassandra; must not be {@literal null}.
+	 * @param session {@link CqlSession} used to interact with Cassandra; must not be {@literal null}.
 	 * @see CassandraConverter
 	 * @see Session
 	 */
-	public AsyncCassandraTemplate(Session session) {
+	public AsyncCassandraTemplate(CqlSession session) {
 		this(session, newConverter());
 	}
 
 	/**
-	 * Creates an instance of {@link AsyncCassandraTemplate} initialized with the given {@link Session} and
+	 * Creates an instance of {@link AsyncCassandraTemplate} initialized with the given {@link CqlSession} and
 	 * {@link CassandraConverter}.
 	 *
-	 * @param session {@link Session} used to interact with Cassandra; must not be {@literal null}.
+	 * @param session {@link CqlSession} used to interact with Cassandra; must not be {@literal null}.
 	 * @param converter {@link CassandraConverter} used to convert between Java and Cassandra types; must not be
 	 *          {@literal null}.
 	 * @see CassandraConverter
 	 * @see Session
 	 */
-	public AsyncCassandraTemplate(Session session, CassandraConverter converter) {
+	public AsyncCassandraTemplate(CqlSession session, CassandraConverter converter) {
 		this(new DefaultSessionFactory(session), converter);
 	}
 
@@ -175,7 +177,7 @@ public class AsyncCassandraTemplate
 		this.entityOperations = new EntityOperations(converter.getMappingContext());
 		this.exceptionTranslator = asyncCqlTemplate.getExceptionTranslator();
 		this.projectionFactory = new SpelAwareProxyProjectionFactory();
-		this.statementFactory = new StatementFactory(new QueryMapper(converter), new UpdateMapper(converter));
+		this.statementFactory = new StatementFactory(converter);
 	}
 
 	/* (non-Javadoc)
@@ -257,7 +259,7 @@ public class AsyncCassandraTemplate
 	 * Returns the {@link StatementFactory} used by this template to construct and run Cassandra CQL statements.
 	 *
 	 * @return the {@link StatementFactory} used by this template to construct and run Cassandra CQL statements.
-	 * @see org.springframework.data.cassandra.core.StatementFactory
+	 * @see StatementFactory
 	 * @since 2.1
 	 */
 	protected StatementFactory getStatementFactory() {
@@ -280,7 +282,7 @@ public class AsyncCassandraTemplate
 
 		Assert.hasText(cql, "CQL must not be empty");
 
-		return select(new SimpleStatement(cql), entityClass);
+		return select(SimpleStatement.newInstance(cql), entityClass);
 	}
 
 	/* (non-Javadoc)
@@ -294,7 +296,7 @@ public class AsyncCassandraTemplate
 		Assert.notNull(entityConsumer, "Entity Consumer must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return select(new SimpleStatement(cql), entityConsumer, entityClass);
+		return select(SimpleStatement.newInstance(cql), entityConsumer, entityClass);
 	}
 
 	/* (non-Javadoc)
@@ -306,18 +308,18 @@ public class AsyncCassandraTemplate
 		Assert.hasText(cql, "CQL must not be empty");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return selectOne(new SimpleStatement(cql), entityClass);
+		return selectOne(SimpleStatement.newInstance(cql), entityClass);
 	}
 
 	// -------------------------------------------------------------------------
-	// Methods dealing with com.datastax.driver.core.Statement
+	// Methods dealing with com.datastax.oss.driver.api.core.cql.Statement
 	// -------------------------------------------------------------------------
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#select(com.datastax.driver.core.Statement, java.lang.Class)
+	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#select(com.datastax.oss.driver.api.core.cql.Statement, java.lang.Class)
 	 */
 	@Override
-	public <T> ListenableFuture<List<T>> select(Statement statement, Class<T> entityClass) {
+	public <T> ListenableFuture<List<T>> select(Statement<?> statement, Class<T> entityClass) {
 
 		Assert.notNull(statement, "Statement must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
@@ -328,10 +330,10 @@ public class AsyncCassandraTemplate
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#select(com.datastax.driver.core.Statement, java.util.function.Consumer, java.lang.Class)
+	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#select(com.datastax.oss.driver.api.core.cql.Statement, java.util.function.Consumer, java.lang.Class)
 	 */
 	@Override
-	public <T> ListenableFuture<Void> select(Statement statement, Consumer<T> entityConsumer, Class<T> entityClass)
+	public <T> ListenableFuture<Void> select(Statement<?> statement, Consumer<T> entityConsumer, Class<T> entityClass)
 			throws DataAccessException {
 
 		Assert.notNull(statement, "Statement must not be null");
@@ -346,29 +348,29 @@ public class AsyncCassandraTemplate
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#selectOne(com.datastax.driver.core.Statement, java.lang.Class)
+	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#selectOne(com.datastax.oss.driver.api.core.cql.Statement, java.lang.Class)
 	 */
 	@Override
-	public <T> ListenableFuture<T> selectOne(Statement statement, Class<T> entityClass) {
+	public <T> ListenableFuture<T> selectOne(Statement<?> statement, Class<T> entityClass) {
 		return new MappingListenableFutureAdapter<>(select(statement, entityClass),
 				list -> list.isEmpty() ? null : list.get(0));
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#slice(com.datastax.driver.core.Statement, java.lang.Class)
+	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#slice(com.datastax.oss.driver.api.core.cql.Statement, java.lang.Class)
 	 */
 	@Override
-	public <T> ListenableFuture<Slice<T>> slice(Statement statement, Class<T> entityClass) {
+	public <T> ListenableFuture<Slice<T>> slice(Statement<?> statement, Class<T> entityClass) {
 
 		Assert.notNull(statement, "Statement must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		ListenableFuture<ResultSet> resultSet = getAsyncCqlOperations().queryForResultSet(statement);
+		ListenableFuture<AsyncResultSet> resultSet = getAsyncCqlOperations().queryForResultSet(statement);
 
 		Function<Row, T> mapper = getMapper(entityClass, entityClass, EntityQueryUtils.getTableName(statement));
 
 		return new MappingListenableFutureAdapter<>(resultSet,
-				rs -> EntityQueryUtils.readSlice(rs, (row, rowNum) -> mapper.apply(row), 0, getEffectiveFetchSize(statement)));
+				rs -> EntityQueryUtils.readSlice(rs, (row, rowNum) -> mapper.apply(row), 0, getEffectivePageSize(statement)));
 	}
 
 	// -------------------------------------------------------------------------
@@ -384,7 +386,7 @@ public class AsyncCassandraTemplate
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return select(getStatementFactory().select(query, getRequiredPersistentEntity(entityClass)), entityClass);
+		return select(getStatementFactory().select(query, getRequiredPersistentEntity(entityClass)).build(), entityClass);
 	}
 
 	/* (non-Javadoc)
@@ -398,7 +400,7 @@ public class AsyncCassandraTemplate
 		Assert.notNull(entityConsumer, "Entity Consumer must not be empty");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return select(getStatementFactory().select(query, getRequiredPersistentEntity(entityClass)), entityConsumer,
+		return select(getStatementFactory().select(query, getRequiredPersistentEntity(entityClass)).build(), entityConsumer,
 				entityClass);
 	}
 
@@ -411,7 +413,8 @@ public class AsyncCassandraTemplate
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return selectOne(getStatementFactory().select(query, getRequiredPersistentEntity(entityClass)), entityClass);
+		return selectOne(getStatementFactory().select(query, getRequiredPersistentEntity(entityClass)).build(),
+				entityClass);
 	}
 
 	/* (non-Javadoc)
@@ -423,7 +426,7 @@ public class AsyncCassandraTemplate
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return slice(getStatementFactory().select(query, getRequiredPersistentEntity(entityClass)), entityClass);
+		return slice(getStatementFactory().select(query, getRequiredPersistentEntity(entityClass)).build(), entityClass);
 	}
 
 	/* (non-Javadoc)
@@ -438,7 +441,7 @@ public class AsyncCassandraTemplate
 		Assert.notNull(entityClass, "Entity type must not be null");
 
 		return getAsyncCqlOperations()
-				.execute(getStatementFactory().update(query, update, getRequiredPersistentEntity(entityClass)));
+				.execute(getStatementFactory().update(query, update, getRequiredPersistentEntity(entityClass)).build());
 	}
 
 	/* (non-Javadoc)
@@ -455,12 +458,13 @@ public class AsyncCassandraTemplate
 
 	private ListenableFuture<Boolean> doDelete(Query query, Class<?> entityClass, CqlIdentifier tableName) {
 
-		RegularStatement delete = getStatementFactory().delete(query, getRequiredPersistentEntity(entityClass), tableName);
+		StatementBuilder<Delete> builder = getStatementFactory().delete(query, getRequiredPersistentEntity(entityClass),
+				tableName);
+		SimpleStatement delete = builder.build();
 
 		maybeEmitEvent(new BeforeDeleteEvent<>(delete, entityClass, tableName));
 
-		ListenableFuture<Boolean> future = getAsyncCqlOperations()
-				.execute(getStatementFactory().delete(query, getRequiredPersistentEntity(entityClass)));
+		ListenableFuture<Boolean> future = getAsyncCqlOperations().execute(delete);
 
 		future.addCallback(success -> maybeEmitEvent(new AfterDeleteEvent<>(delete, entityClass, tableName)), e -> {});
 
@@ -479,9 +483,7 @@ public class AsyncCassandraTemplate
 
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		Select select = QueryBuilder.select().countAll().from(getTableName(entityClass).toCql());
-
-		return getAsyncCqlOperations().queryForObject(select, Long.class);
+		return doCount(Query.empty(), entityClass, getTableName(entityClass));
 	}
 
 	/* (non-Javadoc)
@@ -493,9 +495,17 @@ public class AsyncCassandraTemplate
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		RegularStatement count = getStatementFactory().count(query, getRequiredPersistentEntity(entityClass));
+		return doCount(query, entityClass, getTableName(entityClass));
+	}
 
-		ListenableFuture<Long> result = getAsyncCqlOperations().queryForObject(count, Long.class);
+	ListenableFuture<Long> doCount(Query query, Class<?> entityClass, CqlIdentifier tableName) {
+
+		StatementBuilder<com.datastax.oss.driver.api.querybuilder.select.Select> countStatement = getStatementFactory()
+				.count(query, getRequiredPersistentEntity(entityClass), tableName);
+
+		SimpleStatement statement = countStatement.build();
+
+		ListenableFuture<Long> result = getAsyncCqlOperations().queryForObject(statement, Long.class);
 
 		return new MappingListenableFutureAdapter<>(result, it -> it != null ? it : 0L);
 	}
@@ -511,12 +521,11 @@ public class AsyncCassandraTemplate
 
 		CassandraPersistentEntity<?> entity = getRequiredPersistentEntity(entityClass);
 
-		Select select = QueryBuilder.select().from(entity.getTableName().toCql());
+		StatementBuilder<com.datastax.oss.driver.api.querybuilder.select.Select> select = getStatementFactory()
+				.selectOneById(id, (source, sink) -> getConverter().write(source, sink, entity), entity.getTableName());
 
-		getConverter().write(id, select.where(), entity);
-
-		return new MappingListenableFutureAdapter<>(getAsyncCqlOperations().queryForResultSet(select),
-				resultSet -> resultSet.iterator().hasNext());
+		return new MappingListenableFutureAdapter<>(getAsyncCqlOperations().queryForResultSet(select.build()),
+				resultSet -> resultSet.remaining() > 0);
 	}
 
 	/* (non-Javadoc)
@@ -528,10 +537,11 @@ public class AsyncCassandraTemplate
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		RegularStatement select = getStatementFactory().select(query.limit(1), getRequiredPersistentEntity(entityClass));
+		StatementBuilder<com.datastax.oss.driver.api.querybuilder.select.Select> select = getStatementFactory()
+				.select(query.limit(1), getRequiredPersistentEntity(entityClass), getTableName(entityClass));
 
-		return new MappingListenableFutureAdapter<>(getAsyncCqlOperations().queryForResultSet(select),
-				resultSet -> resultSet.iterator().hasNext());
+		return new MappingListenableFutureAdapter<>(getAsyncCqlOperations().queryForResultSet(select.build()),
+				resultSet -> resultSet.remaining() > 0);
 	}
 
 	/* (non-Javadoc)
@@ -544,15 +554,13 @@ public class AsyncCassandraTemplate
 		Assert.notNull(entityClass, "Entity type must not be null");
 
 		CassandraPersistentEntity<?> entity = getRequiredPersistentEntity(entityClass);
-
-		Select select = QueryBuilder.select().all().from(entity.getTableName().toCql());
-
-		getConverter().write(id, select.where(), entity);
-
-		Function<Row, T> mapper = getMapper(entityClass, entityClass, entity.getTableName());
+		CqlIdentifier tableName = entity.getTableName();
+		StatementBuilder<Select> select = getStatementFactory().selectOneById(id,
+				(source, sink) -> getConverter().write(source, sink, entity), tableName);
+		Function<Row, T> mapper = getMapper(entityClass, entityClass, tableName);
 
 		return new MappingListenableFutureAdapter<>(
-				getAsyncCqlOperations().query(select, (row, rowNum) -> mapper.apply(row)),
+				getAsyncCqlOperations().query(select.build(), (row, rowNum) -> mapper.apply(row)),
 				it -> it.isEmpty() ? null : it.get(0));
 	}
 
@@ -584,14 +592,14 @@ public class AsyncCassandraTemplate
 
 		T entityToUse = source.isVersionedEntity() ? source.initializeVersionProperty() : entity;
 
-		Insert insert = EntityQueryUtils.createInsertQuery(tableName.toCql(), entityToUse, options, getConverter(),
-				persistentEntity);
+		StatementBuilder<RegularInsert> builder = getStatementFactory().insert(entityToUse, options, persistentEntity,
+				tableName);
 
-		return source.isVersionedEntity() ? doInsertVersioned(insert.ifNotExists(), entityToUse, source, tableName)
-				: doInsert(insert, entityToUse, source, tableName);
+		return source.isVersionedEntity() ? doInsertVersioned(builder.build(), entityToUse, source, tableName)
+				: doInsert(builder.build(), entityToUse, source, tableName);
 	}
 
-	private <T> ListenableFuture<EntityWriteResult<T>> doInsertVersioned(Insert insert, T entity,
+	private <T> ListenableFuture<EntityWriteResult<T>> doInsertVersioned(Statement<?> insert, T entity,
 			AdaptibleEntity<T> source, CqlIdentifier tableName) {
 
 		return executeSave(entity, tableName, insert, result -> {
@@ -605,7 +613,7 @@ public class AsyncCassandraTemplate
 	}
 
 	@SuppressWarnings("unused")
-	private <T> ListenableFuture<EntityWriteResult<T>> doInsert(Insert insert, T entity, AdaptibleEntity<T> source,
+	private <T> ListenableFuture<EntityWriteResult<T>> doInsert(Statement<?> insert, T entity, AdaptibleEntity<T> source,
 			CqlIdentifier tableName) {
 
 		return executeSave(entity, tableName, insert);
@@ -645,9 +653,10 @@ public class AsyncCassandraTemplate
 		Number previousVersion = source.getVersion();
 		T toSave = source.incrementVersion();
 
-		Update update = getStatementFactory().update(toSave, options, getConverter(), persistentEntity, tableName);
+		StatementBuilder<Update> update = getStatementFactory().update(toSave, options, persistentEntity, tableName);
+		source.appendVersionCondition(update, previousVersion);
 
-		return executeSave(toSave, tableName, source.appendVersionCondition(update, previousVersion), result -> {
+		return executeSave(toSave, tableName, update.build(), result -> {
 
 			if (!result.wasApplied()) {
 				throw new OptimisticLockingFailureException(
@@ -660,9 +669,9 @@ public class AsyncCassandraTemplate
 	private <T> ListenableFuture<EntityWriteResult<T>> doUpdate(T entity, UpdateOptions options, CqlIdentifier tableName,
 			CassandraPersistentEntity<?> persistentEntity) {
 
-		Update update = getStatementFactory().update(entity, options, getConverter(), persistentEntity, tableName);
+		StatementBuilder<Update> update = getStatementFactory().update(entity, options, persistentEntity, tableName);
 
-		return executeSave(entity, tableName, update);
+		return executeSave(entity, tableName, update.build());
 	}
 
 	/* (non-Javadoc)
@@ -686,16 +695,17 @@ public class AsyncCassandraTemplate
 		CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
 		CqlIdentifier tableName = persistentEntity.getTableName();
 
-		Delete delete = getStatementFactory().delete(entity, options, getConverter(), persistentEntity, tableName);
-
-		return source.isVersionedEntity() ? doDeleteVersioned(delete, entity, source, tableName)
-				: doDelete(delete, entity, tableName);
+		return source.isVersionedEntity() ? doDeleteVersioned(entity, options, source, tableName)
+				: doDelete(entity, options, tableName);
 	}
 
-	private ListenableFuture<WriteResult> doDeleteVersioned(Delete delete, Object entity, AdaptibleEntity<Object> source,
-			CqlIdentifier tableName) {
+	private ListenableFuture<WriteResult> doDeleteVersioned(Object entity, QueryOptions options,
+			AdaptibleEntity<Object> source, CqlIdentifier tableName) {
 
-		return executeDelete(entity, tableName, source.appendVersionCondition(delete), result -> {
+		StatementBuilder<Delete> delete = getStatementFactory().delete(entity, options, getConverter(), tableName);
+		source.appendVersionCondition(delete);
+
+		return executeDelete(entity, tableName, delete.build(), result -> {
 
 			if (!result.wasApplied()) {
 				throw new OptimisticLockingFailureException(
@@ -705,8 +715,11 @@ public class AsyncCassandraTemplate
 		});
 	}
 
-	private ListenableFuture<WriteResult> doDelete(Delete delete, Object entity, CqlIdentifier tableName) {
-		return executeDelete(entity, tableName, delete, result -> {});
+	private ListenableFuture<WriteResult> doDelete(Object entity, QueryOptions options, CqlIdentifier tableName) {
+
+		StatementBuilder<Delete> delete = getStatementFactory().delete(entity, options, getConverter(), tableName);
+
+		return executeDelete(entity, tableName, delete.build(), result -> {});
 	}
 
 	/* (non-Javadoc)
@@ -719,10 +732,11 @@ public class AsyncCassandraTemplate
 		Assert.notNull(entityClass, "Entity type must not be null");
 
 		CassandraPersistentEntity<?> entity = getRequiredPersistentEntity(entityClass);
-
 		CqlIdentifier tableName = entity.getTableName();
-		Delete delete = QueryBuilder.delete().from(tableName.toCql());
-		getConverter().write(id, delete.where(), entity);
+
+		StatementBuilder<Delete> builder = getStatementFactory().deleteById(id,
+				(source, sink) -> getConverter().write(source, sink, entity), tableName);
+		SimpleStatement delete = builder.build();
 
 		maybeEmitEvent(new BeforeDeleteEvent<>(delete, entityClass, tableName));
 
@@ -741,12 +755,13 @@ public class AsyncCassandraTemplate
 		Assert.notNull(entityClass, "Entity type must not be null");
 
 		CqlIdentifier tableName = getTableName(entityClass);
-		Truncate truncate = QueryBuilder.truncate(tableName.toCql());
+		Truncate truncate = QueryBuilder.truncate(tableName);
+		SimpleStatement statement = truncate.build();
 
-		maybeEmitEvent(new BeforeDeleteEvent<>(truncate, entityClass, tableName));
+		maybeEmitEvent(new BeforeDeleteEvent<>(statement, entityClass, tableName));
 
-		ListenableFuture<Boolean> future = getAsyncCqlOperations().execute(truncate);
-		future.addCallback(success -> maybeEmitEvent(new AfterDeleteEvent<>(truncate, entityClass, tableName)), e -> {});
+		ListenableFuture<Boolean> future = getAsyncCqlOperations().execute(statement);
+		future.addCallback(success -> maybeEmitEvent(new AfterDeleteEvent<>(statement, entityClass, tableName)), e -> {});
 
 		return new MappingListenableFutureAdapter<>(future, aBoolean -> null);
 	}
@@ -756,22 +771,24 @@ public class AsyncCassandraTemplate
 	// -------------------------------------------------------------------------
 
 	private <T> ListenableFuture<EntityWriteResult<T>> executeSave(T entity, CqlIdentifier tableName,
-			Statement statement) {
+			Statement<?> statement) {
 
 		return executeSave(entity, tableName, statement, ignore -> {});
 	}
 
-	private <T> ListenableFuture<EntityWriteResult<T>> executeSave(T entity, CqlIdentifier tableName, Statement statement,
-			Consumer<WriteResult> beforeAfterSaveEvent) {
+	private <T> ListenableFuture<EntityWriteResult<T>> executeSave(T entity, CqlIdentifier tableName,
+			Statement<?> statement, Consumer<WriteResult> beforeAfterSaveEvent) {
 
 		maybeEmitEvent(new BeforeSaveEvent<>(entity, tableName, statement));
 		T entityToSave = maybeCallBeforeSave(entity, tableName, statement);
 
-		ListenableFuture<ResultSet> result = getAsyncCqlOperations().execute(new AsyncStatementCallback(statement));
+		ListenableFuture<AsyncResultSet> result = getAsyncCqlOperations().execute(new AsyncStatementCallback(statement));
 
 		return new MappingListenableFutureAdapter<>(result, resultSet -> {
 
-			EntityWriteResult<T> writeResult = EntityWriteResult.of(resultSet, entityToSave);
+			EntityWriteResult<T> writeResult = new EntityWriteResult<>(
+					Collections.singletonList(resultSet.getExecutionInfo()), resultSet.wasApplied(), getFirstPage(resultSet),
+					entityToSave);
 
 			beforeAfterSaveEvent.accept(writeResult);
 
@@ -781,16 +798,17 @@ public class AsyncCassandraTemplate
 		});
 	}
 
-	private ListenableFuture<WriteResult> executeDelete(Object entity, CqlIdentifier tableName, Statement statement,
+	private ListenableFuture<WriteResult> executeDelete(Object entity, CqlIdentifier tableName, Statement<?> statement,
 			Consumer<WriteResult> resultConsumer) {
 
 		maybeEmitEvent(new BeforeDeleteEvent<>(statement, entity.getClass(), tableName));
 
-		ListenableFuture<ResultSet> result = getAsyncCqlOperations().execute(new AsyncStatementCallback(statement));
+		ListenableFuture<AsyncResultSet> result = getAsyncCqlOperations().execute(new AsyncStatementCallback(statement));
 
 		return new MappingListenableFutureAdapter<>(result, resultSet -> {
 
-			WriteResult writeResult = WriteResult.of(resultSet);
+			WriteResult writeResult = new WriteResult(Collections.singletonList(resultSet.getExecutionInfo()),
+					resultSet.wasApplied(), getFirstPage(resultSet));
 
 			resultConsumer.accept(writeResult);
 
@@ -800,14 +818,18 @@ public class AsyncCassandraTemplate
 		});
 	}
 
-	private int getConfiguredFetchSize(Session session) {
-		return session.getCluster().getConfiguration().getQueryOptions().getFetchSize();
+	private static List<Row> getFirstPage(AsyncResultSet resultSet) {
+		return StreamSupport.stream(resultSet.currentPage().spliterator(), false).collect(Collectors.toList());
 	}
 
-	private int getEffectiveFetchSize(Statement statement) {
+	private static int getConfiguredPageSize(CqlSession session) {
+		return session.getContext().getConfig().getDefaultProfile().getInt(DefaultDriverOption.REQUEST_PAGE_SIZE, 5000);
+	}
 
-		if (statement.getFetchSize() > 0) {
-			return statement.getFetchSize();
+	private int getEffectivePageSize(Statement<?> statement) {
+
+		if (statement.getPageSize() > 0) {
+			return statement.getPageSize();
 		}
 
 		if (getAsyncCqlOperations() instanceof CassandraAccessor) {
@@ -820,7 +842,7 @@ public class AsyncCassandraTemplate
 		}
 
 		return getAsyncCqlOperations()
-				.execute((AsyncSessionCallback<Integer>) session -> AsyncResult.forValue(getConfiguredFetchSize(session)))
+				.execute((AsyncSessionCallback<Integer>) session -> AsyncResult.forValue(getConfiguredPageSize(session)))
 				.completable().join();
 	}
 
@@ -831,7 +853,7 @@ public class AsyncCassandraTemplate
 
 		return row -> {
 
-			maybeEmitEvent(new AfterLoadEvent(row, targetType, tableName));
+			maybeEmitEvent(new AfterLoadEvent<>(row, targetType, tableName));
 
 			Object source = getConverter().read(typeToRead, row);
 
@@ -874,7 +896,7 @@ public class AsyncCassandraTemplate
 		return object;
 	}
 
-	protected <T> T maybeCallBeforeSave(T object, CqlIdentifier tableName, Statement statement) {
+	protected <T> T maybeCallBeforeSave(T object, CqlIdentifier tableName, Statement<?> statement) {
 
 		if (null != entityCallbacks) {
 			return (T) entityCallbacks.callback(BeforeSaveCallback.class, object, tableName, statement);
@@ -903,11 +925,11 @@ public class AsyncCassandraTemplate
 	}
 
 	@Value
-	class AsyncStatementCallback implements AsyncSessionCallback<ResultSet>, CqlProvider {
+	class AsyncStatementCallback implements AsyncSessionCallback<AsyncResultSet>, CqlProvider {
 
-		@lombok.NonNull Statement statement;
+		@lombok.NonNull Statement<?> statement;
 
-		AsyncStatementCallback(Statement statement) {
+		AsyncStatementCallback(Statement<?> statement) {
 			this.statement = statement;
 		}
 
@@ -915,10 +937,10 @@ public class AsyncCassandraTemplate
 		 * @see org.springframework.data.cassandra.core.cql.AsyncSessionCallback#doInSession(com.datastax.driver.core.Session)
 		 */
 		@Override
-		public ListenableFuture<ResultSet> doInSession(Session session) throws DriverException, DataAccessException {
-			return new GuavaListenableFutureAdapter<>(session.executeAsync(this.statement),
-					e -> e instanceof DriverException
-							? exceptionTranslator.translate("AsyncStatementCallback", getCql(), (DriverException) e)
+		public ListenableFuture<AsyncResultSet> doInSession(CqlSession session)
+				throws DriverException, DataAccessException {
+			return new CassandraFutureAdapter<>(session.executeAsync(this.statement),
+					e -> e instanceof DriverException ? exceptionTranslator.translate("AsyncStatementCallback", getCql(), e)
 							: exceptionTranslator.translateExceptionIfPossible(e));
 		}
 

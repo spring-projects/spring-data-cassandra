@@ -25,6 +25,7 @@ import lombok.Data;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,19 +36,16 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import org.springframework.data.annotation.ReadOnlyProperty;
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.UserDefinedType;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
-import org.springframework.data.cassandra.support.UserTypeBuilder;
+import org.springframework.data.cassandra.support.UserDefinedTypeBuilder;
 import org.springframework.data.cassandra.test.util.RowMockUtil;
 
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.UDTValue;
-import com.datastax.driver.core.UserType;
-import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.data.UdtValue;
+import com.datastax.oss.driver.api.core.type.DataTypes;
 
 /**
  * Unit tests for UDT through {@link MappingCassandraConverter}.
@@ -59,9 +57,10 @@ public class MappingCassandraConverterUDTUnitTests {
 
 	@Mock UserTypeResolver userTypeResolver;
 
-	UserType manufacturer = UserTypeBuilder.forName("manufacturer").withField("name", DataType.varchar())
-			.withField("displayname", DataType.varchar()).build();
-	UserType currency = UserTypeBuilder.forName("mycurrency").withField("currency", DataType.varchar()).build();
+	com.datastax.oss.driver.api.core.type.UserDefinedType manufacturer = UserDefinedTypeBuilder.forName("manufacturer")
+			.withField("name", DataTypes.TEXT).withField("displayname", DataTypes.TEXT).build();
+	com.datastax.oss.driver.api.core.type.UserDefinedType currency = UserDefinedTypeBuilder.forName("mycurrency")
+			.withField("currency", DataTypes.TEXT).build();
 
 	Row rowMock;
 
@@ -77,23 +76,23 @@ public class MappingCassandraConverterUDTUnitTests {
 		mappingCassandraConverter = new MappingCassandraConverter(mappingContext);
 		mappingCassandraConverter.afterPropertiesSet();
 
-		when(userTypeResolver.resolveType(CqlIdentifier.of("manufacturer"))).thenReturn(manufacturer);
-		when(userTypeResolver.resolveType(CqlIdentifier.of("currency"))).thenReturn(currency);
+		when(userTypeResolver.resolveType(CqlIdentifier.fromCql("manufacturer"))).thenReturn(manufacturer);
+		when(userTypeResolver.resolveType(CqlIdentifier.fromCql("currency"))).thenReturn(currency);
 	}
 
 	@Test // DATACASS-487, DATACASS-623
 	public void shouldReadMappedUdtInMap() {
 
-		UDTValue key = manufacturer.newValue().setString("name", "a good one").setString("displayname", "my displayName");
-		UDTValue value1 = currency.newValue().setString("currency", "EUR");
-		UDTValue value2 = currency.newValue().setString("currency", "USD");
+		UdtValue key = manufacturer.newValue().setString("name", "a good one").setString("displayname", "my displayName");
+		UdtValue value1 = currency.newValue().setString("currency", "EUR");
+		UdtValue value2 = currency.newValue().setString("currency", "USD");
 
-		Map<UDTValue, List<UDTValue>> map = new HashMap<>();
+		Map<UdtValue, List<UdtValue>> map = new HashMap<>();
 
 		map.put(key, Arrays.asList(value1, value2));
 
 		rowMock = RowMockUtil
-				.newRowMock(column("acceptedCurrencies", map, DataType.map(manufacturer, DataType.list(currency))));
+				.newRowMock(column("acceptedCurrencies", map, DataTypes.mapOf(manufacturer, DataTypes.listOf(currency))));
 
 		Supplier supplier = mappingCassandraConverter.read(Supplier.class, rowMock);
 
@@ -112,7 +111,7 @@ public class MappingCassandraConverterUDTUnitTests {
 
 		Supplier supplier = new Supplier(currencies);
 
-		Insert insert = QueryBuilder.insertInto("table");
+		Map<CqlIdentifier, Object> insert = new LinkedHashMap<>();
 
 		mappingCassandraConverter.write(supplier, insert);
 

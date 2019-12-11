@@ -15,14 +15,11 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.mapping.model.DefaultSpELExpressionEvaluator;
 import org.springframework.data.mapping.model.SpELExpressionEvaluator;
-import org.springframework.lang.Nullable;
-import org.springframework.util.Assert;
 
-import com.datastax.driver.core.CodecRegistry;
-import com.datastax.driver.core.Row;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
 
 /**
  * {@link CassandraValueProvider} to read property values from a {@link Row}.
@@ -31,12 +28,10 @@ import com.datastax.driver.core.Row;
  * @author Matthew T. Adams
  * @author David Webb
  * @author Mark Paluch
+ * @deprecated since 3.0, use directly {@link RowValueProvider}.
  */
-public class BasicCassandraRowValueProvider implements CassandraRowValueProvider {
-
-	private final ColumnReader reader;
-
-	private final SpELExpressionEvaluator evaluator;
+@Deprecated
+public class BasicCassandraRowValueProvider extends RowValueProvider {
 
 	/**
 	 * Create a new {@link BasicCassandraRowValueProvider} with the given {@link Row}, {@link CodecRegistry} and
@@ -48,13 +43,7 @@ public class BasicCassandraRowValueProvider implements CassandraRowValueProvider
 	 * @since 2.1
 	 */
 	public BasicCassandraRowValueProvider(Row source, CodecRegistry codecRegistry, SpELExpressionEvaluator evaluator) {
-
-		Assert.notNull(source, "Source Row must not be null");
-		Assert.notNull(codecRegistry, "CodecRegistry must not be null");
-		Assert.notNull(evaluator, "SpELExpressionEvaluator must not be null");
-
-		this.reader = new ColumnReader(source, codecRegistry);
-		this.evaluator = evaluator;
+		super(source, evaluator);
 	}
 
 	/**
@@ -67,35 +56,7 @@ public class BasicCassandraRowValueProvider implements CassandraRowValueProvider
 	 */
 	@Deprecated
 	public BasicCassandraRowValueProvider(Row source, DefaultSpELExpressionEvaluator evaluator) {
-		this(source, CodecRegistry.DEFAULT_INSTANCE, evaluator);
+		super(source, evaluator);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.mapping.model.PropertyValueProvider#getPropertyValue(org.springframework.data.mapping.PersistentProperty)
-	 */
-	@Nullable
-	@Override
-	@SuppressWarnings("unchecked")
-	public <T> T getPropertyValue(CassandraPersistentProperty property) {
-
-		String spelExpression = property.getSpelExpression();
-
-		return spelExpression != null ? this.evaluator.evaluate(spelExpression)
-				: (T) this.reader.get(property.getRequiredColumnName());
-	}
-
-	public Row getRow() {
-		return this.reader.getRow();
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.convert.CassandraValueProvider#hasProperty(org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty)
-	 */
-	@Override
-	public boolean hasProperty(CassandraPersistentProperty property) {
-
-		Assert.notNull(property, "CassandraPersistentProperty must not be null");
-
-		return this.reader.contains(property.getRequiredColumnName());
-	}
 }

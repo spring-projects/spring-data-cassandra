@@ -20,6 +20,8 @@ import static org.mockito.Mockito.*;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -28,14 +30,15 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
-import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
-import org.springframework.data.cassandra.support.UserTypeBuilder;
 
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.TableMetadata;
-import com.datastax.driver.core.UserType;
+import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.support.UserDefinedTypeBuilder;
+
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;
+import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
+import com.datastax.oss.driver.api.core.type.DataTypes;
+import com.datastax.oss.driver.api.core.type.UserDefinedType;
 
 /**
  * Unit tests for {@link CassandraPersistentEntitySchemaDropper}.
@@ -48,10 +51,11 @@ public class CassandraPersistentEntitySchemaDropperUnitTests extends CassandraPe
 
 	@Mock CassandraAdminOperations operations;
 	@Mock KeyspaceMetadata metadata;
-	UserType universetype = UserTypeBuilder.forName("universetype").withField("name", DataType.varchar()).build();
-	UserType moontype = UserTypeBuilder.forName("moontype").withField("universeType", universetype).build();
-	UserType planettype = UserTypeBuilder.forName("planettype").withField("moonType", DataType.set(moontype))
-			.withField("universeType", universetype).build();
+	UserDefinedType universetype = UserDefinedTypeBuilder.forName("universetype").withField("name", DataTypes.TEXT)
+			.build();
+	UserDefinedType moontype = UserDefinedTypeBuilder.forName("moontype").withField("universeType", universetype).build();
+	UserDefinedType planettype = UserDefinedTypeBuilder.forName("planettype")
+			.withField("moonType", DataTypes.setOf(moontype)).withField("universeType", universetype).build();
 	@Mock TableMetadata person;
 	@Mock TableMetadata contact;
 
@@ -61,17 +65,17 @@ public class CassandraPersistentEntitySchemaDropperUnitTests extends CassandraPe
 	@Before
 	public void setUp() {
 
-		context.setUserTypeResolver(typeName -> metadata.getUserType(typeName.toCql()));
+		context.setUserTypeResolver(typeName -> metadata.getUserDefinedType(typeName).get());
 
 		when(operations.getKeyspaceMetadata()).thenReturn(metadata);
-		when(person.getName()).thenReturn("person");
-		when(contact.getName()).thenReturn("contact");
+		when(person.getName()).thenReturn(CqlIdentifier.fromCql("person"));
+		when(contact.getName()).thenReturn(CqlIdentifier.fromCql("contact"));
 	}
 
 	@Test // DATACASS-355, DATACASS-546
 	public void shouldDropTypesInOrderOfDependencies() {
 
-		when(metadata.getUserTypes()).thenReturn(Arrays.asList(universetype, moontype, planettype));
+		when(metadata.getUserDefinedTypes()).thenReturn(createTypes(universetype, moontype, planettype));
 
 		CassandraPersistentEntitySchemaDropper schemaDropper = new CassandraPersistentEntitySchemaDropper(context,
 				operations);
@@ -87,15 +91,15 @@ public class CassandraPersistentEntitySchemaDropperUnitTests extends CassandraPe
 		context.setInitialEntitySet(new HashSet<>(Arrays.asList(MoonType.class, UniverseType.class)));
 		context.afterPropertiesSet();
 
-		when(metadata.getUserTypes()).thenReturn(Arrays.asList(universetype, moontype, planettype));
+		when(metadata.getUserDefinedTypes()).thenReturn(createTypes(universetype, moontype, planettype));
 
 		CassandraPersistentEntitySchemaDropper schemaDropper = new CassandraPersistentEntitySchemaDropper(context,
 				operations);
 
 		schemaDropper.dropUserTypes(false);
 
-		verify(operations).dropUserType(CqlIdentifier.of("universetype"));
-		verify(operations).dropUserType(CqlIdentifier.of("moontype"));
+		verify(operations).dropUserType(CqlIdentifier.fromCql("universetype"));
+		verify(operations).dropUserType(CqlIdentifier.fromCql("moontype"));
 		verify(operations).getKeyspaceMetadata();
 		verifyNoMoreInteractions(operations);
 	}
@@ -106,15 +110,15 @@ public class CassandraPersistentEntitySchemaDropperUnitTests extends CassandraPe
 		context.setInitialEntitySet(Collections.singleton(Person.class));
 		context.afterPropertiesSet();
 
-		when(metadata.getTables()).thenReturn(Arrays.asList(person, contact));
+		when(metadata.getTables()).thenReturn(createTables(person, contact));
 
 		CassandraPersistentEntitySchemaDropper schemaDropper = new CassandraPersistentEntitySchemaDropper(context,
 				operations);
 
 		schemaDropper.dropTables(true);
 
-		verify(operations).dropTable(CqlIdentifier.of("person"));
-		verify(operations).dropTable(CqlIdentifier.of("contact"));
+		verify(operations).dropTable(CqlIdentifier.fromCql("person"));
+		verify(operations).dropTable(CqlIdentifier.fromCql("contact"));
 		verify(operations).getKeyspaceMetadata();
 		verifyNoMoreInteractions(operations);
 	}
@@ -125,14 +129,14 @@ public class CassandraPersistentEntitySchemaDropperUnitTests extends CassandraPe
 		context.setInitialEntitySet(Collections.singleton(Person.class));
 		context.afterPropertiesSet();
 
-		when(metadata.getTables()).thenReturn(Arrays.asList(person, contact));
+		when(metadata.getTables()).thenReturn(createTables(person, contact));
 
 		CassandraPersistentEntitySchemaDropper schemaDropper = new CassandraPersistentEntitySchemaDropper(context,
 				operations);
 
 		schemaDropper.dropTables(false);
 
-		verify(operations).dropTable(CqlIdentifier.of("person"));
+		verify(operations).dropTable(CqlIdentifier.fromCql("person"));
 		verify(operations).getKeyspaceMetadata();
 		verifyNoMoreInteractions(operations);
 	}
@@ -142,9 +146,31 @@ public class CassandraPersistentEntitySchemaDropperUnitTests extends CassandraPe
 		InOrder inOrder = Mockito.inOrder(operations);
 
 		for (String typename : typenames) {
-			inOrder.verify(operations).dropUserType(CqlIdentifier.of(typename));
+			inOrder.verify(operations).dropUserType(CqlIdentifier.fromCql(typename));
 		}
 
 		inOrder.verifyNoMoreInteractions();
+	}
+
+	private static Map<CqlIdentifier, UserDefinedType> createTypes(UserDefinedType... types) {
+
+		Map<CqlIdentifier, UserDefinedType> result = new LinkedHashMap<>();
+
+		Arrays.stream(types).forEach(type -> {
+			result.put(type.getName(), type);
+		});
+
+		return result;
+	}
+
+	private static Map<CqlIdentifier, TableMetadata> createTables(TableMetadata... tables) {
+
+		Map<CqlIdentifier, TableMetadata> result = new LinkedHashMap<>();
+
+		Arrays.stream(tables).forEach(table -> {
+			result.put(table.getName(), table);
+		});
+
+		return result;
 	}
 }

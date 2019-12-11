@@ -17,14 +17,13 @@ package org.springframework.data.cassandra.core.cql;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.cassandra.ReactiveSession;
 import org.springframework.data.cassandra.ReactiveSessionFactory;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
-
-import com.datastax.driver.core.exceptions.DriverException;
 
 /**
  * Base class for {@link ReactiveCqlTemplate} and other CQL-accessing DAO helpers, defining common properties such as
@@ -118,7 +117,7 @@ public abstract class ReactiveCassandraAccessor implements InitializingBean {
 	 * @see DataAccessException
 	 */
 	@Nullable
-	protected DataAccessException translateExceptionIfPossible(DriverException ex) {
+	protected DataAccessException translateExceptionIfPossible(RuntimeException ex) {
 
 		Assert.notNull(ex, "DriverException must not be null");
 
@@ -142,7 +141,7 @@ public abstract class ReactiveCassandraAccessor implements InitializingBean {
 	 *      "https://docs.spring.io/spring/docs/current/spring-framework-reference/data-access.html#dao-exceptions">Consistent
 	 *      exception hierarchy</a>
 	 */
-	protected DataAccessException translate(String task, @Nullable String cql, DriverException ex) {
+	protected DataAccessException translate(String task, @Nullable String cql, RuntimeException ex) {
 
 		Assert.notNull(ex, "DriverException must not be null");
 

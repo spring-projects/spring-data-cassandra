@@ -26,6 +26,8 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
+import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,20 +45,19 @@ import org.junit.Test;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
+import org.springframework.data.cassandra.core.mapping.SimpleTupleTypeFactory;
 import org.springframework.data.cassandra.domain.AllPossibleTypes;
 import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
 import org.springframework.data.cassandra.support.CassandraVersion;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.data.util.Version;
 
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.Duration;
-import com.datastax.driver.core.LocalDate;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.SimpleStatement;
-import com.datastax.driver.core.TupleType;
-import com.datastax.driver.core.TupleValue;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.data.TupleValue;
+import com.datastax.oss.driver.api.core.type.DataTypes;
+import com.datastax.oss.driver.api.core.type.TupleType;
 
 /**
  * Integration tests for type mapping using {@link CassandraOperations}.
@@ -305,7 +306,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	public void shouldReadAndWriteDate() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
-		entity.setDate(LocalDate.fromDaysSinceEpoch(1));
+		entity.setDate(LocalDate.ofEpochDay(1));
 
 		operations.insert(entity);
 		AllPossibleTypes loaded = load(entity);
@@ -463,7 +464,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	@Test // DATACASS-284
 	public void shouldReadAndWriteTupleType() {
 
-		TupleType tupleType = cluster.getMetadata().newTupleType(DataType.varchar(), DataType.bigint());
+		TupleType tupleType = SimpleTupleTypeFactory.DEFAULT.create(DataTypes.TEXT, DataTypes.BIGINT);
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 
@@ -480,7 +481,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	@Test // DATACASS-284
 	public void shouldReadAndWriteListOfTuples() {
 
-		TupleType tupleType = cluster.getMetadata().newTupleType(DataType.varchar(), DataType.bigint());
+		TupleType tupleType = SimpleTupleTypeFactory.DEFAULT.create(DataTypes.TEXT, DataTypes.BIGINT);
 
 		ListOfTuples entity = new ListOfTuples();
 
@@ -504,7 +505,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 		long time = 21312214L;
 
 		operations.getCqlOperations()
-				.execute(new SimpleStatement("INSERT INTO timeentity (id, time) values(?,?)", id, time));
+				.execute(SimpleStatement.newInstance("INSERT INTO timeentity (id, time) values(?,?)", id, time));
 
 		TimeEntity loaded = operations.selectOneById(id, TimeEntity.class);
 
@@ -568,7 +569,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 
 		ResultSet resultSet = session.execute("SELECT localTime FROM AllPossibleTypes WHERE id = '1'");
 		Row row = resultSet.one();
-		assertThat(row.getTime(0)).isEqualTo(3_723_000_000_000L);
+		assertThat(row.getLocalTime(0).getNano()).isEqualTo(3_723_000_000_000L);
 	}
 
 	@Test // DATACASS-694
@@ -748,7 +749,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 
 		assumeTrue(cassandraVersion.isGreaterThanOrEqualTo(VERSION_3_10));
 
-		WithDuration withDuration = new WithDuration("foo", Duration.from("2h"));
+		WithDuration withDuration = new WithDuration("foo", Duration.ofHours(2));
 
 		operations.insert(withDuration);
 

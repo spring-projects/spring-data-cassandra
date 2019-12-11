@@ -27,17 +27,20 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.domain.AllPossibleTypes;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
+
 import org.threeten.bp.LocalDateTime;
 
-import com.datastax.driver.core.DataType;
+import com.datastax.oss.driver.api.core.type.DataTypes;
 
 /**
  * Unit tests for {@link ReactiveCassandraParameterAccessor}.
@@ -63,7 +66,7 @@ public class ReactiveCassandraParameterAccessorUnitTests {
 		ReactiveCassandraParameterAccessor accessor = new ReactiveCassandraParameterAccessor(
 				getCassandraQueryMethod(method), new Object[] { Flux.just("firstname") });
 
-		assertThat(accessor.getDataType(0)).isEqualTo(DataType.varchar());
+		assertThat(accessor.getDataType(0)).isEqualTo(DataTypes.TEXT);
 	}
 
 	@Test // DATACASS-335
@@ -84,7 +87,7 @@ public class ReactiveCassandraParameterAccessorUnitTests {
 		ReactiveCassandraParameterAccessor accessor = new ReactiveCassandraParameterAccessor(
 				getCassandraQueryMethod(method), new Object[] { Single.just(LocalDateTime.of(2000, 10, 11, 12, 13, 14)) });
 
-		assertThat(accessor.getDataType(0)).isEqualTo(DataType.date());
+		assertThat(accessor.getDataType(0)).isEqualTo(DataTypes.DATE);
 	}
 
 	@Test // DATACASS-335
@@ -94,7 +97,7 @@ public class ReactiveCassandraParameterAccessorUnitTests {
 		ReactiveCassandraParameterAccessor accessor = new ReactiveCassandraParameterAccessor(
 				getCassandraQueryMethod(method), new Object[] { Mono.just("") });
 
-		assertThat(accessor.getDataType(0)).isEqualTo(DataType.date());
+		assertThat(accessor.getDataType(0)).isEqualTo(DataTypes.DATE);
 	}
 
 	@Test // DATACASS-335
@@ -104,7 +107,7 @@ public class ReactiveCassandraParameterAccessorUnitTests {
 		ReactiveCassandraParameterAccessor accessor = new ReactiveCassandraParameterAccessor(
 				getCassandraQueryMethod(method), new Object[] { Mono.just("") });
 
-		assertThat(accessor.getDataType(0)).isEqualTo(DataType.date());
+		assertThat(accessor.getDataType(0)).isEqualTo(DataTypes.DATE);
 	}
 
 	private CassandraQueryMethod getCassandraQueryMethod(Method method) {
@@ -118,8 +121,9 @@ public class ReactiveCassandraParameterAccessorUnitTests {
 		Flux<AllPossibleTypes> findByLocalDateTime(Mono<LocalDateTime> dateTime);
 
 		Flux<AllPossibleTypes> findByAnnotatedByLocalDateTime(
-				@CassandraType(type = DataType.Name.DATE) Single<LocalDateTime> dateTime);
+				@CassandraType(type = CassandraSimpleTypeHolder.Name.DATE) Single<LocalDateTime> dateTime);
 
-		Flux<AllPossibleTypes> findByAnnotatedObject(@CassandraType(type = DataType.Name.DATE) Mono<Object> dateTime);
+		Flux<AllPossibleTypes> findByAnnotatedObject(
+				@CassandraType(type = CassandraSimpleTypeHolder.Name.DATE) Mono<Object> dateTime);
 	}
 }

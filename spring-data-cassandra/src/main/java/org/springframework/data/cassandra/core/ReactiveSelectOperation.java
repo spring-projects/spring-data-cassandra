@@ -18,9 +18,10 @@ package org.springframework.data.cassandra.core;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.util.Assert;
+
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * The {@link ReactiveSelectOperation} interface allows creation and execution of Cassandra {@code SELECT} operations in
@@ -83,7 +84,7 @@ public interface ReactiveSelectOperation {
 
 			Assert.hasText(table, "Table name must not be null or empty");
 
-			return inTable(CqlIdentifier.of(table));
+			return inTable(CqlIdentifier.fromCql(table));
 		}
 
 		/**

@@ -29,7 +29,7 @@ import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlSession;
 
 /**
  * Factory to create and configure a Cassandra {@link SessionFactory} with support for executing CQL and initializing
@@ -46,7 +46,7 @@ public class SessionFactoryFactoryBean extends AbstractFactoryBean<SessionFactor
 	protected static final boolean DEFAULT_DROP_TABLES = false;
 	protected static final boolean DEFAULT_DROP_UNUSED_TABLES = false;
 
-	private Session session;
+	private CqlSession session;
 
 	private @Nullable KeyspacePopulator keyspacePopulator;
 
@@ -57,11 +57,11 @@ public class SessionFactoryFactoryBean extends AbstractFactoryBean<SessionFactor
 	private SchemaAction schemaAction = SchemaAction.NONE;
 
 	/**
-	 * Set the {@link Session} to use.
+	 * Set the {@link CqlSession} to use.
 	 *
 	 * @param session must not be {@literal null}.
 	 */
-	public void setSession(Session session) {
+	public void setSession(CqlSession session) {
 
 		Assert.notNull(session, "Session must not be null");
 
@@ -74,7 +74,7 @@ public class SessionFactoryFactoryBean extends AbstractFactoryBean<SessionFactor
 	 * @param keyspacePopulator the {@link KeyspacePopulator} to use during initialization.
 	 * @see #setKeyspaceCleaner
 	 */
-	public void setKeyspacePopulator(KeyspacePopulator keyspacePopulator) {
+	public void setKeyspacePopulator(@Nullable KeyspacePopulator keyspacePopulator) {
 		this.keyspacePopulator = keyspacePopulator;
 	}
 
@@ -82,10 +82,10 @@ public class SessionFactoryFactoryBean extends AbstractFactoryBean<SessionFactor
 	 * Set the {@link KeyspacePopulator} to execute during the bean destruction phase, cleaning up the keyspace and
 	 * leaving it in a known state for others.
 	 *
-	 * @param keyspaceCleaner the {@link KeyspacePopulator} to use during destruction.
+	 * @param keyspaceCleaner the {@link KeyspacePopulator} to use during cleanup.
 	 * @see #setKeyspacePopulator
 	 */
-	public void setKeyspaceCleaner(KeyspacePopulator keyspaceCleaner) {
+	public void setKeyspaceCleaner(@Nullable KeyspacePopulator keyspaceCleaner) {
 		this.keyspaceCleaner = keyspaceCleaner;
 	}
 

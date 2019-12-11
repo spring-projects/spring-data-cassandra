@@ -15,12 +15,12 @@
  */
 package org.springframework.data.cassandra.core
 
-import com.datastax.driver.core.SimpleStatement
+import com.datastax.oss.driver.api.core.CqlIdentifier
+import com.datastax.oss.driver.api.core.cql.SimpleStatement
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.Test
-import org.springframework.data.cassandra.core.cql.CqlIdentifier
 import org.springframework.data.cassandra.core.query.Query
 import org.springframework.data.cassandra.core.query.Update
 import org.springframework.data.cassandra.domain.Person
@@ -38,7 +38,7 @@ class CassandraOperationsExtensionsUnitTests {
 	@Test // DATACASS-484
 	fun `getTableName(KClass) extension should call its Java counterpart`() {
 
-		every { operations.getTableName(Person::class.java) } returns CqlIdentifier.of("person")
+		every { operations.getTableName(Person::class.java) } returns CqlIdentifier.fromCql("person")
 
 		operations.getTableName(Person::class)
 		verify { operations.getTableName(Person::class.java) }
@@ -47,7 +47,7 @@ class CassandraOperationsExtensionsUnitTests {
 	@Test // DATACASS-484
 	fun `getTableName() with reified type parameter extension should call its Java counterpart`() {
 
-		every { operations.getTableName(Person::class.java) } returns CqlIdentifier.of("person")
+		every { operations.getTableName(Person::class.java) } returns CqlIdentifier.fromCql("person")
 
 		operations.getTableName<Person>()
 		verify { operations.getTableName(Person::class.java) }
@@ -104,13 +104,13 @@ class CassandraOperationsExtensionsUnitTests {
 	}
 
 	// -------------------------------------------------------------------------
-	// Methods dealing with com.datastax.driver.core.Statement
+	// Methods dealing with com.datastax.oss.driver.api.core.cql.Statement
 	// -------------------------------------------------------------------------
 
 	@Test // DATACASS-484
 	fun `select(Statement, KClass) extension should call its Java counterpart`() {
 
-		val statement = SimpleStatement("SELECT * FROM person")
+		val statement = SimpleStatement.newInstance("SELECT * FROM person")
 
 		operations.select(statement, Person::class)
 		verify { operations.select(statement, Person::class.java) }
@@ -119,7 +119,7 @@ class CassandraOperationsExtensionsUnitTests {
 	@Test // DATACASS-484
 	fun `select(Statement) with reified type parameter extension should call its Java counterpart`() {
 
-		val statement = SimpleStatement("SELECT * FROM person")
+		val statement = SimpleStatement.newInstance("SELECT * FROM person")
 		operations.select<Person>(statement)
 		verify { operations.select(statement, Person::class.java) }
 	}
@@ -127,7 +127,7 @@ class CassandraOperationsExtensionsUnitTests {
 	@Test // DATACASS-484
 	fun `slice(Statement, KClass) extension should call its Java counterpart`() {
 
-		val statement = SimpleStatement("SELECT * FROM person")
+		val statement = SimpleStatement.newInstance("SELECT * FROM person")
 		every { operations.slice(statement, Person::class.java) } returns SliceImpl(listOf(Person("Walter", "White")))
 
 		operations.slice(statement, Person::class)
@@ -137,7 +137,7 @@ class CassandraOperationsExtensionsUnitTests {
 	@Test // DATACASS-484
 	fun `slice(Statement) with reified type parameter extension should call its Java counterpart`() {
 
-		val statement = SimpleStatement("SELECT * FROM person")
+		val statement = SimpleStatement.newInstance("SELECT * FROM person")
 		every { operations.slice(statement, Person::class.java) } returns SliceImpl(listOf(Person("Walter", "White")))
 
 		operations.slice<Person>(statement)
@@ -147,7 +147,7 @@ class CassandraOperationsExtensionsUnitTests {
 	@Test // DATACASS-484
 	fun `stream(Statement, KClass) extension should call its Java counterpart`() {
 
-		val statement = SimpleStatement("SELECT * FROM person")
+		val statement = SimpleStatement.newInstance("SELECT * FROM person")
 
 		operations.stream(statement, Person::class)
 		verify { operations.stream(statement, Person::class.java) }
@@ -156,7 +156,7 @@ class CassandraOperationsExtensionsUnitTests {
 	@Test // DATACASS-484
 	fun `stream(Statement) with reified type parameter extension should call its Java counterpart`() {
 
-		val statement = SimpleStatement("SELECT * FROM person")
+		val statement = SimpleStatement.newInstance("SELECT * FROM person")
 
 		operations.stream<Person>(statement)
 		verify { operations.stream(statement, Person::class.java) }
@@ -165,7 +165,7 @@ class CassandraOperationsExtensionsUnitTests {
 	@Test // DATACASS-484
 	fun `selectOne(Statement, KClass) extension should call its Java counterpart`() {
 
-		val statement = SimpleStatement("SELECT * FROM person")
+		val statement = SimpleStatement.newInstance("SELECT * FROM person")
 		every { operations.selectOne("SELECT * FROM person", Person::class.java) } returns Person("Walter", "White")
 
 		operations.selectOne(statement, Person::class)
@@ -175,7 +175,7 @@ class CassandraOperationsExtensionsUnitTests {
 	@Test // DATACASS-484
 	fun `selectOne(Statement) with reified type parameter extension should call its Java counterpart`() {
 
-		val statement = SimpleStatement("SELECT * FROM person")
+		val statement = SimpleStatement.newInstance("SELECT * FROM person")
 		every { operations.selectOne("SELECT * FROM person", Person::class.java) } returns Person("Walter", "White")
 
 		operations.selectOne<Person>(statement)

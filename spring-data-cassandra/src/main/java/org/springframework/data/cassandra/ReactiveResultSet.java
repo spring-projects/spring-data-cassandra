@@ -19,9 +19,9 @@ import reactor.core.publisher.Flux;
 
 import java.util.List;
 
-import com.datastax.driver.core.ColumnDefinitions;
-import com.datastax.driver.core.ExecutionInfo;
-import com.datastax.driver.core.Row;
+import com.datastax.oss.driver.api.core.cql.ColumnDefinitions;
+import com.datastax.oss.driver.api.core.cql.ExecutionInfo;
+import com.datastax.oss.driver.api.core.cql.Row;
 
 /**
  * The reactive result of a query.
@@ -29,13 +29,12 @@ import com.datastax.driver.core.Row;
  * The retrieval of the rows of a {@link ReactiveResultSet} is generally paged (a first page of result is fetched and
  * the next one is only fetched once all the results of the first one has been consumed). The size of the pages can be
  * configured either globally through {@link com.datastax.driver.core.QueryOptions#setFetchSize} or per-statement with
- * {@link com.datastax.driver.core.Statement#setFetchSize}.
+ * {@link com.datastax.oss.driver.api.core.cql.Statement#setFetchSize}.
  * <p>
  * Please note however that this {@link ReactiveResultSet} paging is not available with the version 1 of the native
- * protocol (i.e. with Cassandra 1.2 or if version 1 has been explicitly requested through
- * {@link com.datastax.driver.core.Cluster.Builder#withProtocolVersion}). If the protocol version 1 is in use, a
- * {@link ReactiveResultSet} is always fetched in it's entirely and it's up to the client to make sure that no query can
- * yield {@link ReactiveResultSet} that won't hold in memory.
+ * protocol (i.e. with Cassandra 1.2 or if version 1 has been explicitly requested). If the protocol version 1 is in
+ * use, a {@link ReactiveResultSet} is always fetched in it's entirely and it's up to the client to make sure that no
+ * query can yield {@link ReactiveResultSet} that won't hold in memory.
  * <p>
  * Note that this class is not thread-safe.
  *
@@ -51,8 +50,8 @@ public interface ReactiveResultSet {
 	 * Returns a {@link Flux} over the rows contained in this result set applying transparent paging.
 	 * <p>
 	 * The {@link Flux} will stream over all records that in this {@link ReactiveResultSet} according to the reactive
-	 * demand and fetch next result chunks by issuing the underlying query with the current
-	 * {@link com.datastax.driver.core.PagingState} applied.
+	 * demand and fetch next result chunks by issuing the underlying query with the current {@link java.nio.ByteBuffer
+	 * paging state} applied.
 	 * <p>
 	 *
 	 * @return a {@link Flux} of rows that will stream over all {@link Row rows} of the entire result.
@@ -61,8 +60,8 @@ public interface ReactiveResultSet {
 
 	/**
 	 * Returns a {@link Flux} over the rows contained in this result set chunk. This method does not apply transparent
-	 * paging. Use {@link com.datastax.driver.core.PagingState} from {@link #getExecutionInfo()} to issue subsequent
-	 * queries to obtain the next result chunk.
+	 * paging. Use {@link java.nio.ByteBuffer paging state} from {@link #getExecutionInfo()} to issue subsequent queries
+	 * to obtain the next result chunk.
 	 *
 	 * @return a {@link Flux} of rows that will stream over all {@link Row rows} in this {@link ReactiveResultSet}.
 	 * @since 2.1

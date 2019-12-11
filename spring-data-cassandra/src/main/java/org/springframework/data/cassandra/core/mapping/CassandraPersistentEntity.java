@@ -15,12 +15,11 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.lang.Nullable;
 
-import com.datastax.driver.core.TupleType;
-import com.datastax.driver.core.UserType;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.type.TupleType;
 
 /**
  * Cassandra specific {@link PersistentEntity} abstraction.
@@ -83,6 +82,6 @@ public interface CassandraPersistentEntity<T> extends PersistentEntity<T, Cassan
 	 * @see UserDefinedType
 	 */
 	@Nullable
-	UserType getUserType();
+	com.datastax.oss.driver.api.core.type.UserDefinedType getUserType();
 
 }

@@ -21,15 +21,15 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.data.cassandra.core.CassandraOperations;
-import org.springframework.data.cassandra.core.cql.CqlOperations;
 import org.springframework.data.cassandra.support.KeyspaceTestUtils;
 import org.springframework.data.cassandra.test.util.AbstractEmbeddedCassandraIntegrationTest;
 import org.springframework.data.cassandra.test.util.KeyspaceRule;
 
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlSession;
 
 /**
  * @author Matthews T. Adams
@@ -40,7 +40,7 @@ public class MinimalXmlConfigIntegrationTests extends AbstractEmbeddedCassandraI
 
 	public static final String KEYSPACE = "minimalxmlconfigtest";
 
-	private Session session;
+	private CqlSession session;
 	private ConfigurableApplicationContext context;
 
 	@Rule public final KeyspaceRule keyspaceRule = new KeyspaceRule(cassandraEnvironment, KEYSPACE);
@@ -49,7 +49,7 @@ public class MinimalXmlConfigIntegrationTests extends AbstractEmbeddedCassandraI
 	public void setUp() {
 
 		this.context = new ClassPathXmlApplicationContext("MinimalXmlConfigIntegrationTests-context.xml", getClass());
-		this.session = context.getBean(Session.class);
+		this.session = context.getBean(CqlSession.class);
 	}
 
 	@After

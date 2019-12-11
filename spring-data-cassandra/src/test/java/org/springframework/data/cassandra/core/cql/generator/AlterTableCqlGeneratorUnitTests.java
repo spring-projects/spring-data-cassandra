@@ -21,12 +21,13 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.junit.Test;
+
 import org.springframework.data.cassandra.core.cql.keyspace.AlterTableSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.TableOption;
 import org.springframework.data.cassandra.core.cql.keyspace.TableOption.CachingOption;
 import org.springframework.data.cassandra.core.cql.keyspace.TableOption.KeyCachingOption;
 
-import com.datastax.driver.core.DataType;
+import com.datastax.oss.driver.api.core.type.DataTypes;
 
 /**
  * Unit tests for {@link AlterTableCqlGenerator}.
@@ -41,7 +42,7 @@ public class AlterTableCqlGeneratorUnitTests {
 	public void alterTableAlterColumnType() {
 
 		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily").alter("lastKnownLocation",
-				DataType.uuid());
+				DataTypes.UUID);
 
 		assertThat(toCql(spec)).isEqualTo("ALTER TABLE addamsfamily ALTER lastknownlocation TYPE uuid;");
 	}
@@ -50,7 +51,7 @@ public class AlterTableCqlGeneratorUnitTests {
 	public void alterTableAlterListColumnType() {
 
 		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily").alter("lastKnownLocation",
-				DataType.list(DataType.ascii()));
+				DataTypes.listOf(DataTypes.ASCII));
 
 		assertThat(toCql(spec)).isEqualTo("ALTER TABLE addamsfamily ALTER lastknownlocation TYPE list<ascii>;");
 	}
@@ -58,8 +59,7 @@ public class AlterTableCqlGeneratorUnitTests {
 	@Test // DATACASS-192
 	public void alterTableAddColumn() {
 
-		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily").add("gravesite",
-				DataType.varchar());
+		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily").add("gravesite", DataTypes.TEXT);
 
 		assertThat(toCql(spec)).isEqualTo("ALTER TABLE addamsfamily ADD gravesite varchar;");
 	}
@@ -68,7 +68,7 @@ public class AlterTableCqlGeneratorUnitTests {
 	public void alterTableAddListColumn() {
 
 		AlterTableSpecification spec = AlterTableSpecification.alterTable("users").add("top_places",
-				DataType.list(DataType.ascii()));
+				DataTypes.listOf(DataTypes.ASCII));
 
 		assertThat(toCql(spec)).isEqualTo("ALTER TABLE users ADD top_places list<ascii>;");
 	}
@@ -103,7 +103,7 @@ public class AlterTableCqlGeneratorUnitTests {
 	public void alterTableAddColumnAndComment() {
 
 		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily")
-				.add("top_places", DataType.list(DataType.ascii())).add("other", DataType.list(DataType.ascii()))
+				.add("top_places", DataTypes.listOf(DataTypes.ASCII)).add("other", DataTypes.listOf(DataTypes.ASCII))
 				.with(TableOption.COMMENT, "A most excellent and useful table");
 
 		assertThat(toCql(spec)).isEqualTo(

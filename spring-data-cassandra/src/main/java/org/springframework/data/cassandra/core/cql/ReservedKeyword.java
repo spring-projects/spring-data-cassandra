@@ -28,7 +28,9 @@ import org.springframework.util.StringUtils;
  *      "https://cassandra.apache.org/doc/cql3/CQL.html#appendixA">https://cassandra.apache.org/doc/cql3/CQL.html#appendixA</a>
  * @author Matthew T. Adams
  * @author Mark Paluch
+ * @deprecated since 3.0 without replacement.
  */
+@Deprecated
 public enum ReservedKeyword {
 
 	ADD, ALTER, AND, ANY, APPLY, ASC, AUTHORIZE, //

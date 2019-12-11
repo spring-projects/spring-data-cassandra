@@ -23,11 +23,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.dao.TypeMismatchDataAccessException;
 
-import com.datastax.driver.core.ColumnDefinitions;
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.Row;
+import com.datastax.oss.driver.api.core.cql.ColumnDefinition;
+import com.datastax.oss.driver.api.core.cql.ColumnDefinitions;
+import com.datastax.oss.driver.api.core.cql.Row;
 
 /**
  * Unit tests for {@link SingleColumnRowMapper}.
@@ -38,8 +39,9 @@ import com.datastax.driver.core.Row;
 @RunWith(MockitoJUnitRunner.class)
 public class SingleColumnRowMapperUnitTests {
 
-	@Mock private Row row;
-	@Mock private ColumnDefinitions columnDefinitions;
+	@Mock Row row;
+	@Mock ColumnDefinition columnDefinition;
+	@Mock ColumnDefinitions columnDefinitions;
 
 	private SingleColumnRowMapper rowMapper;
 
@@ -121,7 +123,7 @@ public class SingleColumnRowMapperUnitTests {
 	public void mapRowSingleColumnWrongType() {
 
 		when(columnDefinitions.size()).thenReturn(1);
-		when(columnDefinitions.getType(0)).thenReturn(DataType.blob());
+
 		when(row.getObject(0)).thenReturn("hello");
 
 		rowMapper = SingleColumnRowMapper.newInstance(ColumnDefinitions.class);

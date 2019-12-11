@@ -26,9 +26,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.core.annotation.AliasFor;
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.util.ClassTypeInformation;
+
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * Unit tests for {@link CassandraUserTypePersistentEntity}.
@@ -53,8 +55,8 @@ public class CassandraUserTypePersistentEntityUnitTests {
 
 		CassandraUserTypePersistentEntity<MappedUdt> type = getEntity(MappedUdt.class);
 
-		assertThat(type.getTableName()).isEqualTo(CqlIdentifier.of("mappedudt"));
-		assertThat(type.getTableName()).isEqualTo(CqlIdentifier.of("Mappedudt"));
+		assertThat(type.getTableName()).isEqualTo(CqlIdentifier.fromCql("mappedudt"));
+		assertThat(type.getTableName()).isEqualTo(CqlIdentifier.fromCql("Mappedudt"));
 	}
 
 	@Test // DATACASS-172
@@ -62,8 +64,8 @@ public class CassandraUserTypePersistentEntityUnitTests {
 
 		CassandraUserTypePersistentEntity<WithName> type = getEntity(WithName.class);
 
-		assertThat(type.getTableName()).isEqualTo(CqlIdentifier.of("withname"));
-		assertThat(type.getTableName()).isEqualTo(CqlIdentifier.of("Withname"));
+		assertThat(type.getTableName()).isEqualTo(CqlIdentifier.fromCql("withname"));
+		assertThat(type.getTableName()).isEqualTo(CqlIdentifier.fromCql("Withname"));
 	}
 
 	@Test // DATACASS-172
@@ -71,8 +73,8 @@ public class CassandraUserTypePersistentEntityUnitTests {
 
 		CassandraUserTypePersistentEntity<WithForceQuote> type = getEntity(WithForceQuote.class);
 
-		assertThat(type.getTableName()).isNotEqualTo(CqlIdentifier.of("upperCase", true));
-		assertThat(type.getTableName()).isEqualTo(CqlIdentifier.of("UpperCase", true));
+		assertThat(type.getTableName()).isNotEqualTo(CqlIdentifier.fromCql("upperCase"));
+		assertThat(type.getTableName()).isEqualTo(CqlIdentifier.fromCql("UpperCase"));
 	}
 
 	@Test // DATACASS-259
@@ -80,7 +82,7 @@ public class CassandraUserTypePersistentEntityUnitTests {
 
 		CassandraUserTypePersistentEntity<TypeWithComposedAnnotation> type = getEntity(TypeWithComposedAnnotation.class);
 
-		assertThat(type.getTableName()).isEqualTo(CqlIdentifier.of("mytype", true));
+		assertThat(type.getTableName()).isEqualTo(CqlIdentifier.fromCql("mytype"));
 	}
 
 	private <T> CassandraUserTypePersistentEntity<T> getEntity(Class<T> entityClass) {

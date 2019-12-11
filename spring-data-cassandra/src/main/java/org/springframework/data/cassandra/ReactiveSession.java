@@ -20,14 +20,11 @@ import reactor.core.publisher.Mono;
 import java.io.Closeable;
 import java.util.Map;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.Statement;
-import com.datastax.driver.core.exceptions.NoHostAvailableException;
-import com.datastax.driver.core.exceptions.QueryExecutionException;
-import com.datastax.driver.core.exceptions.QueryValidationException;
-import com.datastax.driver.core.exceptions.UnsupportedFeatureException;
+import com.datastax.oss.driver.api.core.context.DriverContext;
+import com.datastax.oss.driver.api.core.cql.BoundStatement;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.cql.Statement;
 
 /**
  * A session holds connections to a Cassandra cluster, allowing it to be queried. {@link ReactiveSession} executes
@@ -65,11 +62,11 @@ public interface ReactiveSession extends Closeable {
 	boolean isClosed();
 
 	/**
-	 * Returns the {@code Cluster} object this session is part of.
+	 * Returns a context that provides access to all the policies used by this driver instance.
 	 *
-	 * @return the {@code Cluster} object this session is part of.
+	 * @return a context that provides access to all the policies used by this driver instance.
 	 */
-	Cluster getCluster();
+	DriverContext getContext();
 
 	/**
 	 * Executes the provided query.
@@ -79,11 +76,6 @@ public interface ReactiveSession extends Closeable {
 	 * @param query the CQL query to execute.
 	 * @return the result of the query. That result will never be null but can be empty (and will be for any non SELECT
 	 *         query).
-	 * @throws NoHostAvailableException if no host in the cluster can be contacted successfully to execute this query.
-	 * @throws QueryExecutionException if the query triggered an execution exception, i.e. an exception thrown by
-	 *           Cassandra when it cannot execute the query with the requested consistency level successfully.
-	 * @throws QueryValidationException if the query if invalid (syntax error, unauthorized or any other validation
-	 *           problem).
 	 */
 	Mono<ReactiveResultSet> execute(String query);
 
@@ -94,16 +86,9 @@ public interface ReactiveSession extends Closeable {
 	 *
 	 * @param query the CQL query to execute.
 	 * @param values values required for the execution of {@code query}. See
-	 *          {@link SimpleStatement#SimpleStatement(String, Object...)} for more details.
+	 *          {@link SimpleStatement#newInstance(String, Object...)} for more details.
 	 * @return the result of the query. That result will never be null but can be empty (and will be for any non SELECT
 	 *         query).
-	 * @throws NoHostAvailableException if no host in the cluster can be contacted successfully to execute this query.
-	 * @throws QueryExecutionException if the query triggered an execution exception, i.e. an exception thrown by
-	 *           Cassandra when it cannot execute the query with the requested consistency level successfully.
-	 * @throws QueryValidationException if the query if invalid (syntax error, unauthorized or any other validation
-	 *           problem).
-	 * @throws UnsupportedFeatureException if version 1 of the protocol is in use (i.e. if you've forced version 1 through
-	 *           {@link Cluster.Builder#withProtocolVersion} or you use Cassandra 1.2).
 	 */
 	Mono<ReactiveResultSet> execute(String query, Object... values);
 
@@ -114,16 +99,9 @@ public interface ReactiveSession extends Closeable {
 	 *
 	 * @param query the CQL query to execute.
 	 * @param values values required for the execution of {@code query}. See
-	 *          {@link SimpleStatement#SimpleStatement(String, Map)} for more details.
+	 *          {@link SimpleStatement#newInstance(String, Map)} for more details.
 	 * @return the result of the query. That result will never be null but can be empty (and will be for any non SELECT
 	 *         query).
-	 * @throws NoHostAvailableException if no host in the cluster can be contacted successfully to execute this query.
-	 * @throws QueryExecutionException if the query triggered an execution exception, i.e. an exception thrown by
-	 *           Cassandra when it cannot execute the query with the requested consistency level successfully.
-	 * @throws QueryValidationException if the query if invalid (syntax error, unauthorized or any other validation
-	 *           problem).
-	 * @throws UnsupportedFeatureException if version 1 or 2 of the protocol is in use (i.e. if you've forced it through
-	 *           {@link Cluster.Builder#withProtocolVersion} or you use Cassandra 1.2 or 2.0).
 	 */
 	Mono<ReactiveResultSet> execute(String query, Map<String, Object> values);
 
@@ -138,23 +116,14 @@ public interface ReactiveSession extends Closeable {
 	 * @param statement the CQL query to execute (that can be any {@link Statement}).
 	 * @return the result of the query. That result will never be null but can be empty (and will be for any non SELECT
 	 *         query).
-	 * @throws NoHostAvailableException if no host in the cluster can be contacted successfully to execute this query.
-	 * @throws QueryExecutionException if the query triggered an execution exception, i.e. an exception thrown by
-	 *           Cassandra when it cannot execute the query with the requested consistency level successfully.
-	 * @throws QueryValidationException if the query if invalid (syntax error, unauthorized or any other validation
-	 *           problem).
-	 * @throws UnsupportedFeatureException if the protocol version 1 is in use and a feature not supported has been used.
-	 *           Features that are not supported by the version protocol 1 include: BatchStatement, ReactiveResultSet
-	 *           paging and binary values in RegularStatement.
 	 */
-	Mono<ReactiveResultSet> execute(Statement statement);
+	Mono<ReactiveResultSet> execute(Statement<?> statement);
 
 	/**
 	 * Prepares the provided query string.
 	 *
 	 * @param query the CQL query string to prepare
 	 * @return the prepared statement corresponding to {@code query}.
-	 * @throws NoHostAvailableException if no host in the cluster can be contacted successfully to prepare this query.
 	 */
 	Mono<PreparedStatement> prepare(String query);
 
@@ -165,7 +134,7 @@ public interface ReactiveSession extends Closeable {
 	 * inherit the query properties set on {@code statement}. Concretely, this means that in the following code:
 	 *
 	 * <pre>
-	 * RegularStatement toPrepare = new SimpleStatement("SELECT * FROM test WHERE k=?")
+	 * Statement toPrepare = SimpleStatement.newInstance("SELECT * FROM test WHERE k=?")
 	 * 		.setConsistencyLevel(ConsistencyLevel.QUORUM);
 	 * PreparedStatement prepared = session.prepare(toPrepare);
 	 * session.execute(prepared.bind("someValue"));
@@ -179,21 +148,14 @@ public interface ReactiveSession extends Closeable {
 	 *
 	 * @param statement the statement to prepare
 	 * @return the prepared statement corresponding to {@code statement}.
-	 * @throws NoHostAvailableException if no host in the cluster can be contacted successfully to prepare this statement.
 	 * @throws IllegalArgumentException if {@code statement.getValues() != null} (values for executing a prepared
 	 *           statement should be provided after preparation though the {@link PreparedStatement#bind} method or
 	 *           through a corresponding {@link BoundStatement}).
 	 */
-	Mono<PreparedStatement> prepare(RegularStatement statement);
+	Mono<PreparedStatement> prepare(SimpleStatement statement);
 
 	/**
 	 * Initiates a shutdown of this session instance and blocks until that shutdown completes.
-	 * <p/>
-	 * This method is a shortcut for {@code closeAsync().get()}.
-	 * <p/>
-	 * Note that this method does not close the corresponding {@code Cluster} instance (which holds additional resources,
-	 * in particular internal executors that must be shut down in order for the client program to terminate). If you want
-	 * to do so, use {@link Cluster#close}, but note that it will close all sessions created from that cluster.
 	 */
 	@Override
 	void close();

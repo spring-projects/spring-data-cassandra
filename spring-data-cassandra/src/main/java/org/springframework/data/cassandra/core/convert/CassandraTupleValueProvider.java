@@ -15,28 +15,20 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.mapping.model.SpELExpressionEvaluator;
-import org.springframework.lang.Nullable;
-import org.springframework.util.Assert;
 
-import com.datastax.driver.core.CodecRegistry;
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.TupleValue;
+import com.datastax.oss.driver.api.core.data.TupleValue;
+import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
 
 /**
  * {@link CassandraValueProvider} to read property values from a {@link TupleValue}.
  *
  * @author Mark Paluch
  * @since 2.1
+ * @deprecated since 3.0, use {@link TupleValueProvider} directly.
  */
-public class CassandraTupleValueProvider implements CassandraValueProvider {
-
-	private final CodecRegistry codecRegistry;
-
-	private final SpELExpressionEvaluator evaluator;
-
-	private final TupleValue tupleValue;
+@Deprecated
+public class CassandraTupleValueProvider extends TupleValueProvider {
 
 	/**
 	 * Create a new {@link CassandraTupleValueProvider} with the given {@link TupleValue} and
@@ -48,40 +40,6 @@ public class CassandraTupleValueProvider implements CassandraValueProvider {
 	 */
 	public CassandraTupleValueProvider(TupleValue tupleValue, CodecRegistry codecRegistry,
 			SpELExpressionEvaluator evaluator) {
-
-		Assert.notNull(tupleValue, "TupleValue must not be null");
-		Assert.notNull(codecRegistry, "CodecRegistry must not be null");
-		Assert.notNull(evaluator, "SpELExpressionEvaluator must not be null");
-
-		this.tupleValue = tupleValue;
-		this.codecRegistry = codecRegistry;
-		this.evaluator = evaluator;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.mapping.model.PropertyValueProvider#getPropertyValue(org.springframework.data.mapping.PersistentProperty)
-	 */
-	@Nullable
-	@Override
-	public <T> T getPropertyValue(CassandraPersistentProperty property) {
-
-		String spelExpression = property.getSpelExpression();
-
-		if (spelExpression != null) {
-			return evaluator.evaluate(spelExpression);
-		}
-
-		int ordinal = property.getRequiredOrdinal();
-		DataType elementType = tupleValue.getType().getComponentTypes().get(ordinal);
-
-		return tupleValue.get(ordinal, codecRegistry.codecFor(elementType));
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.convert.CassandraValueProvider#hasProperty(org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty)
-	 */
-	@Override
-	public boolean hasProperty(CassandraPersistentProperty property) {
-		return this.tupleValue.getType().getComponentTypes().size() >= property.getRequiredOrdinal();
+		super(tupleValue, evaluator);
 	}
 }

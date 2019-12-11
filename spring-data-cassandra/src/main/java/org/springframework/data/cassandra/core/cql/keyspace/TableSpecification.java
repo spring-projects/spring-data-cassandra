@@ -15,7 +15,6 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
-import static com.datastax.oss.driver.api.core.CqlIdentifier.*;
 import static org.springframework.data.cassandra.core.cql.PrimaryKeyType.*;
 
 import java.util.ArrayList;
@@ -23,12 +22,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import com.datastax.oss.driver.api.core.CqlIdentifier;
 import org.springframework.data.cassandra.core.cql.Ordering;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.DataType;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.type.DataType;
 
 /**
  * Object to support the configuration of table specifications that have columns. This class can also be used as a
@@ -72,7 +71,7 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 	 * @param type The data type of the column, must not be {@literal null}.
 	 */
 	public T column(String name, DataType type) {
-		return column(of(name), type);
+		return column(CqlIdentifier.fromCql(name), type);
 	}
 
 	/**
@@ -95,7 +94,7 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 	 * @return this
 	 */
 	public T partitionKeyColumn(String name, DataType type) {
-		return partitionKeyColumn(of(name), type);
+		return partitionKeyColumn(CqlIdentifier.fromCql(name), type);
 	}
 
 	/**
@@ -120,7 +119,7 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 	 * @return this
 	 */
 	public T clusteredKeyColumn(String name, DataType type) {
-		return clusteredKeyColumn(of(name), type);
+		return clusteredKeyColumn(CqlIdentifier.fromCql(name), type);
 	}
 
 	/**
@@ -216,7 +215,7 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 		Assert.notNull(keyType, "PrimaryKeyType must not be null");
 		Assert.notNull(ordering, "Ordering must not be null");
 
-		return column(of(name), type, Optional.of(keyType), Optional.of(ordering));
+		return column(CqlIdentifier.fromCql(name), type, Optional.of(keyType), Optional.of(ordering));
 	}
 
 	/**
@@ -236,7 +235,7 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 		Assert.notNull(keyType, "PrimaryKeyType must not be null");
 		Assert.notNull(ordering, "Ordering must not be null");
 
-		return column(of(name), type, Optional.of(keyType), ordering);
+		return column(CqlIdentifier.fromCql(name), type, Optional.of(keyType), ordering);
 	}
 
 	@SuppressWarnings("unchecked")

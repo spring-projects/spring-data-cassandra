@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateKeyspaceSpecification;
@@ -33,7 +34,7 @@ import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingInte
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlSession;
 
 /**
  * @author Matthew T. Adams
@@ -43,7 +44,7 @@ import com.datastax.driver.core.Session;
 @ContextConfiguration(classes = KeyspaceCreatingJavaConfigIntegrationTests.KeyspaceCreatingJavaConfig.class)
 public class KeyspaceCreatingJavaConfigIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
-	@Autowired Session session;
+	@Autowired CqlSession session;
 
 	@Test
 	public void test() {

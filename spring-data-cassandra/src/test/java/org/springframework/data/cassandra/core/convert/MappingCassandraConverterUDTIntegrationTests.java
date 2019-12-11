@@ -15,7 +15,11 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Getter;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -23,10 +27,6 @@ import java.util.Currency;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -37,7 +37,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.config.SchemaAction;
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import org.springframework.data.cassandra.core.StatementFactory;
+import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.SimpleUserTypeResolver;
 import org.springframework.data.cassandra.core.mapping.Table;
@@ -46,19 +47,14 @@ import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.domain.AllPossibleTypes;
 import org.springframework.data.cassandra.repository.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.data.cassandra.repository.support.IntegrationTestConfig;
-import org.springframework.data.convert.CustomConversions;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.UDTValue;
-import com.datastax.driver.core.UserType;
-import com.datastax.driver.core.querybuilder.Delete;
-import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
-import com.datastax.driver.core.querybuilder.Update;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.data.UdtValue;
 
 /**
  * Integration tests for UDT types through {@link MappingCassandraConverter}.
@@ -85,13 +81,13 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 		}
 
 		@Override
-		public CustomConversions customConversions() {
+		public CassandraCustomConversions customConversions() {
 			return new CassandraCustomConversions(Arrays.asList(new UDTToCurrencyConverter(),
-					new CurrencyToUDTConverter(new SimpleUserTypeResolver(cluster().getObject(), getKeyspaceName()))));
+					new CurrencyToUDTConverter(new SimpleUserTypeResolver(getRequiredSession()))));
 		}
 	}
 
-	@Autowired Session session;
+	@Autowired CqlSession session;
 	@Autowired MappingCassandraConverter converter;
 
 	@Before
@@ -99,36 +95,36 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 
 		if (initialized.compareAndSet(false, true)) {
 
-			session.execute("DROP TABLE IF EXISTS addressbook;");
-			session.execute("CREATE TYPE IF NOT EXISTS address (zip text, city text, streetlines list<text>);");
+			session.execute("DROP TABLE IF EXISTS addressbook");
+			session.execute("CREATE TYPE IF NOT EXISTS address (zip text, city text, streetlines list<text>)");
 			session.execute("CREATE TABLE addressbook (id text PRIMARY KEY, currentaddress FROZEN<address>, "
-					+ "alternate FROZEN<address>, previousaddresses FROZEN<list<address>>);");
+					+ "alternate FROZEN<address>, previousaddresses FROZEN<list<address>>)");
 
-			session.execute("DROP TABLE IF EXISTS bank;");
-			session.execute("CREATE TYPE IF NOT EXISTS currency (currency text);");
+			session.execute("DROP TABLE IF EXISTS bank");
+			session.execute("CREATE TYPE IF NOT EXISTS currency (currency text)");
 			session.execute(
-					"CREATE TABLE bank (id text PRIMARY KEY, currency FROZEN<currency>, othercurrencies FROZEN<list<currency>>);");
+					"CREATE TABLE bank (id text PRIMARY KEY, currency FROZEN<currency>, othercurrencies FROZEN<list<currency>>)");
 
-			session.execute("DROP TABLE IF EXISTS money;");
-			session.execute("CREATE TYPE IF NOT EXISTS currency (currency text);");
-			session.execute("CREATE TABLE money (currency FROZEN<currency> PRIMARY KEY);");
+			session.execute("DROP TABLE IF EXISTS money");
+			session.execute("CREATE TYPE IF NOT EXISTS currency (currency text)");
+			session.execute("CREATE TABLE money (currency FROZEN<currency> PRIMARY KEY)");
 
-			session.execute("DROP TABLE IF EXISTS car;");
-			session.execute("CREATE TYPE IF NOT EXISTS manufacturer (name text);");
-			session.execute("CREATE TYPE IF NOT EXISTS engine (manufacturer FROZEN<manufacturer>);");
-			session.execute("CREATE TABLE car (id text PRIMARY KEY, engine FROZEN<engine>);");
+			session.execute("DROP TABLE IF EXISTS car");
+			session.execute("CREATE TYPE IF NOT EXISTS manufacturer (name text)");
+			session.execute("CREATE TYPE IF NOT EXISTS engine (manufacturer FROZEN<manufacturer>)");
+			session.execute("CREATE TABLE car (id text PRIMARY KEY, engine FROZEN<engine>)");
 
-			session.execute("DROP TABLE IF EXISTS supplier;");
+			session.execute("DROP TABLE IF EXISTS supplier");
 			session.execute(
-					"CREATE TABLE supplier (id text PRIMARY KEY, acceptedCurrencies frozen<map<manufacturer, list<currency>>>);");
+					"CREATE TABLE supplier (id text PRIMARY KEY, acceptedCurrencies frozen<map<manufacturer, list<currency>>>)");
 
 		} else {
 
-			session.execute("TRUNCATE addressbook;");
-			session.execute("TRUNCATE bank;");
-			session.execute("TRUNCATE money;");
-			session.execute("TRUNCATE car;");
-			session.execute("TRUNCATE supplier;");
+			session.execute("TRUNCATE addressbook");
+			session.execute("TRUNCATE bank");
+			session.execute("TRUNCATE money");
+			session.execute("TRUNCATE car");
+			session.execute("TRUNCATE supplier");
 		}
 	}
 
@@ -136,7 +132,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 	public void shouldReadMappedUdt() {
 
 		session.execute("INSERT INTO addressbook (id, currentaddress) " + "VALUES ('1', "
-				+ "{zip:'69469', city: 'Weinheim', streetlines: ['Heckenpfad', '14']});");
+				+ "{zip:'69469', city: 'Weinheim', streetlines: ['Heckenpfad', '14']})");
 
 		ResultSet resultSet = session.execute("SELECT * from addressbook");
 		AddressBook addressBook = converter.read(AddressBook.class, resultSet.one());
@@ -161,18 +157,17 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 		addressBook.setId("1");
 		addressBook.setCurrentaddress(addressUserType);
 
-		Insert insert = QueryBuilder.insertInto("addressbook");
-		converter.write(addressBook, insert);
+		SimpleStatement statement = new StatementFactory(converter).insert(addressBook, WriteOptions.empty()).build();
 
-		assertThat(insert.toString()).isEqualTo("INSERT INTO addressbook (currentaddress,id) "
-				+ "VALUES ({zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']},'1');");
+		assertThat(statement.getQuery()).isEqualTo("INSERT INTO addressbook (currentaddress,id) "
+				+ "VALUES ({zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']},'1')");
 	}
 
 	@Test // DATACASS-172
 	public void shouldReadMappedUdtCollection() {
 
 		session.execute("INSERT INTO addressbook (id,  previousaddresses) " + "VALUES ('1', "
-				+ " [{zip:'53773', city: 'Bonn'}, {zip:'12345', city: 'Bonn'}]);");
+				+ " [{zip:'53773', city: 'Bonn'}, {zip:'12345', city: 'Bonn'}])");
 
 		ResultSet resultSet = session.execute("SELECT * from addressbook");
 		AddressBook addressBook = converter.read(AddressBook.class, resultSet.one());
@@ -198,18 +193,17 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 		addressBook.setId("1");
 		addressBook.setPreviousaddresses(Collections.singletonList(addressUserType));
 
-		Insert insert = QueryBuilder.insertInto("addressbook");
-		converter.write(addressBook, insert);
+		SimpleStatement statement = new StatementFactory(converter).insert(addressBook, WriteOptions.empty()).build();
 
-		assertThat(insert.toString()).isEqualTo("INSERT INTO addressbook (id,previousaddresses) "
-				+ "VALUES ('1',[{zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']}]);");
+		assertThat(statement.getQuery()).isEqualTo("INSERT INTO addressbook (id,previousaddresses) "
+				+ "VALUES ('1',[{zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']}])");
 	}
 
 	@Test // DATACASS-172
 	public void shouldReadUdt() {
 
 		session.execute("INSERT INTO addressbook (id, alternate) " + "VALUES ('1', "
-				+ "{zip:'69469', city: 'Weinheim', streetlines: ['Heckenpfad', '14']});");
+				+ "{zip:'69469', city: 'Weinheim', streetlines: ['Heckenpfad', '14']})");
 
 		ResultSet resultSet = session.execute("SELECT * from addressbook");
 		AddressBook addressBook = converter.read(AddressBook.class, resultSet.one());
@@ -224,20 +218,19 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 
 		CassandraPersistentEntity<?> persistentEntity = converter.getMappingContext()
 				.getRequiredPersistentEntity(AddressUserType.class);
-		UDTValue udtValue = persistentEntity.getUserType().newValue();
+		UdtValue udtValue = persistentEntity.getUserType().newValue();
 		udtValue.setString("zip", "69469");
 		udtValue.setString("city", "Weinheim");
-		udtValue.setList("streetlines", Arrays.asList("Heckenpfad", "14"));
+		udtValue.setList("streetlines", Arrays.asList("Heckenpfad", "14"), String.class);
 
 		AddressBook addressBook = new AddressBook();
 		addressBook.setId("1");
 		addressBook.setAlternate(udtValue);
 
-		Insert insert = QueryBuilder.insertInto("addressbook");
-		converter.write(addressBook, insert);
+		SimpleStatement statement = new StatementFactory(converter).insert(addressBook, WriteOptions.empty()).build();
 
-		assertThat(insert.toString()).isEqualTo("INSERT INTO addressbook (alternate,id) "
-				+ "VALUES ({zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']},'1');");
+		assertThat(statement.getQuery()).isEqualTo("INSERT INTO addressbook (alternate,id) "
+				+ "VALUES ({zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']},'1')");
 	}
 
 	@Test // DATACASS-172
@@ -251,11 +244,10 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 		WithMappedUdtId withUdtId = new WithMappedUdtId();
 		withUdtId.setId(addressUserType);
 
-		Insert insert = QueryBuilder.insertInto("addressbook");
-		converter.write(withUdtId, insert);
+		SimpleStatement statement = new StatementFactory(converter).insert(withUdtId, WriteOptions.empty()).build();
 
-		assertThat(insert.toString()).isEqualTo(
-				"INSERT INTO addressbook (id) " + "VALUES ({zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']});");
+		assertThat(statement.getQuery()).isEqualTo(
+				"INSERT INTO addressbook (id) " + "VALUES ({zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']})");
 	}
 
 	@Test // DATACASS-172
@@ -263,25 +255,24 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 
 		CassandraPersistentEntity<?> persistentEntity = converter.getMappingContext()
 				.getRequiredPersistentEntity(AddressUserType.class);
-		UDTValue udtValue = persistentEntity.getUserType().newValue();
+		UdtValue udtValue = persistentEntity.getUserType().newValue();
 		udtValue.setString("zip", "69469");
 		udtValue.setString("city", "Weinheim");
-		udtValue.setList("streetlines", Arrays.asList("Heckenpfad", "14"));
+		udtValue.setList("streetlines", Arrays.asList("Heckenpfad", "14"), String.class);
 
 		WithUdtId withUdtId = new WithUdtId();
 		withUdtId.setId(udtValue);
 
-		Insert insert = QueryBuilder.insertInto("addressbook");
-		converter.write(withUdtId, insert);
+		SimpleStatement statement = new StatementFactory(converter).insert(withUdtId, WriteOptions.empty()).build();
 
-		assertThat(insert.toString()).isEqualTo(
-				"INSERT INTO addressbook (id) " + "VALUES ({zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']});");
+		assertThat(statement.getQuery()).isEqualTo(
+				"INSERT INTO addressbook (id) " + "VALUES ({zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']})");
 	}
 
 	@Test // DATACASS-172
 	public void shouldReadUdtWithCustomConversion() {
 
-		session.execute("INSERT INTO bank (id, currency) " + "VALUES ('1', {currency:'EUR'});");
+		session.execute("INSERT INTO bank (id, currency) " + "VALUES ('1', {currency:'EUR'})");
 
 		ResultSet resultSet = session.execute("SELECT * from bank");
 		Bank addressBook = converter.read(Bank.class, resultSet.one());
@@ -293,7 +284,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 	@Test // DATACASS-172
 	public void shouldReadUdtListWithCustomConversion() {
 
-		session.execute("INSERT INTO bank (id, othercurrencies) " + "VALUES ('1', [{currency:'EUR'}]);");
+		session.execute("INSERT INTO bank (id, othercurrencies) " + "VALUES ('1', [{currency:'EUR'}])");
 
 		ResultSet resultSet = session.execute("SELECT * from bank");
 		Bank addressBook = converter.read(Bank.class, resultSet.one());
@@ -306,22 +297,21 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 
 		Bank bank = new Bank(null, Currency.getInstance("EUR"), null);
 
-		Insert insert = QueryBuilder.insertInto("bank");
-		converter.write(bank, insert);
+		SimpleStatement statement = new StatementFactory(converter).insert(bank, WriteOptions.empty()).build();
 
-		assertThat(insert.toString()).isEqualTo("INSERT INTO bank (currency) VALUES ({currency:'EUR'});");
+		assertThat(statement.getQuery()).isEqualTo("INSERT INTO bank (currency) VALUES ({currency:'EUR'})");
 	}
 
 	@Test // DATACASS-172
-	public void shouldWriteUdtUpdateWherePrimaryKeyWithCustomConversion() {
+	public void shouldWriteUdtWhereWherePrimaryKeyWithCustomConversion() {
 
 		Money money = new Money();
 		money.setCurrency(Currency.getInstance("EUR"));
 
-		Update update = QueryBuilder.update("money");
-		converter.write(money, update);
+		Where where = new Where();
+		converter.write(money, where);
 
-		assertThat(update.toString()).isEqualTo("UPDATE money WHERE currency={currency:'EUR'};");
+		assertThat(where.toString()).isEqualTo("currency={currency:'EUR'}");
 	}
 
 	@Test // DATACASS-172, DATACASS-400
@@ -329,34 +319,9 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 
 		MoneyTransfer money = new MoneyTransfer("1", Currency.getInstance("EUR"));
 
-		Update update = QueryBuilder.update("money");
-		converter.write(money, update);
+		SimpleStatement statement = new StatementFactory(converter).update(money, WriteOptions.empty()).build();
 
-		assertThat(update.toString()).isEqualTo("UPDATE money SET currency={currency:'EUR'} WHERE id='1';");
-	}
-
-	@Test // DATACASS-172
-	public void shouldWriteUdtSelectWherePrimaryKeyWithCustomConversion() {
-
-		Money money = new Money();
-		money.setCurrency(Currency.getInstance("EUR"));
-
-		Select select = QueryBuilder.select().from("money");
-		converter.write(money, select.where());
-
-		assertThat(select.toString()).isEqualTo("SELECT * FROM money WHERE currency={currency:'EUR'};");
-	}
-
-	@Test // DATACASS-172
-	public void shouldWriteUdtDeleteWherePrimaryKeyWithCustomConversion() {
-
-		Money money = new Money();
-		money.setCurrency(Currency.getInstance("EUR"));
-
-		Delete delete = QueryBuilder.delete().from("money");
-		converter.write(money, delete.where());
-
-		assertThat(delete.toString()).isEqualTo("DELETE FROM money WHERE currency={currency:'EUR'};");
+		assertThat(statement.getQuery()).isEqualTo("UPDATE money SET currency={currency:'EUR'} WHERE id='1'");
 	}
 
 	@Test // DATACASS-172, DATACASS-400
@@ -364,16 +329,15 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 
 		Bank bank = new Bank(null, null, Collections.singletonList(Currency.getInstance("EUR")));
 
-		Insert insert = QueryBuilder.insertInto("bank");
-		converter.write(bank, insert);
+		SimpleStatement statement = new StatementFactory(converter).insert(bank, WriteOptions.empty()).build();
 
-		assertThat(insert.toString()).isEqualTo("INSERT INTO bank (othercurrencies) VALUES ([{currency:'EUR'}]);");
+		assertThat(statement.getQuery()).isEqualTo("INSERT INTO bank (othercurrencies) VALUES ([{currency:'EUR'}])");
 	}
 
 	@Test // DATACASS-172
 	public void shouldReadNestedUdt() {
 
-		session.execute("INSERT INTO car (id, engine)  VALUES ('1',  {manufacturer: {name:'a good one'}});");
+		session.execute("INSERT INTO car (id, engine)  VALUES ('1',  {manufacturer: {name:'a good one'}})");
 
 		ResultSet resultSet = session.execute("SELECT * from car");
 		Car car = converter.read(Car.class, resultSet.one());
@@ -390,18 +354,17 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 
 		Car car = new Car("1", engine);
 
-		Insert insert = QueryBuilder.insertInto("car");
-		converter.write(car, insert);
+		SimpleStatement statement = new StatementFactory(converter).insert(car, WriteOptions.empty()).build();
 
-		assertThat(insert.toString())
-				.isEqualTo("INSERT INTO car (engine,id) VALUES ({manufacturer:{name:'a good one'}},'1');");
+		assertThat(statement.getQuery())
+				.isEqualTo("INSERT INTO car (engine,id) VALUES ({manufacturer:{name:'a good one'}},'1')");
 	}
 
 	@Test // DATACASS-487
 	public void shouldReadUdtInMap() {
 
 		this.session.execute("INSERT INTO supplier (id, acceptedCurrencies)"
-			+ " VALUES ('1', {{name:'a good one'}:[{currency:'EUR'},{currency:'USD'}]});");
+				+ " VALUES ('1', {{name:'a good one'}:[{currency:'EUR'},{currency:'USD'}]})");
 
 		ResultSet resultSet = this.session.execute("SELECT * FROM supplier");
 		Supplier supplier = this.converter.read(Supplier.class, resultSet.one());
@@ -479,13 +442,13 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 
 		private AddressUserType currentaddress;
 		private List<AddressUserType> previousaddresses;
-		private UDTValue alternate;
+		private UdtValue alternate;
 	}
 
 	@Data
 	@Table
 	public static class WithUdtId {
-		@Id private UDTValue id;
+		@Id private UdtValue id;
 	}
 
 	@Data
@@ -504,15 +467,15 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 		List<String> streetLines;
 	}
 
-	private static class UDTToCurrencyConverter implements Converter<UDTValue, Currency> {
+	private static class UDTToCurrencyConverter implements Converter<UdtValue, Currency> {
 
 		@Override
-		public Currency convert(UDTValue source) {
+		public Currency convert(UdtValue source) {
 			return Currency.getInstance(source.getString("currency"));
 		}
 	}
 
-	private static class CurrencyToUDTConverter implements Converter<Currency, UDTValue> {
+	private static class CurrencyToUDTConverter implements Converter<Currency, UdtValue> {
 
 		final UserTypeResolver userTypeResolver;
 
@@ -521,9 +484,10 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 		}
 
 		@Override
-		public UDTValue convert(Currency source) {
-			UserType userType = userTypeResolver.resolveType(CqlIdentifier.of("currency"));
-			UDTValue udtValue = userType.newValue();
+		public UdtValue convert(Currency source) {
+			com.datastax.oss.driver.api.core.type.UserDefinedType userType = userTypeResolver
+					.resolveType(CqlIdentifier.fromCql("currency"));
+			UdtValue udtValue = userType.newValue();
 			udtValue.setString("currency", source.getCurrencyCode());
 			return udtValue;
 		}

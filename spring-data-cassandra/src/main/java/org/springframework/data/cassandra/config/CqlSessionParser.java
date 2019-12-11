@@ -67,6 +67,7 @@ class CqlSessionParser extends AbstractSingleBeanDefinitionParser {
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 
 		addOptionalPropertyValue(builder, "keyspaceName", element, "keyspace-name");
+		addOptionalPropertyValue(builder, "localDatacenter", element, "local-datacenter");
 		addOptionalPropertyValue(builder, "contactPoints", element, "contact-points");
 		addOptionalPropertyValue(builder, "password", element, "password");
 		addOptionalPropertyValue(builder, "port", element, "port");

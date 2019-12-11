@@ -24,12 +24,13 @@ import java.util.concurrent.Future;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.data.cassandra.core.AsyncCassandraTemplate;
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.domain.User;
 
-import com.datastax.driver.core.Statement;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 
 /**
  * Integration test for mapping events via {@link AsyncCassandraTemplate}.
@@ -55,7 +56,7 @@ public class AsyncCassandraTemplateEventIntegrationTests extends EventListenerIn
 		getUninterruptibly(template.select("SELECT * FROM users;", it -> {}, User.class));
 
 		assertThat(getListener().getAfterLoad()).extracting(CassandraMappingEvent::getTableName)
-				.contains(CqlIdentifier.of("users"));
+				.contains(CqlIdentifier.fromCql("users"));
 		assertThat(getListener().getAfterConvert()).extracting(CassandraMappingEvent::getSource).containsOnly(firstUser);
 	}
 
@@ -65,7 +66,7 @@ public class AsyncCassandraTemplateEventIntegrationTests extends EventListenerIn
 		getUninterruptibly(template.select(query(where("id").is(firstUser.getId())), it -> {}, User.class));
 
 		assertThat(getListener().getAfterLoad()).extracting(CassandraMappingEvent::getTableName)
-				.contains(CqlIdentifier.of("users"));
+				.contains(CqlIdentifier.fromCql("users"));
 		assertThat(getListener().getAfterConvert()).extracting(CassandraMappingEvent::getSource).containsOnly(firstUser);
 	}
 
@@ -75,7 +76,7 @@ public class AsyncCassandraTemplateEventIntegrationTests extends EventListenerIn
 		getUninterruptibly(template.slice(Query.empty(), User.class));
 
 		assertThat(getListener().getAfterLoad()).extracting(CassandraMappingEvent::getTableName)
-				.contains(CqlIdentifier.of("users"));
+				.contains(CqlIdentifier.fromCql("users"));
 		assertThat(getListener().getAfterConvert()).extracting(CassandraMappingEvent::getSource).containsOnly(firstUser);
 	}
 
@@ -125,7 +126,7 @@ public class AsyncCassandraTemplateEventIntegrationTests extends EventListenerIn
 			}
 
 			@Override
-			public <T> List<T> select(Statement statement, Class<T> entityClass) {
+			public <T> List<T> select(SimpleStatement statement, Class<T> entityClass) {
 				return getUninterruptibly(template.select(statement, entityClass));
 			}
 		};

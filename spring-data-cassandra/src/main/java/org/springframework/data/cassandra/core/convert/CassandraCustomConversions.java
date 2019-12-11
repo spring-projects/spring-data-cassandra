@@ -32,8 +32,6 @@ import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
-import com.datastax.driver.core.DataType.Name;
-
 /**
  * Value object to capture custom conversion. {@link CassandraCustomConversions} also act as factory for
  * {@link SimpleTypeHolder}
@@ -75,7 +73,7 @@ public class CassandraCustomConversions extends org.springframework.data.convert
 
 					CassandraType annotation = AnnotatedElementUtils.getMergedAnnotation(it, CassandraType.class);
 
-					return annotation != null && annotation.type() == Name.TIME;
+					return annotation != null && annotation.type() == CassandraSimpleTypeHolder.Name.TIME;
 				}) //
 				.map(it -> {
 

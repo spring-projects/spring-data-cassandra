@@ -17,19 +17,19 @@ package org.springframework.data.cassandra.core.cql;
 
 import static org.assertj.core.api.Assertions.*;
 
-import reactor.core.scheduler.Schedulers;
 import reactor.test.StepVerifier;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.data.cassandra.ReactiveSession;
 import org.springframework.data.cassandra.core.cql.session.DefaultBridgedReactiveSession;
 import org.springframework.data.cassandra.core.cql.session.DefaultReactiveSessionFactory;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
 
-import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 
 /**
  * Integration tests for {@link ReactiveCqlTemplate}.
@@ -46,14 +46,13 @@ public class ReactiveCqlTemplateIntegrationTests extends AbstractKeyspaceCreatin
 	@Before
 	public void before() {
 
-		reactiveSession = new DefaultBridgedReactiveSession(getSession(), Schedulers.elastic());
+		reactiveSession = new DefaultBridgedReactiveSession(getSession());
 
 		if (initialized.compareAndSet(false, true)) {
 			getSession().execute("CREATE TABLE IF NOT EXISTS user (id text PRIMARY KEY, username text);");
-		} else {
-			getSession().execute("TRUNCATE user;");
 		}
 
+		getSession().execute("TRUNCATE user;");
 		getSession().execute("INSERT INTO user (id, username) VALUES ('WHITE', 'Walter');");
 
 		template = new ReactiveCqlTemplate(new DefaultReactiveSessionFactory(reactiveSession));
@@ -88,9 +87,7 @@ public class ReactiveCqlTemplateIntegrationTests extends AbstractKeyspaceCreatin
 	@Test // DATACASS-335
 	public void executeStatementShouldRemoveRecords() {
 
-		template.execute(QueryBuilder.delete() //
-						.from("user") //
-				.where(QueryBuilder.eq("id", "WHITE"))).as(StepVerifier::create) //
+		template.execute(SimpleStatement.newInstance("DELETE FROM user WHERE id = 'WHITE'")).as(StepVerifier::create) //
 				.expectNext(true) //
 				.verifyComplete();
 
@@ -100,9 +97,7 @@ public class ReactiveCqlTemplateIntegrationTests extends AbstractKeyspaceCreatin
 	@Test // DATACASS-335
 	public void queryForObjectStatementShouldReturnFirstColumn() {
 
-		template.queryForObject(QueryBuilder //
-						.select("id") //
-				.from("user"), String.class).as(StepVerifier::create) //
+		template.queryForObject(SimpleStatement.newInstance("SELECT id FROM user"), String.class).as(StepVerifier::create) //
 				.expectNext("WHITE") //
 				.verifyComplete();
 	}
@@ -110,7 +105,7 @@ public class ReactiveCqlTemplateIntegrationTests extends AbstractKeyspaceCreatin
 	@Test // DATACASS-335
 	public void queryForObjectStatementShouldReturnMap() {
 
-		template.queryForMap(QueryBuilder.select().from("user")).as(StepVerifier::create) //
+		template.queryForMap(SimpleStatement.newInstance("SELECT * FROM user")).as(StepVerifier::create) //
 				.consumeNextWith(actual -> {
 
 					assertThat(actual).containsEntry("id", "WHITE").containsEntry("username", "Walter");

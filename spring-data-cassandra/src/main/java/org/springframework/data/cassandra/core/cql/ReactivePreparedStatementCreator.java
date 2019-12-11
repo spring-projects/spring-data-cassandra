@@ -19,8 +19,8 @@ import reactor.core.publisher.Mono;
 
 import org.springframework.data.cassandra.ReactiveSession;
 
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.exceptions.DriverException;
+import com.datastax.oss.driver.api.core.DriverException;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 
 /**
  * One of the two central callback interfaces used by the {@link ReactiveCqlTemplate} class. This interface creates a

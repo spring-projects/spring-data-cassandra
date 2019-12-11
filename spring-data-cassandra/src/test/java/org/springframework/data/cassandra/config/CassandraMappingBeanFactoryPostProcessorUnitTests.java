@@ -27,7 +27,7 @@ import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlSession;
 
 /**
  * Unit tests for {@link CassandraMappingBeanFactoryPostProcessor}.
@@ -65,7 +65,7 @@ public class CassandraMappingBeanFactoryPostProcessorUnitTests {
 
 		context.refresh();
 
-		assertThat(context.getBeanNamesForType(Session.class)).hasSize(2);
+		assertThat(context.getBeanNamesForType(CqlSession.class)).hasSize(2);
 	}
 
 	@Test // DATACASS-290
@@ -101,16 +101,16 @@ public class CassandraMappingBeanFactoryPostProcessorUnitTests {
 	}
 
 	@SuppressWarnings("unused")
-	private static class MockSessionFactory extends AbstractFactoryBean<Session> {
+	private static class MockSessionFactory extends AbstractFactoryBean<CqlSession> {
 
 		@Override
 		public Class<?> getObjectType() {
-			return Session.class;
+			return CqlSession.class;
 		}
 
 		@Override
-		protected Session createInstance() {
-			return mock(Session.class);
+		protected CqlSession createInstance() {
+			return mock(CqlSession.class);
 		}
 	}
 }

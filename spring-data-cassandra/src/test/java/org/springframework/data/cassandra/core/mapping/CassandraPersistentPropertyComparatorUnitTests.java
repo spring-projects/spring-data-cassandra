@@ -15,19 +15,16 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
-import static org.springframework.data.cassandra.core.mapping.CassandraPersistentPropertyComparator.INSTANCE;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.data.cassandra.core.mapping.CassandraPersistentPropertyComparator.*;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * The CassandraPersistentPropertyComparatorUnitTests class is a test suite of test cases testing the contract and
@@ -164,8 +161,8 @@ public class CassandraPersistentPropertyComparatorUnitTests {
 		when(left.isPrimaryKeyColumn()).thenReturn(true);
 		when(right.isCompositePrimaryKey()).thenReturn(true);
 		when(right.isPrimaryKeyColumn()).thenReturn(false);
-		when(left.getRequiredColumnName()).thenReturn(CqlIdentifier.of("left"));
-		when(right.getRequiredColumnName()).thenReturn(CqlIdentifier.of("right"));
+		when(left.getRequiredColumnName()).thenReturn(CqlIdentifier.fromCql("left"));
+		when(right.getRequiredColumnName()).thenReturn(CqlIdentifier.fromCql("right"));
 
 		assertThat(INSTANCE.compare(left, right)).isLessThan(0);
 

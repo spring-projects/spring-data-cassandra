@@ -20,10 +20,10 @@ import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.data.cassandra.core.mapping.UnsupportedCassandraOperationException;
 import org.springframework.lang.Nullable;
 
-import com.datastax.driver.core.exceptions.DriverException;
+import com.datastax.oss.driver.api.core.DriverException;
 
 /**
- * Strategy interface for translating between {@link DriverException DriverExceptios} and Spring's data access
+ * Strategy interface for translating between {@link RuntimeException driver exceptions} and Spring's data access
  * strategy-agnostic {@link DataAccessException} hierarchy.
  *
  * @author Mark Paluch
@@ -34,7 +34,7 @@ import com.datastax.driver.core.exceptions.DriverException;
 public interface CqlExceptionTranslator extends PersistenceExceptionTranslator {
 
 	/**
-	 * Translate the given {@link DriverException} into a generic {@link DataAccessException}.
+	 * Translate the given {@link RuntimeException} into a generic {@link DataAccessException}.
 	 * <p>
 	 * The returned {@link DataAccessException} is supposed to contain the original {@code DriverException} as root cause.
 	 * However, client code may not generally rely on this due to {@link DataAccessException}s possibly being caused by
@@ -44,10 +44,10 @@ public interface CqlExceptionTranslator extends PersistenceExceptionTranslator {
 	 * @param task readable text describing the task being attempted.
 	 * @param cql CQL query or update that caused the problem (may be {@literal null}).
 	 * @param ex the offending {@link DriverException}.
-	 * @return the DataAccessException, wrapping the {@link DriverException}.
+	 * @return the DataAccessException, wrapping the {@link RuntimeException}.
 	 * @see org.springframework.dao.DataAccessException#getRootCause()
 	 */
-	default DataAccessException translate(@Nullable String task, @Nullable String cql, DriverException ex) {
+	default DataAccessException translate(@Nullable String task, @Nullable String cql, RuntimeException ex) {
 
 		DataAccessException translated = translateExceptionIfPossible(ex);
 		return translated == null ? new UnsupportedCassandraOperationException("Cannot translate exception", ex)

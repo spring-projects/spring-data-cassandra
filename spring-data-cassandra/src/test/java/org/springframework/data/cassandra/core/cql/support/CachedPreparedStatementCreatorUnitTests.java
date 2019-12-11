@@ -18,18 +18,20 @@ package org.springframework.data.cassandra.core.cql.support;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.util.Optional;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.SimpleStatement;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
+import com.datastax.oss.driver.api.querybuilder.update.Assignment;
 
 /**
  * Unit tests for {@link CachedPreparedStatementCreator}.
@@ -39,28 +41,21 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
 @RunWith(MockitoJUnitRunner.class)
 public class CachedPreparedStatementCreatorUnitTests {
 
-	@Mock Session session;
+	@Mock CqlSession session;
 
-	@Mock Session otherSession;
+	@Mock CqlSession otherSession;
 
-	@Mock Session otherKeyspaceSession;
-
-	@Mock Cluster cluster;
+	@Mock CqlSession otherKeyspaceSession;
 
 	@Mock PreparedStatement preparedStatement;
 
 	@Before
 	public void before() {
 
-		when(session.getCluster()).thenReturn(cluster);
-		when(otherSession.getCluster()).thenReturn(cluster);
-		when(otherKeyspaceSession.getCluster()).thenReturn(cluster);
+		when(session.getKeyspace()).thenReturn(Optional.of(CqlIdentifier.fromCql("keyspace")));
+		when(otherSession.getKeyspace()).thenReturn(Optional.of(CqlIdentifier.fromCql("other")));
 
-		when(session.getLoggedKeyspace()).thenReturn("keyspace");
-		when(otherSession.getLoggedKeyspace()).thenReturn("keyspace");
-		when(otherKeyspaceSession.getLoggedKeyspace()).thenReturn("other");
-
-		when(session.prepare(any(RegularStatement.class))).thenReturn(preparedStatement);
+		when(session.prepare(any(SimpleStatement.class))).thenReturn(preparedStatement);
 	}
 
 	@Test // DATACASS-403
@@ -114,7 +109,7 @@ public class CachedPreparedStatementCreatorUnitTests {
 	public void shouldCachePreparedStatementOnKeyspaceLevel() {
 
 		String cql = "SELECT foo FROM users;";
-		when(otherKeyspaceSession.prepare(any(RegularStatement.class))).thenReturn(preparedStatement);
+		when(otherKeyspaceSession.prepare(any(SimpleStatement.class))).thenReturn(preparedStatement);
 
 		PreparedStatementCache cache = PreparedStatementCache.create();
 
@@ -130,7 +125,8 @@ public class CachedPreparedStatementCreatorUnitTests {
 	@Test // DATACASS-403
 	public void shouldCacheBuiltPreparedStatement() {
 
-		RegularStatement statement = QueryBuilder.update("users").with(QueryBuilder.set("foo", "bar"));
+		SimpleStatement statement = QueryBuilder.update("users")
+				.set(Assignment.setColumn("foo", QueryBuilder.literal("bar"))).where().build();
 
 		PreparedStatementCache cache = PreparedStatementCache.create();
 
@@ -148,8 +144,10 @@ public class CachedPreparedStatementCreatorUnitTests {
 	@Test // DATACASS-403
 	public void shouldCacheSameBuiltPreparedStatements() {
 
-		RegularStatement firstStatement = QueryBuilder.update("users").with(QueryBuilder.set("foo", "bar"));
-		RegularStatement secondStatement = QueryBuilder.update("users").with(QueryBuilder.set("foo", "bar"));
+		SimpleStatement firstStatement = QueryBuilder.update("users")
+				.set(Assignment.setColumn("foo", QueryBuilder.literal("bar"))).where().build();
+		SimpleStatement secondStatement = QueryBuilder.update("users")
+				.set(Assignment.setColumn("foo", QueryBuilder.literal("bar"))).where().build();
 
 		PreparedStatementCache cache = PreparedStatementCache.create();
 
@@ -164,8 +162,10 @@ public class CachedPreparedStatementCreatorUnitTests {
 	@Test // DATACASS-403
 	public void shouldCacheAdoptDifferencesInCachedPreparedStatements() {
 
-		RegularStatement firstStatement = QueryBuilder.update("users").with(QueryBuilder.set("foo", "bar"));
-		RegularStatement secondStatement = QueryBuilder.update("users").with(QueryBuilder.set("bar", "foo"));
+		SimpleStatement firstStatement = QueryBuilder.update("users")
+				.set(Assignment.setColumn("foo", QueryBuilder.literal("bar"))).where().build();
+		SimpleStatement secondStatement = QueryBuilder.update("users")
+				.set(Assignment.setColumn("boo", QueryBuilder.literal("far"))).where().build();
 
 		PreparedStatementCache cache = PreparedStatementCache.create();
 

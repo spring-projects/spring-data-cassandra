@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -27,6 +27,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.domain.AllPossibleTypes;
 import org.springframework.data.projection.ProjectionFactory;
@@ -36,9 +37,7 @@ import org.springframework.data.repository.core.support.DefaultRepositoryMetadat
 
 import org.threeten.bp.LocalDateTime;
 
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.DataType.Name;
-import com.datastax.driver.core.policies.DowngradingConsistencyRetryPolicy;
+import com.datastax.oss.driver.api.core.type.DataTypes;
 
 /**
  * Unit tests for {@link CassandraParametersParameterAccessor}.
@@ -60,7 +59,7 @@ public class CassandraParametersParameterAccessorUnitTests {
 		CassandraParameterAccessor accessor = new CassandraParametersParameterAccessor(getCassandraQueryMethod(method),
 				"firstname");
 
-		assertThat(accessor.getDataType(0)).isEqualTo(DataType.varchar());
+		assertThat(accessor.getDataType(0)).isEqualTo(DataTypes.TEXT);
 		assertThat(accessor.getQueryOptions()).isNull();
 	}
 
@@ -81,7 +80,7 @@ public class CassandraParametersParameterAccessorUnitTests {
 		CassandraParameterAccessor accessor = new CassandraParametersParameterAccessor(getCassandraQueryMethod(method),
 				LocalDateTime.of(2000, 10, 11, 12, 13, 14));
 
-		assertThat(accessor.getDataType(0)).isEqualTo(DataType.date());
+		assertThat(accessor.getDataType(0)).isEqualTo(DataTypes.DATE);
 	}
 
 	@Test // DATACASS-296
@@ -90,7 +89,7 @@ public class CassandraParametersParameterAccessorUnitTests {
 		Method method = PossibleRepository.class.getMethod("findByAnnotatedObject", Object.class);
 		CassandraParameterAccessor accessor = new CassandraParametersParameterAccessor(getCassandraQueryMethod(method), "");
 
-		assertThat(accessor.getDataType(0)).isEqualTo(DataType.date());
+		assertThat(accessor.getDataType(0)).isEqualTo(DataTypes.DATE);
 	}
 
 	@Test // DATACASS-296
@@ -99,13 +98,13 @@ public class CassandraParametersParameterAccessorUnitTests {
 		Method method = PossibleRepository.class.getMethod("findByAnnotatedObject", Object.class);
 		CassandraParameterAccessor accessor = new CassandraParametersParameterAccessor(getCassandraQueryMethod(method), "");
 
-		assertThat(accessor.getDataType(0)).isEqualTo(DataType.date());
+		assertThat(accessor.getDataType(0)).isEqualTo(DataTypes.DATE);
 	}
 
 	@Test // DATACASS-146
 	public void shouldProvideQueryOptions() throws Exception {
 
-		QueryOptions options = QueryOptions.builder().retryPolicy(DowngradingConsistencyRetryPolicy.INSTANCE).build();
+		QueryOptions options = QueryOptions.builder().build();
 
 		Method method = PossibleRepository.class.getMethod("findByFirstname", QueryOptions.class, String.class);
 		CassandraParameterAccessor accessor = new CassandraParametersParameterAccessor(getCassandraQueryMethod(method),
@@ -124,9 +123,11 @@ public class CassandraParametersParameterAccessorUnitTests {
 
 		List<AllPossibleTypes> findByBpLocalDateTime(LocalDateTime dateTime);
 
-		List<AllPossibleTypes> findByAnnotatedBpLocalDateTime(@CassandraType(type = Name.DATE) LocalDateTime dateTime);
+		List<AllPossibleTypes> findByAnnotatedBpLocalDateTime(
+				@CassandraType(type = CassandraSimpleTypeHolder.Name.DATE) LocalDateTime dateTime);
 
-		List<AllPossibleTypes> findByAnnotatedObject(@CassandraType(type = Name.DATE) Object dateTime);
+		List<AllPossibleTypes> findByAnnotatedObject(
+				@CassandraType(type = CassandraSimpleTypeHolder.Name.DATE) Object dateTime);
 
 		List<AllPossibleTypes> findByFirstname(QueryOptions queryOptions, String firstname);
 	}

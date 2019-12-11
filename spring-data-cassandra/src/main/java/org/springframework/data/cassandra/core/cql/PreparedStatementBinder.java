@@ -15,9 +15,9 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.exceptions.DriverException;
+import com.datastax.oss.driver.api.core.DriverException;
+import com.datastax.oss.driver.api.core.cql.BoundStatement;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 
 /**
  * General callback interface used by the {@link CqlTemplate} and {@link ReactiveCqlTemplate} classes.
@@ -35,7 +35,7 @@ import com.datastax.driver.core.exceptions.DriverException;
  * @author David Webb
  * @author Mark Paluch
  * @see CqlTemplate#query(String, PreparedStatementBinder, ResultSetExtractor)
- * @see AsyncCqlTemplate#query(AsyncPreparedStatementCreator, PreparedStatementBinder, ResultSetExtractor)
+ * @see AsyncCqlTemplate#query(String, PreparedStatementBinder, AsyncResultSetExtractor)
  * @see ReactiveCqlTemplate#query(String, PreparedStatementBinder, ReactiveResultSetExtractor)
  */
 @FunctionalInterface

@@ -24,6 +24,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -31,12 +32,12 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.data.cassandra.core.convert.CassandraTypeMappingIntegrationTests.Condition;
+import org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.core.mapping.PrimaryKey;
 import org.springframework.data.cassandra.core.mapping.Table;
 
-import com.datastax.driver.core.DataType.Name;
-import com.datastax.driver.core.TupleValue;
+import com.datastax.oss.driver.api.core.data.TupleValue;
 
 /**
  * @author Mark Paluch
@@ -53,7 +54,7 @@ public class AllPossibleTypes {
 
 	UUID uuid;
 
-	@CassandraType(type = Name.INT) Number justNumber;
+	@CassandraType(type = CassandraSimpleTypeHolder.Name.INT) Number justNumber;
 
 	Byte boxedByte;
 	byte primitiveByte;
@@ -76,7 +77,7 @@ public class AllPossibleTypes {
 	Boolean boxedBoolean;
 	boolean primitiveBoolean;
 
-	com.datastax.driver.core.LocalDate date;
+	LocalDate date;
 
 	Date timestamp;
 
@@ -92,7 +93,8 @@ public class AllPossibleTypes {
 	Set<Condition> setOfEnum;
 	List<Condition> listOfEnum;
 
-	@CassandraType(type = Name.TUPLE, typeArguments = { Name.VARCHAR, Name.BIGINT }) TupleValue tupleValue;
+	@CassandraType(type = CassandraSimpleTypeHolder.Name.TUPLE, typeArguments = { CassandraSimpleTypeHolder.Name.VARCHAR,
+			CassandraSimpleTypeHolder.Name.BIGINT }) TupleValue tupleValue;
 
 	// supported by conversion
 	java.time.Instant instant;

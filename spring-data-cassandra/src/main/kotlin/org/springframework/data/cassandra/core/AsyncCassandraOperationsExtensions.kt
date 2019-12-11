@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core
 
-import com.datastax.driver.core.Statement
+import com.datastax.oss.driver.api.core.cql.Statement
 import org.springframework.data.cassandra.core.query.Query
 import org.springframework.data.cassandra.core.query.Update
 import org.springframework.data.domain.Slice
@@ -73,59 +73,59 @@ inline fun <reified T : Any> AsyncCassandraOperations.selectOne(cql: String): Li
 		selectOne(cql, T::class.java)
 
 // -------------------------------------------------------------------------
-// Methods dealing with com.datastax.driver.core.Statement
+// Methods dealing with com.datastax.oss.driver.api.core.cql.Statement
 // -------------------------------------------------------------------------
 
 /**
  * Extension for [AsyncCassandraOperations.select] providing a [KClass] based variant.
  */
 @Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("select<T>(statement)"))
-fun <T : Any> AsyncCassandraOperations.select(statement: Statement, entityClass: KClass<T>): ListenableFuture<List<T>> =
+fun <T : Any> AsyncCassandraOperations.select(statement: Statement<*>, entityClass: KClass<T>): ListenableFuture<List<T>> =
 		select(statement, entityClass.java)
 
 /**
  * Extension for [AsyncCassandraOperations.select] leveraging reified type parameters.
  */
-inline fun <reified T : Any> AsyncCassandraOperations.select(statement: Statement): ListenableFuture<List<T>> =
+inline fun <reified T : Any> AsyncCassandraOperations.select(statement: Statement<*>): ListenableFuture<List<T>> =
 		select(statement, T::class.java)
 
 /**
  * Extension for [AsyncCassandraOperations.select] providing a Consumer-like function.
  */
 @Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("select<T>(statement, consumer)"))
-fun <T : Any> AsyncCassandraOperations.select(statement: Statement, entityClass: KClass<T>, consumer: (T) -> Unit): ListenableFuture<Void> =
+fun <T : Any> AsyncCassandraOperations.select(statement: Statement<*>, entityClass: KClass<T>, consumer: (T) -> Unit): ListenableFuture<Void> =
 		select(statement, consumer, entityClass.java)
 
 /**
  * Extension for [AsyncCassandraOperations.select] providing a Consumer-like function leveraging reified type parameters.
  */
-inline fun <reified T : Any> AsyncCassandraOperations.select(statement: Statement, crossinline consumer: (T) -> Unit): ListenableFuture<Void> =
+inline fun <reified T : Any> AsyncCassandraOperations.select(statement: Statement<*>, crossinline consumer: (T) -> Unit): ListenableFuture<Void> =
 		select(statement, { consumer(it) }, T::class.java)
 
 /**
  * Extension for [AsyncCassandraOperations.slice] providing a [KClass] based variant.
  */
 @Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("slice<T>(statement)"))
-fun <T : Any> AsyncCassandraOperations.slice(statement: Statement, entityClass: KClass<T>): ListenableFuture<Slice<T>> =
+fun <T : Any> AsyncCassandraOperations.slice(statement: Statement<*>, entityClass: KClass<T>): ListenableFuture<Slice<T>> =
 		slice(statement, entityClass.java)
 
 /**
  * Extension for [AsyncCassandraOperations.slice] leveraging reified type parameters.
  */
-inline fun <reified T : Any> AsyncCassandraOperations.slice(statement: Statement): ListenableFuture<Slice<T>> =
+inline fun <reified T : Any> AsyncCassandraOperations.slice(statement: Statement<*>): ListenableFuture<Slice<T>> =
 		slice(statement, T::class.java)
 
 /**
  * Extension for [AsyncCassandraOperations.selectOne] providing a [KClass] based variant.
  */
 @Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("selectOne<T>(statement)"))
-fun <T : Any> AsyncCassandraOperations.selectOne(statement: Statement, entityClass: KClass<T>): ListenableFuture<T?> =
+fun <T : Any> AsyncCassandraOperations.selectOne(statement: Statement<*>, entityClass: KClass<T>): ListenableFuture<T?> =
 		selectOne(statement, entityClass.java)
 
 /**
  * Extension for [AsyncCassandraOperations.selectOne] leveraging reified type parameters.
  */
-inline fun <reified T : Any> AsyncCassandraOperations.selectOne(statement: Statement): ListenableFuture<T?> =
+inline fun <reified T : Any> AsyncCassandraOperations.selectOne(statement: Statement<*>): ListenableFuture<T?> =
 		selectOne(statement, T::class.java)
 
 // -------------------------------------------------------------------------

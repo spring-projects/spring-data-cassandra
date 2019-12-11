@@ -17,9 +17,9 @@ package org.springframework.data.cassandra.core.cql;
 
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.exceptions.DriverException;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.DriverException;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 
 /**
  * Trivial implementation of {@link PreparedStatementCreator}. This prepared statement creator simply prepares a
@@ -59,7 +59,7 @@ public class SimplePreparedStatementCreator implements PreparedStatementCreator,
 	 * @see org.springframework.data.cassandra.core.cql.PreparedStatementCreator#createPreparedStatement(com.datastax.driver.core.Session)
 	 */
 	@Override
-	public PreparedStatement createPreparedStatement(Session session) throws DriverException {
+	public PreparedStatement createPreparedStatement(CqlSession session) throws DriverException {
 		return session.prepare(this.cql);
 	}
 }

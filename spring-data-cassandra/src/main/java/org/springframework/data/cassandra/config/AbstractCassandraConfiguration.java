@@ -19,7 +19,10 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -28,7 +31,7 @@ import org.springframework.data.cassandra.core.CassandraAdminTemplate;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.CassandraCustomConversions;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
-import org.springframework.data.cassandra.core.cql.session.DefaultSessionFactory;
+import org.springframework.data.cassandra.core.cql.session.init.KeyspacePopulator;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.SimpleTupleTypeFactory;
 import org.springframework.data.cassandra.core.mapping.SimpleUserTypeResolver;
@@ -39,8 +42,8 @@ import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.CqlSession;
 
 /**
  * Base class for Spring Data Cassandra configuration using JavaConfig.
@@ -51,91 +54,72 @@ import com.datastax.driver.core.Session;
  * @author Mark Paluch
  */
 @Configuration
-public abstract class AbstractCassandraConfiguration extends AbstractClusterConfiguration
-		implements BeanClassLoaderAware {
+public abstract class AbstractCassandraConfiguration extends AbstractSessionConfiguration
+		implements BeanClassLoaderAware, BeanFactoryAware {
 
 	private @Nullable ClassLoader beanClassLoader;
+	private @Nullable BeanFactory beanFactory;
 
 	/**
-	 * Returns the initialized {@link Session} instance.
+	 * Returns the initialized {@link CqlSession} instance.
 	 *
-	 * @return the {@link Session}.
+	 * @return the {@link CqlSession}.
 	 * @throws IllegalStateException if the session factory is not initialized.
 	 */
-	protected Session getRequiredSession() {
+	protected SessionFactory getRequiredSessionFactory() {
 
-		CassandraSessionFactoryBean factoryBean = session();
+		Assert.state(beanFactory != null, "BeanFactory not initialized");
 
-		Session session = factoryBean.getObject();
-
-		Assert.state(session != null, "Session factory not initialized");
-
-		return session;
+		return beanFactory.getBean(SessionFactory.class);
 	}
 
 	/**
-	 * Creates a {@link CassandraSessionFactoryBean} that provides a Cassandra {@link com.datastax.driver.core.Session}.
-	 * The lifecycle of {@link CassandraSessionFactoryBean} initializes the {@link #getSchemaAction() schema} in the
+	 * Creates a {@link SessionFactoryFactoryBean} that provides a {@link SessionFactory}. The lifecycle of
+	 * {@link SessionFactoryFactoryBean} initializes the {@link #getSchemaAction() schema} in the
 	 * {@link #getKeyspaceName() configured keyspace}.
 	 *
-	 * @return the {@link CassandraSessionFactoryBean}.
-	 * @see #cluster()
+	 * @return the {@link SessionFactoryFactoryBean}.
 	 * @see #cassandraConverter()
 	 * @see #getKeyspaceName()
 	 * @see #getSchemaAction()
-	 * @see #getStartupScripts()
-	 * @see #getShutdownScripts()
+	 * @see #keyspacePopulator()
+	 * @see #keyspaceCleaner()
 	 */
 	@Bean
-	public CassandraSessionFactoryBean session() {
+	public SessionFactoryFactoryBean sessionFactory(CqlSession cqlSession) {
 
-		CassandraSessionFactoryBean session = new CassandraSessionFactoryBean();
+		SessionFactoryFactoryBean bean = new SessionFactoryFactoryBean();
 
-		session.setCluster(getRequiredCluster());
-		session.setConverter(cassandraConverter());
-		session.setKeyspaceName(getKeyspaceName());
-		session.setSchemaAction(getSchemaAction());
-		session.setStartupScripts(getStartupScripts());
-		session.setShutdownScripts(getShutdownScripts());
+		bean.setSession(cqlSession);
 
-		return session;
+		bean.setConverter(beanFactory.getBean(CassandraConverter.class));
+		bean.setSchemaAction(getSchemaAction());
+		bean.setKeyspacePopulator(keyspacePopulator());
+		bean.setKeyspacePopulator(keyspaceCleaner());
+
+		return bean;
 	}
 
 	/**
-	 * Creates a {@link CassandraCqlSessionFactoryBean} that provides a Cassandra
-	 * {@link com.datastax.oss.driver.api.core.CqlSession}. The lifecycle of {@link CassandraSessionFactoryBean}
-	 * initializes the {@link #getSchemaAction() schema} in the {@link #getKeyspaceName() configured keyspace}.
+	 * Creates a {@link KeyspacePopulator} to initialize the keyspace.
 	 *
-	 * @return the {@link CassandraSessionFactoryBean}.
-	 * @see #cluster()
-	 * @see #cassandraConverter()
-	 * @see #getKeyspaceName()
-	 * @see #getSchemaAction()
-	 * @see #getStartupScripts()
-	 * @see #getShutdownScripts()
+	 * @return the {@link KeyspacePopulator} or {@code null} if none configured.
+	 * @see org.springframework.data.cassandra.core.cql.session.init.ResourceKeyspacePopulator
 	 */
-	@Bean
-	public CqlSessionFactoryBean cassandraSession() {
-
-		CqlSessionFactoryBean session = new CqlSessionFactoryBean();
-
-		session.setContactPoints(getContactPoints());
-		session.setPort(getPort());
-		session.setKeyspaceName(getKeyspaceName());
-
-		return session;
+	@Nullable
+	protected KeyspacePopulator keyspacePopulator() {
+		return null;
 	}
 
 	/**
-	 * Creates a {@link DefaultSessionFactory} using the configured {@link #session()} to be used with
-	 * {@link org.springframework.data.cassandra.core.CassandraTemplate}.
+	 * Creates a {@link KeyspacePopulator} to cleanup the keyspace.
 	 *
-	 * @return {@link SessionFactory} used to initialize the Template API.
-	 * @since 2.0
+	 * @return the {@link KeyspacePopulator} or {@code null} if none configured.
+	 * @see org.springframework.data.cassandra.core.cql.session.init.ResourceKeyspacePopulator
 	 */
-	@Bean
-	public SessionFactory sessionFactory() {
-		return new DefaultSessionFactory(getRequiredSession());
+	@Nullable
+	protected KeyspacePopulator keyspaceCleaner() {
+		return null;
 	}
 
 	/**
@@ -149,15 +133,12 @@ public abstract class AbstractCassandraConfiguration extends AbstractClusterConf
 	@Bean
 	public CassandraConverter cassandraConverter() {
 
-		try {
-			MappingCassandraConverter mappingCassandraConverter = new MappingCassandraConverter(cassandraMapping());
+		MappingCassandraConverter mappingCassandraConverter = new MappingCassandraConverter(
+				beanFactory.getBean(CassandraMappingContext.class));
 
-			mappingCassandraConverter.setCustomConversions(customConversions());
+		mappingCassandraConverter.setCustomConversions(beanFactory.getBean(CassandraCustomConversions.class));
 
-			return mappingCassandraConverter;
-		} catch (ClassNotFoundException cause) {
-			throw new IllegalStateException(cause);
-		}
+		return mappingCassandraConverter;
 	}
 
 	/**
@@ -170,22 +151,21 @@ public abstract class AbstractCassandraConfiguration extends AbstractClusterConf
 	@Bean
 	public CassandraMappingContext cassandraMapping() throws ClassNotFoundException {
 
-		Cluster cluster = getRequiredCluster();
-
-		UserTypeResolver userTypeResolver = new SimpleUserTypeResolver(cluster, getKeyspaceName());
+		UserTypeResolver userTypeResolver = new SimpleUserTypeResolver(getRequiredSession(),
+				CqlIdentifier.fromCql(getKeyspaceName()));
 
 		CassandraMappingContext mappingContext = new CassandraMappingContext(userTypeResolver,
-				new SimpleTupleTypeFactory(cluster));
+				SimpleTupleTypeFactory.DEFAULT);
 
 		Optional.ofNullable(this.beanClassLoader).ifPresent(mappingContext::setBeanClassLoader);
 
 		mappingContext.setInitialEntitySet(getInitialEntitySet());
 
-		CustomConversions customConversions = customConversions();
+		CustomConversions customConversions = beanFactory.getBean(CassandraCustomConversions.class);
 
 		mappingContext.setCustomConversions(customConversions);
 		mappingContext.setSimpleTypeHolder(customConversions.getSimpleTypeHolder());
-		mappingContext.setCodecRegistry(cluster.getConfiguration().getCodecRegistry());
+		mappingContext.setCodecRegistry(getRequiredSession().getContext().getCodecRegistry());
 
 		return mappingContext;
 	}
@@ -225,12 +205,17 @@ public abstract class AbstractCassandraConfiguration extends AbstractClusterConf
 	 */
 	@Bean
 	public CassandraAdminTemplate cassandraTemplate() throws Exception {
-		return new CassandraAdminTemplate(sessionFactory(), cassandraConverter());
+		return new CassandraAdminTemplate(getRequiredSessionFactory(), beanFactory.getBean(CassandraConverter.class));
 	}
 
 	@Override
 	public void setBeanClassLoader(ClassLoader classLoader) {
 		this.beanClassLoader = classLoader;
+	}
+
+	@Override
+	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+		this.beanFactory = beanFactory;
 	}
 
 	/**
@@ -240,13 +225,6 @@ public abstract class AbstractCassandraConfiguration extends AbstractClusterConf
 	public String[] getEntityBasePackages() {
 		return new String[] { getClass().getPackage().getName() };
 	}
-
-	/**
-	 * Return the name of the keyspace to connect to.
-	 *
-	 * @return must not be {@literal null}.
-	 */
-	protected abstract String getKeyspaceName();
 
 	/**
 	 * The {@link SchemaAction} to perform at startup. Defaults to {@link SchemaAction#NONE}.

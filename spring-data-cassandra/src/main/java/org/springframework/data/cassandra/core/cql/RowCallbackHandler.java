@@ -15,8 +15,8 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.exceptions.DriverException;
+import com.datastax.oss.driver.api.core.DriverException;
+import com.datastax.oss.driver.api.core.cql.Row;
 
 /**
  * An interface used by {@link CqlTemplate} for processing rows of a {@link com.datastax.driver.core.ResultSet} on a
@@ -40,7 +40,8 @@ public interface RowCallbackHandler {
 
 	/**
 	 * Implementations must implement this method to process each row of data in the
-	 * {@link com.datastax.driver.core.ResultSet}. This method is only supposed to extract values of the current row.
+	 * {@link com.datastax.oss.driver.api.core.cql.ResultSet}. This method is only supposed to extract values of the
+	 * current row.
 	 * <p>
 	 * Exactly what the implementation chooses to do is up to it: A trivial implementation might simply count rows, while
 	 * another implementation might build an XML document.

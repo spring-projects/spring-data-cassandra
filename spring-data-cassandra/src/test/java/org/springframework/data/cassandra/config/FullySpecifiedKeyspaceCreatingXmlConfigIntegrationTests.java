@@ -17,13 +17,14 @@ package org.springframework.data.cassandra.config;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.cassandra.support.KeyspaceTestUtils;
 import org.springframework.data.cassandra.test.util.AbstractEmbeddedCassandraIntegrationTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlSession;
 
 /**
  * @author Matthew T. Adams
@@ -32,7 +33,7 @@ import com.datastax.driver.core.Session;
 @ContextConfiguration
 public class FullySpecifiedKeyspaceCreatingXmlConfigIntegrationTests extends AbstractEmbeddedCassandraIntegrationTest {
 
-	@Autowired Session session;
+	@Autowired CqlSession session;
 
 	@Test
 	public void test() {

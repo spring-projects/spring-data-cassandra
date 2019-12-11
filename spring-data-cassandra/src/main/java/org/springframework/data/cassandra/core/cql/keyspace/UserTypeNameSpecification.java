@@ -15,8 +15,9 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
-import com.datastax.oss.driver.api.core.CqlIdentifier;
 import org.springframework.util.Assert;
+
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * Base value object builder class to construction of user type specifications.

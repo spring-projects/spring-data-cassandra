@@ -27,12 +27,10 @@ import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
-import com.datastax.driver.core.Statement;
-import com.datastax.driver.core.querybuilder.Batch;
-import com.datastax.driver.core.querybuilder.Delete;
-import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Update;
+import com.datastax.oss.driver.api.core.cql.BatchStatement;
+import com.datastax.oss.driver.api.core.cql.BatchStatementBuilder;
+import com.datastax.oss.driver.api.core.cql.BatchType;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 
 /**
  * Default implementation for {@link CassandraBatchOperations}.
@@ -46,7 +44,7 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 
 	private final AtomicBoolean executed = new AtomicBoolean();
 
-	private final Batch batch = QueryBuilder.batch();
+	private final BatchStatementBuilder batch = BatchStatement.builder(BatchType.LOGGED);
 
 	private final CassandraConverter converter;
 
@@ -111,7 +109,7 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 	public WriteResult execute() {
 
 		if (this.executed.compareAndSet(false, true)) {
-			return WriteResult.of(this.operations.getCqlOperations().queryForResultSet(batch));
+			return WriteResult.of(this.operations.getCqlOperations().queryForResultSet(batch.build()));
 		}
 
 		throw new IllegalStateException("This Cassandra Batch was already executed");
@@ -125,7 +123,7 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 
 		assertNotExecuted();
 
-		this.batch.using(QueryBuilder.timestamp(timestamp));
+		this.batch.setQueryTimestamp(timestamp);
 
 		return this;
 	}
@@ -169,10 +167,10 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 			BasicCassandraPersistentEntity<?> persistentEntity = mappingContext
 					.getRequiredPersistentEntity(entity.getClass());
 
-			Insert insertQuery = EntityQueryUtils.createInsertQuery(persistentEntity.getTableName().toCql(), entity, options,
-					getConverter(), persistentEntity);
+			SimpleStatement insertQuery = getStatementFactory()
+					.insert(entity, options, persistentEntity, persistentEntity.getTableName()).build();
 
-			this.batch.add(insertQuery);
+			this.batch.addStatement(insertQuery);
 		}
 
 		return this;
@@ -214,10 +212,10 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 
 			CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
 
-			Update update = getStatementFactory().update(entity, options, getConverter(), persistentEntity,
-					persistentEntity.getTableName());
+			SimpleStatement update = getStatementFactory()
+					.update(entity, options, persistentEntity, persistentEntity.getTableName()).build();
 
-			this.batch.add(update);
+			this.batch.addStatement(update);
 		}
 
 		return this;
@@ -259,10 +257,10 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 
 			CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
 
-			Delete delete = getStatementFactory().delete(entity, options, this.converter, persistentEntity,
-					persistentEntity.getTableName());
+			SimpleStatement delete = getStatementFactory()
+					.delete(entity, options, this.getConverter(), persistentEntity.getTableName()).build();
 
-			this.batch.add(delete);
+			this.batch.addStatement(delete);
 		}
 
 		return this;

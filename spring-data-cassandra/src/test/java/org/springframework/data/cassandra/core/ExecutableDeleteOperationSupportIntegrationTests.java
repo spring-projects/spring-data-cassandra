@@ -15,25 +15,26 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.data.cassandra.core.query.Criteria.where;
-import static org.springframework.data.cassandra.core.query.Query.query;
-
-import java.util.Collections;
+import static org.assertj.core.api.Assertions.*;
+import static org.springframework.data.cassandra.core.query.Criteria.*;
+import static org.springframework.data.cassandra.core.query.Query.*;
 
 import lombok.Data;
+
+import java.util.Collections;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.mapping.Column;
 import org.springframework.data.cassandra.core.mapping.Indexed;
 import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
+
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * Integration tests for {@link ExecutableDeleteOperationSupport}.
@@ -51,9 +52,9 @@ public class ExecutableDeleteOperationSupportIntegrationTests extends AbstractKe
 	public void setUp() {
 
 		template = new CassandraAdminTemplate(session, new MappingCassandraConverter());
-		template.dropTable(true, CqlIdentifier.of("person"));
-		template.createTable(true, CqlIdentifier.of("person"), ExecutableInsertOperationSupportIntegrationTests.Person.class,
-				Collections.emptyMap());
+		template.dropTable(true, CqlIdentifier.fromCql("person"));
+		template.createTable(true, CqlIdentifier.fromCql("person"),
+				ExecutableInsertOperationSupportIntegrationTests.Person.class, Collections.emptyMap());
 
 		han = new Person();
 		han.firstname = "han";
@@ -70,10 +71,7 @@ public class ExecutableDeleteOperationSupportIntegrationTests extends AbstractKe
 	@Test // DATACASS-485
 	public void removeAllMatching() {
 
-		WriteResult deleteResult = this.template
-				.delete(Person.class)
-				.matching(query(where("id").is(han.id)))
-				.all();
+		WriteResult deleteResult = this.template.delete(Person.class).matching(query(where("id").is(han.id))).all();
 
 		assertThat(deleteResult).isNotNull();
 		assertThat(deleteResult.wasApplied()).isTrue();
@@ -82,11 +80,8 @@ public class ExecutableDeleteOperationSupportIntegrationTests extends AbstractKe
 	@Test // DATACASS-485
 	public void removeAllMatchingWithAlternateDomainTypeAndCollection() {
 
-		WriteResult deleteResult = this.template
-				.delete(Jedi.class)
-				.inTable("person")
-				.matching(query(where("id").in(han.id, luke.id)))
-				.all();
+		WriteResult deleteResult = this.template.delete(Jedi.class).inTable("person")
+				.matching(query(where("id").in(han.id, luke.id))).all();
 
 		assertThat(deleteResult).isNotNull();
 		assertThat(deleteResult.wasApplied()).isTrue();

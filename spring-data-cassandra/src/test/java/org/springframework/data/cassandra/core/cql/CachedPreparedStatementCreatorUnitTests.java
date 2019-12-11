@@ -25,6 +25,7 @@ import edu.umd.cs.mtc.MultithreadedTestCase;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Before;
@@ -33,8 +34,9 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 
 /**
  * Unit tests for {@link CachedPreparedStatementCreator}.
@@ -45,7 +47,7 @@ import com.datastax.driver.core.Session;
 public class CachedPreparedStatementCreatorUnitTests {
 
 	PreparedStatement preparedStatement;
-	@Mock Session sessionMock;
+	@Mock CqlSession sessionMock;
 
 	@Before
 	public void before() throws Exception {
@@ -103,14 +105,14 @@ public class CachedPreparedStatementCreatorUnitTests {
 
 		final AtomicInteger atomicInteger = new AtomicInteger();
 		final CachedPreparedStatementCreator preparedStatementCreator;
-		final Session session;
+		final CqlSession session;
 
 		public CreatePreparedStatementIsThreadSafe(final PreparedStatement preparedStatement,
 				CachedPreparedStatementCreator preparedStatementCreator) {
 
 			this.preparedStatementCreator = preparedStatementCreator;
 
-			this.session = newProxy(Session.class, new TestInvocationHandler() {
+			this.session = newProxy(CqlSession.class, new TestInvocationHandler() {
 
 				@Override
 				public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -119,6 +121,10 @@ public class CachedPreparedStatementCreatorUnitTests {
 						waitForTick(2);
 						atomicInteger.incrementAndGet();
 						return preparedStatement;
+					}
+
+					if (method.getName().equals("getKeyspace")) {
+						return Optional.of(CqlIdentifier.fromCql("system"));
 					}
 
 					return super.invoke(proxy, method, args);

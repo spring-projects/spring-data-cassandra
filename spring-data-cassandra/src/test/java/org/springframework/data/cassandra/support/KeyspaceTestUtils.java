@@ -17,7 +17,7 @@ package org.springframework.data.cassandra.support;
 
 import static org.assertj.core.api.Assertions.*;
 
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlSession;
 
 /**
  * @author Matthew T. Adams
@@ -25,7 +25,7 @@ import com.datastax.driver.core.Session;
  */
 public class KeyspaceTestUtils {
 
-	public static void assertKeyspaceExists(String keyspace, Session session) {
-		assertThat(session.getCluster().getMetadata().getKeyspace(keyspace)).isNotNull();
+	public static void assertKeyspaceExists(String keyspace, CqlSession session) {
+		assertThat(session.getMetadata().getKeyspace(keyspace)).isPresent();
 	}
 }

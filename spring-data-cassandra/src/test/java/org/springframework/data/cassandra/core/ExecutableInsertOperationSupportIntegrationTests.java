@@ -26,10 +26,11 @@ import org.junit.Test;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.mapping.Indexed;
 import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
+
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * Integration tests for {@link ExecutableInsertOperationSupport}.
@@ -47,8 +48,8 @@ public class ExecutableInsertOperationSupportIntegrationTests extends AbstractKe
 	public void setUp() {
 
 		template = new CassandraAdminTemplate(session, new MappingCassandraConverter());
-		template.dropTable(true, CqlIdentifier.of("person"));
-		template.createTable(true, CqlIdentifier.of("person"), Person.class, Collections.emptyMap());
+		template.dropTable(true, CqlIdentifier.fromCql("person"));
+		template.createTable(true, CqlIdentifier.fromCql("person"), Person.class, Collections.emptyMap());
 
 		initPersons();
 	}

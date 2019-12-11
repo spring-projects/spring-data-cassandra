@@ -24,16 +24,14 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.core.query.CriteriaDefinition.Operator;
 import org.springframework.lang.Nullable;
 
-import com.datastax.driver.core.CodecRegistry;
-import com.datastax.driver.core.TypeCodec;
+import com.datastax.oss.driver.api.core.type.codec.TypeCodec;
+import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
 
 /**
  * Utility methods for CQL serialization.
  *
  * @author Mark Paluch
  * @see org.springframework.core.convert.converter.Converter
- * @see com.datastax.driver.core.CodecRegistry
- * @see com.datastax.driver.core.TypeCodec
  * @since 2.0
  */
 abstract class SerializationUtils {
@@ -97,7 +95,7 @@ abstract class SerializationUtils {
 			return "null";
 		}
 
-		TypeCodec<Object> codec = CodecRegistry.DEFAULT_INSTANCE.codecFor(value);
+		TypeCodec<Object> codec = CodecRegistry.DEFAULT.codecFor(value);
 
 		return codec.format(value);
 	}

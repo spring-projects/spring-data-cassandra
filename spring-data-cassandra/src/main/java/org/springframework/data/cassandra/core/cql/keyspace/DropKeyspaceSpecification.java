@@ -19,6 +19,8 @@ import lombok.EqualsAndHashCode;
 
 import org.springframework.data.cassandra.core.cql.KeyspaceIdentifier;
 
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+
 /**
  * Object to configure a {@code DROP KEYSPACE} specification.
  *
@@ -29,7 +31,7 @@ public class DropKeyspaceSpecification extends KeyspaceActionSpecification {
 
 	private boolean ifExists;
 
-	private DropKeyspaceSpecification(KeyspaceIdentifier name) {
+	private DropKeyspaceSpecification(CqlIdentifier name) {
 		super(name);
 	}
 
@@ -40,7 +42,7 @@ public class DropKeyspaceSpecification extends KeyspaceActionSpecification {
 	 * @return a new {@link DropKeyspaceSpecification}.
 	 */
 	public static DropKeyspaceSpecification dropKeyspace(String name) {
-		return new DropKeyspaceSpecification(KeyspaceIdentifier.of(name));
+		return dropKeyspace(CqlIdentifier.fromCql(name));
 	}
 
 	/**
@@ -48,8 +50,21 @@ public class DropKeyspaceSpecification extends KeyspaceActionSpecification {
 	 *
 	 * @param name must not be {@literal null}.
 	 * @return a new {@link DropKeyspaceSpecification}.
+	 * @deprecated since 3.0, use {@link #dropKeyspace(CqlIdentifier)}.
 	 */
+	@Deprecated
 	public static DropKeyspaceSpecification dropKeyspace(KeyspaceIdentifier name) {
+		return dropKeyspace(CqlIdentifier.fromCql(name.toCql()));
+	}
+
+	/**
+	 * Create a new {@link DropKeyspaceSpecification} for the given {@code name}.
+	 *
+	 * @param name must not be {@literal null}.
+	 * @return a new {@link DropKeyspaceSpecification}.
+	 * @since 3.0
+	 */
+	public static DropKeyspaceSpecification dropKeyspace(CqlIdentifier name) {
 		return new DropKeyspaceSpecification(name);
 	}
 

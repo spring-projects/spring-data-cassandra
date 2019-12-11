@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import org.reactivestreams.Publisher;
+
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.data.cassandra.ReactiveResultSet;
@@ -32,15 +33,14 @@ import org.springframework.data.cassandra.core.cql.session.DefaultReactiveSessio
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.SimpleStatement;
-import com.datastax.driver.core.Statement;
-import com.datastax.driver.core.exceptions.DriverException;
-import com.datastax.driver.core.policies.RetryPolicy;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.oss.driver.api.core.ConsistencyLevel;
+import com.datastax.oss.driver.api.core.DriverException;
+import com.datastax.oss.driver.api.core.cql.BoundStatement;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.cql.Statement;
+import com.datastax.oss.driver.api.core.retry.RetryPolicy;
 
 /**
  * <b>This is the central class in the CQL core package for reactive Cassandra data access.</b> It simplifies the use of
@@ -82,27 +82,22 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
 public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements ReactiveCqlOperations {
 
 	/**
-	 * Placeholder for default values.
-	 */
-	private static final Statement DEFAULTS = QueryBuilder.select().from("DEFAULT");
-
-	/**
-	 * If this variable is set to a non-negative value, it will be used for setting the {@code fetchSize} property on
+	 * If this variable is set to a non-negative value, it will be used for setting the {@code pageSize} property on
 	 * statements used for query processing.
 	 */
-	private int fetchSize = -1;
+	private int pageSize = -1;
 
 	/**
 	 * If this variable is set to a value, it will be used for setting the {@code retryPolicy} property on statements used
 	 * for query processing.
 	 */
-	private @Nullable RetryPolicy retryPolicy;
+	private @Deprecated @Nullable RetryPolicy retryPolicy;
 
 	/**
 	 * If this variable is set to a value, it will be used for setting the {@code consistencyLevel} property on statements
 	 * used for query processing.
 	 */
-	private @Nullable com.datastax.driver.core.ConsistencyLevel consistencyLevel;
+	private @Nullable ConsistencyLevel consistencyLevel;
 
 	/**
 	 * Construct a new {@link ReactiveCqlTemplate Note: The {@link ReactiveSessionFactory} has to be set before using the
@@ -160,42 +155,66 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/**
-	 * Set the fetch size for this {@link ReactiveCqlTemplate}. This is important for processing large result sets:
-	 * Setting this higher than the default value will increase processing speed at the cost of memory consumption;
-	 * setting this lower can avoid transferring row data that will never be read by the application. Default is -1,
-	 * indicating to use the CQL driver's default configuration (i.e. to not pass a specific fetch size setting on to the
-	 * driver).
+	 * Set the fetch size for this template. This is important for processing large result sets: Setting this higher than
+	 * the default value will increase processing speed at the cost of memory consumption; setting this lower can avoid
+	 * transferring row data that will never be read by the application. Default is -1, indicating to use the CQL driver's
+	 * default configuration (i.e. to not pass a specific fetch size setting on to the driver).
 	 *
-	 * @see Statement#setFetchSize(int)
+	 * @see com.datastax.oss.driver.api.core.cql.SimpleStatementBuilder#setPageSize(int)
+	 * @deprecated since 3.0, use {@link #setPageSize(int)}
 	 */
+	@Deprecated
 	public void setFetchSize(int fetchSize) {
-		this.fetchSize = fetchSize;
+		setPageSize(fetchSize);
 	}
 
 	/**
-	 * @return the fetch size specified for this {@link ReactiveCqlTemplate}.
+	 * @return the fetch size specified for this template.
+	 * @deprecated since 3.0, use {@link #getPageSize()}.
 	 */
+	@Deprecated
 	public int getFetchSize() {
-		return this.fetchSize;
+		return getPageSize();
 	}
 
 	/**
-	 * Set the retry policy for this {@link ReactiveCqlTemplate}. This is important for defining behavior when a request
-	 * fails.
+	 * Set the page size for this template. This is important for processing large result sets: Setting this higher than
+	 * the default value will increase processing speed at the cost of memory consumption; setting this lower can avoid
+	 * transferring row data that will never be read by the application. Default is -1, indicating to use the CQL driver's
+	 * default configuration (i.e. to not pass a specific page size setting on to the driver).
 	 *
-	 * @see Statement#setRetryPolicy(RetryPolicy)
-	 * @see RetryPolicy
+	 * @see com.datastax.oss.driver.api.core.cql.SimpleStatementBuilder#setPageSize(int)
 	 */
+	public void setPageSize(int fetchSize) {
+		this.pageSize = fetchSize;
+	}
+
+	/**
+	 * @return the page size specified for this template.
+	 */
+	public int getPageSize() {
+		return this.pageSize;
+	}
+
+	/**
+	 * Set the retry policy for this template. This is important for defining behavior when a request fails.
+	 *
+	 * @see RetryPolicy
+	 * @deprecated since 3.0. Use driver execution profiles instead.
+	 */
+	@Deprecated
 	public void setRetryPolicy(@Nullable RetryPolicy retryPolicy) {
 		this.retryPolicy = retryPolicy;
 	}
 
 	/**
-	 * @return the {@link RetryPolicy} specified for this {@link ReactiveCqlTemplate}.
+	 * @return the {@link RetryPolicy} specified for this template.
+	 * @deprecated since 3.0. Use driver execution profiles instead.
 	 */
 	@Nullable
+	@Deprecated
 	public RetryPolicy getRetryPolicy() {
-		return retryPolicy;
+		return this.retryPolicy;
 	}
 
 	// -------------------------------------------------------------------------
@@ -237,14 +256,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 		Assert.hasText(cql, "CQL must not be empty");
 		Assert.notNull(resultSetExtractor, "ReactiveResultSetExtractor must not be null");
 
-		return createFlux(new SimpleStatement(cql), (session, stmt) -> {
-
-			if (logger.isDebugEnabled()) {
-				logger.debug("Executing CQL Statement [{}]", cql);
-			}
-
-			return session.execute(stmt).flatMapMany(resultSetExtractor::extractData);
-		}).onErrorMap(translateException("Query", cql));
+		return query(SimpleStatement.newInstance(cql), resultSetExtractor);
 	}
 
 	/* (non-Javadoc)
@@ -304,14 +316,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 
 		Assert.hasText(cql, "CQL must not be empty");
 
-		return createMono(new SimpleStatement(cql), (session, statement) -> {
-
-			if (logger.isDebugEnabled()) {
-				logger.debug("Executing CQL [{}]", cql);
-
-			}
-			return session.execute(statement);
-		}).onErrorMap(translateException("QueryForResultSet", cql));
+		return queryForResultSet(SimpleStatement.newInstance(cql));
 	}
 
 	/* (non-Javadoc)
@@ -335,14 +340,14 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	// -------------------------------------------------------------------------
-	// Methods dealing with com.datastax.driver.core.Statement
+	// Methods dealing with com.datastax.oss.driver.api.core.cql.Statement
 	// -------------------------------------------------------------------------
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.ReactiveCqlOperations#execute(com.datastax.driver.core.Statement)
+	 * @see org.springframework.data.cassandra.core.cql.ReactiveCqlOperations#execute(com.datastax.oss.driver.api.core.cql.Statement)
 	 */
 	@Override
-	public Mono<Boolean> execute(Statement statement) throws DataAccessException {
+	public Mono<Boolean> execute(Statement<?> statement) throws DataAccessException {
 
 		Assert.notNull(statement, "CQL Statement must not be null");
 
@@ -350,10 +355,10 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.ReactiveCqlOperations#query(com.datastax.driver.core.Statement, org.springframework.data.cassandra.core.cql.ReactiveResultSetExtractor)
+	 * @see org.springframework.data.cassandra.core.cql.ReactiveCqlOperations#query(com.datastax.oss.driver.api.core.cql.Statement, org.springframework.data.cassandra.core.cql.ReactiveResultSetExtractor)
 	 */
 	@Override
-	public <T> Flux<T> query(Statement statement, ReactiveResultSetExtractor<T> rse) throws DataAccessException {
+	public <T> Flux<T> query(Statement<?> statement, ReactiveResultSetExtractor<T> rse) throws DataAccessException {
 
 		Assert.notNull(statement, "CQL Statement must not be null");
 		Assert.notNull(rse, "ReactiveResultSetExtractor must not be null");
@@ -364,64 +369,64 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 				logger.debug("Executing CQL Statement [{}]", statement);
 			}
 
-			return session.execute(stmt).flatMapMany(rse::extractData);
+			return session.execute(applyStatementSettings(statement)).flatMapMany(rse::extractData);
 		}).onErrorMap(translateException("Query", statement.toString()));
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.ReactiveCqlOperations#query(com.datastax.driver.core.Statement, org.springframework.data.cassandra.core.cql.RowMapper)
+	 * @see org.springframework.data.cassandra.core.cql.ReactiveCqlOperations#query(com.datastax.oss.driver.api.core.cql.Statement, org.springframework.data.cassandra.core.cql.RowMapper)
 	 */
 	@Override
-	public <T> Flux<T> query(Statement statement, RowMapper<T> rowMapper) throws DataAccessException {
+	public <T> Flux<T> query(Statement<?> statement, RowMapper<T> rowMapper) throws DataAccessException {
 		return query(statement, new ReactiveRowMapperResultSetExtractor<>(rowMapper));
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.ReactiveCqlOperations#queryForObject(com.datastax.driver.core.Statement, org.springframework.data.cassandra.core.cql.RowMapper)
+	 * @see org.springframework.data.cassandra.core.cql.ReactiveCqlOperations#queryForObject(com.datastax.oss.driver.api.core.cql.Statement, org.springframework.data.cassandra.core.cql.RowMapper)
 	 */
 	@Override
-	public <T> Mono<T> queryForObject(Statement statement, RowMapper<T> rowMapper) throws DataAccessException {
+	public <T> Mono<T> queryForObject(Statement<?> statement, RowMapper<T> rowMapper) throws DataAccessException {
 		return query(statement, rowMapper).buffer(2).flatMap(list -> Mono.just(DataAccessUtils.requiredSingleResult(list)))
 				.next();
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.ReactiveCqlOperations#queryForObject(com.datastax.driver.core.Statement, java.lang.Class)
+	 * @see org.springframework.data.cassandra.core.cql.ReactiveCqlOperations#queryForObject(com.datastax.oss.driver.api.core.cql.Statement, java.lang.Class)
 	 */
 	@Override
-	public <T> Mono<T> queryForObject(Statement statement, Class<T> requiredType) throws DataAccessException {
+	public <T> Mono<T> queryForObject(Statement<?> statement, Class<T> requiredType) throws DataAccessException {
 		return queryForObject(statement, getSingleColumnRowMapper(requiredType));
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.ReactiveCqlOperations#queryForMap(com.datastax.driver.core.Statement)
+	 * @see org.springframework.data.cassandra.core.cql.ReactiveCqlOperations#queryForMap(com.datastax.oss.driver.api.core.cql.Statement)
 	 */
 	@Override
-	public Mono<Map<String, Object>> queryForMap(Statement statement) throws DataAccessException {
+	public Mono<Map<String, Object>> queryForMap(Statement<?> statement) throws DataAccessException {
 		return queryForObject(statement, getColumnMapRowMapper());
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.ReactiveCqlOperations#queryForFlux(com.datastax.driver.core.Statement, java.lang.Class)
+	 * @see org.springframework.data.cassandra.core.cql.ReactiveCqlOperations#queryForFlux(com.datastax.oss.driver.api.core.cql.Statement, java.lang.Class)
 	 */
 	@Override
-	public <T> Flux<T> queryForFlux(Statement statement, Class<T> elementType) throws DataAccessException {
+	public <T> Flux<T> queryForFlux(Statement<?> statement, Class<T> elementType) throws DataAccessException {
 		return query(statement, getSingleColumnRowMapper(elementType));
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.ReactiveCqlOperations#queryForFlux(com.datastax.driver.core.Statement)
+	 * @see org.springframework.data.cassandra.core.cql.ReactiveCqlOperations#queryForFlux(com.datastax.oss.driver.api.core.cql.Statement)
 	 */
 	@Override
-	public Flux<Map<String, Object>> queryForFlux(Statement statement) throws DataAccessException {
+	public Flux<Map<String, Object>> queryForFlux(Statement<?> statement) throws DataAccessException {
 		return query(statement, getColumnMapRowMapper());
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.ReactiveCqlOperations#queryForResultSet(com.datastax.driver.core.Statement)
+	 * @see org.springframework.data.cassandra.core.cql.ReactiveCqlOperations#queryForResultSet(com.datastax.oss.driver.api.core.cql.Statement)
 	 */
 	@Override
-	public Mono<ReactiveResultSet> queryForResultSet(Statement statement) throws DataAccessException {
+	public Mono<ReactiveResultSet> queryForResultSet(Statement<?> statement) throws DataAccessException {
 
 		Assert.notNull(statement, "CQL Statement must not be null");
 
@@ -432,18 +437,18 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 
 			}
 
-			return session.execute(executedStatement);
+			return session.execute(applyStatementSettings(executedStatement));
 		}).onErrorMap(translateException("QueryForResultSet", statement.toString()));
 	}
 
 	@Override
-	public Flux<Row> queryForRows(Statement statement) throws DataAccessException {
+	public Flux<Row> queryForRows(Statement<?> statement) throws DataAccessException {
 		return queryForResultSet(statement).flatMapMany(ReactiveResultSet::rows)
 				.onErrorMap(translateException("QueryForRows", statement.toString()));
 	}
 
 	// -------------------------------------------------------------------------
-	// Methods dealing with prepared statements
+	// Methods dealing with com.datastax.oss.driver.api.core.cql.PreparedStatement
 	// -------------------------------------------------------------------------
 
 	/* (non-Javadoc)
@@ -460,8 +465,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 
 			logger.debug("Preparing statement [{}] using {}", getCql(psc), psc);
 
-			return psc.createPreparedStatement(session).doOnNext(this::applyStatementSettings)
-					.flatMapMany(ps -> action.doInPreparedStatement(session, ps));
+			return psc.createPreparedStatement(session).flatMapMany(ps -> action.doInPreparedStatement(session, ps));
 		}).onErrorMap(translateException("ReactivePreparedStatementCallback", getCql(psc)));
 	}
 
@@ -493,15 +497,13 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 		return execute(psc, (session, ps) -> Mono.just(ps).flatMapMany(pps -> {
 
 			if (logger.isDebugEnabled()) {
-				logger.debug("Executing Prepared CQL Statement [{}]", ps.getQueryString());
+				logger.debug("Executing Prepared CQL Statement [{}]", ps.getQuery());
 			}
 
 			BoundStatement boundStatement = (preparedStatementBinder != null ? preparedStatementBinder.bindValues(ps)
 					: ps.bind());
 
-			applyStatementSettings(boundStatement);
-
-			return session.execute(boundStatement);
+			return session.execute(applyStatementSettings(boundStatement));
 		}).flatMap(rse::extractData)).onErrorMap(translateException("Query", getCql(psc)));
 	}
 
@@ -667,9 +669,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 
 			BoundStatement boundStatement = newArgPreparedStatementBinder(objects).bindValues(ps);
 
-			applyStatementSettings(boundStatement);
-
-			return session.execute(boundStatement);
+			return session.execute(applyStatementSettings(boundStatement));
 
 		}).map(ReactiveResultSet::wasApplied));
 	}
@@ -697,7 +697,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 * @param callback must not be {@literal null}.
 	 * @return a reusable {@link Flux} wrapping the {@link ReactiveStatementCallback}.
 	 */
-	protected <T> Flux<T> createFlux(Statement statement, ReactiveStatementCallback<T> callback) {
+	protected <T> Flux<T> createFlux(Statement<?> statement, ReactiveStatementCallback<T> callback) {
 
 		Assert.notNull(callback, "ReactiveStatementCallback must not be null");
 
@@ -714,7 +714,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 * @param callback must not be {@literal null}.
 	 * @return a reusable {@link Mono} wrapping the {@link ReactiveStatementCallback}.
 	 */
-	protected <T> Mono<T> createMono(Statement statement, ReactiveStatementCallback<T> callback) {
+	protected <T> Mono<T> createMono(Statement<?> statement, ReactiveStatementCallback<T> callback) {
 
 		Assert.notNull(callback, "ReactiveStatementCallback must not be null");
 
@@ -775,56 +775,26 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/**
-	 * Prepare the given CQL Statement (or {@link com.datastax.driver.core.PreparedStatement}), applying statement
-	 * settings such as fetch size, retry policy, and consistency level.
+	 * Prepare the given CQL Statement applying statement settings such as page size and consistency level.
 	 *
 	 * @param stmt the CQL Statement to prepare
-	 * @see #setFetchSize(int)
-	 * @see #setRetryPolicy(RetryPolicy)
+	 * @see #setPageSize(int)
 	 * @see #setConsistencyLevel(ConsistencyLevel)
 	 */
-	protected void applyStatementSettings(Statement stmt) {
+	protected Statement<?> applyStatementSettings(Statement<?> statement) {
 
+		Statement<?> statementToUse = statement;
 		ConsistencyLevel consistencyLevel = getConsistencyLevel();
 
-		if (consistencyLevel != null && stmt.getConsistencyLevel() == DEFAULTS.getConsistencyLevel()) {
-			stmt.setConsistencyLevel(consistencyLevel);
+		if (getFetchSize() > -1 && statement.getPageSize() < 0) {
+			statementToUse = statementToUse.setPageSize(getFetchSize());
 		}
 
-		int fetchSize = getFetchSize();
-
-		if (fetchSize != -1 && stmt.getFetchSize() == DEFAULTS.getFetchSize()) {
-			stmt.setFetchSize(fetchSize);
+		if (consistencyLevel != null && statementToUse.getConsistencyLevel() == null) {
+			statementToUse = statementToUse.setConsistencyLevel(getConsistencyLevel());
 		}
 
-		RetryPolicy retryPolicy = getRetryPolicy();
-
-		if (retryPolicy != null && stmt.getRetryPolicy() == DEFAULTS.getRetryPolicy()) {
-			stmt.setRetryPolicy(retryPolicy);
-		}
-	}
-
-	/**
-	 * Prepare the given CQL Statement (or {@link com.datastax.driver.core.PreparedStatement}), applying statement
-	 * settings such as retry policy and consistency level.
-	 *
-	 * @param stmt the CQL Statement to prepare
-	 * @see #setRetryPolicy(RetryPolicy)
-	 * @see #setConsistencyLevel(ConsistencyLevel)
-	 */
-	protected void applyStatementSettings(PreparedStatement stmt) {
-
-		ConsistencyLevel consistencyLevel = getConsistencyLevel();
-
-		if (consistencyLevel != null) {
-			stmt.setConsistencyLevel(consistencyLevel);
-		}
-
-		RetryPolicy retryPolicy = getRetryPolicy();
-
-		if (retryPolicy != null) {
-			stmt.setRetryPolicy(retryPolicy);
-		}
+		return statementToUse;
 	}
 
 	/**
@@ -866,7 +836,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 				.orElse(null);
 	}
 
-	class SimpleReactivePreparedStatementCreator implements ReactivePreparedStatementCreator, CqlProvider {
+	static class SimpleReactivePreparedStatementCreator implements ReactivePreparedStatementCreator, CqlProvider {
 
 		private final String cql;
 

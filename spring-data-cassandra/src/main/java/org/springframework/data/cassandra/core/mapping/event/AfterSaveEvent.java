@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.mapping.event;
 
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * {@link CassandraMappingEvent} triggered after save of an object.

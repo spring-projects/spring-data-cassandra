@@ -20,7 +20,7 @@ import org.springframework.data.cassandra.repository.Query;
 import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 
-import com.datastax.driver.core.SimpleStatement;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 
 /**
  * String-based {@link AbstractCassandraQuery} implementation.

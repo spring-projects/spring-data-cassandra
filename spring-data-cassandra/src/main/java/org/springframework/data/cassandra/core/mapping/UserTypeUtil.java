@@ -15,15 +15,15 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import static org.springframework.data.cassandra.core.cql.CqlIdentifier.*;
-
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.DataType.CollectionType;
-import com.datastax.driver.core.DataType.Name;
-import com.datastax.driver.core.UserType;
+import com.datastax.oss.driver.api.core.type.DataType;
+import com.datastax.oss.driver.api.core.type.DataTypes;
+import com.datastax.oss.driver.api.core.type.ListType;
+import com.datastax.oss.driver.api.core.type.MapType;
+import com.datastax.oss.driver.api.core.type.SetType;
+import com.datastax.oss.driver.api.core.type.UserDefinedType;
+import com.datastax.oss.driver.internal.core.metadata.schema.ShallowUserDefinedType;
 
 /**
  * {@link com.datastax.driver.core.UserType} utility methods. Mainly for internal use within the framework.
@@ -44,86 +44,53 @@ class UserTypeUtil {
 
 		Assert.notNull(dataType, "DataType must not be null");
 
-		if (dataType.getName() == Name.LIST && dataType instanceof CollectionType) {
+		if (dataType instanceof ListType) {
 
-			CollectionType collectionType = (CollectionType) dataType;
+			ListType collectionType = (ListType) dataType;
+			DataType elementType = collectionType.getElementType();
 
-			DataType typeArgument = collectionType.getTypeArguments().get(0);
-
-			if (typeArgument instanceof CollectionType || isNonFrozenUdt(typeArgument)) {
-				return DataType.list(potentiallyFreeze(typeArgument), collectionType.isFrozen());
+			if (isCollectionType(elementType) || isNonFrozenUdt(elementType)) {
+				return DataTypes.listOf(potentiallyFreeze(elementType), collectionType.isFrozen());
 			}
 		}
 
-		if (dataType.getName() == Name.SET && dataType instanceof CollectionType) {
+		if (dataType instanceof SetType) {
 
-			CollectionType collectionType = (CollectionType) dataType;
+			SetType collectionType = (SetType) dataType;
+			DataType elementType = collectionType.getElementType();
 
-			DataType typeArgument = collectionType.getTypeArguments().get(0);
-
-			if (typeArgument instanceof CollectionType || isNonFrozenUdt(typeArgument)) {
-				return DataType.set(potentiallyFreeze(typeArgument), collectionType.isFrozen());
+			if (isCollectionType(elementType) || isNonFrozenUdt(elementType)) {
+				return DataTypes.setOf(potentiallyFreeze(elementType), collectionType.isFrozen());
 			}
 		}
 
-		if (dataType.getName() == Name.MAP && dataType instanceof CollectionType) {
+		if (dataType instanceof MapType) {
 
-			CollectionType collectionType = (CollectionType) dataType;
+			MapType collectionType = (MapType) dataType;
 
-			DataType keyType = collectionType.getTypeArguments().get(0);
-			DataType valueType = collectionType.getTypeArguments().get(1);
+			DataType keyType = collectionType.getKeyType();
+			DataType valueType = collectionType.getValueType();
 
-			if (keyType instanceof CollectionType || valueType instanceof CollectionType || isNonFrozenUdt(keyType)
+			if (isCollectionType(keyType) || isCollectionType(valueType) || isNonFrozenUdt(keyType)
 					|| isNonFrozenUdt(valueType)) {
-				return DataType.map(potentiallyFreeze(keyType), potentiallyFreeze(valueType), collectionType.isFrozen());
+				return DataTypes.mapOf(potentiallyFreeze(keyType), potentiallyFreeze(valueType), collectionType.isFrozen());
 			}
 		}
 
-		return isNonFrozenUdt(dataType) ? new FrozenLiteralDataType(getTypeName(dataType)) : dataType;
+		if (isNonFrozenUdt(dataType)) {
+			UserDefinedType userDefinedType = (UserDefinedType) dataType;
+			return new ShallowUserDefinedType(userDefinedType.getKeyspace(), userDefinedType.getName(), true);
+		}
+
+		return dataType;
 	}
 
-	private static CqlIdentifier getTypeName(DataType dataType) {
-
-		if (dataType instanceof UserType) {
-			return CqlIdentifier.of(((UserType) dataType).getTypeName());
-		}
-
-		return of(dataType.asFunctionParameterString());
+	private static boolean isCollectionType(DataType typeArgument) {
+		return typeArgument instanceof ListType || typeArgument instanceof SetType || typeArgument instanceof MapType;
 	}
 
 	private static boolean isNonFrozenUdt(DataType dataType) {
-		return dataType.getName() == Name.UDT && !dataType.isFrozen();
+		return dataType instanceof UserDefinedType && !((UserDefinedType) dataType).isFrozen();
 	}
 
-	/**
-	 * @author Jens Schauder
-	 * @since 1.5.1
-	 */
-	static class FrozenLiteralDataType extends DataType {
-
-		private final CqlIdentifier type;
-
-		FrozenLiteralDataType(CqlIdentifier type) {
-
-			super(Name.UDT);
-
-			this.type = type;
-		}
-
-		/* (non-Javadoc)
-		 * @see com.datastax.driver.core.DataType#isFrozen()
-		 */
-		@Override
-		public boolean isFrozen() {
-			return true;
-		}
-
-		/* (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
-		@Override
-		public String toString() {
-			return String.format("frozen<%s>", type.toCql());
-		}
-	}
 }

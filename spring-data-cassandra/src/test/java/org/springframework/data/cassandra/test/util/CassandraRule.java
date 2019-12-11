@@ -15,39 +15,34 @@
  */
 package org.springframework.data.cassandra.test.util;
 
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.rules.ExternalResource;
 
 import org.springframework.data.cassandra.core.cql.SessionCallback;
 import org.springframework.data.cassandra.support.CassandraConnectionProperties;
 import org.springframework.data.cassandra.support.CqlDataSet;
-import org.springframework.data.cassandra.support.IntegrationTestNettyOptions;
 import org.springframework.util.Assert;
 import org.springframework.util.SocketUtils;
 import org.springframework.util.StringUtils;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.QueryOptions;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.SocketOptions;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.CqlSessionBuilder;
 
 /**
- * JUnit Rule used to provide a Cassandra context for integration tests.
- *
- * This rule can use/spin up either an embedded Cassandra instance or use an external instance.
- *
- * Typical usage:
+ * JUnit Rule used to provide a Cassandra context for integration tests. This rule can use/spin up either an embedded
+ * Cassandra instance or use an external instance. Typical usage:
  *
  * <pre>
  * public class MyIntegrationTest {
- * 		&#064;Rule public CassandraRule rule = new CassandraRule(CONFIG)
- * 				.before(new ClassPathCQLDataSet("CreateIndexCqlGeneratorIntegrationTests-BasicTest.cql", "keyspace"));
+ * 	&#064;Rule public CassandraRule rule = new CassandraRule(CONFIG)
+ * 			.before(new ClassPathCQLDataSet("CreateIndexCqlGeneratorIntegrationTests-BasicTest.cql", "keyspace"));
  * }
  * </pre>
  *
@@ -61,12 +56,13 @@ public class CassandraRule extends ExternalResource {
 
 	private final long startupTimeout;
 
-	@SuppressWarnings("all")
-	private final CassandraConnectionProperties properties = new CassandraConnectionProperties();
+	@SuppressWarnings("all") private final CassandraConnectionProperties properties = new CassandraConnectionProperties();
 
 	private CassandraRule parent;
 
-	private Cluster cluster;
+	private CqlSession system;
+
+	private CqlSession session;
 
 	private Integer cassandraPort;
 
@@ -75,7 +71,7 @@ public class CassandraRule extends ExternalResource {
 
 	private final Map<SessionCallback<?>, InvocationMode> invocationModeMap = new HashMap<>();
 
-	private Session session;
+	private CqlSessionBuilder sessionBuilder;
 
 	private final String configurationFilename;
 
@@ -89,11 +85,11 @@ public class CassandraRule extends ExternalResource {
 	}
 
 	/**
-	 * Constructs a new instance of {@link CassandraRule} initialized with the given YAML configuration resource,
-	 * thereby allowing the use of a configuration file and to provide a startup timeout.
+	 * Constructs a new instance of {@link CassandraRule} initialized with the given YAML configuration resource, thereby
+	 * allowing the use of a configuration file and to provide a startup timeout.
 	 *
-	 * @param yamlConfigurationResource {@link String name} of the configuration resource;
-	 * must not be {@literal null} or empty.
+	 * @param yamlConfigurationResource {@link String name} of the configuration resource; must not be {@literal null} or
+	 *          empty.
 	 * @param startupTimeout long value indicating the startup timeout in milliseconds.
 	 */
 	public CassandraRule(String yamlConfigurationResource, long startupTimeout) {
@@ -105,8 +101,8 @@ public class CassandraRule extends ExternalResource {
 	}
 
 	/**
-	 * Constructs a new instance of {@link CassandraRule} using the provided (parent) {@link CassandraRule}
-	 * to preserve cluster/connection context.
+	 * Constructs a new instance of {@link CassandraRule} using the provided (parent) {@link CassandraRule} to preserve
+	 * cluster/connection context.
 	 *
 	 * @param parent the {@link CassandraRule parent} instance.
 	 */
@@ -118,25 +114,14 @@ public class CassandraRule extends ExternalResource {
 	}
 
 	/**
-	 * Creates a {@link CassandraRule} to be used in an "owning" scope.
-	 *
-	 * The derived {@link CassandraRule} shares the connection of {@literal this} instance
-	 * and starts with a fresh before/after configuration.
+	 * Creates a {@link CassandraRule} to be used in an "owning" scope. The derived {@link CassandraRule} shares the
+	 * connection of {@literal this} instance and starts with a fresh before/after configuration.
 	 *
 	 * @return a derived {@link CassandraRule} sharing the connection of {@literal this} instance.
 	 * @see #CassandraRule(CassandraRule)
 	 */
 	public CassandraRule testInstance() {
 		return new CassandraRule(this);
-	}
-
-	/**
-	 * Returns the {@link Cluster}.
-	 *
-	 * @return the Cluster
-	 */
-	public Cluster getCluster() {
-		return this.cluster;
 	}
 
 	/**
@@ -157,7 +142,7 @@ public class CassandraRule extends ExternalResource {
 	 *
 	 * @return the Session
 	 */
-	public Session getSession() {
+	public CqlSession getSession() {
 		return this.session;
 	}
 
@@ -265,8 +250,7 @@ public class CassandraRule extends ExternalResource {
 	private void configureRemoteJmxPort() {
 
 		if (!System.getProperties().containsKey("com.sun.management.jmxremote.port")) {
-			System.setProperty("com.sun.management.jmxremote.port",
-				String.valueOf(SocketUtils.findAvailableTcpPort(1024)));
+			System.setProperty("com.sun.management.jmxremote.port", String.valueOf(SocketUtils.findAvailableTcpPort(1024)));
 		}
 	}
 
@@ -285,61 +269,44 @@ public class CassandraRule extends ExternalResource {
 
 			if (resourceHolder == null) {
 
-				this.cluster = buildCluster(this.cassandraPort);
+				this.sessionBuilder = buildCluster(this.cassandraPort);
 
 				if (isClusterReuseEnabled()) {
-					resourceHolder = new ResourceHolder(this.cluster);
+					resourceHolder = new ResourceHolder(this.sessionBuilder);
 				}
 			} else {
-				this.cluster = resourceHolder.cluster;
+				this.sessionBuilder = resourceHolder.sessionBuilder;
 			}
 		} else {
 			this.cassandraPort = this.parent.cassandraPort;
-			this.cluster = this.parent.cluster;
+			this.sessionBuilder = this.parent.sessionBuilder;
 		}
 
 		this.session = resolveSession();
 	}
 
-	private Cluster buildCluster(int port) {
-
-		QueryOptions queryOptions = new QueryOptions().setRefreshSchemaIntervalMillis(0);
-
-		SocketOptions socketOptions = new SocketOptions()
-			.setConnectTimeoutMillis((int) TimeUnit.SECONDS.toMillis(15))
-			.setReadTimeoutMillis((int) TimeUnit.SECONDS.toMillis(15));
+	private CqlSessionBuilder buildCluster(int port) {
 
 		String host = resolveHost();
 
-		return new Cluster.Builder()
-				.addContactPoints(host)
-				.withPort(port)
-				.withMaxSchemaAgreementWaitSeconds(3)
-				.withNettyOptions(IntegrationTestNettyOptions.INSTANCE)
-				.withQueryOptions(queryOptions)
-				.withSocketOptions(socketOptions)
-				.build();
+		return CqlSession.builder().addContactPoint(InetSocketAddress.createUnresolved(host, port))
+				.withLocalDatacenter("datacenter1");
 	}
 
 	private String resolveHost() {
 
-		return isEmbedded()
-				? EmbeddedCassandraServerHelper.getHost()
-				: this.properties.getCassandraHost();
+		return isEmbedded() ? EmbeddedCassandraServerHelper.getHost() : this.properties.getCassandraHost();
 	}
 
 	private int resolvePort() {
 
-		return isEmbedded()
-				? EmbeddedCassandraServerHelper.getNativeTransportPort()
-				: this.properties.getCassandraPort();
+		return isEmbedded() ? EmbeddedCassandraServerHelper.getNativeTransportPort() : this.properties.getCassandraPort();
 	}
 
-	private Session resolveSession() {
+	private CqlSession resolveSession() {
 
 		return isNotParent() ? this.parent.getSession()
-			: resourceHolder != null ? resourceHolder.session
-			: this.cluster.connect();
+				: resourceHolder != null ? resourceHolder.system : this.sessionBuilder.build();
 	}
 
 	private void executeBeforeHooks() {
@@ -379,8 +346,6 @@ public class CassandraRule extends ExternalResource {
 		if (resourceHolder == null) {
 			if (isParent()) {
 				this.session.close();
-				this.cluster.closeAsync();
-				this.cluster = null;
 			} else {
 				this.session.closeAsync();
 			}
@@ -417,12 +382,12 @@ public class CassandraRule extends ExternalResource {
 		load(this.session, cqlDataSet);
 	}
 
-	private void load(Session session, CqlDataSet cqlDataSet) {
+	private void load(CqlSession session, CqlDataSet cqlDataSet) {
 
-		Optional.of(cqlDataSet.getKeyspaceName())
-			.filter(StringUtils::hasText)
-			.filter(keyspaceName -> !keyspaceName.equals(session.getLoggedKeyspace()))
-			.ifPresent(keyspaceName -> session.execute(String.format(KeyspaceRule.USE_KEYSPACE_CQL, keyspaceName)));
+		Optional.of(cqlDataSet.getKeyspaceName()).filter(StringUtils::hasText)
+				.filter(
+						keyspaceName -> !keyspaceName.equals(session.getKeyspace().map(CqlIdentifier::toString).orElse("system")))
+				.ifPresent(keyspaceName -> session.execute(String.format(KeyspaceRule.USE_KEYSPACE_CQL, keyspaceName)));
 
 		cqlDataSet.getCqlStatements().forEach(session::execute);
 	}
@@ -445,21 +410,15 @@ public class CassandraRule extends ExternalResource {
 
 	private static class ResourceHolder {
 
-		private Cluster cluster;
-		private Session session;
+		private final CqlSessionBuilder sessionBuilder;
+		private final CqlSession system;
 
-		private ResourceHolder(Cluster cluster) {
-			this(cluster, cluster.connect());
-		}
-
-		private ResourceHolder(Cluster cluster, Session session) {
-
-			this.cluster = cluster;
-			this.session = session;
+		private ResourceHolder(CqlSessionBuilder sessionBuilder) {
+			this.sessionBuilder = sessionBuilder;
+			this.system = sessionBuilder.build();
 
 			Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-				session.close();
-				cluster.close();
+				system.close();
 			}));
 		}
 	}

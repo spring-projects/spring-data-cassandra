@@ -26,8 +26,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlSession;
 
 /**
  * Unit tests for auditing enabled using Java config.
@@ -55,23 +54,13 @@ public class JavaConfigAuditingTests extends AbstractAuditingTests {
 		}
 
 		@Bean
-		public CassandraSessionFactoryBean session() {
+		public CqlSessionFactoryBean session() {
 
-			CassandraSessionFactoryBean sessionFactoryBean = mock(CassandraSessionFactoryBean.class);
-			Session session = mock(Session.class);
+			CqlSessionFactoryBean sessionFactoryBean = mock(CqlSessionFactoryBean.class);
+			CqlSession session = mock(CqlSession.class);
 			when(sessionFactoryBean.getObject()).thenReturn(session);
 
 			return sessionFactoryBean;
-		}
-
-		@Bean
-		public CassandraClusterFactoryBean cluster() {
-
-			CassandraClusterFactoryBean cassandraClusterFactoryBean = mock(CassandraClusterFactoryBean.class);
-			Cluster cluster = mock(Cluster.class);
-			when(cassandraClusterFactoryBean.getObject()).thenReturn(cluster);
-
-			return cassandraClusterFactoryBean;
 		}
 	}
 }

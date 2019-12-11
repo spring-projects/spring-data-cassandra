@@ -23,16 +23,9 @@ import reactor.core.scheduler.Schedulers;
 import reactor.test.StepVerifier;
 import reactor.test.StepVerifier.FirstStep;
 
-import java.lang.reflect.UndeclaredThrowableException;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
-
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.ReactiveCqlTemplate;
 import org.springframework.data.cassandra.core.cql.session.DefaultBridgedReactiveSession;
@@ -47,13 +40,8 @@ import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
-import org.springframework.util.Assert;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.Host;
-import com.datastax.driver.core.LatencyTracker;
-import com.datastax.driver.core.Statement;
-import com.datastax.driver.core.utils.UUIDs;
+import com.datastax.oss.driver.api.core.uuid.Uuids;
 
 /**
  * Integration tests for {@link ReactiveCassandraTemplate}.
@@ -320,13 +308,13 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 	public void shouldSelectByQueryWithSorting() {
 
 		UserToken token1 = new UserToken();
-		token1.setUserId(UUIDs.endOf(System.currentTimeMillis()));
-		token1.setToken(UUIDs.startOf(System.currentTimeMillis()));
+		token1.setUserId(Uuids.endOf(System.currentTimeMillis()));
+		token1.setToken(Uuids.startOf(System.currentTimeMillis()));
 		token1.setUserComment("foo");
 
 		UserToken token2 = new UserToken();
 		token2.setUserId(token1.getUserId());
-		token2.setToken(UUIDs.endOf(System.currentTimeMillis() + 100));
+		token2.setToken(Uuids.endOf(System.currentTimeMillis() + 100));
 		token2.setUserComment("bar");
 
 		template.insert(token1).block();
@@ -341,8 +329,8 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 	public void shouldSelectOneByQuery() {
 
 		UserToken token1 = new UserToken();
-		token1.setUserId(UUIDs.endOf(System.currentTimeMillis()));
-		token1.setToken(UUIDs.startOf(System.currentTimeMillis()));
+		token1.setUserId(Uuids.endOf(System.currentTimeMillis()));
+		token1.setToken(Uuids.startOf(System.currentTimeMillis()));
 		token1.setUserComment("foo");
 
 		template.insert(token1).block();
@@ -350,58 +338,6 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 		Query query = Query.query(Criteria.where("userId").is(token1.getUserId()));
 
 		assertThat(template.selectOne(query, UserToken.class).block()).isEqualTo(token1);
-	}
-
-	@Test // DATACASS-529
-	public void pagedSelectShouldIssueMultipleStatements() {
-
-		Set<String> expectedIds = new LinkedHashSet<>();
-
-		for (int count = 0; count < 100; count++) {
-			User user = new User("heisenberg" + count, "Walter", "White");
-			expectedIds.add(user.getId());
-			template.insert(user).as(StepVerifier::create).expectNextCount(1).verifyComplete();
-		}
-
-		QueryListener listener = new QueryListener();
-		this.cluster.register(listener);
-
-		Query query = Query.empty().pageRequest(CassandraPageRequest.first(10));
-
-		template.select(query, User.class).as(StepVerifier::create).expectNextCount(100).verifyComplete();
-
-		listener.await(it -> it.size() == 11);
-		assertThat(listener.statements).hasSize(11);
-
-		this.cluster.unregister(listener);
-	}
-
-	@Test // DATACASS-529
-	public void shouldIssueSinglePageRequestForSlice() {
-
-		Set<String> expectedIds = new LinkedHashSet<>();
-
-		for (int count = 0; count < 100; count++) {
-			User user = new User("heisenberg" + count, "Walter", "White");
-			expectedIds.add(user.getId());
-			template.insert(user).as(StepVerifier::create).expectNextCount(1).verifyComplete();
-		}
-
-		QueryListener listener = new QueryListener();
-		this.cluster.register(listener);
-
-		Query query = Query.empty().pageRequest(CassandraPageRequest.first(10));
-
-		Mono<Slice<User>> slice = template.slice(query, User.class);
-
-		slice.as(StepVerifier::create).consumeNextWith(it -> {
-			assertThat(it).hasSize(10);
-		}).verifyComplete();
-
-		listener.await(it -> it.size() == 1);
-		assertThat(listener.statements).hasSize(1);
-
-		this.cluster.unregister(listener);
 	}
 
 	@Test // DATACASS-529
@@ -420,66 +356,4 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 		return template.selectOneById(userId, User.class).as(StepVerifier::create);
 	}
 
-	static class QueryListener implements LatencyTracker {
-
-		private List<Statement> statements = new CopyOnWriteArrayList<>();
-
-		@Override
-		public void update(Host host, Statement statement, Exception exception, long newLatencyNanos) {
-			statements.add(statement);
-		}
-
-		@Override
-		public void onRegister(Cluster cluster) {}
-
-		@Override
-		public void onUnregister(Cluster cluster) {}
-
-		/**
-		 * Await until {@link Predicate} yields {@literal true}. Waits up to {@literal 10 SECONDS}
-		 *
-		 * @param predicate must not be {@literal null}.
-		 * @throws IllegalStateException if the timeout exceeds.
-		 * @throws UndeclaredThrowableException in case of {@link InterruptedException}.
-		 */
-		public void await(Predicate<List<Statement>> predicate) {
-			await(predicate, 10, TimeUnit.SECONDS);
-		}
-
-		/**
-		 * Await until {@link Predicate} yields {@literal true}. The predicate is eagerly evaluated. If the predicate yields
-		 * {@literal false}, micro-waits of {@code 100ms} are applied.
-		 *
-		 * @param predicate must not be {@literal null}.
-		 * @param timeout
-		 * @param unit must not be {@literal null}.
-		 * @throws IllegalStateException if the timeout exceeds.
-		 * @throws UndeclaredThrowableException in case of {@link InterruptedException}.
-		 */
-		public void await(Predicate<List<Statement>> predicate, long timeout, TimeUnit unit) {
-
-			Assert.notNull(predicate, "Predicate must not be null");
-			Assert.notNull(unit, "TimeUnit must not be null");
-
-			long waitedNs = 0;
-			long timeoutMs = unit.toNanos(timeout);
-			long waitSegmentMs = TimeUnit.MILLISECONDS.toMillis(100);
-
-			while (!predicate.test(statements)) {
-
-				try {
-					Thread.sleep(waitSegmentMs);
-					waitedNs += TimeUnit.MILLISECONDS.toNanos(waitSegmentMs);
-				} catch (InterruptedException e) {
-					Thread.currentThread().interrupt();
-					throw new UndeclaredThrowableException(e);
-				}
-
-				if (waitedNs > timeoutMs) {
-					throw new IllegalStateException(
-							String.format("Timeout: Condition did not evaluate to true within %d %s!", timeout, unit));
-				}
-			}
-		}
-	}
 }

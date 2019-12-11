@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.util.StringUtils;
 
-import com.datastax.driver.core.ResultSet;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
 
 /**
  * {@link Converter} from {@link ResultSet} to a {@link List} of {@link String}.

@@ -17,16 +17,16 @@ package org.springframework.data.cassandra.core.cql;
 
 import org.springframework.dao.DataAccessException;
 
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.exceptions.DriverException;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.DriverException;
 
 /**
- * Generic callback interface for code that operates on a Cassandra {@link Session}. Allows to execute any number of
+ * Generic callback interface for code that operates on a Cassandra {@link CqlSession}. Allows to execute any number of
  * operations on a single session, using any type and number of statements.
  * <p>
- * This is particularly useful for delegating to existing data access code that expects a {@link Session} to work on and
- * throws {@link DriverException}. For newly written code, it is strongly recommended to use {@link CqlTemplate}'s more
- * specific operations, for example a {@code query} or {@code update} variant.
+ * This is particularly useful for delegating to existing data access code that expects a {@link CqlSession} to work on
+ * and throws {@link DriverException}. For newly written code, it is strongly recommended to use {@link CqlTemplate}'s
+ * more specific operations, for example a {@code query} or {@code update} variant.
  *
  * @author David Webb
  * @author Mark Paluch
@@ -38,8 +38,8 @@ import com.datastax.driver.core.exceptions.DriverException;
 public interface SessionCallback<T> {
 
 	/**
-	 * Gets called by {@link CqlTemplate#execute} with an active Cassandra {@link Session}. Does not need to care about
-	 * activating or closing the {@link Session}.
+	 * Gets called by {@link CqlTemplate#execute} with an active Cassandra {@link CqlSession}. Does not need to care about
+	 * activating or closing the {@link CqlSession}.
 	 * <p>
 	 * Allows for returning a result object created within the callback, i.e. a domain object or a collection of domain
 	 * objects. Note that there's special support for single step actions: see {@link CqlTemplate#queryForObject} etc. A
@@ -53,5 +53,5 @@ public interface SessionCallback<T> {
 	 * @see CqlTemplate#queryForObject(String, Class)
 	 * @see CqlTemplate#queryForResultSet(String)
 	 */
-	T doInSession(Session session) throws DriverException, DataAccessException;
+	T doInSession(CqlSession session) throws DriverException, DataAccessException;
 }

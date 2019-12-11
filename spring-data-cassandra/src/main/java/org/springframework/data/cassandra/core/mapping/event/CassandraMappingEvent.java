@@ -16,8 +16,9 @@
 package org.springframework.data.cassandra.core.mapping.event;
 
 import org.springframework.context.ApplicationEvent;
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.util.Assert;
+
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * Base {@link ApplicationEvent} triggered by Spring Data Cassandra.

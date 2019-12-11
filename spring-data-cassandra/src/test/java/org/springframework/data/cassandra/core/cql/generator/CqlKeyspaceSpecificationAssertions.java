@@ -23,8 +23,8 @@ import java.util.Map;
 import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceDescriptor;
 import org.springframework.data.cassandra.core.cql.keyspace.Option;
 
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;
 
 /**
  * @author John McPeek
@@ -32,8 +32,8 @@ import com.datastax.driver.core.Session;
 public class CqlKeyspaceSpecificationAssertions {
 
 	@SuppressWarnings("unchecked")
-	public static void assertKeyspace(KeyspaceDescriptor expected, String keyspace, Session session) {
-		KeyspaceMetadata kmd = session.getCluster().getMetadata().getKeyspace(keyspace.toLowerCase());
+	public static void assertKeyspace(KeyspaceDescriptor expected, String keyspace, CqlSession session) {
+		KeyspaceMetadata kmd = session.getMetadata().getKeyspace(keyspace.toLowerCase()).get();
 
 		assertThat(expected.getName()).isEqualTo(kmd.getName());
 

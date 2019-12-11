@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.springframework.util.Assert;
 
-import com.google.common.io.Resources;
+import com.datastax.oss.driver.shaded.guava.common.io.Resources;
 
 /**
  * An executable CQL data set. The data set can be created from class path resources and execution can be bound to a

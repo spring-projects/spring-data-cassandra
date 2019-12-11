@@ -15,73 +15,39 @@
  */
 package org.springframework.data.cassandra.config;
 
+import java.util.Collections;
+import java.util.List;
+
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.SessionFactory;
 import org.springframework.data.cassandra.core.cql.CqlTemplate;
+import org.springframework.data.cassandra.core.cql.keyspace.CreateKeyspaceSpecification;
+import org.springframework.data.cassandra.core.cql.keyspace.DropKeyspaceSpecification;
 import org.springframework.data.cassandra.core.cql.session.DefaultSessionFactory;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlSession;
 
 /**
- * Spring {@link @Configuration} class used to configure a Cassandra client application
- * {@link com.datastax.driver.core.Session} connected to a Cassandra {@link com.datastax.driver.core.Cluster}. Enables a
- * Cassandra Keyspace to be specified along with the ability to execute arbitrary CQL on startup as well as shutdown.
+ * Spring {@link @Configuration} class used to configure a Cassandra client application {@link CqlSession} connected to
+ * a Cassandra cluster. Enables a Cassandra Keyspace to be specified along with the ability to execute arbitrary CQL on
+ * startup as well as shutdown.
  *
  * @author Matthew T. Adams
  * @author John Blum
  * @author Mark Paluch
- * @see AbstractClusterConfiguration
  * @see org.springframework.context.annotation.Configuration
  */
 @Configuration
-public abstract class AbstractSessionConfiguration extends AbstractClusterConfiguration {
+public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 
-	/**
-	 * Returns the initialized {@link Session} instance.
-	 *
-	 * @return the {@link Session}.
-	 * @throws IllegalStateException if the session factory is not initialized.
-	 */
-	protected Session getRequiredSession() {
-
-		CassandraCqlSessionFactoryBean factoryBean = session();
-		Assert.state(factoryBean.getObject() != null, "Session factory not initialized");
-
-		return factoryBean.getObject();
-	}
-
-	/**
-	 * Creates a {@link CassandraCqlSessionFactoryBean} that provides a Cassandra
-	 * {@link com.datastax.driver.core.Session}.
-	 *
-	 * @return the {@link CassandraCqlSessionFactoryBean}.
-	 * @see #cluster()
-	 * @see #getKeyspaceName()
-	 */
-	@Bean
-	public CassandraCqlSessionFactoryBean session() {
-
-		CassandraCqlSessionFactoryBean bean = new CassandraCqlSessionFactoryBean();
-
-		bean.setCluster(getRequiredCluster());
-		bean.setKeyspaceName(getKeyspaceName());
-
-		return bean;
-	}
-
-	/**
-	 * Creates a {@link DefaultSessionFactory} using the configured {@link #session()} to be used with
-	 * {@link CqlTemplate}.
-	 *
-	 * @return {@link SessionFactory} used to initialize the Template API.
-	 * @since 2.0
-	 */
-	@Bean
-	public SessionFactory sessionFactory() {
-		return new DefaultSessionFactory(getRequiredSession());
-	}
+	private @Nullable BeanFactory beanFactory;
 
 	/**
 	 * Return the name of the keyspace to connect to.
@@ -89,4 +55,169 @@ public abstract class AbstractSessionConfiguration extends AbstractClusterConfig
 	 * @return must not be {@literal null}.
 	 */
 	protected abstract String getKeyspaceName();
+
+	/**
+	 * Returns the initialized {@link CqlSession} instance.
+	 *
+	 * @return the {@link CqlSession}.
+	 * @throws IllegalStateException if the session factory is not initialized.
+	 */
+	protected SessionFactory getRequiredSessionFactory() {
+
+		ObjectProvider<SessionFactory> beanProvider = beanFactory.getBeanProvider(SessionFactory.class);
+
+		return beanProvider.getIfAvailable(() -> new DefaultSessionFactory(beanFactory.getBean(CqlSession.class)));
+	}
+
+	/**
+	 * Returns the {@link SessionBuilderConfigurer}.
+	 *
+	 * @return the {@link SessionBuilderConfigurer}; may be {@literal null}.
+	 * @since 1.5
+	 */
+	@Nullable
+	protected SessionBuilderConfigurer getClusterBuilderConfigurer() {
+		return null;
+	}
+
+	/**
+	 * Returns the cluster name.
+	 *
+	 * @return the cluster name; may be {@literal null}.
+	 * @since 1.5
+	 */
+	@Nullable
+	protected String getClusterName() {
+		return null;
+	}
+
+	/**
+	 * Returns the {@link CompressionType}.
+	 *
+	 * @return the {@link CompressionType}, may be {@literal null}.
+	 */
+	@Nullable
+	protected CompressionType getCompressionType() {
+		return null;
+	}
+
+	/**
+	 * Returns the Cassandra contact points. Defaults to {@code localhost}
+	 *
+	 * @return the Cassandra contact points
+	 * @see CqlSessionFactoryBean#DEFAULT_CONTACT_POINTS
+	 */
+	protected String getContactPoints() {
+		return CqlSessionFactoryBean.DEFAULT_CONTACT_POINTS;
+	}
+
+	/**
+	 * Returns the Cassandra port. Defaults to {@code 9042}.
+	 *
+	 * @return the Cassandra port
+	 * @see CqlSessionFactoryBean#DEFAULT_PORT
+	 */
+	protected int getPort() {
+		return CqlSessionFactoryBean.DEFAULT_PORT;
+	}
+
+	/**
+	 * Returns the list of keyspace creations to be run right after initialization.
+	 *
+	 * @return the list of keyspace creations, may be empty but never {@link null}
+	 */
+	protected List<CreateKeyspaceSpecification> getKeyspaceCreations() {
+		return Collections.emptyList();
+	}
+
+	/**
+	 * Returns the list of keyspace drops to be run before shutdown.
+	 *
+	 * @return the list of keyspace drops, may be empty but never {@link null}
+	 */
+	protected List<DropKeyspaceSpecification> getKeyspaceDrops() {
+		return Collections.emptyList();
+	}
+
+	/**
+	 * Returns the list of startup scripts to be run after {@link #getKeyspaceCreations() keyspace creations} and after
+	 * initialization.
+	 *
+	 * @return the list of startup scripts, may be empty but never {@link null}
+	 * @deprecated since 3.0, declare a
+	 *             {@link org.springframework.data.cassandra.core.cql.session.init.SessionFactoryInitializer} bean.
+	 */
+	@Deprecated
+	protected List<String> getStartupScripts() {
+		return Collections.emptyList();
+	}
+
+	/**
+	 * Returns the list of shutdown scripts to be run after {@link #getKeyspaceDrops() keyspace drops} and right before
+	 * shutdown.
+	 *
+	 * @return the list of shutdown scripts, may be empty but never {@link null}
+	 * @deprecated since 3.0, declare a
+	 *             {@link org.springframework.data.cassandra.core.cql.session.init.SessionFactoryInitializer} bean.
+	 */
+	@Deprecated
+	protected List<String> getShutdownScripts() {
+		return Collections.emptyList();
+	}
+
+	/**
+	 * Returns the initialized {@link CqlSession} instance.
+	 *
+	 * @return the {@link CqlSession}.
+	 * @throws IllegalStateException if the session factory is not initialized.
+	 */
+	protected CqlSession getRequiredSession() {
+
+		Assert.state(beanFactory != null, "BeanFactory not initialized");
+
+		return beanFactory.getBean(CqlSession.class);
+	}
+
+	/**
+	 * Creates a {@link CqlSessionFactoryBean} that provides a Cassandra {@link CqlSession}.
+	 *
+	 * @return the {@link CqlSessionFactoryBean}.
+	 * @see #getKeyspaceName()
+	 * @see #getStartupScripts()
+	 * @see #getShutdownScripts()
+	 */
+	@Bean
+	public CqlSessionFactoryBean session() {
+
+		CqlSessionFactoryBean bean = new CqlSessionFactoryBean();
+
+		bean.setContactPoints(getContactPoints());
+		bean.setPort(getPort());
+
+		bean.setKeyspaceCreations(getKeyspaceCreations());
+		bean.setKeyspaceDrops(getKeyspaceDrops());
+
+		bean.setKeyspaceName(getKeyspaceName());
+		bean.setKeyspaceStartupScripts(getStartupScripts());
+		bean.setKeyspaceShutdownScripts(getShutdownScripts());
+
+		return bean;
+	}
+
+	/**
+	 * Creates a {@link CqlTemplate} configured with {@link #getRequiredSessionFactory()}.
+	 *
+	 * @return the {@link CqlTemplate}.
+	 * @see #getRequiredSession()
+	 */
+	@Bean
+	public CqlTemplate cqlTemplate() {
+		return new CqlTemplate(getRequiredSessionFactory());
+	}
+
+	@Override
+	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+		this.beanFactory = beanFactory;
+	}
+
 }

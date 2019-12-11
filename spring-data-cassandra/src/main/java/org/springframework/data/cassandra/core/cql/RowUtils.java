@@ -17,14 +17,17 @@ package org.springframework.data.cassandra.core.cql;
 
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.Date;
 import java.util.UUID;
 
 import org.springframework.lang.Nullable;
 
-import com.datastax.driver.core.LocalDate;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.TupleValue;
-import com.datastax.driver.core.UDTValue;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.data.TupleValue;
+import com.datastax.oss.driver.api.core.data.UdtValue;
 
 /**
  * Generic utility methods for working with Cassandra. Mainly for internal use within the framework, but also useful for
@@ -64,7 +67,7 @@ public abstract class RowUtils {
 		if (String.class == requiredType) {
 			return row.getString(index);
 		} else if (boolean.class == requiredType || Boolean.class == requiredType) {
-			value = row.getBool(index);
+			value = row.getBoolean(index);
 		} else if (byte.class == requiredType || Byte.class == requiredType) {
 			value = row.getByte(index);
 		} else if (short.class == requiredType || Short.class == requiredType) {
@@ -78,19 +81,24 @@ public abstract class RowUtils {
 		} else if (double.class == requiredType || Double.class == requiredType || Number.class == requiredType) {
 			value = row.getDouble(index);
 		} else if (BigDecimal.class == requiredType) {
-			return row.getDecimal(index);
+			return row.getBigDecimal(index);
 		} else if (LocalDate.class == requiredType) {
-			return row.getDate(index);
+			return row.getLocalDate(index);
+		} else if (LocalTime.class == requiredType) {
+			return row.getLocalTime(index);
 		} else if (java.util.Date.class == requiredType) {
-			return row.getTimestamp(index);
+			Instant instant = row.getInstant(index);
+			return instant == null ? null : Date.from(instant);
+		} else if (Instant.class == requiredType) {
+			return row.getInstant(index);
 		} else if (ByteBuffer.class == requiredType) {
-			return row.getBytes(index);
+			return row.getByteBuffer(index);
 		} else if (TupleValue.class == requiredType) {
 			return row.getTupleValue(index);
-		} else if (UDTValue.class == requiredType) {
-			return row.getUDTValue(index);
+		} else if (UdtValue.class == requiredType) {
+			return row.getUdtValue(index);
 		} else if (UUID.class == requiredType) {
-			return row.getUUID(index);
+			return row.getUuid(index);
 		} else {
 			// Some unknown type desired -> rely on getObject.
 			return row.getObject(index);

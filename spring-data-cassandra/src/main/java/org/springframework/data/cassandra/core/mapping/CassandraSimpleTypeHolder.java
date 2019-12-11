@@ -15,9 +15,10 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import java.time.LocalTime;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -27,14 +28,14 @@ import java.util.stream.Collectors;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.lang.Nullable;
 
-import com.datastax.driver.core.CodecRegistry;
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.DataType.Name;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.TupleValue;
-import com.datastax.driver.core.TypeCodec;
-import com.datastax.driver.core.UDTValue;
-import com.google.common.reflect.TypeToken;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.data.TupleValue;
+import com.datastax.oss.driver.api.core.type.DataType;
+import com.datastax.oss.driver.api.core.type.DataTypes;
+import com.datastax.oss.driver.api.core.type.UserDefinedType;
+import com.datastax.oss.driver.api.core.type.codec.TypeCodec;
+import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
+import com.datastax.oss.driver.api.core.type.reflect.GenericType;
 
 /**
  * Simple constant holder for a {@link SimpleTypeHolder} enriched with Cassandra specific simple types.
@@ -51,13 +52,18 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 	 */
 	public static final Set<Class<?>> CASSANDRA_SIMPLE_TYPES;
 
+	private static final List<DataType> primitives = Arrays.asList(DataTypes.ASCII, DataTypes.BIGINT, DataTypes.BLOB,
+			DataTypes.BOOLEAN, DataTypes.COUNTER, DataTypes.DECIMAL, DataTypes.DOUBLE, DataTypes.FLOAT, DataTypes.INT,
+			DataTypes.TIMESTAMP, DataTypes.UUID, DataTypes.VARINT, DataTypes.TIMEUUID, DataTypes.INET, DataTypes.DATE,
+			DataTypes.TEXT, DataTypes.TIME, DataTypes.SMALLINT, DataTypes.TINYINT, DataTypes.DURATION);
+
 	private static final Map<Class<?>, DataType> classToDataType;
 
-	private static final Map<DataType.Name, DataType> nameToDataType;
+	private static final Map<Name, DataType> nameToDataType;
 
 	static {
 
-		CodecRegistry codecRegistry = CodecRegistry.DEFAULT_INSTANCE;
+		CodecRegistry codecRegistry = CodecRegistry.DEFAULT;
 
 		Map<Class<?>, Class<?>> primitiveWrappers = new HashMap<>(8);
 
@@ -75,7 +81,7 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 		simpleTypes.add(Number.class);
 		simpleTypes.add(Row.class);
 		simpleTypes.add(TupleValue.class);
-		simpleTypes.add(UDTValue.class);
+		simpleTypes.add(UserDefinedType.class);
 
 		classToDataType = Collections.unmodifiableMap(classToDataType(codecRegistry, primitiveWrappers));
 		nameToDataType = Collections.unmodifiableMap(nameToDataType());
@@ -101,8 +107,7 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 
 		Map<Class<?>, DataType> classToDataType = new HashMap<>(16);
 
-		DataType.allPrimitiveTypes().forEach(dataType -> {
-
+		primitives.forEach(dataType -> {
 			Class<?> javaType = codecRegistry.codecFor(dataType).getJavaType().getRawType();
 
 			classToDataType.put(javaType, dataType);
@@ -111,19 +116,13 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 					.ifPresent(primitiveType -> classToDataType.put(primitiveType, dataType));
 		});
 
-		// override String to text DataType as String is used multiple times
-		classToDataType.put(String.class, DataType.text());
-
 		// map Long to bigint as counter columns (last type aver multiple overrides) are a special use case
 		// so map it to a more common type by default
-		classToDataType.put(Long.class, DataType.bigint());
-		classToDataType.put(long.class, DataType.bigint());
+		classToDataType.put(Long.class, DataTypes.BIGINT);
+		classToDataType.put(long.class, DataTypes.BIGINT);
 
 		// override UUID to timeuuid as regular uuid as the favored default
-		classToDataType.put(UUID.class, DataType.uuid());
-
-		// override LocalTime to time as time columns are mapped to long by default
-		classToDataType.put(LocalTime.class, DataType.time());
+		classToDataType.put(UUID.class, DataTypes.UUID);
 
 		return classToDataType;
 	}
@@ -135,10 +134,27 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 
 		Map<Name, DataType> nameToDataType = new HashMap<>(16);
 
-		DataType.allPrimitiveTypes().forEach(dataType -> nameToDataType.put(dataType.getName(), dataType));
-
-		nameToDataType.put(Name.VARCHAR, DataType.varchar());
-		nameToDataType.put(Name.TEXT, DataType.text());
+		nameToDataType.put(Name.ASCII, DataTypes.ASCII);
+		nameToDataType.put(Name.BIGINT, DataTypes.BIGINT);
+		nameToDataType.put(Name.BLOB, DataTypes.BLOB);
+		nameToDataType.put(Name.BOOLEAN, DataTypes.BOOLEAN);
+		nameToDataType.put(Name.COUNTER, DataTypes.COUNTER);
+		nameToDataType.put(Name.DECIMAL, DataTypes.DECIMAL);
+		nameToDataType.put(Name.DOUBLE, DataTypes.DOUBLE);
+		nameToDataType.put(Name.FLOAT, DataTypes.FLOAT);
+		nameToDataType.put(Name.INT, DataTypes.INT);
+		nameToDataType.put(Name.TIMESTAMP, DataTypes.TIMESTAMP);
+		nameToDataType.put(Name.UUID, DataTypes.UUID);
+		nameToDataType.put(Name.VARCHAR, DataTypes.TEXT);
+		nameToDataType.put(Name.TEXT, DataTypes.TEXT);
+		nameToDataType.put(Name.TIMEUUID, DataTypes.TIMEUUID);
+		nameToDataType.put(Name.INET, DataTypes.INET);
+		nameToDataType.put(Name.DATE, DataTypes.DATE);
+		nameToDataType.put(Name.SMALLINT, DataTypes.SMALLINT);
+		nameToDataType.put(Name.TINYINT, DataTypes.TINYINT);
+		nameToDataType.put(Name.VARINT, DataTypes.VARINT);
+		nameToDataType.put(Name.TIME, DataTypes.TIME);
+		nameToDataType.put(Name.DURATION, DataTypes.DURATION);
 
 		return nameToDataType;
 	}
@@ -151,8 +167,8 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 	 */
 	private static Set<Class<?>> getCassandraPrimitiveTypes(CodecRegistry codecRegistry) {
 
-		return DataType.allPrimitiveTypes().stream().map(codecRegistry::codecFor).map(TypeCodec::getJavaType)
-				.map(TypeToken::getRawType).collect(Collectors.toSet());
+		return primitives.stream().map(codecRegistry::codecFor).map(TypeCodec::getJavaType).map(GenericType::getRawType)
+				.collect(Collectors.toSet());
 	}
 
 	/**
@@ -164,16 +180,25 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 	 */
 	@Nullable
 	public static DataType getDataTypeFor(Class<?> javaType) {
-		return javaType.isEnum() ? DataType.varchar() : classToDataType.get(javaType);
+		return javaType.isEnum() ? DataTypes.TEXT : classToDataType.get(javaType);
 	}
 
 	/**
-	 * Returns the {@link DataType} for a {@link DataType.Name}.
+	 * Returns the {@link DataType} for a {@link Name}.
 	 *
 	 * @param dataTypeName must not be {@literal null}.
-	 * @return the {@link DataType} for {@link DataType.Name}.
+	 * @return the {@link DataType} for {@link Name}.
 	 */
-	public static DataType getDataTypeFor(DataType.Name dataTypeName) {
+	public static DataType getDataTypeFor(Name dataTypeName) {
 		return nameToDataType.get(dataTypeName);
+	}
+
+	/**
+	 * Cassandra Protocol types.
+	 *
+	 * @since 3.0
+	 */
+	public enum Name {
+		ASCII, BIGINT, BLOB, BOOLEAN, COUNTER, DECIMAL, DOUBLE, FLOAT, INT, TIMESTAMP, UUID, VARCHAR, TEXT, VARINT, TIMEUUID, INET, DATE, TIME, SMALLINT, TINYINT, DURATION, LIST, MAP, SET, UDT, TUPLE;
 	}
 }

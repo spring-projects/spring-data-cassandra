@@ -15,47 +15,32 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.mapping.model.DefaultSpELExpressionEvaluator;
 import org.springframework.data.mapping.model.SpELExpressionEvaluator;
-import org.springframework.lang.Nullable;
-import org.springframework.util.Assert;
 
-import com.datastax.driver.core.CodecRegistry;
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.UDTValue;
+import com.datastax.oss.driver.api.core.data.UdtValue;
+import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
 
 /**
- * {@link CassandraValueProvider} to read property values from a {@link UDTValue}.
+ * {@link CassandraValueProvider} to read property values from a {@link UdtValue}.
  *
  * @author Mark Paluch
  * @since 1.5
+ * @deprecated since 3.0, use {@link UdtValueProvider} directly.
  */
-public class CassandraUDTValueProvider implements CassandraValueProvider {
-
-	private final UDTValue udtValue;
-
-	private final CodecRegistry codecRegistry;
-
-	private final SpELExpressionEvaluator evaluator;
+@Deprecated
+public class CassandraUDTValueProvider extends UdtValueProvider {
 
 	/**
-	 * Create a new {@link CassandraUDTValueProvider} with the given {@link UDTValue} and {@link SpELExpressionEvaluator}.
+	 * Create a new {@link CassandraUDTValueProvider} with the given {@link UdtValue} and {@link SpELExpressionEvaluator}.
 	 *
 	 * @param udtValue must not be {@literal null}.
 	 * @param codecRegistry must not be {@literal null}.
 	 * @param evaluator must not be {@literal null}.
 	 * @since 2.1
 	 */
-	public CassandraUDTValueProvider(UDTValue udtValue, CodecRegistry codecRegistry, SpELExpressionEvaluator evaluator) {
-
-		Assert.notNull(udtValue, "UDTValue must not be null");
-		Assert.notNull(codecRegistry, "CodecRegistry must not be null");
-		Assert.notNull(evaluator, "SpELExpressionEvaluator must not be null");
-
-		this.udtValue = udtValue;
-		this.codecRegistry = codecRegistry;
-		this.evaluator = evaluator;
+	public CassandraUDTValueProvider(UdtValue udtValue, CodecRegistry codecRegistry, SpELExpressionEvaluator evaluator) {
+		super(udtValue, evaluator);
 	}
 
 	/**
@@ -65,38 +50,11 @@ public class CassandraUDTValueProvider implements CassandraValueProvider {
 	 * @param udtValue must not be {@literal null}.
 	 * @param codecRegistry must not be {@literal null}.
 	 * @param evaluator must not be {@literal null}.
-	 * @deprecated since 2.1, use {@link #CassandraUDTValueProvider(UDTValue, CodecRegistry, SpELExpressionEvaluator)}
+	 * @deprecated since 2.1, use {@link #CassandraUDTValueProvider(UdtValue, CodecRegistry, SpELExpressionEvaluator)}
 	 */
 	@Deprecated
-	public CassandraUDTValueProvider(UDTValue udtValue, CodecRegistry codecRegistry,
+	public CassandraUDTValueProvider(UdtValue udtValue, CodecRegistry codecRegistry,
 			DefaultSpELExpressionEvaluator evaluator) {
-
-		this(udtValue, codecRegistry, (SpELExpressionEvaluator) evaluator);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.mapping.model.PropertyValueProvider#getPropertyValue(org.springframework.data.mapping.PersistentProperty)
-	 */
-	@Nullable
-	public <T> T getPropertyValue(CassandraPersistentProperty property) {
-
-		String spelExpression = property.getSpelExpression();
-
-		if (spelExpression != null) {
-			return this.evaluator.evaluate(spelExpression);
-		}
-
-		String name = property.getRequiredColumnName().toCql();
-		DataType fieldType = this.udtValue.getType().getFieldType(name);
-
-		return this.udtValue.get(name, this.codecRegistry.codecFor(fieldType));
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.convert.CassandraValueProvider#hasProperty(org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty)
-	 */
-	@Override
-	public boolean hasProperty(CassandraPersistentProperty property) {
-		return this.udtValue.getType().contains(property.getRequiredColumnName().toCql());
+		super(udtValue, evaluator);
 	}
 }

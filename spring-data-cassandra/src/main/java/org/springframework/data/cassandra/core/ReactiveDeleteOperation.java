@@ -17,9 +17,10 @@ package org.springframework.data.cassandra.core;
 
 import reactor.core.publisher.Mono;
 
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.util.Assert;
+
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * The {@link ReactiveDeleteOperation} interface allows creation and execution of Cassandra {@code DELETE} operations in
@@ -76,7 +77,7 @@ public interface ReactiveDeleteOperation {
 
 			Assert.hasText(table, "Table name must not be null or empty");
 
-			return inTable(CqlIdentifier.of(table));
+			return inTable(CqlIdentifier.fromCql(table));
 		}
 
 		/**

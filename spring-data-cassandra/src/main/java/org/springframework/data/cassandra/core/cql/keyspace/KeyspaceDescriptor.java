@@ -17,19 +17,20 @@ package org.springframework.data.cassandra.core.cql.keyspace;
 
 import java.util.Map;
 
-import org.springframework.data.cassandra.core.cql.KeyspaceIdentifier;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * Describes a Keyspace.
  *
  * @author John McPeek
+ * @author Mark Paluch
  */
 public interface KeyspaceDescriptor {
 
 	/**
 	 * Returns the name of the table.
 	 */
-	KeyspaceIdentifier getName();
+	CqlIdentifier getName();
 
 	/**
 	 * Returns an unmodifiable {@link Map} of keyspace options.

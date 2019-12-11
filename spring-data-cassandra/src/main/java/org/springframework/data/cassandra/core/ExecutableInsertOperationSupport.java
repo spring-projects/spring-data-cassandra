@@ -20,9 +20,10 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * Implementation of {@link ExecutableInsertOperation}.
@@ -46,12 +47,6 @@ class ExecutableInsertOperationSupport implements ExecutableInsertOperation {
 
 		return new ExecutableInsertSupport<>(this.template, domainType, InsertOptions.empty(), null);
 	}
-
-	// TODO: rethink the implementation
-	// While the use of final fields and construction on mutation effectively makes this class Thread-safe,
-	// it is possible this implementation could generate a high-level of young-gen garbage on the JVM heap,
-	// particularly if the template insert(..) (and this class) are used inside of a loop for a large number
-	// of domain types. Of course, this assumption is highly contingent on the user's application design.
 
 	@RequiredArgsConstructor
 	@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)

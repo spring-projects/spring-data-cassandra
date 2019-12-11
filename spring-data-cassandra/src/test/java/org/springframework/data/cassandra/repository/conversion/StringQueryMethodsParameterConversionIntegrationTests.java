@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.cassandra.repository.MapIdCassandraRepository;
 import org.springframework.data.cassandra.repository.NamedQueryIntegrationTests.PersonRepositoryWithNamedQueries;
@@ -28,8 +29,8 @@ import org.springframework.data.cassandra.repository.Query;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.UDTValue;
+import com.datastax.oss.driver.api.core.data.UdtValue;
+import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;
 
 /**
  * Integration tests for query argument conversion through {@link PersonRepositoryWithNamedQueries}.
@@ -75,7 +76,7 @@ public class StringQueryMethodsParameterConversionIntegrationTests extends Param
 	public void findByMainPhoneUdtValue() {
 
 		KeyspaceMetadata keyspace = adminOperations.getKeyspaceMetadata();
-		UDTValue udtValue = keyspace.getUserType("phone").newValue();
+		UdtValue udtValue = keyspace.getUserDefinedType("phone").get().newValue();
 		udtValue.setString("number", walter.getMainPhone().getNumber());
 
 		assertThat(contactRepository.findByMainPhone(udtValue)).contains(walter);
@@ -94,7 +95,7 @@ public class StringQueryMethodsParameterConversionIntegrationTests extends Param
 		Phone phone = walter.getAlternativePhones().get(0);
 
 		KeyspaceMetadata keyspace = adminOperations.getKeyspaceMetadata();
-		UDTValue udtValue = keyspace.getUserType("phone").newValue();
+		UdtValue udtValue = keyspace.getUserDefinedType("phone").get().newValue();
 		udtValue.setString("number", phone.getNumber());
 
 		assertThat(contactRepository.findByAlternativePhonesContains(udtValue)).contains(walter);
@@ -115,12 +116,12 @@ public class StringQueryMethodsParameterConversionIntegrationTests extends Param
 		List<Contact> findByMainPhone(Phone phone);
 
 		@Query("SELECT * from contact where mainphone = ?0;")
-		List<Contact> findByMainPhone(UDTValue udtValue);
+		List<Contact> findByMainPhone(UdtValue udtValue);
 
 		@Query("SELECT * from contact where alternativephones contains ?0;")
 		List<Contact> findByAlternativePhonesContains(Phone phone);
 
 		@Query("SELECT * from contact where alternativephones contains ?0;")
-		List<Contact> findByAlternativePhonesContains(UDTValue udtValue);
+		List<Contact> findByAlternativePhonesContains(UdtValue udtValue);
 	}
 }

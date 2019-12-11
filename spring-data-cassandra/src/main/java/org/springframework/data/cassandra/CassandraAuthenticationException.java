@@ -15,9 +15,9 @@
  */
 package org.springframework.data.cassandra;
 
-import java.net.InetAddress;
-
 import org.springframework.dao.PermissionDeniedDataAccessException;
+
+import com.datastax.oss.driver.api.core.metadata.EndPoint;
 
 /**
  * Spring data access exception for a Cassandra authentication failure.
@@ -28,14 +28,14 @@ public class CassandraAuthenticationException extends PermissionDeniedDataAccess
 
 	private static final long serialVersionUID = 8556304586797273927L;
 
-	private InetAddress host;
+	private EndPoint host;
 
-	public CassandraAuthenticationException(InetAddress host, String msg, Throwable cause) {
+	public CassandraAuthenticationException(EndPoint host, String msg, Throwable cause) {
 		super(msg, cause);
 		this.host = host;
 	}
 
-	public InetAddress getHost() {
+	public EndPoint getHost() {
 		return host;
 	}
 }

@@ -52,9 +52,9 @@ import org.springframework.data.util.Streamable;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.TableMetadata;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
 
 /**
  * Test for {@link ReactiveCassandraRepository} query methods.
@@ -76,7 +76,7 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractKeyspac
 	}
 
 	@Autowired ReactiveCassandraOperations operations;
-	@Autowired Session session;
+	@Autowired CqlSession session;
 
 	ReactiveCassandraRepositoryFactory factory;
 	ClassLoader classLoader;
@@ -99,10 +99,10 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractKeyspac
 	@Before
 	public void setUp() throws Exception {
 
-		KeyspaceMetadata keyspace = session.getCluster().getMetadata().getKeyspace(session.getLoggedKeyspace());
-		TableMetadata users = keyspace.getTable("users");
+		TableMetadata users = session.getKeyspace().flatMap(it -> session.getMetadata().getKeyspace(it))
+				.flatMap(it -> it.getTable(CqlIdentifier.fromCql("users"))).get();
 
-		if (users.getIndex("IX_lastname") == null) {
+		if (users.getIndexes().containsKey(CqlIdentifier.fromCql("IX_lastname"))) {
 			session.execute("CREATE INDEX IX_lastname ON users (lastname);");
 			Thread.sleep(500);
 		}

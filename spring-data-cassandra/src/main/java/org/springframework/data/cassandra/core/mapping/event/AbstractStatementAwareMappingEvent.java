@@ -15,9 +15,8 @@
  */
 package org.springframework.data.cassandra.core.mapping.event;
 
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
-
-import com.datastax.driver.core.Statement;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.cql.Statement;
 
 /**
  * Event encapsulating Cassandra CQL statement.
@@ -28,7 +27,7 @@ import com.datastax.driver.core.Statement;
  */
 public abstract class AbstractStatementAwareMappingEvent<T> extends CassandraMappingEvent<T> {
 
-	private final Statement statement;
+	private final Statement<?> statement;
 
 	/**
 	 * Creates new {@link AbstractStatementAwareMappingEvent}.
@@ -37,7 +36,7 @@ public abstract class AbstractStatementAwareMappingEvent<T> extends CassandraMap
 	 * @param statement must not be {@literal null}.
 	 * @param tableName must not be {@literal null}.
 	 */
-	public AbstractStatementAwareMappingEvent(T source, Statement statement, CqlIdentifier tableName) {
+	public AbstractStatementAwareMappingEvent(T source, Statement<?> statement, CqlIdentifier tableName) {
 
 		super(source, tableName);
 		this.statement = statement;

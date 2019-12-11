@@ -16,7 +16,6 @@
 package org.springframework.data.cassandra.repository.support;
 
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.mapping.MapId;
@@ -24,6 +23,8 @@ import org.springframework.data.cassandra.repository.query.CassandraEntityInform
 import org.springframework.data.repository.core.support.PersistentEntityInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * {@link CassandraEntityInformation} implementation using a {@link CassandraPersistentEntity} instance to lookup the

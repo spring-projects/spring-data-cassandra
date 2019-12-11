@@ -35,7 +35,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.Column;
@@ -44,10 +43,10 @@ import org.springframework.data.cassandra.core.mapping.Tuple;
 import org.springframework.data.cassandra.core.mapping.UserDefinedType;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.core.query.Update;
-import org.springframework.data.cassandra.support.UserTypeBuilder;
+import org.springframework.data.cassandra.support.UserDefinedTypeBuilder;
 
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.UserType;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.type.DataTypes;
 
 /**
  * Unit tests for {@link UpdateMapper}.
@@ -67,7 +66,8 @@ public class UpdateMapperUnitTests {
 
 	UpdateMapper updateMapper;
 
-	UserType manufacturer = UserTypeBuilder.forName("manufacturer").withField("name", DataType.varchar()).build();
+	com.datastax.oss.driver.api.core.type.UserDefinedType manufacturer = UserDefinedTypeBuilder.forName("manufacturer")
+			.withField("name", DataTypes.TEXT).build();
 
 	@Mock UserTypeResolver userTypeResolver;
 
@@ -88,7 +88,7 @@ public class UpdateMapperUnitTests {
 
 		persistentEntity = mappingContext.getRequiredPersistentEntity(Person.class);
 
-		when(userTypeResolver.resolveType(CqlIdentifier.of("manufacturer"))).thenReturn(manufacturer);
+		when(userTypeResolver.resolveType(CqlIdentifier.fromCql("manufacturer"))).thenReturn(manufacturer);
 	}
 
 	@Test // DATACASS-343

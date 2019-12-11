@@ -15,13 +15,13 @@
  */
 package org.springframework.data.cassandra.repository.isolated;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.offset;
+import static org.assertj.core.api.Assertions.*;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -47,7 +47,6 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.datastax.driver.core.LocalDate;
 
 /**
  * Integration tests for various return types on a Cassandra repository.
@@ -219,7 +218,7 @@ public class RepositoryReturnTypesIntegrationTests extends AbstractSpringDataEmb
 	public void shouldReturnDate() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("123");
-		entity.setDate(LocalDate.fromDaysSinceEpoch(1));
+		entity.setDate(LocalDate.ofEpochDay(1));
 		allPossibleTypesRepository.save(entity);
 
 		LocalDate result = allPossibleTypesRepository.findLocalDateById(entity.getId());

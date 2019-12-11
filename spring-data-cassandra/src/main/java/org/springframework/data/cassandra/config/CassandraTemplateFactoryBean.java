@@ -26,7 +26,7 @@ import org.springframework.data.cassandra.core.cql.session.DefaultSessionFactory
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlSession;
 
 /**
  * Factory for configuring a {@link CassandraTemplate}.
@@ -91,12 +91,12 @@ public class CassandraTemplateFactoryBean implements FactoryBean<CassandraTempla
 	}
 
 	/**
-	 * Sets the Cassandra {@link Session} to use. The {@link CassandraTemplate} will use the logged keyspace of the
-	 * underlying {@link Session}. Don't change the keyspace using CQL but use a {@link SessionFactory}.
+	 * Sets the Cassandra {@link CqlSession} to use. The {@link CassandraTemplate} will use the logged keyspace of the
+	 * underlying {@link CqlSession}. Don't change the keyspace using CQL but use a {@link SessionFactory}.
 	 *
 	 * @param session must not be {@literal null}.
 	 */
-	public void setSession(Session session) {
+	public void setSession(CqlSession session) {
 
 		Assert.notNull(session, "Session must not be null");
 
@@ -105,7 +105,7 @@ public class CassandraTemplateFactoryBean implements FactoryBean<CassandraTempla
 
 	/**
 	 * Sets the Cassandra {@link SessionFactory} to use. The {@link CassandraTemplate} will use the logged keyspace of the
-	 * underlying {@link Session}. Don't change the keyspace using CQL.
+	 * underlying {@link CqlSession}. Don't change the keyspace using CQL.
 	 *
 	 * @param sessionFactory must not be {@literal null}.
 	 * @since 2.0
@@ -119,7 +119,8 @@ public class CassandraTemplateFactoryBean implements FactoryBean<CassandraTempla
 
 	/**
 	 * Sets the Cassandra {@link CqlOperations} to use. The {@link CassandraTemplate} will use the logged keyspace of the
-	 * underlying {@link Session}. Don't change the keyspace using CQL but use {@link #setSessionFactory(SessionFactory)}.
+	 * underlying {@link CqlSession}. Don't change the keyspace using CQL but use
+	 * {@link #setSessionFactory(SessionFactory)}.
 	 *
 	 * @param cqlOperations must not be {@literal null}.
 	 * @since 2.0

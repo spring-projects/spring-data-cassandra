@@ -16,18 +16,16 @@
 package org.springframework.data.cassandra.core.cql;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 
 import org.junit.Before;
@@ -44,12 +42,17 @@ import org.springframework.data.cassandra.CassandraInvalidQueryException;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.util.concurrent.ListenableFuture;
 
-import com.datastax.driver.core.*;
-import com.datastax.driver.core.exceptions.InvalidQueryException;
-import com.datastax.driver.core.exceptions.NoHostAvailableException;
-import com.datastax.driver.core.policies.DowngradingConsistencyRetryPolicy;
-import com.google.common.util.concurrent.AbstractFuture;
-import com.google.common.util.concurrent.SettableFuture;
+import com.datastax.oss.driver.api.core.ConsistencyLevel;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.NoNodeAvailableException;
+import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
+import com.datastax.oss.driver.api.core.cql.BoundStatement;
+import com.datastax.oss.driver.api.core.cql.ColumnDefinitions;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.cql.Statement;
+import com.datastax.oss.driver.api.core.servererrors.InvalidQueryException;
 
 /**
  * Unit tests for {@link AsyncCqlTemplate}.
@@ -59,8 +62,8 @@ import com.google.common.util.concurrent.SettableFuture;
 @RunWith(MockitoJUnitRunner.class)
 public class AsyncCqlTemplateUnitTests {
 
-	@Mock Session session;
-	@Mock ResultSet resultSet;
+	@Mock CqlSession session;
+	@Mock AsyncResultSet resultSet;
 	@Mock Row row;
 	@Mock PreparedStatement preparedStatement;
 	@Mock BoundStatement boundStatement;
@@ -69,22 +72,22 @@ public class AsyncCqlTemplateUnitTests {
 	AsyncCqlTemplate template;
 
 	@Before
-	public void setup() throws Exception {
+	public void setup() {
 
 		this.template = new AsyncCqlTemplate();
 		this.template.setSession(session);
 	}
 
 	// -------------------------------------------------------------------------
-	// Tests dealing with a plain com.datastax.driver.core.Session
+	// Tests dealing with a plain com.datastax.oss.driver.api.core.CqlSession
 	// -------------------------------------------------------------------------
 
 	@Test // DATACASS-292
-	public void executeCallbackShouldTranslateExceptions() throws Exception {
+	public void executeCallbackShouldTranslateExceptions() {
 
 		try {
 			template.execute((AsyncSessionCallback<String>) session -> {
-				throw new InvalidQueryException("wrong query");
+				throw new InvalidQueryException(null, "wrong query");
 			});
 
 			fail("Missing CassandraInvalidQueryException");
@@ -96,8 +99,7 @@ public class AsyncCqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void executeCqlShouldTranslateExceptions() throws Exception {
 
-		TestResultSetFuture resultSetFuture = TestResultSetFuture
-				.failed(new NoHostAvailableException(Collections.emptyMap()));
+		TestResultSetFuture resultSetFuture = TestResultSetFuture.failed(new NoNodeAvailableException());
 		when(session.executeAsync(any(Statement.class))).thenReturn(resultSetFuture);
 
 		ListenableFuture<Boolean> future = template.execute("UPDATE user SET a = 'b';");
@@ -108,7 +110,7 @@ public class AsyncCqlTemplateUnitTests {
 			fail("Missing CassandraConnectionFailureException");
 		} catch (ExecutionException e) {
 			assertThat(e).hasCauseInstanceOf(CassandraConnectionFailureException.class)
-					.hasMessageContaining("tried for query failed");
+					.hasMessageContaining("No node was available");
 		}
 	}
 
@@ -119,7 +121,7 @@ public class AsyncCqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void executeCqlShouldCallExecution() {
 
-		doTestStrings(null, null, null, asyncCqlTemplate -> {
+		doTestStrings(null, null, asyncCqlTemplate -> {
 
 			asyncCqlTemplate.execute("SELECT * from USERS");
 
@@ -130,7 +132,7 @@ public class AsyncCqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void executeCqlWithArgumentsShouldCallExecution() {
 
-		doTestStrings(5, ConsistencyLevel.ONE, DowngradingConsistencyRetryPolicy.INSTANCE, asyncCqlTemplate -> {
+		doTestStrings(5, ConsistencyLevel.ONE, asyncCqlTemplate -> {
 
 			asyncCqlTemplate.execute("SELECT * from USERS");
 
@@ -141,11 +143,11 @@ public class AsyncCqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryForResultSetShouldCallExecution() {
 
-		doTestStrings(null, null, null, asyncCqlTemplate -> {
+		doTestStrings(null, null, asyncCqlTemplate -> {
 
-			ResultSet resultSet = getUninterruptibly(asyncCqlTemplate.queryForResultSet("SELECT * from USERS"));
+			AsyncResultSet resultSet = getUninterruptibly(asyncCqlTemplate.queryForResultSet("SELECT * from USERS"));
 
-			assertThat(resultSet).hasSize(3);
+			assertThat(resultSet.currentPage()).hasSize(3);
 			verify(session).executeAsync(any(Statement.class));
 		});
 	}
@@ -153,7 +155,7 @@ public class AsyncCqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryWithResultSetExtractorShouldCallExecution() {
 
-		doTestStrings(null, null, null, asyncCqlTemplate -> {
+		doTestStrings(null, null, asyncCqlTemplate -> {
 
 			List<String> rows = getUninterruptibly(
 					asyncCqlTemplate.query("SELECT * from USERS", (row, index) -> row.getString(0)));
@@ -166,7 +168,7 @@ public class AsyncCqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryWithResultSetExtractorWithArgumentsShouldCallExecution() {
 
-		doTestStrings(5, ConsistencyLevel.ONE, DowngradingConsistencyRetryPolicy.INSTANCE, asyncCqlTemplate -> {
+		doTestStrings(5, ConsistencyLevel.ONE, asyncCqlTemplate -> {
 
 			List<String> rows = getUninterruptibly(
 					asyncCqlTemplate.query("SELECT * from USERS", (row, index) -> row.getString(0)));
@@ -179,11 +181,11 @@ public class AsyncCqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryCqlShouldTranslateExceptions() throws Exception {
 
-		TestResultSetFuture resultSetFuture = TestResultSetFuture
-				.failed(new NoHostAvailableException(Collections.emptyMap()));
+		TestResultSetFuture resultSetFuture = TestResultSetFuture.failed(new NoNodeAvailableException());
 		when(session.executeAsync(any(Statement.class))).thenReturn(resultSetFuture);
 
-		ListenableFuture<Boolean> future = template.query("UPDATE user SET a = 'b';", ResultSet::wasApplied);
+		ListenableFuture<Boolean> future = template.query("UPDATE user SET a = 'b';",
+				(AsyncResultSetExtractor<Boolean>) it -> new AsyncResult<>(it.wasApplied()));
 
 		try {
 			future.get();
@@ -191,7 +193,7 @@ public class AsyncCqlTemplateUnitTests {
 			fail("Missing CassandraConnectionFailureException");
 		} catch (ExecutionException e) {
 			assertThat(e).hasCauseInstanceOf(CassandraConnectionFailureException.class)
-					.hasMessageContaining("tried for query failed");
+					.hasMessageContaining("No node was available");
 		}
 	}
 
@@ -199,7 +201,7 @@ public class AsyncCqlTemplateUnitTests {
 	public void queryForObjectCqlShouldBeEmpty() throws Exception {
 
 		when(session.executeAsync(any(Statement.class))).thenReturn(new TestResultSetFuture(resultSet));
-		when(resultSet.iterator()).thenReturn(Collections.emptyIterator());
+		when(resultSet.currentPage()).thenReturn(Collections.emptyList());
 
 		ListenableFuture<String> future = template.queryForObject("SELECT * FROM user", (row, rowNum) -> "OK");
 
@@ -217,7 +219,7 @@ public class AsyncCqlTemplateUnitTests {
 	public void queryForObjectCqlShouldReturnRecord() {
 
 		when(session.executeAsync(any(Statement.class))).thenReturn(new TestResultSetFuture(resultSet));
-		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
+		when(resultSet.currentPage()).thenReturn(Collections.singleton(row));
 
 		ListenableFuture<String> future = template.queryForObject("SELECT * FROM user", (row, rowNum) -> "OK");
 		assertThat(getUninterruptibly(future)).isEqualTo("OK");
@@ -227,7 +229,7 @@ public class AsyncCqlTemplateUnitTests {
 	public void queryForObjectCqlShouldReturnNullValue() {
 
 		when(session.executeAsync(any(Statement.class))).thenReturn(new TestResultSetFuture(resultSet));
-		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
+		when(resultSet.currentPage()).thenReturn(Collections.singleton(row));
 
 		ListenableFuture<String> future = template.queryForObject("SELECT * FROM user", (row, rowNum) -> null);
 		assertThat(getUninterruptibly(future)).isNull();
@@ -237,7 +239,7 @@ public class AsyncCqlTemplateUnitTests {
 	public void queryForObjectCqlShouldFailReturningManyRecords() throws Exception {
 
 		when(session.executeAsync(any(Statement.class))).thenReturn(new TestResultSetFuture(resultSet));
-		when(resultSet.iterator()).thenReturn(Arrays.asList(row, row).iterator());
+		when(resultSet.currentPage()).thenReturn(Arrays.asList(row, row));
 
 		ListenableFuture<String> future = template.queryForObject("SELECT * FROM user", (row, rowNum) -> "OK");
 		try {
@@ -254,7 +256,7 @@ public class AsyncCqlTemplateUnitTests {
 	public void queryForObjectCqlWithTypeShouldReturnRecord() {
 
 		when(session.executeAsync(any(Statement.class))).thenReturn(new TestResultSetFuture(resultSet));
-		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
+		when(resultSet.currentPage()).thenReturn(Collections.singleton(row));
 		when(row.getColumnDefinitions()).thenReturn(columnDefinitions);
 		when(columnDefinitions.size()).thenReturn(1);
 		when(row.getString(0)).thenReturn("OK");
@@ -268,7 +270,7 @@ public class AsyncCqlTemplateUnitTests {
 	public void queryForListCqlWithTypeShouldReturnRecord() {
 
 		when(session.executeAsync(any(Statement.class))).thenReturn(new TestResultSetFuture(resultSet));
-		when(resultSet.iterator()).thenReturn(Arrays.asList(row, row).iterator());
+		when(resultSet.currentPage()).thenReturn(Arrays.asList(row, row));
 		when(row.getColumnDefinitions()).thenReturn(columnDefinitions);
 		when(columnDefinitions.size()).thenReturn(1);
 		when(row.getString(0)).thenReturn("OK", "NOT OK");
@@ -290,15 +292,15 @@ public class AsyncCqlTemplateUnitTests {
 	}
 
 	// -------------------------------------------------------------------------
-	// Tests dealing with com.datastax.driver.core.Statement
+	// Tests dealing with com.datastax.oss.driver.api.core.cql.Statement
 	// -------------------------------------------------------------------------
 
 	@Test // DATACASS-292
 	public void executeStatementShouldCallExecution() {
 
-		doTestStrings(null, null, null, asyncCqlTemplate -> {
+		doTestStrings(null, null, asyncCqlTemplate -> {
 
-			asyncCqlTemplate.execute(new SimpleStatement("SELECT * from USERS"));
+			asyncCqlTemplate.execute(SimpleStatement.newInstance("SELECT * from USERS"));
 
 			verify(session).executeAsync(any(Statement.class));
 		});
@@ -307,9 +309,9 @@ public class AsyncCqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void executeStatementWithArgumentsShouldCallExecution() {
 
-		doTestStrings(5, ConsistencyLevel.ONE, DowngradingConsistencyRetryPolicy.INSTANCE, asyncCqlTemplate -> {
+		doTestStrings(5, ConsistencyLevel.ONE, asyncCqlTemplate -> {
 
-			asyncCqlTemplate.execute(new SimpleStatement("SELECT * from USERS"));
+			asyncCqlTemplate.execute(SimpleStatement.newInstance("SELECT * from USERS"));
 
 			verify(session).executeAsync(any(Statement.class));
 		});
@@ -318,12 +320,12 @@ public class AsyncCqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryForResultStatementSetShouldCallExecution() {
 
-		doTestStrings(null, null, null, asyncCqlTemplate -> {
+		doTestStrings(null, null, asyncCqlTemplate -> {
 
-			ListenableFuture<ResultSet> future = asyncCqlTemplate
-					.queryForResultSet(new SimpleStatement("SELECT * from USERS"));
+			ListenableFuture<AsyncResultSet> future = asyncCqlTemplate
+					.queryForResultSet(SimpleStatement.newInstance("SELECT * from USERS"));
 
-			assertThat(getUninterruptibly(future)).hasSize(3);
+			assertThat(getUninterruptibly(future).currentPage()).hasSize(3);
 			verify(session).executeAsync(any(Statement.class));
 		});
 	}
@@ -331,9 +333,9 @@ public class AsyncCqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryWithResultSetStatementExtractorShouldCallExecution() {
 
-		doTestStrings(null, null, null, asyncCqlTemplate -> {
+		doTestStrings(null, null, asyncCqlTemplate -> {
 
-			ListenableFuture<List<String>> future = asyncCqlTemplate.query(new SimpleStatement("SELECT * from USERS"),
+			ListenableFuture<List<String>> future = asyncCqlTemplate.query(SimpleStatement.newInstance("SELECT * from USERS"),
 					(row, index) -> row.getString(0));
 
 			assertThat(getUninterruptibly(future)).hasSize(3).contains("Walter", "Hank", " Jesse");
@@ -344,9 +346,9 @@ public class AsyncCqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryWithResultSetStatementExtractorWithArgumentsShouldCallExecution() {
 
-		doTestStrings(5, ConsistencyLevel.ONE, DowngradingConsistencyRetryPolicy.INSTANCE, asyncCqlTemplate -> {
+		doTestStrings(5, ConsistencyLevel.ONE, asyncCqlTemplate -> {
 
-			ListenableFuture<List<String>> future = asyncCqlTemplate.query(new SimpleStatement("SELECT * from USERS"),
+			ListenableFuture<List<String>> future = asyncCqlTemplate.query(SimpleStatement.newInstance("SELECT * from USERS"),
 					(row, index) -> row.getString(0));
 
 			assertThat(getUninterruptibly(future)).hasSize(3).contains("Walter", "Hank", " Jesse");
@@ -357,12 +359,11 @@ public class AsyncCqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryStatementShouldTranslateExceptions() throws Exception {
 
-		TestResultSetFuture resultSetFuture = TestResultSetFuture
-				.failed(new NoHostAvailableException(Collections.emptyMap()));
+		TestResultSetFuture resultSetFuture = TestResultSetFuture.failed(new NoNodeAvailableException());
 		when(session.executeAsync(any(Statement.class))).thenReturn(resultSetFuture);
 
-		ListenableFuture<Boolean> future = template.query(new SimpleStatement("UPDATE user SET a = 'b';"),
-				ResultSet::wasApplied);
+		ListenableFuture<Boolean> future = template.query(SimpleStatement.newInstance("UPDATE user SET a = 'b';"),
+				(AsyncResultSetExtractor<Boolean>) rs -> new AsyncResult<>(rs.wasApplied()));
 
 		try {
 			future.get();
@@ -370,7 +371,7 @@ public class AsyncCqlTemplateUnitTests {
 			fail("Missing CassandraConnectionFailureException");
 		} catch (ExecutionException e) {
 			assertThat(e).hasCauseInstanceOf(CassandraConnectionFailureException.class)
-					.hasMessageContaining("tried for query failed");
+					.hasMessageContaining("No node was available");
 		}
 	}
 
@@ -378,9 +379,9 @@ public class AsyncCqlTemplateUnitTests {
 	public void queryForObjectStatementShouldBeEmpty() throws Exception {
 
 		when(session.executeAsync(any(Statement.class))).thenReturn(new TestResultSetFuture(resultSet));
-		when(resultSet.iterator()).thenReturn(Collections.emptyIterator());
+		when(resultSet.currentPage()).thenReturn(Collections.emptyList());
 
-		ListenableFuture<String> future = template.queryForObject(new SimpleStatement("SELECT * FROM user"),
+		ListenableFuture<String> future = template.queryForObject(SimpleStatement.newInstance("SELECT * FROM user"),
 				(row, rowNum) -> "OK");
 
 		try {
@@ -397,9 +398,9 @@ public class AsyncCqlTemplateUnitTests {
 	public void queryForObjectStatementShouldReturnRecord() {
 
 		when(session.executeAsync(any(Statement.class))).thenReturn(new TestResultSetFuture(resultSet));
-		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
+		when(resultSet.currentPage()).thenReturn(Collections.singleton(row));
 
-		ListenableFuture<String> future = template.queryForObject(new SimpleStatement("SELECT * FROM user"),
+		ListenableFuture<String> future = template.queryForObject(SimpleStatement.newInstance("SELECT * FROM user"),
 				(row, rowNum) -> "OK");
 		assertThat(getUninterruptibly(future)).isEqualTo("OK");
 	}
@@ -408,9 +409,9 @@ public class AsyncCqlTemplateUnitTests {
 	public void queryForObjectStatementShouldReturnNullValue() {
 
 		when(session.executeAsync(any(Statement.class))).thenReturn(new TestResultSetFuture(resultSet));
-		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
+		when(resultSet.currentPage()).thenReturn(Collections.singleton(row));
 
-		ListenableFuture<String> future = template.queryForObject(new SimpleStatement("SELECT * FROM user"),
+		ListenableFuture<String> future = template.queryForObject(SimpleStatement.newInstance("SELECT * FROM user"),
 				(row, rowNum) -> null);
 		assertThat(getUninterruptibly(future)).isNull();
 	}
@@ -419,9 +420,9 @@ public class AsyncCqlTemplateUnitTests {
 	public void queryForObjectStatementShouldFailReturningManyRecords() throws Exception {
 
 		when(session.executeAsync(any(Statement.class))).thenReturn(new TestResultSetFuture(resultSet));
-		when(resultSet.iterator()).thenReturn(Arrays.asList(row, row).iterator());
+		when(resultSet.currentPage()).thenReturn(Arrays.asList(row, row));
 
-		ListenableFuture<String> future = template.queryForObject(new SimpleStatement("SELECT * FROM user"),
+		ListenableFuture<String> future = template.queryForObject(SimpleStatement.newInstance("SELECT * FROM user"),
 				(row, rowNum) -> "OK");
 		try {
 			future.get();
@@ -437,12 +438,13 @@ public class AsyncCqlTemplateUnitTests {
 	public void queryForObjectStatementWithTypeShouldReturnRecord() {
 
 		when(session.executeAsync(any(Statement.class))).thenReturn(new TestResultSetFuture(resultSet));
-		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
+		when(resultSet.currentPage()).thenReturn(Collections.singleton(row));
 		when(row.getColumnDefinitions()).thenReturn(columnDefinitions);
 		when(columnDefinitions.size()).thenReturn(1);
 		when(row.getString(0)).thenReturn("OK");
 
-		ListenableFuture<String> future = template.queryForObject(new SimpleStatement("SELECT * FROM user"), String.class);
+		ListenableFuture<String> future = template.queryForObject(SimpleStatement.newInstance("SELECT * FROM user"),
+				String.class);
 
 		assertThat(getUninterruptibly(future)).isEqualTo("OK");
 	}
@@ -451,12 +453,12 @@ public class AsyncCqlTemplateUnitTests {
 	public void queryForListStatementWithTypeShouldReturnRecord() {
 
 		when(session.executeAsync(any(Statement.class))).thenReturn(new TestResultSetFuture(resultSet));
-		when(resultSet.iterator()).thenReturn(Arrays.asList(row, row).iterator());
+		when(resultSet.currentPage()).thenReturn(Arrays.asList(row, row));
 		when(row.getColumnDefinitions()).thenReturn(columnDefinitions);
 		when(columnDefinitions.size()).thenReturn(1);
 		when(row.getString(0)).thenReturn("OK", "NOT OK");
 
-		ListenableFuture<List<String>> future = template.queryForList(new SimpleStatement("SELECT * FROM user"),
+		ListenableFuture<List<String>> future = template.queryForList(SimpleStatement.newInstance("SELECT * FROM user"),
 				String.class);
 
 		assertThat(getUninterruptibly(future)).contains("OK", "NOT OK");
@@ -468,7 +470,7 @@ public class AsyncCqlTemplateUnitTests {
 		when(session.executeAsync(any(Statement.class))).thenReturn(new TestResultSetFuture(resultSet));
 		when(resultSet.wasApplied()).thenReturn(true);
 
-		ListenableFuture<Boolean> future = template.execute(new SimpleStatement("UPDATE user SET a = 'b';"));
+		ListenableFuture<Boolean> future = template.execute(SimpleStatement.newInstance("UPDATE user SET a = 'b';"));
 
 		assertThat(getUninterruptibly(future)).isTrue();
 	}
@@ -480,13 +482,13 @@ public class AsyncCqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryPreparedStatementWithCallbackShouldCallExecution() {
 
-		doTestStrings(null, null, null, asyncCqlTemplate -> {
+		doTestStrings(null, null, asyncCqlTemplate -> {
 
-			ListenableFuture<ResultSetFuture> futureOfFuture = asyncCqlTemplate.execute("SELECT * from USERS",
+			ListenableFuture<CompletionStage<AsyncResultSet>> futureOfFuture = asyncCqlTemplate.execute("SELECT * from USERS",
 					(session, ps) -> session.executeAsync(ps.bind("A")));
 
 			try {
-				assertThat(getUninterruptibly(futureOfFuture).get()).hasSize(3);
+				assertThat(getUninterruptibly(futureOfFuture).toCompletableFuture().get().currentPage()).hasSize(3);
 			} catch (Exception e) {
 				fail(e.getMessage(), e);
 			}
@@ -496,7 +498,7 @@ public class AsyncCqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void executePreparedStatementWithCallbackShouldCallExecution() {
 
-		doTestStrings(null, null, null, asyncCqlTemplate -> {
+		doTestStrings(null, null, asyncCqlTemplate -> {
 
 			when(this.preparedStatement.bind("White")).thenReturn(this.boundStatement);
 			when(this.resultSet.wasApplied()).thenReturn(true);
@@ -512,15 +514,15 @@ public class AsyncCqlTemplateUnitTests {
 
 		try {
 			template.execute(session -> {
-				throw new NoHostAvailableException(Collections.emptyMap());
+				throw new NoNodeAvailableException();
 			}, (session, ps) -> session.executeAsync(boundStatement));
 			fail("Missing CassandraConnectionFailureException");
 		} catch (CassandraConnectionFailureException e) {
-			assertThat(e).hasMessageContaining("tried for query");
+			assertThat(e).hasMessageContaining("No node was available");
 		}
 
-		ListenableFuture<ResultSetFuture> future = template.execute(
-				session -> AsyncResult.forExecutionException(new NoHostAvailableException(Collections.emptyMap())),
+		ListenableFuture<CompletionStage<AsyncResultSet>> future = template.execute(
+				session -> AsyncResult.forExecutionException(new NoNodeAvailableException()),
 				(session, ps) -> session.executeAsync(boundStatement));
 
 		try {
@@ -529,17 +531,16 @@ public class AsyncCqlTemplateUnitTests {
 			fail("Missing CassandraConnectionFailureException");
 		} catch (ExecutionException e) {
 			assertThat(e).hasCauseInstanceOf(CassandraConnectionFailureException.class)
-					.hasMessageContaining("tried for query");
+					.hasMessageContaining("No node was available");
 		}
 	}
 
 	@Test // DATACASS-292
 	public void executePreparedStatementCreatorShouldTranslateStatementCallbackExceptions() throws Exception {
 
-		ListenableFuture<ResultSetFuture> future = template.execute(session -> new AsyncResult<>(preparedStatement),
-				(session, ps) -> {
-					throw new NoHostAvailableException(Collections.emptyMap());
-				});
+		ListenableFuture<?> future = template.execute(session -> new AsyncResult<>(preparedStatement), (session, ps) -> {
+			throw new NoNodeAvailableException();
+		});
 
 		try {
 			future.get();
@@ -547,7 +548,7 @@ public class AsyncCqlTemplateUnitTests {
 			fail("Missing CassandraConnectionFailureException");
 		} catch (ExecutionException e) {
 			assertThat(e).hasCauseInstanceOf(CassandraConnectionFailureException.class)
-					.hasMessageContaining("tried for query");
+					.hasMessageContaining("No node was available");
 		}
 	}
 
@@ -556,12 +557,12 @@ public class AsyncCqlTemplateUnitTests {
 
 		when(preparedStatement.bind()).thenReturn(boundStatement);
 		when(session.executeAsync(boundStatement)).thenReturn(new TestResultSetFuture(resultSet));
-		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
+		when(resultSet.currentPage()).thenReturn(Collections.singleton(row));
 
-		ListenableFuture<Iterator<Row>> future = template.query(session -> new AsyncResult<>(preparedStatement),
-				ResultSet::iterator);
+		ListenableFuture<Iterable<Row>> future = template.query(session -> new AsyncResult<>(preparedStatement),
+				(AsyncResultSetExtractor<Iterable<Row>>) rs -> new AsyncResult<>(rs.currentPage()));
 
-		assertThat((Iterable<Row>) () -> getUninterruptibly(future)).contains(row);
+		assertThat(getUninterruptibly(future)).contains(row);
 		verify(preparedStatement).bind();
 	}
 
@@ -569,27 +570,26 @@ public class AsyncCqlTemplateUnitTests {
 	public void queryPreparedStatementCreatorAndBinderShouldReturnResult() {
 
 		when(session.executeAsync(boundStatement)).thenReturn(new TestResultSetFuture(resultSet));
-		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
-		when(resultSet.spliterator()).thenCallRealMethod();
+		when(resultSet.currentPage()).thenReturn(Collections.singleton(row));
 
-		ListenableFuture<ResultSet> future = template
+		ListenableFuture<AsyncResultSet> future = template
 				.query(session -> new AsyncResult<PreparedStatement>(preparedStatement), ps -> {
 					ps.bind("a", "b");
 					return boundStatement;
-				}, rs -> rs);
+				}, (AsyncResultSetExtractor<AsyncResultSet>) AsyncResult::new);
 
-		assertThat(getUninterruptibly(future)).contains(row);
+		assertThat(getUninterruptibly(future).currentPage()).contains(row);
 		verify(preparedStatement).bind("a", "b");
 	}
 
 	@Test // DATACASS-292
 	public void queryPreparedStatementCreatorAndBinderShouldTranslatePrepareStatementExceptions() throws Exception {
 
-		ListenableFuture<ResultSet> future = template.query(
-				session -> AsyncResult.forExecutionException(new NoHostAvailableException(Collections.emptyMap())), ps -> {
+		ListenableFuture<AsyncResultSet> future = template
+				.query(session -> AsyncResult.forExecutionException(new NoNodeAvailableException()), ps -> {
 					ps.bind("a", "b");
 					return boundStatement;
-				}, rs -> rs);
+				}, (AsyncResultSetExtractor<AsyncResultSet>) AsyncResult::new);
 
 		try {
 			future.get();
@@ -603,10 +603,9 @@ public class AsyncCqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryPreparedStatementCreatorAndBinderShouldTranslateBindExceptions() throws Exception {
 
-		ListenableFuture<ResultSet> future = template
-				.query(session -> new AsyncResult<PreparedStatement>(preparedStatement), ps -> {
-					throw new NoHostAvailableException(Collections.emptyMap());
-				}, rs -> rs);
+		ListenableFuture<AsyncResultSet> future = template.query(session -> new AsyncResult<>(preparedStatement), ps -> {
+			throw new NoNodeAvailableException();
+		}, (AsyncResultSetExtractor<AsyncResultSet>) AsyncResult::new);
 
 		try {
 			future.get();
@@ -619,16 +618,14 @@ public class AsyncCqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryPreparedStatementCreatorAndBinderShouldTranslateExecutionExceptions() throws Exception {
 
-		TestResultSetFuture resultSetFuture = TestResultSetFuture
-				.failed(new NoHostAvailableException(Collections.emptyMap()));
+		TestResultSetFuture resultSetFuture = TestResultSetFuture.failed(new NoNodeAvailableException());
 
 		when(session.executeAsync(boundStatement)).thenReturn(resultSetFuture);
 
-		ListenableFuture<ResultSet> future = template
-				.query(session -> new AsyncResult<PreparedStatement>(preparedStatement), ps -> {
-					ps.bind("a", "b");
-					return boundStatement;
-				}, rs -> rs);
+		ListenableFuture<AsyncResultSet> future = template.query(session -> new AsyncResult<>(preparedStatement), ps -> {
+			ps.bind("a", "b");
+			return boundStatement;
+		}, (AsyncResultSetExtractor<AsyncResultSet>) AsyncResult::new);
 
 		try {
 			future.get();
@@ -642,7 +639,7 @@ public class AsyncCqlTemplateUnitTests {
 	public void queryPreparedStatementCreatorAndBinderAndMapperShouldReturnResult() {
 
 		when(session.executeAsync(boundStatement)).thenReturn(new TestResultSetFuture(resultSet));
-		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
+		when(resultSet.currentPage()).thenReturn(Collections.singleton(row));
 
 		ListenableFuture<List<Row>> future = template.query(session -> new AsyncResult<>(preparedStatement), ps -> {
 			ps.bind("a", "b");
@@ -660,7 +657,7 @@ public class AsyncCqlTemplateUnitTests {
 				.thenReturn(new TestPreparedStatementFuture(preparedStatement));
 		when(preparedStatement.bind("Walter")).thenReturn(boundStatement);
 		when(session.executeAsync(boundStatement)).thenReturn(new TestResultSetFuture(resultSet));
-		when(resultSet.iterator()).thenReturn(Collections.emptyIterator());
+		when(resultSet.currentPage()).thenReturn(Collections.emptyList());
 
 		ListenableFuture<String> future = template.queryForObject("SELECT * FROM user WHERE username = ?",
 				(row, rowNum) -> "OK", "Walter");
@@ -682,7 +679,7 @@ public class AsyncCqlTemplateUnitTests {
 				.thenReturn(new TestPreparedStatementFuture(preparedStatement));
 		when(preparedStatement.bind("Walter")).thenReturn(boundStatement);
 		when(session.executeAsync(boundStatement)).thenReturn(new TestResultSetFuture(resultSet));
-		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
+		when(resultSet.currentPage()).thenReturn(Collections.singleton(row));
 
 		ListenableFuture<String> future = template.queryForObject("SELECT * FROM user WHERE username = ?",
 				(row, rowNum) -> "OK", "Walter");
@@ -696,7 +693,7 @@ public class AsyncCqlTemplateUnitTests {
 				.thenReturn(new TestPreparedStatementFuture(preparedStatement));
 		when(preparedStatement.bind("Walter")).thenReturn(boundStatement);
 		when(session.executeAsync(boundStatement)).thenReturn(new TestResultSetFuture(resultSet));
-		when(resultSet.iterator()).thenReturn(Arrays.asList(row, row).iterator());
+		when(resultSet.currentPage()).thenReturn(Arrays.asList(row, row));
 
 		ListenableFuture<String> future = template.queryForObject("SELECT * FROM user WHERE username = ?",
 				(row, rowNum) -> "OK", "Walter");
@@ -717,7 +714,7 @@ public class AsyncCqlTemplateUnitTests {
 				.thenReturn(new TestPreparedStatementFuture(preparedStatement));
 		when(preparedStatement.bind("Walter")).thenReturn(boundStatement);
 		when(session.executeAsync(boundStatement)).thenReturn(new TestResultSetFuture(resultSet));
-		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
+		when(resultSet.currentPage()).thenReturn(Collections.singleton(row));
 		when(row.getColumnDefinitions()).thenReturn(columnDefinitions);
 		when(columnDefinitions.size()).thenReturn(1);
 		when(row.getString(0)).thenReturn("OK");
@@ -734,7 +731,7 @@ public class AsyncCqlTemplateUnitTests {
 				.thenReturn(new TestPreparedStatementFuture(preparedStatement));
 		when(preparedStatement.bind("Walter")).thenReturn(boundStatement);
 		when(session.executeAsync(boundStatement)).thenReturn(new TestResultSetFuture(resultSet));
-		when(resultSet.iterator()).thenReturn(Arrays.asList(row, row).iterator());
+		when(resultSet.currentPage()).thenReturn(Arrays.asList(row, row));
 		when(row.getColumnDefinitions()).thenReturn(columnDefinitions);
 		when(columnDefinitions.size()).thenReturn(1);
 		when(row.getString(0)).thenReturn("OK", "NOT OK");
@@ -760,29 +757,20 @@ public class AsyncCqlTemplateUnitTests {
 	}
 
 	private <T> void doTestStrings(Integer fetchSize, ConsistencyLevel consistencyLevel,
-			com.datastax.driver.core.policies.RetryPolicy retryPolicy, Consumer<AsyncCqlTemplate> cqlTemplateConsumer) {
+			Consumer<AsyncCqlTemplate> cqlTemplateConsumer) {
 
 		String[] results = { "Walter", "Hank", " Jesse" };
 
 		when(this.session.executeAsync((Statement) any())).thenReturn(new TestResultSetFuture(resultSet));
-		when(this.resultSet.iterator()).thenReturn(Arrays.asList(row, row, row).iterator());
-		when(this.resultSet.spliterator()).thenCallRealMethod();
-
+		when(this.resultSet.currentPage()).thenReturn(Arrays.asList(row, row, row));
 		when(this.row.getString(0)).thenReturn(results[0], results[1], results[2]);
-
-		SettableFuture<PreparedStatement> settableFuture = SettableFuture.create();
-		settableFuture.set(this.preparedStatement);
-
-		when(this.session.prepareAsync(anyString())).thenReturn(settableFuture);
+		when(this.session.prepareAsync(anyString())).thenReturn(new TestPreparedStatementFuture(this.preparedStatement));
 
 		AsyncCqlTemplate template = new AsyncCqlTemplate();
 		template.setSession(this.session);
 
 		if (fetchSize != null) {
 			template.setFetchSize(fetchSize);
-		}
-		if (retryPolicy != null) {
-			template.setRetryPolicy(retryPolicy);
 		}
 		if (consistencyLevel != null) {
 			template.setConsistencyLevel(consistencyLevel);
@@ -798,11 +786,7 @@ public class AsyncCqlTemplateUnitTests {
 		if (statement instanceof PreparedStatement || statement instanceof BoundStatement) {
 
 			if (fetchSize != null) {
-				verify(statement).setFetchSize(fetchSize.intValue());
-			}
-
-			if (retryPolicy != null) {
-				verify(statement).setRetryPolicy(retryPolicy);
+				verify(statement).setPageSize(fetchSize.intValue());
 			}
 
 			if (consistencyLevel != null) {
@@ -811,11 +795,7 @@ public class AsyncCqlTemplateUnitTests {
 		} else {
 
 			if (fetchSize != null) {
-				assertThat(statement.getFetchSize()).isEqualTo(fetchSize.intValue());
-			}
-
-			if (retryPolicy != null) {
-				assertThat(statement.getRetryPolicy()).isEqualTo(retryPolicy);
+				assertThat(statement.getPageSize()).isEqualTo(fetchSize.intValue());
 			}
 
 			if (consistencyLevel != null) {
@@ -833,32 +813,12 @@ public class AsyncCqlTemplateUnitTests {
 		}
 	}
 
-	private static class TestResultSetFuture extends AbstractFuture<ResultSet> implements ResultSetFuture {
+	private static class TestResultSetFuture extends CompletableFuture<AsyncResultSet> {
 
 		public TestResultSetFuture() {}
 
-		public TestResultSetFuture(ResultSet resultSet) {
-			set(resultSet);
-		}
-
-		@Override
-		public boolean set(ResultSet value) {
-			return super.set(value);
-		}
-
-		@Override
-		public ResultSet getUninterruptibly() {
-			return null;
-		}
-
-		@Override
-		public ResultSet getUninterruptibly(long l, TimeUnit timeUnit) throws TimeoutException {
-			return null;
-		}
-
-		@Override
-		protected boolean setException(Throwable throwable) {
-			return super.setException(throwable);
+		public TestResultSetFuture(AsyncResultSet result) {
+			complete(result);
 		}
 
 		/**
@@ -870,22 +830,18 @@ public class AsyncCqlTemplateUnitTests {
 		public static TestResultSetFuture failed(Throwable throwable) {
 
 			TestResultSetFuture future = new TestResultSetFuture();
-			future.setException(throwable);
+			future.completeExceptionally(throwable);
 			return future;
 		}
 	}
 
-	private static class TestPreparedStatementFuture extends AbstractFuture<PreparedStatement> {
+	private static class TestPreparedStatementFuture extends CompletableFuture<PreparedStatement> {
 
 		public TestPreparedStatementFuture() {}
 
-		public TestPreparedStatementFuture(PreparedStatement resultSet) {
-			set(resultSet);
+		public TestPreparedStatementFuture(PreparedStatement ps) {
+			complete(ps);
 		}
 
-		@Override
-		public boolean set(PreparedStatement value) {
-			return super.set(value);
-		}
 	}
 }

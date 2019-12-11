@@ -25,16 +25,16 @@ import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.cassandra.core.CassandraTemplate;
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
 
-import com.datastax.driver.core.SimpleStatement;
-import com.datastax.driver.core.Statement;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 
 /**
  * Integration tests for lifecycle events.
@@ -78,7 +78,7 @@ public abstract class EventListenerIntegrationTestSupport extends AbstractKeyspa
 		User loaded = getAccessor().selectOneById(firstUser.getId(), User.class);
 
 		assertThat(listener.getAfterLoad()).extracting(CassandraMappingEvent::getTableName)
-				.containsOnly(CqlIdentifier.of("users"));
+				.containsOnly(CqlIdentifier.fromCql("users"));
 		assertThat(listener.getAfterConvert()).extracting(CassandraMappingEvent::getSource).containsOnly(loaded);
 	}
 
@@ -88,17 +88,17 @@ public abstract class EventListenerIntegrationTestSupport extends AbstractKeyspa
 		List<User> loaded = getAccessor().select(query(where("id").is(firstUser.getId())), User.class);
 
 		assertThat(listener.getAfterLoad()).extracting(CassandraMappingEvent::getTableName)
-				.containsOnly(CqlIdentifier.of("users"));
+				.containsOnly(CqlIdentifier.fromCql("users"));
 		assertThat(listener.getAfterConvert()).extracting(CassandraMappingEvent::getSource).containsOnly(loaded.get(0));
 	}
 
 	@Test // DATACASS-106
 	public void selectByStatementShouldEmitLoadEvents() {
 
-		List<User> loaded = getAccessor().select(new SimpleStatement("SELECT * FROM users"), User.class);
+		List<User> loaded = getAccessor().select(SimpleStatement.newInstance("SELECT * FROM users"), User.class);
 
 		assertThat(listener.getAfterLoad()).extracting(CassandraMappingEvent::getTableName)
-				.containsOnly(CqlIdentifier.of("users"));
+				.containsOnly(CqlIdentifier.fromCql("users"));
 		assertThat(listener.getAfterConvert()).extracting(CassandraMappingEvent::getSource).containsOnly(loaded.get(0));
 	}
 
@@ -128,9 +128,9 @@ public abstract class EventListenerIntegrationTestSupport extends AbstractKeyspa
 		getAccessor().delete(firstUser);
 
 		assertThat(listener.getBeforeDelete()).extracting(CassandraMappingEvent::getTableName)
-				.containsExactly(CqlIdentifier.of("users"));
+				.containsExactly(CqlIdentifier.fromCql("users"));
 		assertThat(listener.getAfterDelete()).extracting(CassandraMappingEvent::getTableName)
-				.containsExactly(CqlIdentifier.of("users"));
+				.containsExactly(CqlIdentifier.fromCql("users"));
 	}
 
 	@Test // DATACASS-106
@@ -139,9 +139,9 @@ public abstract class EventListenerIntegrationTestSupport extends AbstractKeyspa
 		getAccessor().deleteById(firstUser.getId(), User.class);
 
 		assertThat(listener.getBeforeDelete()).extracting(CassandraMappingEvent::getTableName)
-				.containsExactly(CqlIdentifier.of("users"));
+				.containsExactly(CqlIdentifier.fromCql("users"));
 		assertThat(listener.getAfterDelete()).extracting(CassandraMappingEvent::getTableName)
-				.containsExactly(CqlIdentifier.of("users"));
+				.containsExactly(CqlIdentifier.fromCql("users"));
 	}
 
 	@Test // DATACASS-106
@@ -150,9 +150,9 @@ public abstract class EventListenerIntegrationTestSupport extends AbstractKeyspa
 		getAccessor().delete(query(where("id").is(firstUser.getId())), User.class);
 
 		assertThat(listener.getBeforeDelete()).extracting(CassandraMappingEvent::getTableName)
-				.containsExactly(CqlIdentifier.of("users"));
+				.containsExactly(CqlIdentifier.fromCql("users"));
 		assertThat(listener.getAfterDelete()).extracting(CassandraMappingEvent::getTableName)
-				.containsExactly(CqlIdentifier.of("users"));
+				.containsExactly(CqlIdentifier.fromCql("users"));
 	}
 
 	@Test // DATACASS-106
@@ -161,9 +161,9 @@ public abstract class EventListenerIntegrationTestSupport extends AbstractKeyspa
 		getAccessor().truncate(User.class);
 
 		assertThat(listener.getBeforeDelete()).extracting(CassandraMappingEvent::getTableName)
-				.containsExactly(CqlIdentifier.of("users"));
+				.containsExactly(CqlIdentifier.fromCql("users"));
 		assertThat(listener.getAfterDelete()).extracting(CassandraMappingEvent::getTableName)
-				.containsExactly(CqlIdentifier.of("users"));
+				.containsExactly(CqlIdentifier.fromCql("users"));
 	}
 
 	@Test // DATACASS-106
@@ -269,6 +269,6 @@ public abstract class EventListenerIntegrationTestSupport extends AbstractKeyspa
 
 		<T> List<T> select(Query query, Class<T> entityClass);
 
-		<T> List<T> select(Statement statement, Class<T> entityClass);
+		<T> List<T> select(SimpleStatement statement, Class<T> entityClass);
 	}
 }

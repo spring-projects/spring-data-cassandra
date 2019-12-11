@@ -15,21 +15,16 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.io.Serializable;
+import static org.mockito.Mockito.*;
 
 import lombok.Data;
-
 import reactor.core.publisher.Mono;
+
+import java.io.Serializable;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
@@ -43,8 +38,7 @@ import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 
-import com.datastax.driver.core.UserType;
-import com.datastax.driver.core.querybuilder.Insert;
+import com.datastax.oss.driver.api.core.type.UserDefinedType;
 
 /**
  * Unit tests for {@link SimpleReactiveCassandraRepository}.
@@ -62,10 +56,8 @@ public class SimpleReactiveCassandraRepositoryUnitTests {
 
 	@Mock ReactiveCassandraOperations cassandraOperations;
 	@Mock UserTypeResolver userTypeResolver;
-	@Mock UserType userType;
+	@Mock UserDefinedType userType;
 	@Mock EntityWriteResult writeResult;
-
-	@Captor ArgumentCaptor<Insert> insertCaptor;
 
 	@Before
 	public void before() {

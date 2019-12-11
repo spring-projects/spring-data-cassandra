@@ -31,6 +31,7 @@ import java.util.function.Consumer;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.CassandraTemplate;
@@ -41,8 +42,7 @@ import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingInte
 import org.springframework.data.convert.CustomConversions;
 import org.springframework.util.StringUtils;
 
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.oss.driver.api.core.cql.Row;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -74,7 +74,7 @@ public class CustomConversionIntegrationTests extends AbstractKeyspaceCreatingIn
 
 		cassandraOperations.insert(employee);
 
-		Row row = cassandraOperations.selectOne(QueryBuilder.select("id", "person").from("employee"), Row.class);
+		Row row = cassandraOperations.selectOne("SELECT id, person FROM employee", Row.class);
 
 		assertThat(row.getString("id")).isEqualTo("employee-id");
 		assertThat(row.getString("person")).contains("\"firstname\":\"Homer\"");
@@ -91,7 +91,7 @@ public class CustomConversionIntegrationTests extends AbstractKeyspaceCreatingIn
 		employee.setPerson(new Person("Homer", "Simpson"));
 		cassandraOperations.update(employee);
 
-		Row row = cassandraOperations.selectOne(QueryBuilder.select("id", "person").from("employee"), Row.class);
+		Row row = cassandraOperations.selectOne("SELECT id, person FROM employee", Row.class);
 
 		assertThat(row.getString("id")).isEqualTo("employee-id");
 		assertThat(row.getString("person")).contains("\"firstname\":\"Homer\"");
@@ -108,8 +108,7 @@ public class CustomConversionIntegrationTests extends AbstractKeyspaceCreatingIn
 		employee.setPeople(Collections.singleton(new Person("Apu", "Nahasapeemapetilon")));
 		cassandraOperations.update(employee);
 
-		Row row = cassandraOperations.selectOne(QueryBuilder.select("id", "person", "friends", "people").from("employee"),
-				Row.class);
+		Row row = cassandraOperations.selectOne("SELECT id, person, friends, people FROM employee", Row.class);
 
 		assertThat(row.getObject("friends")).isInstanceOf(List.class);
 		assertThat(row.getList("friends", String.class)).hasSize(2);
@@ -128,8 +127,7 @@ public class CustomConversionIntegrationTests extends AbstractKeyspaceCreatingIn
 
 		cassandraOperations.insert(employee);
 
-		Row row = cassandraOperations.selectOne(QueryBuilder.select("id", "person", "friends", "people").from("employee"),
-				Row.class);
+		Row row = cassandraOperations.selectOne("SELECT id, person, friends, people FROM employee", Row.class);
 
 		assertThat(row.getObject("friends")).isInstanceOf(List.class);
 		assertThat(row.getList("friends", String.class)).hasSize(2);
@@ -141,11 +139,10 @@ public class CustomConversionIntegrationTests extends AbstractKeyspaceCreatingIn
 	@Test // DATACASS-296
 	public void shouldLoadCustomConvertedObject() {
 
-		cassandraOperations.getCqlOperations().execute(QueryBuilder.insertInto("employee").value("id", "employee-id")
-				.value("person", "{\"firstname\":\"Homer\",\"lastname\":\"Simpson\"}"));
+		cassandraOperations.getCqlOperations().execute(
+				"INSERT INTO employee (id, person) VALUES('employee-id, '{\"firstname\":\"Homer\",\"lastname\":\"Simpson\"}");
 
-		Employee employee = cassandraOperations.selectOne(QueryBuilder.select("id", "person").from("employee"),
-				Employee.class);
+		Employee employee = cassandraOperations.selectOne("SELECT id, person FROM employee", Employee.class);
 
 		assertThat(employee.getId()).isEqualTo("employee-id");
 		assertThat(employee.getPerson()).isNotNull();
@@ -156,11 +153,10 @@ public class CustomConversionIntegrationTests extends AbstractKeyspaceCreatingIn
 	@Test // DATACASS-296
 	public void shouldLoadCustomConvertedWithCollectionsObject() {
 
-		cassandraOperations.getCqlOperations().execute(QueryBuilder.insertInto("employee").value("id", "employee-id")
-				.value("people", Collections.singleton("{\"firstname\":\"Apu\",\"lastname\":\"Nahasapeemapetilon\"}")));
+		cassandraOperations.getCqlOperations().execute(
+				"INSERT INTO employee (id, people) VALUES('employee-id, '[{\"firstname\":\"Apu\",\"lastname\":\"Nahasapeemapetilon\"}]");
 
-		Employee employee = cassandraOperations.selectOne(QueryBuilder.select("id", "people").from("employee"),
-				Employee.class);
+		Employee employee = cassandraOperations.selectOne("SELECT id, people FROM employee", Employee.class);
 
 		assertThat(employee.getId()).isEqualTo("employee-id");
 		assertThat(employee.getPeople()).isNotNull();
@@ -177,17 +173,15 @@ public class CustomConversionIntegrationTests extends AbstractKeyspaceCreatingIn
 
 		cassandraOperations = new CassandraTemplate(session, converter);
 
-		cassandraOperations.getCqlOperations().execute(QueryBuilder.insertInto("employee").value("id", "employee-id")
-				.value("people", Collections.singleton("{\"firstname\":\"Apu\",\"lastname\":\"Nahasapeemapetilon\"}")));
+		cassandraOperations.getCqlOperations().execute(
+				"INSERT INTO employee (id, people) VALUES('employee-id, '[{\"firstname\":\"Apu\",\"lastname\":\"Nahasapeemapetilon\"}]");
 
-		Employee employee = cassandraOperations.selectOne(QueryBuilder.select("id", "people").from("employee"),
-				Employee.class);
+		Employee employee = cassandraOperations.selectOne("SELECT id, people FROM employee", Employee.class);
 
 		assertThat(employee.getId()).isEqualTo("employee-id");
 		assertThat(employee.getPeople()).isNotNull().hasSize(1);
 
 		assertThat(employee.getPeople()).extracting(Person::getFirstname).contains("Apu");
-
 	}
 
 	private static MappingCassandraConverter createConverter() {

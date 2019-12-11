@@ -17,10 +17,10 @@ package org.springframework.data.cassandra.core.cql;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.StreamSupport;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.cassandra.SessionFactory;
@@ -28,21 +28,18 @@ import org.springframework.data.cassandra.core.cql.session.DefaultSessionFactory
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.Statement;
-import com.datastax.driver.core.exceptions.DriverException;
-import com.datastax.driver.core.policies.RetryPolicy;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.oss.driver.api.core.ConsistencyLevel;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.cql.Statement;
+import com.datastax.oss.driver.api.core.retry.RetryPolicy;
 
 /**
  * {@link CassandraAccessor} provides access to a Cassandra {@link SessionFactory} and the
  * {@link CassandraExceptionTranslator}.
  * <p>
  * Classes providing a higher abstraction level usually extend {@link CassandraAccessor} to provide a richer set of
- * functionality on top of a {@link SessionFactory} using {@link Session}.
+ * functionality on top of a {@link SessionFactory} using {@link CqlSession}.
  *
  * @author David Webb
  * @author Mark Paluch
@@ -52,38 +49,33 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
  */
 public class CassandraAccessor implements InitializingBean {
 
-	/**
-	 * Placeholder for default values.
-	 */
-	private static final Statement DEFAULTS = QueryBuilder.select().from("DEFAULT");
-
 	/** Logger available to subclasses */
 	protected final Logger logger = LoggerFactory.getLogger(getClass());
 
 	private CqlExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
 
 	/**
-	 * If this variable is set to a non-negative value, it will be used for setting the {@code fetchSize} property on
+	 * If this variable is set to a non-negative value, it will be used for setting the {@code pageSize} property on
 	 * statements used for query processing.
 	 */
-	private int fetchSize = -1;
+	private int pageSize = -1;
 
 	/**
 	 * If this variable is set to a value, it will be used for setting the {@code consistencyLevel} property on statements
 	 * used for query processing.
 	 */
-	private @Nullable com.datastax.driver.core.ConsistencyLevel consistencyLevel;
+	private @Nullable ConsistencyLevel consistencyLevel;
 
 	/**
 	 * If this variable is set to a value, it will be used for setting the {@code retryPolicy} property on statements used
 	 * for query processing.
 	 */
-	private @Nullable com.datastax.driver.core.policies.RetryPolicy retryPolicy;
+	private @Deprecated @Nullable RetryPolicy retryPolicy;
 
 	private @Nullable SessionFactory sessionFactory;
 
 	/**
-	 * Ensures the Cassandra {@link Session} and exception translator has been propertly set.
+	 * Ensures the Cassandra {@link CqlSession} and exception translator has been propertly set.
 	 */
 	@Override
 	public void afterPropertiesSet() {
@@ -141,46 +133,72 @@ public class CassandraAccessor implements InitializingBean {
 	 * transferring row data that will never be read by the application. Default is -1, indicating to use the CQL driver's
 	 * default configuration (i.e. to not pass a specific fetch size setting on to the driver).
 	 *
-	 * @see Statement#setFetchSize(int)
+	 * @see com.datastax.oss.driver.api.core.cql.SimpleStatementBuilder#setPageSize(int)
+	 * @deprecated since 3.0, use {@link #setPageSize(int)}
 	 */
+	@Deprecated
 	public void setFetchSize(int fetchSize) {
-		this.fetchSize = fetchSize;
+		setPageSize(fetchSize);
 	}
 
 	/**
 	 * @return the fetch size specified for this template.
+	 * @deprecated since 3.0, use {@link #getPageSize()}.
 	 */
+	@Deprecated
 	public int getFetchSize() {
-		return this.fetchSize;
+		return getPageSize();
+	}
+
+	/**
+	 * Set the page size for this template. This is important for processing large result sets: Setting this higher than
+	 * the default value will increase processing speed at the cost of memory consumption; setting this lower can avoid
+	 * transferring row data that will never be read by the application. Default is -1, indicating to use the CQL driver's
+	 * default configuration (i.e. to not pass a specific page size setting on to the driver).
+	 *
+	 * @see com.datastax.oss.driver.api.core.cql.SimpleStatementBuilder#setPageSize(int)
+	 */
+	public void setPageSize(int fetchSize) {
+		this.pageSize = fetchSize;
+	}
+
+	/**
+	 * @return the page size specified for this template.
+	 */
+	public int getPageSize() {
+		return this.pageSize;
 	}
 
 	/**
 	 * Set the retry policy for this template. This is important for defining behavior when a request fails.
 	 *
-	 * @see Statement#setRetryPolicy(RetryPolicy)
 	 * @see RetryPolicy
+	 * @deprecated since 3.0. Use driver execution profiles instead.
 	 */
+	@Deprecated
 	public void setRetryPolicy(@Nullable RetryPolicy retryPolicy) {
 		this.retryPolicy = retryPolicy;
 	}
 
 	/**
 	 * @return the {@link RetryPolicy} specified for this template.
+	 * @deprecated since 3.0. Use driver execution profiles instead.
 	 */
 	@Nullable
+	@Deprecated
 	public RetryPolicy getRetryPolicy() {
 		return this.retryPolicy;
 	}
 
 	/**
-	 * Sets the Cassandra {@link Session} used by this template to perform Cassandra data access operations. The
+	 * Sets the Cassandra {@link CqlSession} used by this template to perform Cassandra data access operations. The
 	 * {@code session} will replace the current {@link #getSessionFactory()} with {@link DefaultSessionFactory}.
 	 *
-	 * @param session Cassandra {@link Session} used by this template, must not be{@literal null}.
-	 * @see com.datastax.driver.core.Session
+	 * @param session Cassandra {@link CqlSession} used by this template, must not be{@literal null}.
+	 * @see CqlSession
 	 * @see DefaultSessionFactory
 	 */
-	public void setSession(Session session) {
+	public void setSession(CqlSession session) {
 
 		Assert.notNull(session, "Session must not be null");
 
@@ -188,16 +206,16 @@ public class CassandraAccessor implements InitializingBean {
 	}
 
 	/**
-	 * Returns the Cassandra {@link Session} from {@link SessionFactory} used by this template to perform Cassandra data
-	 * access operations.
+	 * Returns the Cassandra {@link CqlSession} from {@link SessionFactory} used by this template to perform Cassandra
+	 * data access operations.
 	 *
-	 * @return the Cassandra {@link Session} used by this template.
+	 * @return the Cassandra {@link CqlSession} used by this template.
 	 * @see com.datastax.driver.core.Session
 	 * @deprecated since 2.0. This class uses a {@link SessionFactory} to dispatch CQL calls amongst different
-	 *             {@link Session}s during its lifecycle.
+	 *             {@link CqlSession}s during its lifecycle.
 	 */
 	@Deprecated
-	public Session getSession() {
+	public CqlSession getSession() {
 
 		Assert.state(getSessionFactory() != null, "SessionFactory was not properly initialized");
 
@@ -207,7 +225,7 @@ public class CassandraAccessor implements InitializingBean {
 	/**
 	 * Sets the Cassandra {@link SessionFactory} used by this template to perform Cassandra data access operations.
 	 *
-	 * @param sessionFactory Cassandra {@link Session} used by this template. Must not be{@literal null}.
+	 * @param sessionFactory Cassandra {@link CqlSession} used by this template. Must not be{@literal null}.
 	 * @since 2.0
 	 * @see com.datastax.driver.core.Session
 	 */
@@ -231,105 +249,82 @@ public class CassandraAccessor implements InitializingBean {
 	}
 
 	/**
-	 * Prepare the given CQL Statement (or {@link com.datastax.driver.core.PreparedStatement}), applying statement
-	 * settings such as retry policy and consistency level.
+	 * Create a {@link SimpleStatement} given {@code cql}.
 	 *
-	 * @param statement the CQL Statement to prepare
-	 * @see #setRetryPolicy(RetryPolicy)
-	 * @see #setConsistencyLevel(ConsistencyLevel)
+	 * @param cql the CQL query.
+	 * @return the {@link SimpleStatement} to use.
+	 * @since 3.0
 	 */
-	protected <T extends PreparedStatement> T applyStatementSettings(T statement) {
-
-		ConsistencyLevel consistencyLevel = getConsistencyLevel();
-
-		if (consistencyLevel != null) {
-			statement.setConsistencyLevel(consistencyLevel);
-		}
-
-		RetryPolicy retryPolicy = getRetryPolicy();
-
-		if (retryPolicy != null) {
-			statement.setRetryPolicy(retryPolicy);
-		}
-
-		return statement;
+	protected SimpleStatement newStatement(String cql) {
+		return SimpleStatement.newInstance(cql);
 	}
 
 	/**
-	 * Prepare the given CQL Statement (or {@link com.datastax.driver.core.PreparedStatement}), applying statement
-	 * settings such as fetch size, retry policy, and consistency level.
+	 * Prepare the given CQL Statement applying statement settings such as page size and consistency level.
 	 *
 	 * @param statement the CQL Statement to prepare
-	 * @see #setFetchSize(int)
-	 * @see #setRetryPolicy(RetryPolicy)
+	 * @see #setPageSize(int)
 	 * @see #setConsistencyLevel(ConsistencyLevel)
 	 */
-	protected <T extends Statement> T applyStatementSettings(T statement) {
+	protected Statement<?> applyStatementSettings(Statement<?> statement) {
 
+		Statement<?> statementToUse = statement;
 		ConsistencyLevel consistencyLevel = getConsistencyLevel();
 
-		if (consistencyLevel != null && statement.getConsistencyLevel() == DEFAULTS.getConsistencyLevel()) {
-			statement.setConsistencyLevel(consistencyLevel);
+		if (getFetchSize() > -1 && statement.getPageSize() < 0) {
+			statementToUse = statementToUse.setPageSize(getFetchSize());
 		}
 
-		int fetchSize = getFetchSize();
-
-		if (fetchSize != -1 && statement.getFetchSize() == DEFAULTS.getFetchSize()) {
-			statement.setFetchSize(fetchSize);
+		if (consistencyLevel != null && statementToUse.getConsistencyLevel() == null) {
+			statementToUse = statementToUse.setConsistencyLevel(getConsistencyLevel());
 		}
 
-		RetryPolicy retryPolicy = getRetryPolicy();
-
-		if (retryPolicy != null && statement.getRetryPolicy() == DEFAULTS.getRetryPolicy()) {
-			statement.setRetryPolicy(retryPolicy);
-		}
-
-		return statement;
+		return statementToUse;
 	}
 
 	/**
-	 * Translate the given {@link DriverException} into a generic {@link DataAccessException}.
+	 * Translate the given {@link RuntimeException} into a generic {@link DataAccessException}.
 	 * <p>
-	 * The returned {@link DataAccessException} is supposed to contain the original {@code DriverException} as root cause.
-	 * However, client code may not generally rely on this due to {@link DataAccessException}s possibly being caused by
-	 * other resource APIs as well. That said, a {@code getRootCause() instanceof DataAccessException} check (and
-	 * subsequent cast) is considered reliable when expecting Cassandra-based access to have happened.
+	 * The returned {@link DataAccessException} is supposed to contain the original {@code RuntimeException} as root
+	 * cause. However, client code may not generally rely on this due to {@link DataAccessException}s possibly being
+	 * caused by other resource APIs as well. That said, a {@code getRootCause() instanceof DataAccessException} check
+	 * (and subsequent cast) is considered reliable when expecting Cassandra-based access to have happened.
 	 *
-	 * @param ex the offending {@link DriverException}
-	 * @return the DataAccessException, wrapping the {@code DriverException}
+	 * @param ex the offending {@link RuntimeException}
+	 * @return the DataAccessException, wrapping the {@code RuntimeException}
 	 * @see <a href=
 	 *      "https://docs.spring.io/spring/docs/current/spring-framework-reference/data-access.html#dao-exceptions">Consistent
 	 *      exception hierarchy</a>
 	 * @see DataAccessException
 	 */
 	@Nullable
-	protected DataAccessException translateExceptionIfPossible(DriverException ex) {
+	protected DataAccessException translateExceptionIfPossible(RuntimeException ex) {
 
-		Assert.notNull(ex, "DriverException must not be null");
+		Assert.notNull(ex, "RuntimeException must not be null");
 
 		return getExceptionTranslator().translateExceptionIfPossible(ex);
 	}
 
 	/**
-	 * Translate the given {@link DriverException} into a generic {@link DataAccessException}.
+	 * Translate the given {@link RuntimeException} into a generic {@link DataAccessException}.
 	 * <p>
-	 * The returned {@link DataAccessException} is supposed to contain the original {@code DriverException} as root cause.
-	 * However, client code may not generally rely on this due to {@link DataAccessException}s possibly being caused by
-	 * other resource APIs as well. That said, a {@code getRootCause() instanceof DataAccessException} check (and
-	 * subsequent cast) is considered reliable when expecting Cassandra-based access to have happened.
+	 * The returned {@link DataAccessException} is supposed to contain the original {@code RuntimeException} as root
+	 * cause. However, client code may not generally rely on this due to {@link DataAccessException}s possibly being
+	 * caused by other resource APIs as well. That said, a {@code getRootCause() instanceof DataAccessException} check
+	 * (and subsequent cast) is considered reliable when expecting Cassandra-based access to have happened.
 	 *
 	 * @param task readable text describing the task being attempted
 	 * @param cql CQL query or update that caused the problem (may be {@literal null})
-	 * @param ex the offending {@link DriverException}
-	 * @return the DataAccessException, wrapping the {@code DriverException}
+	 * @param ex the offending {@link RuntimeException}
+	 * @return the DataAccessException, wrapping the {@code RuntimeException}
 	 * @see org.springframework.dao.DataAccessException#getRootCause()
 	 * @see <a href=
 	 *      "https://docs.spring.io/spring/docs/current/spring-framework-reference/data-access.html#dao-exceptions">Consistent
 	 *      exception hierarchy</a>
 	 */
-	protected DataAccessException translate(String task, @Nullable String cql, DriverException ex) {
+	protected DataAccessException translate(String task, @Nullable String cql, RuntimeException ex) {
 
-		Assert.notNull(ex, "DriverException must not be null");
+		Assert.notNull(ex, "RuntimeException must not be null");
 
 		return getExceptionTranslator().translate(task, cql, ex);
 	}
@@ -343,49 +338,6 @@ public class CassandraAccessor implements InitializingBean {
 	 */
 	protected PreparedStatementBinder newPreparedStatementBinder(Object[] args) {
 		return new ArgumentPreparedStatementBinder(args);
-	}
-
-	/**
-	 * Constructs a new instance of the {@link ResultSetExtractor} initialized with and adapting the given
-	 * {@link RowCallbackHandler}.
-	 *
-	 * @param rowCallbackHandler {@link RowCallbackHandler} to adapt as a {@link ResultSetExtractor}.
-	 * @return a {@link ResultSetExtractor} implementation adapting an instance of the {@link RowCallbackHandler}.
-	 * @see AsyncCqlTemplate.RowCallbackHandlerResultSetExtractor
-	 * @see ResultSetExtractor
-	 * @see RowCallbackHandler
-	 */
-	protected RowCallbackHandlerResultSetExtractor newResultSetExtractor(RowCallbackHandler rowCallbackHandler) {
-		return new RowCallbackHandlerResultSetExtractor(rowCallbackHandler);
-	}
-
-	/**
-	 * Constructs a new instance of the {@link ResultSetExtractor} initialized with and adapting the given
-	 * {@link RowMapper}.
-	 *
-	 * @param rowMapper {@link RowMapper} to adapt as a {@link ResultSetExtractor}.
-	 * @return a {@link ResultSetExtractor} implementation adapting an instance of the {@link RowMapper}.
-	 * @see ResultSetExtractor
-	 * @see RowMapper
-	 * @see RowMapperResultSetExtractor
-	 */
-	protected <T> RowMapperResultSetExtractor<T> newResultSetExtractor(RowMapper<T> rowMapper) {
-		return new RowMapperResultSetExtractor<>(rowMapper);
-	}
-
-	/**
-	 * Constructs a new instance of the {@link ResultSetExtractor} initialized with and adapting the given
-	 * {@link RowMapper}.
-	 *
-	 * @param rowMapper {@link RowMapper} to adapt as a {@link ResultSetExtractor}.
-	 * @param rowsExpected number of expected rows in the {@link ResultSet}.
-	 * @return a {@link ResultSetExtractor} implementation adapting an instance of the {@link RowMapper}.
-	 * @see ResultSetExtractor
-	 * @see RowMapper
-	 * @see RowMapperResultSetExtractor
-	 */
-	protected <T> RowMapperResultSetExtractor<T> newResultSetExtractor(RowMapper<T> rowMapper, int rowsExpected) {
-		return new RowMapperResultSetExtractor<>(rowMapper, rowsExpected);
 	}
 
 	/**
@@ -424,29 +376,5 @@ public class CassandraAccessor implements InitializingBean {
 				.map(o -> (CqlProvider) o) //
 				.map(CqlProvider::getCql) //
 				.orElse(null);
-	}
-
-	/**
-	 * Adapter to enable use of a {@link RowCallbackHandler} inside a {@link ResultSetExtractor}.
-	 */
-	protected static class RowCallbackHandlerResultSetExtractor implements ResultSetExtractor<Object> {
-
-		private final RowCallbackHandler rowCallbackHandler;
-
-		protected RowCallbackHandlerResultSetExtractor(RowCallbackHandler rowCallbackHandler) {
-			this.rowCallbackHandler = rowCallbackHandler;
-		}
-
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.ResultSetExtractor#extractData(com.datastax.driver.core.ResultSet)
-		 */
-		@Override
-		@Nullable
-		public Object extractData(ResultSet resultSet) {
-
-			StreamSupport.stream(resultSet.spliterator(), false).forEach(rowCallbackHandler::processRow);
-
-			return null;
-		}
 	}
 }

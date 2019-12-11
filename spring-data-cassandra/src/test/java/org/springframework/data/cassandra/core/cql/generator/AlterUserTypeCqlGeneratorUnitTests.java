@@ -19,9 +19,10 @@ import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.cassandra.core.cql.generator.AlterUserTypeCqlGenerator.*;
 
 import org.junit.Test;
+
 import org.springframework.data.cassandra.core.cql.keyspace.AlterUserTypeSpecification;
 
-import com.datastax.driver.core.DataType;
+import com.datastax.oss.driver.api.core.type.DataTypes;
 
 /**
  * Unit tests for {@link AlterUserTypeCqlGenerator}.
@@ -34,7 +35,7 @@ public class AlterUserTypeCqlGeneratorUnitTests {
 	public void alterTypeShouldAddField() {
 
 		AlterUserTypeSpecification spec = AlterUserTypeSpecification.alterType("address") //
-				.add("zip", DataType.varchar());
+				.add("zip", DataTypes.TEXT);
 
 		assertThat(toCql(spec)).isEqualTo("ALTER TYPE address ADD zip varchar;");
 	}
@@ -43,7 +44,7 @@ public class AlterUserTypeCqlGeneratorUnitTests {
 	public void alterTypeShouldAlterField() {
 
 		AlterUserTypeSpecification spec = AlterUserTypeSpecification.alterType("address") //
-				.alter("zip", DataType.varchar());
+				.alter("zip", DataTypes.TEXT);
 
 		assertThat(toCql(spec)).isEqualTo("ALTER TYPE address ALTER zip TYPE varchar;");
 	}

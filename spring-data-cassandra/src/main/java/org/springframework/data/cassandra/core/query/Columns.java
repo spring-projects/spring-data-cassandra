@@ -27,17 +27,18 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
+
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * Value object to abstract column names involved in a CQL query. Columns can be constructed from an array of names and
  * included using a {@link Selector}.
  *
  * @author Mark Paluch
- * @see org.springframework.data.cassandra.core.cql.CqlIdentifier
+ * @see com.datastax.oss.driver.api.core.CqlIdentifier
  * @see org.springframework.data.cassandra.core.query.ColumnName
  * @see Selector
  * @see FunctionCall
@@ -355,7 +356,7 @@ public class Columns implements Iterable<ColumnName> {
 		 * @return the aliased {@link ColumnSelector}.
 		 */
 		public ColumnSelector as(String alias) {
-			return as(CqlIdentifier.of(alias));
+			return as(CqlIdentifier.fromCql(alias));
 		}
 
 		/**
@@ -381,7 +382,7 @@ public class Columns implements Iterable<ColumnName> {
 		 */
 		@Override
 		public String toString() {
-			return getAlias().map(cqlIdentifier -> String.format("%s AS %s", getExpression(), cqlIdentifier.toCql()))
+			return getAlias().map(cqlIdentifier -> String.format("%s AS %s", getExpression(), cqlIdentifier))
 					.orElseGet(this::getExpression);
 		}
 	}
@@ -421,7 +422,7 @@ public class Columns implements Iterable<ColumnName> {
 		 * @return the aliased {@link ColumnSelector}.
 		 */
 		public FunctionCall as(String alias) {
-			return as(CqlIdentifier.of(alias));
+			return as(CqlIdentifier.fromCql(alias));
 		}
 
 		/**
@@ -457,7 +458,7 @@ public class Columns implements Iterable<ColumnName> {
 			String parameters = StringUtils.collectionToDelimitedString(getParameters(), ", ");
 
 			return getAlias()
-					.map(cqlIdentifier -> String.format("%s(%s) AS %s", getExpression(), parameters, cqlIdentifier.toCql()))
+					.map(cqlIdentifier -> String.format("%s(%s) AS %s", getExpression(), parameters, cqlIdentifier))
 					.orElseGet(() -> String.format("%s(%s)", getExpression(), parameters));
 		}
 	}

@@ -15,27 +15,26 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.KeyspaceMetadata;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.UserType;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.metadata.Metadata;
+import com.datastax.oss.driver.api.core.type.UserDefinedType;
 
 /**
- * Default implementation of {@link UserTypeResolver} that resolves {@link UserType} by their name from
- * {@link Cluster#getMetadata()}.
+ * Default implementation of {@link UserTypeResolver} that resolves a {@link UserDefinedType} by its name from
+ * {@link Metadata}.
  *
  * @author Mark Paluch
  * @since 1.5
  */
 public class SimpleUserTypeResolver implements UserTypeResolver {
 
-	private final String keyspaceName;
+	private final CqlSession session;
 
-	private final Cluster cluster;
+	private final CqlIdentifier keyspaceName;
 
 	/**
 	 * Create a new {@link SimpleUserTypeResolver}.
@@ -43,27 +42,28 @@ public class SimpleUserTypeResolver implements UserTypeResolver {
 	 * @param session must not be {@literal null}.
 	 * @since 3.0
 	 */
-	public SimpleUserTypeResolver(Session session) {
+	public SimpleUserTypeResolver(CqlSession session) {
 
 		Assert.notNull(session, "Session must not be null");
 
-		this.keyspaceName = session.getLoggedKeyspace();
-		this.cluster = session.getCluster();
+		this.session = session;
+		this.keyspaceName = session.getKeyspace().orElse(CqlIdentifier.fromCql("system"));
 	}
 
 	/**
 	 * Create a new {@link SimpleUserTypeResolver}.
 	 *
-	 * @param cluster must not be {@literal null}.
-	 * @param keyspaceName must not be empty or {@literal null}.
+	 * @param session must not be {@literal null}.
+	 * @param keyspaceName must not be {@literal null}.
+	 * @since 3.0
 	 */
-	public SimpleUserTypeResolver(Cluster cluster, String keyspaceName) {
+	public SimpleUserTypeResolver(CqlSession session, CqlIdentifier keyspaceName) {
 
-		Assert.notNull(cluster, "Cluster must not be null");
-		Assert.hasText(keyspaceName, "Keyspace must not be null or empty");
+		Assert.notNull(session, "Session must not be null");
+		Assert.notNull(keyspaceName, "Keyspace must not be null");
 
+		this.session = session;
 		this.keyspaceName = keyspaceName;
-		this.cluster = cluster;
 	}
 
 	/* (non-Javadoc)
@@ -71,10 +71,9 @@ public class SimpleUserTypeResolver implements UserTypeResolver {
 	 */
 	@Nullable
 	@Override
-	public UserType resolveType(CqlIdentifier typeName) {
-
-		KeyspaceMetadata keyspace = cluster.getMetadata().getKeyspace(keyspaceName);
-
-		return keyspace.getUserType(typeName.toCql());
+	public UserDefinedType resolveType(CqlIdentifier typeName) {
+		return session.getMetadata().getKeyspace(keyspaceName) //
+				.flatMap(it -> it.getUserDefinedType(typeName)) //
+				.orElse(null);
 	}
 }

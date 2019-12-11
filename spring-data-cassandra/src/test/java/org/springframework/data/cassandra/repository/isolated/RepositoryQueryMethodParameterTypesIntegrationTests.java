@@ -31,6 +31,7 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -39,6 +40,7 @@ import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.core.convert.CassandraCustomConversions;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.domain.AllPossibleTypes;
 import org.springframework.data.cassandra.repository.Query;
@@ -50,8 +52,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.datastax.driver.core.DataType.Name;
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlSession;
 
 /**
  * Integration tests for various query method parameter types.
@@ -81,7 +82,7 @@ public class RepositoryQueryMethodParameterTypesIntegrationTests
 	}
 
 	@Autowired AllPossibleTypesRepository allPossibleTypesRepository;
-	@Autowired Session session;
+	@Autowired CqlSession session;
 	@Autowired CassandraMappingContext mappingContext;
 	@Autowired MappingCassandraConverter converter;
 
@@ -126,8 +127,7 @@ public class RepositoryQueryMethodParameterTypesIntegrationTests
 		Instant instant = localDate.atStartOfDay().toInstant(ZoneOffset.UTC);
 
 		allPossibleTypes.setId("id");
-		allPossibleTypes.setDate(com.datastax.driver.core.LocalDate.fromYearMonthDay(localDate.getYear(),
-				localDate.getMonthValue(), localDate.getDayOfMonth()));
+		allPossibleTypes.setDate(LocalDate.of(localDate.getYear(), localDate.getMonthValue(), localDate.getDayOfMonth()));
 
 		allPossibleTypesRepository.save(allPossibleTypes);
 
@@ -190,7 +190,8 @@ public class RepositoryQueryMethodParameterTypesIntegrationTests
 		List<AllPossibleTypes> findWithZoneId(ZoneId zoneId);
 
 		@Query("select * from allpossibletypes where date = ?0")
-		List<AllPossibleTypes> findWithAnnotatedDateParameter(@CassandraType(type = Name.DATE) Date timestamp);
+		List<AllPossibleTypes> findWithAnnotatedDateParameter(
+				@CassandraType(type = CassandraSimpleTypeHolder.Name.DATE) Date timestamp);
 
 		@Query("select * from allpossibletypes where date = ?0")
 		List<AllPossibleTypes> findWithDateParameter(Date timestamp);
@@ -199,15 +200,14 @@ public class RepositoryQueryMethodParameterTypesIntegrationTests
 		List<AllPossibleTypes> findWithZoneId(Optional<ZoneId> zoneId);
 	}
 
-	private static class DateToLocalDateConverter implements Converter<Date, com.datastax.driver.core.LocalDate> {
+	private static class DateToLocalDateConverter implements Converter<Date, LocalDate> {
 
 		@Override
-		public com.datastax.driver.core.LocalDate convert(Date source) {
+		public LocalDate convert(Date source) {
 
 			LocalDate localDate = LocalDateTime.ofInstant(source.toInstant(), ZoneOffset.UTC.normalized()).toLocalDate();
 
-			return com.datastax.driver.core.LocalDate.fromYearMonthDay(localDate.getYear(), localDate.getMonthValue(),
-					localDate.getDayOfMonth());
+			return LocalDate.of(localDate.getYear(), localDate.getMonthValue(), localDate.getDayOfMonth());
 		}
 	}
 }

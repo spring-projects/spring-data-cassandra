@@ -24,8 +24,8 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.data.cassandra.SessionFactory;
 
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
 
 /**
  * Unit tests for {@link org.springframework.data.cassandra.core.cql.session.init.SessionFactoryInitializer}.
@@ -37,7 +37,7 @@ public class SessionFactoryInitializerTests {
 	@Test // DATACASS-704
 	public void shouldInitializeKeyspace() {
 
-		Session session = initialize("initialize-keyspace.xml");
+		CqlSession session = initialize("initialize-keyspace.xml");
 
 		verify(session).execute("create table if not exists mytable1 (id uuid primary key, column1 text)");
 		verify(session).execute("create table if not exists mytable2 (id uuid primary key, column1 text)");
@@ -47,7 +47,7 @@ public class SessionFactoryInitializerTests {
 	@Test // DATACASS-704
 	public void shouldInitializeAndCleanupKeyspace() {
 
-		Session session = initialize("initialize-and-cleanup-keyspace.xml");
+		CqlSession session = initialize("initialize-and-cleanup-keyspace.xml");
 
 		verify(session).execute("create table if not exists mytable1 (id uuid primary key, column1 text)");
 		verify(session).execute("create table if not exists mytable2 (id uuid primary key, column1 text)");
@@ -60,7 +60,7 @@ public class SessionFactoryInitializerTests {
 		return new ClassPathXmlApplicationContext(file, getClass());
 	}
 
-	private Session initialize(String file) {
+	private CqlSession initialize(String file) {
 		ConfigurableApplicationContext context = context(file);
 		try {
 			return context.getBean(SessionFactory.class).getSession();
@@ -80,7 +80,7 @@ public class SessionFactoryInitializerTests {
 		@Override
 		protected SessionFactory createInstance() {
 
-			Session sessionMock = mock(Session.class);
+			CqlSession sessionMock = mock(CqlSession.class);
 			SessionFactory sessionFactoryMock = mock(SessionFactory.class);
 
 			when(sessionFactoryMock.getSession()).thenReturn(sessionMock);

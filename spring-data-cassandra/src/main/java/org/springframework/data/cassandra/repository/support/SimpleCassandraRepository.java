@@ -35,9 +35,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.mapping.context.AbstractMappingContext;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
+import com.datastax.oss.driver.api.querybuilder.insert.Insert;
 
 /**
  * Repository base implementation for Cassandra.
@@ -120,6 +118,7 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 	 * @deprecated since 2.1, use {@link InsertOptions#isInsertNulls()} with
 	 *             {@link CassandraOperations#insert(Object, InsertOptions)}.
 	 */
+	@Deprecated
 	protected <S extends T> Insert createInsert(S entity) {
 		return InsertUtil.createInsert(this.operations.getConverter(), entity);
 	}
@@ -191,10 +190,7 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 	 */
 	@Override
 	public List<T> findAll() {
-
-		Select select = QueryBuilder.select().all().from(this.entityInformation.getTableName().toCql());
-
-		return this.operations.select(select, this.entityInformation.getJavaType());
+		return this.operations.select(Query.empty(), this.entityInformation.getJavaType());
 	}
 
 	/* (non-Javadoc)

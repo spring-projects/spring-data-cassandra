@@ -15,28 +15,20 @@
  */
 package org.springframework.data.cassandra.config;
 
-import org.springframework.context.annotation.Bean;
 import org.springframework.data.cassandra.core.cql.CqlTemplate;
 
 /**
- * Abstract configuration class to create a {@link CqlTemplate} and inheriting {@link com.datastax.driver.core.Session}
- * and {@link com.datastax.driver.core.Cluster} creation. This class is usually extended by user configuration classes.
+ * Abstract configuration class to create a {@link CqlTemplate} and inheriting
+ * {@link com.datastax.oss.driver.api.core.CqlSession} creation. This class is usually extended by user configuration
+ * classes.
  *
  * @author Matthew T. Adams
  * @author Mark Paluch
  * @see AbstractSessionConfiguration
  * @see CqlTemplate
+ * @deprecated since 3.0, use {@link AbstractSessionConfiguration}.
  */
+@Deprecated
 public abstract class AbstractCqlTemplateConfiguration extends AbstractSessionConfiguration {
 
-	/**
-	 * Creates a {@link CqlTemplate} configured with {@link #sessionFactory()}.
-	 *
-	 * @return the {@link CqlTemplate}.
-	 * @see #sessionFactory()
-	 */
-	@Bean
-	public CqlTemplate cqlTemplate() {
-		return new CqlTemplate(sessionFactory());
-	}
 }

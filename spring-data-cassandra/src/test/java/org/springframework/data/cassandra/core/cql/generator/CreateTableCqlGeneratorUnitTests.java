@@ -32,8 +32,9 @@ import org.springframework.data.cassandra.core.cql.keyspace.TableOption.Compacti
 import org.springframework.data.cassandra.core.cql.keyspace.TableOption.CompressionOption;
 import org.springframework.data.cassandra.core.cql.keyspace.TableOption.KeyCachingOption;
 
-import com.datastax.driver.core.DataType;
 import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.type.DataType;
+import com.datastax.oss.driver.api.core.type.DataTypes;
 
 /**
  * Unit tests for {@link CreateTableCqlGenerator}.
@@ -48,9 +49,9 @@ public class CreateTableCqlGeneratorUnitTests {
 	public void shouldGenerateCorrectCQL() {
 
 		CqlIdentifier name = CqlIdentifier.fromCql("mytable");
-		DataType partitionKeyType0 = DataType.text();
+		DataType partitionKeyType0 = DataTypes.TEXT;
 		CqlIdentifier partitionKey0 = CqlIdentifier.fromCql("partitionKey0");
-		DataType columnType1 = DataType.text();
+		DataType columnType1 = DataTypes.TEXT;
 		String column1 = "column1";
 
 		CreateTableSpecification table = CreateTableSpecification.createTable(name)
@@ -66,12 +67,12 @@ public class CreateTableCqlGeneratorUnitTests {
 	public void shouldGenerateCompositePrimaryKey() {
 
 		CqlIdentifier name = CqlIdentifier.fromCql("composite_partition_key_table");
-		DataType partKeyType0 = DataType.text();
+		DataType partKeyType0 = DataTypes.TEXT;
 		CqlIdentifier partKey0 = CqlIdentifier.fromCql("partKey0");
-		DataType partKeyType1 = DataType.text();
+		DataType partKeyType1 = DataTypes.TEXT;
 		CqlIdentifier partKey1 = CqlIdentifier.fromCql("partKey1");
 		CqlIdentifier column0 = CqlIdentifier.fromCql("column0");
-		DataType columnType0 = DataType.text();
+		DataType columnType0 = DataTypes.TEXT;
 
 		CreateTableSpecification table = CreateTableSpecification.createTable(name)
 				.partitionKeyColumn(partKey0, partKeyType0).partitionKeyColumn(partKey1, partKeyType1)
@@ -90,11 +91,11 @@ public class CreateTableCqlGeneratorUnitTests {
 	public void shouldGenerateTableOptions() {
 
 		CqlIdentifier name = CqlIdentifier.fromCql("mytable");
-		DataType partitionKeyType0 = DataType.text();
+		DataType partitionKeyType0 = DataTypes.TEXT;
 		CqlIdentifier partitionKey0 = CqlIdentifier.fromCql("partitionKey0");
-		DataType partitionKeyType1 = DataType.timestamp();
+		DataType partitionKeyType1 = DataTypes.TIMESTAMP;
 		CqlIdentifier partitionKey1 = CqlIdentifier.fromCql("create_timestamp");
-		DataType columnType1 = DataType.text();
+		DataType columnType1 = DataTypes.TEXT;
 		CqlIdentifier column1 = CqlIdentifier.fromCql("column1");
 		Double readRepairChance = 0.5;
 
@@ -115,11 +116,11 @@ public class CreateTableCqlGeneratorUnitTests {
 	public void shouldGenerateMultipleOptions() {
 
 		CqlIdentifier name = CqlIdentifier.fromCql("timeseries_table");
-		DataType partitionKeyType0 = DataType.timeuuid();
+		DataType partitionKeyType0 = DataTypes.TIMEUUID;
 		CqlIdentifier partitionKey0 = CqlIdentifier.fromCql("tid");
-		DataType partitionKeyType1 = DataType.timestamp();
+		DataType partitionKeyType1 = DataTypes.TIMESTAMP;
 		CqlIdentifier partitionKey1 = CqlIdentifier.fromCql("create_timestamp");
-		DataType columnType1 = DataType.text();
+		DataType columnType1 = DataTypes.TEXT;
 		CqlIdentifier column1 = CqlIdentifier.fromCql("data_point");
 		Double readRepairChance = 0.5;
 		Double dcLocalReadRepairChance = 0.7;
@@ -169,9 +170,9 @@ public class CreateTableCqlGeneratorUnitTests {
 	public void createTableWithOrderedClustering() {
 
 		CreateTableSpecification table = CreateTableSpecification.createTable("person") //
-				.partitionKeyColumn("id", DataType.ascii()) //
-				.clusteredKeyColumn("date_of_birth", DataType.date(), Ordering.ASCENDING) //
-				.column("name", DataType.ascii());
+				.partitionKeyColumn("id", DataTypes.ASCII) //
+				.clusteredKeyColumn("date_of_birth", DataTypes.DATE, Ordering.ASCENDING) //
+				.column("name", DataTypes.ASCII);
 
 		assertThat(toCql(table)).isEqualTo("CREATE TABLE person (id ascii, date_of_birth date, name ascii, " //
 				+ "PRIMARY KEY (id, date_of_birth)) " //
@@ -182,9 +183,9 @@ public class CreateTableCqlGeneratorUnitTests {
 	public void createTableWithOrderedClusteringAndOptions() {
 
 		CreateTableSpecification table = CreateTableSpecification.createTable("person") //
-				.partitionKeyColumn("id", DataType.ascii()) //
-				.clusteredKeyColumn("date_of_birth", DataType.date(), Ordering.ASCENDING) //
-				.column("name", DataType.ascii()).with(TableOption.COMPACT_STORAGE);
+				.partitionKeyColumn("id", DataTypes.ASCII) //
+				.clusteredKeyColumn("date_of_birth", DataTypes.DATE, Ordering.ASCENDING) //
+				.column("name", DataTypes.ASCII).with(TableOption.COMPACT_STORAGE);
 
 		assertThat(toCql(table)).isEqualTo("CREATE TABLE person (id ascii, date_of_birth date, name ascii, " //
 				+ "PRIMARY KEY (id, date_of_birth)) " //

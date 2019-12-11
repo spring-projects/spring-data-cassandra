@@ -15,9 +15,10 @@
  */
 package org.springframework.data.cassandra.core;
 
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.util.Assert;
+
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * {@link ExecutableDeleteOperation} allows creation and execution of Cassandra {@code DELETE} operations in a fluent
@@ -72,7 +73,7 @@ public interface ExecutableDeleteOperation {
 
 			Assert.hasText(table, "Table name must not be null or empty");
 
-			return inTable(CqlIdentifier.of(table));
+			return inTable(CqlIdentifier.fromCql(table));
 		}
 
 		/**

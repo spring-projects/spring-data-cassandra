@@ -25,9 +25,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
 
-import com.datastax.driver.core.querybuilder.QueryBuilder;
+import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.util.concurrent.CompletableToListenableFutureAdapter;
+
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 
 /**
  * Integration tests for {@link AsyncCqlTemplate}.
@@ -40,14 +42,13 @@ public class AsyncCqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIn
 	private AsyncCqlTemplate template;
 
 	@Before
-	public void before() throws Exception {
+	public void before() {
 
 		if (initialized.compareAndSet(false, true)) {
-			getSession().execute("CREATE TABLE IF NOT EXISTS user (id text PRIMARY KEY, username text);");
-		} else {
-			session.execute("TRUNCATE user;");
+			session.execute("CREATE TABLE IF NOT EXISTS user (id text PRIMARY KEY, username text);");
 		}
 
+		session.execute("TRUNCATE user;");
 		session.execute("INSERT INTO user (id, username) VALUES ('WHITE', 'Walter');");
 
 		template = new AsyncCqlTemplate();
@@ -55,7 +56,7 @@ public class AsyncCqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIn
 	}
 
 	@Test // DATACASS-292
-	public void executeShouldRemoveRecords() throws Exception {
+	public void executeShouldRemoveRecords() {
 
 		getUninterruptibly(template.execute("DELETE FROM user WHERE id = 'WHITE'"));
 
@@ -63,7 +64,7 @@ public class AsyncCqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIn
 	}
 
 	@Test // DATACASS-292
-	public void queryShouldInvokeCallback() throws Exception {
+	public void queryShouldInvokeCallback() {
 
 		List<String> result = new ArrayList<>();
 		getUninterruptibly(template.query("SELECT id FROM user;", row -> {
@@ -74,7 +75,7 @@ public class AsyncCqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIn
 	}
 
 	@Test // DATACASS-292
-	public void queryForObjectShouldReturnFirstColumn() throws Exception {
+	public void queryForObjectShouldReturnFirstColumn() {
 
 		String id = getUninterruptibly(template.queryForObject("SELECT id FROM user;", String.class));
 
@@ -82,7 +83,7 @@ public class AsyncCqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIn
 	}
 
 	@Test // DATACASS-292
-	public void queryForObjectShouldReturnMap() throws Exception {
+	public void queryForObjectShouldReturnMap() {
 
 		Map<String, Object> map = getUninterruptibly(template.queryForMap("SELECT * FROM user;"));
 
@@ -90,18 +91,18 @@ public class AsyncCqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIn
 	}
 
 	@Test // DATACASS-292
-	public void executeStatementShouldRemoveRecords() throws Exception {
+	public void executeStatementShouldRemoveRecords() {
 
-		getUninterruptibly(template.execute(QueryBuilder.delete().from("user").where(QueryBuilder.eq("id", "WHITE"))));
+		getUninterruptibly(template.execute(SimpleStatement.newInstance("DELETE FROM user WHERE id = 'WHITE'")));
 
 		assertThat(session.execute("SELECT * FROM user").one()).isNull();
 	}
 
 	@Test // DATACASS-292
-	public void queryStatementShouldInvokeCallback() throws Exception {
+	public void queryStatementShouldInvokeCallback() {
 
 		List<String> result = new ArrayList<>();
-		getUninterruptibly(template.query(QueryBuilder.select("id").from("user"), row -> {
+		getUninterruptibly(template.query(SimpleStatement.newInstance("SELECT id FROM user"), row -> {
 			result.add(row.getString(0));
 		}));
 
@@ -109,23 +110,25 @@ public class AsyncCqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIn
 	}
 
 	@Test // DATACASS-292
-	public void queryForObjectStatementShouldReturnFirstColumn() throws Exception {
+	public void queryForObjectStatementShouldReturnFirstColumn() {
 
-		String id = getUninterruptibly(template.queryForObject(QueryBuilder.select("id").from("user"), String.class));
+		String id = getUninterruptibly(
+				template.queryForObject(SimpleStatement.newInstance("SELECT id FROM user"), String.class));
 
 		assertThat(id).isEqualTo("WHITE");
 	}
 
 	@Test // DATACASS-292
-	public void queryForObjectStatementShouldReturnMap() throws Exception {
+	public void queryForObjectStatementShouldReturnMap() {
 
-		Map<String, Object> map = getUninterruptibly(template.queryForMap(QueryBuilder.select().from("user")));
+		Map<String, Object> map = getUninterruptibly(
+				template.queryForMap(SimpleStatement.newInstance("SELECT * FROM user")));
 
 		assertThat(map).containsEntry("id", "WHITE").containsEntry("username", "Walter");
 	}
 
 	@Test // DATACASS-292
-	public void executeWithArgsShouldRemoveRecords() throws Exception {
+	public void executeWithArgsShouldRemoveRecords() {
 
 		getUninterruptibly(template.execute("DELETE FROM user WHERE id = ?", "WHITE"));
 
@@ -133,7 +136,7 @@ public class AsyncCqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIn
 	}
 
 	@Test // DATACASS-292
-	public void queryPreparedStatementShouldInvokeCallback() throws Exception {
+	public void queryPreparedStatementShouldInvokeCallback() {
 
 		List<String> result = new ArrayList<>();
 		getUninterruptibly(template.query("SELECT id FROM user WHERE id = ?;", row -> {
@@ -144,20 +147,19 @@ public class AsyncCqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIn
 	}
 
 	@Test // DATACASS-292
-	public void queryPreparedStatementCreatorShouldInvokeCallback() throws Exception {
+	public void queryPreparedStatementCreatorShouldInvokeCallback() {
 
 		List<String> result = new ArrayList<>();
-		getUninterruptibly(template
-				.query(session -> new GuavaListenableFutureAdapter<>(session.prepareAsync("SELECT id FROM user WHERE id = ?;"),
-						template.getExceptionTranslator()), ps -> ps.bind("WHITE"), row -> {
-							result.add(row.getString(0));
-						}));
+		getUninterruptibly(template.query(session -> new CompletableToListenableFutureAdapter<>(
+				session.prepareAsync("SELECT id FROM user WHERE id = ?;")), ps -> ps.bind("WHITE"), row -> {
+					result.add(row.getString(0));
+				}));
 
 		assertThat(result).contains("WHITE");
 	}
 
 	@Test // DATACASS-292
-	public void queryForObjectWithArgsShouldReturnFirstColumn() throws Exception {
+	public void queryForObjectWithArgsShouldReturnFirstColumn() {
 
 		String id = getUninterruptibly(template.queryForObject("SELECT id FROM user WHERE id = ?;", String.class, "WHITE"));
 
@@ -165,7 +167,7 @@ public class AsyncCqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIn
 	}
 
 	@Test // DATACASS-292
-	public void queryForObjectWithArgsShouldReturnMap() throws Exception {
+	public void queryForObjectWithArgsShouldReturnMap() {
 
 		Map<String, Object> map = getUninterruptibly(template.queryForMap("SELECT * FROM user WHERE id = ?;", "WHITE"));
 

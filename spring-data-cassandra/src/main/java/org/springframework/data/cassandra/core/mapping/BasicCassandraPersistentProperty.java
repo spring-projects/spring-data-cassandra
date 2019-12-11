@@ -31,7 +31,6 @@ import org.springframework.context.expression.BeanFactoryAccessor;
 import org.springframework.context.expression.BeanFactoryResolver;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
-import org.springframework.data.cassandra.core.cql.CqlIdentifier;
 import org.springframework.data.cassandra.core.cql.Ordering;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.cassandra.util.SpelUtils;
@@ -48,9 +47,10 @@ import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.DataType.Name;
-import com.datastax.driver.core.UserType;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.type.DataType;
+import com.datastax.oss.driver.api.core.type.DataTypes;
+import com.datastax.oss.driver.api.core.type.UserDefinedType;
 
 /**
  * Cassandra specific {@link org.springframework.data.mapping.model.AnnotationBasedPersistentProperty} implementation.
@@ -192,7 +192,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 			assertTypeArguments(args.size(), 2);
 
-			return DataType.map(getDataTypeFor(args.get(0).getType()), getDataTypeFor(args.get(1).getType()));
+			return DataTypes.mapOf(getDataTypeFor(args.get(0).getType()), getDataTypeFor(args.get(1).getType()));
 		}
 
 		if (isCollectionLike()) {
@@ -202,11 +202,11 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 			assertTypeArguments(args.size(), 1);
 
 			if (Set.class.isAssignableFrom(getType())) {
-				return DataType.set(getDataTypeFor(args.get(0).getType()));
+				return DataTypes.setOf(getDataTypeFor(args.get(0).getType()));
 			}
 
 			if (List.class.isAssignableFrom(getType())) {
-				return DataType.list(getDataTypeFor(args.get(0).getType()));
+				return DataTypes.listOf(getDataTypeFor(args.get(0).getType()));
 			}
 		}
 
@@ -215,21 +215,23 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 	private DataType getDataTypeFor(CassandraType annotation) {
 
-		DataType.Name type = annotation.type();
+		CassandraSimpleTypeHolder.Name type = annotation.type();
 
 		switch (type) {
 			case MAP:
 				assertTypeArguments(annotation.typeArguments().length, 2);
-				return DataType.map(CassandraSimpleTypeHolder.getDataTypeFor(annotation.typeArguments()[0]),
+				return DataTypes.mapOf(CassandraSimpleTypeHolder.getDataTypeFor(annotation.typeArguments()[0]),
 						CassandraSimpleTypeHolder.getDataTypeFor(annotation.typeArguments()[1]));
 			case LIST:
 				assertTypeArguments(annotation.typeArguments().length, 1);
-				return annotation.typeArguments()[0] == Name.UDT ? DataType.list(getUserType(annotation))
-						: DataType.list(CassandraSimpleTypeHolder.getDataTypeFor(annotation.typeArguments()[0]));
+				return annotation.typeArguments()[0] == CassandraSimpleTypeHolder.Name.UDT
+						? DataTypes.listOf(getUserType(annotation))
+						: DataTypes.listOf(CassandraSimpleTypeHolder.getDataTypeFor(annotation.typeArguments()[0]));
 			case SET:
 				assertTypeArguments(annotation.typeArguments().length, 1);
-				return annotation.typeArguments()[0] == Name.UDT ? DataType.set(getUserType(annotation))
-						: DataType.set(CassandraSimpleTypeHolder.getDataTypeFor(annotation.typeArguments()[0]));
+				return annotation.typeArguments()[0] == CassandraSimpleTypeHolder.Name.UDT
+						? DataTypes.setOf(getUserType(annotation))
+						: DataTypes.setOf(CassandraSimpleTypeHolder.getDataTypeFor(annotation.typeArguments()[0]));
 			case UDT:
 				return getUserType(annotation);
 			default:
@@ -247,9 +249,9 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 		Assert.state(this.userTypeResolver != null, "UserTypeResolver is null");
 
-		CqlIdentifier identifier = CqlIdentifier.of(annotation.userTypeName());
+		CqlIdentifier identifier = CqlIdentifier.fromCql(annotation.userTypeName());
 
-		UserType userType = this.userTypeResolver.resolveType(identifier);
+		UserDefinedType userType = this.userTypeResolver.resolveType(identifier);
 
 		if (userType == null) {
 			throw new MappingException(String.format("User type [%s] not found", identifier));
@@ -370,7 +372,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 			name = this.spelContext != null ? SpelUtils.evaluate(overriddenName, this.spelContext) : overriddenName;
 		}
 
-		return name != null ? CqlIdentifier.of(name, forceQuote) : null;
+		return name != null ? IdentifierFactory.create(name, forceQuote) : null;
 	}
 
 	/* (non-Javadoc)
@@ -395,7 +397,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		this.forceQuote = forceQuote;
 
 		if (changed) {
-			setColumnName(CqlIdentifier.of(getRequiredColumnName().getUnquoted(), forceQuote));
+			setColumnName(IdentifierFactory.create(getRequiredColumnName().asInternal(), forceQuote));
 		}
 	}
 

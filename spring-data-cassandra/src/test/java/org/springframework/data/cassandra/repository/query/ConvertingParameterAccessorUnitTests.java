@@ -36,8 +36,8 @@ import org.springframework.data.cassandra.repository.query.ConvertingParameterAc
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 
-import com.datastax.driver.core.CodecRegistry;
-import com.datastax.driver.core.DataType;
+import com.datastax.oss.driver.api.core.type.DataTypes;
+import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
 
 /**
  * Unit tests for {@link ConvertingParameterAccessor}.
@@ -60,14 +60,14 @@ public class ConvertingParameterAccessorUnitTests {
 		this.converter = new MappingCassandraConverter();
 		this.converter.afterPropertiesSet();
 		this.convertingParameterAccessor = new ConvertingParameterAccessor(converter, mockParameterAccessor,
-				CodecRegistry.DEFAULT_INSTANCE);
+				CodecRegistry.DEFAULT);
 	}
 
 	@Test // DATACASS-296
 	public void shouldReturnNullBindableValue() {
 
 		ConvertingParameterAccessor accessor = new ConvertingParameterAccessor(converter, mockParameterAccessor,
-				CodecRegistry.DEFAULT_INSTANCE);
+				CodecRegistry.DEFAULT);
 
 		assertThat(accessor.getBindableValue(0)).isNull();
 	}
@@ -79,7 +79,7 @@ public class ConvertingParameterAccessorUnitTests {
 		when(mockParameterAccessor.getBindableValue(0)).thenReturn("hello");
 
 		ConvertingParameterAccessor accessor = new ConvertingParameterAccessor(converter, mockParameterAccessor,
-				CodecRegistry.DEFAULT_INSTANCE);
+				CodecRegistry.DEFAULT);
 
 		assertThat(accessor.getBindableValue(0)).isEqualTo((Object) "hello");
 	}
@@ -92,15 +92,15 @@ public class ConvertingParameterAccessorUnitTests {
 		when(mockParameterAccessor.getBindableValue(0)).thenReturn(localDate);
 
 		assertThat(convertingParameterAccessor.getBindableValue(0))
-				.isEqualTo(com.datastax.driver.core.LocalDate.fromYearMonthDay(2010, 7, 4));
+				.isEqualTo(LocalDate.of(2010, 7, 4));
 	}
 
 	@Test // DATACASS-296, DATACASS-7
 	public void shouldReturnDataTypeProvidedByDelegate() {
 
-		when(mockParameterAccessor.getDataType(0)).thenReturn(DataType.varchar());
+		when(mockParameterAccessor.getDataType(0)).thenReturn(DataTypes.TEXT);
 
-		assertThat(convertingParameterAccessor.getDataType(0)).isEqualTo(DataType.varchar());
+		assertThat(convertingParameterAccessor.getDataType(0)).isEqualTo(DataTypes.TEXT);
 	}
 
 	@Test // DATACASS-296, DATACASS-7
@@ -120,18 +120,18 @@ public class ConvertingParameterAccessorUnitTests {
 
 		List<?> list = (List<?>) converted;
 
-		assertThat(list.get(0)).isInstanceOf(com.datastax.driver.core.LocalDate.class);
+		assertThat(list.get(0)).isInstanceOf(LocalDate.class);
 	}
 
 	@Test // DATACASS-7, DATACASS-506
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void shouldProvideTypeBasedOnPropertyType() {
 
-		when(mockProperty.getDataType()).thenReturn(DataType.varchar());
+		when(mockProperty.getDataType()).thenReturn(DataTypes.TEXT);
 		when(mockProperty.isAnnotationPresent(CassandraType.class)).thenReturn(true);
 		when(mockProperty.getRequiredAnnotation(CassandraType.class)).thenReturn(mock(CassandraType.class));
 		when(mockParameterAccessor.getParameterType(0)).thenReturn((Class) String.class);
 
-		assertThat(convertingParameterAccessor.getDataType(0, mockProperty)).isEqualTo(DataType.varchar());
+		assertThat(convertingParameterAccessor.getDataType(0, mockProperty)).isEqualTo(DataTypes.TEXT);
 	}
 }
