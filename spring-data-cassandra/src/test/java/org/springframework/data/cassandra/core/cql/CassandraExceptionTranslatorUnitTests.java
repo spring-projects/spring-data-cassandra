@@ -16,7 +16,6 @@
 package org.springframework.data.cassandra.core.cql;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.Assume.*;
 import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Constructor;
@@ -33,12 +32,12 @@ import org.springframework.data.cassandra.*;
 import org.springframework.util.ClassUtils;
 
 import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
-import com.datastax.oss.driver.api.core.DriverException;
 import com.datastax.oss.driver.api.core.NoNodeAvailableException;
 import com.datastax.oss.driver.api.core.ProtocolVersion;
 import com.datastax.oss.driver.api.core.UnsupportedProtocolVersionException;
 import com.datastax.oss.driver.api.core.auth.AuthenticationException;
 import com.datastax.oss.driver.api.core.connection.BusyConnectionException;
+import com.datastax.oss.driver.api.core.connection.FrameTooLongException;
 import com.datastax.oss.driver.api.core.metadata.EndPoint;
 import com.datastax.oss.driver.api.core.metadata.Node;
 import com.datastax.oss.driver.api.core.servererrors.*;
@@ -66,7 +65,7 @@ public class CassandraExceptionTranslatorUnitTests {
 		DataAccessException result = sut.translateExceptionIfPossible(new AuthenticationException(endPoint, "message"));
 
 		assertThat(result).isInstanceOf(CassandraAuthenticationException.class)
-				.hasMessageStartingWith("Authentication error on host").hasCauseInstanceOf(AuthenticationException.class);
+				.hasMessageStartingWith("Authentication error").hasCauseInstanceOf(AuthenticationException.class);
 	}
 
 	@Test // DATACASS-402
@@ -74,8 +73,8 @@ public class CassandraExceptionTranslatorUnitTests {
 
 		DataAccessException result = sut.translateExceptionIfPossible(new NoNodeAvailableException());
 
-		assertThat(result).isInstanceOf(CassandraConnectionFailureException.class)
-				.hasMessageStartingWith("All host(s) tried").hasCauseInstanceOf(NoNodeAvailableException.class);
+		assertThat(result).isInstanceOf(CassandraConnectionFailureException.class).hasMessageStartingWith("No node was")
+				.hasCauseInstanceOf(NoNodeAvailableException.class);
 	}
 
 	@Test // DATACASS-402
@@ -142,7 +141,7 @@ public class CassandraExceptionTranslatorUnitTests {
 
 		DataAccessException result = sut.translateExceptionIfPossible(new BootstrappingException(node));
 
-		assertThat(result).isInstanceOf(TransientDataAccessResourceException.class).hasMessageStartingWith("Queried host")
+		assertThat(result).isInstanceOf(TransientDataAccessResourceException.class).hasMessageContaining("bootstrapping")
 				.hasCauseInstanceOf(BootstrappingException.class);
 	}
 
@@ -151,7 +150,7 @@ public class CassandraExceptionTranslatorUnitTests {
 
 		DataAccessException result = sut.translateExceptionIfPossible(new OverloadedException(node));
 
-		assertThat(result).isInstanceOf(TransientDataAccessResourceException.class).hasMessageStartingWith("Queried host")
+		assertThat(result).isInstanceOf(TransientDataAccessResourceException.class)
 				.hasCauseInstanceOf(OverloadedException.class);
 	}
 
@@ -209,23 +208,17 @@ public class CassandraExceptionTranslatorUnitTests {
 
 		DataAccessException result = sut.translateExceptionIfPossible(new BusyConnectionException(2));
 
-		assertThat(result).isInstanceOf(CassandraConnectionFailureException.class)
-				.hasMessageContaining("Connection has run out of stream").hasCauseInstanceOf(BusyConnectionException.class);
+		assertThat(result).isInstanceOf(CassandraConnectionFailureException.class).hasMessageContaining("simultaneous")
+				.hasCauseInstanceOf(BusyConnectionException.class);
 	}
 
 	@Test // DATACASS-402
-	@SuppressWarnings("unchecked")
-	public void shouldTranslateFrameTooLongException() throws Exception {
+	public void shouldTranslateFrameTooLongException() {
 
-		assumeTrue(
-				ClassUtils.isPresent("com.datastax.driver.core.exceptions.FrameTooLongException", getClass().getClassLoader()));
+		DataAccessException result = sut.translateExceptionIfPossible(new FrameTooLongException(socketAddress, "foo"));
 
-		DriverException exception = createInstance("com.datastax.driver.core.exceptions.FrameTooLongException",
-				new Class[] { Integer.TYPE }, 5);
-
-		DataAccessException result = sut.translateExceptionIfPossible(exception);
-
-		assertThat(result).isInstanceOf(CassandraUncategorizedException.class).hasCauseInstanceOf(exception.getClass());
+		assertThat(result).isInstanceOf(CassandraUncategorizedException.class)
+				.hasCauseInstanceOf(FrameTooLongException.class);
 	}
 
 	@Test // DATACASS-402
@@ -245,8 +238,8 @@ public class CassandraExceptionTranslatorUnitTests {
 		InvalidConfigurationInQueryException cx = new InvalidConfigurationInQueryException(node, "err");
 		DataAccessException dax = sut.translate("Query", "SELECT * FROM person", cx);
 
-		assertThat(dax).hasRootCauseInstanceOf(InvalidQueryException.class).hasMessage(
-				"Query; CQL [SELECT * FROM person]; err; nested exception is com.datastax.driver.core.exceptions.InvalidConfigurationInQueryException: err");
+		assertThat(dax).hasRootCauseInstanceOf(InvalidConfigurationInQueryException.class).hasMessage(
+				"Query; CQL [SELECT * FROM person]; err; nested exception is com.datastax.oss.driver.api.core.servererrors.InvalidConfigurationInQueryException: err");
 	}
 
 	@SuppressWarnings("unchecked")

@@ -46,12 +46,14 @@ import org.springframework.data.cassandra.domain.VersionedUser;
 import org.springframework.data.mapping.callback.EntityCallbacks;
 import org.springframework.util.concurrent.ListenableFuture;
 
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.NoNodeAvailableException;
 import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
 import com.datastax.oss.driver.api.core.cql.ColumnDefinition;
 import com.datastax.oss.driver.api.core.cql.ColumnDefinitions;
 import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.Statement;
 import com.datastax.oss.driver.api.core.type.DataTypes;
 
@@ -69,7 +71,7 @@ public class AsyncCassandraTemplateUnitTests {
 	@Mock ColumnDefinition columnDefinition;
 	@Mock ColumnDefinitions columnDefinitions;
 
-	@Captor ArgumentCaptor<Statement> statementCaptor;
+	@Captor ArgumentCaptor<SimpleStatement> statementCaptor;
 
 	AsyncCassandraTemplate template;
 
@@ -108,7 +110,7 @@ public class AsyncCassandraTemplateUnitTests {
 	public void selectUsingCqlShouldReturnMappedResults() {
 
 		when(resultSet.currentPage()).thenReturn(Collections.singleton(row));
-		when(columnDefinitions.contains(anyString())).thenReturn(true);
+		when(columnDefinitions.contains(any(CqlIdentifier.class))).thenReturn(true);
 
 		when(columnDefinitions.get(anyInt())).thenReturn(columnDefinition);
 		when(columnDefinitions.firstIndexOf("id")).thenReturn(0);
@@ -125,15 +127,14 @@ public class AsyncCassandraTemplateUnitTests {
 
 		assertThat(getUninterruptibly(list)).hasSize(1).contains(new User("myid", "Walter", "White"));
 		verify(session).executeAsync(statementCaptor.capture());
-		assertThat(statementCaptor.getValue()).hasToString("SELECT * FROM users");
+		assertThat(statementCaptor.getValue().getQuery()).isEqualTo("SELECT * FROM users");
 	}
 
 	@Test // DATACASS-292
 	public void selectUsingCqlShouldInvokeCallbackWithMappedResults() {
 
 		when(resultSet.currentPage()).thenReturn(Collections.singletonList(row));
-		when(columnDefinitions.contains(anyString())).thenReturn(true);
-
+		when(columnDefinitions.contains(any(CqlIdentifier.class))).thenReturn(true);
 		when(columnDefinitions.get(anyInt())).thenReturn(columnDefinition);
 		when(columnDefinitions.firstIndexOf("id")).thenReturn(0);
 		when(columnDefinitions.firstIndexOf("firstname")).thenReturn(1);
@@ -152,7 +153,7 @@ public class AsyncCassandraTemplateUnitTests {
 		assertThat(getUninterruptibly(result)).isNull();
 		assertThat(list).hasSize(1).contains(new User("myid", "Walter", "White"));
 		verify(session).executeAsync(statementCaptor.capture());
-		assertThat(statementCaptor.getValue()).hasToString("SELECT * FROM users");
+		assertThat(statementCaptor.getValue().getQuery()).isEqualTo("SELECT * FROM users");
 	}
 
 	@Test // DATACASS-292
@@ -176,7 +177,7 @@ public class AsyncCassandraTemplateUnitTests {
 	public void selectOneShouldReturnMappedResults() {
 
 		when(resultSet.currentPage()).thenReturn(Collections.singleton(row));
-		when(columnDefinitions.contains(anyString())).thenReturn(true);
+		when(columnDefinitions.contains(any(CqlIdentifier.class))).thenReturn(true);
 
 		when(columnDefinitions.get(anyInt())).thenReturn(columnDefinition);
 		when(columnDefinitions.firstIndexOf("id")).thenReturn(0);
@@ -189,18 +190,18 @@ public class AsyncCassandraTemplateUnitTests {
 		when(row.getObject(1)).thenReturn("Walter");
 		when(row.getObject(2)).thenReturn("White");
 
-		ListenableFuture<User> future = template.selectOne("SELECT * FROM users WHERE id='myid';", User.class);
+		ListenableFuture<User> future = template.selectOne("SELECT * FROM users WHERE id='myid'", User.class);
 
 		assertThat(getUninterruptibly(future)).isEqualTo(new User("myid", "Walter", "White"));
 		verify(session).executeAsync(statementCaptor.capture());
-		assertThat(statementCaptor.getValue()).hasToString("SELECT * FROM users WHERE id='myid';");
+		assertThat(statementCaptor.getValue().getQuery()).isEqualTo("SELECT * FROM users WHERE id='myid'");
 	}
 
 	@Test // DATACASS-292
 	public void selectOneByIdShouldReturnMappedResults() {
 
 		when(resultSet.currentPage()).thenReturn(Collections.singleton(row));
-		when(columnDefinitions.contains(anyString())).thenReturn(true);
+		when(columnDefinitions.contains(any(CqlIdentifier.class))).thenReturn(true);
 		when(columnDefinitions.get(anyInt())).thenReturn(columnDefinition);
 		when(columnDefinitions.firstIndexOf("id")).thenReturn(0);
 		when(columnDefinitions.firstIndexOf("firstname")).thenReturn(1);
@@ -216,7 +217,7 @@ public class AsyncCassandraTemplateUnitTests {
 
 		assertThat(getUninterruptibly(future)).isEqualTo(new User("myid", "Walter", "White"));
 		verify(session).executeAsync(statementCaptor.capture());
-		assertThat(statementCaptor.getValue()).hasToString("SELECT * FROM users WHERE id='myid';");
+		assertThat(statementCaptor.getValue().getQuery()).isEqualTo("SELECT * FROM users WHERE id='myid' LIMIT 1");
 	}
 
 	@Test // DATACASS-696
@@ -224,7 +225,7 @@ public class AsyncCassandraTemplateUnitTests {
 
 		when(resultSet.currentPage()).thenReturn(Collections.singleton(row));
 
-		ListenableFuture<String> future = template.selectOne("SELECT id FROM users WHERE id='myid';", String.class);
+		ListenableFuture<String> future = template.selectOne("SELECT id FROM users WHERE id='myid'", String.class);
 
 		assertThat(getUninterruptibly(future)).isNull();
 	}
@@ -232,37 +233,35 @@ public class AsyncCassandraTemplateUnitTests {
 	@Test // DATACASS-292
 	public void existsShouldReturnExistingElement() {
 
-		when(resultSet.currentPage()).thenReturn(Collections.singleton(row));
+		when(resultSet.one()).thenReturn(row);
 
 		ListenableFuture<Boolean> future = template.exists("myid", User.class);
 
 		assertThat(getUninterruptibly(future)).isTrue();
 		verify(session).executeAsync(statementCaptor.capture());
-		assertThat(statementCaptor.getValue()).hasToString("SELECT * FROM users WHERE id='myid';");
+		assertThat(statementCaptor.getValue().getQuery()).isEqualTo("SELECT * FROM users WHERE id='myid' LIMIT 1");
 	}
 
 	@Test // DATACASS-292
 	public void existsShouldReturnNonExistingElement() {
 
-		when(resultSet.currentPage()).thenReturn(Collections.emptyList());
-
 		ListenableFuture<Boolean> future = template.exists("myid", User.class);
 
 		assertThat(getUninterruptibly(future)).isFalse();
 		verify(session).executeAsync(statementCaptor.capture());
-		assertThat(statementCaptor.getValue()).hasToString("SELECT * FROM users WHERE id='myid';");
+		assertThat(statementCaptor.getValue().getQuery()).isEqualTo("SELECT * FROM users WHERE id='myid' LIMIT 1");
 	}
 
 	@Test // DATACASS-512
 	public void existsByQueryShouldReturnExistingElement() {
 
-		when(resultSet.currentPage()).thenReturn(Collections.singleton(row));
+		when(resultSet.one()).thenReturn(row);
 
 		ListenableFuture<Boolean> future = template.exists(Query.empty(), User.class);
 
 		assertThat(getUninterruptibly(future)).isTrue();
 		verify(session).executeAsync(statementCaptor.capture());
-		assertThat(statementCaptor.getValue()).hasToString("SELECT * FROM users LIMIT 1;");
+		assertThat(statementCaptor.getValue().getQuery()).isEqualTo("SELECT * FROM users LIMIT 1");
 	}
 
 	@Test // DATACASS-292
@@ -276,7 +275,7 @@ public class AsyncCassandraTemplateUnitTests {
 
 		assertThat(getUninterruptibly(future)).isEqualTo(42L);
 		verify(session).executeAsync(statementCaptor.capture());
-		assertThat(statementCaptor.getValue()).hasToString("SELECT count(*) FROM users;");
+		assertThat(statementCaptor.getValue().getQuery()).isEqualTo("SELECT count(1) FROM users");
 	}
 
 	@Test // DATACASS-292
@@ -290,7 +289,7 @@ public class AsyncCassandraTemplateUnitTests {
 
 		assertThat(getUninterruptibly(future)).isEqualTo(42L);
 		verify(session).executeAsync(statementCaptor.capture());
-		assertThat(statementCaptor.getValue()).hasToString("SELECT COUNT(1) FROM users;");
+		assertThat(statementCaptor.getValue().getQuery()).isEqualTo("SELECT count(1) FROM users");
 	}
 
 	@Test // DATACASS-292, DATACASS-618
@@ -304,8 +303,8 @@ public class AsyncCassandraTemplateUnitTests {
 
 		assertThat(getUninterruptibly(future)).isEqualTo(user);
 		verify(session).executeAsync(statementCaptor.capture());
-		assertThat(statementCaptor.getValue())
-				.hasToString("INSERT INTO users (firstname,id,lastname) VALUES ('Walter','heisenberg','White');");
+		assertThat(statementCaptor.getValue().getQuery())
+				.isEqualTo("INSERT INTO users (firstname,id,lastname) VALUES ('Walter','heisenberg','White')");
 		assertThat(beforeConvert).isSameAs(user);
 		assertThat(beforeSave).isSameAs(user);
 	}
@@ -321,8 +320,8 @@ public class AsyncCassandraTemplateUnitTests {
 
 		assertThat(getUninterruptibly(future)).isEqualTo(user);
 		verify(session).executeAsync(statementCaptor.capture());
-		assertThat(statementCaptor.getValue()).hasToString(
-				"INSERT INTO vusers (firstname,id,lastname,version) VALUES ('Walter','heisenberg','White',0) IF NOT EXISTS;");
+		assertThat(statementCaptor.getValue().getQuery()).isEqualTo(
+				"INSERT INTO vusers (firstname,id,lastname,version) VALUES ('Walter','heisenberg','White',0) IF NOT EXISTS");
 		assertThat(beforeConvert).isSameAs(user);
 		assertThat(beforeSave).isSameAs(user);
 	}
@@ -357,8 +356,8 @@ public class AsyncCassandraTemplateUnitTests {
 
 		assertThat(getUninterruptibly(future)).isEqualTo(user);
 		verify(session).executeAsync(statementCaptor.capture());
-		assertThat(statementCaptor.getValue())
-				.hasToString("UPDATE users SET firstname='Walter',lastname='White' WHERE id='heisenberg';");
+		assertThat(statementCaptor.getValue().getQuery())
+				.isEqualTo("UPDATE users SET firstname='Walter', lastname='White' WHERE id='heisenberg'");
 		assertThat(beforeConvert).isSameAs(user);
 		assertThat(beforeSave).isSameAs(user);
 	}
@@ -375,8 +374,8 @@ public class AsyncCassandraTemplateUnitTests {
 
 		assertThat(getUninterruptibly(future)).isEqualTo(user);
 		verify(session).executeAsync(statementCaptor.capture());
-		assertThat(statementCaptor.getValue()).hasToString(
-				"UPDATE vusers SET firstname='Walter',lastname='White',version=1 WHERE id='heisenberg' IF version=0;");
+		assertThat(statementCaptor.getValue().getQuery()).isEqualTo(
+				"UPDATE vusers SET firstname='Walter', lastname='White', version=1 WHERE id='heisenberg' IF version=0");
 		assertThat(beforeConvert).isSameAs(user);
 		assertThat(beforeSave).isSameAs(user);
 	}
@@ -390,8 +389,8 @@ public class AsyncCassandraTemplateUnitTests {
 		template.update(user, updateOptions);
 
 		verify(session).executeAsync(statementCaptor.capture());
-		assertThat(statementCaptor.getValue())
-				.hasToString("UPDATE users SET firstname='Walter',lastname='White' WHERE id='heisenberg' IF EXISTS;");
+		assertThat(statementCaptor.getValue().getQuery())
+				.isEqualTo("UPDATE users SET firstname='Walter', lastname='White' WHERE id='heisenberg' IF EXISTS");
 	}
 
 	@Test // DATACASS-575
@@ -403,8 +402,8 @@ public class AsyncCassandraTemplateUnitTests {
 		template.update(user, options);
 
 		verify(session).executeAsync(statementCaptor.capture());
-		assertThat(statementCaptor.getValue()).hasToString(
-				"UPDATE users SET firstname='Walter',lastname='White' WHERE id='heisenberg' IF firstname='Walter';");
+		assertThat(statementCaptor.getValue().getQuery())
+				.isEqualTo("UPDATE users SET firstname='Walter', lastname='White' WHERE id='heisenberg' IF firstname='Walter'");
 	}
 
 	@Test // DATACASS-575
@@ -416,7 +415,8 @@ public class AsyncCassandraTemplateUnitTests {
 		template.update(query, update, User.class);
 
 		verify(session).executeAsync(statementCaptor.capture());
-		assertThat(statementCaptor.getValue()).hasToString("UPDATE users SET firstname='Walter' WHERE id='heisenberg';");
+		assertThat(statementCaptor.getValue().getQuery())
+				.isEqualTo("UPDATE users SET firstname='Walter' WHERE id='heisenberg'");
 	}
 
 	@Test // DATACASS-575
@@ -432,8 +432,8 @@ public class AsyncCassandraTemplateUnitTests {
 		template.update(query, update, User.class);
 
 		verify(session).executeAsync(statementCaptor.capture());
-		assertThat(statementCaptor.getValue()).hasToString(
-				"UPDATE users SET firstname='Walter' WHERE id='heisenberg' IF firstname='Walter' AND lastname='White';");
+		assertThat(statementCaptor.getValue().getQuery()).isEqualTo(
+				"UPDATE users SET firstname='Walter' WHERE id='heisenberg' IF firstname='Walter' AND lastname='White'");
 	}
 
 	@Test // DATACASS-292
@@ -466,7 +466,7 @@ public class AsyncCassandraTemplateUnitTests {
 
 		assertThat(getUninterruptibly(future)).isTrue();
 		verify(session).executeAsync(statementCaptor.capture());
-		assertThat(statementCaptor.getValue()).hasToString("DELETE FROM users WHERE id='heisenberg';");
+		assertThat(statementCaptor.getValue().getQuery()).isEqualTo("DELETE FROM users WHERE id='heisenberg'");
 	}
 
 	@Test // DATACASS-292
@@ -480,7 +480,7 @@ public class AsyncCassandraTemplateUnitTests {
 
 		assertThat(getUninterruptibly(future)).isEqualTo(user);
 		verify(session).executeAsync(statementCaptor.capture());
-		assertThat(statementCaptor.getValue()).hasToString("DELETE FROM users WHERE id='heisenberg';");
+		assertThat(statementCaptor.getValue().getQuery()).isEqualTo("DELETE FROM users WHERE id='heisenberg'");
 	}
 
 	@Test // DATACASS-575
@@ -492,8 +492,8 @@ public class AsyncCassandraTemplateUnitTests {
 		template.delete(user, options);
 
 		verify(session).executeAsync(statementCaptor.capture());
-		assertThat(statementCaptor.getValue())
-				.hasToString("DELETE FROM users WHERE id='heisenberg' IF firstname='Walter';");
+		assertThat(statementCaptor.getValue().getQuery())
+				.isEqualTo("DELETE FROM users WHERE id='heisenberg' IF firstname='Walter'");
 	}
 
 	@Test // DATACASS-575
@@ -505,8 +505,8 @@ public class AsyncCassandraTemplateUnitTests {
 		template.delete(query, User.class);
 
 		verify(session).executeAsync(statementCaptor.capture());
-		assertThat(statementCaptor.getValue())
-				.hasToString("DELETE FROM users WHERE id='heisenberg' IF firstname='Walter';");
+		assertThat(statementCaptor.getValue().getQuery())
+				.isEqualTo("DELETE FROM users WHERE id='heisenberg' IF firstname='Walter'");
 	}
 
 	@Test // DATACASS-292
@@ -534,7 +534,7 @@ public class AsyncCassandraTemplateUnitTests {
 		template.truncate(User.class);
 
 		verify(session).executeAsync(statementCaptor.capture());
-		assertThat(statementCaptor.getValue()).hasToString("TRUNCATE users;");
+		assertThat(statementCaptor.getValue().getQuery()).isEqualTo("TRUNCATE users");
 	}
 
 	private static <T> T getUninterruptibly(Future<T> future) {

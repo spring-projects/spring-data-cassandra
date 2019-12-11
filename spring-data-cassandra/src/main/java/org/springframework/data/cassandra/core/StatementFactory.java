@@ -15,9 +15,13 @@
  */
 package org.springframework.data.cassandra.core;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
+
 import java.beans.PropertyDescriptor;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -201,16 +205,16 @@ public class StatementFactory {
 	 * {@link UpdateOptions}.
 	 *
 	 * @param id must not be {@literal null}.
-	 * @param entityWriter must not be {@literal null}.
+	 * @param persistentEntity must not be {@literal null}.
 	 * @param tableName must not be {@literal null}.
 	 * @return the select builder.
 	 */
-	StatementBuilder<Select> selectOneById(Object id, EntityWriter<Object, Object> entityWriter,
+	StatementBuilder<Select> selectOneById(Object id, CassandraPersistentEntity<?> persistentEntity,
 			CqlIdentifier tableName) {
 
 		Where where = new Where();
 
-		entityWriter.write(id, where);
+		cassandraConverter.write(id, where, persistentEntity);
 
 		return StatementBuilder.of(QueryBuilder.selectFrom(tableName).all().limit(1)).bind((statement, factory) -> {
 			return statement.where(toRelations(where, factory));
@@ -522,9 +526,9 @@ public class StatementFactory {
 		StatementBuilder<Delete> builder = delete(columnNames, tableName, filter);
 
 		query.getQueryOptions() //
-				.filter(UpdateOptions.class::isInstance) //
-				.map(UpdateOptions.class::cast) //
-				.map(UpdateOptions::getIfCondition) //
+				.filter(DeleteOptions.class::isInstance) //
+				.map(DeleteOptions.class::cast) //
+				.map(DeleteOptions::getIfCondition) //
 				.ifPresent(criteriaDefinitions -> {
 					applyDeleteIfCondition(builder, criteriaDefinitions);
 				});
@@ -661,17 +665,12 @@ public class StatementFactory {
 			select = QueryBuilder.selectFrom(from).all();
 		} else {
 
-			select = QueryBuilder.selectFrom(from).selectors();
+			List<com.datastax.oss.driver.api.querybuilder.select.Selector> mappedSelectors = selectors.stream()
+					.map(selector -> {
+						return selector.getAlias().map(it -> getSelection(selector).as(it)).orElseGet(() -> getSelection(selector));
+					}).collect(Collectors.toList());
 
-			for (Selector selector : selectors) {
-
-				com.datastax.oss.driver.api.querybuilder.select.Selector selection = getSelection(selector);
-				if (selector.getAlias().isPresent()) {
-					selection = selection.as(selector.getAlias().get());
-				}
-
-				select.selector(selection);
-			}
+			select = QueryBuilder.selectFrom(from).selectors(mappedSelectors);
 		}
 
 		StatementBuilder<Select> builder = StatementBuilder.of(select);
@@ -687,7 +686,7 @@ public class StatementFactory {
 						.collect(Collectors.toMap(Sort.Order::getProperty, //
 								order -> order.isAscending() ? ClusteringOrder.ASC : ClusteringOrder.DESC));
 
-				return select.orderBy(ordering);
+				return statement.orderBy(ordering);
 			});
 		}
 
@@ -706,14 +705,15 @@ public class StatementFactory {
 							return com.datastax.oss.driver.api.querybuilder.select.Selector
 									.column(((ColumnSelector) param).getExpression());
 						}
-						return com.datastax.oss.driver.api.querybuilder.select.Selector.function(param.toString());
+						return new SimpleSelector(param.toString());
 
 					}).toArray(com.datastax.oss.driver.api.querybuilder.select.Selector[]::new);
 
 			return com.datastax.oss.driver.api.querybuilder.select.Selector.function(selector.getExpression(), arguments);
 		}
 
-		return QueryBuilder.literal(selector.getExpression());
+		return com.datastax.oss.driver.api.querybuilder.select.Selector
+				.column(CqlIdentifier.fromInternal(selector.getExpression()));
 	}
 
 	private static StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update(CqlIdentifier table,
@@ -835,14 +835,20 @@ public class StatementFactory {
 
 		if (updateOp.getValue() instanceof Set) {
 
+			Collection<Object> collection = (Collection<Object>) updateOp.getValue();
+			Assert.isTrue(collection.size() == 1, "RemoveOp must contain a single set element");
 
-			return Assignment.removeSetElement(updateOp.toCqlIdentifier(), termFactory.create(updateOp.getValue()));
+			return Assignment.removeSetElement(updateOp.toCqlIdentifier(),
+					termFactory.create(collection.iterator().next()));
 		}
 
 		if (updateOp.getValue() instanceof List) {
 
+			Collection<Object> collection = (Collection<Object>) updateOp.getValue();
+			Assert.isTrue(collection.size() == 1, "RemoveOp must contain a single list element");
 
-			return Assignment.removeListElement(updateOp.toCqlIdentifier(), termFactory.create(updateOp.getValue()));
+			return Assignment.removeListElement(updateOp.toCqlIdentifier(),
+					termFactory.create(collection.iterator().next()));
 		}
 
 		return Assignment.remove(updateOp.toCqlIdentifier(), termFactory.create(updateOp.getValue()));
@@ -965,7 +971,8 @@ public class StatementFactory {
 
 	private static Relation toClause(CriteriaDefinition criteriaDefinition, TermFactory factory) {
 
-		CqlIdentifier columnName = criteriaDefinition.getColumnName().getCqlIdentifier().get();
+		CqlIdentifier columnName = criteriaDefinition.getColumnName().getCqlIdentifier()
+				.orElseGet(() -> CqlIdentifier.fromInternal(criteriaDefinition.getColumnName().toCql()));
 
 		Predicate predicate = criteriaDefinition.getPredicate();
 
@@ -1093,5 +1100,31 @@ public class StatementFactory {
 
 		throw new IllegalArgumentException(String.format("Criteria %s %s %s not supported for IF Conditions", columnName,
 				predicate.getOperator(), predicate.getValue()));
+	}
+
+	static class SimpleSelector implements com.datastax.oss.driver.api.querybuilder.select.Selector {
+
+		private final String selector;
+
+		SimpleSelector(String selector) {
+			this.selector = selector;
+		}
+
+		@NonNull
+		@Override
+		public com.datastax.oss.driver.api.querybuilder.select.Selector as(@NonNull CqlIdentifier alias) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Nullable
+		@Override
+		public CqlIdentifier getAlias() {
+			return null;
+		}
+
+		@Override
+		public void appendTo(@NonNull StringBuilder builder) {
+			builder.append(selector);
+		}
 	}
 }

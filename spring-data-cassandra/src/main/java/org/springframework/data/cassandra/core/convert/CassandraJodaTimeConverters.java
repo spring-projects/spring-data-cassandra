@@ -15,17 +15,20 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import org.joda.time.LocalDate;
+import org.joda.time.LocalDateTime;
 import org.joda.time.LocalTime;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
-import org.springframework.data.convert.ReadingConverter;
 import org.springframework.data.convert.WritingConverter;
 import org.springframework.util.ClassUtils;
 
@@ -60,7 +63,15 @@ public abstract class CassandraJodaTimeConverters {
 		List<Converter<?, ?>> converters = new ArrayList<>();
 
 		converters.add(MillisOfDayToLocalTimeConverter.INSTANCE);
-		converters.add(LocalTimeToMillisOfDayConverter.INSTANCE);
+
+		converters.add(FromJodaLocalTimeConverter.INSTANCE);
+		converters.add(ToJodaLocalTimeConverter.INSTANCE);
+
+		converters.add(FromJodaLocalDateConverter.INSTANCE);
+		converters.add(ToJodaLocalDateConverter.INSTANCE);
+
+		converters.add(LocalDateTimeToInstantConverter.INSTANCE);
+		converters.add(InstantToLocalDateTimeConverter.INSTANCE);
 
 		return converters;
 	}
@@ -70,7 +81,6 @@ public abstract class CassandraJodaTimeConverters {
 	 *
 	 * @author Mark Paluch
 	 */
-	@ReadingConverter
 	public enum MillisOfDayToLocalTimeConverter implements Converter<Long, LocalTime> {
 
 		INSTANCE;
@@ -86,8 +96,6 @@ public abstract class CassandraJodaTimeConverters {
 	 *
 	 * @author Mark Paluch
 	 */
-	@WritingConverter
-	@CassandraType(type = CassandraSimpleTypeHolder.Name.TIME)
 	public enum LocalTimeToMillisOfDayConverter implements Converter<LocalTime, Long> {
 
 		INSTANCE;
@@ -95,6 +103,101 @@ public abstract class CassandraJodaTimeConverters {
 		@Override
 		public Long convert(LocalTime source) {
 			return (long) source.getMillisOfDay();
+		}
+	}
+
+	/**
+	 * Simple singleton to convert {@link LocalTime}s to their {@link java.time.LocalTime} representation.
+	 *
+	 * @author Mark Paluch
+	 */
+	@WritingConverter
+	@CassandraType(type = CassandraSimpleTypeHolder.Name.TIME)
+	public enum FromJodaLocalTimeConverter implements Converter<LocalTime, java.time.LocalTime> {
+
+		INSTANCE;
+
+		@Override
+		public java.time.LocalTime convert(LocalTime source) {
+			return java.time.LocalTime.ofNanoOfDay(TimeUnit.MILLISECONDS.toNanos(source.getMillisOfDay()));
+		}
+	}
+
+	/**
+	 * Simple singleton to convert {@link java.time.LocalTime}s to their {@link LocalTime} representation.
+	 *
+	 * @author Mark Paluch
+	 */
+	public enum ToJodaLocalTimeConverter implements Converter<java.time.LocalTime, LocalTime> {
+
+		INSTANCE;
+
+		@Override
+		public LocalTime convert(java.time.LocalTime source) {
+			return LocalTime.fromMillisOfDay(TimeUnit.NANOSECONDS.toMillis(source.toNanoOfDay()));
+		}
+	}
+
+	/**
+	 * Simple singleton to convert {@link LocalTime}s to their {@link java.time.LocalDate} representation.
+	 *
+	 * @author Mark Paluch
+	 */
+	@WritingConverter
+	@CassandraType(type = CassandraSimpleTypeHolder.Name.DATE)
+	public enum FromJodaLocalDateConverter implements Converter<LocalDate, java.time.LocalDate> {
+
+		INSTANCE;
+
+		@Override
+		public java.time.LocalDate convert(LocalDate date) {
+			return java.time.LocalDate.of(date.getYear(), date.getMonthOfYear(), date.getDayOfMonth());
+		}
+	}
+
+	/**
+	 * Simple singleton to convert {@link java.time.LocalTime}s to their {@link LocalDate} representation.
+	 *
+	 * @author Mark Paluch
+	 */
+	public enum ToJodaLocalDateConverter implements Converter<java.time.LocalDate, LocalDate> {
+
+		INSTANCE;
+
+		@Override
+		public LocalDate convert(java.time.LocalDate date) {
+			return new LocalDate(date.getYear(), date.getMonthValue(), date.getDayOfMonth());
+		}
+	}
+
+	/**
+	 * Simple singleton to convert {@link LocalDateTime}s to their {@link java.time.Instant} representation.
+	 *
+	 * @since 3.0
+	 */
+	@WritingConverter
+	public enum LocalDateTimeToInstantConverter implements Converter<LocalDateTime, java.time.Instant> {
+
+		INSTANCE;
+
+		@Override
+		public java.time.Instant convert(LocalDateTime source) {
+			return source.toDate().toInstant();
+		}
+	}
+
+	/**
+	 * Simple singleton to convert {@link java.time.LocalDateTime}s to their {@link LocalDateTime} representation.
+	 *
+	 * @since 3.0
+	 */
+	public enum InstantToLocalDateTimeConverter implements Converter<java.time.Instant, LocalDateTime> {
+
+		INSTANCE;
+
+		@Override
+		public LocalDateTime convert(java.time.Instant source) {
+			return new LocalDateTime(Date.from(source));
 		}
 	}
 }

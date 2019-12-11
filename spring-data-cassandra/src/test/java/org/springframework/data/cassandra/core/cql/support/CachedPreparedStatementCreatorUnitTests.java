@@ -52,8 +52,9 @@ public class CachedPreparedStatementCreatorUnitTests {
 	@Before
 	public void before() {
 
-		when(session.getKeyspace()).thenReturn(Optional.of(CqlIdentifier.fromCql("keyspace")));
-		when(otherSession.getKeyspace()).thenReturn(Optional.of(CqlIdentifier.fromCql("other")));
+		when(session.getKeyspace()).thenReturn(Optional.of(CqlIdentifier.fromCql("mykeyspace")));
+		when(otherSession.getKeyspace()).thenReturn(Optional.of(CqlIdentifier.fromCql("mykeyspace")));
+		when(otherKeyspaceSession.getKeyspace()).thenReturn(Optional.of(CqlIdentifier.fromCql("other")));
 
 		when(session.prepare(any(SimpleStatement.class))).thenReturn(preparedStatement);
 	}

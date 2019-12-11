@@ -204,9 +204,19 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 	static class DefaultReactiveResultSet implements ReactiveResultSet {
 
 		private final AsyncResultSet resultSet;
+		private final boolean wasApplied;
 
 		DefaultReactiveResultSet(AsyncResultSet resultSet) {
 			this.resultSet = resultSet;
+
+			boolean wasApplied;
+			try {
+				wasApplied = resultSet.wasApplied();
+			} catch (Exception e) {
+				wasApplied = false;
+			}
+
+			this.wasApplied = wasApplied;
 		}
 
 		/* (non-Javadoc)
@@ -277,7 +287,7 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 		 */
 		@Override
 		public boolean wasApplied() {
-			return this.resultSet.wasApplied();
+			return this.wasApplied;
 		}
 
 		/* (non-Javadoc)

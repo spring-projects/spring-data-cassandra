@@ -95,7 +95,7 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 		bean.setConverter(beanFactory.getBean(CassandraConverter.class));
 		bean.setSchemaAction(getSchemaAction());
 		bean.setKeyspacePopulator(keyspacePopulator());
-		bean.setKeyspacePopulator(keyspaceCleaner());
+		bean.setKeyspaceCleaner(keyspaceCleaner());
 
 		return bean;
 	}
@@ -161,7 +161,7 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 
 		mappingContext.setInitialEntitySet(getInitialEntitySet());
 
-		CustomConversions customConversions = beanFactory.getBean(CassandraCustomConversions.class);
+		CustomConversions customConversions = beanFactory.getBean(CustomConversions.class);
 
 		mappingContext.setCustomConversions(customConversions);
 		mappingContext.setSimpleTypeHolder(customConversions.getSimpleTypeHolder());
@@ -185,8 +185,8 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 
 	/**
 	 * Return the {@link Set} of initial entity classes. Scans by default the class path using
-	 * {@link #getEntityBasePackages()}. Can be overriden by subclasses to skip class path scanning and return a fixed set
-	 * of entity classes.
+	 * {@link #getEntityBasePackages()}. Can be overridden by subclasses to skip class path scanning and return a fixed
+	 * set of entity classes.
 	 *
 	 * @return {@link Set} of initial entity classes.
 	 * @throws ClassNotFoundException if the entity scan fails.
@@ -200,11 +200,9 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 
 	/**
 	 * Creates a {@link CassandraAdminTemplate}.
-	 *
-	 * @throws Exception if the {@link com.datastax.driver.core.Session} could not be obtained.
 	 */
 	@Bean
-	public CassandraAdminTemplate cassandraTemplate() throws Exception {
+	public CassandraAdminTemplate cassandraTemplate() {
 		return new CassandraAdminTemplate(getRequiredSessionFactory(), beanFactory.getBean(CassandraConverter.class));
 	}
 
@@ -216,6 +214,7 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 	@Override
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
 		this.beanFactory = beanFactory;
+		super.setBeanFactory(beanFactory);
 	}
 
 	/**

@@ -15,11 +15,17 @@
  */
 package org.springframework.data.cassandra.core.cql.util;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
+
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 import org.springframework.util.Assert;
@@ -29,6 +35,8 @@ import com.datastax.oss.driver.api.core.cql.SimpleStatementBuilder;
 import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
 import com.datastax.oss.driver.api.querybuilder.BuildableQuery;
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
+import com.datastax.oss.driver.api.querybuilder.term.Term;
+import com.datastax.oss.driver.internal.querybuilder.CqlHelper;
 
 /**
  * Functional builder for Cassandra {@link BuildableQuery statements}. Statements are built by applying
@@ -106,11 +114,11 @@ public class StatementBuilder<S extends BuildableQuery> {
 	 * @param action the builder function to be applied to the statement.
 	 * @return {@code this} {@link StatementBuilder}.
 	 */
-	public StatementBuilder<S> apply(UnaryOperator<S> action) {
+	public <R extends BuildableQuery> StatementBuilder<S> apply(Function<S, R> action) {
 
 		Assert.notNull(action, "BindFunction must not be null");
 
-		queryActions.add((source, termFactory) -> action.apply(source));
+		queryActions.add((source, termFactory) -> (S) action.apply(source));
 		return this;
 	}
 
@@ -168,7 +176,7 @@ public class StatementBuilder<S extends BuildableQuery> {
 
 		if (parameterHandling == ParameterHandling.INLINE) {
 
-			TermFactory termFactory = value -> QueryBuilder.literal(value, codecRegistry);
+			TermFactory termFactory = value -> toLiteralTerms(value, codecRegistry);
 
 			for (BuilderRunnable<S> runnable : queryActions) {
 				statement = runnable.run(statement, termFactory);
@@ -212,6 +220,44 @@ public class StatementBuilder<S extends BuildableQuery> {
 		}
 
 		throw new UnsupportedOperationException(String.format("ParameterHandling %s not supported", parameterHandling));
+	}
+
+	private static Term toLiteralTerms(@Nullable Object value, CodecRegistry codecRegistry) {
+
+		if (value instanceof List) {
+
+			List<Term> terms = new ArrayList<>();
+
+			for (Object o : (List<Object>) value) {
+				terms.add(toLiteralTerms(o, codecRegistry));
+			}
+
+			return new ListTerm(terms);
+		}
+
+		if (value instanceof Set) {
+
+			List<Term> terms = new ArrayList<>();
+
+			for (Object o : (Set<Object>) value) {
+				terms.add(toLiteralTerms(o, codecRegistry));
+			}
+
+			return new SetTerm(terms);
+		}
+
+		if (value instanceof Map) {
+
+			Map<Term, Term> terms = new LinkedHashMap<>();
+
+			((Map<?, ?>) value).forEach((k, v) -> {
+				terms.put(toLiteralTerms(k, codecRegistry), toLiteralTerms(v, codecRegistry));
+			});
+
+			return new MapTerm(terms);
+		}
+
+		return QueryBuilder.literal(value, codecRegistry);
 	}
 
 	private SimpleStatementBuilder onBuild(SimpleStatementBuilder statementBuilder) {
@@ -263,5 +309,112 @@ public class StatementBuilder<S extends BuildableQuery> {
 		 * Named bind markers.
 		 */
 		BY_NAME;
+	}
+
+	static class ListTerm implements Term {
+
+		private final Collection<? extends Term> components;
+
+		public ListTerm(@NonNull Collection<? extends Term> components) {
+			this.components = components;
+		}
+
+		@Override
+		public void appendTo(@NonNull StringBuilder builder) {
+
+			if (components.isEmpty()) {
+				builder.append("[]");
+				return;
+			}
+
+			CqlHelper.append(components, builder, "[", ",", "]");
+		}
+
+		@Override
+		public boolean isIdempotent() {
+			for (Term component : components) {
+				if (!component.isIdempotent()) {
+					return false;
+				}
+			}
+			return true;
+		}
+	}
+
+	static class SetTerm implements Term {
+
+		private final Collection<? extends Term> components;
+
+		public SetTerm(@NonNull Collection<? extends Term> components) {
+			this.components = components;
+		}
+
+		@Override
+		public void appendTo(@NonNull StringBuilder builder) {
+
+			if (components.isEmpty()) {
+				builder.append("{}");
+				return;
+			}
+
+			CqlHelper.append(components, builder, "{", ",", "}");
+		}
+
+		@Override
+		public boolean isIdempotent() {
+			for (Term component : components) {
+				if (!component.isIdempotent()) {
+					return false;
+				}
+			}
+			return true;
+		}
+	}
+
+	static class MapTerm implements Term {
+
+		private final Map<? extends Term, ? extends Term> components;
+
+		public MapTerm(Map<? extends Term, ? extends Term> components) {
+			this.components = components;
+		}
+
+		@Override
+		public void appendTo(@NonNull StringBuilder builder) {
+
+			if (components.isEmpty()) {
+				builder.append("{}");
+				return;
+			}
+
+			boolean first = true;
+
+			for (Map.Entry<? extends Term, ? extends Term> entry : components.entrySet()) {
+
+				if (first) {
+					builder.append("{");
+					first = false;
+				} else {
+					builder.append(",");
+				}
+				entry.getKey().appendTo(builder);
+				builder.append(":");
+				entry.getValue().appendTo(builder);
+			}
+			if (!first) {
+				builder.append("}");
+			}
+		}
+
+		@Override
+		public boolean isIdempotent() {
+			for (Map.Entry<? extends Term, ? extends Term> entry : components.entrySet()) {
+
+				if (!entry.getKey().isIdempotent() || !entry.getValue().isIdempotent()) {
+					return false;
+				}
+			}
+			return true;
+		}
 	}
 }

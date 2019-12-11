@@ -29,6 +29,7 @@ import java.util.stream.IntStream;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
@@ -45,7 +46,7 @@ import org.springframework.data.cassandra.core.query.CassandraPageRequest;
 import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.domain.UserToken;
 import org.springframework.data.cassandra.repository.CassandraRepository;
-import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.data.cassandra.test.util.AbstractEmbeddedCassandraIntegrationTest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
@@ -61,7 +62,7 @@ import org.springframework.util.ClassUtils;
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration
-public class SimpleCassandraRepositoryIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest
+public class SimpleCassandraRepositoryIntegrationTests extends AbstractEmbeddedCassandraIntegrationTest
 		implements BeanClassLoaderAware, BeanFactoryAware {
 
 	@Configuration

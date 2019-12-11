@@ -110,7 +110,8 @@ public class CassandraPersistentEntitySchemaDropperUnitTests extends CassandraPe
 		context.setInitialEntitySet(Collections.singleton(Person.class));
 		context.afterPropertiesSet();
 
-		when(metadata.getTables()).thenReturn(createTables(person, contact));
+		Map<CqlIdentifier, TableMetadata> tables = createTables(person, contact);
+		when(metadata.getTables()).thenReturn(tables);
 
 		CassandraPersistentEntitySchemaDropper schemaDropper = new CassandraPersistentEntitySchemaDropper(context,
 				operations);
@@ -129,7 +130,8 @@ public class CassandraPersistentEntitySchemaDropperUnitTests extends CassandraPe
 		context.setInitialEntitySet(Collections.singleton(Person.class));
 		context.afterPropertiesSet();
 
-		when(metadata.getTables()).thenReturn(createTables(person, contact));
+		Map<CqlIdentifier, TableMetadata> tables = createTables(person, contact);
+		when(metadata.getTables()).thenReturn(tables);
 
 		CassandraPersistentEntitySchemaDropper schemaDropper = new CassandraPersistentEntitySchemaDropper(context,
 				operations);

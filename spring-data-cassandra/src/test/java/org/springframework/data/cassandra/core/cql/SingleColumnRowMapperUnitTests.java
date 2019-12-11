@@ -123,6 +123,7 @@ public class SingleColumnRowMapperUnitTests {
 	public void mapRowSingleColumnWrongType() {
 
 		when(columnDefinitions.size()).thenReturn(1);
+		when(columnDefinitions.get(0)).thenReturn(columnDefinition);
 
 		when(row.getObject(0)).thenReturn("hello");
 

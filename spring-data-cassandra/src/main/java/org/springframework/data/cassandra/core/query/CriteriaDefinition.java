@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.core.query;
 import lombok.EqualsAndHashCode;
 
 import java.util.Optional;
+import java.util.function.Function;
 
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -83,6 +84,18 @@ public interface CriteriaDefinition {
 		@Nullable
 		public Object getValue() {
 			return this.value;
+		}
+
+		/**
+		 * This method allows the application of a function to this {@link Predicate} value. The function should expect a
+		 * single {@link Object} argument and produce an {@code R} result. Any exception thrown by f() will be propagated to
+		 * the caller.
+		 *
+		 * @param <R>
+		 * @return the result of the {@link Function mappingFunction}.
+		 */
+		public <R> R as(Function<Object, ? extends R> mappingFunction) {
+			return mappingFunction.apply(this.value);
 		}
 	}
 

@@ -140,7 +140,7 @@ public class CustomConversionIntegrationTests extends AbstractKeyspaceCreatingIn
 	public void shouldLoadCustomConvertedObject() {
 
 		cassandraOperations.getCqlOperations().execute(
-				"INSERT INTO employee (id, person) VALUES('employee-id, '{\"firstname\":\"Homer\",\"lastname\":\"Simpson\"}");
+				"INSERT INTO employee (id, person) VALUES('employee-id', '{\"firstname\":\"Homer\",\"lastname\":\"Simpson\"}')");
 
 		Employee employee = cassandraOperations.selectOne("SELECT id, person FROM employee", Employee.class);
 
@@ -154,7 +154,7 @@ public class CustomConversionIntegrationTests extends AbstractKeyspaceCreatingIn
 	public void shouldLoadCustomConvertedWithCollectionsObject() {
 
 		cassandraOperations.getCqlOperations().execute(
-				"INSERT INTO employee (id, people) VALUES('employee-id, '[{\"firstname\":\"Apu\",\"lastname\":\"Nahasapeemapetilon\"}]");
+				"INSERT INTO employee (id, people) VALUES('employee-id', {'{\"firstname\":\"Apu\",\"lastname\":\"Nahasapeemapetilon\"}'})");
 
 		Employee employee = cassandraOperations.selectOne("SELECT id, people FROM employee", Employee.class);
 
@@ -174,7 +174,7 @@ public class CustomConversionIntegrationTests extends AbstractKeyspaceCreatingIn
 		cassandraOperations = new CassandraTemplate(session, converter);
 
 		cassandraOperations.getCqlOperations().execute(
-				"INSERT INTO employee (id, people) VALUES('employee-id, '[{\"firstname\":\"Apu\",\"lastname\":\"Nahasapeemapetilon\"}]");
+				"INSERT INTO employee (id, people) VALUES('employee-id', {'{\"firstname\":\"Apu\",\"lastname\":\"Nahasapeemapetilon\"}'})");
 
 		Employee employee = cassandraOperations.selectOne("SELECT id, people FROM employee", Employee.class);
 

@@ -76,6 +76,7 @@ import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.Statement;
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
 import com.datastax.oss.driver.api.querybuilder.delete.Delete;
+import com.datastax.oss.driver.api.querybuilder.insert.Insert;
 import com.datastax.oss.driver.api.querybuilder.insert.RegularInsert;
 import com.datastax.oss.driver.api.querybuilder.select.Select;
 import com.datastax.oss.driver.api.querybuilder.truncate.Truncate;
@@ -522,10 +523,10 @@ public class AsyncCassandraTemplate
 		CassandraPersistentEntity<?> entity = getRequiredPersistentEntity(entityClass);
 
 		StatementBuilder<com.datastax.oss.driver.api.querybuilder.select.Select> select = getStatementFactory()
-				.selectOneById(id, (source, sink) -> getConverter().write(source, sink, entity), entity.getTableName());
+				.selectOneById(id, entity, entity.getTableName());
 
 		return new MappingListenableFutureAdapter<>(getAsyncCqlOperations().queryForResultSet(select.build()),
-				resultSet -> resultSet.remaining() > 0);
+				resultSet -> resultSet.one() != null);
 	}
 
 	/* (non-Javadoc)
@@ -541,7 +542,7 @@ public class AsyncCassandraTemplate
 				.select(query.limit(1), getRequiredPersistentEntity(entityClass), getTableName(entityClass));
 
 		return new MappingListenableFutureAdapter<>(getAsyncCqlOperations().queryForResultSet(select.build()),
-				resultSet -> resultSet.remaining() > 0);
+				resultSet -> resultSet.one() != null);
 	}
 
 	/* (non-Javadoc)
@@ -555,8 +556,7 @@ public class AsyncCassandraTemplate
 
 		CassandraPersistentEntity<?> entity = getRequiredPersistentEntity(entityClass);
 		CqlIdentifier tableName = entity.getTableName();
-		StatementBuilder<Select> select = getStatementFactory().selectOneById(id,
-				(source, sink) -> getConverter().write(source, sink, entity), tableName);
+		StatementBuilder<Select> select = getStatementFactory().selectOneById(id, entity, tableName);
 		Function<Row, T> mapper = getMapper(entityClass, entityClass, tableName);
 
 		return new MappingListenableFutureAdapter<>(
@@ -595,11 +595,16 @@ public class AsyncCassandraTemplate
 		StatementBuilder<RegularInsert> builder = getStatementFactory().insert(entityToUse, options, persistentEntity,
 				tableName);
 
-		return source.isVersionedEntity() ? doInsertVersioned(builder.build(), entityToUse, source, tableName)
-				: doInsert(builder.build(), entityToUse, source, tableName);
+		if (source.isVersionedEntity()) {
+
+			builder.apply(Insert::ifNotExists);
+			return doInsertVersioned(builder.build(), entityToUse, source, tableName);
+		}
+
+		return doInsert(builder.build(), entityToUse, source, tableName);
 	}
 
-	private <T> ListenableFuture<EntityWriteResult<T>> doInsertVersioned(Statement<?> insert, T entity,
+	private <T> ListenableFuture<EntityWriteResult<T>> doInsertVersioned(SimpleStatement insert, T entity,
 			AdaptibleEntity<T> source, CqlIdentifier tableName) {
 
 		return executeSave(entity, tableName, insert, result -> {
@@ -613,7 +618,8 @@ public class AsyncCassandraTemplate
 	}
 
 	@SuppressWarnings("unused")
-	private <T> ListenableFuture<EntityWriteResult<T>> doInsert(Statement<?> insert, T entity, AdaptibleEntity<T> source,
+	private <T> ListenableFuture<EntityWriteResult<T>> doInsert(SimpleStatement insert, T entity,
+			AdaptibleEntity<T> source,
 			CqlIdentifier tableName) {
 
 		return executeSave(entity, tableName, insert);
@@ -703,9 +709,9 @@ public class AsyncCassandraTemplate
 			AdaptibleEntity<Object> source, CqlIdentifier tableName) {
 
 		StatementBuilder<Delete> delete = getStatementFactory().delete(entity, options, getConverter(), tableName);
-		source.appendVersionCondition(delete);
+		;
 
-		return executeDelete(entity, tableName, delete.build(), result -> {
+		return executeDelete(entity, tableName, source.appendVersionCondition(delete).build(), result -> {
 
 			if (!result.wasApplied()) {
 				throw new OptimisticLockingFailureException(
@@ -734,8 +740,7 @@ public class AsyncCassandraTemplate
 		CassandraPersistentEntity<?> entity = getRequiredPersistentEntity(entityClass);
 		CqlIdentifier tableName = entity.getTableName();
 
-		StatementBuilder<Delete> builder = getStatementFactory().deleteById(id,
-				(source, sink) -> getConverter().write(source, sink, entity), tableName);
+		StatementBuilder<Delete> builder = getStatementFactory().deleteById(id, entity, tableName);
 		SimpleStatement delete = builder.build();
 
 		maybeEmitEvent(new BeforeDeleteEvent<>(delete, entityClass, tableName));
@@ -771,13 +776,13 @@ public class AsyncCassandraTemplate
 	// -------------------------------------------------------------------------
 
 	private <T> ListenableFuture<EntityWriteResult<T>> executeSave(T entity, CqlIdentifier tableName,
-			Statement<?> statement) {
+			SimpleStatement statement) {
 
 		return executeSave(entity, tableName, statement, ignore -> {});
 	}
 
 	private <T> ListenableFuture<EntityWriteResult<T>> executeSave(T entity, CqlIdentifier tableName,
-			Statement<?> statement, Consumer<WriteResult> beforeAfterSaveEvent) {
+			SimpleStatement statement, Consumer<WriteResult> beforeAfterSaveEvent) {
 
 		maybeEmitEvent(new BeforeSaveEvent<>(entity, tableName, statement));
 		T entityToSave = maybeCallBeforeSave(entity, tableName, statement);
@@ -798,7 +803,7 @@ public class AsyncCassandraTemplate
 		});
 	}
 
-	private ListenableFuture<WriteResult> executeDelete(Object entity, CqlIdentifier tableName, Statement<?> statement,
+	private ListenableFuture<WriteResult> executeDelete(Object entity, CqlIdentifier tableName, SimpleStatement statement,
 			Consumer<WriteResult> resultConsumer) {
 
 		maybeEmitEvent(new BeforeDeleteEvent<>(statement, entity.getClass(), tableName));
@@ -927,9 +932,9 @@ public class AsyncCassandraTemplate
 	@Value
 	class AsyncStatementCallback implements AsyncSessionCallback<AsyncResultSet>, CqlProvider {
 
-		@lombok.NonNull Statement<?> statement;
+		@lombok.NonNull SimpleStatement statement;
 
-		AsyncStatementCallback(Statement<?> statement) {
+		AsyncStatementCallback(SimpleStatement statement) {
 			this.statement = statement;
 		}
 
@@ -949,7 +954,7 @@ public class AsyncCassandraTemplate
 		 */
 		@Override
 		public String getCql() {
-			return this.statement.toString();
+			return this.statement.getQuery();
 		}
 	}
 }

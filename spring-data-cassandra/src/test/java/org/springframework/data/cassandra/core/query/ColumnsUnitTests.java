@@ -55,9 +55,9 @@ public class ColumnsUnitTests {
 	@Test // DATACASS-343
 	public void shouldCreateFromCqlIdentifiers() {
 
-		Columns columns = Columns.from(CqlIdentifier.fromCql("Foo"), CqlIdentifier.fromCql("bar"));
+		Columns columns = Columns.from(CqlIdentifier.fromInternal("Foo"), CqlIdentifier.fromInternal("bar"));
 
-		assertThat(columns.toString()).contains("\"Foo\"").contains("bar");
+		assertThat(columns.toString()).contains("Foo").contains("bar");
 	}
 
 	@Test // DATACASS-343

@@ -38,8 +38,8 @@ import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.repository.config.EnableReactiveCassandraRepositories;
+import org.springframework.data.cassandra.repository.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.data.cassandra.repository.support.IntegrationTestConfig;
-import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.data.repository.reactive.RxJava2CrudRepository;
 import org.springframework.stereotype.Repository;
@@ -58,7 +58,7 @@ import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = ConvertingReactiveCassandraRepositoryTests.Config.class)
-public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspaceCreatingIntegrationTest {
+public class ConvertingReactiveCassandraRepositoryTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
 
 	@EnableReactiveCassandraRepositories(includeFilters = @Filter(value = Repository.class),
 			considerNestedRepositories = true)

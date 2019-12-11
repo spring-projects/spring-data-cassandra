@@ -149,7 +149,7 @@ class RowReader {
 			DataType valueType = setType.getElementType();
 			TypeCodec<Object> typeCodec = codecRegistry.codecFor(valueType);
 
-			return row.getList(index, typeCodec.getJavaType().getRawType());
+			return row.getSet(index, typeCodec.getJavaType().getRawType());
 		}
 
 		// Map

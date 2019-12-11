@@ -70,6 +70,7 @@ import com.datastax.oss.driver.api.core.type.TupleType;
 public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
 	static final Version VERSION_3_10 = Version.parse("3.10");
+	static boolean initialized = false;
 
 	CassandraOperations operations;
 	Version cassandraVersion;
@@ -83,9 +84,12 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 		SchemaTestUtils.potentiallyCreateTableFor(AllPossibleTypes.class, operations);
 		SchemaTestUtils.potentiallyCreateTableFor(TimeEntity.class, operations);
 
-		operations.getCqlOperations().execute("DROP TABLE IF EXISTS ListOfTuples;");
-		operations.getCqlOperations()
-				.execute("CREATE TABLE ListOfTuples (id varchar PRIMARY KEY, tuples frozen<list<tuple<varchar, bigint>>>);");
+		if (!initialized) {
+			initialized = true;
+			operations.getCqlOperations().execute("DROP TABLE IF EXISTS ListOfTuples;");
+			operations.getCqlOperations()
+					.execute("CREATE TABLE ListOfTuples (id varchar PRIMARY KEY, tuples frozen<list<tuple<varchar, bigint>>>);");
+		}
 
 		SchemaTestUtils.truncate(AllPossibleTypes.class, operations);
 		SchemaTestUtils.truncate(TimeEntity.class, operations);
@@ -569,7 +573,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 
 		ResultSet resultSet = session.execute("SELECT localTime FROM AllPossibleTypes WHERE id = '1'");
 		Row row = resultSet.one();
-		assertThat(row.getLocalTime(0).getNano()).isEqualTo(3_723_000_000_000L);
+		assertThat(row.getLocalTime(0)).isEqualTo(entity.getLocalTime());
 	}
 
 	@Test // DATACASS-694
@@ -644,6 +648,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-296
+	@Ignore("DATACASS-656 - Custom Conversions lookup order")
 	public void shouldReadAndWriteJodaDateTime() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -702,6 +707,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-296
+	@Ignore("DATACASS-656 - Custom Conversions lookup order")
 	public void shouldReadAndWriteBpInstant() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -712,7 +718,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 
 		AllPossibleTypes loaded = load(entity);
 
-		assertThat(loaded.getBpZoneId()).isEqualTo(entity.getBpZoneId());
+		assertThat(loaded.getBpInstant()).isEqualTo(entity.getBpInstant());
 	}
 
 	@Test // DATACASS-296

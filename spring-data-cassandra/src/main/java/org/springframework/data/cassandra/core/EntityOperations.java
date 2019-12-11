@@ -151,7 +151,7 @@ class EntityOperations {
 		 * @param currentVersionNumber previous version number.
 		 * @return the altered {@link Update} containing the {@code IF} condition for optimistic locking.
 		 */
-		void appendVersionCondition(StatementBuilder<Update> update, Number currentVersionNumber);
+		StatementBuilder<Update> appendVersionCondition(StatementBuilder<Update> update, Number currentVersionNumber);
 
 		/**
 		 * Appends a {@code IF} condition to an {@link Delete} statement for optimistic locking to perform the delete only
@@ -162,7 +162,7 @@ class EntityOperations {
 		 * @return the altered {@link Delete} containing the {@code IF} condition for optimistic locking.
 		 * @see #getVersion()
 		 */
-		void appendVersionCondition(StatementBuilder<Delete> delete);
+		StatementBuilder<Delete> appendVersionCondition(StatementBuilder<Delete> delete);
 
 		/**
 		 * Initializes the version property of the of the current entity if available.
@@ -273,9 +273,10 @@ class EntityOperations {
 		 * @see org.springframework.data.cassandra.core.EntityOperations.AdaptibleEntity#appendVersionCondition(com.datastax.oss.driver.api.querybuilder.update.Update, java.lang.Number)
 		 */
 		@Override
-		public void appendVersionCondition(StatementBuilder<Update> update, Number currentVersionNumber) {
+		public StatementBuilder<Update> appendVersionCondition(StatementBuilder<Update> update,
+				Number currentVersionNumber) {
 
-			update.bind((statement, factory) -> {
+			return update.bind((statement, factory) -> {
 				return statement.if_(Condition.column(getVersionColumnName()).isEqualTo(factory.create(currentVersionNumber)));
 			});
 		}
@@ -284,9 +285,9 @@ class EntityOperations {
 		 * @see org.springframework.data.cassandra.core.EntityOperations.AdaptibleEntity#appendVersionCondition(com.datastax.oss.driver.api.querybuilder.delete.Delete)
 		 */
 		@Override
-		public void appendVersionCondition(StatementBuilder<Delete> delete) {
+		public StatementBuilder<Delete> appendVersionCondition(StatementBuilder<Delete> delete) {
 
-			delete.bind((statement, factory) -> {
+			return delete.bind((statement, factory) -> {
 				return statement.if_(Condition.column(getVersionColumnName()).isEqualTo(factory.create(getVersion())));
 			});
 		}

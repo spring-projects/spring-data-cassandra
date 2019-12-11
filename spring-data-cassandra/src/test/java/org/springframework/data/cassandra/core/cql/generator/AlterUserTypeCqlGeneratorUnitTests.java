@@ -37,7 +37,7 @@ public class AlterUserTypeCqlGeneratorUnitTests {
 		AlterUserTypeSpecification spec = AlterUserTypeSpecification.alterType("address") //
 				.add("zip", DataTypes.TEXT);
 
-		assertThat(toCql(spec)).isEqualTo("ALTER TYPE address ADD zip varchar;");
+		assertThat(toCql(spec)).isEqualTo("ALTER TYPE address ADD zip text;");
 	}
 
 	@Test // DATACASS-172
@@ -46,7 +46,7 @@ public class AlterUserTypeCqlGeneratorUnitTests {
 		AlterUserTypeSpecification spec = AlterUserTypeSpecification.alterType("address") //
 				.alter("zip", DataTypes.TEXT);
 
-		assertThat(toCql(spec)).isEqualTo("ALTER TYPE address ALTER zip TYPE varchar;");
+		assertThat(toCql(spec)).isEqualTo("ALTER TYPE address ALTER zip TYPE text;");
 	}
 
 	@Test // DATACASS-172

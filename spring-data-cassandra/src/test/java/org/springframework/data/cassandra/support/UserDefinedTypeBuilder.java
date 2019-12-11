@@ -123,7 +123,7 @@ public class UserDefinedTypeBuilder {
 		@Override
 		@NonNull
 		public UserDefinedType copy(boolean newFrozen) {
-			return delegate.copy(newFrozen);
+			return new UserDefinedTypeWrapper(delegate.copy(newFrozen));
 		}
 
 		@Override

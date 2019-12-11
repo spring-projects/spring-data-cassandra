@@ -87,16 +87,6 @@ public class CassandraExceptionTranslator implements CqlExceptionTranslator {
 			return new CassandraAuthenticationException(((AuthenticationException) exception).getEndPoint(), message,
 					exception);
 		}
-		/* TODO ???
-		if (exception instanceof DriverInternalError) {
-			return new CassandraInternalException(message, exception);
-		}
-
-		if (exception instanceof InvalidTypeException) {
-			return new CassandraTypeMismatchException(message, exception);
-		}
-		???
-		 */
 
 		if (exception instanceof ReadTimeoutException) {
 			return new CassandraReadTimeoutException(((ReadTimeoutException) exception).wasDataPresent(), message, exception);

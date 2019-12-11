@@ -48,11 +48,11 @@ import org.springframework.util.StringUtils;
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.data.TupleValue;
 import com.datastax.oss.driver.api.core.data.UdtValue;
+import com.datastax.oss.driver.api.core.detach.AttachmentPoint;
 import com.datastax.oss.driver.api.core.type.DataType;
 import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.datastax.oss.driver.api.core.type.TupleType;
 import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
-import com.datastax.oss.driver.internal.core.metadata.schema.ShallowUserDefinedType;
 
 /**
  * Default implementation of a {@link MappingContext} for Cassandra using {@link CassandraPersistentEntity} and
@@ -466,23 +466,26 @@ public class CassandraMappingContext
 				CassandraPersistentEntity<?> primaryKeyEntity = getRequiredPersistentEntity(property.getRawType());
 
 				for (CassandraPersistentProperty primaryKeyProperty : primaryKeyEntity) {
+
+					DataType dataType = getDataTypeWithUserTypeFactory(primaryKeyProperty, DataTypeProvider.ShallowType);
+
 					if (primaryKeyProperty.isPartitionKeyColumn()) {
-						specification.partitionKeyColumn(primaryKeyProperty.getRequiredColumnName(),
-								getDataType(primaryKeyProperty));
+						specification.partitionKeyColumn(primaryKeyProperty.getRequiredColumnName(), dataType);
 					} else { // cluster column
-						specification.clusteredKeyColumn(primaryKeyProperty.getRequiredColumnName(),
-								getDataType(primaryKeyProperty), primaryKeyProperty.getPrimaryKeyOrdering());
+						specification.clusteredKeyColumn(primaryKeyProperty.getRequiredColumnName(), dataType,
+								primaryKeyProperty.getPrimaryKeyOrdering());
 					}
 				}
 			} else {
+				DataType type = UserTypeUtil
+						.potentiallyFreeze(getDataTypeWithUserTypeFactory(property, DataTypeProvider.ShallowType));
+
 				if (property.isIdProperty() || property.isPartitionKeyColumn()) {
-					specification.partitionKeyColumn(property.getRequiredColumnName(),
-							UserTypeUtil.potentiallyFreeze(getDataType(property)));
+					specification.partitionKeyColumn(property.getRequiredColumnName(), type);
 				} else if (property.isClusterKeyColumn()) {
-					specification.clusteredKeyColumn(property.getRequiredColumnName(),
-							UserTypeUtil.potentiallyFreeze(getDataType(property)), property.getPrimaryKeyOrdering());
+					specification.clusteredKeyColumn(property.getRequiredColumnName(), type, property.getPrimaryKeyOrdering());
 				} else {
-					specification.column(property.getRequiredColumnName(), UserTypeUtil.potentiallyFreeze(getDataType(property)));
+					specification.column(property.getRequiredColumnName(), type);
 				}
 			}
 		}
@@ -838,19 +841,31 @@ public class CassandraMappingContext
 			}
 		},
 
-		FrozenLiteral {
+		ShallowType {
 
 			@Override
 			public DataType getDataType(CassandraPersistentEntity<?> entity) {
-				return new ShallowUserDefinedType(com.datastax.oss.driver.api.core.CqlIdentifier.fromCql("system"),
-						entity.getTableName(), true);
+				return entity.isTupleType() ? entity.getTupleType() : new ShallowUserDefinedType(entity.getTableName(), false);
 			}
 
 			@Override
 			DataType getUserType(com.datastax.oss.driver.api.core.CqlIdentifier userTypeName,
 					UserTypeResolver userTypeResolver) {
-				return new ShallowUserDefinedType(com.datastax.oss.driver.api.core.CqlIdentifier.fromCql("system"),
-						userTypeName, true);
+				return new ShallowUserDefinedType(userTypeName, false);
+			}
+		},
+
+		FrozenLiteral {
+
+			@Override
+			public DataType getDataType(CassandraPersistentEntity<?> entity) {
+				return new ShallowUserDefinedType(entity.getTableName(), true);
+			}
+
+			@Override
+			DataType getUserType(com.datastax.oss.driver.api.core.CqlIdentifier userTypeName,
+					UserTypeResolver userTypeResolver) {
+				return new ShallowUserDefinedType(userTypeName, true);
 			}
 		};
 
@@ -875,5 +890,114 @@ public class CassandraMappingContext
 		abstract DataType getUserType(com.datastax.oss.driver.api.core.CqlIdentifier userTypeName,
 				UserTypeResolver userTypeResolver);
 
+	}
+
+	static class ShallowUserDefinedType implements com.datastax.oss.driver.api.core.type.UserDefinedType {
+
+		private final CqlIdentifier name;
+		private final boolean frozen;
+
+		public ShallowUserDefinedType(String name, boolean frozen) {
+			this(CqlIdentifier.fromInternal(name), frozen);
+		}
+
+		public ShallowUserDefinedType(CqlIdentifier name, boolean frozen) {
+			this.name = name;
+			this.frozen = frozen;
+		}
+
+		@Override
+		public CqlIdentifier getKeyspace() {
+			return null;
+		}
+
+		@Override
+		public CqlIdentifier getName() {
+			return name;
+		}
+
+		@Override
+		public boolean isFrozen() {
+			return frozen;
+		}
+
+		@Override
+		public List<CqlIdentifier> getFieldNames() {
+			throw new UnsupportedOperationException(
+					"This implementation should only be used internally, this is likely a driver bug");
+		}
+
+		@Override
+		public int firstIndexOf(CqlIdentifier id) {
+			throw new UnsupportedOperationException(
+					"This implementation should only be used internally, this is likely a driver bug");
+		}
+
+		@Override
+		public int firstIndexOf(String name) {
+			throw new UnsupportedOperationException(
+					"This implementation should only be used internally, this is likely a driver bug");
+		}
+
+		@Override
+		public List<DataType> getFieldTypes() {
+			throw new UnsupportedOperationException(
+					"This implementation should only be used internally, this is likely a driver bug");
+		}
+
+		@Override
+		public com.datastax.oss.driver.api.core.type.UserDefinedType copy(boolean newFrozen) {
+			return new ShallowUserDefinedType(this.name, newFrozen);
+		}
+
+		@Override
+		public UdtValue newValue() {
+			throw new UnsupportedOperationException(
+					"This implementation should only be used internally, this is likely a driver bug");
+		}
+
+		@Override
+		public UdtValue newValue(@edu.umd.cs.findbugs.annotations.NonNull Object... fields) {
+			throw new UnsupportedOperationException(
+					"This implementation should only be used internally, this is likely a driver bug");
+		}
+
+		@Override
+		public AttachmentPoint getAttachmentPoint() {
+			throw new UnsupportedOperationException(
+					"This implementation should only be used internally, this is likely a driver bug");
+		}
+
+		@Override
+		public boolean isDetached() {
+			throw new UnsupportedOperationException(
+					"This implementation should only be used internally, this is likely a driver bug");
+		}
+
+		@Override
+		public void attach(@edu.umd.cs.findbugs.annotations.NonNull AttachmentPoint attachmentPoint) {
+			throw new UnsupportedOperationException(
+					"This implementation should only be used internally, this is likely a driver bug");
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o)
+				return true;
+			if (!(o instanceof com.datastax.oss.driver.api.core.type.UserDefinedType))
+				return false;
+			com.datastax.oss.driver.api.core.type.UserDefinedType that = (com.datastax.oss.driver.api.core.type.UserDefinedType) o;
+			return isFrozen() == that.isFrozen() && Objects.equals(getName(), that.getName());
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(name, frozen);
+		}
+
+		@Override
+		public String toString() {
+			return "ShallowUserDefinedType{" + "name=" + name + ", frozen=" + frozen + '}';
+		}
 	}
 }

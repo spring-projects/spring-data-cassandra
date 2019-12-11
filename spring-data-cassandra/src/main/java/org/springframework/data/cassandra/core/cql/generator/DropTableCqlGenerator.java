@@ -41,6 +41,6 @@ public class DropTableCqlGenerator extends TableNameCqlGenerator<DropTableSpecif
 		DropTableSpecification specification = spec();
 
 		return cql.append("DROP TABLE ").append(specification.getIfExists() ? "IF EXISTS " : "")
-				.append(specification.getName()).append(";");
+				.append(specification.getName().asCql(true)).append(";");
 	}
 }

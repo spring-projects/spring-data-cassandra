@@ -204,7 +204,7 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 	}
 
 	@Test // DATACASS-292
-	public void updateShouldUpdateEntityWithLwt() {
+	public void updateShouldUpdateEntityWithLwt() throws InterruptedException {
 
 		UpdateOptions lwtOptions = UpdateOptions.builder().withIfExists().build();
 
@@ -217,6 +217,10 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 
 		assertThat(getUninterruptibly(updated).wasApplied()).isTrue();
 		assertThat(getUninterruptibly(updated).getEntity()).isSameAs(user);
+
+		// Cassandra requires a while to apply that change...
+		Thread.sleep(200);
+
 		assertThat(getUser(user.getId()).getFirstname()).isEqualTo("Walter Hartwell");
 	}
 

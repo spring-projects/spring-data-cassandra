@@ -90,7 +90,7 @@ public class AlterUserTypeCqlGeneratorIntegrationTests extends AbstractKeyspaceC
 
 	@Test // DATACASS-172
 	public void generationFailsIfNameIsNotSet() {
-		assertThatIllegalArgumentException().isThrownBy(() -> toCql(AlterUserTypeSpecification.alterType(null)));
+		assertThatNullPointerException().isThrownBy(() -> toCql(AlterUserTypeSpecification.alterType(null)));
 	}
 
 	@Test // DATACASS-172

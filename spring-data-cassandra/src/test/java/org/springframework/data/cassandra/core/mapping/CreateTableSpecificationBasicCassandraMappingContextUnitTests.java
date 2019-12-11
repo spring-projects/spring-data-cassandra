@@ -62,7 +62,7 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 	private CassandraMappingContext ctx = new CassandraMappingContext();
 
 	@Before
-	public void setUp() throws Exception {
+	public void setUp() {
 
 		List<Converter<?, ?>> converters = new ArrayList<>();
 		converters.add(new PersonReadConverter());
@@ -248,21 +248,21 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 	@Test // DATACASS-172
 	public void columnsShouldMapToUdt() {
 
-		UserDefinedType human_udt = mock(UserDefinedType.class, "human_udt");
-		UserDefinedType species_udt = mock(UserDefinedType.class, "species_udt");
-		UserDefinedType peeps_udt = mock(UserDefinedType.class, "peeps_udt");
+		UserDefinedType human_udt = new CassandraMappingContext.ShallowUserDefinedType("human_udt", false);
+		UserDefinedType species_udt = new CassandraMappingContext.ShallowUserDefinedType("species_udt", false);
+		UserDefinedType peeps_udt = new CassandraMappingContext.ShallowUserDefinedType("peeps_udt", false);
 
 		ctx.setUserTypeResolver(typeName -> {
 
-			if (typeName.toString().equals(human_udt.toString())) {
+			if (typeName.equals(human_udt.getName())) {
 				return human_udt;
 			}
 
-			if (typeName.toString().equals(species_udt.toString())) {
+			if (typeName.equals(species_udt.getName())) {
 				return species_udt;
 			}
 
-			if (typeName.toString().equals(peeps_udt.toString())) {
+			if (typeName.equals(peeps_udt.getName())) {
 				return peeps_udt;
 			}
 			return null;
@@ -270,19 +270,19 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 
 		CreateTableSpecification specification = getCreateTableSpecificationFor(WithUdtFields.class);
 
-		assertThat(getColumnType("human", specification)).isEqualTo(human_udt);
-		assertThat(getColumnType("friends", specification)).isEqualTo(DataTypes.listOf(species_udt));
-		assertThat(getColumnType("people", specification)).isEqualTo(DataTypes.setOf(peeps_udt));
+		assertThat(getColumnType("human", specification).asCql(false, true)).isEqualTo("human_udt");
+		assertThat(getColumnType("friends", specification).asCql(false, true)).isEqualTo("list<species_udt>");
+		assertThat(getColumnType("people", specification).asCql(false, true)).isEqualTo("set<peeps_udt>");
 	}
 
 	@Test // DATACASS-172
 	public void columnsShouldMapToMappedUserType() {
 
-		UserDefinedType mappedUdt = mock(UserDefinedType.class, "mappedudt");
+		UserDefinedType mappedUdt = new CassandraMappingContext.ShallowUserDefinedType("mappedudt", true);
 
 		ctx.setUserTypeResolver(typeName -> {
 
-			if (typeName.toString().equals(mappedUdt.toString())) {
+			if (typeName.equals(mappedUdt.getName())) {
 				return mappedUdt;
 			}
 			return null;
@@ -303,8 +303,11 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 		UserDefinedType mappedUdt = mock(UserDefinedType.class, "mappedudt");
 		UserDefinedType human_udt = mock(UserDefinedType.class, "human_udt");
 
-		when(mappedUdt.toString()).thenReturn("mappedudt");
-		when(human_udt.toString()).thenReturn("human_udt");
+		when(human_udt.copy(true)).thenReturn(human_udt);
+		when(mappedUdt.copy(true)).thenReturn(mappedUdt);
+
+		when(mappedUdt.asCql(anyBoolean(), anyBoolean())).thenReturn("mappedudt");
+		when(human_udt.asCql(anyBoolean(), anyBoolean())).thenReturn("human_udt");
 
 		ctx.setUserTypeResolver(typeName -> {
 

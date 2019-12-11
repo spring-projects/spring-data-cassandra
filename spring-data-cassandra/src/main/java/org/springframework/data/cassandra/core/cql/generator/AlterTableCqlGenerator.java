@@ -74,7 +74,7 @@ public class AlterTableCqlGenerator extends TableOptionsCqlGenerator<AlterTableS
 	}
 
 	private void preambleCql(StringBuilder cql) {
-		cql.append("ALTER TABLE ").append(spec().getName());
+		cql.append("ALTER TABLE ").append(spec().getName().asCql(true));
 	}
 
 	private void changesCql(StringBuilder cql) {

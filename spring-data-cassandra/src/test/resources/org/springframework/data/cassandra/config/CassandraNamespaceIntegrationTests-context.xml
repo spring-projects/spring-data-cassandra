@@ -9,9 +9,6 @@
 		http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd
 ">
 
-	<bean id="nettyOptions"
-		  class="org.springframework.data.cassandra.support.IntegrationTestNettyOptions"/>
-
 	<context:property-placeholder
 			location="classpath:/config/cassandra-connection.properties,classpath:/org/springframework/data/cassandra/config/cassandra.properties"/>
 

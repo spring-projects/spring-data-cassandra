@@ -50,7 +50,7 @@ public class SchemaTestUtils {
 			Optional<TableMetadata> table = session.getKeyspace().flatMap(it -> session.getMetadata().getKeyspace(it))
 					.flatMap(it -> it.getTable(persistentEntity.getTableName()));
 
-			if (table.isPresent()) {
+			if (!table.isPresent()) {
 				CreateTableSpecification tableSpecification = mappingContext.getCreateTableSpecificationFor(persistentEntity);
 				operations.getCqlOperations().execute(new CreateTableCqlGenerator(tableSpecification).toCql());
 			}

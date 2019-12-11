@@ -101,7 +101,7 @@ public class CassandraMappingContextUnitTests {
 
 		assertThat(idProperty).satisfies(actual -> {
 
-			assertThat(actual.getColumnName().toString()).isEqualTo("foo");
+			assertThat(actual.getColumnName()).hasToString("foo");
 		});
 	}
 

@@ -50,7 +50,7 @@ public class ColumnNameUnitTests {
 		ColumnName first = ColumnName.from(CqlIdentifier.fromCql("foo"));
 		ColumnName second = ColumnName.from(CqlIdentifier.fromCql("Foo"));
 
-		ColumnName different = ColumnName.from(CqlIdentifier.fromCql("Foo"));
+		ColumnName different = ColumnName.from(CqlIdentifier.fromInternal("bar"));
 
 		assertThat(first).isEqualTo(second);
 		assertThat(first.equals(second)).isTrue();

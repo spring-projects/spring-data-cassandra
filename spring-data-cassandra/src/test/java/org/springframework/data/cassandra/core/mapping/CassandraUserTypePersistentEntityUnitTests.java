@@ -56,7 +56,6 @@ public class CassandraUserTypePersistentEntityUnitTests {
 		CassandraUserTypePersistentEntity<MappedUdt> type = getEntity(MappedUdt.class);
 
 		assertThat(type.getTableName()).isEqualTo(CqlIdentifier.fromCql("mappedudt"));
-		assertThat(type.getTableName()).isEqualTo(CqlIdentifier.fromCql("Mappedudt"));
 	}
 
 	@Test // DATACASS-172
@@ -65,7 +64,6 @@ public class CassandraUserTypePersistentEntityUnitTests {
 		CassandraUserTypePersistentEntity<WithName> type = getEntity(WithName.class);
 
 		assertThat(type.getTableName()).isEqualTo(CqlIdentifier.fromCql("withname"));
-		assertThat(type.getTableName()).isEqualTo(CqlIdentifier.fromCql("Withname"));
 	}
 
 	@Test // DATACASS-172
@@ -73,8 +71,7 @@ public class CassandraUserTypePersistentEntityUnitTests {
 
 		CassandraUserTypePersistentEntity<WithForceQuote> type = getEntity(WithForceQuote.class);
 
-		assertThat(type.getTableName()).isNotEqualTo(CqlIdentifier.fromCql("upperCase"));
-		assertThat(type.getTableName()).isEqualTo(CqlIdentifier.fromCql("UpperCase"));
+		assertThat(type.getTableName()).isEqualTo(CqlIdentifier.fromInternal("UpperCase"));
 	}
 
 	@Test // DATACASS-259

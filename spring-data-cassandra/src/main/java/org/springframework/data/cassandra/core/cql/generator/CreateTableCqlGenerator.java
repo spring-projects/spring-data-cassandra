@@ -64,7 +64,8 @@ public class CreateTableCqlGenerator extends TableOptionsCqlGenerator<TableSpeci
 	}
 
 	private void preambleCql(StringBuilder cql) {
-		cql.append("CREATE TABLE ").append(spec().getIfNotExists() ? "IF NOT EXISTS " : "").append(spec().getName());
+		cql.append("CREATE TABLE ").append(spec().getIfNotExists() ? "IF NOT EXISTS " : "")
+				.append(spec().getName().asCql(true));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -176,7 +177,7 @@ public class CreateTableCqlGenerator extends TableOptionsCqlGenerator<TableSpeci
 				} else {
 					ordering.append(", ");
 				}
-				ordering.append(col.getName()).append(" ").append(col.getOrdering().cql());
+				ordering.append(col.getName().asCql(true)).append(" ").append(col.getOrdering().cql());
 			}
 		}
 
@@ -196,7 +197,7 @@ public class CreateTableCqlGenerator extends TableOptionsCqlGenerator<TableSpeci
 			} else {
 				str.append(", ");
 			}
-			str.append(col.getName());
+			str.append(col.getName().asCql(true));
 		}
 	}
 }

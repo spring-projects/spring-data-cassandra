@@ -41,8 +41,8 @@ public abstract class AbstractReactiveCassandraConfiguration extends AbstractCas
 	private @Nullable BeanFactory beanFactory;
 
 	/**
-	 * Creates a {@link ReactiveSession} object. This wraps a {@link com.datastax.driver.core.Session} to expose Cassandra
-	 * access in a reactive style.
+	 * Creates a {@link ReactiveSession} object. This wraps a {@link com.datastax.oss.driver.api.core.CqlSession} to
+	 * expose Cassandra access in a reactive style.
 	 *
 	 * @return the {@link ReactiveSession}.
 	 * @see #session()
@@ -93,5 +93,6 @@ public abstract class AbstractReactiveCassandraConfiguration extends AbstractCas
 	@Override
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
 		this.beanFactory = beanFactory;
+		super.setBeanFactory(beanFactory);
 	}
 }

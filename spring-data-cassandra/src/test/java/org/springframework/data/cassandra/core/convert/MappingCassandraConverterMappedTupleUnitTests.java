@@ -69,10 +69,8 @@ public class MappingCassandraConverterMappedTupleUnitTests {
 
 		TupleValue value = entity.getTupleType().newValue("hello", 1);
 
-		this.rowMock = RowMockUtil.newRowMock(
-				column("name", "Jon Doe", DataTypes.TEXT),
-			column("tuple", value, entity.getTupleType())
-		);
+		this.rowMock = RowMockUtil.newRowMock(column("name", "Jon Doe", DataTypes.TEXT),
+				column("tuple", value, entity.getTupleType()));
 
 		Person person = this.mappingCassandraConverter.read(Person.class, rowMock);
 
@@ -95,7 +93,8 @@ public class MappingCassandraConverterMappedTupleUnitTests {
 
 		this.mappingCassandraConverter.write(person, insert);
 
-		assertThat(insert.toString()).contains("VALUES ('Jon Doe',('hello',1))");
+		TupleValue tupleValue = (TupleValue) insert.get(CqlIdentifier.fromCql("tuple"));
+		assertThat(tupleValue.getFormattedContents()).contains("('hello',1)");
 	}
 
 	@Data

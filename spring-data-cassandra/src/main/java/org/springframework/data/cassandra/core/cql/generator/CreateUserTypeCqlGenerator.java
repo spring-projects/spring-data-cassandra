@@ -52,14 +52,15 @@ public class CreateUserTypeCqlGenerator extends UserTypeNameCqlGenerator<CreateU
 		Assert.notNull(getSpecification().getName(), "User type name must not be null");
 
 		Assert.isTrue(!getSpecification().getFields().isEmpty(),
-				String.format("User type [%s] does not contain fields", getSpecification().getName()));
+				String.format("User type [%s] does not contain fields", getSpecification().getName().asCql(true)));
 
 		return columns(preambleCql(cql)).append(";");
 	}
 
 	private StringBuilder preambleCql(StringBuilder cql) {
 
-		return cql.append("CREATE TYPE ").append(spec().getIfNotExists() ? "IF NOT EXISTS " : "").append(spec().getName());
+		return cql.append("CREATE TYPE ").append(spec().getIfNotExists() ? "IF NOT EXISTS " : "")
+				.append(spec().getName().asCql(true));
 	}
 
 	private StringBuilder columns(StringBuilder cql) {

@@ -177,7 +177,12 @@ public class CassandraPageRequest extends PageRequest {
 	 */
 	@Nullable
 	public ByteBuffer getPagingState() {
-		return this.pagingState;
+
+		if (this.pagingState == null) {
+			return null;
+		}
+
+		return this.pagingState.asReadOnlyBuffer();
 	}
 
 	/**
@@ -198,7 +203,7 @@ public class CassandraPageRequest extends PageRequest {
 
 		Assert.state(hasNext(), "Cannot create a next page request without a PagingState");
 
-		return new CassandraPageRequest(getPageNumber() + 1, getPageSize(), getSort(), this.pagingState, false);
+		return new CassandraPageRequest(getPageNumber() + 1, getPageSize(), getSort(), getPagingState(), false);
 	}
 
 	/**
@@ -212,7 +217,7 @@ public class CassandraPageRequest extends PageRequest {
 
 		Assert.notNull(sort, "Sort must not be null");
 
-		return new CassandraPageRequest(this.getPageNumber(), this.getPageSize(), sort, this.pagingState, this.nextAllowed);
+		return new CassandraPageRequest(this.getPageNumber(), this.getPageSize(), sort, getPagingState(), this.nextAllowed);
 	}
 
 	/* (non-Javadoc)

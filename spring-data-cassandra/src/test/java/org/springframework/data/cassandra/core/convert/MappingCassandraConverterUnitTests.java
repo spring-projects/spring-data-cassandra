@@ -31,11 +31,13 @@ import java.net.UnknownHostException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.*;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import org.springframework.data.annotation.Id;
@@ -51,6 +53,7 @@ import org.springframework.data.cassandra.core.mapping.PrimaryKey;
 import org.springframework.data.cassandra.core.mapping.PrimaryKeyClass;
 import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
 import org.springframework.data.cassandra.core.mapping.Table;
+import org.springframework.data.cassandra.domain.AllPossibleTypes;
 import org.springframework.data.cassandra.domain.CompositeKey;
 import org.springframework.data.cassandra.domain.TypeWithCompositeKey;
 import org.springframework.data.cassandra.domain.TypeWithKeyClass;
@@ -97,6 +100,19 @@ public class MappingCassandraConverterUnitTests {
 		mappingCassandraConverter.write(withEnumColumns, insert);
 
 		assertThat(getValues(insert)).contains("MINT");
+	}
+
+	@Test // DATACASS-260
+	public void shouldWriteEnumSet() {
+
+		AllPossibleTypes entity = new AllPossibleTypes("1");
+		entity.setSetOfEnum(Collections.singleton(CassandraTypeMappingIntegrationTests.Condition.MINT));
+
+		Map<CqlIdentifier, Object> insert = new LinkedHashMap<>();
+
+		mappingCassandraConverter.write(entity, insert);
+
+		assertThat(insert.get(CqlIdentifier.fromCql("setofenum"))).isInstanceOf(Set.class);
 	}
 
 	@Test // DATACASS-255
@@ -290,13 +306,72 @@ public class MappingCassandraConverterUnitTests {
 	@Test // DATACASS-280, DATACASS-271
 	public void shouldReadTimestampCorrectly() {
 
-		Date date = new Date(1);
+		Instant instant = Instant.now();
 
-		rowMock = RowMockUtil.newRowMock(column("foo", date, DataTypes.TIMESTAMP));
+		rowMock = RowMockUtil.newRowMock(column("foo", instant, DataTypes.TIMESTAMP));
 
 		Date result = mappingCassandraConverter.readRow(Date.class, rowMock);
 
-		assertThat(result).isEqualTo(date);
+		assertThat(result).isEqualTo(Date.from(instant));
+	}
+
+	@Test // DATACASS-280, DATACASS-271
+	public void shouldReadInstantTimestampCorrectly() {
+
+		Instant instant = Instant.now();
+
+		rowMock = RowMockUtil.newRowMock(column("foo", instant, DataTypes.TIMESTAMP));
+
+		Instant result = mappingCassandraConverter.readRow(Instant.class, rowMock);
+
+		assertThat(result).isEqualTo(instant);
+	}
+
+	@Test // DATACASS-656
+	public void shouldReadAndWriteTimestampFromObject() {
+
+		AllPossibleTypes entity = new AllPossibleTypes("1");
+		entity.setInstant(Instant.now());
+		entity.setTimestamp(new Date(1));
+
+		Map<CqlIdentifier, Object> insert = new LinkedHashMap<>();
+
+		mappingCassandraConverter.write(entity, insert);
+
+		assertThat(insert.get(CqlIdentifier.fromCql("instant"))).isInstanceOf(Instant.class);
+		assertThat(insert.get(CqlIdentifier.fromCql("timestamp"))).isInstanceOf(Instant.class);
+	}
+
+	@Test // DATACASS-656
+	@Ignore("Fails because of reverse custom conversion registration order")
+	public void shouldReadAndWriteTimestampFromObjectWithConversion() {
+
+		AllPossibleTypes entity = new AllPossibleTypes("1");
+		entity.setInstant(Instant.now());
+		entity.setTimestamp(new Date(1));
+		entity.setJodaDateTime(new org.joda.time.DateTime(2010, 7, 4, 1, 2, 3));
+		entity.setBpInstant(org.threeten.bp.Instant.now());
+
+		Map<CqlIdentifier, Object> insert = new LinkedHashMap<>();
+
+		mappingCassandraConverter.write(entity, insert);
+
+		assertThat(insert.get(CqlIdentifier.fromCql("jodadatetime"))).isInstanceOf(Instant.class);
+		assertThat(insert.get(CqlIdentifier.fromCql("bpinstant"))).isInstanceOf(Instant.class);
+	}
+
+	@Test // DATACASS-656
+	public void shouldReadAndWriteTimeFromObjectWithConversion() {
+
+		AllPossibleTypes entity = new AllPossibleTypes("1");
+
+		entity.setJodaLocalTime(org.joda.time.LocalTime.fromMillisOfDay(50000));
+
+		Map<CqlIdentifier, Object> insert = new LinkedHashMap<>();
+
+		mappingCassandraConverter.write(entity, insert);
+
+		assertThat(insert.get(CqlIdentifier.fromCql("jodalocaltime"))).isInstanceOf(LocalTime.class);
 	}
 
 	@Test // DATACASS-271

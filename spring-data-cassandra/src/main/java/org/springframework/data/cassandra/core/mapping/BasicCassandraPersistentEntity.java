@@ -107,7 +107,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 			return determineName(annotation.value(), annotation.forceQuote());
 		}
 
-		return CqlIdentifier.fromCql(getType().getSimpleName());
+		return IdentifierFactory.create(getType().getSimpleName(), false);
 	}
 
 	CqlIdentifier determineName(String value, boolean forceQuote) {

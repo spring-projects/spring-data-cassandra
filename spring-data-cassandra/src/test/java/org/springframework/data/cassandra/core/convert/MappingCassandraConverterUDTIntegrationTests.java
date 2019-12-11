@@ -247,7 +247,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 		SimpleStatement statement = new StatementFactory(converter).insert(withUdtId, WriteOptions.empty()).build();
 
 		assertThat(statement.getQuery()).isEqualTo(
-				"INSERT INTO addressbook (id) " + "VALUES ({zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']})");
+				"INSERT INTO withmappedudtid (id) " + "VALUES ({zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']})");
 	}
 
 	@Test // DATACASS-172
@@ -255,6 +255,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 
 		CassandraPersistentEntity<?> persistentEntity = converter.getMappingContext()
 				.getRequiredPersistentEntity(AddressUserType.class);
+
 		UdtValue udtValue = persistentEntity.getUserType().newValue();
 		udtValue.setString("zip", "69469");
 		udtValue.setString("city", "Weinheim");
@@ -266,7 +267,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 		SimpleStatement statement = new StatementFactory(converter).insert(withUdtId, WriteOptions.empty()).build();
 
 		assertThat(statement.getQuery()).isEqualTo(
-				"INSERT INTO addressbook (id) " + "VALUES ({zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']})");
+				"INSERT INTO withudtid (id) " + "VALUES ({zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']})");
 	}
 
 	@Test // DATACASS-172
@@ -311,7 +312,9 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 		Where where = new Where();
 		converter.write(money, where);
 
-		assertThat(where.toString()).isEqualTo("currency={currency:'EUR'}");
+		assertThat((UdtValue) where.get(CqlIdentifier.fromCql("currency"))) //
+				.extracting(UdtValue::getFormattedContents) //
+				.isEqualTo("{currency:'EUR'}");
 	}
 
 	@Test // DATACASS-172, DATACASS-400
@@ -321,7 +324,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 
 		SimpleStatement statement = new StatementFactory(converter).update(money, WriteOptions.empty()).build();
 
-		assertThat(statement.getQuery()).isEqualTo("UPDATE money SET currency={currency:'EUR'} WHERE id='1'");
+		assertThat(statement.getQuery()).isEqualTo("UPDATE moneytransfer SET currency={currency:'EUR'} WHERE id='1'");
 	}
 
 	@Test // DATACASS-172, DATACASS-400

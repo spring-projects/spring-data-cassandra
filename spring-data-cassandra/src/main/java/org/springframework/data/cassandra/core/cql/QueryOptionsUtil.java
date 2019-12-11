@@ -15,13 +15,17 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
+import java.time.Duration;
+
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.cql.SimpleStatementBuilder;
 import com.datastax.oss.driver.api.core.cql.Statement;
 import com.datastax.oss.driver.api.querybuilder.delete.Delete;
+import com.datastax.oss.driver.api.querybuilder.delete.DeleteSelection;
 import com.datastax.oss.driver.api.querybuilder.insert.Insert;
 import com.datastax.oss.driver.api.querybuilder.update.Update;
+import com.datastax.oss.driver.api.querybuilder.update.UpdateStart;
 
 /**
  * Utility class to associate {@link QueryOptions} and {@link WriteOptions} with QueryBuilder {@link Statement}s.
@@ -81,11 +85,6 @@ public abstract class QueryOptionsUtil {
 			statementBuilder.setConsistencyLevel(queryOptions.getConsistencyLevel());
 		}
 
-		// TODO:
-		/*if (queryOptions.getRetryPolicy() != null) {
-			statementToUse = statementToUse.setRetryPolicy(queryOptions.getRetryPolicy());
-		} */
-
 		if (queryOptions.getPageSize() != null) {
 			statementBuilder.setPageSize(queryOptions.getPageSize());
 		}
@@ -141,7 +140,9 @@ public abstract class QueryOptionsUtil {
 		Assert.notNull(delete, "Delete must not be null");
 		Assert.notNull(writeOptions, "WriteOptions must not be null");
 
-		// TODO: Timestamp? TTL
+		if (writeOptions.getTimestamp() != null) {
+			delete = (Delete) ((DeleteSelection) delete).usingTimestamp(writeOptions.getTimestamp());
+		}
 
 		return delete;
 	}
@@ -158,8 +159,22 @@ public abstract class QueryOptionsUtil {
 		Assert.notNull(update, "Update must not be null");
 		Assert.notNull(writeOptions, "WriteOptions must not be null");
 
-		// TODO: Timestamp, TTL?
+		if (hasTtl(writeOptions.getTtl())) {
+			update = (Update) ((UpdateStart) update).usingTtl(getTtlSeconds(writeOptions.getTtl()));
+		}
+
+		if (writeOptions.getTimestamp() != null) {
+			update = (Update) ((UpdateStart) update).usingTimestamp(writeOptions.getTimestamp());
+		}
 
 		return update;
+	}
+
+	private static int getTtlSeconds(Duration ttl) {
+		return Math.toIntExact(ttl.getSeconds());
+	}
+
+	private static boolean hasTtl(Duration ttl) {
+		return !ttl.isZero() && !ttl.isNegative();
 	}
 }
