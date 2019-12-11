@@ -27,8 +27,8 @@ import org.springframework.data.cassandra.core.query.Filter;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.policies.RetryPolicy;
+import com.datastax.oss.driver.api.core.ConsistencyLevel;
+import com.datastax.oss.driver.api.core.retry.RetryPolicy;
 
 /**
  * Extension to {@link WriteOptions} for use with {@code DELETE} operations.
@@ -132,6 +132,7 @@ public class DeleteOptions extends WriteOptions {
 		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#retryPolicy(com.datastax.driver.core.policies.RetryPolicy)
 		 */
 		@Override
+		@Deprecated
 		public DeleteOptionsBuilder retryPolicy(RetryPolicy driverRetryPolicy) {
 
 			super.retryPolicy(driverRetryPolicy);
@@ -142,6 +143,7 @@ public class DeleteOptions extends WriteOptions {
 		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#fetchSize(int)
 		 */
 		@Override
+		@Deprecated
 		public DeleteOptionsBuilder fetchSize(int fetchSize) {
 
 			super.fetchSize(fetchSize);
@@ -149,9 +151,20 @@ public class DeleteOptions extends WriteOptions {
 		}
 
 		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#pageSize(int)
+		 */
+		@Override
+		public DeleteOptionsBuilder pageSize(int pageSize) {
+
+			super.pageSize(pageSize);
+			return this;
+		}
+
+		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#readTimeout(long)
 		 */
 		@Override
+		@Deprecated
 		public DeleteOptionsBuilder readTimeout(long readTimeout) {
 
 			super.readTimeout(readTimeout);
@@ -173,9 +186,9 @@ public class DeleteOptions extends WriteOptions {
 		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#readTimeout(java.time.Duration)
 		 */
 		@Override
-		public DeleteOptionsBuilder readTimeout(Duration readTimeout) {
+		public DeleteOptionsBuilder timeout(Duration timeout) {
 
-			super.readTimeout(readTimeout);
+			super.timeout(timeout);
 			return this;
 		}
 
@@ -299,7 +312,7 @@ public class DeleteOptions extends WriteOptions {
 		 */
 		public DeleteOptions build() {
 
-			return new DeleteOptions(this.consistencyLevel, this.retryPolicy, this.tracing, this.fetchSize, this.readTimeout,
+			return new DeleteOptions(this.consistencyLevel, this.retryPolicy, this.tracing, this.pageSize, this.timeout,
 					this.ttl, this.timestamp, this.ifExists, this.ifCondition);
 		}
 	}

@@ -24,8 +24,8 @@ import java.util.concurrent.TimeUnit;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.policies.RetryPolicy;
+import com.datastax.oss.driver.api.core.ConsistencyLevel;
+import com.datastax.oss.driver.api.core.retry.RetryPolicy;
 
 /**
  * Cassandra Write Options are an extension to {@link QueryOptions} for write operations. {@link WriteOptions}allow
@@ -157,17 +157,18 @@ public class WriteOptions extends QueryOptions {
 		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#consistencyLevel(com.datastax.driver.core.ConsistencyLevel)
 		 */
 		@Override
-		public WriteOptionsBuilder consistencyLevel(com.datastax.driver.core.ConsistencyLevel consistencyLevel) {
+		public WriteOptionsBuilder consistencyLevel(ConsistencyLevel consistencyLevel) {
 
 			super.consistencyLevel(consistencyLevel);
 			return this;
 		}
 
 		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#retryPolicy(org.springframework.data.cassandra.core.cql.RetryPolicy)
+		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#retryPolicy(com.datastax.oss.driver.api.core.retry.RetryPolicy)
 		 */
 		@Override
-		public WriteOptionsBuilder retryPolicy(com.datastax.driver.core.policies.RetryPolicy driverRetryPolicy) {
+		@Deprecated
+		public WriteOptionsBuilder retryPolicy(RetryPolicy driverRetryPolicy) {
 
 			super.retryPolicy(driverRetryPolicy);
 			return this;
@@ -177,9 +178,20 @@ public class WriteOptions extends QueryOptions {
 		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#fetchSize(int)
 		 */
 		@Override
-		public WriteOptionsBuilder fetchSize(int fetchSize) {
+		@Deprecated
+		public WriteOptionsBuilder fetchSize(int pageSize) {
 
-			super.fetchSize(fetchSize);
+			super.fetchSize(pageSize);
+			return this;
+		}
+
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#pageSize(int)
+		 */
+		@Override
+		public WriteOptionsBuilder pageSize(int pageSize) {
+
+			super.pageSize(pageSize);
 			return this;
 		}
 
@@ -187,6 +199,7 @@ public class WriteOptions extends QueryOptions {
 		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#readTimeout(long)
 		 */
 		@Override
+		@Deprecated
 		public WriteOptionsBuilder readTimeout(long readTimeout) {
 
 			super.readTimeout(readTimeout);
@@ -208,9 +221,9 @@ public class WriteOptions extends QueryOptions {
 		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#readTimeout(java.time.Duration)
 		 */
 		@Override
-		public WriteOptionsBuilder readTimeout(Duration readTimeout) {
+		public WriteOptionsBuilder timeout(Duration timeout) {
 
-			super.readTimeout(readTimeout);
+			super.timeout(timeout);
 			return this;
 		}
 
@@ -305,7 +318,7 @@ public class WriteOptions extends QueryOptions {
 		 * @return a new {@link WriteOptions} with the configured values
 		 */
 		public WriteOptions build() {
-			return new WriteOptions(this.consistencyLevel, this.retryPolicy, this.tracing, this.fetchSize, this.readTimeout,
+			return new WriteOptions(this.consistencyLevel, this.retryPolicy, this.tracing, this.pageSize, this.timeout,
 					this.ttl, this.timestamp);
 		}
 	}

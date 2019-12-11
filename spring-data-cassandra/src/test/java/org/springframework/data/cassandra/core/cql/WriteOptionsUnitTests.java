@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -24,9 +24,7 @@ import java.time.ZoneOffset;
 
 import org.junit.Test;
 
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.policies.DowngradingConsistencyRetryPolicy;
-import com.datastax.driver.core.policies.FallthroughRetryPolicy;
+import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
 
 /**
  * Unit tests for {@link WriteOptions}.
@@ -39,74 +37,55 @@ public class WriteOptionsUnitTests {
 	public void buildWriteOptions() {
 
 		WriteOptions writeOptions = WriteOptions.builder()
-				.consistencyLevel(com.datastax.driver.core.ConsistencyLevel.ANY)
+				.consistencyLevel(DefaultConsistencyLevel.ANY)
 				.ttl(123)
 				.timestamp(1519000753)
-				.retryPolicy(FallthroughRetryPolicy.INSTANCE)
 				.readTimeout(1)
-				.fetchSize(10)
+				.pageSize(10)
 				.withTracing()
 				.build();
 
 		assertThat(writeOptions.getTtl()).isEqualTo(Duration.ofSeconds(123));
 		assertThat(writeOptions.getTimestamp()).isEqualTo(1519000753);
-		assertThat(writeOptions.getRetryPolicy()).isEqualTo(FallthroughRetryPolicy.INSTANCE);
-		assertThat(writeOptions.getConsistencyLevel()).isEqualTo(ConsistencyLevel.ANY);
+		assertThat(writeOptions.getConsistencyLevel()).isEqualTo(DefaultConsistencyLevel.ANY);
 		assertThat(writeOptions.getReadTimeout()).isEqualTo(Duration.ofMillis(1));
-		assertThat(writeOptions.getFetchSize()).isEqualTo(10);
+		assertThat(writeOptions.getPageSize()).isEqualTo(10);
 		assertThat(writeOptions.getTracing()).isTrue();
 	}
 
 	@Test // DATACASS-202
 	public void buildReadTimeoutOptionsWriteOptions() {
 
-		WriteOptions writeOptions = WriteOptions.builder().readTimeout(Duration.ofMinutes(1)).build();
+		WriteOptions writeOptions = WriteOptions.builder().timeout(Duration.ofMinutes(1)).build();
 
 		assertThat(writeOptions.getReadTimeout()).isEqualTo(Duration.ofSeconds(60));
-		assertThat(writeOptions.getFetchSize()).isNull();
+		assertThat(writeOptions.getPageSize()).isNull();
 		assertThat(writeOptions.getTracing()).isNull();
 	}
 
-	@Test // DATACASS-202
-	public void buildQueryOptionsWithDriverRetryPolicy() {
-
-		QueryOptions writeOptions = QueryOptions.builder().retryPolicy(FallthroughRetryPolicy.INSTANCE).build();
-
-		assertThat(writeOptions.getRetryPolicy()).isEqualTo(FallthroughRetryPolicy.INSTANCE);
-	}
-
-	@Test // DATACASS-202
-	public void buildQueryOptionsWithRetryPolicy() {
-
-		QueryOptions writeOptions = QueryOptions.builder().retryPolicy(FallthroughRetryPolicy.INSTANCE).build();
-
-		assertThat(writeOptions.getRetryPolicy()).isEqualTo(FallthroughRetryPolicy.INSTANCE);
-	}
 
 	@Test // DATACASS-56
 	public void buildWriteOptionsMutate() {
 		Instant now = LocalDateTime.now().toInstant(ZoneOffset.UTC);
 
 		WriteOptions writeOptions = WriteOptions.builder()
-				.consistencyLevel(com.datastax.driver.core.ConsistencyLevel.ANY)
+				.consistencyLevel(DefaultConsistencyLevel.ANY)
 				.ttl(123)
 				.timestamp(now)
-				.retryPolicy(FallthroughRetryPolicy.INSTANCE)
 				.readTimeout(1)
-				.fetchSize(10)
+				.pageSize(10)
 				.withTracing()
 				.build();
 
-		WriteOptions mutated = writeOptions.mutate().retryPolicy(DowngradingConsistencyRetryPolicy.INSTANCE).build();
+		WriteOptions mutated = writeOptions.mutate().timeout(Duration.ofMillis(100)).build();
 
 		assertThat(mutated).isNotNull();
 		assertThat(mutated).isNotSameAs(writeOptions);
 		assertThat(mutated.getTtl()).isEqualTo(Duration.ofSeconds(123));
 		assertThat(mutated.getTimestamp()).isEqualTo(now.toEpochMilli() * 1000);
-		assertThat(mutated.getRetryPolicy()).isEqualTo(DowngradingConsistencyRetryPolicy.INSTANCE);
-		assertThat(mutated.getConsistencyLevel()).isEqualTo(ConsistencyLevel.ANY);
-		assertThat(mutated.getReadTimeout()).isEqualTo(Duration.ofMillis(1));
-		assertThat(mutated.getFetchSize()).isEqualTo(10);
+		assertThat(mutated.getConsistencyLevel()).isEqualTo(DefaultConsistencyLevel.ANY);
+		assertThat(mutated.getReadTimeout()).isEqualTo(Duration.ofMillis(100));
+		assertThat(mutated.getPageSize()).isEqualTo(10);
 		assertThat(mutated.getTracing()).isTrue();
 	}
 }
