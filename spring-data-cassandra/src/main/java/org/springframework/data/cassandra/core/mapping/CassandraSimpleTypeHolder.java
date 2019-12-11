@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.core.mapping;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -123,6 +124,9 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 
 		// override UUID to timeuuid as regular uuid as the favored default
 		classToDataType.put(UUID.class, DataTypes.UUID);
+
+		// Add type migration support for TIMESTAMP via java.util.Date to preserve driver v3 type mapping
+		classToDataType.put(Date.class, DataTypes.TIMESTAMP);
 
 		return classToDataType;
 	}
