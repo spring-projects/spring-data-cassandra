@@ -93,7 +93,7 @@ public interface ReactiveUpdateOperation {
 		 * @param table {@link CqlIdentifier name} of the table; must not be {@literal null}.
 		 * @return new instance of {@link UpdateWithQuery}.
 		 * @throws IllegalArgumentException if {@link CqlIdentifier table} is {@literal null}.
-		 * @see org.springframework.data.cassandra.core.cql.CqlIdentifier
+		 * @see com.datastax.oss.driver.api.core.CqlIdentifier
 		 * @see UpdateWithQuery
 		 */
 		UpdateWithQuery inTable(CqlIdentifier table);

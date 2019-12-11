@@ -81,7 +81,7 @@ public interface ExecutableInsertOperation {
 		 * @param table {@link CqlIdentifier name} of the table; must not be {@literal null}.
 		 * @return new instance of {@link InsertWithOptions}.
 		 * @throws IllegalArgumentException if {@link CqlIdentifier table} is {@literal null}.
-		 * @see org.springframework.data.cassandra.core.cql.CqlIdentifier
+		 * @see com.datastax.oss.driver.api.core.CqlIdentifier
 		 * @see InsertWithOptions
 		 */
 		InsertWithOptions<T> inTable(CqlIdentifier table);
