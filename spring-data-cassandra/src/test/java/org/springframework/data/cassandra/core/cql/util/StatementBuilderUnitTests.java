@@ -17,6 +17,8 @@ package org.springframework.data.cassandra.core.cql.util;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.util.Collections;
+
 import org.junit.Test;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -67,6 +69,39 @@ public class StatementBuilderUnitTests {
 
 		assertThat(statement.getQuery()).isEqualTo("SELECT * FROM person WHERE foo=?");
 		assertThat(statement.getPositionalValues()).containsOnly("bar");
+	}
+
+	@Test // DATACASS-656
+	public void shouldBindList() {
+
+		SimpleStatement statement = StatementBuilder.of(QueryBuilder.selectFrom("person").all())
+				.bind((select, factory) -> select
+						.where(Relation.column("foo").isEqualTo(factory.create(Collections.singletonList("value")))))
+				.build(StatementBuilder.ParameterHandling.INLINE);
+
+		assertThat(statement.getQuery()).isEqualTo("SELECT * FROM person WHERE foo=['value']");
+	}
+
+	@Test // DATACASS-656
+	public void shouldBindSet() {
+
+		SimpleStatement statement = StatementBuilder.of(QueryBuilder.selectFrom("person").all())
+				.bind((select, factory) -> select
+						.where(Relation.column("foo").isEqualTo(factory.create(Collections.singleton("value")))))
+				.build(StatementBuilder.ParameterHandling.INLINE);
+
+		assertThat(statement.getQuery()).isEqualTo("SELECT * FROM person WHERE foo={'value'}");
+	}
+
+	@Test // DATACASS-656
+	public void shouldBindMap() {
+
+		SimpleStatement statement = StatementBuilder.of(QueryBuilder.selectFrom("person").all())
+				.bind((select, factory) -> select
+						.where(Relation.column("foo").isEqualTo(factory.create(Collections.singletonMap("key", "value")))))
+				.build(StatementBuilder.ParameterHandling.INLINE);
+
+		assertThat(statement.getQuery()).isEqualTo("SELECT * FROM person WHERE foo={'key':'value'}");
 	}
 
 	@Test // DATACASS-656
