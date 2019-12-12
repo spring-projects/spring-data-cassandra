@@ -47,7 +47,7 @@ public class AlterKeyspaceCqlGenerator extends KeyspaceOptionsCqlGenerator<Alter
 	}
 
 	private void preambleCql(StringBuilder cql) {
-		cql.append("ALTER KEYSPACE ").append(spec().getName()).append(" ");
+		cql.append("ALTER KEYSPACE ").append(spec().getName().asCql(true)).append(" ");
 	}
 
 	@SuppressWarnings("unchecked")

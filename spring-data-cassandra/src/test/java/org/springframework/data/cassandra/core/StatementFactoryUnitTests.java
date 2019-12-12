@@ -17,6 +17,8 @@ package org.springframework.data.cassandra.core;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -28,6 +30,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.convert.UpdateMapper;
+import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.data.cassandra.core.cql.util.StatementBuilder;
 import org.springframework.data.cassandra.core.cql.util.StatementBuilder.ParameterHandling;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
@@ -39,8 +42,8 @@ import org.springframework.data.cassandra.core.query.Update;
 import org.springframework.data.cassandra.domain.Group;
 import org.springframework.data.domain.Sort;
 
-import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
 import com.datastax.oss.driver.api.querybuilder.delete.Delete;
+import com.datastax.oss.driver.api.querybuilder.insert.RegularInsert;
 import com.datastax.oss.driver.api.querybuilder.select.Select;
 
 /**
@@ -91,7 +94,6 @@ public class StatementFactoryUnitTests {
 	@Test // DATACASS-549
 	public void shouldMapSelectQueryIsNotNull() {
 
-		System.out.println(QueryBuilder.selectFrom("foo").column("age").build(ParameterHandling.INLINE).getQuery());
 		Query query = Query.query(Criteria.where("foo").isNotNull()).columns(Columns.from("age"));
 
 		StatementBuilder<Select> select = statementFactory.select(query, groupEntity);
@@ -135,14 +137,79 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldMapDeleteQueryWithTtlColumns() {
+	public void shouldMapDeleteQueryWithTimestampColumns() {
 
-		Query query = Query.query(Criteria.where("foo").is("bar"));
+		DeleteOptions options = DeleteOptions.builder().timestamp(1234).build();
+		Query query = Query.query(Criteria.where("foo").is("bar")).queryOptions(options);
 
 		StatementBuilder<Delete> delete = statementFactory.delete(query,
 				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
 
-		assertThat(delete.build(ParameterHandling.INLINE).getQuery()).isEqualTo("DELETE FROM group WHERE foo='bar'");
+		assertThat(delete.build(ParameterHandling.INLINE).getQuery())
+				.isEqualTo("DELETE FROM group USING TIMESTAMP 1234 WHERE foo='bar'");
+	}
+
+	@Test // DATACASS-656
+	public void shouldCreateInsert() {
+
+		Person person = new Person();
+		person.id = "foo";
+
+		StatementBuilder<RegularInsert> insert = statementFactory.insert(person, WriteOptions.empty());
+
+		assertThat(insert.build(ParameterHandling.INLINE).getQuery()).isEqualTo("INSERT INTO person (id) VALUES ('foo')");
+	}
+
+	@Test // DATACASS-656
+	public void shouldCreateInsertIfNotExists() {
+
+		InsertOptions options = InsertOptions.builder().withIfNotExists().build();
+		Person person = new Person();
+		person.id = "foo";
+
+		StatementBuilder<RegularInsert> insert = statementFactory.insert(person, options);
+
+		assertThat(insert.build(ParameterHandling.INLINE).getQuery())
+				.isEqualTo("INSERT INTO person (id) VALUES ('foo') IF NOT EXISTS");
+	}
+
+	@Test // DATACASS-656
+	public void shouldCreateSetInsertNulls() {
+
+		InsertOptions options = InsertOptions.builder().withInsertNulls().build();
+		Person person = new Person();
+		person.id = "foo";
+
+		StatementBuilder<RegularInsert> insert = statementFactory.insert(person, options);
+
+		assertThat(insert.build(ParameterHandling.INLINE).getQuery()).isEqualTo(
+				"INSERT INTO person (first_name,id,list,map,number,set_col) VALUES (NULL,'foo',NULL,NULL,NULL,NULL)");
+	}
+
+	@Test // DATACASS-656
+	public void shouldCreateSetInsertWithTtl() {
+
+		WriteOptions options = WriteOptions.builder().ttl(Duration.ofMinutes(1)).build();
+		Person person = new Person();
+		person.id = "foo";
+
+		StatementBuilder<RegularInsert> insert = statementFactory.insert(person, options);
+
+		assertThat(insert.build(ParameterHandling.INLINE).getQuery())
+				.isEqualTo("INSERT INTO person (id) VALUES ('foo') USING TTL 60");
+	}
+
+	@Test // DATACASS-656
+	public void shouldCreateSetInsertWithTimestamp() {
+
+		WriteOptions options = WriteOptions.builder().timestamp(1234).build();
+		Person person = new Person();
+		person.id = "foo";
+
+		StatementBuilder<RegularInsert> insert = statementFactory.insert(person, options);
+
+		assertThat(insert.build(ParameterHandling.INLINE).getQuery())
+				.isEqualTo("INSERT INTO person (id) VALUES ('foo') USING TIMESTAMP 1234");
 	}
 
 	@Test // DATACASS-343
@@ -155,6 +222,32 @@ public class StatementFactoryUnitTests {
 
 		assertThat(update.build(ParameterHandling.INLINE).getQuery())
 				.isEqualTo("UPDATE person SET first_name='baz', boo='baa' WHERE foo='bar'");
+	}
+
+	@Test // DATACASS-656
+	public void shouldCreateSetUpdateWithTtl() {
+
+		WriteOptions options = WriteOptions.builder().ttl(Duration.ofMinutes(1)).build();
+		Query query = Query.query(Criteria.where("foo").is("bar")).queryOptions(options);
+
+		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory.update(query,
+				Update.empty().set("firstName", "baz"), personEntity);
+
+		assertThat(update.build(ParameterHandling.INLINE).getQuery())
+				.isEqualTo("UPDATE person USING TTL 60 SET first_name='baz' WHERE foo='bar'");
+	}
+
+	@Test // DATACASS-656
+	public void shouldCreateSetUpdateWithTimestamp() {
+
+		WriteOptions options = WriteOptions.builder().timestamp(1234).build();
+		Query query = Query.query(Criteria.where("foo").is("bar")).queryOptions(options);
+
+		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory.update(query,
+				Update.empty().set("firstName", "baz"), personEntity);
+
+		assertThat(update.build(ParameterHandling.INLINE).getQuery())
+				.isEqualTo("UPDATE person USING TIMESTAMP 1234 SET first_name='baz' WHERE foo='bar'");
 	}
 
 	@Test // DATACASS-343
@@ -295,6 +388,89 @@ public class StatementFactoryUnitTests {
 
 		assertThat(update.build(ParameterHandling.INLINE).getQuery())
 				.isEqualTo("UPDATE person SET first_name='baz' WHERE foo='bar' IF foo='baz'");
+	}
+
+	@Test // DATACASS-656
+	public void shouldCreateSetUpdateFromObject() {
+
+		Person person = new Person();
+		person.id = "foo";
+		person.firstName = "bar";
+
+		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory.update(person,
+				WriteOptions.empty());
+
+		assertThat(update.build(ParameterHandling.INLINE).getQuery())
+				.isEqualTo("UPDATE person SET first_name='bar', list=NULL, map=NULL, number=NULL, set_col=NULL WHERE id='foo'");
+	}
+
+	@Test // DATACASS-656
+	public void shouldCreateSetUpdateFromObjectIfExists() {
+
+		UpdateOptions options = UpdateOptions.builder().withIfExists().build();
+		Person person = new Person();
+		person.id = "foo";
+		person.firstName = "bar";
+
+		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory.update(person,
+				options);
+
+		assertThat(update.build(ParameterHandling.INLINE).getQuery()).endsWith("IF EXISTS");
+	}
+
+	@Test // DATACASS-656
+	public void shouldCreateSetUpdateFromObjectIfCondition() {
+
+		UpdateOptions options = UpdateOptions.builder().ifCondition(Criteria.where("foo").is("bar")).build();
+		Person person = new Person();
+		person.id = "foo";
+		person.firstName = "bar";
+
+		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory.update(person,
+				options);
+
+		assertThat(update.build(ParameterHandling.INLINE).getQuery()).endsWith("IF foo='bar'");
+	}
+
+	@Test // DATACASS-656
+	public void shouldCreateSetUpdateFromObjectWithTtl() {
+
+		WriteOptions options = WriteOptions.builder().ttl(Duration.ofMinutes(1)).build();
+		Person person = new Person();
+		person.id = "foo";
+
+		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory.update(person,
+				options);
+
+		assertThat(update.build(ParameterHandling.INLINE).getQuery()).startsWith("UPDATE person USING TTL 60 SET");
+	}
+
+	@Test // DATACASS-656
+	public void shouldCreateSetUpdateFromObjectWithTimestamp() {
+
+		WriteOptions options = WriteOptions.builder().timestamp(1234).build();
+		Person person = new Person();
+		person.id = "foo";
+
+		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory.update(person,
+				options);
+
+		assertThat(update.build(ParameterHandling.INLINE).getQuery()).startsWith("UPDATE person USING TIMESTAMP 1234 SET");
+	}
+
+	@Test // DATACASS-656
+	public void shouldCreateSetUpdateFromObjectWithEmptyCollections() {
+
+		Person person = new Person();
+		person.id = "foo";
+		person.set = Collections.emptySet();
+		person.list = Collections.emptyList();
+
+		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory.update(person,
+				WriteOptions.empty());
+
+		assertThat(update.build(ParameterHandling.INLINE).getQuery())
+				.isEqualTo("UPDATE person SET first_name=NULL, list=[], map=NULL, number=NULL, set_col={} WHERE id='foo'");
 	}
 
 	@Test // DATACASS-512

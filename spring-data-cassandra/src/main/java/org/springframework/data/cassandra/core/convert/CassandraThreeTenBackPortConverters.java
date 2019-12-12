@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -30,7 +31,9 @@ import org.springframework.data.convert.WritingConverter;
 import org.springframework.util.ClassUtils;
 
 import org.threeten.bp.LocalDate;
+import org.threeten.bp.LocalDateTime;
 import org.threeten.bp.LocalTime;
+import org.threeten.bp.ZoneId;
 import org.threeten.bp.temporal.ChronoField;
 
 /**
@@ -73,6 +76,11 @@ public abstract class CassandraThreeTenBackPortConverters {
 
 		converters.add(FromBpLocalDateConverter.INSTANCE);
 		converters.add(ToBpLocalDateConverter.INSTANCE);
+
+		converters.add(FromBpLocalDateTimeConverter.INSTANCE);
+		converters.add(ToBpLocalDateTimeConverter.INSTANCE);
+
+		converters.add(LocalDateTimeToInstantConverter.INSTANCE);
 
 		return converters;
 	}
@@ -174,6 +182,56 @@ public abstract class CassandraThreeTenBackPortConverters {
 		@Override
 		public LocalDate convert(java.time.LocalDate date) {
 			return LocalDate.of(date.getYear(), date.getMonthValue(), date.getDayOfMonth());
+		}
+	}
+
+	/**
+	 * Simple singleton to convert {@link LocalDateTime}s to their {@link java.time.LocalDateTime} representation.
+	 *
+	 * @since 3.0
+	 */
+	@ReadingConverter
+	public enum FromBpLocalDateTimeConverter implements Converter<LocalDateTime, java.time.LocalDateTime> {
+
+		INSTANCE;
+
+		@Override
+		public java.time.LocalDateTime convert(LocalDateTime date) {
+			return java.time.LocalDateTime.of(date.getYear(), date.getMonthValue(), date.getDayOfMonth(), date.getHour(),
+					date.getMinute(), date.getSecond(), date.getNano());
+		}
+	}
+
+	/**
+	 * Simple singleton to convert {@link java.time.LocalDateTime}s to their {@link LocalDateTime} representation.
+	 *
+	 * @since 3.0
+	 */
+	@ReadingConverter
+	public enum ToBpLocalDateTimeConverter implements Converter<java.time.LocalDateTime, LocalDateTime> {
+
+		INSTANCE;
+
+		@Override
+		public LocalDateTime convert(java.time.LocalDateTime date) {
+			return LocalDateTime.of(date.getYear(), date.getMonthValue(), date.getDayOfMonth(), date.getHour(),
+					date.getMinute(), date.getSecond(), date.getNano());
+		}
+	}
+
+	/**
+	 * Force {@link LocalDateTime} to remain a {@link Instant}.
+	 *
+	 * @since 3.0
+	 */
+	@WritingConverter
+	enum LocalDateTimeToInstantConverter implements Converter<LocalDateTime, java.time.Instant> {
+
+		INSTANCE;
+
+		@Override
+		public java.time.Instant convert(LocalDateTime source) {
+			return Instant.ofEpochMilli(source.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
 		}
 	}
 }

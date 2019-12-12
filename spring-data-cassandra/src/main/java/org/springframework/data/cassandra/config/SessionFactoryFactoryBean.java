@@ -131,6 +131,8 @@ public class SessionFactoryFactoryBean extends AbstractFactoryBean<SessionFactor
 		}
 
 		performSchemaAction();
+
+		this.session.refreshSchema();
 	}
 
 	@Override

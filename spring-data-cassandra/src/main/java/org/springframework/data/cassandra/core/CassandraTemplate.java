@@ -750,7 +750,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 
 	}
 
-	private WriteResult doDeleteVersioned(Statement<?> statement, Object entity, AdaptibleEntity<Object> source,
+	private WriteResult doDeleteVersioned(SimpleStatement statement, Object entity, AdaptibleEntity<Object> source,
 			CqlIdentifier tableName) {
 
 		return executeDelete(entity, tableName, statement, result -> {
@@ -779,8 +779,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		CassandraPersistentEntity<?> entity = getRequiredPersistentEntity(entityClass);
 		CqlIdentifier tableName = entity.getTableName();
 
-		StatementBuilder<Delete> delete = getStatementFactory().deleteById(id,
-				(source, sink) -> getConverter().write(source, sink, entity), tableName);
+		StatementBuilder<Delete> delete = getStatementFactory().deleteById(id, entity, tableName);
 		SimpleStatement statement = delete.build();
 
 		maybeEmitEvent(new BeforeDeleteEvent<>(statement, entityClass, tableName));
@@ -851,11 +850,11 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	// Implementation hooks and utility methods
 	// -------------------------------------------------------------------------
 
-	private <T> EntityWriteResult<T> executeSave(T entity, CqlIdentifier tableName, Statement<?> statement) {
+	private <T> EntityWriteResult<T> executeSave(T entity, CqlIdentifier tableName, SimpleStatement statement) {
 		return executeSave(entity, tableName, statement, ignore -> {});
 	}
 
-	private <T> EntityWriteResult<T> executeSave(T entity, CqlIdentifier tableName, Statement<?> statement,
+	private <T> EntityWriteResult<T> executeSave(T entity, CqlIdentifier tableName, SimpleStatement statement,
 			Consumer<WriteResult> resultConsumer) {
 
 		maybeEmitEvent(new BeforeSaveEvent<>(entity, tableName, statement));
@@ -869,7 +868,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		return EntityWriteResult.of(result, entityToSave);
 	}
 
-	private WriteResult executeDelete(Object entity, CqlIdentifier tableName, Statement<?> statement,
+	private WriteResult executeDelete(Object entity, CqlIdentifier tableName, SimpleStatement statement,
 			Consumer<WriteResult> resultConsumer) {
 
 		maybeEmitEvent(new BeforeDeleteEvent<>(statement, entity.getClass(), tableName));
@@ -968,7 +967,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	@Value
 	static class StatementCallback implements SessionCallback<WriteResult>, CqlProvider {
 
-		@lombok.NonNull Statement<?> statement;
+		@lombok.NonNull SimpleStatement statement;
 
 		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.core.cql.SessionCallback#doInSession(org.springframework.data.cassandra.Session)
@@ -983,7 +982,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		 */
 		@Override
 		public String getCql() {
-			return this.statement.toString();
+			return this.statement.getQuery();
 		}
 	}
 }

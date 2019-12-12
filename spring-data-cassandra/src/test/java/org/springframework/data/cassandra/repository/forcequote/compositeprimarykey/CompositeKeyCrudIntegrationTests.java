@@ -47,7 +47,7 @@ public class CompositeKeyCrudIntegrationTests extends AbstractKeyspaceCreatingIn
 	private CorrelationEntity correlationEntity1, correlationEntity2;
 
 	@Before
-	public void setUp() throws Throwable {
+	public void setUp() {
 
 		operations = new CassandraTemplate(session);
 

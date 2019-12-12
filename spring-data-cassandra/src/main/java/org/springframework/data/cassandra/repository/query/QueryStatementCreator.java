@@ -209,9 +209,6 @@ class QueryStatementCreator {
 
 			return function.apply(query);
 		} catch (RuntimeException cause) {
-
-			// TODO
-			cause.printStackTrace();
 			throw QueryCreationException.create(this.queryMethod, cause);
 		}
 	}

@@ -137,7 +137,16 @@ public class CassandraRule extends ExternalResource {
 	}
 
 	/**
-	 * Returns the {@link Session}. The session state can be initialized and pointing to a keyspace other than
+	 * Returns the system {@link CqlSession}.
+	 *
+	 * @return the Session
+	 */
+	public CqlSession getSystemSession() {
+		return this.system;
+	}
+
+	/**
+	 * Returns the {@link CqlSession}. The session state can be initialized and pointing to a keyspace other than
 	 * {@code system}.
 	 *
 	 * @return the Session
@@ -282,6 +291,7 @@ public class CassandraRule extends ExternalResource {
 			this.sessionBuilder = this.parent.sessionBuilder;
 		}
 
+		this.system = resolveSystemSession();
 		this.session = resolveSession();
 	}
 
@@ -303,10 +313,16 @@ public class CassandraRule extends ExternalResource {
 		return isEmbedded() ? EmbeddedCassandraServerHelper.getNativeTransportPort() : this.properties.getCassandraPort();
 	}
 
+	private CqlSession resolveSystemSession() {
+
+		return isNotParent() ? this.parent.getSystemSession()
+				: resourceHolder != null ? resourceHolder.system : this.sessionBuilder.build();
+	}
+
 	private CqlSession resolveSession() {
 
 		return isNotParent() ? this.parent.getSession()
-				: resourceHolder != null ? resourceHolder.system : this.sessionBuilder.build();
+				: resourceHolder != null ? resourceHolder.toUse : this.sessionBuilder.build();
 	}
 
 	private void executeBeforeHooks() {
@@ -411,13 +427,16 @@ public class CassandraRule extends ExternalResource {
 	private static class ResourceHolder {
 
 		private final CqlSessionBuilder sessionBuilder;
-		private final CqlSession system;
+		final CqlSession system;
+		final CqlSession toUse;
 
 		private ResourceHolder(CqlSessionBuilder sessionBuilder) {
 			this.sessionBuilder = sessionBuilder;
 			this.system = sessionBuilder.build();
+			this.toUse = sessionBuilder.build();
 
 			Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+				toUse.close();
 				system.close();
 			}));
 		}

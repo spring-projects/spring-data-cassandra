@@ -40,10 +40,10 @@ import org.springframework.data.cassandra.core.query.CassandraPageRequest;
 import org.springframework.data.cassandra.domain.Group;
 import org.springframework.data.cassandra.domain.GroupKey;
 import org.springframework.data.cassandra.domain.User;
+import org.springframework.data.cassandra.repository.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.data.cassandra.repository.support.IntegrationTestConfig;
 import org.springframework.data.cassandra.repository.support.ReactiveCassandraRepositoryFactory;
 import org.springframework.data.cassandra.repository.support.SimpleReactiveCassandraRepository;
-import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
@@ -63,7 +63,7 @@ import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-public class ReactiveCassandraRepositoryIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest
+public class ReactiveCassandraRepositoryIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest
 		implements BeanClassLoaderAware, BeanFactoryAware {
 
 	@Configuration
@@ -102,7 +102,7 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractKeyspac
 		TableMetadata users = session.getKeyspace().flatMap(it -> session.getMetadata().getKeyspace(it))
 				.flatMap(it -> it.getTable(CqlIdentifier.fromCql("users"))).get();
 
-		if (users.getIndexes().containsKey(CqlIdentifier.fromCql("IX_lastname"))) {
+		if (!users.getIndexes().containsKey(CqlIdentifier.fromCql("IX_lastname"))) {
 			session.execute("CREATE INDEX IX_lastname ON users (lastname);");
 			Thread.sleep(500);
 		}

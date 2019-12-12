@@ -20,8 +20,11 @@ import static org.springframework.data.cassandra.core.cql.keyspace.CreateKeyspac
 import java.util.Collections;
 import java.util.List;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.cassandra.ReactiveSession;
 import org.springframework.data.cassandra.config.AbstractReactiveCassandraConfiguration;
+import org.springframework.data.cassandra.config.CqlSessionFactoryBean;
 import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateKeyspaceSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.DropKeyspaceSpecification;
@@ -46,6 +49,31 @@ public class IntegrationTestConfig extends AbstractReactiveCassandraConfiguratio
 	@Override
 	protected int getPort() {
 		return PORT;
+	}
+
+	@Bean
+	@Override
+	public CqlSessionFactoryBean session() {
+
+		SharedCqlSessionFactoryBean bean = new SharedCqlSessionFactoryBean();
+
+		bean.setContactPoints(getContactPoints());
+		bean.setPort(getPort());
+
+		bean.setKeyspaceCreations(getKeyspaceCreations());
+		bean.setKeyspaceDrops(getKeyspaceDrops());
+
+		bean.setKeyspaceName(getKeyspaceName());
+		bean.setKeyspaceStartupScripts(getStartupScripts());
+		bean.setKeyspaceShutdownScripts(getShutdownScripts());
+
+		return bean;
+	}
+
+	@Bean(destroyMethod = "")
+	@Override
+	public ReactiveSession reactiveSession() {
+		return super.reactiveSession();
 	}
 
 	@Override

@@ -369,7 +369,7 @@ public class QueryMapperUnitTests {
 				this.mappingContext.getRequiredPersistentEntity(Person.class));
 
 		assertThat(mappedObject)
-				.contains(Criteria.where("localtime").gt(java.time.LocalTime.ofNanoOfDay(TimeUnit.NANOSECONDS.toMillis(1000))));
+				.contains(Criteria.where("localtime").gt(java.time.LocalTime.ofNanoOfDay(TimeUnit.MILLISECONDS.toNanos(1000))));
 	}
 
 	@Test // DATACASS-523

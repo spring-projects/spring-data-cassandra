@@ -101,6 +101,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		CassandraMappingContext mappingContext = new CassandraMappingContext();
 
 		mappingContext.setCustomConversions(new CassandraCustomConversions(Collections.emptyList()));
+		mappingContext.afterPropertiesSet();
 
 		return mappingContext;
 	}
@@ -593,22 +594,31 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		return id;
 	}
 
+	/**
+	 * Check custom conversions for type override or fall back to
+	 * {@link #determineTargetType(CassandraPersistentProperty)}
+	 *
+	 * @param property
+	 * @return
+	 */
 	private Class<?> getTargetType(CassandraPersistentProperty property) {
+		return getCustomConversions().getCustomWriteTarget(property.getType())
+				.orElseGet(() -> determineTargetType(property));
+	}
 
-		return getCustomConversions().getCustomWriteTarget(property.getType()).orElseGet(() -> {
+	private Class<?> determineTargetType(CassandraPersistentProperty property) {
 
-			if (property.isAnnotationPresent(CassandraType.class)) {
-				return getPropertyTargetType(property);
-			}
-
-			if (property.isCompositePrimaryKey() || property.isCollectionLike()
-					|| getCustomConversions().isSimpleType(property.getType())) {
-
-				return property.getType();
-			}
-
+		if (property.isAnnotationPresent(CassandraType.class)) {
 			return getPropertyTargetType(property);
-		});
+		}
+
+		if (property.isCompositePrimaryKey() || property.isCollectionLike()
+				|| getCustomConversions().isSimpleType(property.getType())) {
+
+			return property.getType();
+		}
+
+		return getPropertyTargetType(property);
 	}
 
 	private Class<?> getPropertyTargetType(CassandraPersistentProperty property) {
@@ -638,7 +648,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	@Nullable
 	@SuppressWarnings("unchecked")
 	private <T> T getWriteValue(CassandraPersistentProperty property, ConvertingPropertyAccessor propertyAccessor) {
-		return (T) getWriteValue(propertyAccessor.getProperty(property, (Class<T>) getTargetType(property)),
+		return (T) getWriteValue(propertyAccessor.getProperty(property, (Class<T>) determineTargetType(property)),
 				property.getTypeInformation());
 	}
 

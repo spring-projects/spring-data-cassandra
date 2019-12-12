@@ -132,7 +132,7 @@ public class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCrea
 
 		execute(spec);
 
-		assertThat(getTableMetadata("addamsfamily").getColumn("gender")).isNull();
+		assertThat(getTableMetadata("addamsfamily").getColumn("gender")).isEmpty();
 	}
 
 	@Test // DATACASS-192
@@ -144,8 +144,8 @@ public class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCrea
 
 		execute(spec);
 
-		assertThat(getTableMetadata("addamsfamily").getColumn("name")).isNull();
-		assertThat(getTableMetadata("addamsfamily").getColumn("newname")).isNotNull();
+		assertThat(getTableMetadata("addamsfamily").getColumn("name")).isEmpty();
+		assertThat(getTableMetadata("addamsfamily").getColumn("newname")).isPresent();
 	}
 
 	@Test // DATACASS-192
@@ -161,10 +161,8 @@ public class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCrea
 
 		execute(spec);
 
-		/**
-		 * TODO assertThat(getTableMetadata("users").getOptions().getCaching().get("keys")).isEqualTo("NONE");
-		 * assertThat(getTableMetadata("users").getOptions().getCaching().get("rows_per_partition")).isEqualTo("15");
-		 */
+		assertThat(getTableMetadata("users").getOptions().toString())
+				.contains("caching={keys=NONE, rows_per_partition=15}");
 	}
 
 	private void execute(AlterTableSpecification spec) {
@@ -173,7 +171,7 @@ public class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCrea
 
 	private TableMetadata getTableMetadata(String table) {
 
-		KeyspaceMetadata keyspace = session.getMetadata().getKeyspace(session.getKeyspace().get()).get();
+		KeyspaceMetadata keyspace = session.refreshSchema().getKeyspace(session.getKeyspace().get()).get();
 		return keyspace.getTable(table).get();
 	}
 }

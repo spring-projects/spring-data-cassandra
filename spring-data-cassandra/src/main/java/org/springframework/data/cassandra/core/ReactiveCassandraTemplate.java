@@ -587,7 +587,7 @@ public class ReactiveCassandraTemplate
 		});
 	}
 
-	private <T> Mono<EntityWriteResult<T>> doInsertVersioned(Statement<?> insert, T entity, AdaptibleEntity<T> source,
+	private <T> Mono<EntityWriteResult<T>> doInsertVersioned(SimpleStatement insert, T entity, AdaptibleEntity<T> source,
 			CqlIdentifier tableName) {
 
 		return executeSave(entity, tableName, insert, (result, sink) -> {
@@ -605,7 +605,7 @@ public class ReactiveCassandraTemplate
 		});
 	}
 
-	private <T> Mono<EntityWriteResult<T>> doInsert(Statement<?> insert, T entity, CqlIdentifier tableName) {
+	private <T> Mono<EntityWriteResult<T>> doInsert(SimpleStatement insert, T entity, CqlIdentifier tableName) {
 		return executeSave(entity, tableName, insert);
 	}
 
@@ -698,7 +698,7 @@ public class ReactiveCassandraTemplate
 				: doDelete(builder.build(), entity, tableName);
 	}
 
-	private Mono<WriteResult> doDeleteVersioned(Statement<?> delete, Object entity, AdaptibleEntity<Object> source,
+	private Mono<WriteResult> doDeleteVersioned(SimpleStatement delete, Object entity, AdaptibleEntity<Object> source,
 			CqlIdentifier tableName) {
 
 		return executeDelete(entity, tableName, delete, (result, sink) -> {
@@ -716,7 +716,7 @@ public class ReactiveCassandraTemplate
 		});
 	}
 
-	private Mono<WriteResult> doDelete(Statement<?> delete, Object entity, CqlIdentifier tableName) {
+	private Mono<WriteResult> doDelete(SimpleStatement delete, Object entity, CqlIdentifier tableName) {
 		return executeDelete(entity, tableName, delete, (result, sink) -> sink.next(result));
 	}
 
@@ -732,7 +732,7 @@ public class ReactiveCassandraTemplate
 		CassandraPersistentEntity<?> entity = getRequiredPersistentEntity(entityClass);
 		CqlIdentifier tableName = entity.getTableName();
 
-		StatementBuilder<Delete> builder = getStatementFactory().deleteById(id, getConverter(), tableName);
+		StatementBuilder<Delete> builder = getStatementFactory().deleteById(id, entity, tableName);
 		SimpleStatement delete = builder.build();
 
 		Mono<Boolean> result = getReactiveCqlOperations().execute(delete)
@@ -799,11 +799,11 @@ public class ReactiveCassandraTemplate
 	// Implementation hooks and utility methods
 	// -------------------------------------------------------------------------
 
-	private <T> Mono<EntityWriteResult<T>> executeSave(T entity, CqlIdentifier tableName, Statement<?> statement) {
+	private <T> Mono<EntityWriteResult<T>> executeSave(T entity, CqlIdentifier tableName, SimpleStatement statement) {
 		return executeSave(entity, tableName, statement, (writeResult, sink) -> sink.next(writeResult));
 	}
 
-	private <T> Mono<EntityWriteResult<T>> executeSave(T entity, CqlIdentifier tableName, Statement<?> statement,
+	private <T> Mono<EntityWriteResult<T>> executeSave(T entity, CqlIdentifier tableName, SimpleStatement statement,
 			BiConsumer<EntityWriteResult<T>, SynchronousSink<EntityWriteResult<T>>> handler) {
 
 		return Mono.defer(() -> {
@@ -820,7 +820,7 @@ public class ReactiveCassandraTemplate
 
 	}
 
-	private Mono<WriteResult> executeDelete(Object entity, CqlIdentifier tableName, Statement<?> statement,
+	private Mono<WriteResult> executeDelete(Object entity, CqlIdentifier tableName, SimpleStatement statement,
 			BiConsumer<WriteResult, SynchronousSink<WriteResult>> handler) {
 
 		maybeEmitEvent(new BeforeDeleteEvent<>(statement, entity.getClass(), tableName));
@@ -917,7 +917,7 @@ public class ReactiveCassandraTemplate
 	@Value
 	static class StatementCallback implements ReactiveSessionCallback<WriteResult>, CqlProvider {
 
-		@lombok.NonNull Statement<?> statement;
+		@lombok.NonNull SimpleStatement statement;
 
 		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.core.cql.ReactiveSessionCallback#doInSession(org.springframework.data.cassandra.ReactiveSession)
@@ -932,7 +932,7 @@ public class ReactiveCassandraTemplate
 		 */
 		@Override
 		public String getCql() {
-			return this.statement.toString();
+			return this.statement.getQuery();
 		}
 
 		private static Mono<WriteResult> toWriteResult(ReactiveResultSet resultSet) {

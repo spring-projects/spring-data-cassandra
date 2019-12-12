@@ -202,7 +202,7 @@ public class ColumnSpecification {
 	}
 
 	public StringBuilder toCql(StringBuilder cql) {
-		return cql.append(name).append(" ").append(type.asCql(true, true));
+		return cql.append(name.asCql(true)).append(" ").append(type.asCql(true, true));
 	}
 
 	/* (non-Javadoc)

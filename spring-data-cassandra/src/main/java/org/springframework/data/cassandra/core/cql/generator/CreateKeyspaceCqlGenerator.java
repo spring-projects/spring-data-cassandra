@@ -50,7 +50,8 @@ public class CreateKeyspaceCqlGenerator extends KeyspaceOptionsCqlGenerator<Crea
 	}
 
 	private void preambleCql(StringBuilder cql) {
-		cql.append("CREATE KEYSPACE ").append(spec().getIfNotExists() ? "IF NOT EXISTS " : "").append(spec().getName());
+		cql.append("CREATE KEYSPACE ").append(spec().getIfNotExists() ? "IF NOT EXISTS " : "")
+				.append(spec().getName().asCql(true));
 	}
 
 	@SuppressWarnings("unchecked")

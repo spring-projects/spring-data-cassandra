@@ -141,7 +141,7 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 
 	/**
 	 * Returns the list of startup scripts to be run after {@link #getKeyspaceCreations() keyspace creations} and after
-	 * initialization.
+	 * initialization in the {@code system} keyspace.
 	 *
 	 * @return the list of startup scripts, may be empty but never {@link null}
 	 * @deprecated since 3.0, declare a
@@ -154,7 +154,7 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 
 	/**
 	 * Returns the list of shutdown scripts to be run after {@link #getKeyspaceDrops() keyspace drops} and right before
-	 * shutdown.
+	 * shutdown in the {@code system} keyspace.
 	 *
 	 * @return the list of shutdown scripts, may be empty but never {@link null}
 	 * @deprecated since 3.0, declare a

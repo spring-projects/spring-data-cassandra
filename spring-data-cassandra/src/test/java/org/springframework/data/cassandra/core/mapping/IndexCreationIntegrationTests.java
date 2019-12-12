@@ -70,8 +70,8 @@ public class IndexCreationIntegrationTests extends AbstractKeyspaceCreatingInteg
 
 		TableMetadata metadata = getMetadata(createTable.getName());
 
-		assertThat(metadata.getIndexes().get("firstname_index")).isNotNull();
-		assertThat(metadata.getIndexes().get("withsecondaryindex_map_idx")).isNotNull();
+		assertThat(metadata.getIndexes().get(CqlIdentifier.fromCql("firstname_index"))).isNotNull();
+		assertThat(metadata.getIndexes().get(CqlIdentifier.fromCql("withsecondaryindex_map_idx"))).isNotNull();
 	}
 
 	@Test
@@ -88,11 +88,11 @@ public class IndexCreationIntegrationTests extends AbstractKeyspaceCreatingInteg
 
 		TableMetadata metadata = getMetadata(createTable.getName());
 
-		assertThat(metadata.getIndexes().get("withsasiindex_firstname_idx")).isNotNull();
+		assertThat(metadata.getIndexes().get(CqlIdentifier.fromCql("withsasiindex_firstname_idx"))).isNotNull();
 	}
 
 	private TableMetadata getMetadata(CqlIdentifier tableName) {
-		return session.getMetadata().getKeyspace(session.getKeyspace().get()).flatMap(it -> it.getTable(tableName)).get();
+		return session.refreshSchema().getKeyspace(session.getKeyspace().get()).flatMap(it -> it.getTable(tableName)).get();
 	}
 
 	static class WithSecondaryIndex {

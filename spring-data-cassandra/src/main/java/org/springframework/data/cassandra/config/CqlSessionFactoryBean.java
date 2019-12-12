@@ -33,6 +33,7 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.cassandra.core.CassandraAdminOperations;
+import org.springframework.data.cassandra.core.CassandraAdminTemplate;
 import org.springframework.data.cassandra.core.CassandraPersistentEntitySchemaCreator;
 import org.springframework.data.cassandra.core.CassandraPersistentEntitySchemaDropper;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
@@ -401,18 +402,40 @@ public class CqlSessionFactoryBean implements FactoryBean<CqlSession>, Initializ
 	public void afterPropertiesSet() {
 
 		CqlSessionBuilder sessionBuilder = buildBuilder();
-		this.systemSession = sessionBuilder.build();
+		this.systemSession = buildSystemSession(sessionBuilder);
 
 		initializeCluster(this.systemSession);
 
+		this.session = buildSession(sessionBuilder);
+
+		executeScripts(getStartupScripts().stream(), this.session);
+		performSchemaAction();
+		this.systemSession.refreshSchema();
+		this.session.refreshSchema();
+	}
+
+	/**
+	 * Build the system session.
+	 *
+	 * @param sessionBuilder
+	 * @return
+	 */
+	protected CqlSession buildSystemSession(CqlSessionBuilder sessionBuilder) {
+		return sessionBuilder.withKeyspace("system").build();
+	}
+
+	/**
+	 * Build the keyspace session.
+	 *
+	 * @param sessionBuilder
+	 * @return
+	 */
+	protected CqlSession buildSession(CqlSessionBuilder sessionBuilder) {
 		if (StringUtils.hasText(getKeyspaceName())) {
 			sessionBuilder.withKeyspace(getKeyspaceName());
 		}
 
-		this.session = sessionBuilder.build();
-
-		executeScripts(getStartupScripts().stream(), this.session);
-		performSchemaAction();
+		return sessionBuilder.build();
 	}
 
 	/* (non-Javadoc)
@@ -426,12 +449,26 @@ public class CqlSessionFactoryBean implements FactoryBean<CqlSession>, Initializ
 			executeScripts(getShutdownScripts().stream(), this.session);
 
 			executeSpecsAndScripts(keyspaceDrops, keyspaceShutdownScripts, this.systemSession);
-			systemSession.close();
-			session.close();
+			closeSystemSession();
+			closeSession();
 		}
 	}
 
-	private CqlSessionBuilder buildBuilder() {
+	/**
+	 * Close the regular session object.
+	 */
+	protected void closeSession() {
+		session.close();
+	}
+
+	/**
+	 * Close the system session object.
+	 */
+	protected void closeSystemSession() {
+		systemSession.close();
+	}
+
+	protected CqlSessionBuilder buildBuilder() {
 
 		Assert.hasText(this.contactPoints, "At least one server is required");
 
@@ -514,9 +551,9 @@ public class CqlSessionFactoryBean implements FactoryBean<CqlSession>, Initializ
 	 *          statement.
 	 */
 	protected void createTables(boolean drop, boolean dropUnused, boolean ifNotExists) {
-		// TODO
-		/*CassandraAdminTemplate adminTemplate = new CassandraAdminTemplate(this.session, converter);
-		performSchemaActions(drop, dropUnused, ifNotExists, adminTemplate);*/
+
+		CassandraAdminTemplate adminTemplate = new CassandraAdminTemplate(this.session, converter);
+		performSchemaActions(drop, dropUnused, ifNotExists, adminTemplate);
 	}
 
 	private void performSchemaActions(boolean drop, boolean dropUnused, boolean ifNotExists,

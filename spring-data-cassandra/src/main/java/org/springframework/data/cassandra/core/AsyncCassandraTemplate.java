@@ -604,7 +604,7 @@ public class AsyncCassandraTemplate
 		return doInsert(builder.build(), entityToUse, source, tableName);
 	}
 
-	private <T> ListenableFuture<EntityWriteResult<T>> doInsertVersioned(Statement<?> insert, T entity,
+	private <T> ListenableFuture<EntityWriteResult<T>> doInsertVersioned(SimpleStatement insert, T entity,
 			AdaptibleEntity<T> source, CqlIdentifier tableName) {
 
 		return executeSave(entity, tableName, insert, result -> {
@@ -618,7 +618,8 @@ public class AsyncCassandraTemplate
 	}
 
 	@SuppressWarnings("unused")
-	private <T> ListenableFuture<EntityWriteResult<T>> doInsert(Statement<?> insert, T entity, AdaptibleEntity<T> source,
+	private <T> ListenableFuture<EntityWriteResult<T>> doInsert(SimpleStatement insert, T entity,
+			AdaptibleEntity<T> source,
 			CqlIdentifier tableName) {
 
 		return executeSave(entity, tableName, insert);
@@ -739,8 +740,7 @@ public class AsyncCassandraTemplate
 		CassandraPersistentEntity<?> entity = getRequiredPersistentEntity(entityClass);
 		CqlIdentifier tableName = entity.getTableName();
 
-		StatementBuilder<Delete> builder = getStatementFactory().deleteById(id,
-				(source, sink) -> getConverter().write(source, sink, entity), tableName);
+		StatementBuilder<Delete> builder = getStatementFactory().deleteById(id, entity, tableName);
 		SimpleStatement delete = builder.build();
 
 		maybeEmitEvent(new BeforeDeleteEvent<>(delete, entityClass, tableName));
@@ -776,13 +776,13 @@ public class AsyncCassandraTemplate
 	// -------------------------------------------------------------------------
 
 	private <T> ListenableFuture<EntityWriteResult<T>> executeSave(T entity, CqlIdentifier tableName,
-			Statement<?> statement) {
+			SimpleStatement statement) {
 
 		return executeSave(entity, tableName, statement, ignore -> {});
 	}
 
 	private <T> ListenableFuture<EntityWriteResult<T>> executeSave(T entity, CqlIdentifier tableName,
-			Statement<?> statement, Consumer<WriteResult> beforeAfterSaveEvent) {
+			SimpleStatement statement, Consumer<WriteResult> beforeAfterSaveEvent) {
 
 		maybeEmitEvent(new BeforeSaveEvent<>(entity, tableName, statement));
 		T entityToSave = maybeCallBeforeSave(entity, tableName, statement);
@@ -803,7 +803,7 @@ public class AsyncCassandraTemplate
 		});
 	}
 
-	private ListenableFuture<WriteResult> executeDelete(Object entity, CqlIdentifier tableName, Statement<?> statement,
+	private ListenableFuture<WriteResult> executeDelete(Object entity, CqlIdentifier tableName, SimpleStatement statement,
 			Consumer<WriteResult> resultConsumer) {
 
 		maybeEmitEvent(new BeforeDeleteEvent<>(statement, entity.getClass(), tableName));
@@ -932,9 +932,9 @@ public class AsyncCassandraTemplate
 	@Value
 	class AsyncStatementCallback implements AsyncSessionCallback<AsyncResultSet>, CqlProvider {
 
-		@lombok.NonNull Statement<?> statement;
+		@lombok.NonNull SimpleStatement statement;
 
-		AsyncStatementCallback(Statement<?> statement) {
+		AsyncStatementCallback(SimpleStatement statement) {
 			this.statement = statement;
 		}
 
@@ -954,7 +954,7 @@ public class AsyncCassandraTemplate
 		 */
 		@Override
 		public String getCql() {
-			return this.statement.toString();
+			return this.statement.getQuery();
 		}
 	}
 }

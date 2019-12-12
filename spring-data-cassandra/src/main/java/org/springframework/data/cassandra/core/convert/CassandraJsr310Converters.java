@@ -15,8 +15,11 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
+import static java.time.ZoneId.*;
+
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoField;
 import java.util.ArrayList;
@@ -53,8 +56,11 @@ public abstract class CassandraJsr310Converters {
 		converters.add(LocalTimeToMillisOfDayConverter.INSTANCE);
 
 		converters.add(DateToInstantConverter.INSTANCE);
+		converters.add(LocalDateToInstantConverter.INSTANCE);
+
 		converters.add(LocalDateConverter.INSTANCE);
 		converters.add(LocalTimeConverter.INSTANCE);
+		converters.add(InstantConverter.INSTANCE);
 
 		return converters;
 	}
@@ -99,14 +105,14 @@ public abstract class CassandraJsr310Converters {
 	 *
 	 * @since 3.0
 	 */
-	@ReadingConverter
+	@WritingConverter
 	public enum DateToInstantConverter implements Converter<Date, Instant> {
 
 		INSTANCE;
 
 		@Override
-		public Instant convert(Date date) {
-			return date.toInstant();
+		public Instant convert(Date source) {
+			return source.toInstant();
 		}
 	}
 
@@ -121,8 +127,8 @@ public abstract class CassandraJsr310Converters {
 		INSTANCE;
 
 		@Override
-		public LocalDate convert(LocalDate date) {
-			return date;
+		public LocalDate convert(LocalDate source) {
+			return source;
 		}
 	}
 
@@ -137,8 +143,40 @@ public abstract class CassandraJsr310Converters {
 		INSTANCE;
 
 		@Override
-		public LocalTime convert(LocalTime date) {
-			return date;
+		public LocalTime convert(LocalTime source) {
+			return source;
+		}
+	}
+
+	/**
+	 * Force {@link Instant} to remain a {@link Instant}.
+	 *
+	 * @since 3.0
+	 */
+	@WritingConverter
+	enum InstantConverter implements Converter<Instant, Instant> {
+
+		INSTANCE;
+
+		@Override
+		public Instant convert(Instant source) {
+			return source;
+		}
+	}
+
+	/**
+	 * Force {@link LocalDateTime} to remain a {@link Instant}.
+	 *
+	 * @since 3.0
+	 */
+	@WritingConverter
+	enum LocalDateToInstantConverter implements Converter<LocalDateTime, Instant> {
+
+		INSTANCE;
+
+		@Override
+		public Instant convert(LocalDateTime source) {
+			return source.atZone(systemDefault()).toInstant();
 		}
 	}
 }
