@@ -82,6 +82,8 @@ import com.datastax.oss.driver.api.querybuilder.relation.Relation;
 import com.datastax.oss.driver.api.querybuilder.select.Select;
 import com.datastax.oss.driver.api.querybuilder.term.Term;
 import com.datastax.oss.driver.api.querybuilder.update.Assignment;
+import com.datastax.oss.driver.api.querybuilder.update.OngoingAssignment;
+import com.datastax.oss.driver.api.querybuilder.update.UpdateStart;
 import com.datastax.oss.driver.api.querybuilder.update.UpdateWithAssignments;
 
 /**
@@ -272,7 +274,7 @@ public class StatementFactory {
 
 		CassandraPersistentEntity<?> persistentEntity = cassandraConverter.getMappingContext()
 				.getRequiredPersistentEntity(objectToInsert.getClass());
-		return insert(options, options, persistentEntity, persistentEntity.getTableName());
+		return insert(objectToInsert, options, persistentEntity, persistentEntity.getTableName());
 	}
 
 	/**
@@ -307,7 +309,7 @@ public class StatementFactory {
 		StatementBuilder<RegularInsert> builder = StatementBuilder
 				.of(QueryBuilder.insertInto(tableName).valuesByIds(Collections.emptyMap())).bind((statement, factory) -> {
 
-					Map<CqlIdentifier, Term> values = createTerms(insertNulls, object);
+					Map<CqlIdentifier, Term> values = createTerms(insertNulls, object, factory);
 
 					return statement.valuesByIds(values);
 				}).apply(statement -> (RegularInsert) addWriteOptions(statement, options));
@@ -319,7 +321,8 @@ public class StatementFactory {
 		return builder;
 	}
 
-	private static Map<CqlIdentifier, Term> createTerms(boolean insertNulls, Map<CqlIdentifier, Object> object) {
+	private static Map<CqlIdentifier, Term> createTerms(boolean insertNulls, Map<CqlIdentifier, Object> object,
+			TermFactory factory) {
 
 		Map<CqlIdentifier, Term> values = new LinkedHashMap<>(object.size());
 
@@ -328,7 +331,7 @@ public class StatementFactory {
 			if (o == null && !insertNulls) {
 				return;
 			}
-			values.put(cqlIdentifier, QueryBuilder.literal(o));
+			values.put(cqlIdentifier, factory.create(o));
 		});
 		return values;
 	}
@@ -474,11 +477,12 @@ public class StatementFactory {
 	 * @param tableName must not be {@literal null}.
 	 * @return the delete builder.
 	 */
-	StatementBuilder<Delete> deleteById(Object id, EntityWriter<Object, Object> entityWriter, CqlIdentifier tableName) {
+	StatementBuilder<Delete> deleteById(Object id, CassandraPersistentEntity<?> persistentEntity,
+			CqlIdentifier tableName) {
 
 		Where where = new Where();
 
-		entityWriter.write(id, where);
+		cassandraConverter.write(id, where, persistentEntity);
 
 		return StatementBuilder.of(QueryBuilder.deleteFrom(tableName).where()).bind((statement, factory) -> {
 			return statement.where(toRelations(where, factory));
@@ -644,6 +648,8 @@ public class StatementFactory {
 		}
 
 		select.onBuild(statementBuilder -> {
+
+			query.getPagingState().ifPresent(statementBuilder::setPagingState);
 			query.getQueryOptions().ifPresent(it -> QueryOptionsUtil.addQueryOptions(statementBuilder, it));
 		});
 
@@ -713,17 +719,24 @@ public class StatementFactory {
 	private static StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update(CqlIdentifier table,
 			Update mappedUpdate, Filter filter) {
 
-		List<Assignment> assignments = mappedUpdate.getUpdateOperations().stream().map(StatementFactory::getAssignment)
-				.collect(Collectors.toList());
-		UpdateWithAssignments withAssignments = QueryBuilder.update(table).set(assignments);
+		UpdateStart updateStart = QueryBuilder.update(table);
 
-		return StatementBuilder.of(withAssignments.where()).bind((statement, factory) -> {
+		return StatementBuilder.of((com.datastax.oss.driver.api.querybuilder.update.Update) updateStart)
+				.bind((statement, factory) -> {
 
-			List<Relation> relations = filter.stream().map(criteriaDefinition -> toClause(criteriaDefinition, factory))
-					.collect(Collectors.toList());
+					List<Assignment> assignments = mappedUpdate.getUpdateOperations().stream()
+							.map(assignmentOp -> getAssignment(assignmentOp, factory)).collect(Collectors.toList());
 
-			return statement.where(relations);
-		});
+					return (com.datastax.oss.driver.api.querybuilder.update.Update) ((OngoingAssignment) statement)
+							.set(assignments);
+
+				}).bind((statement, factory) -> {
+
+					List<Relation> relations = filter.stream().map(criteriaDefinition -> toClause(criteriaDefinition, factory))
+							.collect(Collectors.toList());
+
+					return statement.where(relations);
+				});
 	}
 
 	static Iterable<Relation> toRelations(Where where, TermFactory factory) {
@@ -768,39 +781,39 @@ public class StatementFactory {
 		});
 	}
 
-	private static Assignment getAssignment(AssignmentOp assignmentOp) {
+	private static Assignment getAssignment(AssignmentOp assignmentOp, TermFactory termFactory) {
 
 		if (assignmentOp instanceof SetOp) {
-			return getAssignment((SetOp) assignmentOp);
+			return getAssignment((SetOp) assignmentOp, termFactory);
 		}
 
 		if (assignmentOp instanceof RemoveOp) {
-			return getAssignment((RemoveOp) assignmentOp);
+			return getAssignment((RemoveOp) assignmentOp, termFactory);
 		}
 
 		if (assignmentOp instanceof IncrOp) {
-			return getAssignment((IncrOp) assignmentOp);
+			return getAssignment((IncrOp) assignmentOp, termFactory);
 		}
 
 		if (assignmentOp instanceof AddToOp) {
-			return getAssignment((AddToOp) assignmentOp);
+			return getAssignment((AddToOp) assignmentOp, termFactory);
 		}
 
 		if (assignmentOp instanceof AddToMapOp) {
-			return getAssignment((AddToMapOp) assignmentOp);
+			return getAssignment((AddToMapOp) assignmentOp, termFactory);
 		}
 
 		throw new IllegalArgumentException(String.format("UpdateOp %s not supported", assignmentOp));
 	}
 
-	private static Assignment getAssignment(IncrOp incrOp) {
+	private static Assignment getAssignment(IncrOp incrOp, TermFactory termFactory) {
 
 		return incrOp.getValue().intValue() > 0
-				? Assignment.increment(incrOp.toCqlIdentifier(), QueryBuilder.literal(Math.abs(incrOp.getValue().intValue())))
-				: Assignment.decrement(incrOp.toCqlIdentifier(), QueryBuilder.literal(Math.abs(incrOp.getValue().intValue())));
+				? Assignment.increment(incrOp.toCqlIdentifier(), termFactory.create(Math.abs(incrOp.getValue().intValue())))
+				: Assignment.decrement(incrOp.toCqlIdentifier(), termFactory.create(Math.abs(incrOp.getValue().intValue())));
 	}
 
-	private static Assignment getAssignment(SetOp updateOp) {
+	private static Assignment getAssignment(SetOp updateOp, TermFactory termFactory) {
 
 		if (updateOp instanceof SetAtIndexOp) {
 			SetAtIndexOp op = (SetAtIndexOp) updateOp;
@@ -811,22 +824,21 @@ public class StatementFactory {
 
 		if (updateOp instanceof SetAtKeyOp) {
 			SetAtKeyOp op = (SetAtKeyOp) updateOp;
-			return Assignment.setMapValue(op.toCqlIdentifier(), QueryBuilder.literal(op.getKey()),
-					QueryBuilder.literal(op.getValue()));
+			return Assignment.setMapValue(op.toCqlIdentifier(), termFactory.create(op.getKey()),
+					termFactory.create(op.getValue()));
 		}
 
-		return Assignment.setColumn(updateOp.toCqlIdentifier(), QueryBuilder.literal(updateOp.getValue()));
+		return Assignment.setColumn(updateOp.toCqlIdentifier(), termFactory.create(updateOp.getValue()));
 	}
 
-	private static Assignment getAssignment(RemoveOp updateOp) {
+	private static Assignment getAssignment(RemoveOp updateOp, TermFactory termFactory) {
 
 		if (updateOp.getValue() instanceof Set) {
 
 			Collection<Object> collection = (Collection<Object>) updateOp.getValue();
 			Assert.isTrue(collection.size() == 1, "RemoveOp must contain a single set element");
 
-			return Assignment.removeSetElement(updateOp.toCqlIdentifier(),
-					QueryBuilder.literal(collection.iterator().next()));
+			return Assignment.removeSetElement(updateOp.toCqlIdentifier(), termFactory.create(collection.iterator().next()));
 		}
 
 		if (updateOp.getValue() instanceof List) {
@@ -834,27 +846,26 @@ public class StatementFactory {
 			Collection<Object> collection = (Collection<Object>) updateOp.getValue();
 			Assert.isTrue(collection.size() == 1, "RemoveOp must contain a single list element");
 
-			return Assignment.removeListElement(updateOp.toCqlIdentifier(),
-					QueryBuilder.literal(collection.iterator().next()));
+			return Assignment.removeListElement(updateOp.toCqlIdentifier(), termFactory.create(collection.iterator().next()));
 		}
 
-		return Assignment.remove(updateOp.toCqlIdentifier(), QueryBuilder.literal(updateOp.getValue()));
+		return Assignment.remove(updateOp.toCqlIdentifier(), termFactory.create(updateOp.getValue()));
 	}
 
 	@SuppressWarnings("unchecked")
-	private static Assignment getAssignment(AddToOp updateOp) {
+	private static Assignment getAssignment(AddToOp updateOp, TermFactory termFactory) {
 
 		if (updateOp.getValue() instanceof Set) {
-			return Assignment.appendSetElement(updateOp.toCqlIdentifier(), QueryBuilder.literal(updateOp.getValue()));
+			return Assignment.appendSetElement(updateOp.toCqlIdentifier(), termFactory.create(updateOp.getValue()));
 		}
 
 		return Mode.PREPEND.equals(updateOp.getMode())
-				? Assignment.prependListElement(updateOp.toCqlIdentifier(), QueryBuilder.literal(updateOp.getValue()))
-				: Assignment.appendListElement(updateOp.getColumnName().toCql(), QueryBuilder.literal(updateOp.getValue()));
+				? Assignment.prependListElement(updateOp.toCqlIdentifier(), termFactory.create(updateOp.getValue()))
+				: Assignment.appendListElement(updateOp.getColumnName().toCql(), termFactory.create(updateOp.getValue()));
 	}
 
-	private static Assignment getAssignment(AddToMapOp updateOp) {
-		return Assignment.append(updateOp.toCqlIdentifier(), QueryBuilder.literal(updateOp.getValue()));
+	private static Assignment getAssignment(AddToMapOp updateOp, TermFactory termFactory) {
+		return Assignment.append(updateOp.toCqlIdentifier(), termFactory.create(updateOp.getValue()));
 	}
 
 	private StatementBuilder<Delete> delete(List<CqlIdentifier> columnNames, CqlIdentifier from, Filter filter) {
