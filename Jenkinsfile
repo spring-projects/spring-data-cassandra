@@ -15,7 +15,7 @@ pipeline {
 		stage("Test") {
 			when {
 				anyOf {
-					branch 'master'
+					branch '3.0.x'
 					not { triggeredBy 'UpstreamCause' }
 				}
 			}
@@ -39,7 +39,7 @@ pipeline {
 		stage('Release to artifactory') {
 			when {
 				anyOf {
-					branch 'master'
+					branch '3.0.x'
 					not { triggeredBy 'UpstreamCause' }
 				}
 			}
@@ -70,7 +70,7 @@ pipeline {
 		}
 		stage('Publish documentation') {
 			when {
-				branch 'master'
+				branch '3.0.x'
 			}
 			agent {
 				docker {
