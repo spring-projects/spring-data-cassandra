@@ -25,8 +25,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder;
-import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.convert.ReadingConverter;
 import org.springframework.data.convert.WritingConverter;
 
@@ -56,6 +54,7 @@ public abstract class CassandraJsr310Converters {
 
 		converters.add(DateToInstantConverter.INSTANCE);
 		converters.add(LocalDateConverter.INSTANCE);
+		converters.add(LocalTimeConverter.INSTANCE);
 
 		return converters;
 	}
@@ -83,6 +82,7 @@ public abstract class CassandraJsr310Converters {
 	 * @author Mark Paluch
 	 * @since 2.1
 	 */
+	@ReadingConverter
 	public enum LocalTimeToMillisOfDayConverter implements Converter<LocalTime, Long> {
 
 		INSTANCE;
@@ -100,7 +100,6 @@ public abstract class CassandraJsr310Converters {
 	 * @since 3.0
 	 */
 	@ReadingConverter
-	@CassandraType(type = CassandraSimpleTypeHolder.Name.TIMESTAMP)
 	public enum DateToInstantConverter implements Converter<Date, Instant> {
 
 		INSTANCE;
@@ -117,13 +116,28 @@ public abstract class CassandraJsr310Converters {
 	 * @since 3.0
 	 */
 	@WritingConverter
-	@CassandraType(type = CassandraSimpleTypeHolder.Name.DATE)
 	enum LocalDateConverter implements Converter<LocalDate, LocalDate> {
 
 		INSTANCE;
 
 		@Override
 		public LocalDate convert(LocalDate date) {
+			return date;
+		}
+	}
+
+	/**
+	 * Force {@link LocalTime} to remain a {@link LocalTime}.
+	 *
+	 * @since 3.0
+	 */
+	@WritingConverter
+	enum LocalTimeConverter implements Converter<LocalTime, LocalTime> {
+
+		INSTANCE;
+
+		@Override
+		public LocalTime convert(LocalTime date) {
 			return date;
 		}
 	}

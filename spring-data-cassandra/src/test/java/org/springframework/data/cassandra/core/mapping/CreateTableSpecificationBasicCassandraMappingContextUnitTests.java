@@ -252,6 +252,10 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 		UserDefinedType species_udt = mock(UserDefinedType.class, "species_udt");
 		UserDefinedType peeps_udt = mock(UserDefinedType.class, "peeps_udt");
 
+		when(human_udt.copy(true)).thenReturn(human_udt);
+		when(species_udt.copy(true)).thenReturn(species_udt);
+		when(peeps_udt.copy(true)).thenReturn(peeps_udt);
+
 		ctx.setUserTypeResolver(typeName -> {
 
 			if (typeName.toString().equals(human_udt.toString())) {
@@ -279,6 +283,7 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 	public void columnsShouldMapToMappedUserType() {
 
 		UserDefinedType mappedUdt = mock(UserDefinedType.class, "mappedudt");
+		when(mappedUdt.copy(true)).thenReturn(mappedUdt);
 
 		ctx.setUserTypeResolver(typeName -> {
 
@@ -303,8 +308,11 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 		UserDefinedType mappedUdt = mock(UserDefinedType.class, "mappedudt");
 		UserDefinedType human_udt = mock(UserDefinedType.class, "human_udt");
 
-		when(mappedUdt.toString()).thenReturn("mappedudt");
-		when(human_udt.toString()).thenReturn("human_udt");
+		when(human_udt.copy(true)).thenReturn(human_udt);
+		when(mappedUdt.copy(true)).thenReturn(mappedUdt);
+
+		when(mappedUdt.asCql(anyBoolean(), anyBoolean())).thenReturn("mappedudt");
+		when(human_udt.asCql(anyBoolean(), anyBoolean())).thenReturn("human_udt");
 
 		ctx.setUserTypeResolver(typeName -> {
 

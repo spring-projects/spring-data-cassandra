@@ -246,7 +246,7 @@ public class UpdateMapperUnitTests {
 				this.persistentEntity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
-		assertThat(update.toString()).isEqualTo("localtime = 3723000000000");
+		assertThat(update.toString()).startsWith("localtime = '01:02:03.");
 	}
 
 	@Test // DATACASS-523

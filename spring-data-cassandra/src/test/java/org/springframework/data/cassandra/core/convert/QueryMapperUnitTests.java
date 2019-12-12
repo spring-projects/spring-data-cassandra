@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.Currency;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.joda.time.LocalDate;
@@ -188,11 +189,11 @@ public class QueryMapperUnitTests {
 		Filter mappedObject = queryMapper.getMappedObject(query, persistentEntity);
 
 		CriteriaDefinition mappedCriteriaDefinition = mappedObject.iterator().next();
+		CriteriaDefinition.Predicate predicate = mappedCriteriaDefinition.getPredicate();
 
-		assertThat(mappedCriteriaDefinition.getPredicate().getOperator()).isEqualTo(Operators.EQ);
-		assertThat(mappedCriteriaDefinition.getPredicate().getValue()).isInstanceOf(UdtValue.class);
-		assertThat(((UdtValue) mappedCriteriaDefinition.getPredicate().getValue()).getFormattedContents())
-				.isEqualTo("{street:'21 Jump-Street'}");
+		assertThat(predicate.getOperator()).isEqualTo(Operators.EQ);
+		assertThat(predicate.getValue()).isInstanceOf(UdtValue.class);
+		assertThat(predicate.as(UdtValue.class::cast).getFormattedContents()).isEqualTo("{street:'21 Jump-Street'}");
 	}
 
 	@Test // DATACASS-343
@@ -208,7 +209,8 @@ public class QueryMapperUnitTests {
 
 		assertThat(predicate.getOperator()).isEqualTo(Operators.IN);
 		assertThat(predicate.getValue()).isInstanceOf(Collection.class);
-		assertThat(predicate.getValue().toString()).isEqualTo("[{street:'21 Jump-Street'}]");
+		assertThat((List<UdtValue>) predicate.getValue()).extracting(UdtValue::getFormattedContents)
+				.contains("{street:'21 Jump-Street'}");
 	}
 
 	@Test // DATACASS-343
@@ -223,7 +225,8 @@ public class QueryMapperUnitTests {
 
 		assertThat(predicate.getOperator()).isEqualTo(Operators.IN);
 		assertThat(predicate.getValue()).isInstanceOf(Collection.class);
-		assertThat(predicate.getValue().toString()).isEqualTo("[{street:'21 Jump-Street'}]");
+		assertThat((List<UdtValue>) predicate.getValue()).extracting(UdtValue::getFormattedContents)
+				.contains("{street:'21 Jump-Street'}");
 	}
 
 	@Test // DATACASS-487
@@ -360,12 +363,13 @@ public class QueryMapperUnitTests {
 	@Test // DATACASS-302
 	public void shouldMapTime() {
 
-		Filter filter = Filter.from(Criteria.where("localDate").gt(LocalTime.fromMillisOfDay(1000)));
+		Filter filter = Filter.from(Criteria.where("localTime").gt(LocalTime.fromMillisOfDay(1000)));
 
 		Filter mappedObject = this.queryMapper.getMappedObject(filter,
 				this.mappingContext.getRequiredPersistentEntity(Person.class));
 
-		assertThat(mappedObject).contains(Criteria.where("localdate").gt(1000L));
+		assertThat(mappedObject)
+				.contains(Criteria.where("localtime").gt(java.time.LocalTime.ofNanoOfDay(TimeUnit.NANOSECONDS.toMillis(1000))));
 	}
 
 	@Test // DATACASS-523
@@ -388,6 +392,7 @@ public class QueryMapperUnitTests {
 		Integer number;
 
 		LocalDate localDate;
+		LocalTime localTime;
 
 		MappedTuple tuple;
 

@@ -22,6 +22,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -49,10 +50,14 @@ import org.springframework.util.ClassUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
+import com.datastax.oss.driver.api.core.ProtocolVersion;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.data.UdtValue;
+import com.datastax.oss.driver.api.core.detach.AttachmentPoint;
+import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.datastax.oss.driver.api.core.type.UserDefinedType;
 import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
+import com.datastax.oss.driver.internal.core.data.DefaultUdtValue;
 
 /**
  * Unit tests for {@link PartTreeCassandraQuery}.
@@ -65,7 +70,8 @@ public class PartTreeCassandraQueryUnitTests {
 	@Mock CassandraOperations mockCassandraOperations;
 	@Mock UserTypeResolver userTypeResolverMock;
 	@Mock UserDefinedType userTypeMock;
-	@Mock UdtValue udtValueMock;
+	@Mock AttachmentPoint attachmentPoint;
+	DefaultUdtValue udtValue;
 
 	CassandraMappingContext mappingContext;
 	CassandraConverter converter;
@@ -75,11 +81,21 @@ public class PartTreeCassandraQueryUnitTests {
 
 		this.mappingContext = new CassandraMappingContext();
 		this.mappingContext.setUserTypeResolver(userTypeResolverMock);
+		when(userTypeResolverMock.resolveType(any())).thenReturn(userTypeMock);
 
 		this.converter = new MappingCassandraConverter(mappingContext);
 
 		when(mockCassandraOperations.getConverter()).thenReturn(converter);
-		when(udtValueMock.getType()).thenReturn(userTypeMock);
+		when(attachmentPoint.getCodecRegistry()).thenReturn(CodecRegistry.DEFAULT);
+		when(attachmentPoint.getProtocolVersion()).thenReturn(ProtocolVersion.DEFAULT);
+
+		when(userTypeMock.getAttachmentPoint()).thenReturn(attachmentPoint);
+		when(userTypeMock.getFieldNames())
+				.thenReturn(Arrays.asList("city", "country").stream().map(CqlIdentifier::fromCql).collect(Collectors.toList()));
+		when(userTypeMock.getFieldTypes()).thenReturn(Arrays.asList(DataTypes.TEXT, DataTypes.TEXT));
+
+		udtValue = new DefaultUdtValue(userTypeMock);
+		when(userTypeMock.newValue()).thenReturn(udtValue);
 	}
 
 	@Test // DATACASS-7
@@ -142,30 +158,27 @@ public class PartTreeCassandraQueryUnitTests {
 	@Test // DATACASS-172
 	public void shouldDeriveSimpleQueryWithMappedUDT() {
 
-		when(userTypeResolverMock.resolveType(CqlIdentifier.fromCql("address"))).thenReturn(userTypeMock);
-		when(userTypeMock.newValue()).thenReturn(udtValueMock);
-
 		String query = deriveQueryFromMethod("findByMainAddress", new AddressType());
 
-		assertThat(query).isEqualTo("SELECT * FROM person WHERE mainaddress={}");
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE mainaddress={city:NULL,country:NULL}");
 	}
 
 	@Test // DATACASS-172
 	public void shouldDeriveSimpleQueryWithUDTValue() {
 
-		String query = deriveQueryFromMethod(Repo.class, "findByMainAddress", new Class[] { UdtValue.class }, udtValueMock)
+		String query = deriveQueryFromMethod(Repo.class, "findByMainAddress", new Class[] { UdtValue.class }, udtValue)
 				.getQuery();
 
-		assertThat(query).isEqualTo("SELECT * FROM person WHERE mainaddress={}");
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE mainaddress={city:NULL,country:NULL}");
 	}
 
 	@Test // DATACASS-357
 	public void shouldDeriveUdtInCollectionQuery() {
 
 		String query = deriveQueryFromMethod(Repo.class, "findByMainAddressIn", new Class[] { Collection.class },
-				Collections.singleton(udtValueMock)).toString();
+				Collections.singleton(udtValue)).getQuery();
 
-		assertThat(query).isEqualTo("SELECT * FROM person WHERE mainaddress IN ({})");
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE mainaddress IN ({city:NULL,country:NULL})");
 	}
 
 	@Test // DATACASS-343

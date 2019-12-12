@@ -23,7 +23,6 @@ import com.datastax.oss.driver.api.core.type.ListType;
 import com.datastax.oss.driver.api.core.type.MapType;
 import com.datastax.oss.driver.api.core.type.SetType;
 import com.datastax.oss.driver.api.core.type.UserDefinedType;
-import com.datastax.oss.driver.internal.core.metadata.schema.ShallowUserDefinedType;
 
 /**
  * {@link com.datastax.driver.core.UserType} utility methods. Mainly for internal use within the framework.
@@ -78,8 +77,7 @@ class UserTypeUtil {
 		}
 
 		if (isNonFrozenUdt(dataType)) {
-			UserDefinedType userDefinedType = (UserDefinedType) dataType;
-			return new ShallowUserDefinedType(userDefinedType.getKeyspace(), userDefinedType.getName(), true);
+			return ((UserDefinedType) dataType).copy(true);
 		}
 
 		return dataType;

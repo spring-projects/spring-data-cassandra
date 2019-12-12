@@ -100,6 +100,7 @@ public abstract class CassandraThreeTenBackPortConverters {
 	 * @author Mark Paluch
 	 * @since 2.1
 	 */
+	@ReadingConverter
 	public enum LocalTimeToMillisOfDayConverter implements Converter<LocalTime, Long> {
 
 		INSTANCE;
