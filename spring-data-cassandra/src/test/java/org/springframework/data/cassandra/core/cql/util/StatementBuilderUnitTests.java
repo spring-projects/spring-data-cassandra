@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 the original author or authors.
+ * Copyright 2019-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.util.Collections;
 import org.junit.Test;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.metadata.schema.ClusteringOrder;
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
@@ -132,7 +133,7 @@ public class StatementBuilderUnitTests {
 	public void shouldNotifyOnBuild() {
 
 		SimpleStatement statement = StatementBuilder.of(QueryBuilder.selectFrom("person").all())
-				.onBuild(statementBuilder -> statementBuilder.addPositionalValue("foo"))
+				.onBuild(statementBuilder -> statementBuilder.setConsistencyLevel(DefaultConsistencyLevel.LOCAL_ONE))
 				.build(StatementBuilder.ParameterHandling.BY_NAME);
 
 		assertThat(statement.getQuery()).isEqualTo("SELECT * FROM person");

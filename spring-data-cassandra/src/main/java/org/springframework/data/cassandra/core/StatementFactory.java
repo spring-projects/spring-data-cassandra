@@ -87,7 +87,8 @@ import com.datastax.oss.driver.api.querybuilder.update.UpdateStart;
 import com.datastax.oss.driver.api.querybuilder.update.UpdateWithAssignments;
 
 /**
- * Statement factory to render {@link Statement} from {@link Query} and {@link Update} objects.
+ * Statement factory to render {@link com.datastax.oss.driver.api.core.cql.Statement} from {@link Query} and
+ * {@link Update} objects.
  *
  * @author Mark Paluch
  * @author John Blum
@@ -858,12 +859,12 @@ public class StatementFactory {
 	private static Assignment getAssignment(AddToOp updateOp, TermFactory termFactory) {
 
 		if (updateOp.getValue() instanceof Set) {
-			return Assignment.appendSetElement(updateOp.toCqlIdentifier(), termFactory.create(updateOp.getValue()));
+			return Assignment.append(updateOp.toCqlIdentifier(), termFactory.create(updateOp.getValue()));
 		}
 
 		return Mode.PREPEND.equals(updateOp.getMode())
-				? Assignment.prependListElement(updateOp.toCqlIdentifier(), termFactory.create(updateOp.getValue()))
-				: Assignment.appendListElement(updateOp.getColumnName().toCql(), termFactory.create(updateOp.getValue()));
+				? Assignment.prepend(updateOp.toCqlIdentifier(), termFactory.create(updateOp.getValue()))
+				: Assignment.append(updateOp.getColumnName().toCql(), termFactory.create(updateOp.getValue()));
 	}
 
 	private static Assignment getAssignment(AddToMapOp updateOp, TermFactory termFactory) {

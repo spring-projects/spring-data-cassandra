@@ -29,7 +29,7 @@ import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
  *
  * @author Mark Paluch
  * @since 2.1
- * @deprecated Use {@link SimpleTupleTypeFactory} instead.
+ * @deprecated since 3.0, use {@link SimpleTupleTypeFactory} instead.
  */
 @Deprecated
 public class CodecRegistryTupleTypeFactory implements TupleTypeFactory {
