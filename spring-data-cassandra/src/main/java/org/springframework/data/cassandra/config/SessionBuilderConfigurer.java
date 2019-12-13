@@ -22,7 +22,7 @@ import com.datastax.oss.driver.api.core.session.SessionBuilder;
  *
  * @author John Blum
  * @author Mark Paluch
- * @since 1.5
+ * @since 3.0
  * @see com.datastax.oss.driver.api.core.CqlSession
  */
 @FunctionalInterface

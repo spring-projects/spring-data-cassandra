@@ -279,7 +279,6 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-343
-	@Ignore("Missing operator")
 	public void shouldPrependAllToList() {
 
 		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory
@@ -290,7 +289,6 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-343
-	@Ignore("Missing operator")
 	public void shouldAppendAllToList() {
 
 		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory
@@ -318,7 +316,6 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-343
-	@Ignore("Missing operator")
 	public void shouldAddAllToSet() {
 
 		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory
