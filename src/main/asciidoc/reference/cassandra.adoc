@@ -15,14 +15,14 @@ Spring Data support for Apache Cassandra contains a wide range of features:
 For most data-oriented tasks, you can use the `CassandraTemplate` or the `Repository` support, both of which use the
 rich object-mapping functionality. `CqlTemplate` is commonly used to increment counters or perform ad-hoc CRUD
 operations. `CqlTemplate` also provides callback methods that make it easy to get low-level API objects,
-such as `com.datastax.driver.core.Session`, which lets you communicate directly with Cassandra.
+such as `com.datastax.oss.driver.api.core.CqlSession`, which lets you communicate directly with Cassandra.
 Spring Data for Apache Cassandra uses consistent naming conventions on objects in various APIs to those found in
 the DataStax Java Driver so that they are familiar and so that you can map your existing knowledge onto the Spring APIs.
 
 [[cassandra.getting-started]]
 == Getting Started
 
-Spring Data for Apache Cassandra requires Apache Cassandra 2.1 or later and Datastax Java Driver 3.0 or later. An easy way to quickly set up and bootstrap a working environment is to create a Spring-based project in https://spring.io/tools/sts[STS] or use https://start.spring.io/[Spring Initializer].
+Spring Data for Apache Cassandra requires Apache Cassandra 2.1 or later and Datastax Java Driver 4.0 or later. An easy way to quickly set up and bootstrap a working environment is to create a Spring-based project in https://spring.io/tools/sts[STS] or use https://start.spring.io/[Spring Initializer].
 
 First, you need to set up a running Apache Cassandra server. See the
 https://cassandra.apache.org/doc/latest/getting_started/index.html[Apache Cassandra Quick Start Guide]
@@ -83,44 +83,7 @@ To do so, first create a simple domain object class to persist, as the following
 ====
 [source,java]
 ----
-package org.spring.data.cassandra.example;
-
-import org.springframework.data.cassandra.core.mapping.PrimaryKey;
-import org.springframework.data.cassandra.core.mapping.Table;
-
-@Table
-public class Person {
-
-  @PrimaryKey
-  private final String id;
-
-  private final String name;
-  private final int age;
-
-  public Person(String id, String name, int age) {
-    this.id = id;
-    this.name = name;
-    this.age = age;
-  }
-
-  public String getId() {
-    return id;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public int getAge() {
-    return age;
-  }
-
-  @Override
-  public String toString() {
-    return String.format("{ @type = %1$s, id = %2$s, name = %3$s, age = %4$d }",
-      getClass().getName(), getId(), getName(), getAge());
-  }
-}
+include::../{example-root}/Person.java[tags=file]
 ----
 ====
 
@@ -129,54 +92,13 @@ Next, create the main application to run, as the following example shows:
 ====
 [source,java]
 ----
-package org.spring.data.cassandra.example;
-
-import java.util.UUID;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.data.cassandra.core.CassandraOperations;
-import org.springframework.data.cassandra.core.CassandraTemplate;
-import org.springframework.data.cassandra.core.query.Criteria;
-import org.springframework.data.cassandra.core.query.Query;
-
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.Session;
-
-public class CassandraApplication {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(CassandraApplication.class);
-
-  protected static Person newPerson(String name, int age) {
-    return newPerson(UUID.randomUUID().toString(), name, age);
-  }
-
-  protected static Person newPerson(String id, String name, int age) {
-    return new Person(id, name, age);
-  }
-
-  public static void main(String[] args) {
-
-    Cluster cluster = Cluster.builder().addContactPoints("localhost").build();
-    Session session = cluster.connect("mykeyspace");
-
-    CassandraOperations template = new CassandraTemplate(session);
-
-    Person jonDoe = template.insert(newPerson("Jon Doe", 40));
-
-    LOGGER.info(template.selectOne(Query.query(Criteria.where("id").is(jonDoe.getId())), Person.class).getId());
-
-    template.truncate(Person.class);
-    session.close();
-    cluster.close();
-  }
-}
+include::../{example-root}/CassandraApplication.java[tags=file]
 ----
 ====
 
 Even in this simple example, there are a few notable things to point out:
 
-* You can create an instance of `CassandraTemplate` with a Cassandra `Session`, obtained from `Cluster`.
+* You can create an instance of `CassandraTemplate` with a Cassandra `CqlSession`.
 * You must annotate your POJO as a Cassandra `@Table` entity and also annotate the `@PrimaryKey`.
 Optionally, you can override these mapping names to match your Cassandra database table and column names.
 * You can either use raw CQL or the DataStax `QueryBuilder` API to construct your queries.
@@ -191,7 +113,7 @@ https://github.com/spring-projects/spring-data-examples[several examples].
 [[cassandra.connectors]]
 == Connecting to Cassandra with Spring
 
-One of the first tasks when using Apache Cassandra with Spring is to create a `com.datastax.driver.core.Session` object by
+One of the first tasks when using Apache Cassandra with Spring is to create a `com.datastax.oss.driver.api.core.CqlSession` object by
 using the Spring IoC container. You can do so either by using Java-based bean metadata or by using XML-based
 bean metadata. These are discussed in the following sections.
 
@@ -203,69 +125,32 @@ as well as the detailed documentation {spring-framework-docs}core.html#beans-jav
 [[cassandra.cassandra-java-config]]
 === Registering a Session Instance by Using Java-based Metadata
 
-The following example shows how to use Java-based bean metadata to register an instance of a `com.datastax.driver.core.Session`:
+The following example shows how to use Java-based bean metadata to register an instance of a `com.datastax.oss.driver.api.core.CqlSession`:
 
-.Registering a com.datastax.driver.core.Session object by using Java-based bean metadata
+.Registering a `com.datastax.oss.driver.api.core.CqlSession` object by using Java-based bean metadata
 ====
 [source,java]
 ----
-@Configuration
-public class AppConfig {
-
-  /*
-   * Use the standard Cassandra driver API to create a com.datastax.driver.core.Session instance.
-   */
-  public @Bean Session session() {
-    Cluster cluster = Cluster.builder().addContactPoints("localhost").build();
-    return cluster.connect("mykeyspace");
-  }
-}
+include::../{example-root}/AppConfig.java[tags=class]
 ----
 ====
 
-This approach lets you use the standard `com.datastax.driver.core.Session` API that you may already know.
+This approach lets you use the standard `com.datastax.oss.driver.api.core.CqlSession` API that you may already know.
 
-An alternative is to register an instance of `com.datastax.driver.core.Session` with the container by
-using Spring's `CassandraCqlSessionFactoryBean` and `CassandraCqlClusterFactoryBean`. As compared to instantiating
-a `com.datastax.driver.core.Session` instance directly, the `FactoryBean` approach has the added advantage of also
+An alternative is to register an instance of `com.datastax.oss.driver.api.core.CqlSession` with the container by
+using Spring's `CqlSessionFactoryBean`. As compared to instantiating
+a `com.datastax.oss.driver.api.core.CqlSession` instance directly, the `FactoryBean` approach has the added advantage of also
 providing the container with an `ExceptionTranslator` implementation that translates Cassandra exceptions to exceptions
 in Spring's portable `DataAccessException` hierarchy. This hierarchy and the use of
 `@Repository` is described in {spring-framework-docs}data-access.html[Spring's DAO support features].
 
-The following example shows Java-based bean metadata that supports exception translation on `@Repository` annotated classes:
+The following example shows Java-based factory class usage:
 
-.Registering a com.datastax.driver.core.Session object by using Spring's CassandraCqlSessionFactoryBean and enabling Spring's exception translation support
+.Registering a com.datastax.oss.driver.api.core.CqlSession object by using Spring's `CqlSessionFactoryBean`:
 ====
 [source,java]
 ----
-@Configuration
-public class AppConfig {
-
-  /*
-   * Factory bean that creates the com.datastax.driver.core.Session instance
-   */
-  @Bean
-  public CassandraCqlClusterFactoryBean cluster() {
-
-    CassandraCqlClusterFactoryBean cluster = new CassandraCqlClusterFactoryBean();
-    cluster.setContactPoints("localhost");
-
-    return cluster;
-  }
-
-   /*
-    * Factory bean that creates the com.datastax.driver.core.Session instance
-    */
-   @Bean
-   public CassandraCqlSessionFactoryBean session() {
-
-    CassandraCqlSessionFactoryBean session = new CassandraCqlSessionFactoryBean();
-    session.setCluster(cluster().getObject());
-    session.setKeyspaceName("mykeyspace");
-
-    return session;
-  }
-}
+include::../{example-root}/FactoryBeanAppConfig.java[tags=class]
 ----
 ====
 
@@ -278,50 +163,7 @@ The following example shows how to register components to configure object mappi
 ====
 [source,java]
 ----
-@Configuration
-@EnableCassandraRepositories(basePackages = { "org.spring.cassandra.example.repo" })
-public class CassandraConfig {
-
-  @Bean
-  public CassandraClusterFactoryBean cluster() {
-
-    CassandraClusterFactoryBean cluster = new CassandraClusterFactoryBean();
-    cluster.setContactPoints("localhost");
-
-    return cluster;
-  }
-
-  @Bean
-  public CassandraMappingContext mappingContext() {
-
-    BasicCassandraMappingContext mappingContext =  new BasicCassandraMappingContext();
-    mappingContext.setUserTypeResolver(new SimpleUserTypeResolver(cluster().getObject(), "mykeyspace"));
-
-    return mappingContext;
-  }
-
-  @Bean
-  public CassandraConverter converter() {
-    return new MappingCassandraConverter(mappingContext());
-  }
-
-  @Bean
-  public CassandraSessionFactoryBean session() throws Exception {
-
-    CassandraSessionFactoryBean session = new CassandraSessionFactoryBean();
-    session.setCluster(cluster().getObject());
-    session.setKeyspaceName("mykeyspace");
-    session.setConverter(converter());
-    session.setSchemaAction(SchemaAction.NONE);
-
-    return session;
-  }
-
-  @Bean
-  public CassandraOperations cassandraTemplate() throws Exception {
-    return new CassandraTemplate(session().getObject());
-  }
-}
+include::../{example-root}/CassandraConfig.java[tags=class]
 ----
 ====
 
@@ -338,23 +180,7 @@ the `getKeyspaceName` method. The following example shows how to register beans 
 ====
 [source,java]
 ----
-@Configuration
-public class AppConfig extends AbstractCassandraConfiguration {
-
-  /*
-   * Provide a contact point to the configuration.
-   */
-  public String getContactPoints() {
-    return "localhost";
-  }
-
-  /*
-   * Provide a keyspace name to the configuration.
-   */
-  public String getKeyspaceName() {
-    return "mykeyspace";
-  }
-}
+include::../{example-root}/CassandraConfiguration.java[tags=class]
 ----
 ====
 
@@ -384,39 +210,11 @@ In the next two examples, we use Spring to load these properties into the Spring
 ==== Registering a Session Instance by using XML-based Metadata
 
 While you can use Spring's traditional `<beans/>` XML namespace to register an instance of
-`com.datastax.driver.core.Session` with the container, the XML can be quite verbose, because it is general purpose.
-XML namespaces are a better alternative to configuring commonly used objects, such as the `Session` instance.
-The `cql` and `cassandra` namespaces let you create a `Session` instance.
+`com.datastax.oss.driver.api.core.CqlSession` with the container, the XML can be quite verbose, because it is general purpose.
+XML namespaces are a better alternative to configuring commonly used objects, such as the `CqlSession` instance.
+The `cassandra` namespace let you create a `CqlSession` instance.
 
-The following example shows how to configure the `cql` namespace:
-
-.XML schema to configure Cassandra by using the `cql` namespace
-====
-[source,xml]
-----
-<?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:cql="http://www.springframework.org/schema/data/cql"
-  xsi:schemaLocation="
-    http://www.springframework.org/schema/cql
-    https://www.springframework.org/schema/cql/spring-cql.xsd
-    http://www.springframework.org/schema/beans
-    https://www.springframework.org/schema/beans/spring-beans.xsd">
-
-  <!-- Default bean name is 'cassandraCluster' -->
-  <cql:cluster contact-points="localhost" port="9042">
-    <cql:keyspace action="CREATE_DROP" name="mykeyspace" />
-  </cql:cluster>
-
-  <!-- Default bean name is 'cassandraSession' -->
-  <cql:session keyspace-name="mykeyspace" />
-
-</beans>
-----
-====
-
-To use the Cassandra namespace elements, you need to reference the Cassandra schema, as the following example shows:
+The following example shows how to configure the `cassandra` namespace:
 
 .XML schema to configure Cassandra by using the `cassandra` namespace
 ====
@@ -432,21 +230,18 @@ To use the Cassandra namespace elements, you need to reference the Cassandra sch
     http://www.springframework.org/schema/beans
     https://www.springframework.org/schema/beans/spring-beans.xsd">
 
-  <!-- Default bean name is 'cassandraCluster' -->
-  <cassandra:cluster contact-points="localhost" port="9042">
-    <cassandra:keyspace action="CREATE_DROP" name="mykeyspace" />
-  </cassandra:cluster>
-
   <!-- Default bean name is 'cassandraSession' -->
-  <cassandra:session keyspace-name="${cassandra.keyspace}" schema-action="NONE" />
+  <cassandra:session contact-points="localhost" port="9042">
+    <cassandra:keyspace action="CREATE_DROP" name="mykeyspace" />
+  </cassandra:session>
 
+  <cassandra:session-factory>
+    <cassandra:script
+            location="classpath:/org/springframework/data/cassandra/config/schema.cql"/>
+  </cassandra:session-factory>
 </beans>
 ----
 ====
-
-NOTE: You may have noticed the difference between namespaces: `cql` and `cassandra`. Using the `cql` namespace
-is limited to low-level CQL support, while `cassandra` extends the `cql` namespace with object mapping
-and schema generation support.
 
 The XML configuration elements for more advanced Cassandra configuration are shown below. These elements all use
 default bean names to keep the configuration code clean and readable.
@@ -467,13 +262,9 @@ should be straight forward. The following example shows how to configure Spring 
 in placeholders in the bean definitions -->
 <context:property-placeholder location="classpath:cassandra.properties" />
 
-<!-- REQUIRED: The Cassandra cluster -->
-<cassandra:cluster contact-points="${cassandra.contactpoints}"
-port="${cassandra.port}" />
-
-<!-- REQUIRED: The Cassandra session, built from the cluster, and attaching
-to a keyspace -->
-<cassandra:session keyspace-name="${cassandra.keyspace}" />
+<!-- REQUIRED: The Cassandra Session -->
+<cassandra:session contact-points="${cassandra.contactpoints}"
+port="${cassandra.port}" keyspace-name="${cassandra.keyspace}" />
 
 <!-- REQUIRED: The default Cassandra mapping context used by `CassandraConverter` -->
 <cassandra:mapping>
@@ -503,7 +294,7 @@ Spring Data for Apache Cassandra can support you with schema creation.
 === Keyspaces and Lifecycle Scripts
 
 The  first thing to start with is a Cassandra keyspace. A keyspace is a logical grouping of tables that share
-the same replication factor and replication strategy. Keyspace management is located in the `Cluster` configuration,
+the same replication factor and replication strategy. Keyspace management is located in the `CqlSession` configuration,
 which has the `KeyspaceSpecification` and startup and shutdown CQL script execution.
 
 Declaring a keyspace with a specification allows creating and dropping of the Keyspace. It derives CQL from
@@ -513,17 +304,16 @@ the specification so that you need not write CQL yourself. The following example
 ====
 [source,xml]
 ----
-<cql:cluster>
+<cassandra:session>
 
-    <cql:keyspace action="CREATE_DROP" durable-writes="true" name="my_keyspace">
+    <cassandra:keyspace action="CREATE_DROP" durable-writes="true" name="my_keyspace">
+        <cassandra:replication class="NETWORK_TOPOLOGY_STRATEGY">
+          <cassandra:data-center name="foo" replication-factor="1" />
+          <cassandra:data-center name="bar" replication-factor="2" />
+        </cassandra:replication>
+  </cassandra:keyspace>
 
-    <cql:replication class="NETWORK_TOPOLOGY_STRATEGY">
-      <cql:data-center name="foo" replication-factor="1" />
-      <cql:data-center name="bar" replication-factor="2" />
-    </cql:replication>
-  </cql:keyspace>
-
-</cql:cluster>
+</cassandra:session>
 ----
 ====
 
@@ -533,82 +323,14 @@ You can also specify a Cassandra keyspace by using Java configuration, as the fo
 ====
 [source,java]
 ----
-@Configuration
-public abstract class AbstractCassandraConfiguration extends AbstractClusterConfiguration
-		implements BeanClassLoaderAware {
-
-  @Override
-  protected List<CreateKeyspaceSpecification> getKeyspaceCreations() {
-
-    CreateKeyspaceSpecification specification = CreateKeyspaceSpecification.createKeyspace("my_keyspace")
-      .with(KeyspaceOption.DURABLE_WRITES, true)
-      .withNetworkReplication(DataCenterReplication.dcr("foo", 1), DataCenterReplication.dcr("bar", 2));
-
-    return Arrays.asList(specification);
-  }
-
-  @Override
-  protected List<DropKeyspaceSpecification> getKeyspaceDrops() {
-    return Arrays.asList(DropKeyspaceSpecification.dropKeyspace("my_keyspace"));
-  }
-
-  // ...
-}
+include::../{example-root}/CreateKeyspaceConfiguration.java[tags=class]
 ----
 ====
-
-Startup and shutdown CQL execution follows a slightly different approach that is bound to the `Cluster` lifecycle.
-You can provide arbitrary CQL that is executed on `Cluster` initialization and shutdown in the `SYSTEM` keyspace, as the following XML example shows:
-
-.Specifying Startup and Shutdown scripts with XML
-====
-[source,xml]
-----
-<cql:cluster>
-  <cql:startup-cql><![CDATA[
-CREATE KEYSPACE IF NOT EXISTS my_other_keyspace WITH durable_writes = true AND replication = { 'replication_factor' : 1, 'class' : 'SimpleStrategy' };
-    ]]></cql:startup-cql>
-  <cql:shutdown-cql><![CDATA[
-DROP KEYSPACE my_other_keyspace;
-    ]]></cql:shutdown-cql>
-</cql:cluster>
-----
-====
-
-The following example shows how to specify startup and shutdown scripts with Java configuration:
-
-.Specifying Startup and Shutdown scripts with Java configuration
-====
-[source,java]
-----
-@Configuration
-public class CassandraConfiguration extends AbstractCassandraConfiguration {
-
-  @Override
-  protected List<String> getStartupScripts() {
-
-    String script = "CREATE KEYSPACE IF NOT EXISTS my_other_keyspace "
-      + "WITH durable_writes = true "
-      + "AND replication = { 'replication_factor' : 1, 'class' : 'SimpleStrategy' };";
-
-    return Arrays.asList(script);
-  }
-
-  @Override
-  protected List<String> getShutdownScripts() {
-    return Arrays.asList("DROP KEYSPACE my_other_keyspace;");
-  }
-
-  // ...
-}
-----
-====
-
-NOTE: Both the `cql` and `cassandra` namespaces include `KeyspaceSpecifications` and the lifecycle CQL scripts.
 
 NOTE: Keyspace creation allows rapid bootstrapping without the need of external keyspace management. This can be useful
 for certain scenarios but should be used with care. Dropping a keyspace on application shutdown removes the keyspace
 and all data from the tables in the keyspace.
+
 
 [[cassandra.schema-management.initializing]]
 === Initializing a `SessionFactory`
@@ -616,11 +338,19 @@ and all data from the tables in the keyspace.
 The `org.springframework.data.cassandra.core.cql.session.init` package provides support for initializing an existing `SessionFactory`.
 You may sometimes need to initialize a keyspace that runs on a server somewhere.
 
+[[cassandra.schema-management.initializing.config]]
+==== Initializing a Keyspace
 
-[[cassandra.schema-management.initializing.xml]]
-==== Initializing a Keyspace by Using Spring XML
+You can provide arbitrary CQL that is executed on `CqlSession` initialization and shutdown in the configured keyspace, as the following Java configuration example shows:
 
-If you want to initialize a database and you can provide a reference to a `SessionFactory` bean, you can use the `initialize-keyspace` tag in the `cassandra` namespace:
+====
+[source,java]
+----
+include::../{example-root}/KeyspacePopulatorConfiguration.java[tags=class]
+----
+====
+
+If you want to initialize a database using XML configuration and you can provide a reference to a `SessionFactory` bean, you can use the `initialize-keyspace` tag in the `cassandra` namespace:
 
 ====
 [source,xml,indent=0,subs="verbatim,quotes"]
@@ -658,7 +388,6 @@ The following example gets a value from a system property:
 <1> Get the value for `enabled` from a system property called `INITIALIZE_KEYSPACE`.
 ====
 
-
 The second option to control what happens with existing data is to be more tolerant of failures.
 To this end, you can control the ability of the initializer to ignore certain errors in the CQL it executes from the scripts, as the following example shows:
 
@@ -682,10 +411,19 @@ Each statement should be separated by `;` or a new line if the `;` character is 
 You can control that globally or script by script, as the following example shows:
 
 ====
+[source,java]
+----
+include::../{example-root}/SessionFactoryInitializerConfiguration.java[tags=class]
+----
+====
+
+Alternatively, you can use XML to configure the `SessionFactoryInitializer`:
+
+====
 [source,xml,indent=0,subs="verbatim,quotes"]
 ----
 <cassandra:initialize-keyspace session-factory-ref="sessionFactory" separator="@@">        <1>
-    <cassandra:script location="classpath:com/myapp/cql/db-schema.cql" separator=";"/> <2>
+    <cassandra:script location="classpath:com/myapp/cql/db-schema.cql" separator=";"/>     <2>
     <cassandra:script location="classpath:com/myapp/cql/db-test-data-1.cql"/>
     <cassandra:script location="classpath:com/myapp/cql/db-test-data-2.cql"/>
 </cassandra:initialize-keyspace>
@@ -736,7 +474,7 @@ This structure is common in Spring web applications but can be more generally ap
 Spring Data for Apache Cassandra approaches data access with mapped entity classes that fit your data model.
 You can use these entity classes to create Cassandra table specifications and user type definitions.
 
-Schema creation is tied to `Session` initialization by `SchemaAction`. The following actions are supported:
+Schema creation is tied to `CqlSession` initialization by `SchemaAction`. The following actions are supported:
 
 * `SchemaAction.NONE`: No tables or types are created or dropped. This is the default setting.
 * `SchemaAction.CREATE`: Create tables, indexes, and user-defined types from entities annotated with `@Table` and types annotated with `@UserDefinedType`. Existing tables or types cause an error if you tried to create the type.
@@ -774,16 +512,7 @@ The following example shows how to specify entity base packages in Java configur
 ====
 [source,java]
 ----
-@Configuration
-public class CassandraConfiguration extends AbstractCassandraConfiguration {
-
-	@Override
-	public String[] getEntityBasePackages() {
-		return new String[] { "com.foo", "com.bar" };
-	}
-
-	// ...
-}
+include::../{example-root}/EntityBasePackagesConfiguration.java[tags=class]
 ----
 ====
 
@@ -826,70 +555,48 @@ of all of the functionality exposed by the `CqlTemplate`. See the https://docs.s
 [[cassandra.cql-template.examples.query]]
 ==== Querying (SELECT) with `CqlTemplate`
 
-The following query gets the number of rows in a relation:
+The following query gets the number of rows in a table:
 
 ====
-[source,java]
+[source,java,indent=0]
 ----
-int rowCount = cqlTemplate.queryForObject("SELECT COUNT(*) FROM t_actor", Integer.class);
+include::../{example-root}/CqlTemplateExamples.java[tags=rowCount]
 ----
 ====
 
 The following query uses a bind variable:
 
 ====
-[source,java]
+[source,java,indent=0]
 ----
-int countOfActorsNamedJoe = cqlTemplate.queryForObject(
-		"SELECT COUNT(*) FROM t_actor WHERE first_name = ?", Integer.class, "Joe");
+include::../{example-root}/CqlTemplateExamples.java[tags=countOfActorsNamedJoe]
 ----
 ====
 
 The following example queries for a `String`:
 
 ====
-[source,java]
+[source,java,indent=0]
 ----
-String lastName = cqlTemplate.queryForObject(
-		"SELECT last_name FROM t_actor WHERE id = ?",
-		String.class, 1212L);
+include::../{example-root}/CqlTemplateExamples.java[tags=lastName]
 ----
 ====
 
 The following example queries and populates a single domain object:
 
 ====
-[source,java]
+[source,java,indent=0]
 ----
-Actor actor = cqlTemplate.queryForObject(
-		"SELECT first_name, last_name FROM t_actor WHERE id = ?",
-		new RowMapper<Actor>() {
-			public Actor mapRow(Row row, int rowNum) {
-				Actor actor = new Actor();
-				actor.setFirstName(row.getString("first_name"));
-				actor.setLastName(row.getString("last_name"));
-				return actor;
-			},
-      new Object[]{1212L},
-		});
+include::../{example-root}/CqlTemplateExamples.java[tags=rowMapper]
 ----
 ====
 
 The following example queries and populates multiple domain objects:
 
 ====
-[source,java]
+[source,java,indent=0]
 ----
-List<Actor> actors = cqlTemplate.query(
-		"SELECT first_name, last_name FROM t_actor",
-		new RowMapper<Actor>() {
-			public Actor mapRow(Row row int rowNum) {
-				Actor actor = new Actor();
-				actor.setFirstName(row.getString("first_name"));
-				actor.setLastName(row.getString("last_name"));
-				return actor;
-			}
-		});
+include::../{example-root}/CqlTemplateExamples.java[tags=listOfRowMapper]
 ----
 ====
 
@@ -900,23 +607,9 @@ duplication present in the two `RowMapper` anonymous inner classes and extract t
 For example, it might be better to write the last code snippet as follows:
 
 ====
-[source,java]
+[source,java,indent=0]
 ----
-public List<Actor> findAllActors() {
-	return cqlTemplate.query("SELECT first_name, last_name FROM t_actor", ActorMapper.INSTANCE);
-}
-
-enum ActorMapper implements RowMapper<Actor> {
-
-    INSTANCE;
-
-	public Actor mapRow(Row row, int rowNum) {
-		Actor actor = new Actor();
-		actor.setFirstName(row.getString("first_name"));
-		actor.setLastName(row.getString("last_name"));
-		return actor;
-	}
-}
+include::../{example-root}/CqlTemplateExamples.java[tags=findAllActors]
 ----
 ====
 
@@ -929,33 +622,27 @@ as variable arguments or, alternatively, as an object array.
 The following example shows how to perform an `INSERT` operation with `CqlTemplate`:
 
 ====
-[source,java]
+[source,java,indent=0]
 ----
-cqlTemplate.execute(
-		"INSERT INTO t_actor (first_name, last_name) VALUES (?, ?)",
-		"Leonor", "Watling");
+include::../{example-root}/CqlTemplateExamples.java[tags=insert]
 ----
 ====
 
 The following example shows how to perform an `UPDATE` operation with `CqlTemplate`:
 
 ====
-[source,java]
+[source,java,indent=0]
 ----
-cqlTemplate.execute(
-		"UPDATE t_actor SET last_name = ? WHERE id = ?",
-		"Banjo", 5276L);
+include::../{example-root}/CqlTemplateExamples.java[tags=update]
 ----
 ====
 
 The following example shows how to perform an `DELETE` operation with `CqlTemplate`:
 
 ====
-[source,java]
+[source,java,indent=0]
 ----
-cqlTemplate.execute(
-		"DELETE FROM actor WHERE id = ?",
-		Long.valueOf(actorId));
+include::../{example-root}/CqlTemplateExamples.java[tags=delete]
 ----
 ====
 
@@ -970,12 +657,7 @@ The following example shows how to create and drop a table by using different AP
 ====
 [source,java]
 ----
-cqlOperations.execute("CREATE TABLE test_table (id uuid primary key, event text)");
-
-DropTableSpecification dropper = DropTableSpecification.dropTable("test_table");
-String cql = DropTableCqlGenerator.toCql(dropper);
-
-cqlTemplate.execute(cql);
+include::../{example-root}/CqlTemplateExamples.java[tags=other]
 ----
 ====
 
@@ -985,11 +667,11 @@ include::exception-translation.adoc[]
 [[cassandra.connections]]
 == Controlling Cassandra Connections
 
-Applications connect to Apache Cassandra by using `Cluster` and `Session` objects. A Cassandra `Session` keeps track of
+Applications connect to Apache Cassandra by using `CqlSession` objects. A Cassandra `CqlSession` keeps track of
 multiple connections to the individual nodes and is designed to be a thread-safe, long-lived object.
-Usually, you can use a single `Session` for the whole application.
+Usually, you can use a single `CqlSession` for the whole application.
 
-Spring acquires a Cassandra `Session` through a `SessionFactory`. `SessionFactory` is part of
+Spring acquires a Cassandra `CqlSession` through a `SessionFactory`. `SessionFactory` is part of
 Spring Data for Apache Cassandra and is a generalized connection factory.
 It lets the container or framework hide connection handling and routing issues from the application code.
 
@@ -1004,7 +686,7 @@ CqlTemplate template = new CqlTemplate();
 template.setSessionFactory(new DefaultSessionFactory(session));
 ----
 
-`CqlTemplate` and other Template API implementations obtain a `Session` for each operation. Due to their
+`CqlTemplate` and other Template API implementations obtain a `CqlSession` for each operation. Due to their
 long-lived nature, sessions are not closed after invoking the desired operation. Responsibility for proper
 resource disposal lies with the container or framework that uses the session.
 
@@ -1215,7 +897,7 @@ import static org.springframework.data.cassandra.core.query.Criteria.where;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.core.query.Update;
 
-...
+…
 
 boolean applied = cassandraTemplate.update(Query.query(where("id").is("foo")),
   Update.create().increment("balance", 50.00), Account.class);
@@ -1394,7 +1076,7 @@ The `Query` class has some additional methods that you can use to provide option
 * `Query` *columns* `(Columns columns)`: Used to define columns to be included in the query results.
 * `Query` *limit* `(long limit)`: Used to limit the size of the returned results to the provided limit (used for paging).
 * `Query` *pageRequest* `(Pageable pageRequest)`: Used to associate `Sort`, `PagingState`, and `fetchSize` with the query (used for paging).
-* `Query` *pagingState* `(PagingState pagingState)`: Used to associate a `PagingState` with the query (used for paging).
+* `Query` *pagingState* `(ByteBuffer pagingState)`: Used to associate a `ByteBuffer` with the query (used for paging).
 * `Query` *queryOptions* `(QueryOptions queryOptions)`: Used to associate `QueryOptions` with the query.
 * `Query` *sort* `(Sort sort)`: Used to provide a sort definition for the results.
 * `Query` *withAllowFiltering* `()`: Used to render `ALLOW FILTERING` queries.

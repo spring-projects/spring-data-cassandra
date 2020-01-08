@@ -23,22 +23,7 @@ with Jackson 2:
 
 [source,java]
 ----
-import org.springframework.core.convert.converter.Converter;
-
-import org.springframework.util.StringUtils;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-static class PersonWriteConverter implements Converter<Person, String> {
-
-  public String convert(Person source) {
-
-    try {
-      return new ObjectMapper().writeValueAsString(source);
-    } catch (IOException e) {
-      throw new IllegalStateException(e);
-    }
-  }
-}
+include::../{example-root}/PersonWriteConverter.java[tags=class]
 ----
 
 [[cassandra.custom-converters.reader]]
@@ -51,26 +36,7 @@ with Jackson 2:
 
 [source,java]
 ----
-import org.springframework.core.convert.converter.Converter;
-
-import org.springframework.util.StringUtils;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-static class PersonReadConverter implements Converter<String, Person> {
-
-  public Person convert(String source) {
-
-   if (StringUtils.hasText(source)) {
-     try {
-       return new ObjectMapper().readValue(source, Person.class);
-     } catch (IOException e) {
-       throw new IllegalStateException(e);
-     }
-    }
-
-    return null;
-  }
-}
+include::../{example-root}/PersonReadConverter.java[tags=class]
 ----
 
 [[cassandra.custom-converters.java]]
@@ -82,22 +48,7 @@ as well as configure `CustomConversions`:
 
 [source,java]
 ----
-@Configuration
-public static class Config extends AbstractCassandraConfiguration {
-
-  @Override
-  public CustomConversions customConversions() {
-
-    List<Converter<?, ?>> converters = new ArrayList<Converter<?, ?>>();
-
-    converters.add(new PersonReadConverter());
-    converters.add(new PersonWriteConverter());
-
-    return new CustomConversions(converters);
-  }
-
-  // other methods omitted...
-}
+include::../{example-root}/ConverterConfiguration.java[tags=class]
 ----
 
 [[cassandra.converter-disambiguation]]
