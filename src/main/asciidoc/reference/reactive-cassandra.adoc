@@ -14,7 +14,7 @@ The reactive Cassandra support contains a wide range of features:
 For most data-oriented tasks, you can use the `ReactiveCassandraTemplate` or the repository support, which use
 the rich object mapping functionality. `ReactiveCqlTemplate` is commonly used to increment counters or perform ad-hoc
 CRUD operations. `ReactiveCqlTemplate` also provides callback methods that make it easy to get low-level
-API objects, such as `com.datastax.driver.core.Session`, which let you communicate directly with Cassandra.
+API objects, such as `com.datastax.oss.driver.api.core.CqlSession`, which let you communicate directly with Cassandra.
 Spring Data for Apache Cassandra uses consistent naming conventions on objects in various APIs to those found
 in the DataStax Java Driver so that they are immediately familiar and so that you can map your existing knowledge
 onto the Spring APIs.
@@ -83,44 +83,7 @@ To do so, first create a simple domain object class to persist, as the following
 ====
 [source,java]
 ----
-package org.spring.data.cassandra.example;
-
-import org.springframework.data.cassandra.core.mapping.PrimaryKey;
-import org.springframework.data.cassandra.core.mapping.Table;
-
-@Table
-public class Person {
-
-  @PrimaryKey
-  private final String id;
-
-  private final String name;
-  private final int age;
-
-  public Person(String id, String name, int age) {
-    this.id = id;
-    this.name = name;
-    this.age = age;
-  }
-
-  public String getId() {
-    return id;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public int getAge() {
-    return age;
-  }
-
-  @Override
-  public String toString() {
-    return String.format("{ @type = %1$s, id = %2$s, name = %3$s, age = %4$d }",
-      getClass().getName(), getId(), getName(), getAge());
-  }
-}
+include::../{example-root}/Person.java[tags=file]
 ----
 ====
 
@@ -129,52 +92,7 @@ Next, create the main application to run, as the following example shows:
 ====
 [source,java]
 ----
-package org.spring.data.cassandra.example;
-
-import java.util.UUID;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
-import org.springframework.data.cassandra.core.ReactiveCassandraTemplate;
-import org.springframework.data.cassandra.core.query.Criteria;
-import org.springframework.data.cassandra.core.query.Query;
-
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.Session;
-
-import reactor.core.publisher.Mono;
-
-public class CassandraApplication {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(CassandraApplication.class);
-
-  protected static Person newPerson(String name, int age) {
-    return newPerson(UUID.randomUUID().toString(), name, age);
-  }
-
-  protected static Person newPerson(String id, String name, int age) {
-    return new Person(id, name, age);
-  }
-
-  public static void main(String[] args) {
-
-    Cluster cluster = Cluster.builder().addContactPoints("localhost").build();
-    Session session = cluster.connect("mykeyspace");
-
-    ReactiveCassandraOperations template = new ReactiveCassandraTemplate(new DefaultBridgedReactiveSession(session));
-
-    Mono<Person> jonDoe = template.insert(newPerson("Jon Doe", 40));
-
-    jonDoe.flatMap(it -> template.selectOne(Query.query(Criteria.where("id").is(it.getId())), Person.class))
-        .doOnNext(it -> LOGGER.info(it.toString()))
-        .then(template.truncate(Person.class))
-        .block();
-
-    session.close();
-    cluster.close();
-  }
-}
+include::../{example-root}/ReactiveCassandraApplication.java[tags=file]
 ----
 ====
 
@@ -182,7 +100,7 @@ Even in this simple example, there are a few notable things to point out:
 
 * A fully synchronous flow does not benefit from a reactive infrastructure, because a reactive programming model
 requires synchronization.
-* You can create an instance of `ReactiveCassandraTemplate` with a Cassandra `Session` obtained from `Cluster`.
+* You can create an instance of `ReactiveCassandraTemplate` with a Cassandra `CqlSession`.
 * You must annotate your POJO as a Cassandra `@Table` and annotate the `@PrimaryKey`.
 Optionally, you can override these mapping names to match your Cassandra database table and column names.
 * You can either use raw CQL or the DataStax `QueryBuilder` API to construct your queries.
@@ -196,7 +114,7 @@ can download and play around with to get a feel for how the library works.
 [[cassandra.reactive.connectors]]
 == Connecting to Cassandra with Spring
 
-One of the first tasks when using Apache Cassandra with Spring is to create a `com.datastax.driver.core.Session` object by
+One of the first tasks when using Apache Cassandra with Spring is to create a `com.datastax.oss.driver.api.core.CqlSession` object by
 using the Spring IoC container. You can do so either by using Java-based bean metadata or by using XML-based
 bean metadata. These are discussed in the following sections.
 
@@ -210,41 +128,24 @@ as well as the detailed documentation {spring-framework-docs}core.html#beans-jav
 === Registering a Session instance using Java-based metadata
 
 You can configure Reactive Cassandra support by using <<cassandra.cassandra-java-config,Java Configuration classes>>.
-Reactive Cassandra support adapts a `Session` to provide a reactive execution model on top of an asynchronous driver.
+Reactive Cassandra support adapts a `CqlSession` to provide a reactive execution model on top of an asynchronous driver.
 
-A reactive `Session` is configured similarly to an imperative `Session`. We provide supporting configuration classes
+A reactive `CqlSession` is configured similarly to an imperative `CqlSession`. We provide supporting configuration classes
 that come with predefined defaults and require only environment-specific information to configure Spring Data for
 Apache Cassandra. The base class for reactive support is `AbstractReactiveCassandraConfiguration`. This configuration
 class extends the imperative `AbstractCassandraConfiguration`, so the reactive support also configures
 the imperative API support. The following example shows how to register Apache Cassandra beans in a configuration class:
-
+           ReactiveAppCassandraConfiguration
 .Registering Spring Data for Apache Cassandra beans using `AbstractReactiveCassandraConfiguration`
 ====
 [source,java]
 ----
-@Configuration
-public class AppConfig extends AbstractReactiveCassandraConfiguration {
-
-  /*
-   * Provide a contact point to the configuration.
-   */
-  public String getContactPoints() {
-    return "localhost";
-  }
-
-  /*
-   * Provide a keyspace name to the configuration.
-   */
-  public String getKeyspaceName() {
-    return "mykeyspace";
-  }
-}
+include::../{example-root}/ReactiveCassandraConfiguration.java[tags=class]
 ----
 ====
 
 The configuration class in the preceding example is schema-management-enabled to create CQL objects during startup.
 See <<cassandra.schema-management>> for further details.
-
 
 [[cassandra.reactive.cql-template]]
 == `ReactiveCqlTemplate`
@@ -281,67 +182,45 @@ of all of the functionality exposed by the `ReactiveCqlTemplate`. See the attend
 The following query gets the number of rows in a relation:
 
 ====
-[source,java]
+[source,java,indent=0]
 ----
-Mono<Integer> rowCount = reactiveCqlTemplate.queryForObject("SELECT COUNT(*) FROM t_actor", Integer.class);
+include::../{example-root}/ReactiveCqlTemplateExamples.java[tags=rowCount]
 ----
 ====
 
 The following query uses a bind variable:
 
 ====
-[source,java]
+[source,java,indent=0]
 ----
-Mono<Integer> countOfActorsNamedJoe = reactiveCqlTemplate.queryForObject(
-		"SELECT COUNT(*) FROM t_actor WHERE first_name = ?", Integer.class, "Joe");
+include::../{example-root}/ReactiveCqlTemplateExamples.java[tags=countOfActorsNamedJoe]
 ----
 ====
 
 The following example queries for a `String`:
 
 ====
-[source,java]
+[source,java,indent=0]
 ----
-Mono<String> lastName = reactiveCqlTemplate.queryForObject(
-		"SELECT last_name FROM t_actor WHERE id = ?",
-		String.class, 1212L);
+include::../{example-root}/ReactiveCqlTemplateExamples.java[tags=lastName]
 ----
 ====
 
-The following exmaple queries and populates a single domain object:
+The following example queries and populates a single domain object:
 
 ====
-[source,java]
+[source,java,indent=0]
 ----
-Mono<Actor> actor = reactiveCqlTemplate.queryForObject(
-		"SELECT first_name, last_name FROM t_actor WHERE id = ?",
-		new RowMapper<Actor>() {
-			public Actor mapRow(Row row, int rowNum) {
-				Actor actor = new Actor();
-				actor.setFirstName(row.getString("first_name"));
-				actor.setLastName(row.getString("last_name"));
-				return actor;
-			},
-		new Object[]{1212L},
-		});
+include::../{example-root}/ReactiveCqlTemplateExamples.java[tags=rowMapper]
 ----
 ====
 
 The following example queries and populates a number of domain objects:
 
 ====
-[source,java]
+[source,java,indent=0]
 ----
-Flux<Actor> actors = reactiveCqlTemplate.query(
-		"SELECT first_name, last_name FROM t_actor",
-		new RowMapper<Actor>() {
-			public Actor mapRow(Row row int rowNum) {
-				Actor actor = new Actor();
-				actor.setFirstName(row.getString("first_name"));
-				actor.setLastName(row.getString("last_name"));
-				return actor;
-			}
-		});
+include::../{example-root}/ReactiveCqlTemplateExamples.java[tags=listOfRowMapper]
 ----
 ====
 
@@ -352,23 +231,9 @@ duplication present in the two `RowMapper` anonymous inner classes and extract t
 For example, it might be better to write the last code snippet as follows:
 
 ====
-[source,java]
+[source,java,indent=0]
 ----
-public Flux<Actor> findAllActors() {
-	return reactiveCqlTemplate.query("SELECT first_name, last_name FROM t_actor", ActorMapper.INSTANCE);
-}
-
-enum ActorMapper implements RowMapper<Actor> {
-
-    INSTANCE;
-
-	public Actor mapRow(Row row, int rowNum) {
-		Actor actor = new Actor();
-		actor.setFirstName(row.getString("first_name"));
-		actor.setLastName(row.getString("last_name"));
-		return actor;
-	}
-}
+include::../{example-root}/ReactiveCqlTemplateExamples.java[tags=findAllActors]
 ----
 ====
 
@@ -381,33 +246,27 @@ as variable arguments or, alternatively, as an object array.
 The following example shows how to perform an `INSERT` operation with `ReactiveCqlTemplate`:
 
 ====
-[source,java]
+[source,java,indent=0]
 ----
-Mono<Boolean> applied = reactiveCqlTemplate.execute(
-		"INSERT INTO t_actor (first_name, last_name) VALUES (?, ?)",
-		"Leonor", "Watling");
+include::../{example-root}/ReactiveCqlTemplateExamples.java[tags=insert]
 ----
 ====
 
 The following example shows how to perform an `UPDATE` operation with `ReactiveCqlTemplate`:
 
 ====
-[source,java]
+[source,java,indent=0]
 ----
-Mono<Boolean> applied = reactiveCqlTemplate.execute(
-		"UPDATE t_actor SET last_name = ? WHERE id = ?",
-		"Banjo", 5276L);
+include::../{example-root}/ReactiveCqlTemplateExamples.java[tags=update]
 ----
 ====
 
 The following example shows how to perform an `DELETE` operation with `ReactiveCqlTemplate`:
 
 ====
-[source,java]
+[source,java,indent=0]
 ----
-Mono<Boolean> applied = reactiveCqlTemplate.execute(
-		"DELETE FROM actor WHERE id = ?",
-		Long.valueOf(actorId));
+include::../{example-root}/ReactiveCqlTemplateExamples.java[tags=delete]
 ----
 ====
 
@@ -585,7 +444,7 @@ For updates, you can select to update a number of rows.
 The following example shows updating a single account object by adding a one-time $50.00 bonus to the balance
 with the `+` assignment:
 
-.Updating rows using `CasandraTemplate`
+.Updating rows using `ReactiveCasandraTemplate`
 ====
 [source,java]
 ----
@@ -593,7 +452,7 @@ import static org.springframework.data.cassandra.core.query.Criteria.where;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.core.query.Update;
 
-...
+…
 
 Mono<Boolean> wasApplied = reactiveCassandraTemplate.update(Query.query(where("id").is("foo")),
   Update.create().increment("balance", 50.00), Account.class);

@@ -159,34 +159,7 @@ to and from the database. The following example configuration class sets up Cass
 ====
 [source,java]
 ----
-@Configuration
-public static class Config extends AbstractCassandraConfiguration {
-
-  @Override
-  protected String getKeyspaceName() {
-    return "bigbank";
-  }
-
-  // the following are optional
-
-  @Override
-  public CustomConversions customConversions() {
-
-    List<Converter<?, ?>> converters = new ArrayList<>();
-
-    converters.add(new PersonReadConverter());
-    converters.add(new PersonWriteConverter());
-
-    return new CassandraCustomConversions(converters);
-  }
-
-  @Override
-  public SchemaAction getSchemaAction() {
-    return SchemaAction.RECREATE;
-  }
-
-  // other methods omitted...
-}
+include::../{example-root}/SchemaConfiguration.java[tags=class]
 ----
 ====
 
@@ -326,23 +299,7 @@ The following example shows a class with a flat composite primary key:
 ====
 [source,java]
 ----
-@Table(value = "login_event")
-public class LoginEvent {
-
-  @PrimaryKeyColumn(name = "person_id", ordinal = 0, type = PrimaryKeyType.PARTITIONED)
-  private String personId;
-
-  @PrimaryKeyColumn(name = "event_code", ordinal = 1, type = PrimaryKeyType.PARTITIONED)
-  private int eventCode;
-
-  @PrimaryKeyColumn(name = "event_time", ordinal = 2, type = PrimaryKeyType.CLUSTERED, ordering = Ordering.DESCENDING)
-  private Date eventTime;
-
-  @Column("ip_address)
-  private String ipAddress;
-
-  // getters and setters omitted
-}
+include::../{example-root}/LoginEvent.java[tags=class]
 ----
 ====
 
@@ -358,20 +315,7 @@ in a single complex object. The following example shows a composite primary key 
 ====
 [source,java]
 ----
-@PrimaryKeyClass
-public class LoginEventKey implements Serializable {
-
-  @PrimaryKeyColumn(name = "person_id", ordinal = 0, type = PrimaryKeyType.PARTITIONED)
-  private String personId;
-
-  @PrimaryKeyColumn(name = "event_code", ordinal = 1, type = PrimaryKeyType.PARTITIONED)
-  private int eventCode;
-
-  @PrimaryKeyColumn(name = "event_time", ordinal = 2, type = PrimaryKeyType.CLUSTERED, ordering = Ordering.DESCENDING)
-  private Date eventTime;
-
-  // other methods omitted
-}
+include::../{example-root}/LoginEventKey.java[tags=class]
 ----
 ====
 
@@ -387,7 +331,7 @@ public class LoginEvent {
   @PrimaryKey
   private LoginEventKey key;
 
-  @Column("ip_address)
+  @Column("ip_address")
   private String ipAddress;
 
   // getters and setters omitted
@@ -435,68 +379,7 @@ The following example shows a more complex mapping:
 ====
 [source,java]
 ----
-@Table("my_person")
-public class Person {
-
-  @PrimaryKeyClass
-  public static class Key implements Serializable {
-
-    @PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED)
-    private String type;
-
-    @PrimaryKeyColumn(ordinal = 1, type = PrimaryKeyType.PARTITIONED)
-    private String value;
-
-    @PrimaryKeyColumn(name = "correlated_type", ordinal = 2, type = PrimaryKeyType.CLUSTERED)
-    private String correlatedType;
-
-    // other getters/setters ommitted
-  }
-
-  @PrimaryKey
-  private Person.Key key;
-
-  @CassandraType(type = Name.VARINT)
-  private Integer ssn;
-
-  @Column("f_name")
-  private String firstName;
-
-  @Column(forceQuote = true)
-  @Indexed
-  private String lastName;
-
-  private Address address;
-
-  @CassandraType(type = Name.UDT, userTypeName = "myusertype")
-  private UDTValue usertype;
-
-  private Coordinates coordinates;
-
-  @Transient
-  private Integer accountTotal;
-
-  @CassandraType(type = Name.SET, typeArguments = Name.BIGINT)
-  private Set<Long> timestamps;
-
-  private Map<@Indexed String, InetAddress> sessions;
-
-  public Person(Integer ssn) {
-    this.ssn = ssn;
-  }
-
-  public String getId() {
-    return id;
-  }
-
-  // no setter for Id.  (getter is only exposed for some unit testing)
-
-  public Integer getSsn() {
-    return ssn;
-  }
-
-  // other getters/setters ommitted
-}
+include::../{example-root}/mapping/Person.java[tags=class]
 ----
 ====
 
@@ -506,21 +389,7 @@ The following example shows how to map a UDT `Address`:
 ====
 [source,java]
 ----
-@UserDefinedType("address")
-public class Address {
-
-  @CassandraType(type = Name.VARCHAR)
-  private String street;
-
-  private String city;
-
-  private Set<String> zipcodes;
-
-  @CassandraType(type = Name.SET, typeArguments = Name.BIGINT)
-  private List<Long> timestamps;
-
-  // other getters/setters ommitted
-}
+include::../{example-root}/mapping/Address.java[tags=class]
 ----
 ====
 
@@ -533,21 +402,7 @@ The following example shows how map a tuple:
 ====
 [source,java]
 ----
-@Tuple
-public class Coordinates {
-
-  @Element(0)
-  @CassandraType(type = Name.VARCHAR)
-  private String description;
-
-  @Element(1)
-  private long longitude;
-
-  @Element(2)
-  private long latitude;
-
-  // other getters/setters ommitted
-}
+include::../{example-root}/mapping/Coordinates.java[tags=class]
 ----
 ====
 
@@ -567,29 +422,11 @@ from the annotated element. The following example shows a number of ways to crea
 ====
 [source,java]
 ----
-@Table
-public class Person {
-
-  @Id
-  private String key;
-
-  @SASI @StandardAnalyzed
-  private String names;
-
-  @Indexed("indexed_map")
-  private Map<String, String> entries;
-
-  private Map<@Indexed String, String> keys;
-
-  private Map<String, @Indexed String> values;
-
-  // …
-}
+include::../{example-root}/mapping/PersonWithIndexes.java[tags=class]
 ----
 ====
 
 CAUTION: Index creation on session initialization may have a severe performance impact on application startup.
-
 
 [[cassandra.mapping.explicit-converters]]
 === Overriding Mapping with Explicit Converters
@@ -609,15 +446,7 @@ The following example of a Spring `Converter` implementation converts from a row
 
 [source,java]
 ----
-@ReadingConverter
- public class PersonReadConverter implements Converter<Row, Person> {
-
-  public Person convert(Row source) {
-    Person person = new Person(row.getString("id"));
-    person.setAge(source.getInt("age");
-    return person;
-  }
-}
+include::../{example-root}/mapping/PersonReadConverter.java[tags=class]
 ----
 
 
@@ -631,12 +460,7 @@ To intercept an object before it goes into the database, you can register a subc
 ====
 [source,java]
 ----
-public class BeforeSaveListener extends AbstractCassandraEventListener<Person> {
-  @Override
-  public void onBeforeSave(BeforeSaveEvent<Person> event) {
-    … change values, delete them, whatever …
-  }
-}
+include::../{example-root}/mapping/BeforeSaveListener.java[tags=class]
 ----
 ====
 
