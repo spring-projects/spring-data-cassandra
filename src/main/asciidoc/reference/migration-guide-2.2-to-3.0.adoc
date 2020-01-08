@@ -5,12 +5,12 @@ Spring Data for Apache Cassandra 3.0 introduces a set of breaking changes when u
 
 == Review dependencies
 
-Upgrading to Spring Data Cassandra requires an upgrade to the DataStax Driver version 4. Upgrading to the new driver comes with transitive dependency changes, most notably Google Guava is bundled and shaded by the driver.
+Upgrading to Spring Data Cassandra requires an upgrade to the DataStax Driver version 4. Upgrading to the new driver comes with transitive dependency changes, most notably, Google Guava is bundled and shaded by the driver.
 
 == Adapt Configuration
 
-DataStax Java Driver 4 merges `Cluster` and `Session` objects into a single `CqlSession` object, therefore all `Cluster`-related API was removed.
-The Configuration was revised in large parts by removing most configuration items that were moved into `DriverConfigLoader` that is mostly file-based.
+DataStax Java Driver 4 merges `Cluster` and `Session` objects into a single `CqlSession` object, therefore, all `Cluster`-related API was removed.
+The configuration was revised in large parts by removing most configuration items that were moved into `DriverConfigLoader` that is mostly file-based.
 This means that `SocketOptions`, `AddressTranslator` and many more options are configured now through other means.
 
 If you're using XML-based configuration, make sure to migrate all configuration files from the  `cql` namespace (`http://www.springframework.org/schema/cql https://www.springframework.org/schema/cql/spring-cql.xsd`) to the `cassandra` namespace (`http://www.springframework.org/schema/data/cassandra https://www.springframework.org/schema/data/cassandra/spring-cassandra.xsd`).
@@ -109,16 +109,20 @@ Your data model may require updates if you use the following features:
 
 === `@CassandraType`
 
-DataStax driver 4 no longer ships with a `Name` enumeration to describe the Cassandra type. We decided to re-introduce the enumeration with `CassandraType.Name`. Make sure to update your imports to use the newly introduced replacement type.
+DataStax driver 4 no longer ships with a `Name` enumeration to describe the Cassandra type.
+We decided to re-introduce the enumeration with `CassandraType.Name`.
+Make sure to update your imports to use the newly introduced replacement type.
 
 === Force Quote
 
-This flag is now deprecated and we recommend to not use it any longer.
-Spring Data for Apache Cassandra uses internally the driver's `CqlIdentifier` that ensures quoting where it's required.
+This flag is now deprecated, and we recommend not to use it any longer.
+Spring Data for Apache Cassandra internally uses the driver's `CqlIdentifier` that ensures quoting where it's required.
 
 === Property Types
 
-DataStax driver 4 no longer uses `java.lang.Date`. Please upgrade your data model to use `java.time.LocalDateTime`. Please also migrate raw UDT and tuple types to the new driver types `UdtValue` respective `TupleValue`.
+DataStax driver 4 no longer uses `java.lang.Date`.
+Please upgrade your data model to use `java.time.LocalDateTime`.
+Please also migrate raw UDT and tuple types to the new driver types `UdtValue` respective `TupleValue`.
 
 == Other changes
 
@@ -178,8 +182,3 @@ DataStax driver 4 no longer uses `java.lang.Date`. Please upgrade your data mode
 * `cassandra:cluster` (endpoint properties merged to `cassandra:session`)
 * `cassandra:initialize-keyspace` namespace support
 * `cassandra:session-factory` with `cassandra:script` support
-
-
-
-
-
