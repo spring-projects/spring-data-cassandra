@@ -1,5 +1,5 @@
 /**
- * Provides utility classes for simple {@link com.datastax.driver.core.Session} access and various session
+ * Provides utility classes for simple {@link com.datastax.oss.driver.api.core.CqlSession} access and various session
  * implementations.
  */
 @NonNullApi

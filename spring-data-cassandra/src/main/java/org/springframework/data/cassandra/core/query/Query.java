@@ -208,7 +208,7 @@ public class Query implements Filter {
 
 		CassandraPageRequest.validatePageable(pageable);
 
-		ByteBuffer pagingState = this.pagingState.orElse(null);
+		ByteBuffer pagingState = getPagingState().orElse(null);
 
 		if (pageable instanceof CassandraPageRequest) {
 			pagingState = ((CassandraPageRequest) pageable).getPagingState();
@@ -236,10 +236,10 @@ public class Query implements Filter {
 	}
 
 	/**
-	 * @return the optional {@link PagingState}.
+	 * @return the optional {@link ByteBuffer paging state}.
 	 */
 	public Optional<ByteBuffer> getPagingState() {
-		return this.pagingState;
+		return this.pagingState.map(ByteBuffer::asReadOnlyBuffer);
 	}
 
 	/**

@@ -114,7 +114,7 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 	}
 
 	// -------------------------------------------------------------------------
-	// Methods dealing with a plain com.datastax.driver.core.Session
+	// Methods dealing with a plain com.datastax.oss.driver.api.core.CqlSession
 	// -------------------------------------------------------------------------
 
 	/*

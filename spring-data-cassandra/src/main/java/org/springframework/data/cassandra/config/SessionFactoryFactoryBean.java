@@ -69,7 +69,9 @@ public class SessionFactoryFactoryBean extends AbstractFactoryBean<SessionFactor
 	}
 
 	/**
-	 * Set the {@link KeyspacePopulator} to execute during the bean initialization phase.
+	 * Set the {@link KeyspacePopulator} to execute during the bean initialization phase. The
+	 * {@link KeyspacePopulator#populate(CqlSession) KeyspacePopulator} is invoked before creating
+	 * {@link #setSchemaAction(SchemaAction) the schema}.
 	 *
 	 * @param keyspacePopulator the {@link KeyspacePopulator} to use during initialization.
 	 * @see #setKeyspaceCleaner

@@ -30,7 +30,8 @@
 
 	<cassandra:converter/>
 
-	<cassandra:cql-template id="foo-template"/>
+	<cassandra:cql-template id="foo-template"
+							session-factory-ref="cassandraSessionFactory"/>
 	<cassandra:template cql-template-ref="foo-template"/>
 
 </beans>

@@ -45,7 +45,7 @@ import com.datastax.oss.driver.api.core.retry.RetryPolicy;
  * @author Mark Paluch
  * @author John Blum
  * @see org.springframework.beans.factory.InitializingBean
- * @see com.datastax.driver.core.Session
+ * @see com.datastax.oss.driver.api.core.CqlSession
  */
 public class CassandraAccessor implements InitializingBean {
 
@@ -210,7 +210,7 @@ public class CassandraAccessor implements InitializingBean {
 	 * data access operations.
 	 *
 	 * @return the Cassandra {@link CqlSession} used by this template.
-	 * @see com.datastax.driver.core.Session
+	 * @see com.datastax.oss.driver.api.core.CqlSession
 	 * @deprecated since 2.0. This class uses a {@link SessionFactory} to dispatch CQL calls amongst different
 	 *             {@link CqlSession}s during its lifecycle.
 	 */
@@ -227,7 +227,7 @@ public class CassandraAccessor implements InitializingBean {
 	 *
 	 * @param sessionFactory Cassandra {@link CqlSession} used by this template. Must not be{@literal null}.
 	 * @since 2.0
-	 * @see com.datastax.driver.core.Session
+	 * @see com.datastax.oss.driver.api.core.CqlSession
 	 */
 	public void setSessionFactory(SessionFactory sessionFactory) {
 

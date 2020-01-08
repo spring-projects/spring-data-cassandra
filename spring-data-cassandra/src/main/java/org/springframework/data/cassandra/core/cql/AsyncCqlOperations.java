@@ -48,9 +48,9 @@ public interface AsyncCqlOperations {
 
 	/**
 	 * Execute a CQL data access operation, implemented as callback action working on a
-	 * {@link com.datastax.driver.core.Session}. This allows for implementing arbitrary data access operations, within
-	 * Spring's managed CQL environment: that is, converting CQL {@link com.datastax.oss.driver.api.core.DriverException}s
-	 * into Spring's {@link DataAccessException} hierarchy.
+	 * {@link com.datastax.oss.driver.api.core.CqlSession}. This allows for implementing arbitrary data access operations,
+	 * within Spring's managed CQL environment: that is, converting CQL
+	 * {@link com.datastax.oss.driver.api.core.DriverException}s into Spring's {@link DataAccessException} hierarchy.
 	 * <p>
 	 * The callback action can return a result object, for example a domain object or a collection of domain objects.
 	 *
@@ -638,7 +638,7 @@ public interface AsyncCqlOperations {
 	 * The callback action can return a result object, for example a domain object or a collection of domain objects.
 	 *
 	 * @param preparedStatementCreator object that can create a {@link PreparedStatement} given a
-	 *          {@link com.datastax.driver.core.Session}, must not be {@literal null}.
+	 *          {@link com.datastax.oss.driver.api.core.CqlSession}, must not be {@literal null}.
 	 * @param action callback object that specifies the action, must not be {@literal null}.
 	 * @return a result object returned by the action, or {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
@@ -650,7 +650,7 @@ public interface AsyncCqlOperations {
 	 * Query using a prepared statement, reading the {@link ResultSet} with a {@link AsyncResultSetExtractor}.
 	 *
 	 * @param preparedStatementCreator object that can create a {@link PreparedStatement} given a
-	 *          {@link com.datastax.driver.core.Session}, must not be {@literal null}.
+	 *          {@link com.datastax.oss.driver.api.core.CqlSession}, must not be {@literal null}.
 	 * @param resultSetExtractor object that will extract results, must not be {@literal null}.
 	 * @return an arbitrary result object, as returned by the {@link AsyncResultSetExtractor}
 	 * @throws DataAccessException if there is any problem executing the query.
@@ -663,7 +663,7 @@ public interface AsyncCqlOperations {
 	 * {@link RowCallbackHandler}.
 	 *
 	 * @param preparedStatementCreator object that can create a {@link PreparedStatement} given a
-	 *          {@link com.datastax.driver.core.Session}, must not be {@literal null}.
+	 *          {@link com.datastax.oss.driver.api.core.CqlSession}, must not be {@literal null}.
 	 * @param rowCallbackHandler object that will extract results, one row at a time, must not be {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
@@ -674,7 +674,7 @@ public interface AsyncCqlOperations {
 	 * Query using a prepared statement, mapping each row to a Java object via a {@link RowMapper}.
 	 *
 	 * @param preparedStatementCreator object that can create a {@link PreparedStatement} given a
-	 *          {@link com.datastax.driver.core.Session}, must not be {@literal null}.
+	 *          {@link com.datastax.oss.driver.api.core.CqlSession}, must not be {@literal null}.
 	 * @param rowMapper object that will map one object per row, must not be {@literal null}.
 	 * @return the result {@link List}, containing mapped objects.
 	 * @throws DataAccessException if there is any problem executing the query.
@@ -687,7 +687,7 @@ public interface AsyncCqlOperations {
 	 * to the query, reading the {@link ResultSet} with a {@link AsyncResultSetExtractor}.
 	 *
 	 * @param preparedStatementCreator object that can create a {@link PreparedStatement} given a
-	 *          {@link com.datastax.driver.core.Session}, must not be {@literal null}.
+	 *          {@link com.datastax.oss.driver.api.core.CqlSession}, must not be {@literal null}.
 	 * @param psb object that knows how to set values on the prepared statement. If this is {@literal null}, the CQL will
 	 *          be assumed to contain no bind parameters. Even if there are no bind parameters, this object may be used to
 	 *          set fetch size and other performance options.
@@ -703,7 +703,7 @@ public interface AsyncCqlOperations {
 	 * to the query, reading the {@link ResultSet} on a per-row basis with a {@link RowCallbackHandler}.
 	 *
 	 * @param preparedStatementCreator object that can create a {@link PreparedStatement} given a
-	 *          {@link com.datastax.driver.core.Session}, must not be {@literal null}.
+	 *          {@link com.datastax.oss.driver.api.core.CqlSession}, must not be {@literal null}.
 	 * @param psb object that knows how to set values on the prepared statement. If this is {@literal null}, the CQL will
 	 *          be assumed to contain no bind parameters. Even if there are no bind parameters, this object may be used to
 	 *          set fetch size and other performance options.
@@ -718,7 +718,7 @@ public interface AsyncCqlOperations {
 	 * to the query, mapping each row to a Java object via a {@link RowMapper}.
 	 *
 	 * @param preparedStatementCreator object that can create a {@link PreparedStatement} given a
-	 *          {@link com.datastax.driver.core.Session}, must not be {@literal null}.
+	 *          {@link com.datastax.oss.driver.api.core.CqlSession}, must not be {@literal null}.
 	 * @param psb object that knows how to set values on the prepared statement. If this is {@literal null}, the CQL will
 	 *          be assumed to contain no bind parameters. Even if there are no bind parameters, this object may be used to
 	 *          set fetch size and other performance options.

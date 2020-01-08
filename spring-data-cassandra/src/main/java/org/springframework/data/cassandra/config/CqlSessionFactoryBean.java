@@ -32,11 +32,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.data.cassandra.core.CassandraAdminOperations;
 import org.springframework.data.cassandra.core.CassandraAdminTemplate;
 import org.springframework.data.cassandra.core.CassandraPersistentEntitySchemaCreator;
 import org.springframework.data.cassandra.core.CassandraPersistentEntitySchemaDropper;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
+import org.springframework.data.cassandra.core.cql.CassandraExceptionTranslator;
 import org.springframework.data.cassandra.core.cql.generator.AlterKeyspaceCqlGenerator;
 import org.springframework.data.cassandra.core.cql.generator.CreateKeyspaceCqlGenerator;
 import org.springframework.data.cassandra.core.cql.generator.DropKeyspaceCqlGenerator;
@@ -64,7 +67,8 @@ import com.datastax.oss.driver.api.core.CqlSessionBuilder;
  * @author Mark Paluch
  * @since 3.0
  */
-public class CqlSessionFactoryBean implements FactoryBean<CqlSession>, InitializingBean, DisposableBean {
+public class CqlSessionFactoryBean
+		implements FactoryBean<CqlSession>, InitializingBean, DisposableBean, PersistenceExceptionTranslator {
 
 	public static final int DEFAULT_PORT = 9042;
 	public static final String DEFAULT_CONTACT_POINTS = "localhost";
@@ -74,6 +78,7 @@ public class CqlSessionFactoryBean implements FactoryBean<CqlSession>, Initializ
 	private static final boolean DEFAULT_CREATE_IF_NOT_EXISTS = false;
 	private static final boolean DEFAULT_DROP_TABLES = false;
 	private static final boolean DEFAULT_DROP_UNUSED_TABLES = false;
+	private static final CassandraExceptionTranslator EXCEPTION_TRANSLATOR = new CassandraExceptionTranslator();
 
 	private @Nullable CqlSession systemSession;
 	private @Nullable CqlSession session;
@@ -652,4 +657,9 @@ public class CqlSessionFactoryBean implements FactoryBean<CqlSession>, Initializ
 				"Unsupported specification type: " + ClassUtils.getQualifiedName(specification.getClass()));
 	}
 
+	@Nullable
+	@Override
+	public DataAccessException translateExceptionIfPossible(RuntimeException e) {
+		return EXCEPTION_TRANSLATOR.translateExceptionIfPossible(e);
+	}
 }

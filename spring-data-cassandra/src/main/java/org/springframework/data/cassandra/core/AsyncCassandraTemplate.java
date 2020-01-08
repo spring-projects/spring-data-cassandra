@@ -939,7 +939,7 @@ public class AsyncCassandraTemplate
 		}
 
 		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.AsyncSessionCallback#doInSession(com.datastax.driver.core.Session)
+		 * @see org.springframework.data.cassandra.core.cql.AsyncSessionCallback#doInSession(com.datastax.oss.driver.api.core.CqlSession)
 		 */
 		@Override
 		public ListenableFuture<AsyncResultSet> doInSession(CqlSession session)
