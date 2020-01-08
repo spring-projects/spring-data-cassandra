@@ -23,7 +23,7 @@ import java.util.UUID;
 
 import org.junit.Test;
 
-import org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder.Name;
+import org.springframework.data.cassandra.core.mapping.CassandraType.Name;
 
 import com.datastax.oss.driver.api.core.type.DataTypes;
 

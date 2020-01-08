@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.repository.query;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.springframework.data.cassandra.core.mapping.CassandraType.*;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -27,7 +28,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
-import org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.domain.AllPossibleTypes;
 import org.springframework.data.projection.ProjectionFactory;
@@ -124,10 +124,10 @@ public class CassandraParametersParameterAccessorUnitTests {
 		List<AllPossibleTypes> findByBpLocalDateTime(LocalDateTime dateTime);
 
 		List<AllPossibleTypes> findByAnnotatedBpLocalDateTime(
-				@CassandraType(type = CassandraSimpleTypeHolder.Name.DATE) LocalDateTime dateTime);
+				@CassandraType(type = Name.DATE) LocalDateTime dateTime);
 
 		List<AllPossibleTypes> findByAnnotatedObject(
-				@CassandraType(type = CassandraSimpleTypeHolder.Name.DATE) Object dateTime);
+				@CassandraType(type = Name.DATE) Object dateTime);
 
 		List<AllPossibleTypes> findByFirstname(QueryOptions queryOptions, String firstname);
 	}

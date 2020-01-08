@@ -40,7 +40,6 @@ import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.core.convert.CassandraCustomConversions;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
-import org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.domain.AllPossibleTypes;
 import org.springframework.data.cassandra.repository.Query;
@@ -191,7 +190,7 @@ public class RepositoryQueryMethodParameterTypesIntegrationTests
 
 		@Query("select * from allpossibletypes where date = ?0")
 		List<AllPossibleTypes> findWithAnnotatedDateParameter(
-				@CassandraType(type = CassandraSimpleTypeHolder.Name.DATE) Date timestamp);
+				@CassandraType(type = CassandraType.Name.DATE) Date timestamp);
 
 		@Query("select * from allpossibletypes where date = ?0")
 		List<AllPossibleTypes> findWithDateParameter(Date timestamp);

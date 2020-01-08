@@ -46,7 +46,6 @@ import org.springframework.data.annotation.Transient;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.cassandra.core.mapping.BasicMapId;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
-import org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.core.mapping.MapId;
 import org.springframework.data.cassandra.core.mapping.PrimaryKey;
@@ -974,7 +973,7 @@ public class MappingCassandraConverterUnitTests {
 
 		@PrimaryKey private String id;
 
-		@CassandraType(type = CassandraSimpleTypeHolder.Name.INT) private Condition asOrdinal;
+		@CassandraType(type = CassandraType.Name.INT) private Condition asOrdinal;
 
 		public String getId() {
 			return id;
@@ -1126,7 +1125,7 @@ public class MappingCassandraConverterUnitTests {
 
 		@PrimaryKey private String id;
 
-		@CassandraType(type = CassandraSimpleTypeHolder.Name.DATE) java.time.LocalDate localDate;
+		@CassandraType(type = CassandraType.Name.DATE) java.time.LocalDate localDate;
 	}
 
 	/**
@@ -1137,7 +1136,7 @@ public class MappingCassandraConverterUnitTests {
 
 		@PrimaryKey private String id;
 
-		@CassandraType(type = CassandraSimpleTypeHolder.Name.DATE) org.joda.time.LocalDate localDate;
+		@CassandraType(type = CassandraType.Name.DATE) org.joda.time.LocalDate localDate;
 	}
 
 	/**
@@ -1148,7 +1147,7 @@ public class MappingCassandraConverterUnitTests {
 
 		@PrimaryKey private String id;
 
-		@CassandraType(type = CassandraSimpleTypeHolder.Name.DATE) org.threeten.bp.LocalDate localDate;
+		@CassandraType(type = CassandraType.Name.DATE) org.threeten.bp.LocalDate localDate;
 	}
 
 	@Table

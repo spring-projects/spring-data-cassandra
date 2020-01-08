@@ -27,7 +27,7 @@ import java.lang.annotation.Target;
  * @author Alex Shvid
  * @author Matthew T. Adams
  * @author Mark Paluch
- * @see CassandraSimpleTypeHolder.Name
+ * @see Name
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
@@ -38,12 +38,11 @@ public @interface CassandraType {
 	/**
 	 * The {@link Name} of the property.
 	 */
-	CassandraSimpleTypeHolder.Name type();
+	Name type();
 
 	/**
-	 * If the property is {@link java.util.Collection Collection-like}, then this attribute holds a single
-	 * {@link CassandraSimpleTypeHolder.Name DataType Name} representing the element type of the
-	 * {@link java.util.Collection}.
+	 * If the property is {@link java.util.Collection Collection-like}, then this attribute holds a single {@link Name
+	 * DataType Name} representing the element type of the {@link java.util.Collection}.
 	 * <p/>
 	 * If the property is a {@link java.util.Map}, then this attribute holds exactly two {@link Name DataType Names}; the
 	 * first is the key type and the second is the value type.
@@ -51,10 +50,10 @@ public @interface CassandraType {
 	 * If the property is neither {@link java.util.Collection Collection-like} nor a {@link java.util.Map}, then this
 	 * attribute is ignored.
 	 *
-	 * @return an array of {@link CassandraSimpleTypeHolder.Name} objects.
-	 * @see CassandraSimpleTypeHolder.Name
+	 * @return an array of {@link Name} objects.
+	 * @see Name
 	 */
-	CassandraSimpleTypeHolder.Name[] typeArguments() default {};
+	Name[] typeArguments() default {};
 
 	/**
 	 * If the property maps to a User-Defined Type (UDT) then this attribute holds the user type name. For
@@ -66,4 +65,12 @@ public @interface CassandraType {
 	 */
 	String userTypeName() default "";
 
+	/**
+	 * Cassandra Protocol types.
+	 *
+	 * @since 3.0
+	 */
+	enum Name {
+		ASCII, BIGINT, BLOB, BOOLEAN, COUNTER, DECIMAL, DOUBLE, FLOAT, INT, TIMESTAMP, UUID, VARCHAR, TEXT, VARINT, TIMEUUID, INET, DATE, TIME, SMALLINT, TINYINT, DURATION, LIST, MAP, SET, UDT, TUPLE;
+	}
 }

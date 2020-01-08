@@ -20,7 +20,6 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.core.mapping.PrimaryKey;
 import org.springframework.data.cassandra.core.mapping.Table;
@@ -35,5 +34,5 @@ import org.springframework.data.cassandra.core.mapping.Table;
 public class TimeEntity {
 
 	@PrimaryKey @NonNull private String id;
-	@CassandraType(type = CassandraSimpleTypeHolder.Name.TIME) private long time;
+	@CassandraType(type = CassandraType.Name.TIME) private long time;
 }

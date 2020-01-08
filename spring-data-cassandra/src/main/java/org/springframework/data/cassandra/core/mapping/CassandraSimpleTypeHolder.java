@@ -60,7 +60,7 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 
 	private static final Map<Class<?>, DataType> classToDataType;
 
-	private static final Map<Name, DataType> nameToDataType;
+	private static final Map<CassandraType.Name, DataType> nameToDataType;
 
 	static {
 
@@ -132,33 +132,33 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 	}
 
 	/**
-	 * @return the map between {@link Name} and {@link DataType}.
+	 * @return the map between {@link CassandraType.Name} and {@link DataType}.
 	 */
-	private static Map<Name, DataType> nameToDataType() {
+	private static Map<CassandraType.Name, DataType> nameToDataType() {
 
-		Map<Name, DataType> nameToDataType = new HashMap<>(16);
+		Map<CassandraType.Name, DataType> nameToDataType = new HashMap<>(16);
 
-		nameToDataType.put(Name.ASCII, DataTypes.ASCII);
-		nameToDataType.put(Name.BIGINT, DataTypes.BIGINT);
-		nameToDataType.put(Name.BLOB, DataTypes.BLOB);
-		nameToDataType.put(Name.BOOLEAN, DataTypes.BOOLEAN);
-		nameToDataType.put(Name.COUNTER, DataTypes.COUNTER);
-		nameToDataType.put(Name.DECIMAL, DataTypes.DECIMAL);
-		nameToDataType.put(Name.DOUBLE, DataTypes.DOUBLE);
-		nameToDataType.put(Name.FLOAT, DataTypes.FLOAT);
-		nameToDataType.put(Name.INT, DataTypes.INT);
-		nameToDataType.put(Name.TIMESTAMP, DataTypes.TIMESTAMP);
-		nameToDataType.put(Name.UUID, DataTypes.UUID);
-		nameToDataType.put(Name.VARCHAR, DataTypes.TEXT);
-		nameToDataType.put(Name.TEXT, DataTypes.TEXT);
-		nameToDataType.put(Name.TIMEUUID, DataTypes.TIMEUUID);
-		nameToDataType.put(Name.INET, DataTypes.INET);
-		nameToDataType.put(Name.DATE, DataTypes.DATE);
-		nameToDataType.put(Name.SMALLINT, DataTypes.SMALLINT);
-		nameToDataType.put(Name.TINYINT, DataTypes.TINYINT);
-		nameToDataType.put(Name.VARINT, DataTypes.VARINT);
-		nameToDataType.put(Name.TIME, DataTypes.TIME);
-		nameToDataType.put(Name.DURATION, DataTypes.DURATION);
+		nameToDataType.put(CassandraType.Name.ASCII, DataTypes.ASCII);
+		nameToDataType.put(CassandraType.Name.BIGINT, DataTypes.BIGINT);
+		nameToDataType.put(CassandraType.Name.BLOB, DataTypes.BLOB);
+		nameToDataType.put(CassandraType.Name.BOOLEAN, DataTypes.BOOLEAN);
+		nameToDataType.put(CassandraType.Name.COUNTER, DataTypes.COUNTER);
+		nameToDataType.put(CassandraType.Name.DECIMAL, DataTypes.DECIMAL);
+		nameToDataType.put(CassandraType.Name.DOUBLE, DataTypes.DOUBLE);
+		nameToDataType.put(CassandraType.Name.FLOAT, DataTypes.FLOAT);
+		nameToDataType.put(CassandraType.Name.INT, DataTypes.INT);
+		nameToDataType.put(CassandraType.Name.TIMESTAMP, DataTypes.TIMESTAMP);
+		nameToDataType.put(CassandraType.Name.UUID, DataTypes.UUID);
+		nameToDataType.put(CassandraType.Name.VARCHAR, DataTypes.TEXT);
+		nameToDataType.put(CassandraType.Name.TEXT, DataTypes.TEXT);
+		nameToDataType.put(CassandraType.Name.TIMEUUID, DataTypes.TIMEUUID);
+		nameToDataType.put(CassandraType.Name.INET, DataTypes.INET);
+		nameToDataType.put(CassandraType.Name.DATE, DataTypes.DATE);
+		nameToDataType.put(CassandraType.Name.SMALLINT, DataTypes.SMALLINT);
+		nameToDataType.put(CassandraType.Name.TINYINT, DataTypes.TINYINT);
+		nameToDataType.put(CassandraType.Name.VARINT, DataTypes.VARINT);
+		nameToDataType.put(CassandraType.Name.TIME, DataTypes.TIME);
+		nameToDataType.put(CassandraType.Name.DURATION, DataTypes.DURATION);
 
 		return nameToDataType;
 	}
@@ -188,21 +188,13 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 	}
 
 	/**
-	 * Returns the {@link DataType} for a {@link Name}.
+	 * Returns the {@link DataType} for a {@link CassandraType.Name}.
 	 *
 	 * @param dataTypeName must not be {@literal null}.
-	 * @return the {@link DataType} for {@link Name}.
+	 * @return the {@link DataType} for {@link CassandraType.Name}.
 	 */
-	public static DataType getDataTypeFor(Name dataTypeName) {
+	public static DataType getDataTypeFor(CassandraType.Name dataTypeName) {
 		return nameToDataType.get(dataTypeName);
 	}
 
-	/**
-	 * Cassandra Protocol types.
-	 *
-	 * @since 3.0
-	 */
-	public enum Name {
-		ASCII, BIGINT, BLOB, BOOLEAN, COUNTER, DECIMAL, DOUBLE, FLOAT, INT, TIMESTAMP, UUID, VARCHAR, TEXT, VARINT, TIMEUUID, INET, DATE, TIME, SMALLINT, TINYINT, DURATION, LIST, MAP, SET, UDT, TUPLE;
-	}
 }

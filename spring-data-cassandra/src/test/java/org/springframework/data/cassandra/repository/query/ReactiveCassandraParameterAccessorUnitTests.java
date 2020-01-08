@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.repository.query;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.springframework.data.cassandra.core.mapping.CassandraType.*;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -30,7 +31,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
-import org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.domain.AllPossibleTypes;
 import org.springframework.data.projection.ProjectionFactory;
@@ -121,9 +121,9 @@ public class ReactiveCassandraParameterAccessorUnitTests {
 		Flux<AllPossibleTypes> findByLocalDateTime(Mono<LocalDateTime> dateTime);
 
 		Flux<AllPossibleTypes> findByAnnotatedByLocalDateTime(
-				@CassandraType(type = CassandraSimpleTypeHolder.Name.DATE) Single<LocalDateTime> dateTime);
+				@CassandraType(type = Name.DATE) Single<LocalDateTime> dateTime);
 
 		Flux<AllPossibleTypes> findByAnnotatedObject(
-				@CassandraType(type = CassandraSimpleTypeHolder.Name.DATE) Mono<Object> dateTime);
+				@CassandraType(type = Name.DATE) Mono<Object> dateTime);
 	}
 }
