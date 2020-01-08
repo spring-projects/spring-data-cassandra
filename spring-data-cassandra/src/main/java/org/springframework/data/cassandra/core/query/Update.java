@@ -83,7 +83,7 @@ public class Update {
 	 *
 	 * @return a new {@link Update}.
 	 */
-	public static Update update(String columnName, Object value) {
+	public static Update update(String columnName, @Nullable Object value) {
 		return empty().set(columnName, value);
 	}
 
