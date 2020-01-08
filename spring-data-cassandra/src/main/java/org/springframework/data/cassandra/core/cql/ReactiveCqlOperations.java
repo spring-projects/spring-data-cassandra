@@ -464,8 +464,8 @@ public interface ReactiveCqlOperations {
 	 * Query using a prepared statement and a {@link PreparedStatementBinder} implementation that knows how to bind values
 	 * to the query, reading the {@link ReactiveResultSet} with a {@link ResultSetExtractor}.
 	 *
-	 * @param psc object that can create a {@link PreparedStatement} given a {@link com.datastax.driver.core.Session},
-	 *          must not be {@literal null}.
+	 * @param psc object that can create a {@link PreparedStatement} given a
+	 *          {@link com.datastax.oss.driver.api.core.CqlSession}, must not be {@literal null}.
 	 * @param psb object that knows how to set values on the prepared statement. If this is {@literal null}, the CQL will
 	 *          be assumed to contain no bind parameters. Even if there are no bind parameters, this object may be used to
 	 *          set fetch size and other performance options.
@@ -519,8 +519,8 @@ public interface ReactiveCqlOperations {
 	 * Query using a prepared statement and a {@link PreparedStatementBinder} implementation that knows how to bind values
 	 * to the query, mapping each row to a Java object via a {@link RowMapper}.
 	 *
-	 * @param psc object that can create a {@link PreparedStatement} given a {@link com.datastax.driver.core.Session},
-	 *          must not be {@literal null}.
+	 * @param psc object that can create a {@link PreparedStatement} given a
+	 *          {@link com.datastax.oss.driver.api.core.CqlSession}, must not be {@literal null}.
 	 * @param psb object that knows how to set values on the prepared statement. If this is {@literal null}, the CQL will
 	 *          be assumed to contain no bind parameters. Even if there are no bind parameters, this object may be used to
 	 *          set fetch size and other performance options.

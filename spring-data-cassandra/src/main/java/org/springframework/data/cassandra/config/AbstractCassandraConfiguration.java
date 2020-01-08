@@ -26,6 +26,7 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.cassandra.SessionFactory;
 import org.springframework.data.cassandra.core.CassandraAdminTemplate;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
@@ -230,5 +231,16 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 	 */
 	public SchemaAction getSchemaAction() {
 		return SchemaAction.NONE;
+	}
+
+	/**
+	 * Creates a new {@link ByteArrayResource} given {@code content}.
+	 *
+	 * @param content the script content.
+	 * @return a new {@link ByteArrayResource} for {@code content}.
+	 * @since 3.0
+	 */
+	protected ByteArrayResource scriptOf(String content) {
+		return new ByteArrayResource(content.getBytes());
 	}
 }

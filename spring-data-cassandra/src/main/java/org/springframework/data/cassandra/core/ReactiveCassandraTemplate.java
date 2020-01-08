@@ -140,7 +140,7 @@ public class ReactiveCassandraTemplate
 	 * @param converter {@link CassandraConverter} used to convert between Java and Cassandra types; must not be
 	 *          {@literal null}.
 	 * @see org.springframework.data.cassandra.core.convert.CassandraConverter
-	 * @see com.datastax.driver.core.Session
+	 * @see com.datastax.oss.driver.api.core.CqlSession
 	 */
 	public ReactiveCassandraTemplate(ReactiveSession session, CassandraConverter converter) {
 		this(new DefaultReactiveSessionFactory(session), converter);
@@ -154,7 +154,7 @@ public class ReactiveCassandraTemplate
 	 * @param converter {@link CassandraConverter} used to convert between Java and Cassandra types; must not be
 	 *          {@literal null}.
 	 * @see org.springframework.data.cassandra.core.convert.CassandraConverter
-	 * @see com.datastax.driver.core.Session
+	 * @see com.datastax.oss.driver.api.core.CqlSession
 	 */
 	public ReactiveCassandraTemplate(ReactiveSessionFactory sessionFactory, CassandraConverter converter) {
 		this(new ReactiveCqlTemplate(sessionFactory), converter);
@@ -169,7 +169,7 @@ public class ReactiveCassandraTemplate
 	 * @param converter {@link CassandraConverter} used to convert between Java and Cassandra types; must not be
 	 *          {@literal null}.
 	 * @see org.springframework.data.cassandra.core.convert.CassandraConverter
-	 * @see com.datastax.driver.core.Session
+	 * @see com.datastax.oss.driver.api.core.CqlSession
 	 */
 	public ReactiveCassandraTemplate(ReactiveCqlOperations reactiveCqlOperations, CassandraConverter converter) {
 
