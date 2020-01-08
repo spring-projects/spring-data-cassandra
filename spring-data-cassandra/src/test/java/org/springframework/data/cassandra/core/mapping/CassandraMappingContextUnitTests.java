@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.core.mapping;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.data.cassandra.core.mapping.CassandraType.*;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -674,8 +675,8 @@ public class CassandraMappingContextUnitTests {
 	@Table
 	private static class WithUdt {
 		@Id String id;
-		@CassandraType(type = CassandraSimpleTypeHolder.Name.UDT, userTypeName = "mappedudt") UdtValue udtValue;
-		@CassandraType(type = CassandraSimpleTypeHolder.Name.UDT, userTypeName = "NestedType") Nested nested;
+		@CassandraType(type = Name.UDT, userTypeName = "mappedudt") UdtValue udtValue;
+		@CassandraType(type = Name.UDT, userTypeName = "NestedType") Nested nested;
 	}
 
 	@Table
@@ -698,7 +699,7 @@ public class CassandraMappingContextUnitTests {
 	private static class TypeWithCustomConvertedMap {
 		@Id String id;
 		Map<String, Collection<String>> stringMap;
-		@CassandraType(type = CassandraSimpleTypeHolder.Name.ASCII) Map<String, Collection<String>> blobMap;
+		@CassandraType(type = Name.ASCII) Map<String, Collection<String>> blobMap;
 	}
 
 	@Table
@@ -721,7 +722,7 @@ public class CassandraMappingContextUnitTests {
 	@org.springframework.data.cassandra.core.mapping.UserDefinedType(value = "NestedType")
 	public static class Nested {
 		String s1;
-		@CassandraType(type = CassandraSimpleTypeHolder.Name.UDT,
+		@CassandraType(type = Name.UDT,
 				userTypeName = "AnotherNestedType") AnotherNested anotherNested;
 	}
 
@@ -733,8 +734,7 @@ public class CassandraMappingContextUnitTests {
 	@Table
 	static class TypedTupleEntity {
 		@Id String id;
-		@CassandraType(type = CassandraSimpleTypeHolder.Name.TUPLE, typeArguments = {
-				CassandraSimpleTypeHolder.Name.VARCHAR, CassandraSimpleTypeHolder.Name.BIGINT }) TupleValue typed;
+		@CassandraType(type = Name.TUPLE, typeArguments = { Name.VARCHAR, Name.BIGINT }) TupleValue typed;
 	}
 
 	@Table

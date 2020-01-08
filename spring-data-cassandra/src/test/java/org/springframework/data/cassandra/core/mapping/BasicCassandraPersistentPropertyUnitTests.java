@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.core.mapping;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.springframework.data.cassandra.core.mapping.CassandraType.*;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -200,7 +201,7 @@ public class BasicCassandraPersistentPropertyUnitTests {
 	}
 
 	@Retention(RetentionPolicy.RUNTIME)
-	@CassandraType(type = CassandraSimpleTypeHolder.Name.COUNTER)
+	@CassandraType(type = Name.COUNTER)
 	@interface ComposedCassandraTypeAnnotation {
 	}
 
@@ -224,7 +225,7 @@ public class BasicCassandraPersistentPropertyUnitTests {
 
 		UUID uuid;
 
-		@CassandraType(type = CassandraSimpleTypeHolder.Name.TIMEUUID) UUID timeUUID;
+		@CassandraType(type = Name.TIMEUUID) UUID timeUUID;
 	}
 
 	static class TypeWithMaps {

@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.repository.query;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.springframework.data.cassandra.core.mapping.CassandraType.*;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -26,7 +27,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.domain.Person;
 
@@ -56,7 +56,7 @@ public class CassandraParametersUnitTests {
 		CassandraParameters cassandraParameters = new CassandraParameters(method);
 
 		assertThat(cassandraParameters.getParameter(0).getCassandraType().type())
-				.isEqualTo(CassandraSimpleTypeHolder.Name.TIME);
+				.isEqualTo(Name.TIME);
 	}
 
 	@Test // DATACASS-296
@@ -75,7 +75,7 @@ public class CassandraParametersUnitTests {
 		CassandraParameters cassandraParameters = new CassandraParameters(method);
 
 		assertThat(cassandraParameters.getParameter(0).getCassandraType().type())
-				.isEqualTo(CassandraSimpleTypeHolder.Name.TIME);
+				.isEqualTo(Name.TIME);
 	}
 
 	@Test // DATACASS-296
@@ -85,24 +85,24 @@ public class CassandraParametersUnitTests {
 		CassandraParameters cassandraParameters = new CassandraParameters(method);
 
 		assertThat(cassandraParameters.getParameter(0).getCassandraType().type())
-				.isEqualTo(CassandraSimpleTypeHolder.Name.BOOLEAN);
+				.isEqualTo(Name.BOOLEAN);
 	}
 
 	interface PersonRepository {
 
 		Person findByFirstname(String firstname);
 
-		Person findByFirstTime(@CassandraType(type = CassandraSimpleTypeHolder.Name.TIME) String firstname);
+		Person findByFirstTime(@CassandraType(type = Name.TIME) String firstname);
 
 		Person findByObject(Object firstname);
 
-		Person findByAnnotatedObject(@CassandraType(type = CassandraSimpleTypeHolder.Name.TIME) Object firstname);
+		Person findByAnnotatedObject(@CassandraType(type = Name.TIME) Object firstname);
 
 		Person findByComposedAnnotationObject(@ComposedCassandraTypeAnnotation Object firstname);
 	}
 
 	@Retention(RetentionPolicy.RUNTIME)
-	@CassandraType(type = CassandraSimpleTypeHolder.Name.BOOLEAN)
+	@CassandraType(type = Name.BOOLEAN)
 	@interface ComposedCassandraTypeAnnotation {
 	}
 }

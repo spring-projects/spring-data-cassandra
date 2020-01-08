@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
+import static org.springframework.data.cassandra.core.mapping.CassandraType.*;
+
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,7 +29,6 @@ import org.joda.time.LocalDateTime;
 import org.joda.time.LocalTime;
 
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.convert.WritingConverter;
 import org.springframework.util.ClassUtils;
@@ -112,7 +113,7 @@ public abstract class CassandraJodaTimeConverters {
 	 * @author Mark Paluch
 	 */
 	@WritingConverter
-	@CassandraType(type = CassandraSimpleTypeHolder.Name.TIME)
+	@CassandraType(type = Name.TIME)
 	public enum FromJodaLocalTimeConverter implements Converter<LocalTime, java.time.LocalTime> {
 
 		INSTANCE;
@@ -144,7 +145,7 @@ public abstract class CassandraJodaTimeConverters {
 	 * @author Mark Paluch
 	 */
 	@WritingConverter
-	@CassandraType(type = CassandraSimpleTypeHolder.Name.DATE)
+	@CassandraType(type = Name.DATE)
 	public enum FromJodaLocalDateConverter implements Converter<LocalDate, java.time.LocalDate> {
 
 		INSTANCE;

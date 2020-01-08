@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.core.mapping;
 
 import static org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification.*;
+import static org.springframework.data.cassandra.core.mapping.CassandraType.*;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -588,7 +589,7 @@ public class CassandraMappingContext
 
 			CassandraType annotation = property.getRequiredAnnotation(CassandraType.class);
 
-			if (annotation.type() == CassandraSimpleTypeHolder.Name.TUPLE) {
+			if (annotation.type() == Name.TUPLE) {
 
 				DataType[] dataTypes = Arrays.stream(annotation.typeArguments()).map(CassandraSimpleTypeHolder::getDataTypeFor)
 						.toArray(DataType[]::new);
@@ -596,7 +597,7 @@ public class CassandraMappingContext
 				return getTupleTypeFactory().create(dataTypes);
 			}
 
-			if (annotation.type() == CassandraSimpleTypeHolder.Name.UDT) {
+			if (annotation.type() == Name.UDT) {
 
 				com.datastax.oss.driver.api.core.CqlIdentifier userTypeName = com.datastax.oss.driver.api.core.CqlIdentifier
 						.fromCql(annotation.userTypeName());

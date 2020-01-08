@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.domain;
 
+import static org.springframework.data.cassandra.core.mapping.CassandraType.*;
+
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -32,7 +34,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.data.cassandra.core.convert.CassandraTypeMappingIntegrationTests.Condition;
-import org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.core.mapping.PrimaryKey;
 import org.springframework.data.cassandra.core.mapping.Table;
@@ -54,7 +55,7 @@ public class AllPossibleTypes {
 
 	UUID uuid;
 
-	@CassandraType(type = CassandraSimpleTypeHolder.Name.INT) Number justNumber;
+	@CassandraType(type = Name.INT) Number justNumber;
 
 	Byte boxedByte;
 	byte primitiveByte;
@@ -93,8 +94,7 @@ public class AllPossibleTypes {
 	Set<Condition> setOfEnum;
 	List<Condition> listOfEnum;
 
-	@CassandraType(type = CassandraSimpleTypeHolder.Name.TUPLE, typeArguments = { CassandraSimpleTypeHolder.Name.VARCHAR,
-			CassandraSimpleTypeHolder.Name.BIGINT }) TupleValue tupleValue;
+	@CassandraType(type = Name.TUPLE, typeArguments = { Name.VARCHAR, Name.BIGINT }) TupleValue tupleValue;
 
 	// supported by conversion
 	java.time.Instant instant;

@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.core.mapping;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.data.cassandra.core.mapping.CassandraType.*;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -377,9 +378,8 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 		List<Human> friends;
 		Set<Human> people;
 
-		@CassandraType(type = CassandraSimpleTypeHolder.Name.FLOAT) Human floater;
-		@CassandraType(type = CassandraSimpleTypeHolder.Name.SET,
-				typeArguments = CassandraSimpleTypeHolder.Name.BIGINT) List<Human> enemies;
+		@CassandraType(type = Name.FLOAT) Human floater;
+		@CassandraType(type = Name.SET, typeArguments = Name.BIGINT) List<Human> enemies;
 	}
 
 	@Data
@@ -395,7 +395,7 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 	private static class MappedTuple {
 
 		@Element(0) MappedUdt mappedUdt;
-		@Element(1) @CassandraType(type = CassandraSimpleTypeHolder.Name.UDT, userTypeName = "human_udt") UdtValue human;
+		@Element(1) @CassandraType(type = Name.UDT, userTypeName = "human_udt") UdtValue human;
 		@Element(2) String text;
 	}
 
@@ -405,10 +405,10 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 
 		@Id String id;
 
-		@CassandraType(type = CassandraSimpleTypeHolder.Name.UDT, userTypeName = "human_udt") UdtValue human;
-		@CassandraType(type = CassandraSimpleTypeHolder.Name.LIST, typeArguments = CassandraSimpleTypeHolder.Name.UDT,
+		@CassandraType(type = Name.UDT, userTypeName = "human_udt") UdtValue human;
+		@CassandraType(type = Name.LIST, typeArguments = Name.UDT,
 				userTypeName = "species_udt") List<UdtValue> friends;
-		@CassandraType(type = CassandraSimpleTypeHolder.Name.SET, typeArguments = CassandraSimpleTypeHolder.Name.UDT,
+		@CassandraType(type = Name.SET, typeArguments = Name.UDT,
 				userTypeName = "peeps_udt") Set<UdtValue> people;
 	}
 
@@ -443,8 +443,8 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 
 		@Id String id;
 
-		@CassandraType(type = CassandraSimpleTypeHolder.Name.TIMESTAMP) java.time.LocalDate localDate;
-		@CassandraType(type = CassandraSimpleTypeHolder.Name.TIMESTAMP) org.joda.time.LocalDate jodaLocalDate;
+		@CassandraType(type = Name.TIMESTAMP) java.time.LocalDate localDate;
+		@CassandraType(type = Name.TIMESTAMP) org.joda.time.LocalDate jodaLocalDate;
 	}
 
 	private static class PersonReadConverter implements Converter<String, Human> {

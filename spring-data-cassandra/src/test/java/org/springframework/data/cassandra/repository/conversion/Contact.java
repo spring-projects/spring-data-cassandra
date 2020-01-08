@@ -15,13 +15,14 @@
  */
 package org.springframework.data.cassandra.repository.conversion;
 
+import static org.springframework.data.cassandra.core.mapping.CassandraType.*;
+
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.core.mapping.Table;
 
@@ -38,9 +39,9 @@ class Contact {
 	Address address;
 	List<Address> addresses;
 
-	@CassandraType(type = CassandraSimpleTypeHolder.Name.UDT, userTypeName = "phone") Phone mainPhone;
+	@CassandraType(type = Name.UDT, userTypeName = "phone") Phone mainPhone;
 
-	@CassandraType(type = CassandraSimpleTypeHolder.Name.LIST, typeArguments = CassandraSimpleTypeHolder.Name.UDT,
+	@CassandraType(type = Name.LIST, typeArguments = Name.UDT,
 			userTypeName = "phone") List<Phone> alternativePhones;
 
 	public Contact(String id) {

@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
+import static org.springframework.data.cassandra.core.mapping.CassandraType.*;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedParameterizedType;
 import java.lang.reflect.AnnotatedType;
@@ -215,7 +217,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 	private DataType getDataTypeFor(CassandraType annotation) {
 
-		CassandraSimpleTypeHolder.Name type = annotation.type();
+		Name type = annotation.type();
 
 		switch (type) {
 			case MAP:
@@ -224,12 +226,12 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 						CassandraSimpleTypeHolder.getDataTypeFor(annotation.typeArguments()[1]));
 			case LIST:
 				assertTypeArguments(annotation.typeArguments().length, 1);
-				return annotation.typeArguments()[0] == CassandraSimpleTypeHolder.Name.UDT
+				return annotation.typeArguments()[0] == Name.UDT
 						? DataTypes.listOf(getUserType(annotation))
 						: DataTypes.listOf(CassandraSimpleTypeHolder.getDataTypeFor(annotation.typeArguments()[0]));
 			case SET:
 				assertTypeArguments(annotation.typeArguments().length, 1);
-				return annotation.typeArguments()[0] == CassandraSimpleTypeHolder.Name.UDT
+				return annotation.typeArguments()[0] == Name.UDT
 						? DataTypes.setOf(getUserType(annotation))
 						: DataTypes.setOf(CassandraSimpleTypeHolder.getDataTypeFor(annotation.typeArguments()[0]));
 			case UDT:

@@ -73,7 +73,7 @@ public class CassandraCustomConversions extends org.springframework.data.convert
 
 					CassandraType annotation = AnnotatedElementUtils.getMergedAnnotation(it, CassandraType.class);
 
-					return annotation != null && annotation.type() == CassandraSimpleTypeHolder.Name.TIME;
+					return annotation != null && annotation.type() == CassandraType.Name.TIME;
 				}) //
 				.map(it -> {
 
