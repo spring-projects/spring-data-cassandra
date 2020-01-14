@@ -53,7 +53,7 @@ public class IntegrationTestConfig extends AbstractReactiveCassandraConfiguratio
 
 	@Bean
 	@Override
-	public CqlSessionFactoryBean session() {
+	public CqlSessionFactoryBean cassandraSession() {
 
 		SharedCqlSessionFactoryBean bean = new SharedCqlSessionFactoryBean();
 
@@ -72,8 +72,8 @@ public class IntegrationTestConfig extends AbstractReactiveCassandraConfiguratio
 
 	@Bean(destroyMethod = "")
 	@Override
-	public ReactiveSession reactiveSession() {
-		return super.reactiveSession();
+	public ReactiveSession reactiveCassandraSession() {
+		return super.reactiveCassandraSession();
 	}
 
 	@Override

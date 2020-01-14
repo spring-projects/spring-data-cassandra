@@ -220,7 +220,7 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 	 * @see #getShutdownScripts()
 	 */
 	@Bean
-	public CqlSessionFactoryBean session() {
+	public CqlSessionFactoryBean cassandraSession() {
 
 		CqlSessionFactoryBean bean = new CqlSessionFactoryBean();
 

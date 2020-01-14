@@ -136,7 +136,9 @@ Please also migrate raw UDT and tuple types to the new driver types `UdtValue` r
 Paging state now uses `ByteBuffer`.
 * `SimpleUserTypeResolver` accepts `CqlSession` instead of `Cluster`.
 * `SimpleTupleTypeFactory` was migrated to `enum`. `SimpleTupleTypeFactory.INSTANCE` no longer requires a `Cluster`/`CqlSession` context.
-* Introduction of `StatementBuilder` to functionally build statements as the QueryBuilder API uses immutable statement types
+* Introduction of `StatementBuilder` to functionally build statements as the QueryBuilder API uses immutable statement types.
+* `Session` bean renamed from `session` to `cassandraSession` and `SessionFactory` bean renamed from `sessionFactory` to `cassandraSessionFactory`.
+* `ReactiveSession` bean renamed from `reactiveSession` to `reactiveCassandraSession` and `ReactiveSessionFactory` bean renamed from `reactiveSessionFactory` to `reactiveCassandraSessionFactory`.
 
 == Deprecations
 

@@ -45,24 +45,24 @@ public abstract class AbstractReactiveCassandraConfiguration extends AbstractCas
 	 * expose Cassandra access in a reactive style.
 	 *
 	 * @return the {@link ReactiveSession}.
-	 * @see #session()
+	 * @see #cassandraSession()
 	 * @see DefaultBridgedReactiveSession
 	 */
 	@Bean
-	public ReactiveSession reactiveSession() {
+	public ReactiveSession reactiveCassandraSession() {
 		return new DefaultBridgedReactiveSession(getRequiredSession());
 	}
 
 	/**
 	 * Creates a {@link ReactiveSessionFactory} to be used by the {@link ReactiveCassandraTemplate}. Uses the
-	 * {@link ReactiveSession} instance configured in {@link #reactiveSession()}.
+	 * {@link ReactiveSession} instance configured in {@link #reactiveCassandraSession()}.
 	 *
 	 * @return the {@link ReactiveSessionFactory}.
-	 * @see #reactiveSession()
+	 * @see #reactiveCassandraSession()
 	 * @see #reactiveCassandraTemplate()
 	 */
 	@Bean
-	public ReactiveSessionFactory reactiveSessionFactory() {
+	public ReactiveSessionFactory reactiveCassandraSessionFactory() {
 		return new DefaultReactiveSessionFactory(beanFactory.getBean(ReactiveSession.class));
 	}
 
@@ -70,7 +70,7 @@ public abstract class AbstractReactiveCassandraConfiguration extends AbstractCas
 	 * Creates a {@link CassandraAdminTemplate}.
 	 *
 	 * @return the {@link ReactiveCassandraTemplate}.
-	 * @see #reactiveSessionFactory()
+	 * @see #reactiveCassandraSessionFactory()
 	 * @see #cassandraConverter()
 	 */
 	@Bean
@@ -83,7 +83,7 @@ public abstract class AbstractReactiveCassandraConfiguration extends AbstractCas
 	 * Creates a {@link ReactiveCqlTemplate} using the configured {@link ReactiveSessionFactory}.
 	 *
 	 * @return the {@link ReactiveCqlOperations}.
-	 * @see #reactiveSessionFactory()
+	 * @see #reactiveCassandraSessionFactory()
 	 */
 	@Bean
 	public ReactiveCqlTemplate reactiveCqlTemplate() {

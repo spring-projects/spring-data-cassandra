@@ -54,7 +54,7 @@ public class JavaConfigAuditingTests extends AbstractAuditingTests {
 		}
 
 		@Bean
-		public CqlSessionFactoryBean session() {
+		public CqlSessionFactoryBean cassandraSession() {
 
 			CqlSessionFactoryBean sessionFactoryBean = mock(CqlSessionFactoryBean.class);
 			CqlSession session = mock(CqlSession.class);

@@ -87,7 +87,7 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 	 * @see #keyspaceCleaner()
 	 */
 	@Bean
-	public SessionFactoryFactoryBean sessionFactory(CqlSession cqlSession) {
+	public SessionFactoryFactoryBean cassandraSessionFactory(CqlSession cqlSession) {
 
 		SessionFactoryFactoryBean bean = new SessionFactoryFactoryBean();
 
