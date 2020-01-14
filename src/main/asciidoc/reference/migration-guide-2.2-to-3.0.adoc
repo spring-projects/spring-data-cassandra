@@ -6,6 +6,7 @@ Spring Data for Apache Cassandra 3.0 introduces a set of breaking changes when u
 == Review dependencies
 
 Upgrading to Spring Data Cassandra requires an upgrade to the DataStax Driver version 4. Upgrading to the new driver comes with transitive dependency changes, most notably, Google Guava is bundled and shaded by the driver.
+Check out the https://docs.datastax.com/en/developer/java-driver/4.3/upgrade_guide/[DataStax Java Driver for Apache Cassandra 4 Upgrade Guide] for details on the Driver-related changes.
 
 == Adapt Configuration
 
@@ -14,6 +15,9 @@ The configuration was revised in large parts by removing most configuration item
 This means that `SocketOptions`, `AddressTranslator` and many more options are configured now through other means.
 
 If you're using XML-based configuration, make sure to migrate all configuration files from the  `cql` namespace (`http://www.springframework.org/schema/cql https://www.springframework.org/schema/cql/spring-cql.xsd`) to the `cassandra` namespace (`http://www.springframework.org/schema/data/cassandra https://www.springframework.org/schema/data/cassandra/spring-cassandra.xsd`).
+
+To reflect the change in configuration builders, `ClusterBuilderConfigurer` was renamed to `SessionBuilderConfigurer` accepting now `CqlSessionBuilder` instead of the `Cluster.Builder`.
+Make sure to also provide the local data center in your configuration as it is required to properly configure load balancing.
 
 === Connectivity
 
@@ -39,7 +43,7 @@ With the upgrade, schema support was moved to a new namespace element: `cassandr
 ====
 [source,xml]
 ----
-<cassandra:session contact-points="localhost" port="9042" keyspace="mykeyspace">
+<cassandra:session contact-points="localhost" port="9042" keyspace="mykeyspace" local-datacenter="datacenter1">
   <cassandra:keyspace action="CREATE_DROP" name="mykeyspace" />
 </cassandra:session>
 
@@ -140,6 +144,7 @@ Paging state now uses `ByteBuffer`.
 * `KeyspaceIdentifier` and `CqlIdentifier`, use `com.datastax.oss.driver.api.core.CqlIdentifier` instead.
 * `CassandraSessionFactoryBean`, use `CqlSessionFactoryBean` instead.
 * `AbstractCqlTemplateConfiguration`, use `AbstractSessionConfiguration` instead.
+* `AbstractSessionConfiguration.getClusterName()`, use `AbstractSessionConfiguration.getSessionName()` instead.
 * `CodecRegistryTupleTypeFactory`, use `SimpleTupleTypeFactory` instead.
 * Spring Data's `CqlIdentifier`, use the driver `CqlIdentifier` instead.
 * `forceQuote` attributes as quoting is no longer required. `CqlIdentifier` properly escapes reserved keywords and takes care of case-sensitivity.

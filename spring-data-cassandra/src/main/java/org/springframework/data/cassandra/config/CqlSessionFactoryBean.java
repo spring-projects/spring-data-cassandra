@@ -91,6 +91,8 @@ public class CqlSessionFactoryBean
 	private @Nullable String keyspaceName;
 	private @Nullable String localDatacenter;
 
+	private @Nullable SessionBuilderConfigurer sessionSessionBuilderConfigurer;
+
 	private List<KeyspaceActions> keyspaceActions = new ArrayList<>();
 	private Set<KeyspaceActionSpecification> keyspaceSpecifications = new HashSet<>();
 
@@ -295,6 +297,16 @@ public class CqlSessionFactoryBean
 	}
 
 	/**
+	 * Sets the {@link SessionBuilderConfigurer} to configure the
+	 * {@link com.datastax.oss.driver.api.core.session.SessionBuilder}.
+	 *
+	 * @param sessionSessionBuilderConfigurer
+	 */
+	public void setSessionSessionBuilderConfigurer(@Nullable SessionBuilderConfigurer sessionSessionBuilderConfigurer) {
+		this.sessionSessionBuilderConfigurer = sessionSessionBuilderConfigurer;
+	}
+
+	/**
 	 * Sets CQL scripts to be executed immediately after the session is connected.
 	 *
 	 * @deprecated Use {@link org.springframework.data.cassandra.core.cql.session.init.SessionFactoryInitializer} or
@@ -488,6 +500,10 @@ public class CqlSessionFactoryBean
 
 		if (StringUtils.hasText(this.localDatacenter)) {
 			builder.withLocalDatacenter(this.localDatacenter);
+		}
+
+		if (this.sessionSessionBuilderConfigurer != null) {
+			return this.sessionSessionBuilderConfigurer.configure(builder);
 		}
 
 		return builder;

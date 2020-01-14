@@ -47,6 +47,11 @@ public class CqlTemplateConfigIntegrationTests extends AbstractEmbeddedCassandra
 		}
 
 		@Override
+		protected String getLocalDataCenter() {
+			return "datacenter1";
+		}
+
+		@Override
 		protected int getPort() {
 			return cassandraEnvironment.getPort();
 		}

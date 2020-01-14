@@ -34,4 +34,8 @@ public abstract class AbstractTestJavaConfig extends AbstractSessionConfiguratio
 		return PROPERTIES.getCassandraPort();
 	}
 
+	@Override
+	protected String getLocalDataCenter() {
+		return "datacenter1";
+	}
 }

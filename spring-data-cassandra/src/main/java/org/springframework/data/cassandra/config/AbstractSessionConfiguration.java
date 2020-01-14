@@ -16,7 +16,9 @@
 package org.springframework.data.cassandra.config;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
@@ -31,8 +33,16 @@ import org.springframework.data.cassandra.core.cql.keyspace.DropKeyspaceSpecific
 import org.springframework.data.cassandra.core.cql.session.DefaultSessionFactory;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.config.DefaultDriverOption;
+import com.datastax.oss.driver.api.core.config.DriverOption;
+import com.datastax.oss.driver.api.core.config.ProgrammaticDriverConfigLoaderBuilder;
+import com.datastax.oss.driver.internal.core.config.typesafe.DefaultDriverConfigLoader;
+import com.datastax.oss.driver.internal.core.config.typesafe.DefaultProgrammaticDriverConfigLoaderBuilder;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 
 /**
  * Spring {@link @Configuration} class used to configure a Cassandra client application {@link CqlSession} connected to
@@ -76,7 +86,7 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 	 * @since 1.5
 	 */
 	@Nullable
-	protected SessionBuilderConfigurer getClusterBuilderConfigurer() {
+	protected SessionBuilderConfigurer getSessionBuilderConfigurer() {
 		return null;
 	}
 
@@ -85,9 +95,22 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 	 *
 	 * @return the cluster name; may be {@literal null}.
 	 * @since 1.5
+	 * @deprecated since 3.0, use {@link #getSessionName()} instead.
 	 */
 	@Nullable
+	@Deprecated
 	protected String getClusterName() {
+		return null;
+	}
+
+	/**
+	 * Returns the session name.
+	 *
+	 * @return the session name; may be {@literal null}.
+	 * @since 3.0
+	 */
+	@Nullable
+	protected String getSessionName() {
 		return null;
 	}
 
@@ -137,6 +160,16 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 	 */
 	protected List<DropKeyspaceSpecification> getKeyspaceDrops() {
 		return Collections.emptyList();
+	}
+
+	/**
+	 * Returns the local data center name used for
+	 * {@link com.datastax.oss.driver.api.core.loadbalancing.LoadBalancingPolicy}.
+	 *
+	 * @return the local data center name.
+	 */
+	protected String getLocalDataCenter() {
+		return null;
 	}
 
 	/**
@@ -193,15 +226,55 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 
 		bean.setContactPoints(getContactPoints());
 		bean.setPort(getPort());
+		bean.setLocalDatacenter(getLocalDataCenter());
 
 		bean.setKeyspaceCreations(getKeyspaceCreations());
 		bean.setKeyspaceDrops(getKeyspaceDrops());
+
+		bean.setSessionSessionBuilderConfigurer(getBuilderConfigurer());
 
 		bean.setKeyspaceName(getKeyspaceName());
 		bean.setKeyspaceStartupScripts(getStartupScripts());
 		bean.setKeyspaceShutdownScripts(getShutdownScripts());
 
 		return bean;
+	}
+
+	private SessionBuilderConfigurer getBuilderConfigurer() {
+
+		SessionBuilderConfigurer configurer = getSessionBuilderConfigurer();
+
+		return sessionBuilder -> {
+
+			ProgrammaticDriverConfigLoaderBuilder builder = new DefaultProgrammaticDriverConfigLoaderBuilder(() -> {
+
+				CassandraDriverOptions options = new CassandraDriverOptions();
+
+				if (StringUtils.hasText(getClusterName())) {
+					options.add(DefaultDriverOption.SESSION_NAME, getClusterName());
+				} else if (StringUtils.hasText(getSessionName())) {
+					options.add(DefaultDriverOption.SESSION_NAME, getSessionName());
+				}
+
+				CompressionType compressionType = getCompressionType();
+				if (compressionType != null) {
+					options.add(DefaultDriverOption.PROTOCOL_COMPRESSION, compressionType);
+				}
+
+				ConfigFactory.invalidateCaches();
+				return ConfigFactory.defaultOverrides().withFallback(options.build())
+						.withFallback(ConfigFactory.defaultReference()).resolve();
+
+			}, DefaultDriverConfigLoader.DEFAULT_ROOT_PATH);
+
+			sessionBuilder.withConfigLoader(builder.build());
+
+			if (configurer != null) {
+				return configurer.configure(sessionBuilder);
+			}
+
+			return sessionBuilder;
+		};
 	}
 
 	/**
@@ -218,6 +291,40 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 	@Override
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
 		this.beanFactory = beanFactory;
+	}
+
+	private static class CassandraDriverOptions {
+
+		private final Map<String, String> options = new LinkedHashMap<>();
+
+		private CassandraDriverOptions add(DriverOption option, String value) {
+			String key = createKeyFor(option);
+			this.options.put(key, value);
+			return this;
+		}
+
+		private CassandraDriverOptions add(DriverOption option, int value) {
+			return add(option, String.valueOf(value));
+		}
+
+		private CassandraDriverOptions add(DriverOption option, Enum<?> value) {
+			return add(option, value.name());
+		}
+
+		private CassandraDriverOptions add(DriverOption option, List<String> values) {
+			for (int i = 0; i < values.size(); i++) {
+				this.options.put(String.format("%s.%s", createKeyFor(option), i), values.get(i));
+			}
+			return this;
+		}
+
+		private Config build() {
+			return ConfigFactory.parseMap(this.options, "Environment");
+		}
+
+		private static String createKeyFor(DriverOption option) {
+			return String.format("%s.%s", DefaultDriverConfigLoader.DEFAULT_ROOT_PATH, option.getPath());
+		}
 	}
 
 }

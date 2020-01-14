@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.config;
 
+import com.datastax.oss.driver.api.core.CqlSessionBuilder;
 import com.datastax.oss.driver.api.core.session.SessionBuilder;
 
 /**
@@ -35,5 +36,5 @@ public interface SessionBuilderConfigurer {
 	 * @return the argument to the {@code sessionBuilder} parameter.
 	 * @see SessionBuilder
 	 */
-	SessionBuilder configure(SessionBuilder sessionBuilder);
+	CqlSessionBuilder configure(CqlSessionBuilder sessionBuilder);
 }

@@ -28,8 +28,8 @@ import com.datastax.oss.driver.api.core.cql.Row;
  * <p>
  * The retrieval of the rows of a {@link ReactiveResultSet} is generally paged (a first page of result is fetched and
  * the next one is only fetched once all the results of the first one has been consumed). The size of the pages can be
- * configured either globally through {@link com.datastax.driver.core.QueryOptions#setFetchSize} or per-statement with
- * {@link com.datastax.oss.driver.api.core.cql.Statement#setFetchSize}.
+ * configured either globally or per-statement with
+ * {@link com.datastax.oss.driver.api.core.cql.SimpleStatement#setPageSize(int)}.
  * <p>
  * Please note however that this {@link ReactiveResultSet} paging is not available with the version 1 of the native
  * protocol (i.e. with Cassandra 1.2 or if version 1 has been explicitly requested). If the protocol version 1 is in
@@ -42,7 +42,7 @@ import com.datastax.oss.driver.api.core.cql.Row;
  * @since 2.0
  * @see Flux
  * @see ReactiveSession
- * @see com.datastax.driver.core.ResultSet
+ * @see com.datastax.oss.driver.api.core.cql.AsyncResultSet
  */
 public interface ReactiveResultSet {
 
