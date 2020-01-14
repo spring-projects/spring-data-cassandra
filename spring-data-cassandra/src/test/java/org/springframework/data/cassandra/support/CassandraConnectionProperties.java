@@ -15,7 +15,12 @@
  */
 package org.springframework.data.cassandra.support;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import org.springframework.core.convert.converter.Converter;
@@ -30,6 +35,8 @@ import org.springframework.util.Assert;
 @SuppressWarnings("serial")
 public class CassandraConnectionProperties extends Properties {
 
+	private final static List<WeakReference<CassandraConnectionProperties>> instances = new ArrayList<>();
+
 	protected String resourceName;
 
 	/**
@@ -40,16 +47,43 @@ public class CassandraConnectionProperties extends Properties {
 		this("/config/cassandra-connection.properties");
 	}
 
+	public void update() {
+		try {
+			// Caution: Rewriting properties during initialization.
+			File file = new File(getClass().getResource(resourceName).toURI());
+
+			try (FileOutputStream fos = new FileOutputStream(file)) {
+				store(fos, "");
+			}
+
+			reload();
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new IllegalStateException(e);
+		}
+	}
+
+	public static void reload() {
+		for (WeakReference<CassandraConnectionProperties> ref : instances) {
+
+			CassandraConnectionProperties properties = ref.get();
+			if (properties != null) {
+				properties.loadProperties();
+			}
+		}
+	}
+
 	protected CassandraConnectionProperties(String resourceName) {
 
 		this.resourceName = resourceName;
 		loadProperties();
+
+		instances.add(new WeakReference<>(this));
 	}
 
 	private void loadProperties() {
 
 		loadProperties(this.resourceName);
-		putAll(System.getProperties());
 	}
 
 	private void loadProperties(String resourceName) {
@@ -68,9 +102,26 @@ public class CassandraConnectionProperties extends Properties {
 			if (in != null) {
 				try {
 					in.close();
-				} catch (Exception ignore) { }
+				} catch (Exception ignore) {}
 			}
 		}
+	}
+
+	@Override
+	public String getProperty(String key) {
+
+		String value = super.getProperty(key);
+		if (value == null) {
+			value = System.getProperty(key);
+		}
+
+		return value;
+	}
+
+	@Override
+	public synchronized Object setProperty(String key, String value) {
+		System.setProperty(key, value);
+		return super.setProperty(key, value);
 	}
 
 	/**
@@ -80,11 +131,19 @@ public class CassandraConnectionProperties extends Properties {
 		return getProperty("build.cassandra.host");
 	}
 
+	public void setCassandraHost(String host) {
+		setProperty("build.cassandra.host", host);
+	}
+
 	/**
 	 * @return the Cassandra port (native).
 	 */
 	public int getCassandraPort() {
 		return getInt("build.cassandra.native_transport_port");
+	}
+
+	public void setCassandraPort(int port) {
+		setProperty("build.cassandra.native_transport_port", "" + port);
 	}
 
 	/**
@@ -115,9 +174,12 @@ public class CassandraConnectionProperties extends Properties {
 
 		String cassandraType = getProperty("build.cassandra.mode");
 
-		return CassandraType.EXTERNAL.name().equalsIgnoreCase(cassandraType)
-			? CassandraType.EXTERNAL
-			: CassandraType.EMBEDDED;
+		if (CassandraType.TESTCONTAINERS.name().equalsIgnoreCase(cassandraType)) {
+			return CassandraType.TESTCONTAINERS;
+		}
+
+		return CassandraType.EXTERNAL.name().equalsIgnoreCase(cassandraType) ? CassandraType.EXTERNAL
+				: CassandraType.EMBEDDED;
 	}
 
 	/**
@@ -161,12 +223,12 @@ public class CassandraConnectionProperties extends Properties {
 
 			String message = "%1$s: cannot parse value [%2$s] of property [%3$s] as a [%4$s]";
 
-			throw new IllegalArgumentException(String.format(message, this.resourceName, propertyValue, propertyName,
-					type.getSimpleName()), cause);
+			throw new IllegalArgumentException(
+					String.format(message, this.resourceName, propertyValue, propertyName, type.getSimpleName()), cause);
 		}
 	}
 
 	public enum CassandraType {
-		EMBEDDED, EXTERNAL
+		EMBEDDED, EXTERNAL, TESTCONTAINERS;
 	}
 }

@@ -135,7 +135,7 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 						.collectList() //
 						.flatMap(statements -> {
 
-							this.batch.addStatements(statements);
+							this.batch.addStatements((List<BatchableStatement<?>>) statements);
 
 							return this.operations.getReactiveCqlOperations().queryForResultSet(this.batch.build());
 

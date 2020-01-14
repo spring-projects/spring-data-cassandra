@@ -12,10 +12,46 @@ pipeline {
 	}
 
 	stages {
+		stage("Docker images") {
+			parallel {
+				stage('Publish JDK 8 + Cassandra 3.11') {
+					when {
+						changeset "ci/openjdk8-cassandra-3.11/**"
+					}
+					agent { label 'data' }
+					options { timeout(time: 30, unit: 'MINUTES') }
+
+					steps {
+						script {
+							def image = docker.build("springci/spring-data-openjdk8-cassandra-3.11", "ci/openjdk8-cassandra-3.11/")
+							docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
+								image.push()
+							}
+						}
+					}
+				}
+				stage('Publish JDK 11 + Cassandra 3.11') {
+					when {
+						changeset "ci/openjdk11-8-cassandra-3.11/**"
+					}
+					agent { label 'data' }
+					options { timeout(time: 30, unit: 'MINUTES') }
+
+					steps {
+						script {
+							def image = docker.build("springci/spring-data-openjdk11-8-cassandra-3.11", "ci/openjdk11-8-cassandra-3.11/")
+							docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
+								image.push()
+							}
+						}
+					}
+				}
+			}
+		}
 		stage("Test") {
 			when {
 				anyOf {
-					branch 'master'
+					branch 'issue/DATACASS-699'
 					not { triggeredBy 'UpstreamCause' }
 				}
 			}
@@ -23,15 +59,39 @@ pipeline {
 				stage("test: baseline") {
 					agent {
 						docker {
-							image 'adoptopenjdk/openjdk8:latest'
+							image 'springci/spring-data-openjdk8-cassandra-3.11:latest'
 							label 'data'
-							args '-v $HOME:/tmp/jenkins-home'
 						}
 					}
 					options { timeout(time: 30, unit: 'MINUTES') }
 					steps {
-						sh 'rm -rf ?'
-						sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw clean dependency:list verify -Dsort -U -B'
+						sh 'mkdir -p /tmp/jenkins-home'
+						sh 'JAVA_HOME=/opt/java/openjdk /opt/cassandra/bin/cassandra -R &'
+						sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -Pci,external-cassandra clean dependency:list verify -Dsort -U -B'
+					}
+				}
+			}
+		}
+		stage("Test other configurations") {
+			when {
+				anyOf {
+					branch 'master'
+					not { triggeredBy 'UpstreamCause' }
+				}
+			}
+			parallel {
+				stage("test: baseline (jdk11)") {
+					agent {
+						docker {
+							image 'springci/spring-data-openjdk11-8-cassandra-3.11:latest'
+							label 'data'
+						}
+					}
+					options { timeout(time: 30, unit: 'MINUTES') }
+					steps {
+						sh 'mkdir -p /tmp/jenkins-home'
+						sh 'JAVA_HOME=/opt/java/openjdk8 /opt/cassandra/bin/cassandra -R &'
+						sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -Pci,external-cassandra,java11 clean dependency:list verify -Dsort -U -B'
 					}
 				}
 			}
@@ -47,7 +107,6 @@ pipeline {
 				docker {
 					image 'adoptopenjdk/openjdk8:latest'
 					label 'data'
-					args '-v $HOME:/tmp/jenkins-home'
 				}
 			}
 			options { timeout(time: 20, unit: 'MINUTES') }
@@ -57,7 +116,7 @@ pipeline {
 			}
 
 			steps {
-				sh 'rm -rf ?'
+				sh 'mkdir -p /tmp/jenkins-home'
 				sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -Pci,artifactory ' +
 						'-Dartifactory.server=https://repo.spring.io ' +
 						"-Dartifactory.username=${ARTIFACTORY_USR} " +
@@ -76,7 +135,6 @@ pipeline {
 				docker {
 					image 'adoptopenjdk/openjdk8:latest'
 					label 'data'
-					args '-v $HOME:/tmp/jenkins-home'
 				}
 			}
 			options { timeout(time: 20, unit: 'MINUTES') }
@@ -86,6 +144,7 @@ pipeline {
 			}
 
 			steps {
+				sh 'mkdir -p /tmp/jenkins-home'
 				sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -Pci,distribute ' +
 						'-Dartifactory.server=https://repo.spring.io ' +
 						"-Dartifactory.username=${ARTIFACTORY_USR} " +

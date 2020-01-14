@@ -31,13 +31,15 @@ import org.springframework.util.Assert;
 import org.springframework.util.SocketUtils;
 import org.springframework.util.StringUtils;
 
+import org.testcontainers.containers.CassandraContainer;
+
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.CqlSessionBuilder;
 
 /**
  * JUnit Rule used to provide a Cassandra context for integration tests. This rule can use/spin up either an embedded
- * Cassandra instance or use an external instance. Typical usage:
+ * Cassandra instance, a TestContainer or use an external instance. Typical usage:
  *
  * <pre>
  * public class MyIntegrationTest {
@@ -46,13 +48,19 @@ import com.datastax.oss.driver.api.core.CqlSessionBuilder;
  * }
  * </pre>
  *
+ * Derives its configuration from {@code /config/cassandra-connection.properties} and {@link System#getenv(String)}
+ * {@code CASSANDRA_VERSION} to configure the Cassandra version via Testcontainers.
+ *
  * @author Mark Paluch
  * @author John Blum
  * @since 1.5
+ * @see CassandraConnectionProperties
  */
 public class CassandraRule extends ExternalResource {
 
 	private static ResourceHolder resourceHolder;
+
+	private static CassandraContainer<?> container;
 
 	private final long startupTimeout;
 
@@ -248,12 +256,17 @@ public class CassandraRule extends ExternalResource {
 
 		if (isStartNeeded()) {
 			configureRemoteJmxPort();
-			runEmbeddedCassandra();
+
+			if (isEmbedded()) {
+				runEmbeddedCassandra();
+			} else {
+				runTestcontainerCassandra();
+			}
 		}
 	}
 
 	private boolean isStartNeeded() {
-		return isParent() && isEmbedded();
+		return isParent() && (isEmbedded() || isTestcontainers());
 	}
 
 	private void configureRemoteJmxPort() {
@@ -267,6 +280,24 @@ public class CassandraRule extends ExternalResource {
 
 		if (this.configurationFilename != null) {
 			EmbeddedCassandraServerHelper.startEmbeddedCassandra(this.configurationFilename, this.startupTimeout);
+		}
+	}
+
+	private void runTestcontainerCassandra() {
+
+		if (container == null) {
+			String cassandra_version = System.getenv("CASSANDRA_VERSION");
+			if (StringUtils.hasText(cassandra_version)) {
+				container = new CassandraContainer<>("cassandra:" + cassandra_version);
+			} else {
+				container = new CassandraContainer<>();
+			}
+
+			container.start();
+
+			this.properties.setCassandraHost(container.getContainerIpAddress());
+			this.properties.setCassandraPort(container.getFirstMappedPort());
+			this.properties.update();
 		}
 	}
 
@@ -305,10 +336,18 @@ public class CassandraRule extends ExternalResource {
 
 	private String resolveHost() {
 
+		if (isTestcontainers()) {
+			return container.getContainerIpAddress();
+		}
+
 		return isEmbedded() ? EmbeddedCassandraServerHelper.getHost() : this.properties.getCassandraHost();
 	}
 
 	private int resolvePort() {
+
+		if (isTestcontainers()) {
+			return container.getFirstMappedPort();
+		}
 
 		return isEmbedded() ? EmbeddedCassandraServerHelper.getNativeTransportPort() : this.properties.getCassandraPort();
 	}
@@ -376,6 +415,10 @@ public class CassandraRule extends ExternalResource {
 
 	private boolean isEmbedded() {
 		return CassandraConnectionProperties.CassandraType.EMBEDDED.equals(this.properties.getCassandraType());
+	}
+
+	private boolean isTestcontainers() {
+		return CassandraConnectionProperties.CassandraType.TESTCONTAINERS.equals(this.properties.getCassandraType());
 	}
 
 	private boolean isNotParent() {
