@@ -45,6 +45,7 @@ import com.datastax.oss.driver.api.core.type.DataTypes;
 public class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
 	static final Version CASSANDRA_3_10 = Version.parse("3.10");
+	static final Version CASSANDRA_3_0_10 = Version.parse("3.0.10");
 
 	Version cassandraVersion;
 
@@ -60,7 +61,7 @@ public class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCrea
 	@Test // DATACASS-192, DATACASS-429
 	public void alterTableAlterColumnType() {
 
-		assumeTrue(cassandraVersion.isLessThan(CASSANDRA_3_10));
+		assumeTrue(cassandraVersion.isLessThan(CASSANDRA_3_10) && cassandraVersion.isLessThan(CASSANDRA_3_0_10));
 
 		session.execute(
 				"CREATE TABLE addamsFamily (name varchar PRIMARY KEY, gender varchar,\n" + "  lastknownlocation bigint);");
@@ -78,7 +79,7 @@ public class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCrea
 	@Test // DATACASS-192, DATACASS-429
 	public void alterTableAlterListColumnType() {
 
-		assumeTrue(cassandraVersion.isLessThan(CASSANDRA_3_10));
+		assumeTrue(cassandraVersion.isLessThan(CASSANDRA_3_10) && cassandraVersion.isLessThan(CASSANDRA_3_0_10));
 
 		session.execute(
 				"CREATE TABLE addamsFamily (name varchar PRIMARY KEY, gender varchar,\n" + "  lastknownlocation list<ascii>);");

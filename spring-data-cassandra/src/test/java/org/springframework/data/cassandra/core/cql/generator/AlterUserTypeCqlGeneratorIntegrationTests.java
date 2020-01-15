@@ -37,6 +37,7 @@ import com.datastax.oss.driver.api.core.type.DataTypes;
 public class AlterUserTypeCqlGeneratorIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
 	static final Version CASSANDRA_3_10 = Version.parse("3.10");
+	static final Version CASSANDRA_3_0_10 = Version.parse("3.0.10");
 
 	Version cassandraVersion;
 
@@ -61,7 +62,7 @@ public class AlterUserTypeCqlGeneratorIntegrationTests extends AbstractKeyspaceC
 	@Test // DATACASS-172, DATACASS-429
 	public void alterTypeShouldAlterField() {
 
-		assumeTrue(cassandraVersion.isLessThan(CASSANDRA_3_10));
+		assumeTrue(cassandraVersion.isLessThan(CASSANDRA_3_10) && cassandraVersion.isLessThan(CASSANDRA_3_0_10));
 
 		AlterUserTypeSpecification spec = AlterUserTypeSpecification.alterType("address")//
 				.alter("zip", DataTypes.TEXT);
