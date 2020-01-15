@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.repository.support;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.Assume.*;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -44,13 +45,17 @@ import org.springframework.data.cassandra.core.query.CassandraPageRequest;
 import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.domain.UserToken;
 import org.springframework.data.cassandra.repository.ReactiveCassandraRepository;
+import org.springframework.data.cassandra.support.CassandraVersion;
 import org.springframework.data.cassandra.test.util.AbstractEmbeddedCassandraIntegrationTest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.ExtensionAwareQueryMethodEvaluationContextProvider;
+import org.springframework.data.util.Version;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import com.datastax.oss.driver.api.core.CqlSession;
 
 /**
  * Integration tests for {@link SimpleReactiveCassandraRepository}.
@@ -63,6 +68,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractEmbeddedCassandraIntegrationTest
 		implements BeanClassLoaderAware, BeanFactoryAware {
 
+	static final Version CASSANDRA_3 = Version.parse("3.0");
+
 	@Configuration
 	public static class Config extends IntegrationTestConfig {
 
@@ -72,8 +79,10 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractE
 		}
 	}
 
+	@Autowired private CqlSession session;
 	@Autowired private ReactiveCassandraOperations operations;
 
+	private Version cassandraVersion;
 	private BeanFactory beanFactory;
 	private ClassLoader classLoader;
 	private ReactiveCassandraRepositoryFactory factory;
@@ -101,6 +110,8 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractE
 		factory.setEvaluationContextProvider(ExtensionAwareQueryMethodEvaluationContextProvider.DEFAULT);
 
 		repository = factory.getRepository(UserRepostitory.class);
+
+		cassandraVersion = CassandraVersion.get(session);
 
 		deleteAll();
 
@@ -224,6 +235,8 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractE
 
 	@Test // DATACASS-700
 	public void findAllWithPagingAndSorting() {
+
+		assumeTrue(cassandraVersion.isGreaterThan(CASSANDRA_3));
 
 		UserTokenRepostitory repository = factory.getRepository(UserTokenRepostitory.class);
 		repository.deleteAll();

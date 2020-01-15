@@ -1,11 +1,10 @@
 language: java
 
 env:
-  global:
-    - CASSANDRA_VERSION=3.11.2
   matrix:
-    - CASSANDRA_VERSION=2.2.10
-    - CASSANDRA_VERSION=3.0.10
+    - CASSANDRA_VERSION=2.2.15
+    - CASSANDRA_VERSION=3.0.19
+    - CASSANDRA_VERSION=3.11.5
 
 cache:
   directories:

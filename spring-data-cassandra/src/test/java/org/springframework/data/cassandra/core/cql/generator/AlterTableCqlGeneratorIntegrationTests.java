@@ -148,7 +148,7 @@ public class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCrea
 		assertThat(getTableMetadata("addamsfamily").getColumn("newname")).isPresent();
 	}
 
-	@Test // DATACASS-192
+	@Test // DATACASS-192, DATACASS-656
 	public void alterTableAddCaching() {
 
 		session.execute("CREATE TABLE users (user_name varchar PRIMARY KEY);");
@@ -161,8 +161,7 @@ public class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCrea
 
 		execute(spec);
 
-		assertThat(getTableMetadata("users").getOptions().toString())
-				.contains("caching={keys=NONE, rows_per_partition=15}");
+		assertThat(getTableMetadata("users").getOptions().toString()).contains("caching").contains("keys").contains("NONE");
 	}
 
 	private void execute(AlterTableSpecification spec) {
