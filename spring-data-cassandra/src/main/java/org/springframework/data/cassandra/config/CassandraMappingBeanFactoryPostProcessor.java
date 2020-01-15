@@ -57,10 +57,11 @@ import com.datastax.oss.driver.api.core.session.Session;
  * {@link CassandraMappingContext} definition present, then it will be used in the {@link CassandraMappingContext} bean
  * definition.
  * <p/>
- * It requires that a single {@link CqlSession} or {@link CassandraSessionFactoryBean} definition be present. As
- * described above, multiple {@link CqlSession} definitions, multiple {@link CassandraSessionFactoryBean} definitions,
- * or both a {@link CqlSession} and {@link CassandraSessionFactoryBean} will cause an {@link IllegalStateException} to
- * be thrown.
+ * It requires that a single {@link com.datastax.oss.driver.api.core.CqlSession} or {@link CassandraSessionFactoryBean}
+ * definition be present. As described above, multiple {@link com.datastax.oss.driver.api.core.CqlSession} definitions,
+ * multiple {@link CassandraSessionFactoryBean} definitions, or both a
+ * {@link com.datastax.oss.driver.api.core.CqlSession} and {@link CassandraSessionFactoryBean} will cause an
+ * {@link IllegalStateException} to be thrown.
  *
  * @author Matthew T. Adams
  * @author Mark Paluch

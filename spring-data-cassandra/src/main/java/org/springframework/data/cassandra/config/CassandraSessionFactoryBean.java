@@ -16,15 +16,13 @@
 package org.springframework.data.cassandra.config;
 
 /**
- * Factory to create and configure a Cassandra {@link com.datastax.driver.core.Session} with support for executing CQL
- * and initializing the database schema (a.k.a. keyspace).
+ * Factory to create and configure a Cassandra {@link com.datastax.oss.driver.api.core.CqlSession} with support for
+ * executing CQL and initializing the database schema (a.k.a. keyspace).
  *
  * @author Mathew Adams
  * @author David Webb
  * @author John Blum
  * @author Mark Paluch
- * @see com.datastax.driver.core.KeyspaceMetadata
- * @see com.datastax.driver.core.TableMetadata
  * @deprecated since 3.0, use {@link CqlSessionFactoryBean} directly.
  */
 @Deprecated

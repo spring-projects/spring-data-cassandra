@@ -45,8 +45,8 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
 /**
- * Spring {@link @Configuration} class used to configure a Cassandra client application {@link CqlSession} connected to
- * a Cassandra cluster. Enables a Cassandra Keyspace to be specified along with the ability to execute arbitrary CQL on
+ * Spring {@link Configuration} class used to configure a Cassandra client application {@link CqlSession} connected to a
+ * Cassandra cluster. Enables a Cassandra Keyspace to be specified along with the ability to execute arbitrary CQL on
  * startup as well as shutdown.
  *
  * @author Matthew T. Adams
@@ -147,7 +147,7 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 	/**
 	 * Returns the list of keyspace creations to be run right after initialization.
 	 *
-	 * @return the list of keyspace creations, may be empty but never {@link null}
+	 * @return the list of keyspace creations, may be empty but never {@code null}.
 	 */
 	protected List<CreateKeyspaceSpecification> getKeyspaceCreations() {
 		return Collections.emptyList();
@@ -156,7 +156,7 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 	/**
 	 * Returns the list of keyspace drops to be run before shutdown.
 	 *
-	 * @return the list of keyspace drops, may be empty but never {@link null}
+	 * @return the list of keyspace drops, may be empty but never {@code null}.
 	 */
 	protected List<DropKeyspaceSpecification> getKeyspaceDrops() {
 		return Collections.emptyList();
@@ -176,7 +176,7 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 	 * Returns the list of startup scripts to be run after {@link #getKeyspaceCreations() keyspace creations} and after
 	 * initialization in the {@code system} keyspace.
 	 *
-	 * @return the list of startup scripts, may be empty but never {@link null}
+	 * @return the list of startup scripts, may be empty but never {@code null}.
 	 * @deprecated since 3.0, declare a
 	 *             {@link org.springframework.data.cassandra.core.cql.session.init.SessionFactoryInitializer} bean.
 	 */
@@ -189,7 +189,7 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 	 * Returns the list of shutdown scripts to be run after {@link #getKeyspaceDrops() keyspace drops} and right before
 	 * shutdown in the {@code system} keyspace.
 	 *
-	 * @return the list of shutdown scripts, may be empty but never {@link null}
+	 * @return the list of shutdown scripts, may be empty but never {@code null}.
 	 * @deprecated since 3.0, declare a
 	 *             {@link org.springframework.data.cassandra.core.cql.session.init.SessionFactoryInitializer} bean.
 	 */

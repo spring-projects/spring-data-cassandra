@@ -24,7 +24,7 @@ import com.datastax.oss.driver.api.querybuilder.term.Term;
  * may return inline terms to render values as part of the query string, or bind markers to supply parameters on
  * statement creation/parameter binding.
  * <p>
- * A {@ling TermFactory} is typically used with {@link StatementBuilder}.
+ * A {@link TermFactory} is typically used with {@link StatementBuilder}.
  *
  * @author Mark Paluch
  * @since 3.0

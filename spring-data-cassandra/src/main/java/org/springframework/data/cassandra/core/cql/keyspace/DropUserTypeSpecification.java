@@ -37,7 +37,7 @@ public class DropUserTypeSpecification extends UserTypeNameSpecification {
 	 * Entry point into the {@link DropUserTypeSpecification}'s fluent API given {@code name} to drop a type. Convenient
 	 * if imported statically.
 	 *
-	 * @param name must not be {@link null} or empty.
+	 * @param name must not be {@code null} or empty.
 	 * @return a new {@link DropUserTypeSpecification}.
 	 */
 	public static DropUserTypeSpecification dropType(String name) {
@@ -48,7 +48,7 @@ public class DropUserTypeSpecification extends UserTypeNameSpecification {
 	 * Entry point into the {@link DropUserTypeSpecification}'s fluent API given {@code name} to drop a type. Convenient
 	 * if imported statically.
 	 *
-	 * @param name must not be {@link null} or empty.
+	 * @param name must not be {@code null} or empty.
 	 * @return a new {@link DropUserTypeSpecification}.
 	 */
 	public static DropUserTypeSpecification dropType(CqlIdentifier name) {

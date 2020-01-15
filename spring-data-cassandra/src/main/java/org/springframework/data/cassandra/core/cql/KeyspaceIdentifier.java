@@ -62,6 +62,7 @@ public final class KeyspaceIdentifier implements Comparable<KeyspaceIdentifier> 
 	 *
 	 * @deprecated since 2.0, use {@link #of(CharSequence)}.
 	 */
+	@Deprecated
 	public static KeyspaceIdentifier ksId(CharSequence identifier) {
 		return new KeyspaceIdentifier(identifier);
 	}

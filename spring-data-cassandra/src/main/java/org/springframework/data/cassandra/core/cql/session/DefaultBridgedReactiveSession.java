@@ -47,7 +47,7 @@ import com.datastax.oss.driver.api.core.cql.Statement;
  * methods to reactive execution patterns.
  * <p>
  * Calls are deferred until a subscriber subscribes to the resulting {@link org.reactivestreams.Publisher}. The calls
- * are executed by subscribing to {@link ListenableFuture} and returning the result as calls complete.
+ * are executed by subscribing to {@link CompletionStage} and returning the result as calls complete.
  * <p>
  * Elements are emitted on netty EventLoop threads. {@link AsyncResultSet} allows {@link AsyncResultSet#fetchNextPage()}
  * asynchronous requesting} of subsequent pages. The next page is requested after emitting all elements of the previous

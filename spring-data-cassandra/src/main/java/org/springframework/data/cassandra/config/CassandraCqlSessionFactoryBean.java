@@ -19,20 +19,14 @@ package org.springframework.data.cassandra.config;
 import org.springframework.data.cassandra.core.cql.CassandraExceptionTranslator;
 import org.springframework.data.cassandra.core.cql.CqlTemplate;
 
-
-
 /**
- * Factory for creating and configuring a Cassandra {@link CqlSession}, which is a thread-safe singleton. As such, it is
- * sufficient to have one {@link CqlSession} per application and keyspace.
+ * Factory for creating and configuring a Cassandra {@link com.datastax.oss.driver.api.core.CqlSession}, which is a
+ * thread-safe singleton. As such, it is sufficient to have one {@link CqlSession} per application and keyspace.
  *
  * @author Alex Shvid
  * @author Matthew T. Adams
  * @author John Blum
  * @author Mark Paluch
- * @see org.springframework.beans.factory.DisposableBean
- * @see org.springframework.beans.factory.FactoryBean
- * @see org.springframework.beans.factory.InitializingBean
- * @see org.springframework.dao.support.PersistenceExceptionTranslator
  * @see CqlTemplate
  * @see CassandraExceptionTranslator
  * @deprecated since 3.0, use {@link CqlSessionFactoryBean} directly.

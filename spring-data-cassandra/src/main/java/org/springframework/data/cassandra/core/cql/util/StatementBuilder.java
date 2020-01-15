@@ -40,11 +40,11 @@ import com.datastax.oss.driver.internal.querybuilder.CqlHelper;
 
 /**
  * Functional builder for Cassandra {@link BuildableQuery statements}. Statements are built by applying
- * {@link UnaryOperator builder functions} that get applied when {@link #build() building the actual
+ * {@link UnaryOperator builder functions} that get applied when {@link #build() building} the actual
  * {@link SimpleStatement statement}. The {@code StatmentBuilder} provides a mutable container for statement creation
  * allowing a functional declaration of actions that are necessary to build a statement. This class helps building CQL
  * statements as a {@link BuildableQuery} classes are typically immutable and require return value tracking across
- * methods that want to apply modifications to a statment.
+ * methods that want to apply modifications to a statement.
  * <p>
  * Building a statement consists of three phases:
  * <ol>

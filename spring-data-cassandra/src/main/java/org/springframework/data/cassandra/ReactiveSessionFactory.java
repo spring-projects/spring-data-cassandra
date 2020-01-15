@@ -18,9 +18,9 @@ package org.springframework.data.cassandra;
 /**
  * Strategy interface to produce {@link ReactiveSession} instances.
  * <p>
- * Spring provides a {@link DefaultReactiveSessionFactory} implementation that just returns the same
- * {@link ReactiveSession} instance. Implementations are free to return the same session or route calls to different
- * sessions.
+ * Spring provides a {@link org.springframework.data.cassandra.core.cql.session.DefaultReactiveSessionFactory}
+ * implementation that just returns the same {@link ReactiveSession} instance. Implementations are free to return the
+ * same session or route calls to different sessions. DefaultSessionFactory
  *
  * @author Mark Paluch
  * @see 2.0

@@ -19,10 +19,10 @@ import com.datastax.oss.driver.api.core.DriverException;
 import com.datastax.oss.driver.api.core.cql.Row;
 
 /**
- * An interface used by {@link CqlTemplate} for processing rows of a {@link com.datastax.driver.core.ResultSet} on a
- * per-row basis. Implementations of this interface perform the actual work of processing each row but don't need to
- * worry about exception handling. {@link DriverException}s will be caught and handled by the calling
- * {@link CqlTemplate}.
+ * An interface used by {@link CqlTemplate} for processing rows of a
+ * {@link com.datastax.oss.driver.api.core.cql.ResultSet} on a per-row basis. Implementations of this interface perform
+ * the actual work of processing each row but don't need to worry about exception handling. {@link DriverException}s
+ * will be caught and handled by the calling {@link CqlTemplate}.
  * <p>
  * In contrast to a {@link ResultSetExtractor}, a {@link RowCallbackHandler} object is typically stateful: It keeps the
  * result state within the object, to be available for later inspection.

@@ -28,7 +28,7 @@ import com.datastax.oss.driver.api.core.CqlSession;
  * @author Mark Paluch
  * @since 2.0
  * @see #getSession()
- * @see Session
+ * @see CqlSession
  */
 public class DefaultSessionFactory implements SessionFactory {
 

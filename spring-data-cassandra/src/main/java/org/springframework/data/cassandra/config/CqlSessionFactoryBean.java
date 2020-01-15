@@ -144,7 +144,7 @@ public class CqlSessionFactoryBean
 	}
 
 	/**
-	 * Set the username to use with {@link com.datastax.driver.core.PlainTextAuthProvider}.
+	 * Set the username to use.
 	 *
 	 * @param username The username to set.
 	 */
@@ -153,7 +153,7 @@ public class CqlSessionFactoryBean
 	}
 
 	/**
-	 * Set the username to use with {@link com.datastax.driver.core.PlainTextAuthProvider}.
+	 * Set the password to use.
 	 *
 	 * @param password The password to set.
 	 */
@@ -162,8 +162,8 @@ public class CqlSessionFactoryBean
 	}
 
 	/**
-	 * Sets the name of the Cassandra Keyspace to connect to. Passing {@literal null}, an empty String, or whitespace will
-	 * cause the Cassandra System Keyspace to be used.
+	 * Sets the name of the Cassandra Keyspace to connect to. Passing {@literal null} will cause the Cassandra System
+	 * Keyspace to be used.
 	 *
 	 * @param keyspaceName a String indicating the name of the Keyspace in which to connect.
 	 * @see #getKeyspaceName()
@@ -313,6 +313,7 @@ public class CqlSessionFactoryBean
 	 *             {@link SessionFactoryFactoryBean} with
 	 *             {@link org.springframework.data.cassandra.core.cql.session.init.KeyspacePopulator} instead.
 	 */
+	@Deprecated
 	public void setStartupScripts(@Nullable List<String> scripts) {
 		this.startupScripts = (scripts != null ? new ArrayList<>(scripts) : Collections.emptyList());
 	}

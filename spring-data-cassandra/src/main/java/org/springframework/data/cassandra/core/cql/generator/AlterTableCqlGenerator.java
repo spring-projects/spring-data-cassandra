@@ -37,7 +37,9 @@ import org.springframework.data.cassandra.core.cql.keyspace.TableOption;
 public class AlterTableCqlGenerator extends TableOptionsCqlGenerator<AlterTableSpecification> {
 
 	/**
-	 * Create a new {@literal {@link AlterTableCqlGenerator}. @param specification must not be {@literal null}.
+	 * Create a new {@link AlterTableCqlGenerator}.
+	 *
+	 * @param specification must not be {@literal null}.
 	 */
 	public AlterTableCqlGenerator(AlterTableSpecification specification) {
 		super(specification);

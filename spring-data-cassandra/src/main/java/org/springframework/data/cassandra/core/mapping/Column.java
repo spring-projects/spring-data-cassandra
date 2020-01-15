@@ -59,5 +59,6 @@ public @interface Column {
 	 *             hence it no longer requires an indication whether the name should be quoted.
 	 * @see com.datastax.oss.driver.api.core.CqlIdentifier#fromInternal(String)
 	 */
+	@Deprecated
 	boolean forceQuote() default false;
 }

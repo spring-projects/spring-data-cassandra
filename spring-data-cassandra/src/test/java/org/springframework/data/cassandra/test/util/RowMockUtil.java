@@ -143,7 +143,7 @@ public class RowMockUtil {
 	/**
 	 * Create a new {@link Column} to be used with {@link RowMockUtil#newRowMock(Column...)}.
 	 *
-	 * @param name must not be empty or {@link null}.
+	 * @param name must not be empty or {@code null}.
 	 * @param value can be {@literal null}.
 	 * @param type must not be {@literal null}.
 	 * @return

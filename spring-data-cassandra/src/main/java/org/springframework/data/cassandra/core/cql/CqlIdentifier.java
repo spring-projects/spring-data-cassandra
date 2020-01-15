@@ -143,6 +143,7 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 	 * @see #CqlIdentifier(CharSequence, boolean)
 	 * @deprecated since 2.0, use {@link #quoted(CharSequence)}.
 	 */
+	@Deprecated
 	public static CqlIdentifier quotedCqlId(CharSequence identifier) {
 		return new CqlIdentifier(identifier, true);
 	}

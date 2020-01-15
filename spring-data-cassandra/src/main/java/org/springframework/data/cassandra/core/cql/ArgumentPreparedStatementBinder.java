@@ -34,7 +34,7 @@ public class ArgumentPreparedStatementBinder implements PreparedStatementBinder 
 	/**
 	 * Create a new {@link ArgumentPreparedStatementBinder} for the given arguments.
 	 *
-	 * @param args the arguments to set. May be empty or {@link null} if no arguments are provided.
+	 * @param args the arguments to set. May be empty or {@code null} if no arguments are provided.
 	 */
 	public ArgumentPreparedStatementBinder(@Nullable Object... args) {
 		this.args = args;
