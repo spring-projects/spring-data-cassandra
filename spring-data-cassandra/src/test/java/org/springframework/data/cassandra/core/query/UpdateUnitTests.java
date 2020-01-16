@@ -24,6 +24,7 @@ import org.springframework.data.cassandra.core.query.Update.IncrOp;
  * Unit tests for {@link Update}.
  *
  * @author Mark Paluch
+ * @author Chema Vinacua 
  */
 public class UpdateUnitTests {
 
@@ -133,5 +134,14 @@ public class UpdateUnitTests {
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update.getUpdateOperations().iterator().next()).isInstanceOf(IncrOp.class);
+	}
+
+	@Test // DATACASS-718
+	public void shouldCreateIncrementLongUpdate() {
+
+		Update update = Update.empty().increment("foo", 2400000000l);
+
+		assertThat(update.getUpdateOperations()).hasSize(1);
+		assertThat(update.toString()).isEqualTo("foo = foo + 2400000000");
 	}
 }

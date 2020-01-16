@@ -39,6 +39,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * </pre>
  *
  * @author Mark Paluch
+ * @author Chema Vinacua 
  * @since 2.0
  */
 public class Update {
@@ -671,7 +672,7 @@ public class Update {
 		@Override
 		public String toString() {
 			return String.format("%s = %s %s %d", getColumnName(), getColumnName(), value.doubleValue() > 0 ? "+" : "-",
-					Math.abs(value.intValue()));
+					Math.abs(value.longValue()));
 		}
 	}
 
