@@ -24,6 +24,7 @@ import org.springframework.data.cassandra.core.query.Update.IncrOp;
  * Unit tests for {@link Update}.
  *
  * @author Mark Paluch
+ * @author Chema Vinacua 
  */
 public class UpdateUnitTests {
 
