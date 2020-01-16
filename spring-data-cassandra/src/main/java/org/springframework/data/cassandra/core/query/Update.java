@@ -37,6 +37,7 @@ import org.springframework.util.StringUtils;
  * </pre>
  *
  * @author Mark Paluch
+ * @author Chema Vinacua 
  * @since 2.0
  */
 public class Update {
