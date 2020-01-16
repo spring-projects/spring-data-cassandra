@@ -662,7 +662,7 @@ public class Update {
 		@Override
 		public String toString() {
 			return String.format("%s = %s %s %d", getColumnName(), getColumnName(), value.doubleValue() > 0 ? "+" : "-",
-					Math.abs(value.intValue()));
+					Math.abs(value.longValue()));
 		}
 	}
 
