@@ -1,6 +1,22 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 3.0.0.M1 (2020-01-16)
+----------------------------------------
+* DATACASS-714 - Upgrade to Cassandra driver 4.3.1.
+* DATACASS-713 - Rename Session and SessionFactory bean names with cassandra prefix.
+* DATACASS-711 - Update copyright years to 2020.
+* DATACASS-705 - Introduce SessionFactoryFactoryBean.
+* DATACASS-704 - Add utility to initialize and cleanup the CQL keyspace.
+* DATACASS-703 - Move Keyspace initialization from CassandraClusterFactoryBean to CassandraCqlSessionFactoryBean.
+* DATACASS-700 - Paging through Repository query methods do not retain Sort.
+* DATACASS-699 - Build against JDK 11+.
+* DATACASS-696 - selectOne(…) and event publication fails if entity is null.
+* DATACASS-694 - java.time.LocalTime incorrectly mapped with cassandra time datatype.
+* DATACASS-692 - Release 3.0 M1 (Neumann).
+* DATACASS-656 - Upgrade to Cassandra Driver 4.3.
+
+
 Changes in version 2.2.4.RELEASE (2020-01-15)
 ---------------------------------------------
 * DATACASS-711 - Update copyright years to 2020.
@@ -1106,6 +1122,7 @@ Changes in version 1.0.0.M1 (2014-03-31)
     * [DATACASS-100] - QueryOptions should only have ConsistencyLevel & RetryPolicy
     * [DATACASS-104] - Remove requirement for @PrimaryKeyClass when using composite primary keys
     * [DATACASS-107] - Support declarative query methods
+
 
 
 
