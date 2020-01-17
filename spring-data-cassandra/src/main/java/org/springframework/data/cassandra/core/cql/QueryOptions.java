@@ -24,7 +24,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
-import com.datastax.oss.driver.api.core.retry.RetryPolicy;
+import com.datastax.oss.driver.api.core.config.DriverExecutionProfile;
 
 /**
  * Cassandra Query Options for queries. {@link QueryOptions} allow tuning of various query options on a per-request
@@ -38,41 +38,28 @@ public class QueryOptions {
 
 	private static final QueryOptions EMPTY = QueryOptions.builder().build();
 
-	private final @Nullable Boolean tracing;
-
 	private final @Nullable ConsistencyLevel consistencyLevel;
 
-	private final Duration readTimeout;
+	private final ExecutionProfileResolver executionProfileResolver;
 
 	private final @Nullable Integer pageSize;
 
-	private final @Nullable RetryPolicy retryPolicy;
+	private final @Nullable ConsistencyLevel serialConsistencyLevel;
 
-	protected QueryOptions(@Nullable ConsistencyLevel consistencyLevel, @Nullable RetryPolicy retryPolicy,
-			@Nullable Boolean tracing, @Nullable Integer fetchSize, Duration readTimeout) {
+	private final Duration timeout;
+
+	private final @Nullable Boolean tracing;
+
+	protected QueryOptions(@Nullable ConsistencyLevel consistencyLevel, ExecutionProfileResolver executionProfileResolver,
+			@Nullable Integer pageSize, @Nullable ConsistencyLevel serialConsistencyLevel, Duration timeout,
+			@Nullable Boolean tracing) {
 
 		this.consistencyLevel = consistencyLevel;
-		this.retryPolicy = retryPolicy;
+		this.executionProfileResolver = executionProfileResolver;
+		this.pageSize = pageSize;
+		this.serialConsistencyLevel = serialConsistencyLevel;
+		this.timeout = timeout;
 		this.tracing = tracing;
-		this.pageSize = fetchSize;
-		this.readTimeout = readTimeout;
-	}
-
-	/**
-	 * Creates new {@link QueryOptions} for the given {@link ConsistencyLevel} and {@link RetryPolicy}.
-	 *
-	 * @param consistencyLevel the consistency level, may be {@literal null}.
-	 * @param retryPolicy the retry policy, may be {@literal null}.
-	 * @deprecated since 2.0, use {@link #builder()}.
-	 */
-	@Deprecated
-	public QueryOptions(@Nullable ConsistencyLevel consistencyLevel, @Nullable RetryPolicy retryPolicy) {
-
-		this.consistencyLevel = consistencyLevel;
-		this.retryPolicy = retryPolicy;
-		this.tracing = false;
-		this.pageSize = null;
-		this.readTimeout = Duration.ofMillis(-1);
 	}
 
 	/**
@@ -106,12 +93,20 @@ public class QueryOptions {
 	}
 
 	/**
-	 * @return the the driver {@link ConsistencyLevel}
+	 * @return the the driver {@link ConsistencyLevel}.
 	 * @since 1.5
 	 */
 	@Nullable
 	protected ConsistencyLevel getConsistencyLevel() {
 		return this.consistencyLevel;
+	}
+
+	/**
+	 * @return the the {@link ExecutionProfileResolver}.
+	 * @since 3.0
+	 */
+	protected ExecutionProfileResolver getExecutionProfileResolver() {
+		return this.executionProfileResolver;
 	}
 
 	/**
@@ -124,20 +119,33 @@ public class QueryOptions {
 	}
 
 	/**
-	 * @return the read timeout in milliseconds. May be {@literal null} if not set.
+	 * @return the command timeout. May be {@link Duration#isNegative() negative} if not set.
 	 * @since 1.5
+	 * @see com.datastax.oss.driver.api.core.cql.Statement#setTimeout(Duration)
+	 * @deprecated since 3.0, use {@link #getTimeout()} instead.
 	 */
+	@Deprecated
 	protected Duration getReadTimeout() {
-		return this.readTimeout;
+		return getTimeout();
 	}
 
 	/**
-	 * @return the driver {@link RetryPolicy}
-	 * @since 1.5
+	 * @return the command timeout. May be {@link Duration#isNegative() negative} if not set.
+	 * @since 3.0
+	 * @see com.datastax.oss.driver.api.core.cql.Statement#setTimeout(Duration)
+	 */
+	protected Duration getTimeout() {
+		return this.timeout;
+	}
+
+	/**
+	 * @return the the serial {@link ConsistencyLevel}.
+	 * @since 3.0
+	 * @see com.datastax.oss.driver.api.core.cql.Statement#setSerialConsistencyLevel(ConsistencyLevel)
 	 */
 	@Nullable
-	protected RetryPolicy getRetryPolicy() {
-		return this.retryPolicy;
+	protected ConsistencyLevel getSerialConsistencyLevel() {
+		return this.serialConsistencyLevel;
 	}
 
 	/**
@@ -156,24 +164,27 @@ public class QueryOptions {
 	 */
 	public static class QueryOptionsBuilder {
 
-		protected @Nullable Boolean tracing;
-
 		protected @Nullable ConsistencyLevel consistencyLevel;
 
-		protected Duration timeout = Duration.ofMillis(-1);
+		protected ExecutionProfileResolver executionProfileResolver = ExecutionProfileResolver.none();
 
 		protected @Nullable Integer pageSize;
 
-		protected @Nullable RetryPolicy retryPolicy;
+		protected @Nullable ConsistencyLevel serialConsistencyLevel;
+
+		protected Duration timeout = Duration.ofMillis(-1);
+
+		protected @Nullable Boolean tracing;
 
 		QueryOptionsBuilder() {}
 
 		QueryOptionsBuilder(QueryOptions queryOptions) {
 
 			this.consistencyLevel = queryOptions.consistencyLevel;
+			this.executionProfileResolver = queryOptions.executionProfileResolver;
 			this.pageSize = queryOptions.pageSize;
-			this.timeout = queryOptions.readTimeout;
-			this.retryPolicy = queryOptions.retryPolicy;
+			this.serialConsistencyLevel = queryOptions.serialConsistencyLevel;
+			this.timeout = queryOptions.timeout;
 			this.tracing = queryOptions.tracing;
 		}
 
@@ -193,19 +204,29 @@ public class QueryOptions {
 		}
 
 		/**
-		 * Sets the {@link RetryPolicy driver RetryPolicy} to use. Setting both ( {@link RetryPolicy} and {@link RetryPolicy
-		 * driver RetryPolicy}) retry policies is not supported.
+		 * Sets the {@code execution profile} to use.
 		 *
-		 * @param retryPolicy must not be {@literal null}.
+		 * @param profileName must not be {@literal null} or empty.
 		 * @return {@code this} {@link QueryOptionsBuilder}
-		 * @deprecated since 3.0, use execution profiles instead.
+		 * @since 3.0
+		 * @see com.datastax.oss.driver.api.core.cql.Statement#setExecutionProfileName(String)
 		 */
-		@Deprecated
-		public QueryOptionsBuilder retryPolicy(RetryPolicy retryPolicy) {
+		public QueryOptionsBuilder executionProfile(String profileName) {
+			return executionProfile(ExecutionProfileResolver.from(profileName));
+		}
 
-			Assert.notNull(retryPolicy, "RetryPolicy must not be null");
+		/**
+		 * Sets the {@link ExecutionProfileResolver} to use.
+		 *
+		 * @param executionProfileResolver must not be {@literal null}.
+		 * @return {@code this} {@link QueryOptionsBuilder}
+		 * @see com.datastax.oss.driver.api.core.cql.Statement#setExecutionProfile(DriverExecutionProfile)
+		 */
+		public QueryOptionsBuilder executionProfile(ExecutionProfileResolver executionProfileResolver) {
 
-			this.retryPolicy = retryPolicy;
+			Assert.notNull(executionProfileResolver, "ExecutionProfileResolver must not be null");
+
+			this.executionProfileResolver = executionProfileResolver;
 
 			return this;
 		}
@@ -302,6 +323,21 @@ public class QueryOptions {
 		}
 
 		/**
+		 * Sets the serial {@link ConsistencyLevel} to use.
+		 *
+		 * @param consistencyLevel must not be {@literal null}.
+		 * @return {@code this} {@link QueryOptionsBuilder}
+		 */
+		public QueryOptionsBuilder serialConsistencyLevel(ConsistencyLevel consistencyLevel) {
+
+			Assert.notNull(consistencyLevel, "Serial ConsistencyLevel must not be null");
+
+			this.serialConsistencyLevel = consistencyLevel;
+
+			return this;
+		}
+
+		/**
 		 * Sets the request timeout. Overrides the default timeout.
 		 *
 		 * @param timeout the read timeout. Negative values are not allowed. If it is {@code 0}, the read timeout will be
@@ -347,7 +383,8 @@ public class QueryOptions {
 		 * @return a new {@link QueryOptions} with the configured values
 		 */
 		public QueryOptions build() {
-			return new QueryOptions(this.consistencyLevel, this.retryPolicy, this.tracing, this.pageSize, this.timeout);
+			return new QueryOptions(this.consistencyLevel, this.executionProfileResolver, this.pageSize,
+					this.serialConsistencyLevel, this.timeout, this.tracing);
 		}
 	}
 }

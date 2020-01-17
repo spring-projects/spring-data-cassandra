@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -24,6 +24,8 @@ import org.junit.Test;
 
 import org.springframework.data.cassandra.core.query.Query;
 
+import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
+
 /**
  * Unit tests for {@link DeleteOptions}.
  *
@@ -31,7 +33,7 @@ import org.springframework.data.cassandra.core.query.Query;
  */
 public class DeleteOptionsUnitTests {
 
-	@Test // DATACASS-575
+	@Test // DATACASS-575, DATACASS-708
 	public void shouldConfigureDeleteOptions() {
 
 		Instant now = Instant.ofEpochSecond(1234);
@@ -40,7 +42,10 @@ public class DeleteOptionsUnitTests {
 				.ttl(10) //
 				.timestamp(now) //
 				.withIfExists() //
+				.executionProfile("foo") //
+				.serialConsistencyLevel(DefaultConsistencyLevel.LOCAL_ONE) //
 				.build();
+
 
 		assertThat(deleteOptions.getTtl()).isEqualTo(Duration.ofSeconds(10));
 		assertThat(deleteOptions.getTimestamp()).isEqualTo(now.toEpochMilli() * 1000);

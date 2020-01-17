@@ -39,6 +39,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.cassandra.CassandraConnectionFailureException;
 import org.springframework.data.cassandra.CassandraInvalidQueryException;
+import org.springframework.lang.Nullable;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.util.concurrent.ListenableFuture;
 
@@ -121,7 +122,7 @@ public class AsyncCqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void executeCqlShouldCallExecution() {
 
-		doTestStrings(null, null, asyncCqlTemplate -> {
+		doTestStrings(asyncCqlTemplate -> {
 
 			asyncCqlTemplate.execute("SELECT * from USERS");
 
@@ -143,7 +144,7 @@ public class AsyncCqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryForResultSetShouldCallExecution() {
 
-		doTestStrings(null, null, asyncCqlTemplate -> {
+		doTestStrings(asyncCqlTemplate -> {
 
 			AsyncResultSet resultSet = getUninterruptibly(asyncCqlTemplate.queryForResultSet("SELECT * from USERS"));
 
@@ -155,7 +156,7 @@ public class AsyncCqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryWithResultSetExtractorShouldCallExecution() {
 
-		doTestStrings(null, null, asyncCqlTemplate -> {
+		doTestStrings(asyncCqlTemplate -> {
 
 			List<String> rows = getUninterruptibly(
 					asyncCqlTemplate.query("SELECT * from USERS", (row, index) -> row.getString(0)));
@@ -298,7 +299,7 @@ public class AsyncCqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void executeStatementShouldCallExecution() {
 
-		doTestStrings(null, null, asyncCqlTemplate -> {
+		doTestStrings(asyncCqlTemplate -> {
 
 			asyncCqlTemplate.execute(SimpleStatement.newInstance("SELECT * from USERS"));
 
@@ -320,7 +321,7 @@ public class AsyncCqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryForResultStatementSetShouldCallExecution() {
 
-		doTestStrings(null, null, asyncCqlTemplate -> {
+		doTestStrings(asyncCqlTemplate -> {
 
 			ListenableFuture<AsyncResultSet> future = asyncCqlTemplate
 					.queryForResultSet(SimpleStatement.newInstance("SELECT * from USERS"));
@@ -333,7 +334,7 @@ public class AsyncCqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryWithResultSetStatementExtractorShouldCallExecution() {
 
-		doTestStrings(null, null, asyncCqlTemplate -> {
+		doTestStrings(asyncCqlTemplate -> {
 
 			ListenableFuture<List<String>> future = asyncCqlTemplate.query(SimpleStatement.newInstance("SELECT * from USERS"),
 					(row, index) -> row.getString(0));
@@ -482,7 +483,7 @@ public class AsyncCqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryPreparedStatementWithCallbackShouldCallExecution() {
 
-		doTestStrings(null, null, asyncCqlTemplate -> {
+		doTestStrings(asyncCqlTemplate -> {
 
 			ListenableFuture<CompletionStage<AsyncResultSet>> futureOfFuture = asyncCqlTemplate.execute("SELECT * from USERS",
 					(session, ps) -> session.executeAsync(ps.bind("A")));
@@ -498,7 +499,7 @@ public class AsyncCqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void executePreparedStatementWithCallbackShouldCallExecution() {
 
-		doTestStrings(null, null, asyncCqlTemplate -> {
+		doTestStrings(asyncCqlTemplate -> {
 
 			when(this.preparedStatement.bind("White")).thenReturn(this.boundStatement);
 			when(this.resultSet.wasApplied()).thenReturn(true);
@@ -756,7 +757,11 @@ public class AsyncCqlTemplateUnitTests {
 		assertThat(getUninterruptibly(future)).isTrue();
 	}
 
-	private <T> void doTestStrings(Integer fetchSize, ConsistencyLevel consistencyLevel,
+	private void doTestStrings(Consumer<AsyncCqlTemplate> cqlTemplateConsumer) {
+		doTestStrings(null, null, cqlTemplateConsumer);
+	}
+
+	private void doTestStrings(@Nullable Integer fetchSize, @Nullable ConsistencyLevel consistencyLevel,
 			Consumer<AsyncCqlTemplate> cqlTemplateConsumer) {
 
 		String[] results = { "Walter", "Hank", " Jesse" };
@@ -783,24 +788,12 @@ public class AsyncCqlTemplateUnitTests {
 
 		Statement statement = statementArgumentCaptor.getValue();
 
-		if (statement instanceof PreparedStatement || statement instanceof BoundStatement) {
+		if (fetchSize != null) {
+			assertThat(statement.getPageSize()).isEqualTo(fetchSize.intValue());
+		}
 
-			if (fetchSize != null) {
-				verify(statement).setPageSize(fetchSize.intValue());
-			}
-
-			if (consistencyLevel != null) {
-				verify(statement).setConsistencyLevel(consistencyLevel);
-			}
-		} else {
-
-			if (fetchSize != null) {
-				assertThat(statement.getPageSize()).isEqualTo(fetchSize.intValue());
-			}
-
-			if (consistencyLevel != null) {
-				assertThat(statement.getConsistencyLevel()).isEqualTo(consistencyLevel);
-			}
+		if (consistencyLevel != null) {
+			assertThat(statement.getConsistencyLevel()).isEqualTo(consistencyLevel);
 		}
 	}
 

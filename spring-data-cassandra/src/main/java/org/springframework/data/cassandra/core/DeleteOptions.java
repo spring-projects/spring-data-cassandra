@@ -21,6 +21,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.data.cassandra.core.cql.ExecutionProfileResolver;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.data.cassandra.core.query.CriteriaDefinition;
 import org.springframework.data.cassandra.core.query.Filter;
@@ -28,7 +29,6 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
-import com.datastax.oss.driver.api.core.retry.RetryPolicy;
 
 /**
  * Extension to {@link WriteOptions} for use with {@code DELETE} operations.
@@ -45,11 +45,12 @@ public class DeleteOptions extends WriteOptions {
 
 	private final @Nullable Filter ifCondition;
 
-	private DeleteOptions(@Nullable ConsistencyLevel consistencyLevel, @Nullable RetryPolicy retryPolicy,
-			@Nullable Boolean tracing, @Nullable Integer fetchSize, Duration readTimeout, Duration ttl,
-			@Nullable Long timestamp, boolean ifExists, @Nullable Filter ifCondition) {
+	private DeleteOptions(@Nullable ConsistencyLevel consistencyLevel, ExecutionProfileResolver executionProfileResolver,
+			@Nullable Integer pageSize, @Nullable ConsistencyLevel serialConsistencyLevel, Duration timeout, Duration ttl,
+			@Nullable Long timestamp, @Nullable Boolean tracing, boolean ifExists, @Nullable Filter ifCondition) {
 
-		super(consistencyLevel, retryPolicy, tracing, fetchSize, readTimeout, ttl, timestamp);
+		super(consistencyLevel, executionProfileResolver, pageSize, serialConsistencyLevel, timeout, ttl, timestamp,
+				tracing);
 
 		this.ifExists = ifExists;
 		this.ifCondition = ifCondition;
@@ -129,13 +130,20 @@ public class DeleteOptions extends WriteOptions {
 		}
 
 		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#retryPolicy(com.datastax.driver.core.policies.RetryPolicy)
+		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#executionProfile(String)
 		 */
 		@Override
-		@Deprecated
-		public DeleteOptionsBuilder retryPolicy(RetryPolicy driverRetryPolicy) {
+		public DeleteOptionsBuilder executionProfile(String profileName) {
+			super.executionProfile(profileName);
+			return this;
+		}
 
-			super.retryPolicy(driverRetryPolicy);
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#executionProfile(org.springframework.data.cassandra.core.cql.ExecutionProfileResolver)
+		 */
+		@Override
+		public DeleteOptionsBuilder executionProfile(ExecutionProfileResolver executionProfileResolver) {
+			super.executionProfile(executionProfileResolver);
 			return this;
 		}
 
@@ -179,6 +187,15 @@ public class DeleteOptions extends WriteOptions {
 		public DeleteOptionsBuilder readTimeout(long readTimeout, TimeUnit timeUnit) {
 
 			super.readTimeout(readTimeout, timeUnit);
+			return this;
+		}
+
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#serialConsistencyLevel(com.datastax.oss.driver.api.core.ConsistencyLevel)
+		 */
+		@Override
+		public DeleteOptionsBuilder serialConsistencyLevel(ConsistencyLevel consistencyLevel) {
+			super.serialConsistencyLevel(consistencyLevel);
 			return this;
 		}
 
@@ -312,8 +329,9 @@ public class DeleteOptions extends WriteOptions {
 		 */
 		public DeleteOptions build() {
 
-			return new DeleteOptions(this.consistencyLevel, this.retryPolicy, this.tracing, this.pageSize, this.timeout,
-					this.ttl, this.timestamp, this.ifExists, this.ifCondition);
+			return new DeleteOptions(this.consistencyLevel, this.executionProfileResolver, this.pageSize,
+					this.serialConsistencyLevel, this.timeout, this.ttl, this.timestamp, this.tracing, this.ifExists,
+					this.ifCondition);
 		}
 	}
 }

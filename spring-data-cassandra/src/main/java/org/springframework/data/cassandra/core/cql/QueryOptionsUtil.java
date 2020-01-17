@@ -19,7 +19,6 @@ import java.time.Duration;
 
 import org.springframework.util.Assert;
 
-import com.datastax.oss.driver.api.core.cql.SimpleStatementBuilder;
 import com.datastax.oss.driver.api.core.cql.Statement;
 import com.datastax.oss.driver.api.querybuilder.delete.Delete;
 import com.datastax.oss.driver.api.querybuilder.delete.DeleteSelection;
@@ -52,12 +51,18 @@ public abstract class QueryOptionsUtil {
 			statementToUse = statementToUse.setConsistencyLevel(queryOptions.getConsistencyLevel());
 		}
 
+		statementToUse = queryOptions.getExecutionProfileResolver().apply(statementToUse);
+
 		if (queryOptions.getPageSize() != null) {
 			statementToUse = statementToUse.setPageSize(queryOptions.getPageSize());
 		}
 
-		if (!queryOptions.getReadTimeout().isNegative()) {
-			statementToUse = statementToUse.setTimeout(queryOptions.getReadTimeout());
+		if (queryOptions.getSerialConsistencyLevel() != null) {
+			statementToUse = statementToUse.setSerialConsistencyLevel(queryOptions.getSerialConsistencyLevel());
+		}
+
+		if (!queryOptions.getTimeout().isNegative()) {
+			statementToUse = statementToUse.setTimeout(queryOptions.getTimeout());
 		}
 
 		if (queryOptions.getTracing() != null) {
@@ -69,37 +74,6 @@ public abstract class QueryOptionsUtil {
 		}
 
 		return (T) statementToUse;
-	}
-
-	/**
-	 * Add common {@link QueryOptions} to all types of queries.
-	 *
-	 * @param statement a {@link SimpleStatementBuilder}, must not be {@literal null}.
-	 * @param queryOptions query options (e.g. consistency level) to add to the CQL statement.
-	 */
-	public static void addQueryOptions(SimpleStatementBuilder statementBuilder, QueryOptions queryOptions) {
-
-		Assert.notNull(statementBuilder, "SimpleStatementBuilder must not be null");
-
-		if (queryOptions.getConsistencyLevel() != null) {
-			statementBuilder.setConsistencyLevel(queryOptions.getConsistencyLevel());
-		}
-
-		if (queryOptions.getPageSize() != null) {
-			statementBuilder.setPageSize(queryOptions.getPageSize());
-		}
-
-		if (!queryOptions.getReadTimeout().isNegative()) {
-			statementBuilder.setTimeout(queryOptions.getReadTimeout());
-		}
-
-		if (queryOptions.getTracing() != null) {
-			if (queryOptions.getTracing()) {
-				statementBuilder.setTracing(true);
-			} else {
-				statementBuilder.setTracing(false);
-			}
-		}
 	}
 
 	/**

@@ -315,9 +315,7 @@ public class StatementFactory {
 					return statement.valuesByIds(values);
 				}).apply(statement -> (RegularInsert) addWriteOptions(statement, options));
 
-		builder.onBuild(statementBuilder -> {
-			QueryOptionsUtil.addQueryOptions(statementBuilder, options);
-		});
+		builder.transform(statement -> QueryOptionsUtil.addQueryOptions(statement, options));
 
 		return builder;
 	}
@@ -395,9 +393,7 @@ public class StatementFactory {
 				});
 
 		query.getQueryOptions().ifPresent(options -> {
-			builder.onBuild(statementBuilder -> {
-				query.getQueryOptions().ifPresent(it -> QueryOptionsUtil.addQueryOptions(statementBuilder, it));
-			});
+			builder.transform(statementBuilder -> QueryOptionsUtil.addQueryOptions(statementBuilder, options));
 		});
 
 		return builder;
@@ -462,9 +458,7 @@ public class StatementFactory {
 					applyUpdateIfCondition(builder, criteriaDefinitions);
 				});
 
-		builder.onBuild(statementBuilder -> {
-			QueryOptionsUtil.addQueryOptions(statementBuilder, options);
-		});
+		builder.transform(statement -> QueryOptionsUtil.addQueryOptions(statement, options));
 
 		return builder;
 	}
@@ -542,9 +536,7 @@ public class StatementFactory {
 				});
 
 		query.getQueryOptions().ifPresent(options -> {
-			builder.onBuild(statementBuilder -> {
-				query.getQueryOptions().ifPresent(it -> QueryOptionsUtil.addQueryOptions(statementBuilder, it));
-			});
+			builder.transform(statement -> QueryOptionsUtil.addQueryOptions(statement, options));
 		});
 
 		return builder;
@@ -588,9 +580,7 @@ public class StatementFactory {
 					applyDeleteIfCondition(builder, criteriaDefinitions);
 				});
 
-		builder.onBuild(statementBuilder -> {
-			QueryOptionsUtil.addQueryOptions(statementBuilder, options);
-		});
+		builder.transform(statement -> QueryOptionsUtil.addQueryOptions(statement, options));
 
 		return builder;
 	}
@@ -651,7 +641,10 @@ public class StatementFactory {
 		select.onBuild(statementBuilder -> {
 
 			query.getPagingState().ifPresent(statementBuilder::setPagingState);
-			query.getQueryOptions().ifPresent(it -> QueryOptionsUtil.addQueryOptions(statementBuilder, it));
+		});
+
+		query.getQueryOptions().ifPresent(it -> {
+			select.transform(statement -> QueryOptionsUtil.addQueryOptions(statement, it));
 		});
 
 		return select;
@@ -839,8 +832,7 @@ public class StatementFactory {
 			Collection<Object> collection = (Collection<Object>) updateOp.getValue();
 			Assert.isTrue(collection.size() == 1, "RemoveOp must contain a single set element");
 
-			return Assignment.removeSetElement(updateOp.toCqlIdentifier(),
-					termFactory.create(collection.iterator().next()));
+			return Assignment.removeSetElement(updateOp.toCqlIdentifier(), termFactory.create(collection.iterator().next()));
 		}
 
 		if (updateOp.getValue() instanceof List) {
@@ -848,8 +840,7 @@ public class StatementFactory {
 			Collection<Object> collection = (Collection<Object>) updateOp.getValue();
 			Assert.isTrue(collection.size() == 1, "RemoveOp must contain a single list element");
 
-			return Assignment.removeListElement(updateOp.toCqlIdentifier(),
-					termFactory.create(collection.iterator().next()));
+			return Assignment.removeListElement(updateOp.toCqlIdentifier(), termFactory.create(collection.iterator().next()));
 		}
 
 		return Assignment.remove(updateOp.toCqlIdentifier(), termFactory.create(updateOp.getValue()));

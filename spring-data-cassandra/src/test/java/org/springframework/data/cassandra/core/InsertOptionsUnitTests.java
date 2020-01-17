@@ -24,6 +24,8 @@ import java.time.ZoneOffset;
 
 import org.junit.Test;
 
+import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
+
 /**
  * Unit tests for {@link InsertOptions}.
  *
@@ -32,12 +34,18 @@ import org.junit.Test;
  */
 public class InsertOptionsUnitTests {
 
-	@Test // DATACASS-250, DATACASS-155
+	@Test // DATACASS-250, DATACASS-155, DATACASS-708
 	public void shouldConfigureInsertOptions() {
 
 		Instant now = LocalDateTime.now().toInstant(ZoneOffset.UTC);
 
-		InsertOptions insertOptions = InsertOptions.builder().ttl(10).timestamp(now).withIfNotExists().build();
+		InsertOptions insertOptions = InsertOptions.builder() //
+				.ttl(10) //
+				.timestamp(now) //
+				.withIfNotExists() //
+				.executionProfile("foo") //
+				.serialConsistencyLevel(DefaultConsistencyLevel.LOCAL_ONE) //
+				.build();
 
 		assertThat(insertOptions.getTtl()).isEqualTo(Duration.ofSeconds(10));
 		assertThat(insertOptions.getTimestamp()).isEqualTo(now.toEpochMilli() * 1000);

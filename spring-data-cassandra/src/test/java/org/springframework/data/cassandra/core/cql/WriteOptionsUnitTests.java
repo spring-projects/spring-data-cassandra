@@ -48,7 +48,7 @@ public class WriteOptionsUnitTests {
 		assertThat(writeOptions.getTtl()).isEqualTo(Duration.ofSeconds(123));
 		assertThat(writeOptions.getTimestamp()).isEqualTo(1519000753);
 		assertThat(writeOptions.getConsistencyLevel()).isEqualTo(DefaultConsistencyLevel.ANY);
-		assertThat(writeOptions.getReadTimeout()).isEqualTo(Duration.ofMillis(1));
+		assertThat(writeOptions.getTimeout()).isEqualTo(Duration.ofMillis(1));
 		assertThat(writeOptions.getPageSize()).isEqualTo(10);
 		assertThat(writeOptions.getTracing()).isTrue();
 	}
@@ -58,7 +58,7 @@ public class WriteOptionsUnitTests {
 
 		WriteOptions writeOptions = WriteOptions.builder().timeout(Duration.ofMinutes(1)).build();
 
-		assertThat(writeOptions.getReadTimeout()).isEqualTo(Duration.ofSeconds(60));
+		assertThat(writeOptions.getTimeout()).isEqualTo(Duration.ofSeconds(60));
 		assertThat(writeOptions.getPageSize()).isNull();
 		assertThat(writeOptions.getTracing()).isNull();
 	}
@@ -84,7 +84,7 @@ public class WriteOptionsUnitTests {
 		assertThat(mutated.getTtl()).isEqualTo(Duration.ofSeconds(123));
 		assertThat(mutated.getTimestamp()).isEqualTo(now.toEpochMilli() * 1000);
 		assertThat(mutated.getConsistencyLevel()).isEqualTo(DefaultConsistencyLevel.ANY);
-		assertThat(mutated.getReadTimeout()).isEqualTo(Duration.ofMillis(100));
+		assertThat(mutated.getTimeout()).isEqualTo(Duration.ofMillis(100));
 		assertThat(mutated.getPageSize()).isEqualTo(10);
 		assertThat(mutated.getTracing()).isTrue();
 	}

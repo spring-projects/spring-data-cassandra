@@ -25,10 +25,9 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
-import com.datastax.oss.driver.api.core.retry.RetryPolicy;
 
 /**
- * Cassandra Write Options are an extension to {@link QueryOptions} for write operations. {@link WriteOptions}allow
+ * Cassandra Write Options are an extension to {@link QueryOptions} for write operations. {@link WriteOptions} allow
  * tuning of various query options on a per-request level. Only options that are set are applied to queries.
  *
  * @author David Webb
@@ -44,41 +43,11 @@ public class WriteOptions extends QueryOptions {
 	private final Duration ttl;
 	private final @Nullable Long timestamp;
 
-	/**
-	 * Creates new {@link WriteOptions} for the given {@link ConsistencyLevel} and {@link RetryPolicy}.
-	 *
-	 * @param consistencyLevel the consistency level, may be {@literal null}.
-	 * @param retryPolicy the retry policy, may be {@literal null}.
-	 * @deprecated since 2.0, use {@link #builder()} or {@link #empty()}.
-	 */
-	@Deprecated
-	public WriteOptions(@Nullable ConsistencyLevel consistencyLevel, @Nullable RetryPolicy retryPolicy) {
-		this(consistencyLevel, retryPolicy, null);
-	}
+	protected WriteOptions(@Nullable ConsistencyLevel consistencyLevel, ExecutionProfileResolver executionProfileResolver,
+			@Nullable Integer pageSize, @Nullable ConsistencyLevel serialConsistencyLevel, Duration timeout, Duration ttl,
+			@Nullable Long timestamp, @Nullable Boolean tracing) {
 
-	/**
-	 * Creates new {@link WriteOptions} for the given {@link ConsistencyLevel}, {@link RetryPolicy} and {@code ttl}.
-	 *
-	 * @param consistencyLevel the consistency level, may be {@literal null}.
-	 * @param retryPolicy the retry policy, may be {@literal null}.
-	 * @param ttl the ttl, may be {@literal null}.
-	 * @deprecated since 2.0, use {@link #builder()}.
-	 */
-	@Deprecated
-	public WriteOptions(@Nullable ConsistencyLevel consistencyLevel, @Nullable RetryPolicy retryPolicy,
-			@Nullable Integer ttl) {
-
-		super(consistencyLevel, retryPolicy);
-
-		this.ttl = ttl == null ? Duration.ofMillis(-1) : Duration.ofSeconds(ttl);
-		this.timestamp = null;
-	}
-
-	protected WriteOptions(@Nullable ConsistencyLevel consistencyLevel, @Nullable RetryPolicy retryPolicy,
-			@Nullable Boolean tracing, @Nullable Integer fetchSize, Duration readTimeout, Duration ttl,
-			@Nullable Long timestamp) {
-
-		super(consistencyLevel, retryPolicy, tracing, fetchSize, readTimeout);
+		super(consistencyLevel, executionProfileResolver, pageSize, serialConsistencyLevel, timeout, tracing);
 
 		this.ttl = ttl;
 		this.timestamp = timestamp;
@@ -154,7 +123,7 @@ public class WriteOptions extends QueryOptions {
 		}
 
 		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#consistencyLevel(com.datastax.driver.core.ConsistencyLevel)
+		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#consistencyLevel(com.datastax.oss.driver.api.core.ConsistencyLevel)
 		 */
 		@Override
 		public WriteOptionsBuilder consistencyLevel(ConsistencyLevel consistencyLevel) {
@@ -164,13 +133,20 @@ public class WriteOptions extends QueryOptions {
 		}
 
 		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#retryPolicy(com.datastax.oss.driver.api.core.retry.RetryPolicy)
+		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#executionProfile(String)
 		 */
 		@Override
-		@Deprecated
-		public WriteOptionsBuilder retryPolicy(RetryPolicy driverRetryPolicy) {
+		public WriteOptionsBuilder executionProfile(String profileName) {
+			super.executionProfile(profileName);
+			return this;
+		}
 
-			super.retryPolicy(driverRetryPolicy);
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#executionProfile(org.springframework.data.cassandra.core.cql.ExecutionProfileResolver)
+		 */
+		@Override
+		public WriteOptionsBuilder executionProfile(ExecutionProfileResolver executionProfileResolver) {
+			super.executionProfile(executionProfileResolver);
 			return this;
 		}
 
@@ -214,6 +190,15 @@ public class WriteOptions extends QueryOptions {
 		public WriteOptionsBuilder readTimeout(long readTimeout, TimeUnit timeUnit) {
 
 			super.readTimeout(readTimeout, timeUnit);
+			return this;
+		}
+
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#serialConsistencyLevel(com.datastax.oss.driver.api.core.ConsistencyLevel)
+		 */
+		@Override
+		public WriteOptionsBuilder serialConsistencyLevel(ConsistencyLevel consistencyLevel) {
+			super.serialConsistencyLevel(consistencyLevel);
 			return this;
 		}
 
@@ -318,8 +303,8 @@ public class WriteOptions extends QueryOptions {
 		 * @return a new {@link WriteOptions} with the configured values
 		 */
 		public WriteOptions build() {
-			return new WriteOptions(this.consistencyLevel, this.retryPolicy, this.tracing, this.pageSize, this.timeout,
-					this.ttl, this.timestamp);
+			return new WriteOptions(this.consistencyLevel, this.executionProfileResolver, this.pageSize,
+					this.serialConsistencyLevel, this.timeout, this.ttl, this.timestamp, this.tracing);
 		}
 	}
 }

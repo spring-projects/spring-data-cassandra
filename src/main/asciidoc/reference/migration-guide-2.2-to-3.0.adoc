@@ -171,6 +171,10 @@ Keyspace creation via `CqlSessionFactoryBean` (`cassandra:session`) is not affec
 === Utilities
 
 * `GuavaListenableFutureAdapter`
+* `QueryOptions` and `WriteOptions` constructor taking `ConsistencyLevel` and `RetryPolicy` arguments.
+Use the builder in conjunction of execution profiles as replacement.
+* `CassandraAccessor.setRetryPolicy(…)` and `ReactiveCqlTemplate.setRetryPolicy(…)` methods.
+Use execution profiles as replacement.
 
 === Namespace support
 

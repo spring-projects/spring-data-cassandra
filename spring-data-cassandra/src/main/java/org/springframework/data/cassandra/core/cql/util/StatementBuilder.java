@@ -74,6 +74,7 @@ public class StatementBuilder<S extends BuildableQuery> {
 
 	private List<BuilderRunnable<S>> queryActions = new ArrayList<>();
 	private List<Consumer<SimpleStatementBuilder>> onBuild = new ArrayList<>();
+	private List<UnaryOperator<SimpleStatement>> onBuilt = new ArrayList<>();
 
 	private StatementBuilder(S statement) {
 		this.statement = statement;
@@ -139,6 +140,22 @@ public class StatementBuilder<S extends BuildableQuery> {
 	}
 
 	/**
+	 * Add behavior after the {@link SimpleStatement} has been built. The {@link UnaryOperator} gets invoked with a
+	 * {@link SimpleStatement} allowing association of the final statement with additional settings. The
+	 * {@link UnaryOperator} is applied on {@link #build()}.
+	 *
+	 * @param mappingFunction the {@link UnaryOperator} function that gets notified on {@link #build()}.
+	 * @return {@code this} {@link StatementBuilder}.
+	 */
+	public StatementBuilder<S> transform(UnaryOperator<SimpleStatement> mappingFunction) {
+
+		Assert.notNull(mappingFunction, "Mapping function must not be null");
+
+		onBuilt.add(mappingFunction);
+		return this;
+	}
+
+	/**
 	 * Build a {@link SimpleStatement statement} by applying builder and bind functions using the default
 	 * {@link CodecRegistry} and {@link ParameterHandling#INLINE} parameter rendering.
 	 *
@@ -182,7 +199,7 @@ public class StatementBuilder<S extends BuildableQuery> {
 				statement = runnable.run(statement, termFactory);
 			}
 
-			return onBuild(statement.builder()).build();
+			return StatementBuilder.this.build(statement.builder());
 		}
 
 		if (parameterHandling == ParameterHandling.BY_INDEX) {
@@ -197,7 +214,7 @@ public class StatementBuilder<S extends BuildableQuery> {
 				statement = runnable.run(statement, termFactory);
 			}
 
-			return onBuild(statement.builder().addPositionalValues(values)).build();
+			return build(statement.builder().addPositionalValues(values));
 		}
 
 		if (parameterHandling == ParameterHandling.BY_NAME) {
@@ -216,10 +233,21 @@ public class StatementBuilder<S extends BuildableQuery> {
 			SimpleStatementBuilder builder = statement.builder();
 			values.forEach(builder::addNamedValue);
 
-			return onBuild(builder).build();
+			return build(builder);
 		}
 
 		throw new UnsupportedOperationException(String.format("ParameterHandling %s not supported", parameterHandling));
+	}
+
+	private SimpleStatement build(SimpleStatementBuilder builder) {
+
+		SimpleStatement statmentToUse = onBuild(builder).build();
+
+		for (UnaryOperator<SimpleStatement> operator : onBuilt) {
+			statmentToUse = operator.apply(statmentToUse);
+		}
+
+		return statmentToUse;
 	}
 
 	private static Term toLiteralTerms(@Nullable Object value, CodecRegistry codecRegistry) {

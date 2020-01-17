@@ -38,7 +38,7 @@ public class QueryOptionsUnitTests {
 
 		assertThat(queryOptions.getClass()).isEqualTo(QueryOptions.class);
 		assertThat(queryOptions.getConsistencyLevel()).isEqualTo(DefaultConsistencyLevel.ANY);
-		assertThat(queryOptions.getReadTimeout()).isEqualTo(Duration.ofSeconds(1));
+		assertThat(queryOptions.getTimeout()).isEqualTo(Duration.ofSeconds(1));
 		assertThat(queryOptions.getPageSize()).isEqualTo(10);
 		assertThat(queryOptions.getTracing()).isTrue();
 	}
@@ -55,7 +55,7 @@ public class QueryOptionsUnitTests {
 		assertThat(mutated).isNotSameAs(queryOptions);
 		assertThat(mutated.getClass()).isEqualTo(QueryOptions.class);
 		assertThat(mutated.getConsistencyLevel()).isEqualTo(DefaultConsistencyLevel.ANY);
-		assertThat(mutated.getReadTimeout()).isEqualTo(Duration.ofSeconds(5));
+		assertThat(mutated.getTimeout()).isEqualTo(Duration.ofSeconds(5));
 		assertThat(mutated.getPageSize()).isEqualTo(10);
 		assertThat(mutated.getTracing()).isTrue();
 	}

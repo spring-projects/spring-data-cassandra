@@ -137,5 +137,17 @@ public class StatementBuilderUnitTests {
 
 		assertThat(statement.getQuery()).isEqualTo("SELECT * FROM person");
 		assertThat(statement.getPositionalValues()).hasSize(1);
+
+	}
+
+	@Test // DATACASS-708
+	public void shouldTransformBuiltStatement() {
+
+		SimpleStatement statement = StatementBuilder.of(QueryBuilder.selectFrom("person").all())
+				.transform(statement1 -> statement1.setExecutionProfileName("foo"))
+				.build(StatementBuilder.ParameterHandling.BY_NAME);
+
+		assertThat(statement.getQuery()).isEqualTo("SELECT * FROM person");
+		assertThat(statement.getExecutionProfileName()).isEqualTo("foo");
 	}
 }

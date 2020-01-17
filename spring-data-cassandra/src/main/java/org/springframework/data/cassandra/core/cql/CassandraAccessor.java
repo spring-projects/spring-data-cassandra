@@ -55,6 +55,12 @@ public class CassandraAccessor implements InitializingBean {
 	private CqlExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
 
 	/**
+	 * If this variable is set to a value, it will be used for setting the {@code executionProfile} property on statements
+	 * used for query processing.
+	 */
+	private ExecutionProfileResolver executionProfileResolver = ExecutionProfileResolver.none();
+
+	/**
 	 * If this variable is set to a non-negative value, it will be used for setting the {@code pageSize} property on
 	 * statements used for query processing.
 	 */
@@ -67,10 +73,10 @@ public class CassandraAccessor implements InitializingBean {
 	private @Nullable ConsistencyLevel consistencyLevel;
 
 	/**
-	 * If this variable is set to a value, it will be used for setting the {@code retryPolicy} property on statements used
-	 * for query processing.
+	 * If this variable is set to a value, it will be used for setting the {@code serial consistencyLevel} property on
+	 * statements used for query processing.
 	 */
-	private @Deprecated @Nullable RetryPolicy retryPolicy;
+	private @Nullable ConsistencyLevel serialConsistencyLevel;
 
 	private @Nullable SessionFactory sessionFactory;
 
@@ -128,6 +134,40 @@ public class CassandraAccessor implements InitializingBean {
 	}
 
 	/**
+	 * Set the driver execution profile for this template.
+	 *
+	 * @see Statement#setExecutionProfileName(String)
+	 * @see ExecutionProfileResolver
+	 * @since 3.0
+	 */
+	public void setExecutionProfile(String profileName) {
+		setExecutionProfileResolver(ExecutionProfileResolver.from(profileName));
+
+	}
+
+	/**
+	 * Set the {@link ExecutionProfileResolver} for this template.
+	 *
+	 * @see com.datastax.oss.driver.api.core.config.DriverExecutionProfile
+	 * @see ExecutionProfileResolver
+	 * @since 3.0
+	 */
+	public void setExecutionProfileResolver(ExecutionProfileResolver executionProfileResolver) {
+
+		Assert.notNull(executionProfileResolver, "ExecutionProfileResolver must not be null");
+
+		this.executionProfileResolver = executionProfileResolver;
+	}
+
+	/**
+	 * @return the {@link ExecutionProfileResolver} specified for this template.
+	 * @since 3.0
+	 */
+	public ExecutionProfileResolver getExecutionProfileResolver() {
+		return executionProfileResolver;
+	}
+
+	/**
 	 * Set the fetch size for this template. This is important for processing large result sets: Setting this higher than
 	 * the default value will increase processing speed at the cost of memory consumption; setting this lower can avoid
 	 * transferring row data that will never be read by the application. Default is -1, indicating to use the CQL driver's
@@ -170,24 +210,23 @@ public class CassandraAccessor implements InitializingBean {
 	}
 
 	/**
-	 * Set the retry policy for this template. This is important for defining behavior when a request fails.
+	 * Set the serial consistency level for this template.
 	 *
-	 * @see RetryPolicy
-	 * @deprecated since 3.0. Use driver execution profiles instead.
+	 * @since 3.0
+	 * @see Statement#setSerialConsistencyLevel(ConsistencyLevel)
+	 * @see ConsistencyLevel
 	 */
-	@Deprecated
-	public void setRetryPolicy(@Nullable RetryPolicy retryPolicy) {
-		this.retryPolicy = retryPolicy;
+	public void setSerialConsistencyLevel(@Nullable ConsistencyLevel consistencyLevel) {
+		this.serialConsistencyLevel = consistencyLevel;
 	}
 
 	/**
-	 * @return the {@link RetryPolicy} specified for this template.
-	 * @deprecated since 3.0. Use driver execution profiles instead.
+	 * @return the serial {@link ConsistencyLevel} specified for this template.
+	 * @since 3.0
 	 */
 	@Nullable
-	@Deprecated
-	public RetryPolicy getRetryPolicy() {
-		return this.retryPolicy;
+	public ConsistencyLevel getSerialConsistencyLevel() {
+		return this.serialConsistencyLevel;
 	}
 
 	/**
@@ -263,21 +302,32 @@ public class CassandraAccessor implements InitializingBean {
 	 * Prepare the given CQL Statement applying statement settings such as page size and consistency level.
 	 *
 	 * @param statement the CQL Statement to prepare
-	 * @see #setPageSize(int)
 	 * @see #setConsistencyLevel(ConsistencyLevel)
+	 * @see #setSerialConsistencyLevel(ConsistencyLevel)
+	 * @see #setPageSize(int)
+	 * @see #setExecutionProfile(String)
+	 * @see #setExecutionProfileResolver(ExecutionProfileResolver)
 	 */
 	protected Statement<?> applyStatementSettings(Statement<?> statement) {
 
 		Statement<?> statementToUse = statement;
 		ConsistencyLevel consistencyLevel = getConsistencyLevel();
+		ConsistencyLevel serialConsistencyLevel = getSerialConsistencyLevel();
+		int pageSize = getPageSize();
 
-		if (getFetchSize() > -1 && statement.getPageSize() < 0) {
-			statementToUse = statementToUse.setPageSize(getFetchSize());
+		if (consistencyLevel != null) {
+			statementToUse = statementToUse.setConsistencyLevel(consistencyLevel);
 		}
 
-		if (consistencyLevel != null && statementToUse.getConsistencyLevel() == null) {
-			statementToUse = statementToUse.setConsistencyLevel(getConsistencyLevel());
+		if (serialConsistencyLevel != null) {
+			statementToUse = statementToUse.setSerialConsistencyLevel(serialConsistencyLevel);
 		}
+
+		if (pageSize > -1) {
+			statementToUse = statementToUse.setPageSize(pageSize);
+		}
+
+		statementToUse = getExecutionProfileResolver().apply(statementToUse);
 
 		return statementToUse;
 	}

@@ -845,8 +845,8 @@ public class ReactiveCassandraTemplate
 
 		if (getReactiveCqlOperations() instanceof CassandraAccessor) {
 			CassandraAccessor accessor = (CassandraAccessor) getReactiveCqlOperations();
-			if (accessor.getFetchSize() != -1) {
-				return Mono.just(accessor.getFetchSize());
+			if (accessor.getPageSize() != -1) {
+				return Mono.just(accessor.getPageSize());
 			}
 		}
 

@@ -30,6 +30,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.convert.UpdateMapper;
+import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.data.cassandra.core.cql.util.StatementBuilder;
 import org.springframework.data.cassandra.core.cql.util.StatementBuilder.ParameterHandling;
@@ -42,6 +43,8 @@ import org.springframework.data.cassandra.core.query.Update;
 import org.springframework.data.cassandra.domain.Group;
 import org.springframework.data.domain.Sort;
 
+import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.querybuilder.delete.Delete;
 import com.datastax.oss.driver.api.querybuilder.insert.RegularInsert;
 import com.datastax.oss.driver.api.querybuilder.select.Select;
@@ -69,6 +72,22 @@ public class StatementFactoryUnitTests {
 				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
 
 		assertThat(select.build(ParameterHandling.INLINE).getQuery()).isEqualTo("SELECT * FROM group");
+	}
+
+	@Test // DATACASS-708
+	public void selectShouldApplyQueryOptions() {
+
+		QueryOptions queryOptions = QueryOptions.builder() //
+				.executionProfile("foo") //
+				.serialConsistencyLevel(DefaultConsistencyLevel.QUORUM) //
+				.build();
+
+		StatementBuilder<Select> select = statementFactory.select(Query.empty().queryOptions(queryOptions),
+				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
+
+		SimpleStatement statement = select.build();
+		assertThat(statement.getExecutionProfileName()).isEqualTo("foo");
+		assertThat(statement.getSerialConsistencyLevel()).isEqualTo(DefaultConsistencyLevel.QUORUM);
 	}
 
 	@Test // DATACASS-343
@@ -149,6 +168,25 @@ public class StatementFactoryUnitTests {
 				.isEqualTo("DELETE FROM group USING TIMESTAMP 1234 WHERE foo='bar'");
 	}
 
+	@Test // DATACASS-708
+	public void deleteShouldApplyQueryOptions() {
+
+		Person person = new Person();
+		person.id = "foo";
+
+		QueryOptions queryOptions = QueryOptions.builder() //
+				.executionProfile("foo") //
+				.serialConsistencyLevel(DefaultConsistencyLevel.QUORUM) //
+				.build();
+
+		StatementBuilder<Delete> delete = statementFactory.delete(Query.empty().queryOptions(queryOptions),
+				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
+
+		SimpleStatement statement = delete.build();
+		assertThat(statement.getExecutionProfileName()).isEqualTo("foo");
+		assertThat(statement.getSerialConsistencyLevel()).isEqualTo(DefaultConsistencyLevel.QUORUM);
+	}
+
 	@Test // DATACASS-656
 	public void shouldCreateInsert() {
 
@@ -158,6 +196,24 @@ public class StatementFactoryUnitTests {
 		StatementBuilder<RegularInsert> insert = statementFactory.insert(person, WriteOptions.empty());
 
 		assertThat(insert.build(ParameterHandling.INLINE).getQuery()).isEqualTo("INSERT INTO person (id) VALUES ('foo')");
+	}
+
+	@Test // DATACASS-708
+	public void insertShouldApplyQueryOptions() {
+
+		Person person = new Person();
+		person.id = "foo";
+
+		WriteOptions queryOptions = WriteOptions.builder() //
+				.executionProfile("foo") //
+				.serialConsistencyLevel(DefaultConsistencyLevel.QUORUM) //
+				.build();
+
+		StatementBuilder<RegularInsert> insert = statementFactory.insert(person, queryOptions);
+
+		SimpleStatement statement = insert.build();
+		assertThat(statement.getExecutionProfileName()).isEqualTo("foo");
+		assertThat(statement.getSerialConsistencyLevel()).isEqualTo(DefaultConsistencyLevel.QUORUM);
 	}
 
 	@Test // DATACASS-656
@@ -387,6 +443,24 @@ public class StatementFactoryUnitTests {
 				.isEqualTo("UPDATE person SET first_name='baz' WHERE foo='bar' IF foo='baz'");
 	}
 
+	@Test // DATACASS-708
+	public void updateShouldApplyQueryOptions() {
+
+		UpdateOptions queryOptions = UpdateOptions.builder() //
+				.executionProfile("foo") //
+				.serialConsistencyLevel(DefaultConsistencyLevel.QUORUM) //
+				.build();
+
+		Query query = Query.query(Criteria.where("foo").is("bar")).queryOptions(queryOptions);
+
+		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory.update(query,
+				Update.empty().set("firstName", "baz"), personEntity);
+
+		SimpleStatement statement = update.build();
+		assertThat(statement.getExecutionProfileName()).isEqualTo("foo");
+		assertThat(statement.getSerialConsistencyLevel()).isEqualTo(DefaultConsistencyLevel.QUORUM);
+	}
+
 	@Test // DATACASS-656
 	public void shouldCreateSetUpdateFromObject() {
 
@@ -468,6 +542,27 @@ public class StatementFactoryUnitTests {
 
 		assertThat(update.build(ParameterHandling.INLINE).getQuery())
 				.isEqualTo("UPDATE person SET first_name=NULL, list=[], map=NULL, number=NULL, set_col={} WHERE id='foo'");
+	}
+
+	@Test // DATACASS-708
+	public void updateObjectShouldApplyQueryOptions() {
+
+		WriteOptions queryOptions = WriteOptions.builder() //
+				.executionProfile("foo") //
+				.serialConsistencyLevel(DefaultConsistencyLevel.QUORUM) //
+				.build();
+
+		Person person = new Person();
+		person.id = "foo";
+		person.set = Collections.emptySet();
+		person.list = Collections.emptyList();
+
+		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory.update(person,
+				queryOptions);
+
+		SimpleStatement statement = update.build();
+		assertThat(statement.getExecutionProfileName()).isEqualTo("foo");
+		assertThat(statement.getSerialConsistencyLevel()).isEqualTo(DefaultConsistencyLevel.QUORUM);
 	}
 
 	@Test // DATACASS-512

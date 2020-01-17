@@ -39,16 +39,24 @@ public class QueryOptionsUtilUnitTests {
 
 	@Mock SimpleStatement simpleStatement;
 
-	@Test // DATACASS-202
+	@Test // DATACASS-202, DATACASS-708
 	public void addPreparedStatementOptionsShouldAddDriverQueryOptions() {
+
+		when(simpleStatement.setConsistencyLevel(any())).thenReturn(simpleStatement);
+		when(simpleStatement.setSerialConsistencyLevel(any())).thenReturn(simpleStatement);
+		when(simpleStatement.setExecutionProfileName(anyString())).thenReturn(simpleStatement);
 
 		QueryOptions queryOptions = QueryOptions.builder() //
 				.consistencyLevel(DefaultConsistencyLevel.EACH_QUORUM) //
+				.serialConsistencyLevel(DefaultConsistencyLevel.LOCAL_ONE) //
+				.executionProfile("foo") //
 				.build();
 
 		QueryOptionsUtil.addQueryOptions(simpleStatement, queryOptions);
 
 		verify(simpleStatement).setConsistencyLevel(DefaultConsistencyLevel.EACH_QUORUM);
+		verify(simpleStatement).setSerialConsistencyLevel(DefaultConsistencyLevel.LOCAL_ONE);
+		verify(simpleStatement).setExecutionProfileName("foo");
 	}
 
 	@Test // DATACASS-202

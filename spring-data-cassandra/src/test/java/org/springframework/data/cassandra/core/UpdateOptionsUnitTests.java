@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -23,6 +23,8 @@ import java.time.Instant;
 import org.junit.Test;
 
 import org.springframework.data.cassandra.core.query.Query;
+
+import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
 
 /**
  * Unit tests for {@link UpdateOptions}.
@@ -32,7 +34,7 @@ import org.springframework.data.cassandra.core.query.Query;
  */
 public class UpdateOptionsUnitTests {
 
-	@Test // DATACASS-250, DATACASS-155
+	@Test // DATACASS-250, DATACASS-155, DATACASS-708
 	public void shouldConfigureUpdateOptions() {
 
 		Instant now = Instant.ofEpochSecond(1234);
@@ -40,6 +42,8 @@ public class UpdateOptionsUnitTests {
 		UpdateOptions updateOptions = UpdateOptions.builder() //
 				.ttl(10) //
 				.timestamp(now) //
+				.executionProfile("foo") //
+				.serialConsistencyLevel(DefaultConsistencyLevel.LOCAL_ONE) //
 				.withIfExists() //
 				.build();
 

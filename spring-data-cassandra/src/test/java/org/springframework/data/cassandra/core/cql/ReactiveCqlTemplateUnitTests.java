@@ -39,6 +39,7 @@ import org.springframework.data.cassandra.ReactiveResultSet;
 import org.springframework.data.cassandra.ReactiveSession;
 import org.springframework.data.cassandra.ReactiveSessionFactory;
 import org.springframework.data.cassandra.core.cql.session.DefaultReactiveSessionFactory;
+import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
@@ -135,7 +136,7 @@ public class ReactiveCqlTemplateUnitTests {
 	@Test // DATACASS-335
 	public void executeCqlShouldCallExecution() {
 
-		doTestStrings(null, null, reactiveCqlTemplate -> {
+		doTestStrings(reactiveCqlTemplate -> {
 
 			reactiveCqlTemplate.execute("SELECT * from USERS").as(StepVerifier::create).expectNextCount(1).verifyComplete();
 
@@ -146,7 +147,7 @@ public class ReactiveCqlTemplateUnitTests {
 	@Test // DATACASS-335
 	public void executeCqlWithArgumentsShouldCallExecution() {
 
-		doTestStrings(5, DefaultConsistencyLevel.ONE, reactiveCqlTemplate -> {
+		doTestStrings(5, DefaultConsistencyLevel.ONE, null, "foo", reactiveCqlTemplate -> {
 
 			reactiveCqlTemplate.execute("SELECT * from USERS").as(StepVerifier::create) //
 					.expectNextCount(1) //
@@ -159,7 +160,7 @@ public class ReactiveCqlTemplateUnitTests {
 	@Test // DATACASS-335
 	public void queryForResultSetShouldCallExecution() {
 
-		doTestStrings(null, null, reactiveCqlTemplate -> {
+		doTestStrings(reactiveCqlTemplate -> {
 
 			Mono<ReactiveResultSet> mono = reactiveCqlTemplate.queryForResultSet("SELECT * from USERS");
 
@@ -172,7 +173,7 @@ public class ReactiveCqlTemplateUnitTests {
 	@Test // DATACASS-335
 	public void queryWithResultSetExtractorShouldCallExecution() {
 
-		doTestStrings(null, null, reactiveCqlTemplate -> {
+		doTestStrings(reactiveCqlTemplate -> {
 
 			Flux<String> flux = reactiveCqlTemplate.query("SELECT * from USERS", (row, index) -> row.getString(0));
 
@@ -185,7 +186,7 @@ public class ReactiveCqlTemplateUnitTests {
 	@Test // DATACASS-335
 	public void queryWithResultSetExtractorWithArgumentsShouldCallExecution() {
 
-		doTestStrings(5, ConsistencyLevel.ONE, reactiveCqlTemplate -> {
+		doTestStrings(5, ConsistencyLevel.ONE, null, "foo", reactiveCqlTemplate -> {
 
 			Flux<String> flux = reactiveCqlTemplate.query("SELECT * from USERS", (row, index) -> row.getString(0));
 
@@ -336,7 +337,7 @@ public class ReactiveCqlTemplateUnitTests {
 	@Test // DATACASS-335
 	public void executeStatementShouldCallExecution() {
 
-		doTestStrings(null, null, reactiveCqlTemplate -> {
+		doTestStrings(reactiveCqlTemplate -> {
 
 			reactiveCqlTemplate.execute(SimpleStatement.newInstance("SELECT * from USERS")).as(StepVerifier::create) //
 					.expectNextCount(1) //
@@ -349,7 +350,7 @@ public class ReactiveCqlTemplateUnitTests {
 	@Test // DATACASS-335
 	public void executeStatementWithArgumentsShouldCallExecution() {
 
-		doTestStrings(5, ConsistencyLevel.ONE, reactiveCqlTemplate -> {
+		doTestStrings(5, ConsistencyLevel.ONE, DefaultConsistencyLevel.EACH_QUORUM, "foo", reactiveCqlTemplate -> {
 
 			reactiveCqlTemplate.execute(SimpleStatement.newInstance("SELECT * from USERS")).as(StepVerifier::create) //
 					.expectNextCount(1) //
@@ -362,7 +363,7 @@ public class ReactiveCqlTemplateUnitTests {
 	@Test // DATACASS-335
 	public void queryForResultStatementSetShouldCallExecution() {
 
-		doTestStrings(null, null, reactiveCqlTemplate -> {
+		doTestStrings(reactiveCqlTemplate -> {
 
 			reactiveCqlTemplate.queryForResultSet(SimpleStatement.newInstance("SELECT * from USERS"))
 					.flatMapMany(ReactiveResultSet::rows).as(StepVerifier::create) //
@@ -376,7 +377,7 @@ public class ReactiveCqlTemplateUnitTests {
 	@Test // DATACASS-335
 	public void queryWithResultSetStatementExtractorShouldCallExecution() {
 
-		doTestStrings(null, null, reactiveCqlTemplate -> {
+		doTestStrings(reactiveCqlTemplate -> {
 
 			Flux<String> flux = reactiveCqlTemplate.query(SimpleStatement.newInstance("SELECT * from USERS"),
 					(row, index) -> row.getString(0));
@@ -390,7 +391,7 @@ public class ReactiveCqlTemplateUnitTests {
 	@Test // DATACASS-335
 	public void queryWithResultSetStatementExtractorWithArgumentsShouldCallExecution() {
 
-		doTestStrings(5, ConsistencyLevel.ONE, reactiveCqlTemplate -> {
+		doTestStrings(5, ConsistencyLevel.ONE, null, "foo", reactiveCqlTemplate -> {
 
 			Flux<String> flux = reactiveCqlTemplate.query(SimpleStatement.newInstance("SELECT * from USERS"),
 					(row, index) -> row.getString(0));
@@ -533,7 +534,7 @@ public class ReactiveCqlTemplateUnitTests {
 	@Test // DATACASS-335
 	public void queryPreparedStatementWithCallbackShouldCallExecution() {
 
-		doTestStrings(null, null, reactiveCqlTemplate -> {
+		doTestStrings(reactiveCqlTemplate -> {
 
 			Flux<Row> flux = reactiveCqlTemplate.execute("SELECT * from USERS", (session, ps) -> {
 
@@ -547,7 +548,7 @@ public class ReactiveCqlTemplateUnitTests {
 	@Test // DATACASS-335
 	public void executePreparedStatementWithCallbackShouldCallExecution() {
 
-		doTestStrings(null, null, reactiveCqlTemplate -> {
+		doTestStrings(reactiveCqlTemplate -> {
 
 			Mono<Boolean> applied = reactiveCqlTemplate.execute("UPDATE users SET name = ?", "White");
 			when(this.preparedStatement.bind("White")).thenReturn(this.boundStatement);
@@ -779,7 +780,12 @@ public class ReactiveCqlTemplateUnitTests {
 		verify(session, times(2)).execute(boundStatement);
 	}
 
-	private <T> void doTestStrings(Integer fetchSize, ConsistencyLevel consistencyLevel,
+	private void doTestStrings(Consumer<ReactiveCqlTemplate> cqlTemplateConsumer) {
+		doTestStrings(null, null, null, null, cqlTemplateConsumer);
+	}
+
+	private void doTestStrings(@Nullable Integer fetchSize, @Nullable ConsistencyLevel consistencyLevel,
+			@Nullable ConsistencyLevel serialConsistencyLevel, @Nullable String executionProfile,
 			Consumer<ReactiveCqlTemplate> cqlTemplateConsumer) {
 
 		String[] results = { "Walter", "Hank", " Jesse" };
@@ -801,6 +807,14 @@ public class ReactiveCqlTemplateUnitTests {
 			template.setConsistencyLevel(consistencyLevel);
 		}
 
+		if (serialConsistencyLevel != null) {
+			template.setSerialConsistencyLevel(serialConsistencyLevel);
+		}
+
+		if (executionProfile != null) {
+			template.setExecutionProfile(executionProfile);
+		}
+
 		cqlTemplateConsumer.accept(template);
 
 		ArgumentCaptor<Statement> statementArgumentCaptor = ArgumentCaptor.forClass(Statement.class);
@@ -808,24 +822,20 @@ public class ReactiveCqlTemplateUnitTests {
 
 		Statement statement = statementArgumentCaptor.getValue();
 
-		if (statement instanceof PreparedStatement || statement instanceof BoundStatement) {
+		if (fetchSize != null) {
+			assertThat(statement.getPageSize()).isEqualTo(fetchSize.intValue());
+		}
 
-			if (fetchSize != null) {
-				verify(statement).setPageSize(fetchSize.intValue());
-			}
+		if (consistencyLevel != null) {
+			assertThat(statement.getConsistencyLevel()).isEqualTo(consistencyLevel);
+		}
 
-			if (consistencyLevel != null) {
-				verify(statement).setConsistencyLevel(consistencyLevel);
-			}
-		} else {
+		if (serialConsistencyLevel != null) {
+			assertThat(statement.getSerialConsistencyLevel()).isEqualTo(serialConsistencyLevel);
+		}
 
-			if (fetchSize != null) {
-				assertThat(statement.getPageSize()).isEqualTo(fetchSize.intValue());
-			}
-
-			if (consistencyLevel != null) {
-				assertThat(statement.getConsistencyLevel()).isEqualTo(consistencyLevel);
-			}
+		if (executionProfile != null) {
+			assertThat(statement.getExecutionProfileName()).isEqualTo(executionProfile);
 		}
 	}
 }

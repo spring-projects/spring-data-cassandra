@@ -21,11 +21,11 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.data.cassandra.core.cql.ExecutionProfileResolver;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
-import com.datastax.oss.driver.api.core.retry.RetryPolicy;
 
 /**
  * Extension to {@link WriteOptions} for use with {@code INSERT} operations.
@@ -43,11 +43,12 @@ public class InsertOptions extends WriteOptions {
 
 	private boolean insertNulls;
 
-	private InsertOptions(@Nullable ConsistencyLevel consistencyLevel, @Nullable RetryPolicy retryPolicy,
-			@Nullable Boolean tracing, @Nullable Integer fetchSize, Duration readTimeout, Duration ttl,
-			@Nullable Long timestamp, boolean ifNotExists, boolean insertNulls) {
+	private InsertOptions(@Nullable ConsistencyLevel consistencyLevel, ExecutionProfileResolver executionProfileResolver,
+			@Nullable Integer pageSize, @Nullable ConsistencyLevel serialConsistencyLevel, Duration timeout, Duration ttl,
+			@Nullable Long timestamp, @Nullable Boolean tracing, boolean ifNotExists, boolean insertNulls) {
 
-		super(consistencyLevel, retryPolicy, tracing, fetchSize, readTimeout, ttl, timestamp);
+		super(consistencyLevel, executionProfileResolver, pageSize, serialConsistencyLevel, timeout, ttl, timestamp,
+				tracing);
 
 		this.ifNotExists = ifNotExists;
 		this.insertNulls = insertNulls;
@@ -131,13 +132,20 @@ public class InsertOptions extends WriteOptions {
 		}
 
 		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#retryPolicy(com.datastax.driver.core.policies.RetryPolicy)
+		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#executionProfile(String)
 		 */
 		@Override
-		@Deprecated
-		public InsertOptionsBuilder retryPolicy(RetryPolicy driverRetryPolicy) {
+		public InsertOptionsBuilder executionProfile(String profileName) {
+			super.executionProfile(profileName);
+			return this;
+		}
 
-			super.retryPolicy(driverRetryPolicy);
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#executionProfile(org.springframework.data.cassandra.core.cql.ExecutionProfileResolver)
+		 */
+		@Override
+		public InsertOptionsBuilder executionProfile(ExecutionProfileResolver executionProfileResolver) {
+			super.executionProfile(executionProfileResolver);
 			return this;
 		}
 
@@ -177,6 +185,15 @@ public class InsertOptions extends WriteOptions {
 		public InsertOptionsBuilder readTimeout(long readTimeout, TimeUnit timeUnit) {
 
 			super.readTimeout(readTimeout, timeUnit);
+			return this;
+		}
+
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#serialConsistencyLevel(com.datastax.oss.driver.api.core.ConsistencyLevel)
+		 */
+		@Override
+		public InsertOptionsBuilder serialConsistencyLevel(ConsistencyLevel consistencyLevel) {
+			super.serialConsistencyLevel(consistencyLevel);
 			return this;
 		}
 
@@ -274,8 +291,8 @@ public class InsertOptions extends WriteOptions {
 
 		/**
 		 * Insert {@literal null} values from an entity. This allows the usage of {@code INSERT} statements as upsert by
-		 * ensuring * that the whole entity state is persisted. Inserting {@literal null}s in Cassandra creates tombstones
-		 * so this * option should be used with caution.
+		 * ensuring that the whole entity state is persisted. Inserting {@literal null}s in Cassandra creates tombstones so
+		 * this option should be used with caution.
 		 *
 		 * @return {@code this} {@link InsertOptionsBuilder}
 		 * @since 2.1
@@ -306,8 +323,9 @@ public class InsertOptions extends WriteOptions {
 		 * @return a new {@link InsertOptions} with the configured values
 		 */
 		public InsertOptions build() {
-			return new InsertOptions(this.consistencyLevel, this.retryPolicy, this.tracing, this.pageSize, this.timeout,
-					this.ttl, this.timestamp, this.ifNotExists, this.insertNulls);
+			return new InsertOptions(this.consistencyLevel, this.executionProfileResolver, this.pageSize,
+					this.serialConsistencyLevel, this.timeout, this.ttl, this.timestamp, this.tracing, this.ifNotExists,
+					this.insertNulls);
 		}
 	}
 }

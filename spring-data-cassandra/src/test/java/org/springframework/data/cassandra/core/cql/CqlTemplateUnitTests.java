@@ -36,6 +36,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.cassandra.CassandraConnectionFailureException;
 import org.springframework.data.cassandra.CassandraInvalidQueryException;
+import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlSession;
@@ -112,7 +113,7 @@ public class CqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void executeCqlShouldCallExecution() {
 
-		doTestStrings(null, null, cqlTemplate -> {
+		doTestStrings(cqlTemplate -> {
 
 			cqlTemplate.execute("SELECT * from USERS");
 
@@ -123,7 +124,7 @@ public class CqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void executeCqlWithArgumentsShouldCallExecution() {
 
-		doTestStrings(5, DefaultConsistencyLevel.ONE, cqlTemplate -> {
+		doTestStrings(5, DefaultConsistencyLevel.ONE, null, "foo", cqlTemplate -> {
 
 			cqlTemplate.execute("SELECT * from USERS");
 
@@ -134,7 +135,7 @@ public class CqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryForResultSetShouldCallExecution() {
 
-		doTestStrings(null, null, cqlTemplate -> {
+		doTestStrings(cqlTemplate -> {
 
 			ResultSet resultSet = cqlTemplate.queryForResultSet("SELECT * from USERS");
 
@@ -146,7 +147,7 @@ public class CqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryWithResultSetExtractorShouldCallExecution() {
 
-		doTestStrings(null, null, cqlTemplate -> {
+		doTestStrings(cqlTemplate -> {
 
 			List<String> rows = cqlTemplate.query("SELECT * from USERS", (row, index) -> row.getString(0));
 
@@ -158,7 +159,7 @@ public class CqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryWithResultSetExtractorWithArgumentsShouldCallExecution() {
 
-		doTestStrings(5, ConsistencyLevel.ONE, cqlTemplate -> {
+		doTestStrings(5, ConsistencyLevel.ONE, ConsistencyLevel.EACH_QUORUM, "foo", cqlTemplate -> {
 
 			List<String> rows = cqlTemplate.query("SELECT * from USERS", (row, index) -> row.getString(0));
 
@@ -274,7 +275,7 @@ public class CqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void executeStatementShouldCallExecution() {
 
-		doTestStrings(null, null, cqlTemplate -> {
+		doTestStrings(cqlTemplate -> {
 
 			cqlTemplate.execute(SimpleStatement.newInstance("SELECT * from USERS"));
 
@@ -285,7 +286,7 @@ public class CqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void executeStatementWithArgumentsShouldCallExecution() {
 
-		doTestStrings(5, ConsistencyLevel.ONE, cqlTemplate -> {
+		doTestStrings(5, ConsistencyLevel.ONE, null, "foo", cqlTemplate -> {
 
 			cqlTemplate.execute(SimpleStatement.newInstance("SELECT * from USERS"));
 
@@ -296,7 +297,7 @@ public class CqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryForResultStatementSetShouldCallExecution() {
 
-		doTestStrings(null, null, cqlTemplate -> {
+		doTestStrings(cqlTemplate -> {
 
 			ResultSet resultSet = cqlTemplate.queryForResultSet(SimpleStatement.newInstance("SELECT * from USERS"));
 
@@ -308,7 +309,7 @@ public class CqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryWithResultSetStatementExtractorShouldCallExecution() {
 
-		doTestStrings(null, null, cqlTemplate -> {
+		doTestStrings(cqlTemplate -> {
 
 			List<String> result = cqlTemplate.query(SimpleStatement.newInstance("SELECT * from USERS"),
 					(row, index) -> row.getString(0));
@@ -321,7 +322,7 @@ public class CqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryWithResultSetStatementExtractorWithArgumentsShouldCallExecution() {
 
-		doTestStrings(5, ConsistencyLevel.ONE, cqlTemplate -> {
+		doTestStrings(5, ConsistencyLevel.ONE, null, "foo", cqlTemplate -> {
 
 			List<String> result = cqlTemplate.query(SimpleStatement.newInstance("SELECT * from USERS"),
 					(row, index) -> row.getString(0));
@@ -441,7 +442,7 @@ public class CqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void queryPreparedStatementWithCallbackShouldCallExecution() {
 
-		doTestStrings(null, null, cqlTemplate -> {
+		doTestStrings(cqlTemplate -> {
 
 			ResultSet resultSet = cqlTemplate.execute("SELECT * from USERS", (session, ps) -> session.execute(ps.bind("A")));
 
@@ -456,7 +457,7 @@ public class CqlTemplateUnitTests {
 	@Test // DATACASS-292
 	public void executePreparedStatementWithCallbackShouldCallExecution() {
 
-		doTestStrings(null, null, cqlTemplate -> {
+		doTestStrings(cqlTemplate -> {
 
 			when(this.preparedStatement.bind("White")).thenReturn(this.boundStatement);
 			when(this.resultSet.wasApplied()).thenReturn(true);
@@ -678,7 +679,12 @@ public class CqlTemplateUnitTests {
 		assertThat(applied).isTrue();
 	}
 
-	private <T> void doTestStrings(Integer fetchSize, ConsistencyLevel consistencyLevel,
+	private void doTestStrings(Consumer<CqlTemplate> cqlTemplateConsumer) {
+		doTestStrings(null, null, null, null, cqlTemplateConsumer);
+	}
+
+	private void doTestStrings(@Nullable Integer fetchSize, @Nullable ConsistencyLevel consistencyLevel,
+			@Nullable ConsistencyLevel serialConsistencyLevel, @Nullable String executionProfile,
 			Consumer<CqlTemplate> cqlTemplateConsumer) {
 
 		String[] results = { "Walter", "Hank", " Jesse" };
@@ -701,6 +707,14 @@ public class CqlTemplateUnitTests {
 			template.setConsistencyLevel(consistencyLevel);
 		}
 
+		if (serialConsistencyLevel != null) {
+			template.setSerialConsistencyLevel(serialConsistencyLevel);
+		}
+
+		if (executionProfile != null) {
+			template.setExecutionProfile(executionProfile);
+		}
+
 		cqlTemplateConsumer.accept(template);
 
 		ArgumentCaptor<Statement> statementArgumentCaptor = ArgumentCaptor.forClass(Statement.class);
@@ -708,24 +722,20 @@ public class CqlTemplateUnitTests {
 
 		Statement statement = statementArgumentCaptor.getValue();
 
-		if (statement instanceof PreparedStatement || statement instanceof BoundStatement) {
+		if (fetchSize != null) {
+			assertThat(statement.getPageSize()).isEqualTo(fetchSize.intValue());
+		}
 
-			if (fetchSize != null) {
-				verify(statement).setPageSize(fetchSize.intValue());
-			}
+		if (consistencyLevel != null) {
+			assertThat(statement.getConsistencyLevel()).isEqualTo(consistencyLevel);
+		}
 
-			if (consistencyLevel != null) {
-				verify(statement).setConsistencyLevel(consistencyLevel);
-			}
-		} else {
+		if (serialConsistencyLevel != null) {
+			assertThat(statement.getSerialConsistencyLevel()).isEqualTo(serialConsistencyLevel);
+		}
 
-			if (fetchSize != null) {
-				assertThat(statement.getPageSize()).isEqualTo(fetchSize.intValue());
-			}
-
-			if (consistencyLevel != null) {
-				assertThat(statement.getConsistencyLevel()).isEqualTo(consistencyLevel);
-			}
+		if (executionProfile != null) {
+			assertThat(statement.getExecutionProfileName()).isEqualTo(executionProfile);
 		}
 	}
 }
