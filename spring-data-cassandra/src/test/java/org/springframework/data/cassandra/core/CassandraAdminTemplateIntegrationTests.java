@@ -36,6 +36,7 @@ import com.datastax.driver.core.TableMetadata;
  * Integration tests for {@link CassandraAdminTemplate}.
  *
  * @author Mark Paluch
+ * @author Samuel Padou
  */
 public class CassandraAdminTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
@@ -84,5 +85,21 @@ public class CassandraAdminTemplateIntegrationTests extends AbstractKeyspaceCrea
 		cassandraAdminTemplate.dropTable(CqlIdentifier.of("users"));
 
 		assertThat(getKeyspaceMetadata().getTables()).hasSize(0);
+	}
+
+	@Test // DATACASS-720
+	public void testCaseSensitiveKeyspaceMetadata() {
+
+		String quotedCaseSensitiveKeyspace = "\"CaseSensitive\"";
+
+		session.execute(String.format("DROP KEYSPACE IF EXISTS %s;", quotedCaseSensitiveKeyspace));
+		session.execute(String.format(
+				"CREATE KEYSPACE %s WITH durable_writes = false AND replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};",
+				quotedCaseSensitiveKeyspace));
+		session.execute(String.format("USE %s;", quotedCaseSensitiveKeyspace));
+		assertThat(cassandraAdminTemplate.getKeyspaceMetadata()).isNotNull();
+
+		session.execute(String.format("USE %s;", keyspace));
+		assertThat(cassandraAdminTemplate.getKeyspaceMetadata()).isNotNull();
 	}
 }

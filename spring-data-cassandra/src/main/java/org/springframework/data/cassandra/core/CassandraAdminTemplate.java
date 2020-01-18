@@ -33,6 +33,7 @@ import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity
 import org.springframework.util.Assert;
 
 import com.datastax.driver.core.KeyspaceMetadata;
+import com.datastax.driver.core.Metadata;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
 
@@ -43,6 +44,7 @@ import com.datastax.driver.core.TableMetadata;
  * @author Fabio J. Mendes
  * @author John Blum
  * @author Vagif Zeynalov
+ * @author Samuel Padou
  */
 public class CassandraAdminTemplate extends CassandraTemplate implements CassandraAdminOperations {
 
@@ -166,10 +168,11 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 		// noinspection ConstantConditions
 		return getCqlOperations().execute((SessionCallback<KeyspaceMetadata>) session -> {
 
-			KeyspaceMetadata keyspaceMetadata = session.getCluster().getMetadata().getKeyspace(session.getLoggedKeyspace());
+			String keyspace = Metadata.quoteIfNecessary(session.getLoggedKeyspace());
+			KeyspaceMetadata keyspaceMetadata = session.getCluster().getMetadata().getKeyspace(keyspace);
 
 			Assert.state(keyspaceMetadata != null,
-					String.format("Metadata for keyspace [%s] not available", session.getLoggedKeyspace()));
+					String.format("Metadata for keyspace [%s] not available", keyspace));
 
 			return keyspaceMetadata;
 		});
