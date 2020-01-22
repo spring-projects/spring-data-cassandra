@@ -46,50 +46,14 @@ public class SessionFactoryFactoryBean extends AbstractFactoryBean<SessionFactor
 	protected static final boolean DEFAULT_DROP_TABLES = false;
 	protected static final boolean DEFAULT_DROP_UNUSED_TABLES = false;
 
-	private CqlSession session;
-
-	private @Nullable KeyspacePopulator keyspacePopulator;
-
-	private @Nullable KeyspacePopulator keyspaceCleaner;
-
 	private CassandraConverter converter;
 
+	private CqlSession session;
+
+	private @Nullable KeyspacePopulator keyspaceCleaner;
+	private @Nullable KeyspacePopulator keyspacePopulator;
+
 	private SchemaAction schemaAction = SchemaAction.NONE;
-
-	/**
-	 * Set the {@link CqlSession} to use.
-	 *
-	 * @param session must not be {@literal null}.
-	 */
-	public void setSession(CqlSession session) {
-
-		Assert.notNull(session, "Session must not be null");
-
-		this.session = session;
-	}
-
-	/**
-	 * Set the {@link KeyspacePopulator} to execute during the bean initialization phase. The
-	 * {@link KeyspacePopulator#populate(CqlSession) KeyspacePopulator} is invoked before creating
-	 * {@link #setSchemaAction(SchemaAction) the schema}.
-	 *
-	 * @param keyspacePopulator the {@link KeyspacePopulator} to use during initialization.
-	 * @see #setKeyspaceCleaner
-	 */
-	public void setKeyspacePopulator(@Nullable KeyspacePopulator keyspacePopulator) {
-		this.keyspacePopulator = keyspacePopulator;
-	}
-
-	/**
-	 * Set the {@link KeyspacePopulator} to execute during the bean destruction phase, cleaning up the keyspace and
-	 * leaving it in a known state for others.
-	 *
-	 * @param keyspaceCleaner the {@link KeyspacePopulator} to use during cleanup.
-	 * @see #setKeyspacePopulator
-	 */
-	public void setKeyspaceCleaner(@Nullable KeyspacePopulator keyspaceCleaner) {
-		this.keyspaceCleaner = keyspaceCleaner;
-	}
 
 	/**
 	 * Set the {@link CassandraConverter} to use. Schema actions will derive table and user type information from the
@@ -105,6 +69,29 @@ public class SessionFactoryFactoryBean extends AbstractFactoryBean<SessionFactor
 	}
 
 	/**
+	 * Set the {@link KeyspacePopulator} to execute during the bean destruction phase, cleaning up the keyspace and
+	 * leaving it in a known state for others.
+	 *
+	 * @param keyspaceCleaner the {@link KeyspacePopulator} to use during cleanup.
+	 * @see #setKeyspacePopulator
+	 */
+	public void setKeyspaceCleaner(@Nullable KeyspacePopulator keyspaceCleaner) {
+		this.keyspaceCleaner = keyspaceCleaner;
+	}
+
+	/**
+	 * Set the {@link KeyspacePopulator} to execute during the bean initialization phase. The
+	 * {@link KeyspacePopulator#populate(CqlSession) KeyspacePopulator} is invoked before creating
+	 * {@link #setSchemaAction(SchemaAction) the schema}.
+	 *
+	 * @param keyspacePopulator the {@link KeyspacePopulator} to use during initialization.
+	 * @see #setKeyspaceCleaner
+	 */
+	public void setKeyspacePopulator(@Nullable KeyspacePopulator keyspacePopulator) {
+		this.keyspacePopulator = keyspacePopulator;
+	}
+
+	/**
 	 * Set the {@link SchemaAction}.
 	 *
 	 * @param schemaAction must not be {@literal null}.
@@ -116,11 +103,24 @@ public class SessionFactoryFactoryBean extends AbstractFactoryBean<SessionFactor
 		this.schemaAction = schemaAction;
 	}
 
+	/**
+	 * Set the {@link CqlSession} to use.
+	 *
+	 * @param session must not be {@literal null}.
+	 */
+	public void setSession(CqlSession session) {
+
+		Assert.notNull(session, "Session must not be null");
+
+		this.session = session;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.cassandra.config.CassandraCqlSessionFactoryBean#afterPropertiesSet()
 	 */
 	@Override
+	@SuppressWarnings("all")
 	public void afterPropertiesSet() throws Exception {
 
 		Assert.state(this.session != null, "Session was not properly initialized");
@@ -138,7 +138,14 @@ public class SessionFactoryFactoryBean extends AbstractFactoryBean<SessionFactor
 	}
 
 	@Override
+	protected SessionFactory createInstance() {
+		return new DefaultSessionFactory(this.session);
+	}
+
+	@Override
+	@SuppressWarnings("all")
 	public void destroy() throws Exception {
+
 		if (this.keyspaceCleaner != null) {
 			this.keyspaceCleaner.populate(getObject().getSession());
 		}
@@ -148,11 +155,6 @@ public class SessionFactoryFactoryBean extends AbstractFactoryBean<SessionFactor
 	@Override
 	public Class<?> getObjectType() {
 		return SessionFactory.class;
-	}
-
-	@Override
-	protected SessionFactory createInstance() {
-		return new DefaultSessionFactory(session);
 	}
 
 	/**
@@ -197,17 +199,18 @@ public class SessionFactoryFactoryBean extends AbstractFactoryBean<SessionFactor
 		performSchemaActions(drop, dropUnused, ifNotExists);
 	}
 
+	@SuppressWarnings("all")
 	private void performSchemaActions(boolean drop, boolean dropUnused, boolean ifNotExists) throws Exception {
 
 		CassandraAdminOperations adminOperations = new CassandraAdminTemplate(getObject(), this.converter);
 
-		CassandraPersistentEntitySchemaCreator schemaCreator = new CassandraPersistentEntitySchemaCreator(
-				this.converter.getMappingContext(), adminOperations);
+		CassandraPersistentEntitySchemaCreator schemaCreator =
+				new CassandraPersistentEntitySchemaCreator(this.converter.getMappingContext(), adminOperations);
 
 		if (drop) {
 
-			CassandraPersistentEntitySchemaDropper schemaDropper = new CassandraPersistentEntitySchemaDropper(
-					this.converter.getMappingContext(), adminOperations);
+			CassandraPersistentEntitySchemaDropper schemaDropper =
+					new CassandraPersistentEntitySchemaDropper(this.converter.getMappingContext(), adminOperations);
 
 			schemaDropper.dropTables(dropUnused);
 			schemaDropper.dropUserTypes(dropUnused);

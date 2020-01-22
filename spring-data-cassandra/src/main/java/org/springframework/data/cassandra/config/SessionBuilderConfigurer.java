@@ -16,25 +16,26 @@
 package org.springframework.data.cassandra.config;
 
 import com.datastax.oss.driver.api.core.CqlSessionBuilder;
-import com.datastax.oss.driver.api.core.session.SessionBuilder;
 
 /**
- * Configuration callback class to allow a user to apply additional configuration logic to the {@link SessionBuilder}.
+ * Configuration callback to allow users to implement and apply additional configuration logic to
+ * the {@link CqlSessionBuilder}.
  *
  * @author John Blum
  * @author Mark Paluch
+ * @see com.datastax.oss.driver.api.core.CqlSessionBuilder
  * @since 3.0
- * @see com.datastax.oss.driver.api.core.CqlSession
  */
 @FunctionalInterface
 public interface SessionBuilderConfigurer {
 
 	/**
-	 * Apply addition configuration to the {@link SessionBuilder}.
+	 * Apply additional configuration to the Cassandra {@link CqlSessionBuilder}.
 	 *
-	 * @param sessionBuilder {@link SessionBuilder} to configure.
-	 * @return the argument to the {@code sessionBuilder} parameter.
-	 * @see SessionBuilder
+	 * @param sessionBuilder {@link CqlSessionBuilder} to configure.
+	 * @return the {@link CqlSessionBuilder} or a decorated {@link CqlSessionBuilder} as required by the caller.
+	 * @see com.datastax.oss.driver.api.core.CqlSessionBuilder
 	 */
 	CqlSessionBuilder configure(CqlSessionBuilder sessionBuilder);
+
 }

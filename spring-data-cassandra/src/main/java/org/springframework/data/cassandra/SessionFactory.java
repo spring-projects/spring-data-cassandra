@@ -15,21 +15,23 @@
  */
 package org.springframework.data.cassandra;
 
-
 import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.session.Session;
 
 /**
- * A factory for Apache Cassandra sessions.
- * <p>
+ * A factory for Apache Cassandra {@link Session sessions}.
+ *
  * A {@link SessionFactory} object is the preferred means of getting a connection. The {@link SessionFactory} interface
  * is implemented by a {@link CqlSession} provider.
- * <p>
+ *
  * A {@link SessionFactory} object can have properties that can be modified when necessary. For example, if the
  * {@link CqlSession} is moved to a different server, the property for the server can be changed. The benefit is that
  * because the data source's properties can be changed, any code accessing that {@link SessionFactory} does not need to
  * be changed.
  *
  * @author Mark Paluch
+ * @see com.datastax.oss.driver.api.core.CqlSession
+ * @see com.datastax.oss.driver.api.core.session.Session
  * @since 2.0
  */
 @FunctionalInterface
@@ -40,6 +42,7 @@ public interface SessionFactory {
 	 * object represents.
 	 *
 	 * @return a {@link CqlSession} to Apache Cassandra.
+	 * @see com.datastax.oss.driver.api.core.CqlSession
 	 */
 	CqlSession getSession();
 

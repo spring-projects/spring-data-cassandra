@@ -31,6 +31,7 @@ import org.springframework.data.cassandra.core.cql.CqlTemplate;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateKeyspaceSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.DropKeyspaceSpecification;
 import org.springframework.data.cassandra.core.cql.session.DefaultSessionFactory;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -52,12 +53,65 @@ import com.typesafe.config.ConfigFactory;
  * @author Matthew T. Adams
  * @author John Blum
  * @author Mark Paluch
+ * @see org.springframework.beans.factory.BeanFactoryAware
  * @see org.springframework.context.annotation.Configuration
  */
 @Configuration
 public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 
 	private @Nullable BeanFactory beanFactory;
+
+	/**
+	 * Configures a reference to the {@link BeanFactory}.
+	 *
+	 * @param beanFactory reference to the {@link BeanFactory}.
+	 * @throws BeansException if the {@link BeanFactory} could not be initialized.
+	 * @see org.springframework.beans.factory.BeanFactory
+	 */
+	@Override
+	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+		this.beanFactory = beanFactory;
+	}
+
+	/**
+	 * Returns the configured reference to the {@link BeanFactory}.
+	 *
+	 * @return the configured reference to the {@link BeanFactory}.
+	 * @throws IllegalStateException if the {@link BeanFactory} reference was not configured.
+	 * @see org.springframework.beans.factory.BeanFactory
+	 */
+	protected BeanFactory getBeanFactory() {
+
+		Assert.state(this.beanFactory != null, "BeanFactory not initialized");
+
+		return this.beanFactory;
+	}
+
+	/**
+	 * Gets a required bean of the provided {@link Class type} from the {@link BeanFactory}.
+	 *
+	 * @param <T> {@link Class parameterized clas type} of the bean.
+	 * @param beanType {@link Class type} of the bean.
+	 * @return a required bean of the given {@link Class type} from the {@link BeanFactory}.
+	 * @see org.springframework.beans.factory.BeanFactory#getBean(Class)
+	 * @see #getBeanFactory()
+	 */
+	protected <T> T requireBeanOfType(@NonNull Class<T> beanType) {
+		return getBeanFactory().getBean(beanType);
+	}
+
+	/**
+	 * Returns the {@link String name} of the cluster.
+	 *
+	 * @return the {@link String cluster name}; may be {@literal null}.
+	 * @deprecated since 3.0, use {@link #getSessionName()} instead.
+	 * @since 1.5
+	 */
+	@Nullable
+	@Deprecated
+	protected String getClusterName() {
+		return null;
+	}
 
 	/**
 	 * Return the name of the keyspace to connect to.
@@ -67,39 +121,13 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 	protected abstract String getKeyspaceName();
 
 	/**
-	 * Returns the initialized {@link CqlSession} instance.
+	 * Returns the local data center name used for
+	 * {@link com.datastax.oss.driver.api.core.loadbalancing.LoadBalancingPolicy}.
 	 *
-	 * @return the {@link CqlSession}.
-	 * @throws IllegalStateException if the session factory is not initialized.
-	 */
-	protected SessionFactory getRequiredSessionFactory() {
-
-		ObjectProvider<SessionFactory> beanProvider = beanFactory.getBeanProvider(SessionFactory.class);
-
-		return beanProvider.getIfAvailable(() -> new DefaultSessionFactory(beanFactory.getBean(CqlSession.class)));
-	}
-
-	/**
-	 * Returns the {@link SessionBuilderConfigurer}.
-	 *
-	 * @return the {@link SessionBuilderConfigurer}; may be {@literal null}.
-	 * @since 1.5
+	 * @return the local data center name.
 	 */
 	@Nullable
-	protected SessionBuilderConfigurer getSessionBuilderConfigurer() {
-		return null;
-	}
-
-	/**
-	 * Returns the cluster name.
-	 *
-	 * @return the cluster name; may be {@literal null}.
-	 * @since 1.5
-	 * @deprecated since 3.0, use {@link #getSessionName()} instead.
-	 */
-	@Nullable
-	@Deprecated
-	protected String getClusterName() {
+	protected String getLocalDataCenter() {
 		return null;
 	}
 
@@ -163,12 +191,36 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 	}
 
 	/**
-	 * Returns the local data center name used for
-	 * {@link com.datastax.oss.driver.api.core.loadbalancing.LoadBalancingPolicy}.
+	 * Returns the initialized {@link CqlSession} instance.
 	 *
-	 * @return the local data center name.
+	 * @return the {@link CqlSession}.
+	 * @throws IllegalStateException if the session factory is not initialized.
 	 */
-	protected String getLocalDataCenter() {
+	protected CqlSession getRequiredSession() {
+		return requireBeanOfType(CqlSession.class);
+	}
+
+	/**
+	 * Returns the initialized {@link CqlSession} instance.
+	 *
+	 * @return the {@link CqlSession}.
+	 * @throws IllegalStateException if the session factory is not initialized.
+	 */
+	protected SessionFactory getRequiredSessionFactory() {
+
+		ObjectProvider<SessionFactory> beanProvider = getBeanFactory().getBeanProvider(SessionFactory.class);
+
+		return beanProvider.getIfAvailable(() -> new DefaultSessionFactory(requireBeanOfType(CqlSession.class)));
+	}
+
+	/**
+	 * Returns the {@link SessionBuilderConfigurer}.
+	 *
+	 * @return the {@link SessionBuilderConfigurer}; may be {@literal null}.
+	 * @since 1.5
+	 */
+	@Nullable
+	protected SessionBuilderConfigurer getSessionBuilderConfigurer() {
 		return null;
 	}
 
@@ -176,9 +228,9 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 	 * Returns the list of startup scripts to be run after {@link #getKeyspaceCreations() keyspace creations} and after
 	 * initialization in the {@code system} keyspace.
 	 *
-	 * @return the list of startup scripts, may be empty but never {@code null}.
-	 * @deprecated since 3.0, declare a
-	 *             {@link org.springframework.data.cassandra.core.cql.session.init.SessionFactoryInitializer} bean.
+	 * @return the list of startup scripts, may be {@link Collections#emptyList() empty} but never {@literal null}.
+	 * @deprecated since 3.0; Declare a
+	 * {@link org.springframework.data.cassandra.core.cql.session.init.SessionFactoryInitializer} bean instead.
 	 */
 	@Deprecated
 	protected List<String> getStartupScripts() {
@@ -189,26 +241,13 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 	 * Returns the list of shutdown scripts to be run after {@link #getKeyspaceDrops() keyspace drops} and right before
 	 * shutdown in the {@code system} keyspace.
 	 *
-	 * @return the list of shutdown scripts, may be empty but never {@code null}.
-	 * @deprecated since 3.0, declare a
-	 *             {@link org.springframework.data.cassandra.core.cql.session.init.SessionFactoryInitializer} bean.
+	 * @return the list of shutdown scripts, may be {@link Collections#emptyList() empty} but never {@literal null}.
+	 * @deprecated since 3.0; Declare a
+	 * {@link org.springframework.data.cassandra.core.cql.session.init.SessionFactoryInitializer} bean instead.
 	 */
 	@Deprecated
 	protected List<String> getShutdownScripts() {
 		return Collections.emptyList();
-	}
-
-	/**
-	 * Returns the initialized {@link CqlSession} instance.
-	 *
-	 * @return the {@link CqlSession}.
-	 * @throws IllegalStateException if the session factory is not initialized.
-	 */
-	protected CqlSession getRequiredSession() {
-
-		Assert.state(beanFactory != null, "BeanFactory not initialized");
-
-		return beanFactory.getBean(CqlSession.class);
 	}
 
 	/**
@@ -225,22 +264,19 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 		CqlSessionFactoryBean bean = new CqlSessionFactoryBean();
 
 		bean.setContactPoints(getContactPoints());
-		bean.setPort(getPort());
-		bean.setLocalDatacenter(getLocalDataCenter());
-
 		bean.setKeyspaceCreations(getKeyspaceCreations());
 		bean.setKeyspaceDrops(getKeyspaceDrops());
-
-		bean.setSessionSessionBuilderConfigurer(getBuilderConfigurer());
-
 		bean.setKeyspaceName(getKeyspaceName());
 		bean.setKeyspaceStartupScripts(getStartupScripts());
 		bean.setKeyspaceShutdownScripts(getShutdownScripts());
+		bean.setLocalDatacenter(getLocalDataCenter());
+		bean.setPort(getPort());
+		bean.setSessionBuilderConfigurer(getSessionBuilderConfigurerWrapper());
 
 		return bean;
 	}
 
-	private SessionBuilderConfigurer getBuilderConfigurer() {
+	private SessionBuilderConfigurer getSessionBuilderConfigurerWrapper() {
 
 		SessionBuilderConfigurer configurer = getSessionBuilderConfigurer();
 
@@ -252,18 +288,23 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 
 				if (StringUtils.hasText(getClusterName())) {
 					options.add(DefaultDriverOption.SESSION_NAME, getClusterName());
-				} else if (StringUtils.hasText(getSessionName())) {
+				}
+				else if (StringUtils.hasText(getSessionName())) {
 					options.add(DefaultDriverOption.SESSION_NAME, getSessionName());
 				}
 
 				CompressionType compressionType = getCompressionType();
+
 				if (compressionType != null) {
 					options.add(DefaultDriverOption.PROTOCOL_COMPRESSION, compressionType);
 				}
 
 				ConfigFactory.invalidateCaches();
-				return ConfigFactory.defaultOverrides().withFallback(options.build())
-						.withFallback(ConfigFactory.defaultReference()).resolve();
+
+				return ConfigFactory.defaultOverrides()
+						.withFallback(options.build())
+						.withFallback(ConfigFactory.defaultReference())
+						.resolve();
 
 			}, DefaultDriverConfigLoader.DEFAULT_ROOT_PATH);
 
@@ -288,11 +329,6 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 		return new CqlTemplate(getRequiredSessionFactory());
 	}
 
-	@Override
-	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-		this.beanFactory = beanFactory;
-	}
-
 	private static class CassandraDriverOptions {
 
 		private final Map<String, String> options = new LinkedHashMap<>();
@@ -303,19 +339,8 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 			return this;
 		}
 
-		private CassandraDriverOptions add(DriverOption option, int value) {
-			return add(option, String.valueOf(value));
-		}
-
 		private CassandraDriverOptions add(DriverOption option, Enum<?> value) {
 			return add(option, value.name());
-		}
-
-		private CassandraDriverOptions add(DriverOption option, List<String> values) {
-			for (int i = 0; i < values.size(); i++) {
-				this.options.put(String.format("%s.%s", createKeyFor(option), i), values.get(i));
-			}
-			return this;
 		}
 
 		private Config build() {
@@ -326,5 +351,4 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 			return String.format("%s.%s", DefaultDriverConfigLoader.DEFAULT_ROOT_PATH, option.getPath());
 		}
 	}
-
 }

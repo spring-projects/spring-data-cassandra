@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.cassandra.config;
 
 import java.net.InetSocketAddress;
@@ -70,34 +69,28 @@ import com.datastax.oss.driver.api.core.CqlSessionBuilder;
 public class CqlSessionFactoryBean
 		implements FactoryBean<CqlSession>, InitializingBean, DisposableBean, PersistenceExceptionTranslator {
 
-	public static final int DEFAULT_PORT = 9042;
-	public static final String DEFAULT_CONTACT_POINTS = "localhost";
-
-	protected final Logger logger = LoggerFactory.getLogger(getClass());
-
 	private static final boolean DEFAULT_CREATE_IF_NOT_EXISTS = false;
 	private static final boolean DEFAULT_DROP_TABLES = false;
 	private static final boolean DEFAULT_DROP_UNUSED_TABLES = false;
+
+	public static final int DEFAULT_PORT = 9042;
+
 	private static final CassandraExceptionTranslator EXCEPTION_TRANSLATOR = new CassandraExceptionTranslator();
 
-	private @Nullable CqlSession systemSession;
-	private @Nullable CqlSession session;
+	public static final String CASSANDRA_SYSTEM_SESSION = "system";
+	public static final String DEFAULT_CONTACT_POINTS = "localhost";
 
-	private String contactPoints = DEFAULT_CONTACT_POINTS;
 	private int port = DEFAULT_PORT;
-	private @Nullable String password;
-	private @Nullable String username;
 
-	private @Nullable String keyspaceName;
-	private @Nullable String localDatacenter;
+	private @Nullable CassandraConverter converter;
 
-	private @Nullable SessionBuilderConfigurer sessionSessionBuilderConfigurer;
+	private @Nullable CqlSession session;
+	private @Nullable CqlSession systemSession;
 
 	private List<KeyspaceActions> keyspaceActions = new ArrayList<>();
-	private Set<KeyspaceActionSpecification> keyspaceSpecifications = new HashSet<>();
 
-	private List<CreateKeyspaceSpecification> keyspaceCreations = new ArrayList<>();
 	private List<AlterKeyspaceSpecification> keyspaceAlterations = new ArrayList<>();
+	private List<CreateKeyspaceSpecification> keyspaceCreations = new ArrayList<>();
 	private List<DropKeyspaceSpecification> keyspaceDrops = new ArrayList<>();
 
 	private List<String> keyspaceStartupScripts = new ArrayList<>();
@@ -106,15 +99,26 @@ public class CqlSessionFactoryBean
 	private List<String> startupScripts = Collections.emptyList();
 	private List<String> shutdownScripts = Collections.emptyList();
 
-	private @Nullable CassandraConverter converter;
+	protected final Logger logger = LoggerFactory.getLogger(getClass());
+
+	private Set<KeyspaceActionSpecification> keyspaceSpecifications = new HashSet<>();
 
 	private SchemaAction schemaAction = SchemaAction.NONE;
+
+	private @Nullable SessionBuilderConfigurer sessionBuilderConfigurer;
+
+	private String contactPoints = DEFAULT_CONTACT_POINTS;
+
+	private @Nullable String keyspaceName;
+	private @Nullable String localDatacenter;
+	private @Nullable String password;
+	private @Nullable String username;
 
 	/**
 	 * Null-safe operation to determine whether the Cassandra {@link CqlSession} is connected or not.
 	 *
 	 * @return a boolean value indicating whether the Cassandra {@link CqlSession} is connected.
-	 * @see Session#isClosed()
+	 * @see com.datastax.oss.driver.api.core.session.Session#isClosed()
 	 * @see #getObject()
 	 */
 	public boolean isConnected() {
@@ -132,6 +136,15 @@ public class CqlSessionFactoryBean
 	 */
 	public void setContactPoints(String contactPoints) {
 		this.contactPoints = contactPoints;
+	}
+
+	/**
+	 * Sets the name of the local datacenter.
+	 *
+	 * @param localDatacenter a String indicating the name of the local datacenter.
+	 */
+	public void setLocalDatacenter(@Nullable String localDatacenter) {
+		this.localDatacenter = localDatacenter;
 	}
 
 	/**
@@ -162,6 +175,82 @@ public class CqlSessionFactoryBean
 	}
 
 	/**
+	 * Set the {@link CassandraConverter} to use. Schema actions will derive table and user type information from the
+	 * {@link CassandraMappingContext} inside {@code converter}.
+	 *
+	 * @param converter must not be {@literal null}.
+	 * @deprecated Use {@link CassandraSessionFactoryBean} with
+	 * {@link CassandraSessionFactoryBean#setConverter(CassandraConverter)} instead.
+	 */
+	@Deprecated
+	public void setConverter(CassandraConverter converter) {
+
+		Assert.notNull(converter, "CassandraConverter must not be null");
+
+		this.converter = converter;
+	}
+
+	/**
+	 * @return the configured {@link CassandraConverter}.
+	 */
+	@Nullable
+	public CassandraConverter getConverter() {
+		return this.converter;
+	}
+
+	/**
+	 * Set a {@link List} of {@link KeyspaceActions} to be executed on initialization. Keyspace actions may contain create
+	 * and drop specifications.
+	 *
+	 * @param keyspaceActions the {@link List} of {@link KeyspaceActions}.
+	 */
+	public void setKeyspaceActions(List<KeyspaceActions> keyspaceActions) {
+		this.keyspaceActions = new ArrayList<>(keyspaceActions);
+	}
+
+	/**
+	 * @return the {@link List} of {@link KeyspaceActions}.
+	 */
+	public List<KeyspaceActions> getKeyspaceActions() {
+		return Collections.unmodifiableList(this.keyspaceActions);
+	}
+
+	/**
+	 * Set a {@link List} of {@link AlterKeyspaceSpecification alter keyspace specifications} that are executed when this
+	 * factory is {@link #afterPropertiesSet() initialized}. {@link AlterKeyspaceSpecification Alter keyspace
+	 * specifications} are executed on a system session with no keyspace set, before executing
+	 * {@link #setStartupScripts(List)}.
+	 *
+	 * @param specifications the {@link List} of {@link CreateKeyspaceSpecification create keyspace specifications}.
+	 */
+	public void setKeyspaceAlterations(List<AlterKeyspaceSpecification> specifications) {
+		this.keyspaceAlterations = new ArrayList<>(specifications);
+	}
+
+	/**
+	 * Set a {@link List} of {@link CreateKeyspaceSpecification create keyspace specifications} that are executed when
+	 * this factory is {@link #afterPropertiesSet() initialized}. {@link CreateKeyspaceSpecification Create keyspace
+	 * specifications} are executed on a system session with no keyspace set, before executing
+	 * {@link #setStartupScripts(List)}.
+	 *
+	 * @param specifications the {@link List} of {@link CreateKeyspaceSpecification create keyspace specifications}.
+	 */
+	public void setKeyspaceCreations(List<CreateKeyspaceSpecification> specifications) {
+		this.keyspaceCreations = new ArrayList<>(specifications);
+	}
+
+	/**
+	 * Set a {@link List} of {@link DropKeyspaceSpecification drop keyspace specifications} that are executed when this
+	 * factory is {@link #destroy() destroyed}. {@link DropKeyspaceSpecification Drop keyspace specifications} are
+	 * executed on a system session with no keyspace set, before executing {@link #setShutdownScripts(List)}.
+	 *
+	 * @param specifications the {@link List} of {@link DropKeyspaceSpecification drop keyspace specifications}.
+	 */
+	public void setKeyspaceDrops(List<DropKeyspaceSpecification> specifications) {
+		this.keyspaceDrops = new ArrayList<>(specifications);
+	}
+
+	/**
 	 * Sets the name of the Cassandra Keyspace to connect to. Passing {@literal null} will cause the Cassandra System
 	 * Keyspace to be used.
 	 *
@@ -184,23 +273,6 @@ public class CqlSessionFactoryBean
 	}
 
 	/**
-	 * @return the {@link List} of {@link KeyspaceActions}.
-	 */
-	public List<KeyspaceActions> getKeyspaceActions() {
-		return Collections.unmodifiableList(this.keyspaceActions);
-	}
-
-	/**
-	 * Set a {@link List} of {@link KeyspaceActions} to be executed on initialization. Keyspace actions may contain create
-	 * and drop specifications.
-	 *
-	 * @param keyspaceActions the {@link List} of {@link KeyspaceActions}.
-	 */
-	public void setKeyspaceActions(List<KeyspaceActions> keyspaceActions) {
-		this.keyspaceActions = new ArrayList<>(keyspaceActions);
-	}
-
-	/**
 	 * @param keyspaceSpecifications The {@link KeyspaceActionSpecification} to set.
 	 */
 	public void setKeyspaceSpecifications(List<? extends KeyspaceActionSpecification> keyspaceSpecifications) {
@@ -208,38 +280,10 @@ public class CqlSessionFactoryBean
 	}
 
 	/**
-	 * Set a {@link List} of {@link CreateKeyspaceSpecification create keyspace specifications} that are executed when
-	 * this factory is {@link #afterPropertiesSet() initialized}. {@link CreateKeyspaceSpecification Create keyspace
-	 * specifications} are executed on a system session with no keyspace set, before executing
-	 * {@link #setStartupScripts(List)}.
-	 *
-	 * @param specifications the {@link List} of {@link CreateKeyspaceSpecification create keyspace specifications}.
+	 * @return the {@link KeyspaceActionSpecification} associated with this factory.
 	 */
-	public void setKeyspaceCreations(List<CreateKeyspaceSpecification> specifications) {
-		this.keyspaceCreations = new ArrayList<>(specifications);
-	}
-
-	/**
-	 * Set a {@link List} of {@link AlterKeyspaceSpecification alter keyspace specifications} that are executed when this
-	 * factory is {@link #afterPropertiesSet() initialized}. {@link AlterKeyspaceSpecification Alter keyspace
-	 * specifications} are executed on a system session with no keyspace set, before executing
-	 * {@link #setStartupScripts(List)}.
-	 *
-	 * @param specifications the {@link List} of {@link CreateKeyspaceSpecification create keyspace specifications}.
-	 */
-	public void setKeyspaceAlterations(List<AlterKeyspaceSpecification> specifications) {
-		this.keyspaceAlterations = new ArrayList<>(specifications);
-	}
-
-	/**
-	 * Set a {@link List} of {@link DropKeyspaceSpecification drop keyspace specifications} that are executed when this
-	 * factory is {@link #destroy() destroyed}. {@link DropKeyspaceSpecification Drop keyspace specifications} are
-	 * executed on a system session with no keyspace set, before executing {@link #setShutdownScripts(List)}.
-	 *
-	 * @param specifications the {@link List} of {@link DropKeyspaceSpecification drop keyspace specifications}.
-	 */
-	public void setKeyspaceDrops(List<DropKeyspaceSpecification> specifications) {
-		this.keyspaceDrops = new ArrayList<>(specifications);
+	public Set<KeyspaceActionSpecification> getKeyspaceSpecifications() {
+		return Collections.unmodifiableSet(this.keyspaceSpecifications);
 	}
 
 	/**
@@ -265,19 +309,37 @@ public class CqlSessionFactoryBean
 	}
 
 	/**
-	 * @return the {@link KeyspaceActionSpecification} associated with this factory.
+	 * @return the {@link CassandraMappingContext}.
 	 */
-	public Set<KeyspaceActionSpecification> getKeyspaceSpecifications() {
-		return Collections.unmodifiableSet(this.keyspaceSpecifications);
+	protected CassandraMappingContext getMappingContext() {
+
+		CassandraConverter converter = getConverter();
+
+		Assert.state(converter != null, "CassandraConverter was not properly initialized");
+
+		return converter.getMappingContext();
 	}
 
 	/**
-	 * Sets the name of the local datacenter.
+	 * Set the {@link SchemaAction}.
 	 *
-	 * @param localDatacenter a String indicating the name of the local datacenter.
+	 * @param schemaAction must not be {@literal null}.
+	 * @deprecated Use {@link CassandraSessionFactoryBean} with
+	 *             {@link CassandraSessionFactoryBean#setSchemaAction(SchemaAction)} instead.
 	 */
-	public void setLocalDatacenter(@Nullable String localDatacenter) {
-		this.localDatacenter = localDatacenter;
+	@Deprecated
+	public void setSchemaAction(SchemaAction schemaAction) {
+
+		Assert.notNull(schemaAction, "SchemaAction must not be null");
+
+		this.schemaAction = schemaAction;
+	}
+
+	/**
+	 * @return the {@link SchemaAction}.
+	 */
+	public SchemaAction getSchemaAction() {
+		return this.schemaAction;
 	}
 
 	/**
@@ -285,7 +347,7 @@ public class CqlSessionFactoryBean
 	 *
 	 * @return a reference to the connected Cassandra {@link CqlSession}.
 	 * @throws IllegalStateException if the Cassandra {@link CqlSession} was not properly initialized.
-	 * @see Session
+	 * @see com.datastax.oss.driver.api.core.CqlSession
 	 */
 	protected CqlSession getSession() {
 
@@ -300,10 +362,10 @@ public class CqlSessionFactoryBean
 	 * Sets the {@link SessionBuilderConfigurer} to configure the
 	 * {@link com.datastax.oss.driver.api.core.session.SessionBuilder}.
 	 *
-	 * @param sessionSessionBuilderConfigurer
+	 * @param sessionBuilderConfigurer
 	 */
-	public void setSessionSessionBuilderConfigurer(@Nullable SessionBuilderConfigurer sessionSessionBuilderConfigurer) {
-		this.sessionSessionBuilderConfigurer = sessionSessionBuilderConfigurer;
+	public void setSessionBuilderConfigurer(@Nullable SessionBuilderConfigurer sessionBuilderConfigurer) {
+		this.sessionBuilderConfigurer = sessionBuilderConfigurer;
 	}
 
 	/**
@@ -354,64 +416,6 @@ public class CqlSessionFactoryBean
 		return Collections.unmodifiableList(this.shutdownScripts);
 	}
 
-	/**
-	 * Set the {@link CassandraConverter} to use. Schema actions will derive table and user type information from the
-	 * {@link CassandraMappingContext} inside {@code converter}.
-	 *
-	 * @param converter must not be {@literal null}.
-	 * @deprecated Use {@link CassandraSessionFactoryBean} with
-	 *             {@link CassandraSessionFactoryBean#setConverter(CassandraConverter)} instead.
-	 */
-	@Deprecated
-	public void setConverter(CassandraConverter converter) {
-
-		Assert.notNull(converter, "CassandraConverter must not be null");
-
-		this.converter = converter;
-	}
-
-	/**
-	 * @return the {@link CassandraConverter}.
-	 */
-	@Nullable
-	public CassandraConverter getConverter() {
-		return this.converter;
-	}
-
-	/**
-	 * @return the {@link CassandraMappingContext}.
-	 */
-	protected CassandraMappingContext getMappingContext() {
-
-		CassandraConverter converter = getConverter();
-
-		Assert.state(converter != null, "CassandraConverter was not properly initialized");
-
-		return converter.getMappingContext();
-	}
-
-	/**
-	 * Set the {@link SchemaAction}.
-	 *
-	 * @param schemaAction must not be {@literal null}.
-	 * @deprecated Use {@link CassandraSessionFactoryBean} with
-	 *             {@link CassandraSessionFactoryBean#setSchemaAction(SchemaAction)} instead.
-	 */
-	@Deprecated
-	public void setSchemaAction(SchemaAction schemaAction) {
-
-		Assert.notNull(schemaAction, "SchemaAction must not be null");
-
-		this.schemaAction = schemaAction;
-	}
-
-	/**
-	 * @return the {@link SchemaAction}.
-	 */
-	public SchemaAction getSchemaAction() {
-		return this.schemaAction;
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
@@ -420,35 +424,65 @@ public class CqlSessionFactoryBean
 	public void afterPropertiesSet() {
 
 		CqlSessionBuilder sessionBuilder = buildBuilder();
+
 		this.systemSession = buildSystemSession(sessionBuilder);
 
 		initializeCluster(this.systemSession);
 
 		this.session = buildSession(sessionBuilder);
 
-		executeScripts(getStartupScripts().stream(), this.session);
+		executeCql(getStartupScripts().stream(), this.session);
 		performSchemaAction();
+
 		this.systemSession.refreshSchema();
 		this.session.refreshSchema();
 	}
 
-	/**
-	 * Build the system session.
-	 *
-	 * @param sessionBuilder
-	 * @return
-	 */
-	protected CqlSession buildSystemSession(CqlSessionBuilder sessionBuilder) {
-		return sessionBuilder.withKeyspace("system").build();
+	protected CqlSessionBuilder buildBuilder() {
+
+		Assert.hasText(this.contactPoints, "At least one server is required");
+
+		CqlSessionBuilder sessionBuilder = CqlSession.builder();
+
+		StringUtils.commaDelimitedListToSet(this.contactPoints).forEach(host ->
+			sessionBuilder.addContactPoint(InetSocketAddress.createUnresolved(host, this.port)));
+
+		if (StringUtils.hasText(this.username)) {
+			sessionBuilder.withAuthCredentials(this.username, this.password);
+		}
+
+		if (StringUtils.hasText(this.localDatacenter)) {
+			sessionBuilder.withLocalDatacenter(this.localDatacenter);
+		}
+
+		return this.sessionBuilderConfigurer != null
+			? this.sessionBuilderConfigurer.configure(sessionBuilder)
+			: sessionBuilder;
 	}
 
 	/**
-	 * Build the keyspace session.
+	 * Build the Cassandra {@link CqlSession System Session}.
 	 *
-	 * @param sessionBuilder
-	 * @return
+	 * @param sessionBuilder {@link CqlSessionBuilder} used to a build a Cassandra {@link CqlSession}.
+	 * @return the built Cassandra {@link CqlSession System Session}.
+	 * @see com.datastax.oss.driver.api.core.CqlSessionBuilder
+	 * @see com.datastax.oss.driver.api.core.CqlSession
+	 */
+	protected CqlSession buildSystemSession(CqlSessionBuilder sessionBuilder) {
+		return sessionBuilder.withKeyspace(CASSANDRA_SYSTEM_SESSION).build();
+	}
+
+	/**
+	 * Build a {@link CqlSession Session} to the user-defined {@literal Keyspace} or the default {@literal Keyspace}
+	 * if the user did not specify a {@literal Keyspace} by {@link String name}.
+	 *
+	 * @param sessionBuilder {@link CqlSessionBuilder} used to a build a Cassandra {@link CqlSession}.
+	 * @return the built {@link CqlSession} to the user-defined {@literal Keyspace}.
+	 * @see com.datastax.oss.driver.api.core.CqlSessionBuilder
+	 * @see com.datastax.oss.driver.api.core.CqlSession
 	 */
 	protected CqlSession buildSession(CqlSessionBuilder sessionBuilder) {
+
 		if (StringUtils.hasText(getKeyspaceName())) {
 			sessionBuilder.withKeyspace(getKeyspaceName());
 		}
@@ -456,82 +490,43 @@ public class CqlSessionFactoryBean
 		return sessionBuilder.build();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.beans.factory.DisposableBean#destroy()
-	 */
-	@Override
-	public void destroy() {
-
-		if (session != null) {
-
-			executeScripts(getShutdownScripts().stream(), this.session);
-
-			executeSpecsAndScripts(keyspaceDrops, keyspaceShutdownScripts, this.systemSession);
-			closeSystemSession();
-			closeSession();
-		}
-	}
-
-	/**
-	 * Close the regular session object.
-	 */
-	protected void closeSession() {
-		session.close();
-	}
-
-	/**
-	 * Close the system session object.
-	 */
-	protected void closeSystemSession() {
-		systemSession.close();
-	}
-
-	protected CqlSessionBuilder buildBuilder() {
-
-		Assert.hasText(this.contactPoints, "At least one server is required");
-
-		CqlSessionBuilder builder = CqlSession.builder();
-		StringUtils.commaDelimitedListToSet(this.contactPoints).stream().forEach(host -> {
-			builder.addContactPoint(InetSocketAddress.createUnresolved(host, this.port));
-		});
-
-		if (StringUtils.hasText(this.username)) {
-			builder.withAuthCredentials(this.username, this.password);
-		}
-
-		if (StringUtils.hasText(this.localDatacenter)) {
-			builder.withLocalDatacenter(this.localDatacenter);
-		}
-
-		if (this.sessionSessionBuilderConfigurer != null) {
-			return this.sessionSessionBuilderConfigurer.configure(builder);
-		}
-
-		return builder;
-	}
-
 	private void initializeCluster(CqlSession session) {
 
-		generateSpecificationsFromFactoryDeclarations();
+		generateSpecificationsFromFactoryBeanDeclarations();
 
-		List<KeyspaceActionSpecification> startupSpecifications = new ArrayList<>(
-				this.keyspaceCreations.size() + this.keyspaceAlterations.size());
+		List<KeyspaceActionSpecification> keyspaceStartupSpecifications =
+			new ArrayList<>(this.keyspaceCreations.size() + this.keyspaceAlterations.size());
 
-		startupSpecifications.addAll(this.keyspaceCreations);
-		startupSpecifications.addAll(this.keyspaceAlterations);
+		keyspaceStartupSpecifications.addAll(this.keyspaceCreations);
+		keyspaceStartupSpecifications.addAll(this.keyspaceAlterations);
 
-		executeSpecsAndScripts(startupSpecifications, this.keyspaceStartupScripts, session);
+		executeSpecificationsAndScripts(keyspaceStartupSpecifications, this.keyspaceStartupScripts, session);
 	}
 
-	private void executeSpecsAndScripts(List<? extends KeyspaceActionSpecification> keyspaceActionSpecifications,
-			List<String> scripts, CqlSession session) {
+	/**
+	 * Evaluates the contents of all the {@link KeyspaceActionSpecificationFactoryBean}s
+	 * and generates the proper {@link KeyspaceActionSpecification}s from them.
+	 */
+	private void generateSpecificationsFromFactoryBeanDeclarations() {
 
-		if (!CollectionUtils.isEmpty(keyspaceActionSpecifications) || !CollectionUtils.isEmpty(scripts)) {
+		generateSpecifications(this.keyspaceSpecifications);
+		this.keyspaceActions.forEach(actions -> generateSpecifications(actions.getActions()));
+	}
 
-			Stream<String> keyspaceActions = keyspaceActionSpecifications.stream().map(this::toCql);
+	private void generateSpecifications(Collection<KeyspaceActionSpecification> specifications) {
 
-			executeScripts(Stream.concat(keyspaceActions, scripts.stream()), session);
-		}
+		specifications.forEach(specification -> {
+
+			if (specification instanceof AlterKeyspaceSpecification) {
+				this.keyspaceAlterations.add((AlterKeyspaceSpecification) specification);
+			}
+			else if (specification instanceof CreateKeyspaceSpecification) {
+				this.keyspaceCreations.add((CreateKeyspaceSpecification) specification);
+			}
+			else if (specification instanceof DropKeyspaceSpecification) {
+				this.keyspaceDrops.add((DropKeyspaceSpecification) specification);
+			}
+		});
 	}
 
 	/**
@@ -567,27 +562,28 @@ public class CqlSessionFactoryBean
 	 * Perform schema actions.
 	 *
 	 * @param drop {@literal true} to drop types/tables.
-	 * @param dropUnused {@literal true} to drop unused types/tables (i.e. types/tables not know to be used by
-	 *          {@link CassandraMappingContext}).
-	 * @param ifNotExists {@literal true} to perform creations fail-safe by adding {@code IF NOT EXISTS} to each creation
-	 *          statement.
+	 * @param dropUnused {@literal true} to drop unused types/tables (i.e. types/tables not known to be used by
+	 * the {@link CassandraMappingContext}).
+	 * @param ifNotExists {@literal true} to perform fail-safe creations by adding {@code IF NOT EXISTS}
+	 * to each creation statement.
 	 */
 	protected void createTables(boolean drop, boolean dropUnused, boolean ifNotExists) {
 
-		CassandraAdminTemplate adminTemplate = new CassandraAdminTemplate(this.session, converter);
+		CassandraAdminTemplate adminTemplate = new CassandraAdminTemplate(this.session, this.converter);
+
 		performSchemaActions(drop, dropUnused, ifNotExists, adminTemplate);
 	}
 
 	private void performSchemaActions(boolean drop, boolean dropUnused, boolean ifNotExists,
 			CassandraAdminOperations adminOperations) {
 
-		CassandraPersistentEntitySchemaCreator schemaCreator = new CassandraPersistentEntitySchemaCreator(
-				getMappingContext(), adminOperations);
+		CassandraPersistentEntitySchemaCreator schemaCreator =
+				new CassandraPersistentEntitySchemaCreator(getMappingContext(), adminOperations);
 
 		if (drop) {
 
-			CassandraPersistentEntitySchemaDropper schemaDropper = new CassandraPersistentEntitySchemaDropper(
-					getMappingContext(), adminOperations);
+			CassandraPersistentEntitySchemaDropper schemaDropper =
+					new CassandraPersistentEntitySchemaDropper(getMappingContext(), adminOperations);
 
 			schemaDropper.dropTables(dropUnused);
 			schemaDropper.dropUserTypes(dropUnused);
@@ -596,6 +592,35 @@ public class CqlSessionFactoryBean
 		schemaCreator.createUserTypes(ifNotExists);
 		schemaCreator.createTables(ifNotExists);
 		schemaCreator.createIndexes(ifNotExists);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.DisposableBean#destroy()
+	 */
+	@Override
+	public void destroy() {
+
+		if (this.session != null) {
+			executeCql(getShutdownScripts().stream(), this.session);
+			executeSpecificationsAndScripts(this.keyspaceDrops, this.keyspaceShutdownScripts, this.systemSession);
+			closeSession();
+			closeSystemSession();
+		}
+	}
+
+	/**
+	 * Close the regular session object.
+	 */
+	protected void closeSession() {
+		this.session.close();
+	}
+
+	/**
+	 * Close the system session object.
+	 */
+	protected void closeSystemSession() {
+		this.systemSession.close();
 	}
 
 	/*
@@ -626,52 +651,54 @@ public class CqlSessionFactoryBean
 	}
 
 	/**
-	 * Executes the given Cassandra CQL scripts. The {@link CqlSession} must be connected when this method is called.
+	 * Executes the given, raw Cassandra CQL scripts.
+	 *
+	 * The {@link CqlSession} must be connected when this method is called.
+	 *
+	 * @see com.datastax.oss.driver.api.core.CqlSession#execute(String)
 	 */
-	private void executeScripts(Stream<String> scripts, CqlSession session) {
+	private void executeCql(Stream<String> cql, CqlSession session) {
 
-		scripts.forEach(script -> {
-			logger.info("executing raw CQL [{}]", script);
-			session.execute(script);
+		cql.forEach(query -> {
+			this.logger.info("Executing CQL [{}]", query);
+			session.execute(query);
 		});
+	}
+
+	private void executeSpecificationsAndScripts(List<? extends KeyspaceActionSpecification> keyspaceActionSpecifications,
+			List<String> keyspaceCqlScripts, CqlSession session) {
+
+		if (!CollectionUtils.isEmpty(keyspaceActionSpecifications) || !CollectionUtils.isEmpty(keyspaceCqlScripts)) {
+
+			Stream<String> keyspaceActionSpecificationsStream = keyspaceActionSpecifications.stream().map(this::toCql);
+			Stream<String> keyspaceCqlScriptsStream = keyspaceCqlScripts.stream();
+			Stream<String> cql = Stream.concat(keyspaceActionSpecificationsStream, keyspaceCqlScriptsStream);
+
+			executeCql(cql, session);
+		}
 	}
 
 	/**
-	 * Evaluates the contents of all the KeyspaceSpecificationFactoryBean and generates the proper KeyspaceSpecification
-	 * from them.
+	 * Converts the {@link KeyspaceActionSpecification} to {@link String CQL}.
+	 *
+	 * @param specification {@link KeyspaceActionSpecification} to convert to {@link String CQL}.
+	 * @return a {@link String} containing the CQL for the given {@link KeyspaceActionSpecification}.
+	 * @see org.springframework.data.cassandra.core.cql.keyspace.KeyspaceActionSpecification
 	 */
-	private void generateSpecificationsFromFactoryDeclarations() {
-
-		generateSpecifications(this.keyspaceSpecifications);
-		this.keyspaceActions.forEach(actions -> generateSpecifications(actions.getActions()));
-	}
-
-	private void generateSpecifications(Collection<KeyspaceActionSpecification> specifications) {
-
-		specifications.forEach(keyspaceActionSpecification -> {
-
-			if (keyspaceActionSpecification instanceof AlterKeyspaceSpecification) {
-				this.keyspaceAlterations.add((AlterKeyspaceSpecification) keyspaceActionSpecification);
-			} else if (keyspaceActionSpecification instanceof CreateKeyspaceSpecification) {
-				this.keyspaceCreations.add((CreateKeyspaceSpecification) keyspaceActionSpecification);
-			} else if (keyspaceActionSpecification instanceof DropKeyspaceSpecification) {
-				this.keyspaceDrops.add((DropKeyspaceSpecification) keyspaceActionSpecification);
-			}
-		});
-	}
-
 	private String toCql(KeyspaceActionSpecification specification) {
 
 		if (specification instanceof AlterKeyspaceSpecification) {
 			return new AlterKeyspaceCqlGenerator((AlterKeyspaceSpecification) specification).toCql();
-		} else if (specification instanceof CreateKeyspaceSpecification) {
+		}
+		else if (specification instanceof CreateKeyspaceSpecification) {
 			return new CreateKeyspaceCqlGenerator((CreateKeyspaceSpecification) specification).toCql();
-		} else if (specification instanceof DropKeyspaceSpecification) {
+		}
+		else if (specification instanceof DropKeyspaceSpecification) {
 			return new DropKeyspaceCqlGenerator((DropKeyspaceSpecification) specification).toCql();
 		}
 
-		throw new IllegalArgumentException(
-				"Unsupported specification type: " + ClassUtils.getQualifiedName(specification.getClass()));
+		throw new IllegalArgumentException(String.format("Unsupported specification type: %s",
+			ClassUtils.getQualifiedName(specification.getClass())));
 	}
 
 	@Nullable
