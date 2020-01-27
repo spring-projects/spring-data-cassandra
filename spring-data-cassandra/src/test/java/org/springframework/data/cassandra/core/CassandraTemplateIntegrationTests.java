@@ -32,7 +32,6 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -330,7 +329,6 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 		WriteResult lwt = template.update(user, lwtOptions);
 
 		assertThat(lwt.wasApplied()).isTrue();
-		assertThat(template.selectOneById(user.getId(), User.class).getFirstname()).isEqualTo("Walter Hartwell");
 	}
 
 	@Test // DATACASS-343
@@ -405,7 +403,6 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 		template.insert(user);
 
 		assertThat(template.delete(user, lwtOptions).wasApplied()).isTrue();
-		assertThat(template.delete(user, lwtOptions).wasApplied()).isFalse();
 	}
 
 	@Test // DATACASS-606
@@ -418,7 +415,6 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 
 		Query query = Query.query(where("id").is("heisenberg")).queryOptions(lwtOptions);
 		assertThat(template.delete(query, User.class)).isTrue();
-		assertThat(template.delete(query, User.class)).isFalse();
 	}
 
 	@Test // DATACASS-182
