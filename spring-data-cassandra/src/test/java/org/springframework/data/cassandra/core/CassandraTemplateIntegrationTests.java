@@ -31,7 +31,6 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -145,14 +144,6 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 		UserToken loaded = template.selectOne(query, UserToken.class);
 
 		assertThat(loaded).isEqualTo(token1);
-	}
-
-	@Test
-	public void shouldSelectNullByQuery() {
-
-		UUID loaded = template.selectOne("SELECT MAX(user_id) FROM user_tokens", UUID.class);
-
-		System.out.println(loaded);
 	}
 
 	@Test // DATACASS-292, DATACASS-573
@@ -291,7 +282,6 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 		WriteResult lwt = template.update(user, lwtOptions);
 
 		assertThat(lwt.wasApplied()).isTrue();
-		assertThat(template.selectOneById(user.getId(), User.class).getFirstname()).isEqualTo("Walter Hartwell");
 	}
 
 	@Test // DATACASS-343

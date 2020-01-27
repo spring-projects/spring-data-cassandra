@@ -138,7 +138,6 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 		ListenableFuture<EntityWriteResult<User>> lwt = template.insert(user, lwtOptions);
 
 		assertThat(getUninterruptibly(lwt).wasApplied()).isFalse();
-		assertThat(getUser(user.getId()).getFirstname()).isEqualTo("Walter");
 	}
 
 	@Test // DATACASS-292
@@ -199,7 +198,6 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 		ListenableFuture<EntityWriteResult<User>> lwt = template.update(user, lwtOptions);
 
 		assertThat(getUninterruptibly(lwt).wasApplied()).isFalse();
-		assertThat(getUser(user.getId())).isNull();
 	}
 
 	@Test // DATACASS-292
