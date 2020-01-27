@@ -21,6 +21,7 @@ import org.springframework.util.Assert;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.KeyspaceMetadata;
+import com.datastax.driver.core.Metadata;
 import com.datastax.driver.core.UserType;
 
 /**
@@ -47,7 +48,7 @@ public class SimpleUserTypeResolver implements UserTypeResolver {
 		Assert.notNull(cluster, "Cluster must not be null");
 		Assert.hasText(keyspaceName, "Keyspace must not be null or empty");
 
-		this.keyspaceName = keyspaceName;
+		this.keyspaceName = Metadata.quoteIfNecessary(keyspaceName);
 		this.cluster = cluster;
 	}
 
