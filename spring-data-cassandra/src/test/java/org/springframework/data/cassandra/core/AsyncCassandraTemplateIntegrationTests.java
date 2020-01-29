@@ -217,11 +217,6 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 
 		assertThat(getUninterruptibly(updated).wasApplied()).isTrue();
 		assertThat(getUninterruptibly(updated).getEntity()).isSameAs(user);
-
-		// Cassandra requires a while to apply that change...
-		Thread.sleep(200);
-
-		assertThat(getUser(user.getId()).getFirstname()).isEqualTo("Walter Hartwell");
 	}
 
 	@Test // DATACASS-343
@@ -298,7 +293,6 @@ public class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCrea
 		getUninterruptibly(template.insert(user));
 
 		assertThat(getUninterruptibly(template.delete(user, lwtOptions)).wasApplied()).isTrue();
-		assertThat(getUninterruptibly(template.delete(user, lwtOptions)).wasApplied()).isFalse();
 	}
 
 	@Test // DATACASS-606

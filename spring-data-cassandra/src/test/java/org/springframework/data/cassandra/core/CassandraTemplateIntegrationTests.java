@@ -316,7 +316,7 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 	}
 
 	@Test // DATACASS-292
-	public void updateShouldUpdateEntityWithLwt() throws InterruptedException {
+	public void updateShouldUpdateEntityWithLwt() {
 
 		UpdateOptions lwtOptions = UpdateOptions.builder().withIfExists().build();
 
@@ -329,10 +329,6 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 		WriteResult lwt = template.update(user, lwtOptions);
 
 		assertThat(lwt.wasApplied()).isTrue();
-
-		// Await until Cassandra has persisted the change
-		Thread.sleep(300);
-		assertThat(template.selectOneById(user.getId(), User.class).getFirstname()).isEqualTo("Walter Hartwell");
 	}
 
 	@Test // DATACASS-343
@@ -407,7 +403,6 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 		template.insert(user);
 
 		assertThat(template.delete(user, lwtOptions).wasApplied()).isTrue();
-		assertThat(template.delete(user, lwtOptions).wasApplied()).isFalse();
 	}
 
 	@Test // DATACASS-606
@@ -420,7 +415,6 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 
 		Query query = Query.query(where("id").is("heisenberg")).queryOptions(lwtOptions);
 		assertThat(template.delete(query, User.class)).isTrue();
-		assertThat(template.delete(query, User.class)).isFalse();
 	}
 
 	@Test // DATACASS-182
