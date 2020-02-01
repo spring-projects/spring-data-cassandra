@@ -225,10 +225,11 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 	}
 
 	/**
-	 * Returns the list of startup scripts to be run after {@link #getKeyspaceCreations() keyspace creations} and after
-	 * initialization in the {@code system} keyspace.
+	 * Returns the list of CQL scripts to be run on startup after {@link #getKeyspaceCreations() Keyspace creations}
+	 * and after initialization of the {@literal System} Keyspace.
 	 *
-	 * @return the list of startup scripts, may be {@link Collections#emptyList() empty} but never {@literal null}.
+	 * @return the list of CQL scripts to be run on startup; may be {@link Collections#emptyList() empty}
+	 * but never {@literal null}.
 	 * @deprecated since 3.0; Declare a
 	 * {@link org.springframework.data.cassandra.core.cql.session.init.SessionFactoryInitializer} bean instead.
 	 */
@@ -238,10 +239,11 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 	}
 
 	/**
-	 * Returns the list of shutdown scripts to be run after {@link #getKeyspaceDrops() keyspace drops} and right before
-	 * shutdown in the {@code system} keyspace.
+	 * Returns the list of CQL scripts to be run on shutdown after {@link #getKeyspaceDrops() Keyspace drops}
+	 * and right before shutdown of the {@code System} Keyspace.
 	 *
-	 * @return the list of shutdown scripts, may be {@link Collections#emptyList() empty} but never {@literal null}.
+	 * @return the list of CQL scripts to be run on shutdown; may be {@link Collections#emptyList() empty}
+	 * but never {@literal null}.
 	 * @deprecated since 3.0; Declare a
 	 * {@link org.springframework.data.cassandra.core.cql.session.init.SessionFactoryInitializer} bean instead.
 	 */
@@ -286,11 +288,11 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 
 				CassandraDriverOptions options = new CassandraDriverOptions();
 
-				if (StringUtils.hasText(getClusterName())) {
-					options.add(DefaultDriverOption.SESSION_NAME, getClusterName());
-				}
-				else if (StringUtils.hasText(getSessionName())) {
+				if (StringUtils.hasText(getSessionName())) {
 					options.add(DefaultDriverOption.SESSION_NAME, getSessionName());
+				}
+				else if (StringUtils.hasText(getClusterName())) {
+					options.add(DefaultDriverOption.SESSION_NAME, getClusterName());
 				}
 
 				CompressionType compressionType = getCompressionType();

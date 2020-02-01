@@ -121,7 +121,7 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 
 		SessionFactoryFactoryBean bean = new SessionFactoryFactoryBean();
 
-		// Initialize the CqlSession reference first since it is required, or must not be null.
+		// Initialize the CqlSession reference first since it is required, or must not be null!
 		bean.setSession(cqlSession);
 
 		bean.setConverter(requireBeanOfType(CassandraConverter.class));
@@ -154,6 +154,37 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 	}
 
 	/**
+	 * Configures the Java {@link ClassLoader} used to resolve Cassandra application entity {@link Class types}.
+	 *
+	 * @param classLoader Java {@link ClassLoader} used to resolve Cassandra application entity {@link Class types};
+	 * may be {@literal null}.
+	 * @see java.lang.ClassLoader
+	 */
+	@Override
+	public void setBeanClassLoader(@Nullable ClassLoader classLoader) {
+		this.beanClassLoader = classLoader;
+	}
+
+	/**
+	 * Returns the configured Java {@link ClassLoader} used to resolve Cassandra application entity {@link Class types}.
+	 *
+	 * @return the Java {@link ClassLoader} used to resolve Cassandra application entity {@link Class types}.
+	 * @see java.lang.ClassLoader
+	 * @see java.util.Optional
+	 */
+	protected Optional<ClassLoader> getBeanClassLoader() {
+		return Optional.ofNullable(this.beanClassLoader);
+	}
+
+	/**
+	 * Base packages to scan for entities annotated with {@link Table} annotations. By default, returns the package name
+	 * of {@literal this} ({@code this.getClass().getPackage().getName()}. This method must never return {@literal null}.
+	 */
+	public String[] getEntityBasePackages() {
+		return new String[] { getClass().getPackage().getName() };
+	}
+
+	/**
 	 * Return the {@link Set} of initial entity classes. Scans by default the class path using
 	 * {@link #getEntityBasePackages()}. Can be overridden by subclasses to skip class path scanning and return a fixed
 	 * set of entity classes.
@@ -179,6 +210,15 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 	}
 
 	/**
+	 * The {@link SchemaAction} to perform at application startup. Defaults to {@link SchemaAction#NONE}.
+	 *
+	 * @see org.springframework.data.cassandra.config.SchemaAction
+	 */
+	public SchemaAction getSchemaAction() {
+		return SchemaAction.NONE;
+	}
+
+	/**
 	 * Creates a {@link KeyspacePopulator} to cleanup the keyspace.
 	 *
 	 * @return the {@link KeyspacePopulator} or {@code null} if none configured.
@@ -198,30 +238,6 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 	@Nullable
 	protected KeyspacePopulator keyspacePopulator() {
 		return null;
-	}
-
-	@Override
-	public void setBeanClassLoader(ClassLoader classLoader) {
-		this.beanClassLoader = classLoader;
-	}
-
-	protected Optional<ClassLoader> getBeanClassLoader() {
-		return Optional.ofNullable(this.beanClassLoader);
-	}
-
-	/**
-	 * Base packages to scan for entities annotated with {@link Table} annotations. By default, returns the package name
-	 * of {@literal this} ({@code this.getClass().getPackage().getName()}. This method must never return {@literal null}.
-	 */
-	public String[] getEntityBasePackages() {
-		return new String[] { getClass().getPackage().getName() };
-	}
-
-	/**
-	 * The {@link SchemaAction} to perform at startup. Defaults to {@link SchemaAction#NONE}.
-	 */
-	public SchemaAction getSchemaAction() {
-		return SchemaAction.NONE;
 	}
 
 	/**

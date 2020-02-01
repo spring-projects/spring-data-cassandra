@@ -85,8 +85,7 @@
 	<properties>
 		<build.cassandra.host>localhost</build.cassandra.host>
 		<build.cassandra.mode>embedded</build.cassandra.mode>
-		<build.cassandra.native_transport_port>19042
-		</build.cassandra.native_transport_port>
+		<build.cassandra.native_transport_port>19042</build.cassandra.native_transport_port>
 		<build.cassandra.rpc_port>19160</build.cassandra.rpc_port>
 		<build.cassandra.ssl_storage_port>17001</build.cassandra.ssl_storage_port>
 		<build.cassandra.storage_port>17000</build.cassandra.storage_port>
