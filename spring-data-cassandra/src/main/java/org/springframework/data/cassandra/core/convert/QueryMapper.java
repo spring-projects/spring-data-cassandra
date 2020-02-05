@@ -133,7 +133,8 @@ public class QueryMapper {
 
 			Object value = predicate.getValue();
 
-			Object mappedValue = value != null ? getConverter().convertToColumnType(value, getTypeInformation(field, value))
+			Object mappedValue = value != null
+					? getConverter().convertToColumnType(value, getTypeInformation(field, value))
 					: null;
 
 			Predicate mappedPredicate = new Predicate(predicate.getOperator(), mappedValue);
@@ -330,11 +331,11 @@ public class QueryMapper {
 
 	Field createPropertyField(@Nullable CassandraPersistentEntity<?> entity, ColumnName key) {
 
-		return Optional.ofNullable(entity).<Field> map(e -> new MetadataBackedField(key, e, getMappingContext()))
+		return Optional.ofNullable(entity)
+				.<Field> map(e -> new MetadataBackedField(key, e, getMappingContext()))
 				.orElseGet(() -> new Field(key));
 	}
 
-	@SuppressWarnings("unchecked")
 	TypeInformation<?> getTypeInformation(Field field, @Nullable Object value) {
 
 		if (field.getProperty().isPresent()) {

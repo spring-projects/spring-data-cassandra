@@ -699,14 +699,16 @@ public class StatementFactory {
 				.bind((statement, factory) -> {
 
 					List<Assignment> assignments = mappedUpdate.getUpdateOperations().stream()
-							.map(assignmentOp -> getAssignment(assignmentOp, factory)).collect(Collectors.toList());
+							.map(assignmentOp -> getAssignment(assignmentOp, factory))
+							.collect(Collectors.toList());
 
 					return (com.datastax.oss.driver.api.querybuilder.update.Update) ((OngoingAssignment) statement)
 							.set(assignments);
 
 				}).bind((statement, factory) -> {
 
-					List<Relation> relations = filter.stream().map(criteriaDefinition -> toClause(criteriaDefinition, factory))
+					List<Relation> relations = filter.stream()
+							.map(criteriaDefinition -> toClause(criteriaDefinition, factory))
 							.collect(Collectors.toList());
 
 					return statement.where(relations);
@@ -735,10 +737,13 @@ public class StatementFactory {
 
 	private static void applyUpdateIfCondition(
 			StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update, Filter criteriaDefinitions) {
+
 		update.bind((statement, factory) -> {
 
-			List<Condition> conditions = criteriaDefinitions.stream().map(it -> toCondition(it, factory))
+			List<Condition> conditions = criteriaDefinitions.stream()
+					.map(it -> toCondition(it, factory))
 					.collect(Collectors.toList());
+
 			return statement.if_(conditions);
 		});
 	}
@@ -898,8 +903,8 @@ public class StatementFactory {
 
 		Assert.notNull(update, "Update must not be null");
 
-		com.datastax.oss.driver.api.querybuilder.update.Update updateToUse = QueryOptionsUtil.addWriteOptions(update,
-				writeOptions);
+		com.datastax.oss.driver.api.querybuilder.update.Update updateToUse =
+				QueryOptionsUtil.addWriteOptions(update, writeOptions);
 
 		if (writeOptions instanceof UpdateOptions) {
 

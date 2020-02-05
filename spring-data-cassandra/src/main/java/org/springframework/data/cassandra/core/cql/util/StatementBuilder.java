@@ -15,9 +15,6 @@
  */
 package org.springframework.data.cassandra.core.cql.util;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -28,6 +25,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
@@ -76,23 +75,32 @@ public class StatementBuilder<S extends BuildableQuery> {
 	private List<Consumer<SimpleStatementBuilder>> onBuild = new ArrayList<>();
 	private List<UnaryOperator<SimpleStatement>> onBuilt = new ArrayList<>();
 
-	private StatementBuilder(S statement) {
-		this.statement = statement;
-	}
-
 	/**
-	 * Create a new {@link StatementBuilder} with the given {@link BuildableQuery query stub}. The stub is used as base
-	 * for the built query so each query inherits properties of this stub.
+	 * Factory method used to create a new {@link StatementBuilder} with the given {@link BuildableQuery query stub}.
+	 * The stub is used as base for the built query so each query inherits properties of this stub.
 	 *
-	 * @param stub the query stub to use.
 	 * @param <S> query type.
-	 * @return the {@link StatementBuilder} for the {@link BuildableQuery query stub}.
+	 * @param stub the {@link BuildableQuery query stub} to use.
+	 * @return a {@link StatementBuilder} for the given {@link BuildableQuery query stub}.
+	 * @throws IllegalArgumentException if the {@link BuildableQuery query stub} is {@literal null}.
+	 * @see com.datastax.oss.driver.api.querybuilder.BuildableQuery
 	 */
 	public static <S extends BuildableQuery> StatementBuilder<S> of(S stub) {
 
 		Assert.notNull(stub, "Query stub must not be null");
 
 		return new StatementBuilder<>(stub);
+	}
+
+	/**
+	 * Constructs a new instance of this {@link StatementBuilder} with the given {@link BuildableQuery query stub}.
+	 *
+	 * @param statement the {@link BuildableQuery query stub} from which to build
+	 * the {@link com.datastax.oss.driver.api.core.cql.Statement}.
+	 * @see com.datastax.oss.driver.api.querybuilder.BuildableQuery
+	 */
+	private StatementBuilder(S statement) {
+		this.statement = statement;
 	}
 
 	/**
@@ -106,6 +114,7 @@ public class StatementBuilder<S extends BuildableQuery> {
 		Assert.notNull(action, "BindFunction must not be null");
 
 		queryActions.add(action::bind);
+
 		return this;
 	}
 
@@ -115,11 +124,13 @@ public class StatementBuilder<S extends BuildableQuery> {
 	 * @param action the builder function to be applied to the statement.
 	 * @return {@code this} {@link StatementBuilder}.
 	 */
+	@SuppressWarnings("unchecked")
 	public <R extends BuildableQuery> StatementBuilder<S> apply(Function<S, R> action) {
 
 		Assert.notNull(action, "BindFunction must not be null");
 
 		queryActions.add((source, termFactory) -> (S) action.apply(source));
+
 		return this;
 	}
 
@@ -136,6 +147,7 @@ public class StatementBuilder<S extends BuildableQuery> {
 		Assert.notNull(action, "Consumer must not be null");
 
 		onBuild.add(action);
+
 		return this;
 	}
 
@@ -152,6 +164,7 @@ public class StatementBuilder<S extends BuildableQuery> {
 		Assert.notNull(mappingFunction, "Mapping function must not be null");
 
 		onBuilt.add(mappingFunction);
+
 		return this;
 	}
 
@@ -169,7 +182,7 @@ public class StatementBuilder<S extends BuildableQuery> {
 	 * Build a {@link SimpleStatement statement} by applying builder and bind functions using the given
 	 * {@link ParameterHandling}.
 	 *
-	 * @param parameterHandling
+	 * @param parameterHandling {@link ParameterHandling} used to determine how to render parameters.
 	 * @return the built {@link SimpleStatement}.
 	 */
 	public SimpleStatement build(ParameterHandling parameterHandling) {
@@ -180,8 +193,8 @@ public class StatementBuilder<S extends BuildableQuery> {
 	 * Build a {@link SimpleStatement statement} by applying builder and bind functions using the given
 	 * {@link CodecRegistry} and {@link ParameterHandling}.
 	 *
-	 * @param parameterHandling
-	 * @param codecRegistry
+	 * @param parameterHandling {@link ParameterHandling} used to determine how to render parameters.
+	 * @param codecRegistry registry of Apache Cassandra codecs for converting to/from Java types and CQL types.
 	 * @return the built {@link SimpleStatement}.
 	 */
 	public SimpleStatement build(ParameterHandling parameterHandling, CodecRegistry codecRegistry) {
@@ -199,12 +212,13 @@ public class StatementBuilder<S extends BuildableQuery> {
 				statement = runnable.run(statement, termFactory);
 			}
 
-			return StatementBuilder.this.build(statement.builder());
+			return build(statement.builder());
 		}
 
 		if (parameterHandling == ParameterHandling.BY_INDEX) {
 
 			List<Object> values = new ArrayList<>();
+
 			TermFactory termFactory = value -> {
 				values.add(value);
 				return QueryBuilder.bindMarker();
@@ -220,6 +234,7 @@ public class StatementBuilder<S extends BuildableQuery> {
 		if (parameterHandling == ParameterHandling.BY_NAME) {
 
 			Map<String, Object> values = new LinkedHashMap<>();
+
 			TermFactory termFactory = value -> {
 				String name = "p" + values.size();
 				values.put(name, value);
@@ -231,6 +246,7 @@ public class StatementBuilder<S extends BuildableQuery> {
 			}
 
 			SimpleStatementBuilder builder = statement.builder();
+
 			values.forEach(builder::addNamedValue);
 
 			return build(builder);
@@ -250,6 +266,14 @@ public class StatementBuilder<S extends BuildableQuery> {
 		return statmentToUse;
 	}
 
+	private SimpleStatementBuilder onBuild(SimpleStatementBuilder statementBuilder) {
+
+		onBuild.forEach(it -> it.accept(statementBuilder));
+
+		return statementBuilder;
+	}
+
+	@SuppressWarnings("unchecked")
 	private static Term toLiteralTerms(@Nullable Object value, CodecRegistry codecRegistry) {
 
 		if (value instanceof List) {
@@ -278,21 +302,13 @@ public class StatementBuilder<S extends BuildableQuery> {
 
 			Map<Term, Term> terms = new LinkedHashMap<>();
 
-			((Map<?, ?>) value).forEach((k, v) -> {
-				terms.put(toLiteralTerms(k, codecRegistry), toLiteralTerms(v, codecRegistry));
-			});
+			((Map<?, ?>) value).forEach((k, v) ->
+				terms.put(toLiteralTerms(k, codecRegistry), toLiteralTerms(v, codecRegistry)));
 
 			return new MapTerm(terms);
 		}
 
 		return QueryBuilder.literal(value, codecRegistry);
-	}
-
-	private SimpleStatementBuilder onBuild(SimpleStatementBuilder statementBuilder) {
-
-		onBuild.forEach(it -> it.accept(statementBuilder));
-
-		return statementBuilder;
 	}
 
 	/**
@@ -336,7 +352,7 @@ public class StatementBuilder<S extends BuildableQuery> {
 		/**
 		 * Named bind markers.
 		 */
-		BY_NAME;
+		BY_NAME
 	}
 
 	static class ListTerm implements Term {
@@ -408,6 +424,7 @@ public class StatementBuilder<S extends BuildableQuery> {
 		}
 
 		@Override
+		@SuppressWarnings("all")
 		public void appendTo(@NonNull StringBuilder builder) {
 
 			if (components.isEmpty()) {
@@ -429,6 +446,7 @@ public class StatementBuilder<S extends BuildableQuery> {
 				builder.append(":");
 				entry.getValue().appendTo(builder);
 			}
+
 			if (!first) {
 				builder.append("}");
 			}

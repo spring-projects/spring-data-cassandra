@@ -42,9 +42,11 @@ public abstract class QueryOptionsUtil {
 	 * @param queryOptions query options (e.g. consistency level) to add to the CQL statement.
 	 * @return the given {@link Statement}.
 	 */
+	@SuppressWarnings("unchecked")
 	public static <T extends Statement<?>> T addQueryOptions(T statement, QueryOptions queryOptions) {
 
 		Assert.notNull(statement, "Statement must not be null");
+
 		Statement<?> statementToUse = statement;
 
 		if (queryOptions.getConsistencyLevel() != null) {
@@ -66,11 +68,10 @@ public abstract class QueryOptionsUtil {
 		}
 
 		if (queryOptions.getTracing() != null) {
-			if (queryOptions.getTracing()) {
-				statementToUse = statementToUse.setTracing(true);
-			} else {
-				statementToUse = statementToUse.setTracing(false);
-			}
+			// While the following statement is null-safe, avoid setting Statement tracing if the tracing query option
+			// is null since Statements are immutable and the call creates a new object.  Therefore keep the following
+			// statement wrapped in the conditional null check to avoid additional garbage and added GC pressure.
+			statementToUse = statementToUse.setTracing(Boolean.TRUE.equals(queryOptions.getTracing()));
 		}
 
 		return (T) statementToUse;

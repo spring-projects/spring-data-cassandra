@@ -90,9 +90,11 @@
 		<build.cassandra.ssl_storage_port>17001</build.cassandra.ssl_storage_port>
 		<build.cassandra.storage_port>17000</build.cassandra.storage_port>
 		<cassandra.version>3.11.5</cassandra.version>
-		<cassandra-driver.version>4.3.1</cassandra-driver.version>
+		<cassandra-driver.version>4.4.0</cassandra-driver.version>
 		<dist.id>spring-data-cassandra</dist.id>
 		<el.version>1.0</el.version>
+		<!-- NOTE: com.carrotsearch:hppc dependency version set to same version as Apache Cassandra 3.11.5 -->
+		<hppc.version>0.5.4</hppc.version>
 		<multithreadedtc.version>1.01</multithreadedtc.version>
 		<project.type>multi</project.type>
 		<springdata.commons>2.3.0.BUILD-SNAPSHOT</springdata.commons>
@@ -170,6 +172,13 @@
 			</dependency>
 
 			<dependency>
+				<groupId>org.assertj</groupId>
+				<artifactId>assertj-core</artifactId>
+				<version>${assertj}</version>
+				<scope>test</scope>
+			</dependency>
+
+			<dependency>
 				<groupId>org.testcontainers</groupId>
 				<artifactId>testcontainers-bom</artifactId>
 				<version>${testcontainers}</version>
@@ -185,18 +194,19 @@
 			</dependency>
 
 			<dependency>
+				<groupId>com.carrotsearch</groupId>
+				<artifactId>hppc</artifactId>
+				<version>${hppc.version}</version>
+				<scope>test</scope>
+			</dependency>
+
+			<dependency>
 				<groupId>edu.umd.cs.mtc</groupId>
 				<artifactId>multithreadedtc</artifactId>
 				<version>${multithreadedtc.version}</version>
 				<scope>test</scope>
 			</dependency>
 
-			<dependency>
-				<groupId>org.assertj</groupId>
-				<artifactId>assertj-core</artifactId>
-				<version>${assertj}</version>
-				<scope>test</scope>
-			</dependency>
 		</dependencies>
 	</dependencyManagement>
 

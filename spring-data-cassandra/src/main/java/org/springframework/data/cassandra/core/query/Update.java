@@ -47,10 +47,6 @@ public class Update {
 
 	private final Map<ColumnName, AssignmentOp> updateOperations;
 
-	private Update(Map<ColumnName, AssignmentOp> updateOperations) {
-		this.updateOperations = updateOperations;
-	}
-
 	/**
 	 * Create an empty {@link Update} object.
 	 *
@@ -69,7 +65,7 @@ public class Update {
 
 		Assert.notNull(assignmentOps, "Update operations must not be null");
 
-		Map<ColumnName, AssignmentOp> updateOperations = assignmentOps instanceof Collection<?>
+		Map<ColumnName, AssignmentOp> updateOperations = assignmentOps instanceof Collection
 				? new LinkedHashMap<>(((Collection<?>) assignmentOps).size())
 				: new LinkedHashMap<>();
 
@@ -85,6 +81,10 @@ public class Update {
 	 */
 	public static Update update(String columnName, @Nullable Object value) {
 		return empty().set(columnName, value);
+	}
+
+	private Update(Map<ColumnName, AssignmentOp> updateOperations) {
+		this.updateOperations = updateOperations;
 	}
 
 	/**
@@ -387,7 +387,7 @@ public class Update {
 		 * @see org.springframework.data.cassandra.core.query.Update.AddToBuilder#addAll(java.util.Map)
 		 */
 		@Override
-		public Update addAll(Map<? extends Object, ? extends Object> map) {
+		public Update addAll(Map<?, ?> map) {
 
 			Assert.notNull(map, "Map must not be null");
 

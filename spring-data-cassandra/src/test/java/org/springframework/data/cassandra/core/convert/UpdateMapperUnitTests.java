@@ -15,11 +15,9 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.mockito.Mockito.when;
 
 import java.time.LocalTime;
 import java.util.Collections;
@@ -47,6 +45,9 @@ import org.springframework.data.cassandra.support.UserDefinedTypeBuilder;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.type.DataTypes;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 /**
  * Unit tests for {@link UpdateMapper}.
@@ -107,10 +108,12 @@ public class UpdateMapperUnitTests {
 
 		Map<Manufacturer, Currency> map = Collections.singletonMap(manufacturer, currency);
 
-		Update update = updateMapper.getMappedObject(Update.empty().set("manufacturers", map), persistentEntity);
+		Update update = Update.empty().set("manufacturers", map);
 
-		assertThat(update.getUpdateOperations()).hasSize(1);
-		assertThat(update.toString()).isEqualTo("manufacturers = { {name:'foobar'} : 'Euro' }");
+		Update mappedUpdate = updateMapper.getMappedObject(update, persistentEntity);
+
+		assertThat(mappedUpdate.getUpdateOperations()).hasSize(1);
+		assertThat(mappedUpdate.toString()).isEqualTo("manufacturers = {{name:'foobar'}:'Euro'}");
 	}
 
 	@Test // DATACASS-343
@@ -157,11 +160,12 @@ public class UpdateMapperUnitTests {
 
 		Manufacturer manufacturer = new Manufacturer("foobar");
 
-		Update update = updateMapper.getMappedObject(Update.empty().addTo("manufacturers").entry(manufacturer, currency),
-				persistentEntity);
+		Update update = Update.empty().addTo("manufacturers").entry(manufacturer, currency);
 
-		assertThat(update.getUpdateOperations()).hasSize(1);
-		assertThat(update.toString()).isEqualTo("manufacturers = manufacturers + { {name:'foobar'} : 'Euro' }");
+		Update mappedUpdate = updateMapper.getMappedObject(update, persistentEntity);
+
+		assertThat(mappedUpdate.getUpdateOperations()).hasSize(1);
+		assertThat(mappedUpdate.toString()).isEqualTo("manufacturers = manufacturers + {{name:'foobar'}:'Euro'}");
 	}
 
 	@Test // DATACASS-343
@@ -255,21 +259,28 @@ public class UpdateMapperUnitTests {
 				() -> this.updateMapper.getMappedObject(Update.empty().set("tuple.zip", "bar"), this.persistentEntity));
 	}
 
+	@SuppressWarnings("unused")
 	static class Person {
 
 		@Id String id;
 
-		List<Currency> list;
-		@Column("set_col") Set<Currency> set;
-		Map<String, Currency> map;
-		Map<Manufacturer, Currency> manufacturers;
 		Currency currency;
-		LocalTime localTime;
 
 		Integer number;
+
+		List<Currency> list;
+
+		LocalTime localTime;
+
+		Map<String, Currency> map;
+		Map<Manufacturer, Currency> manufacturers;
+
 		MappedTuple tuple;
 
+		@Column("set_col") Set<Currency> set;
+
 		@Column("first_name") String firstName;
+
 	}
 
 	@Tuple

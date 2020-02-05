@@ -189,6 +189,11 @@
 			<artifactId>multithreadedtc</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>com.carrotsearch</groupId>
+			<artifactId>hppc</artifactId>
+		</dependency>
+
 		<!-- Kotlin extension -->
 		<dependency>
 			<groupId>org.jetbrains.kotlin</groupId>
