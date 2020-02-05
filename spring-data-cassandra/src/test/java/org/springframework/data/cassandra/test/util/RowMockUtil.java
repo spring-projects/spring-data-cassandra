@@ -15,13 +15,15 @@
  */
 package org.springframework.data.cassandra.test.util;
 
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 
+import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -41,9 +43,6 @@ public class RowMockUtil {
 	/**
 	 * Create a new {@link Row} mock using the given {@code columns}. Each column carries a name, value and data type so
 	 * users of {@link Row} can use most of the methods.
-	 *
-	 * @param columns
-	 * @return
 	 */
 	public static Row newRowMock(Column... columns) {
 
@@ -84,8 +83,8 @@ public class RowMockUtil {
 			return false;
 		});
 
-		when(mockColumnDefinitions.get(anyInt())).thenAnswer(invocation -> {
-			return new ColumnDefinition() {
+		when(mockColumnDefinitions.get(anyInt())).thenAnswer(invocation ->
+			new ColumnDefinition() {
 
 				@Override
 				public boolean isDetached() {
@@ -120,8 +119,7 @@ public class RowMockUtil {
 				public DataType getType() {
 					return columns[(Integer) invocation.getArguments()[0]].type;
 				}
-			};
-		});
+			});
 
 		when(mockRow.getBoolean(anyInt())).thenAnswer(invocation -> columns[(Integer) invocation.getArguments()[0]].value);
 		when(mockRow.getLocalDate(anyInt()))
@@ -146,7 +144,6 @@ public class RowMockUtil {
 	 * @param name must not be empty or {@code null}.
 	 * @param value can be {@literal null}.
 	 * @param type must not be {@literal null}.
-	 * @return
 	 */
 	public static Column column(String name, Object value, DataType type) {
 
