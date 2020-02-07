@@ -56,6 +56,7 @@ import org.springframework.data.util.Version;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.data.CqlDuration;
 import com.datastax.oss.driver.api.core.data.TupleValue;
 import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.datastax.oss.driver.api.core.type.TupleType;
@@ -522,13 +523,13 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 
-		entity.setLocalDate(java.time.LocalDate.of(2010, 7, 4));
+		entity.setDate(java.time.LocalDate.of(2010, 7, 4));
 
 		operations.insert(entity);
 
 		AllPossibleTypes loaded = load(entity);
 
-		assertThat(loaded.getLocalDate()).isEqualTo(entity.getLocalDate());
+		assertThat(loaded.getDate()).isEqualTo(entity.getDate());
 	}
 
 	@Test // DATACASS-296
@@ -552,42 +553,42 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 
-		entity.setLocalTime(java.time.LocalTime.of(1, 2, 3));
+		entity.setTime(java.time.LocalTime.of(1, 2, 3));
 
 		operations.insert(entity);
 
 		AllPossibleTypes loaded = load(entity);
 
-		assertThat(loaded.getLocalTime()).isEqualTo(entity.getLocalTime());
+		assertThat(loaded.getTime()).isEqualTo(entity.getTime());
 	}
 
-	@Test // DATACASS-694
+	@Test // DATACASS-694, DATACASS-727
 	public void shouldReadLocalTimeFromDriver() {
 
 		assumeTrue(cassandraVersion.isGreaterThanOrEqualTo(VERSION_3_10));
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 
-		entity.setLocalTime(java.time.LocalTime.of(1, 2, 3));
+		entity.setTime(java.time.LocalTime.of(1, 2, 3));
 
 		operations.insert(entity);
 
-		ResultSet resultSet = session.execute("SELECT localTime FROM AllPossibleTypes WHERE id = '1'");
+		ResultSet resultSet = session.execute("SELECT time FROM AllPossibleTypes WHERE id = '1'");
 		Row row = resultSet.one();
-		assertThat(row.getLocalTime(0)).isEqualTo(entity.getLocalTime());
+		assertThat(row.getLocalTime(0)).isEqualTo(entity.getTime());
 	}
 
-	@Test // DATACASS-694
+	@Test // DATACASS-694, DATACASS-727
 	public void shouldWriteLocalTimeThroughDriver() {
 
 		assumeTrue(cassandraVersion.isGreaterThanOrEqualTo(VERSION_3_10));
 
-		session.execute("INSERT INTO AllPossibleTypes(id,localTime) VALUES('1','01:02:03.000')");
+		session.execute("INSERT INTO AllPossibleTypes(id,time) VALUES('1','01:02:03.000')");
 
-		AllPossibleTypes entity = operations.selectOne("SELECT localTime FROM AllPossibleTypes WHERE id = '1'",
+		AllPossibleTypes entity = operations.selectOne("SELECT time FROM AllPossibleTypes WHERE id = '1'",
 				AllPossibleTypes.class);
 
-		assertThat(entity.getLocalTime()).isEqualTo(LocalTime.of(1, 2, 3, 0));
+		assertThat(entity.getTime()).isEqualTo(LocalTime.of(1, 2, 3, 0));
 	}
 
 	@Test // DATACASS-296, DATACASS-563
@@ -649,8 +650,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 		assertThat(loaded.getJodaLocalDate()).isEqualTo(entity.getJodaLocalDate());
 	}
 
-	@Test // DATACASS-296
-	@Ignore("DATACASS-656 - Custom Conversions lookup order")
+	@Test // DATACASS-296, DATACASS-727
 	public void shouldReadAndWriteJodaDateTime() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -708,8 +708,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 		assertThat(loaded.getBpLocalTime()).isEqualTo(entity.getBpLocalTime());
 	}
 
-	@Test // DATACASS-296
-	@Ignore("DATACASS-656 - Custom Conversions lookup order")
+	@Test // DATACASS-296, DATACASS-727
 	public void shouldReadAndWriteBpInstant() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
@@ -752,18 +751,19 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 		assertThat(loaded.getCount()).isEqualTo(entity.getCount());
 	}
 
-	@Test // DATACASS-429
+	@Test // DATACASS-429, DATACASS-727
 	public void shouldReadAndWriteDuration() {
 
 		assumeTrue(cassandraVersion.isGreaterThanOrEqualTo(VERSION_3_10));
 
-		WithDuration withDuration = new WithDuration("foo", Duration.ofHours(2));
+		WithDuration withDuration = new WithDuration("foo", Duration.ofHours(2), CqlDuration.newInstance(1, 2, 3));
 
 		operations.insert(withDuration);
 
 		WithDuration loaded = operations.selectOneById(withDuration.getId(), WithDuration.class);
 
 		assertThat(loaded.getDuration()).isEqualTo(withDuration.getDuration());
+		assertThat(loaded.getCqlDuration()).isEqualTo(withDuration.getCqlDuration());
 	}
 
 	private AllPossibleTypes load(AllPossibleTypes entity) {
@@ -780,6 +780,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 
 		@Id String id;
 		Duration duration;
+		CqlDuration cqlDuration;
 	}
 
 	@Data

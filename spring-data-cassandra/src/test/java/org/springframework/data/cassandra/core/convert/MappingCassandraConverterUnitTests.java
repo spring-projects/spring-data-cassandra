@@ -37,7 +37,6 @@ import java.time.ZoneOffset;
 import java.util.*;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import org.springframework.data.annotation.Id;
@@ -341,8 +340,7 @@ public class MappingCassandraConverterUnitTests {
 		assertThat(insert.get(CqlIdentifier.fromCql("timestamp"))).isInstanceOf(Instant.class);
 	}
 
-	@Test // DATACASS-656
-	@Ignore("Fails because of reverse custom conversion registration order")
+	@Test // DATACASS-656, DATACASS-727
 	public void shouldReadAndWriteTimestampFromObjectWithConversion() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");

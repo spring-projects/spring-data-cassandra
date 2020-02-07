@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import static org.springframework.data.cassandra.core.mapping.CassandraType.*;
-
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,12 +22,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalDateTime;
 import org.joda.time.LocalTime;
 
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.convert.WritingConverter;
 import org.springframework.util.ClassUtils;
 
@@ -74,6 +72,9 @@ public abstract class CassandraJodaTimeConverters {
 		converters.add(LocalDateTimeToInstantConverter.INSTANCE);
 		converters.add(InstantToLocalDateTimeConverter.INSTANCE);
 
+		converters.add(DateTimeToInstantConverter.INSTANCE);
+		converters.add(InstantToDateTimeConverter.INSTANCE);
+
 		return converters;
 	}
 
@@ -113,7 +114,6 @@ public abstract class CassandraJodaTimeConverters {
 	 * @author Mark Paluch
 	 */
 	@WritingConverter
-	@CassandraType(type = Name.TIME)
 	public enum FromJodaLocalTimeConverter implements Converter<LocalTime, java.time.LocalTime> {
 
 		INSTANCE;
@@ -145,7 +145,6 @@ public abstract class CassandraJodaTimeConverters {
 	 * @author Mark Paluch
 	 */
 	@WritingConverter
-	@CassandraType(type = Name.DATE)
 	public enum FromJodaLocalDateConverter implements Converter<LocalDate, java.time.LocalDate> {
 
 		INSTANCE;
@@ -176,7 +175,6 @@ public abstract class CassandraJodaTimeConverters {
 	 *
 	 * @since 3.0
 	 */
-	@WritingConverter
 	public enum LocalDateTimeToInstantConverter implements Converter<LocalDateTime, java.time.Instant> {
 
 		INSTANCE;
@@ -188,7 +186,7 @@ public abstract class CassandraJodaTimeConverters {
 	}
 
 	/**
-	 * Simple singleton to convert {@link java.time.LocalDateTime}s to their {@link LocalDateTime} representation.
+	 * Simple singleton to convert {@link java.time.Instant}s to their {@link LocalDateTime} representation.
 	 *
 	 * @since 3.0
 	 */
@@ -199,6 +197,36 @@ public abstract class CassandraJodaTimeConverters {
 		@Override
 		public LocalDateTime convert(java.time.Instant source) {
 			return new LocalDateTime(Date.from(source));
+		}
+	}
+
+	/**
+	 * Simple singleton to convert {@link DateTime}s to their {@link java.time.Instant} representation.
+	 *
+	 * @since 3.0
+	 */
+	public enum DateTimeToInstantConverter implements Converter<DateTime, java.time.Instant> {
+
+		INSTANCE;
+
+		@Override
+		public java.time.Instant convert(DateTime source) {
+			return source.toDate().toInstant();
+		}
+	}
+
+	/**
+	 * Simple singleton to convert {@link java.time.Instant}s to their {@link DateTime} representation.
+	 *
+	 * @since 3.0
+	 */
+	public enum InstantToDateTimeConverter implements Converter<java.time.Instant, DateTime> {
+
+		INSTANCE;
+
+		@Override
+		public DateTime convert(java.time.Instant source) {
+			return new DateTime(Date.from(source));
 		}
 	}
 }

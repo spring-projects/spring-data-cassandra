@@ -26,7 +26,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
-import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -78,7 +77,9 @@ public class AllPossibleTypes {
 	Boolean boxedBoolean;
 	boolean primitiveBoolean;
 
-	LocalDate date;
+	java.time.Instant instant;
+	java.time.LocalDate date;
+	java.time.LocalTime time;
 
 	Date timestamp;
 
@@ -97,10 +98,7 @@ public class AllPossibleTypes {
 	@CassandraType(type = Name.TUPLE, typeArguments = { Name.VARCHAR, Name.BIGINT }) TupleValue tupleValue;
 
 	// supported by conversion
-	java.time.Instant instant;
-	java.time.LocalDate localDate;
 	java.time.LocalDateTime localDateTime;
-	java.time.LocalTime localTime;
 	java.time.ZoneId zoneId;
 
 	org.joda.time.DateTime jodaDateTime;

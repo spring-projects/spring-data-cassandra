@@ -487,7 +487,7 @@ public class CassandraMappingContextUnitTests {
 
 		CassandraPersistentEntity<?> persistentEntity = mappingContext.getRequiredPersistentEntity(AllPossibleTypes.class);
 
-		assertThat(mappingContext.getDataType(persistentEntity.getRequiredPersistentProperty("localTime")))
+		assertThat(mappingContext.getDataType(persistentEntity.getRequiredPersistentProperty("time")))
 				.isEqualTo(DataTypes.TIME);
 		assertThat(mappingContext.getDataType(persistentEntity.getRequiredPersistentProperty("jodaLocalTime")))
 				.isEqualTo(DataTypes.TIME);

@@ -210,7 +210,6 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 		CreateTableSpecification specification = getCreateTableSpecificationFor(AllPossibleTypes.class);
 
 		assertThat(getColumnType("date", specification)).isEqualTo(DataTypes.DATE);
-		assertThat(getColumnType("localDate", specification)).isEqualTo(DataTypes.DATE);
 		assertThat(getColumnType("jodaLocalDate", specification)).isEqualTo(DataTypes.DATE);
 		assertThat(getColumnType("bpLocalDate", specification)).isEqualTo(DataTypes.DATE);
 	}

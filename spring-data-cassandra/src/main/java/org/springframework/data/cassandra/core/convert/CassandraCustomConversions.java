@@ -17,20 +17,15 @@ package org.springframework.data.cassandra.core.convert;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.Date;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.function.Predicate;
 
-import org.springframework.core.ResolvableType;
-import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.core.convert.converter.GenericConverter.ConvertiblePair;
 import org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder;
-import org.springframework.data.cassandra.core.mapping.CassandraType;
-import org.springframework.data.convert.WritingConverter;
+import org.springframework.data.convert.Jsr310Converters;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
-import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
 
 /**
  * Value object to capture custom conversion. {@link CassandraCustomConversions} also act as factory for
@@ -45,12 +40,6 @@ public class CassandraCustomConversions extends org.springframework.data.convert
 
 	private static final List<Object> STORE_CONVERTERS;
 
-	/**
-	 * Set of types that indicate usage of Cassandra's time type. Time is represented as long so we need to imply the type
-	 * from an artificial simple type.
-	 */
-	private final static Set<Class<?>> NATIVE_TIME_TYPE_MARKERS;
-
 	private static final StoreConversions STORE_CONVERSIONS;
 
 	static {
@@ -64,25 +53,6 @@ public class CassandraCustomConversions extends org.springframework.data.convert
 
 		STORE_CONVERTERS = Collections.unmodifiableList(converters);
 		STORE_CONVERSIONS = StoreConversions.of(CassandraSimpleTypeHolder.HOLDER, STORE_CONVERTERS);
-
-		List<? extends Class<?>> timeMarkers = STORE_CONVERTERS.stream() //
-				.filter(Converter.class::isInstance) //
-				.map(Object::getClass) //
-				.filter(it -> AnnotatedElementUtils.hasAnnotation(it, WritingConverter.class)) //
-				.filter(it -> {
-
-					CassandraType annotation = AnnotatedElementUtils.getMergedAnnotation(it, CassandraType.class);
-
-					return annotation != null && annotation.type() == CassandraType.Name.TIME;
-				}) //
-				.map(it -> {
-
-					ResolvableType classType = ResolvableType.forClass(it).as(Converter.class).getGeneric(0);
-
-					return classType.getRawClass();
-				}).collect(Collectors.toList());
-
-		NATIVE_TIME_TYPE_MARKERS = new HashSet<>(timeMarkers);
 	}
 
 	/**
@@ -91,20 +61,36 @@ public class CassandraCustomConversions extends org.springframework.data.convert
 	 * @param converters must not be {@literal null}.
 	 */
 	public CassandraCustomConversions(List<?> converters) {
-		super(STORE_CONVERSIONS, converters);
+		super(new CassandraConverterConfiguration(STORE_CONVERSIONS, converters));
 	}
 
 	/**
-	 * Returns {@literal true} if the {@link Class type} is used to denote Cassandra's {@code time} column type.
-	 *
-	 * @param type must not be {@literal null}.
-	 * @return {@literal true} if the type maps to Cassandra's {@code time} column type.
-	 * @since 2.1
+	 * Cassandra-specific extension to {@link org.springframework.data.convert.CustomConversions.ConverterConfiguration}.
+	 * This extension avoids {@link Converter} registrations that enforce date mapping to {@link Date} from JSR-310, Joda
+	 * Time and ThreeTenBackport.
 	 */
-	public boolean isNativeTimeTypeMarker(Class<?> type) {
+	static class CassandraConverterConfiguration extends ConverterConfiguration {
 
-		Assert.notNull(type, "Type must not be null");
+		public CassandraConverterConfiguration(StoreConversions storeConversions, List<?> userConverters) {
+			super(storeConversions, userConverters, getConverterFilter());
+		}
 
-		return NATIVE_TIME_TYPE_MARKERS.contains(ClassUtils.getUserClass(type));
+		static Predicate<ConvertiblePair> getConverterFilter() {
+
+			return convertiblePair -> {
+
+				if (sourceMatches(convertiblePair, "org.joda.time") || sourceMatches(convertiblePair, "org.threeten.bp")
+						|| Jsr310Converters.supports(convertiblePair.getSourceType())
+								&& Date.class.isAssignableFrom(convertiblePair.getTargetType())) {
+					return false;
+				}
+
+				return true;
+			};
+		}
+
+		private static boolean sourceMatches(ConvertiblePair convertiblePair, String packagePrefix) {
+			return convertiblePair.getSourceType().getName().startsWith(packagePrefix);
+		}
 	}
 }

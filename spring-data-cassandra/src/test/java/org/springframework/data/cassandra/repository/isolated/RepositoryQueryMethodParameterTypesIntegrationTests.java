@@ -93,16 +93,16 @@ public class RepositoryQueryMethodParameterTypesIntegrationTests
 	@Test // DATACASS-296
 	public void shouldFindByLocalDate() {
 
-		session.execute("CREATE INDEX IF NOT EXISTS allpossibletypes_localdate ON allpossibletypes ( localdate )");
+		session.execute("CREATE INDEX IF NOT EXISTS allpossibletypes_localdate ON allpossibletypes ( date )");
 
 		AllPossibleTypes allPossibleTypes = new AllPossibleTypes();
 
 		allPossibleTypes.setId("id");
-		allPossibleTypes.setLocalDate(LocalDate.now());
+		allPossibleTypes.setDate(LocalDate.now());
 
 		allPossibleTypesRepository.save(allPossibleTypes);
 
-		List<AllPossibleTypes> result = allPossibleTypesRepository.findWithCreatedDate(allPossibleTypes.getLocalDate());
+		List<AllPossibleTypes> result = allPossibleTypesRepository.findWithCreatedDate(allPossibleTypes.getDate());
 
 		assertThat(result).hasSize(1);
 		assertThat(result).contains(allPossibleTypes);
@@ -182,7 +182,7 @@ public class RepositoryQueryMethodParameterTypesIntegrationTests
 
 	private interface AllPossibleTypesRepository extends CrudRepository<AllPossibleTypes, String> {
 
-		@Query("select * from allpossibletypes where localdate = ?0")
+		@Query("select * from allpossibletypes where date = ?0")
 		List<AllPossibleTypes> findWithCreatedDate(java.time.LocalDate createdDate);
 
 		@Query("select * from allpossibletypes where zoneid = ?0")

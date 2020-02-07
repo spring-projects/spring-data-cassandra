@@ -18,7 +18,6 @@ package org.springframework.data.cassandra.core.convert;
 import static java.time.ZoneId.*;
 
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoField;
@@ -57,10 +56,6 @@ public abstract class CassandraJsr310Converters {
 
 		converters.add(DateToInstantConverter.INSTANCE);
 		converters.add(LocalDateToInstantConverter.INSTANCE);
-
-		converters.add(LocalDateConverter.INSTANCE);
-		converters.add(LocalTimeConverter.INSTANCE);
-		converters.add(InstantConverter.INSTANCE);
 
 		return converters;
 	}
@@ -117,55 +112,7 @@ public abstract class CassandraJsr310Converters {
 	}
 
 	/**
-	 * Force {@link LocalDate} to remain a {@link LocalDate}.
-	 *
-	 * @since 3.0
-	 */
-	@WritingConverter
-	enum LocalDateConverter implements Converter<LocalDate, LocalDate> {
-
-		INSTANCE;
-
-		@Override
-		public LocalDate convert(LocalDate source) {
-			return source;
-		}
-	}
-
-	/**
-	 * Force {@link LocalTime} to remain a {@link LocalTime}.
-	 *
-	 * @since 3.0
-	 */
-	@WritingConverter
-	enum LocalTimeConverter implements Converter<LocalTime, LocalTime> {
-
-		INSTANCE;
-
-		@Override
-		public LocalTime convert(LocalTime source) {
-			return source;
-		}
-	}
-
-	/**
-	 * Force {@link Instant} to remain a {@link Instant}.
-	 *
-	 * @since 3.0
-	 */
-	@WritingConverter
-	enum InstantConverter implements Converter<Instant, Instant> {
-
-		INSTANCE;
-
-		@Override
-		public Instant convert(Instant source) {
-			return source;
-		}
-	}
-
-	/**
-	 * Force {@link LocalDateTime} to remain a {@link Instant}.
+	 * Converter from {@link LocalDateTime} to {@link Instant}.
 	 *
 	 * @since 3.0
 	 */

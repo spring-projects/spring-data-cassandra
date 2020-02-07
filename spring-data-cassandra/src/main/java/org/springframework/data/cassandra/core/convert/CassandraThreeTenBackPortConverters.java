@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import static org.springframework.data.cassandra.core.mapping.CassandraType.*;
-
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,7 +23,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.convert.ReadingConverter;
 import org.springframework.data.convert.ThreeTenBackPortConverters;
 import org.springframework.data.convert.WritingConverter;
@@ -82,6 +79,11 @@ public abstract class CassandraThreeTenBackPortConverters {
 		converters.add(ToBpLocalDateTimeConverter.INSTANCE);
 
 		converters.add(LocalDateTimeToInstantConverter.INSTANCE);
+		converters.add(BpInstantToInstantConverter.INSTANCE);
+		converters.add(InstantToBpInstantConverter.INSTANCE);
+
+		converters.add(ZoneIdToStringConverter.INSTANCE);
+		converters.add(StringToZoneIdConverter.INSTANCE);
 
 		return converters;
 	}
@@ -92,7 +94,6 @@ public abstract class CassandraThreeTenBackPortConverters {
 	 * @author Mark Paluch
 	 * @since 2.1
 	 */
-	@ReadingConverter
 	public enum MillisOfDayToLocalTimeConverter implements Converter<Long, LocalTime> {
 
 		INSTANCE;
@@ -126,7 +127,6 @@ public abstract class CassandraThreeTenBackPortConverters {
 	 * @since 3.0
 	 */
 	@WritingConverter
-	@CassandraType(type = Name.TIME)
 	public enum FromBpLocalTimeConverter implements Converter<LocalTime, java.time.LocalTime> {
 
 		INSTANCE;
@@ -142,7 +142,6 @@ public abstract class CassandraThreeTenBackPortConverters {
 	 *
 	 * @since 3.0
 	 */
-	@ReadingConverter
 	public enum ToBpLocalTimeConverter implements Converter<java.time.LocalTime, LocalTime> {
 
 		INSTANCE;
@@ -159,7 +158,6 @@ public abstract class CassandraThreeTenBackPortConverters {
 	 * @since 3.0
 	 */
 	@WritingConverter
-	@CassandraType(type = Name.DATE)
 	public enum FromBpLocalDateConverter implements Converter<LocalDate, java.time.LocalDate> {
 
 		INSTANCE;
@@ -175,7 +173,6 @@ public abstract class CassandraThreeTenBackPortConverters {
 	 *
 	 * @since 3.0
 	 */
-	@ReadingConverter
 	public enum ToBpLocalDateConverter implements Converter<java.time.LocalDate, LocalDate> {
 
 		INSTANCE;
@@ -208,7 +205,6 @@ public abstract class CassandraThreeTenBackPortConverters {
 	 *
 	 * @since 3.0
 	 */
-	@ReadingConverter
 	public enum ToBpLocalDateTimeConverter implements Converter<java.time.LocalDateTime, LocalDateTime> {
 
 		INSTANCE;
@@ -221,11 +217,10 @@ public abstract class CassandraThreeTenBackPortConverters {
 	}
 
 	/**
-	 * Force {@link LocalDateTime} to remain a {@link Instant}.
+	 * Convert {@link LocalDateTime} to {@link Instant}.
 	 *
 	 * @since 3.0
 	 */
-	@WritingConverter
 	enum LocalDateTimeToInstantConverter implements Converter<LocalDateTime, java.time.Instant> {
 
 		INSTANCE;
@@ -233,6 +228,66 @@ public abstract class CassandraThreeTenBackPortConverters {
 		@Override
 		public java.time.Instant convert(LocalDateTime source) {
 			return Instant.ofEpochMilli(source.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
+		}
+	}
+
+	/**
+	 * Convert {@link org.threeten.bp.Instant} to {@link java.time.Instant}.
+	 *
+	 * @since 3.0
+	 */
+	enum BpInstantToInstantConverter implements Converter<org.threeten.bp.Instant, java.time.Instant> {
+
+		INSTANCE;
+
+		@Override
+		public java.time.Instant convert(org.threeten.bp.Instant source) {
+			return Instant.ofEpochMilli(source.toEpochMilli());
+		}
+	}
+
+	/**
+	 * Convert {@link java.time.Instant} to {@link org.threeten.bp.Instant}.
+	 *
+	 * @since 3.0
+	 */
+	enum InstantToBpInstantConverter implements Converter<java.time.Instant, org.threeten.bp.Instant> {
+
+		INSTANCE;
+
+		@Override
+		public org.threeten.bp.Instant convert(java.time.Instant source) {
+			return org.threeten.bp.Instant.ofEpochMilli(source.toEpochMilli());
+		}
+	}
+
+	/**
+	 * Convert {@link ZoneId} to {@link String}.
+	 *
+	 * @since 3.0
+	 */
+	enum ZoneIdToStringConverter implements Converter<ZoneId, String> {
+
+		INSTANCE;
+
+		@Override
+		public String convert(ZoneId source) {
+			return source.toString();
+		}
+	}
+
+	/**
+	 * Convert {@link String} to {@link ZoneId}.
+	 *
+	 * @since 3.0
+	 */
+	enum StringToZoneIdConverter implements Converter<String, ZoneId> {
+
+		INSTANCE;
+
+		@Override
+		public ZoneId convert(String source) {
+			return ZoneId.of(source);
 		}
 	}
 }

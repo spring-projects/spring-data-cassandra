@@ -96,7 +96,7 @@ public class CassandraMappingContext
 	 * Create a new {@link CassandraMappingContext}.
 	 */
 	public CassandraMappingContext() {
-		setSimpleTypeHolder(CassandraSimpleTypeHolder.HOLDER);
+		setSimpleTypeHolder(customConversions.getSimpleTypeHolder());
 	}
 
 	/**
@@ -110,7 +110,7 @@ public class CassandraMappingContext
 
 		setUserTypeResolver(userTypeResolver);
 		setTupleTypeFactory(tupleTypeFactory);
-		setSimpleTypeHolder(CassandraSimpleTypeHolder.HOLDER);
+		setSimpleTypeHolder(customConversions.getSimpleTypeHolder());
 	}
 
 	/* (non-Javadoc)
@@ -198,6 +198,10 @@ public class CassandraMappingContext
 		Assert.notNull(customConversions, "CustomConversions must not be null");
 
 		this.customConversions = customConversions;
+	}
+
+	public CustomConversions getCustomConversions() {
+		return customConversions;
 	}
 
 	/**
@@ -557,7 +561,7 @@ public class CassandraMappingContext
 	 * @since 1.5
 	 */
 	public DataType getDataType(Class<?> type) {
-		return doGetDataType(type, this.customConversions.getCustomWriteTarget(type).orElse(type));
+		return CassandraSimpleTypeHolder.getDataTypeFor(this.customConversions.getCustomWriteTarget(type).orElse(type));
 	}
 
 	public TupleType getTupleType(CassandraPersistentEntity<?> persistentEntity) {
@@ -651,7 +655,10 @@ public class CassandraMappingContext
 			Supplier<DataType> fallback) {
 
 		Optional<DataType> customWriteTarget = this.customConversions.getCustomWriteTarget(typeInformation.getType())
-				.map(it -> doGetDataType(typeInformation.getType(), it));
+				.map(it -> {
+					typeInformation.getType();
+					return CassandraSimpleTypeHolder.getDataTypeFor(it);
+				});
 
 		DataType dataType = customWriteTarget.orElseGet(() -> {
 
@@ -662,15 +669,15 @@ public class CassandraMappingContext
 
 						if (typeInformation.isCollectionLike()) {
 							if (List.class.isAssignableFrom(typeInformation.getType())) {
-								return DataTypes.listOf(doGetDataType(propertyType, it));
+								return DataTypes.listOf(CassandraSimpleTypeHolder.getDataTypeFor(it));
 							}
 
 							if (Set.class.isAssignableFrom(typeInformation.getType())) {
-								return DataTypes.setOf(doGetDataType(propertyType, it));
+								return DataTypes.setOf(CassandraSimpleTypeHolder.getDataTypeFor(it));
 							}
 						}
 
-						return doGetDataType(propertyType, it);
+						return CassandraSimpleTypeHolder.getDataTypeFor(it);
 
 					}).orElse(null);
 		});
@@ -718,48 +725,13 @@ public class CassandraMappingContext
 			return dataTypeProvider.getDataType(persistentEntity);
 		}
 
-		DataType determinedType = doGetDataType(typeInformation);
+		DataType determinedType = CassandraSimpleTypeHolder.getDataTypeFor(typeInformation.getType());
 
 		if (determinedType != null) {
 			return determinedType;
 		}
 
 		return fallback.get();
-	}
-
-	/**
-	 * Resolve Cassandra {@link DataType}.
-	 *
-	 * @param typeInformation
-	 * @return
-	 */
-	@Nullable
-	private DataType doGetDataType(TypeInformation<?> typeInformation) {
-		return doGetDataType(typeInformation.getType(), typeInformation.getType());
-	}
-
-	/**
-	 * Resolve Cassandra {@link DataType} with conditional handling of {@code time} data type.
-	 *
-	 * @param propertyType
-	 * @param converted
-	 * @return
-	 */
-	@Nullable
-	private DataType doGetDataType(Class<?> propertyType, Class<?> converted) {
-
-		if (this.customConversions instanceof CassandraCustomConversions) {
-
-			CassandraCustomConversions conversions = (CassandraCustomConversions) this.customConversions;
-
-			if (conversions.isNativeTimeTypeMarker(converted)
-					|| (conversions.isNativeTimeTypeMarker(propertyType) && Long.class.equals(converted))) {
-
-				return DataTypes.TIME;
-			}
-		}
-
-		return CassandraSimpleTypeHolder.getDataTypeFor(converted);
 	}
 
 	private TupleType getTupleType(DataTypeProvider dataTypeProvider, CassandraPersistentEntity<?> persistentEntity) {
@@ -781,7 +753,8 @@ public class CassandraMappingContext
 
 		DataType keyType = getDataTypeWithUserTypeFactory(keyTypeInformation, dataTypeProvider, () -> {
 
-			DataType type = doGetDataType(keyTypeInformation.getType(), keyTypeInformation.getType());
+			keyTypeInformation.getType();
+			DataType type = CassandraSimpleTypeHolder.getDataTypeFor(keyTypeInformation.getType());
 
 			if (type != null) {
 				return type;
@@ -792,7 +765,8 @@ public class CassandraMappingContext
 
 		DataType valueType = getDataTypeWithUserTypeFactory(valueTypeInformation, dataTypeProvider, () -> {
 
-			DataType type = doGetDataType(valueTypeInformation.getType(), valueTypeInformation.getType());
+			valueTypeInformation.getType();
+			DataType type = CassandraSimpleTypeHolder.getDataTypeFor(valueTypeInformation.getType());
 
 			if (type != null) {
 				return type;

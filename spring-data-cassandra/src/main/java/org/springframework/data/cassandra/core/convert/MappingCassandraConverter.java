@@ -92,25 +92,18 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 	private SpELContext spELContext;
 
-	private static ConversionService newConversionService() {
-		return new DefaultConversionService();
-	}
-
-	private static CassandraMappingContext newDefaultMappingContext() {
-
-		CassandraMappingContext mappingContext = new CassandraMappingContext();
-
-		mappingContext.setCustomConversions(new CassandraCustomConversions(Collections.emptyList()));
-		mappingContext.afterPropertiesSet();
-
-		return mappingContext;
-	}
-
 	/**
 	 * Create a new {@link MappingCassandraConverter} with a {@link CassandraMappingContext}.
 	 */
 	public MappingCassandraConverter() {
-		this(newDefaultMappingContext());
+
+		super(newConversionService());
+
+		CassandraCustomConversions conversions = new CassandraCustomConversions(Collections.emptyList());
+
+		this.mappingContext = newDefaultMappingContext(conversions);
+		this.setCustomConversions(conversions);
+		this.spELContext = new SpELContext(RowReaderPropertyAccessor.INSTANCE);
 	}
 
 	/**
@@ -124,8 +117,23 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 		Assert.notNull(mappingContext, "CassandraMappingContext must not be null");
 
+		this.setCustomConversions(mappingContext.getCustomConversions());
 		this.mappingContext = mappingContext;
 		this.spELContext = new SpELContext(RowReaderPropertyAccessor.INSTANCE);
+	}
+
+	private static ConversionService newConversionService() {
+		return new DefaultConversionService();
+	}
+
+	private static CassandraMappingContext newDefaultMappingContext(CassandraCustomConversions conversions) {
+
+		CassandraMappingContext mappingContext = new CassandraMappingContext();
+
+		mappingContext.setCustomConversions(conversions);
+		mappingContext.afterPropertiesSet();
+
+		return mappingContext;
 	}
 
 	/* (non-Javadoc)
