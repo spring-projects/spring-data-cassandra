@@ -37,8 +37,9 @@ import org.springframework.util.ClassUtils;
  *
  * @author Mark Paluch
  * @since 1.5
+ * @deprecated since 3.0, use JSR-310 types as replacement for Joda-Time.
  */
-@SuppressWarnings("deprecation")
+@Deprecated
 public abstract class CassandraJodaTimeConverters {
 
 	private static final boolean JODA_TIME_IS_PRESENT = ClassUtils.isPresent("org.joda.time.LocalDate", null);
@@ -83,6 +84,7 @@ public abstract class CassandraJodaTimeConverters {
 	 *
 	 * @author Mark Paluch
 	 */
+	@Deprecated
 	public enum MillisOfDayToLocalTimeConverter implements Converter<Long, LocalTime> {
 
 		INSTANCE;
@@ -98,6 +100,7 @@ public abstract class CassandraJodaTimeConverters {
 	 *
 	 * @author Mark Paluch
 	 */
+	@Deprecated
 	public enum LocalTimeToMillisOfDayConverter implements Converter<LocalTime, Long> {
 
 		INSTANCE;
@@ -114,6 +117,7 @@ public abstract class CassandraJodaTimeConverters {
 	 * @author Mark Paluch
 	 */
 	@WritingConverter
+	@Deprecated
 	public enum FromJodaLocalTimeConverter implements Converter<LocalTime, java.time.LocalTime> {
 
 		INSTANCE;
@@ -129,6 +133,7 @@ public abstract class CassandraJodaTimeConverters {
 	 *
 	 * @author Mark Paluch
 	 */
+	@Deprecated
 	public enum ToJodaLocalTimeConverter implements Converter<java.time.LocalTime, LocalTime> {
 
 		INSTANCE;
@@ -145,6 +150,7 @@ public abstract class CassandraJodaTimeConverters {
 	 * @author Mark Paluch
 	 */
 	@WritingConverter
+	@Deprecated
 	public enum FromJodaLocalDateConverter implements Converter<LocalDate, java.time.LocalDate> {
 
 		INSTANCE;
@@ -160,6 +166,7 @@ public abstract class CassandraJodaTimeConverters {
 	 *
 	 * @author Mark Paluch
 	 */
+	@Deprecated
 	public enum ToJodaLocalDateConverter implements Converter<java.time.LocalDate, LocalDate> {
 
 		INSTANCE;
@@ -175,6 +182,7 @@ public abstract class CassandraJodaTimeConverters {
 	 *
 	 * @since 3.0
 	 */
+	@Deprecated
 	public enum LocalDateTimeToInstantConverter implements Converter<LocalDateTime, java.time.Instant> {
 
 		INSTANCE;
@@ -190,6 +198,7 @@ public abstract class CassandraJodaTimeConverters {
 	 *
 	 * @since 3.0
 	 */
+	@Deprecated
 	public enum InstantToLocalDateTimeConverter implements Converter<java.time.Instant, LocalDateTime> {
 
 		INSTANCE;
@@ -205,6 +214,7 @@ public abstract class CassandraJodaTimeConverters {
 	 *
 	 * @since 3.0
 	 */
+	@Deprecated
 	public enum DateTimeToInstantConverter implements Converter<DateTime, java.time.Instant> {
 
 		INSTANCE;
@@ -220,6 +230,7 @@ public abstract class CassandraJodaTimeConverters {
 	 *
 	 * @since 3.0
 	 */
+	@Deprecated
 	public enum InstantToDateTimeConverter implements Converter<java.time.Instant, DateTime> {
 
 		INSTANCE;

@@ -41,7 +41,9 @@ import org.threeten.bp.temporal.ChronoField;
  * @author Mark Paluch
  * @see <a href="https://www.threeten.org/threetenbp">Threeten Backport</a>
  * @since 1.5
+ * @deprecated since 3.0, use JSR-310 types as replacement for ThreeTen Backport.
  */
+@Deprecated
 public abstract class CassandraThreeTenBackPortConverters {
 
 	private static final boolean THREE_TEN_BACK_PORT_IS_PRESENT = ClassUtils.isPresent("org.threeten.bp.LocalDateTime",
@@ -94,6 +96,7 @@ public abstract class CassandraThreeTenBackPortConverters {
 	 * @author Mark Paluch
 	 * @since 2.1
 	 */
+	@Deprecated
 	public enum MillisOfDayToLocalTimeConverter implements Converter<Long, LocalTime> {
 
 		INSTANCE;
@@ -111,6 +114,7 @@ public abstract class CassandraThreeTenBackPortConverters {
 	 * @since 2.1
 	 */
 	@ReadingConverter
+	@Deprecated
 	public enum LocalTimeToMillisOfDayConverter implements Converter<LocalTime, Long> {
 
 		INSTANCE;
@@ -127,6 +131,7 @@ public abstract class CassandraThreeTenBackPortConverters {
 	 * @since 3.0
 	 */
 	@WritingConverter
+	@Deprecated
 	public enum FromBpLocalTimeConverter implements Converter<LocalTime, java.time.LocalTime> {
 
 		INSTANCE;
@@ -142,6 +147,7 @@ public abstract class CassandraThreeTenBackPortConverters {
 	 *
 	 * @since 3.0
 	 */
+	@Deprecated
 	public enum ToBpLocalTimeConverter implements Converter<java.time.LocalTime, LocalTime> {
 
 		INSTANCE;
@@ -158,6 +164,7 @@ public abstract class CassandraThreeTenBackPortConverters {
 	 * @since 3.0
 	 */
 	@WritingConverter
+	@Deprecated
 	public enum FromBpLocalDateConverter implements Converter<LocalDate, java.time.LocalDate> {
 
 		INSTANCE;
@@ -173,6 +180,7 @@ public abstract class CassandraThreeTenBackPortConverters {
 	 *
 	 * @since 3.0
 	 */
+	@Deprecated
 	public enum ToBpLocalDateConverter implements Converter<java.time.LocalDate, LocalDate> {
 
 		INSTANCE;
@@ -189,6 +197,7 @@ public abstract class CassandraThreeTenBackPortConverters {
 	 * @since 3.0
 	 */
 	@ReadingConverter
+	@Deprecated
 	public enum FromBpLocalDateTimeConverter implements Converter<LocalDateTime, java.time.LocalDateTime> {
 
 		INSTANCE;
@@ -205,6 +214,7 @@ public abstract class CassandraThreeTenBackPortConverters {
 	 *
 	 * @since 3.0
 	 */
+	@Deprecated
 	public enum ToBpLocalDateTimeConverter implements Converter<java.time.LocalDateTime, LocalDateTime> {
 
 		INSTANCE;
@@ -221,6 +231,7 @@ public abstract class CassandraThreeTenBackPortConverters {
 	 *
 	 * @since 3.0
 	 */
+	@Deprecated
 	enum LocalDateTimeToInstantConverter implements Converter<LocalDateTime, java.time.Instant> {
 
 		INSTANCE;
@@ -236,6 +247,7 @@ public abstract class CassandraThreeTenBackPortConverters {
 	 *
 	 * @since 3.0
 	 */
+	@Deprecated
 	enum BpInstantToInstantConverter implements Converter<org.threeten.bp.Instant, java.time.Instant> {
 
 		INSTANCE;
@@ -251,6 +263,7 @@ public abstract class CassandraThreeTenBackPortConverters {
 	 *
 	 * @since 3.0
 	 */
+	@Deprecated
 	enum InstantToBpInstantConverter implements Converter<java.time.Instant, org.threeten.bp.Instant> {
 
 		INSTANCE;
@@ -266,6 +279,7 @@ public abstract class CassandraThreeTenBackPortConverters {
 	 *
 	 * @since 3.0
 	 */
+	@Deprecated
 	enum ZoneIdToStringConverter implements Converter<ZoneId, String> {
 
 		INSTANCE;
@@ -281,6 +295,7 @@ public abstract class CassandraThreeTenBackPortConverters {
 	 *
 	 * @since 3.0
 	 */
+	@Deprecated
 	enum StringToZoneIdConverter implements Converter<String, ZoneId> {
 
 		INSTANCE;
