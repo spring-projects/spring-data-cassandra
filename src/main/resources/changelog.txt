@@ -1,6 +1,18 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 3.0.0.M3 (2020-02-12)
+----------------------------------------
+* DATACASS-728 - Deprecate Joda-Time and ThreeTenBackport support.
+* DATACASS-727 - Clean up converter registration.
+* DATACASS-726 - Upgrade to DataStax Java Driver 4.4.
+* DATACASS-725 - Upgrade to Apache Cassandra 3.11.5.
+* DATACASS-722 - Move off deprecated EntityInstantiators.
+* DATACASS-721 - Refactor codebase around uses of the new DataStax 4.x Driver API.
+* DATACASS-719 - Release 3.0 M3 (Neumann).
+* DATACASS-708 - Extend QueryOptions with serial consistency and execution profile.
+
+
 Changes in version 3.0.0.M2 (2020-01-17)
 ----------------------------------------
 * DATACASS-717 - Release 3.0 M2 (Neumann).
@@ -1127,6 +1139,7 @@ Changes in version 1.0.0.M1 (2014-03-31)
     * [DATACASS-100] - QueryOptions should only have ConsistencyLevel & RetryPolicy
     * [DATACASS-104] - Remove requirement for @PrimaryKeyClass when using composite primary keys
     * [DATACASS-107] - Support declarative query methods
+
 
 
 
