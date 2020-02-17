@@ -39,7 +39,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * </pre>
  *
  * @author Mark Paluch
- * @author Chema Vinacua 
+ * @author Chema Vinacua
  * @since 2.0
  */
 public class Update {
@@ -186,6 +186,12 @@ public class Update {
 	 *         assignment.
 	 */
 	public Update decrement(String columnName, Number delta) {
+
+		if (delta instanceof Integer || delta instanceof Long) {
+
+			long deltaValue = delta.longValue() > 0 ? -Math.abs(delta.longValue()) : delta.longValue();
+			return add(new IncrOp(ColumnName.from(columnName), deltaValue));
+		}
 
 		double deltaValue = delta.doubleValue();
 
