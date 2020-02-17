@@ -24,7 +24,7 @@ import org.springframework.data.cassandra.core.query.Update.IncrOp;
  * Unit tests for {@link Update}.
  *
  * @author Mark Paluch
- * @author Chema Vinacua 
+ * @author Chema Vinacua
  */
 public class UpdateUnitTests {
 
@@ -34,7 +34,7 @@ public class UpdateUnitTests {
 		Update update = Update.update("foo", "bar");
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
-		assertThat(update.toString()).isEqualTo("foo = 'bar'");
+		assertThat(update).hasToString("foo = 'bar'");
 	}
 
 	@Test // DATACASS-343
@@ -43,7 +43,7 @@ public class UpdateUnitTests {
 		Update update = Update.empty().set("foo").atIndex(10).to("bar");
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
-		assertThat(update.toString()).isEqualTo("foo[10] = 'bar'");
+		assertThat(update).hasToString("foo[10] = 'bar'");
 	}
 
 	@Test // DATACASS-343
@@ -52,7 +52,7 @@ public class UpdateUnitTests {
 		Update update = Update.empty().set("foo").atKey("baz").to("bar");
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
-		assertThat(update.toString()).isEqualTo("foo['baz'] = 'bar'");
+		assertThat(update).hasToString("foo['baz'] = 'bar'");
 	}
 
 	@Test // DATACASS-343
@@ -61,7 +61,7 @@ public class UpdateUnitTests {
 		Update update = Update.empty().addTo("foo").entry("foo", "bar");
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
-		assertThat(update.toString()).isEqualTo("foo = foo + {'foo':'bar'}");
+		assertThat(update).hasToString("foo = foo + {'foo':'bar'}");
 	}
 
 	@Test // DATACASS-343
@@ -70,7 +70,7 @@ public class UpdateUnitTests {
 		Update update = Update.empty().addTo("foo").prependAll("foo", "bar");
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
-		assertThat(update.toString()).isEqualTo("foo = ['foo','bar'] + foo");
+		assertThat(update).hasToString("foo = ['foo','bar'] + foo");
 	}
 
 	@Test // DATACASS-343
@@ -79,7 +79,7 @@ public class UpdateUnitTests {
 		Update update = Update.empty().addTo("foo").appendAll("foo", "bar");
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
-		assertThat(update.toString()).isEqualTo("foo = foo + ['foo','bar']");
+		assertThat(update).hasToString("foo = foo + ['foo','bar']");
 	}
 
 	@Test // DATACASS-343
@@ -88,7 +88,7 @@ public class UpdateUnitTests {
 		Update update = Update.empty().remove("foo", "bar");
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
-		assertThat(update.toString()).isEqualTo("foo = foo - ['bar']");
+		assertThat(update).hasToString("foo = foo - ['bar']");
 	}
 
 	@Test // DATACASS-343
@@ -97,7 +97,7 @@ public class UpdateUnitTests {
 		Update update = Update.empty().clear("foo");
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
-		assertThat(update.toString()).isEqualTo("foo = []");
+		assertThat(update).hasToString("foo = []");
 	}
 
 	@Test // DATACASS-343
@@ -106,7 +106,7 @@ public class UpdateUnitTests {
 		Update update = Update.empty().increment("foo");
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
-		assertThat(update.toString()).isEqualTo("foo = foo + 1");
+		assertThat(update).hasToString("foo = foo + 1");
 	}
 
 	@Test // DATACASS-343
@@ -115,7 +115,7 @@ public class UpdateUnitTests {
 		Update update = Update.empty().decrement("foo");
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
-		assertThat(update.toString()).isEqualTo("foo = foo - 1");
+		assertThat(update).hasToString("foo = foo - 1");
 	}
 
 	@Test // DATACASS-343
@@ -124,7 +124,7 @@ public class UpdateUnitTests {
 		Update update = Update.empty().increment("foo").decrement("bar");
 
 		assertThat(update.getUpdateOperations()).hasSize(2);
-		assertThat(update.toString()).isEqualTo("foo = foo + 1, bar = bar - 1");
+		assertThat(update).hasToString("foo = foo + 1, bar = bar - 1");
 	}
 
 	@Test // DATACASS-343
@@ -139,9 +139,18 @@ public class UpdateUnitTests {
 	@Test // DATACASS-718
 	public void shouldCreateIncrementLongUpdate() {
 
-		Update update = Update.empty().increment("foo", 2400000000l);
+		Update update = Update.empty().increment("foo", 2400000000L);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
-		assertThat(update.toString()).isEqualTo("foo = foo + 2400000000");
+		assertThat(update).hasToString("foo = foo + 2400000000");
+	}
+
+	@Test // DATACASS-718
+	public void shouldCreateDecrementLongUpdate() {
+
+		Update update = Update.empty().decrement("foo", 2400000000L);
+
+		assertThat(update.getUpdateOperations()).hasSize(1);
+		assertThat(update).hasToString("foo = foo - 2400000000");
 	}
 }
