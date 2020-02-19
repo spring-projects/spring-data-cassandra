@@ -22,6 +22,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Supplier;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -61,6 +63,8 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	private Boolean forceQuote;
 
 	private @Nullable CqlIdentifier columnName;
+
+	private NamingStrategy namingStrategy = NamingStrategy.INSTANCE;
 
 	private @Nullable StandardEvaluationContext spelContext;
 
@@ -180,7 +184,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 			return null;
 		}
 
-		String defaultName = getName(); // TODO: replace with naming strategy class
+		Supplier<String> defaultName = () -> namingStrategy.getColumnName(this);
 		String overriddenName = null;
 
 		boolean forceQuote = false;
@@ -217,12 +221,15 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	}
 
 	@Nullable
-	private CqlIdentifier createColumnName(String defaultName, @Nullable String overriddenName, boolean forceQuote) {
+	private CqlIdentifier createColumnName(Supplier<String> defaultName, @Nullable String overriddenName,
+			boolean forceQuote) {
 
-		String name = defaultName;
+		String name;
 
 		if (StringUtils.hasText(overriddenName)) {
 			name = this.spelContext != null ? SpelUtils.evaluate(overriddenName, this.spelContext) : overriddenName;
+		} else {
+			name = defaultName.get();
 		}
 
 		return name != null ? IdentifierFactory.create(name, forceQuote) : null;
@@ -237,6 +244,19 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		Assert.notNull(columnName, "ColumnName must not be null");
 
 		this.columnName = columnName;
+	}
+
+	/**
+	 * Set the {@link NamingStrategy} to use.
+	 *
+	 * @param namingStrategy must not be {@literal null}.
+	 * @since 3.0
+	 */
+	public void setNamingStrategy(NamingStrategy namingStrategy) {
+
+		Assert.notNull(namingStrategy, "NamingStrategy must not be null");
+
+		this.namingStrategy = namingStrategy;
 	}
 
 	/* (non-Javadoc)

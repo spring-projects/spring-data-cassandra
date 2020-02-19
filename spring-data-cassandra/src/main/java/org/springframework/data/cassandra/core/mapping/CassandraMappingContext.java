@@ -72,6 +72,8 @@ public class CassandraMappingContext
 
 	private Mapping mapping = new Mapping();
 
+	private NamingStrategy namingStrategy = NamingStrategy.INSTANCE;
+
 	private @Deprecated @Nullable UserTypeResolver userTypeResolver;
 
 	private @Deprecated CodecRegistry codecRegistry = CodecRegistry.DEFAULT;
@@ -263,6 +265,19 @@ public class CassandraMappingContext
 	}
 
 	/**
+	 * Set the {@link NamingStrategy} to use.
+	 *
+	 * @param namingStrategy must not be {@literal null}.
+	 * @since 3.0
+	 */
+	public void setNamingStrategy(NamingStrategy namingStrategy) {
+
+		Assert.notNull(namingStrategy, "NamingStrategy must not be null");
+
+		this.namingStrategy = namingStrategy;
+	}
+
+	/**
 	 * Sets the {@link TupleTypeFactory}.
 	 *
 	 * @param tupleTypeFactory must not be {@literal null}.
@@ -366,6 +381,7 @@ public class CassandraMappingContext
 				: isTuple(typeInformation) ? new BasicCassandraPersistentTupleEntity<>(typeInformation)
 						: new BasicCassandraPersistentEntity<>(typeInformation, getVerifier());
 
+		entity.setNamingStrategy(this.namingStrategy);
 		Optional.ofNullable(this.applicationContext).ifPresent(entity::setApplicationContext);
 
 		return entity;
@@ -390,6 +406,7 @@ public class CassandraMappingContext
 				? new BasicCassandraPersistentTupleProperty(property, owner, simpleTypeHolder)
 				: new BasicCassandraPersistentProperty(property, owner, simpleTypeHolder);
 
+		persistentProperty.setNamingStrategy(this.namingStrategy);
 		Optional.ofNullable(this.applicationContext).ifPresent(persistentProperty::setApplicationContext);
 
 		return persistentProperty;

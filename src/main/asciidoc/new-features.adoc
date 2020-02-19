@@ -5,11 +5,13 @@ This chapter summarizes changes and new features for each release.
 
 [[new-features.3-0-0]]
 == What's new in Spring Data for Apache Cassandra 3.0
-* Upgrade to Cassandra Driver version 4. See the <<cassandra.migration.2.x-to-3.x,2.x to 3.x migration guide for details>>.
 
+* Upgrade to Cassandra Driver version 4. See the <<cassandra.migration.2.x-to-3.x,2.x to 3.x migration guide for details>>.
+* Support for `NamingStrategy`.
 
 [[new-features.2-2-0]]
 == What's new in Spring Data for Apache Cassandra 2.2
+
 * Filter conditions for lightweight transaction update and delete (`UPDATE … IF <condition>`, `DELETE … IF <condition>`).
 * Optimistic Locking support.
 * Auditing via `@EnableCassandraAuditing`.
@@ -22,6 +24,7 @@ This chapter summarizes changes and new features for each release.
 
 [[new-features.2-1-0]]
 == What's new in Spring Data for Apache Cassandra 2.1
+
 * New annotations for `@CountQuery` and `@ExistsQuery`.
 * Template API extended with `count(…)` and `exists(…)` methods accepting `Query`.
 * <<cassandra.template.query.fluent-template-api,Fluent API>> for CRUD operations.

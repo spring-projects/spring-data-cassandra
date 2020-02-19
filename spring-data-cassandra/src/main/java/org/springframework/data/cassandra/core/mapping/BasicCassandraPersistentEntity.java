@@ -55,6 +55,8 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 
 	private CqlIdentifier tableName;
 
+	private NamingStrategy namingStrategy = NamingStrategy.INSTANCE;
+
 	private @Nullable StandardEvaluationContext spelContext;
 
 	/**
@@ -106,13 +108,13 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 			return determineName(annotation.value(), annotation.forceQuote());
 		}
 
-		return IdentifierFactory.create(getType().getSimpleName(), false);
+		return IdentifierFactory.create(namingStrategy.getTableName(this), false);
 	}
 
 	CqlIdentifier determineName(String value, boolean forceQuote) {
 
 		if (!StringUtils.hasText(value)) {
-			return IdentifierFactory.create(getType().getSimpleName(), forceQuote);
+			return IdentifierFactory.create(namingStrategy.getTableName(this), forceQuote);
 		}
 
 		String name = Optional.ofNullable(this.spelContext).map(it -> SpelUtils.evaluate(value, it)).orElse(value);
@@ -197,6 +199,23 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 		Assert.notNull(tableName, "CqlIdentifier must not be null");
 
 		this.tableName = tableName;
+	}
+
+	/**
+	 * Set the {@link NamingStrategy} to use.
+	 *
+	 * @param namingStrategy must not be {@literal null}.
+	 * @since 3.0
+	 */
+	public void setNamingStrategy(NamingStrategy namingStrategy) {
+
+		Assert.notNull(namingStrategy, "NamingStrategy must not be null");
+
+		this.namingStrategy = namingStrategy;
+	}
+
+	NamingStrategy getNamingStrategy() {
+		return namingStrategy;
 	}
 
 	/* (non-Javadoc)
