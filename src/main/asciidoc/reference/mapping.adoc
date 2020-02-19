@@ -444,7 +444,6 @@ include::../{example-root}/mapping/PersonWithIndexes.java[tags=class]
 CAUTION: Index creation on session initialization may have a severe performance impact on application startup.
 
 include::./converters.adoc[]
-
 [[cassandra.mapping-usage.events]]
 == Lifecycle Events
 
