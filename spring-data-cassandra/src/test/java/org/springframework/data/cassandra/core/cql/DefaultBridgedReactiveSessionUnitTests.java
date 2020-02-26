@@ -25,6 +25,7 @@ import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Queue;
+import java.util.Spliterator;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -32,6 +33,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.cassandra.ReactiveResultSet;
 import org.springframework.data.cassandra.core.cql.session.DefaultBridgedReactiveSession;
 
@@ -56,6 +58,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 public class DefaultBridgedReactiveSessionUnitTests {
 
 	@Mock Session sessionMock;
+	@Mock Spliterator<Row> spliteratorMock;
 	@Mock ResultSetFuture future;
 	@Mock ListenableFuture<PreparedStatement> preparedStatementFuture;
 
@@ -172,6 +175,7 @@ public class DefaultBridgedReactiveSessionUnitTests {
 
 		when(resultSet.getAvailableWithoutFetching()).thenReturn(10);
 		when(resultSet.iterator()).thenReturn(rows);
+		when(resultSet.spliterator()).thenReturn(spliteratorMock);
 
 		when(future.get()).thenReturn(resultSet);
 		when(resultSet.isFullyFetched()).thenReturn(true);
@@ -190,6 +194,7 @@ public class DefaultBridgedReactiveSessionUnitTests {
 		ResultSet resultSet = mock(ResultSet.class);
 		when(resultSet.iterator()).thenReturn(rows);
 		when(resultSet.getAvailableWithoutFetching()).thenReturn(10);
+		when(resultSet.spliterator()).thenReturn(spliteratorMock);
 		when(future.get()).thenReturn(resultSet);
 
 		Flux<Row> flux = reactiveSession.execute(new SimpleStatement("")).flatMapMany(ReactiveResultSet::availableRows);
@@ -210,11 +215,13 @@ public class DefaultBridgedReactiveSessionUnitTests {
 
 		when(resultSet.getAvailableWithoutFetching()).thenReturn(10);
 		when(resultSet.iterator()).thenReturn(rows);
+		when(resultSet.spliterator()).thenReturn(spliteratorMock);
 
 		ResultSet emptyResultSet = mock(ResultSet.class);
 
 		when(emptyResultSet.iterator()).thenReturn(Collections.emptyIterator());
 		when(emptyResultSet.isFullyFetched()).thenReturn(true);
+		when(emptyResultSet.spliterator()).thenReturn(spliteratorMock);
 
 		when(future.get()).thenReturn(resultSet);
 		when(resultSet.isFullyFetched()).thenReturn(false, true);
@@ -240,6 +247,7 @@ public class DefaultBridgedReactiveSessionUnitTests {
 
 		when(resultSet.getAvailableWithoutFetching()).thenReturn(10);
 		when(resultSet.iterator()).thenReturn(rows);
+		when(resultSet.spliterator()).thenReturn(spliteratorMock);
 
 		reset(future);
 		doAnswer(invocation -> {
