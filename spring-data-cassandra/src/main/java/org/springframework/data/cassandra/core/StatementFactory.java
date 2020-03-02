@@ -367,9 +367,9 @@ public class StatementFactory {
 
 	private static Assignment getAssignment(IncrOp incrOp) {
 
-		return incrOp.getValue().intValue() > 0
-				? QueryBuilder.incr(incrOp.getColumnName().toCql(), Math.abs(incrOp.getValue().intValue()))
-				: QueryBuilder.decr(incrOp.getColumnName().toCql(), Math.abs(incrOp.getValue().intValue()));
+		return incrOp.getValue().longValue() > 0
+				? QueryBuilder.incr(incrOp.getColumnName().toCql(), Math.abs(incrOp.getValue().longValue()))
+				: QueryBuilder.decr(incrOp.getColumnName().toCql(), Math.abs(incrOp.getValue().longValue()));
 	}
 
 	private static Assignment getAssignment(SetOp updateOp) {

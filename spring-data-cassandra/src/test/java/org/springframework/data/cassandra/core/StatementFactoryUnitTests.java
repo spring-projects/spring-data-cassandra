@@ -241,12 +241,28 @@ public class StatementFactoryUnitTests {
 		assertThat(update.toString()).isEqualTo("UPDATE person SET number=number+1;");
 	}
 
+	@Test // DATACASS-735
+	public void shouldCreateIncrementLongUpdate() {
+
+		Statement update = statementFactory.update(Query.empty(), Update.empty().increment("number", Long.MAX_VALUE), personEntity);
+
+		assertThat(update.toString()).isEqualTo("UPDATE person SET number=number+" + Long.MAX_VALUE+";");
+	}
+
 	@Test // DATACASS-343
 	public void shouldCreateDecrementUpdate() {
 
 		Statement update = statementFactory.update(Query.empty(), Update.empty().decrement("number"), personEntity);
 
 		assertThat(update.toString()).isEqualTo("UPDATE person SET number=number-1;");
+	}
+
+	@Test // DATACASS-735
+	public void shouldCreateDecrementLongUpdate() {
+
+		Statement update = statementFactory.update(Query.empty(), Update.empty().decrement("number", Long.MAX_VALUE), personEntity);
+
+		assertThat(update.toString()).isEqualTo("UPDATE person SET number=number-" + Long.MAX_VALUE+";");
 	}
 
 	@Test // DATACASS-569
