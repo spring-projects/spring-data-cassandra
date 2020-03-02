@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import java.time.Duration;
 import java.util.Collections;
@@ -419,6 +419,16 @@ public class StatementFactoryUnitTests {
 		assertThat(update.build(ParameterHandling.INLINE).getQuery()).isEqualTo("UPDATE person SET number+=1");
 	}
 
+	@Test // DATACASS-735
+	public void shouldCreateIncrementLongUpdate() {
+
+		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory
+				.update(Query.empty(), Update.empty().increment("number", Long.MAX_VALUE), personEntity);
+
+		assertThat(update.build(ParameterHandling.INLINE).getQuery())
+				.isEqualTo("UPDATE person SET number+=" + Long.MAX_VALUE);
+	}
+
 	@Test // DATACASS-343
 	public void shouldCreateDecrementUpdate() {
 
@@ -426,6 +436,16 @@ public class StatementFactoryUnitTests {
 				.update(Query.empty(), Update.empty().decrement("number"), personEntity);
 
 		assertThat(update.build(ParameterHandling.INLINE).getQuery()).isEqualTo("UPDATE person SET number-=1");
+	}
+
+	@Test // DATACASS-735
+	public void shouldCreateDecrementLongUpdate() {
+
+		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory
+				.update(Query.empty(), Update.empty().decrement("number", Long.MAX_VALUE), personEntity);
+
+		assertThat(update.build(ParameterHandling.INLINE).getQuery())
+				.isEqualTo("UPDATE person SET number-=" + Long.MAX_VALUE);
 	}
 
 	@Test // DATACASS-569

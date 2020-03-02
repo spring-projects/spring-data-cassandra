@@ -785,9 +785,9 @@ public class StatementFactory {
 
 	private static Assignment getAssignment(IncrOp incrOp, TermFactory termFactory) {
 
-		return incrOp.getValue().intValue() > 0
-				? Assignment.increment(incrOp.toCqlIdentifier(), termFactory.create(Math.abs(incrOp.getValue().intValue())))
-				: Assignment.decrement(incrOp.toCqlIdentifier(), termFactory.create(Math.abs(incrOp.getValue().intValue())));
+		return incrOp.getValue().longValue() > 0
+				? Assignment.increment(incrOp.toCqlIdentifier(), termFactory.create(Math.abs(incrOp.getValue().longValue())))
+				: Assignment.decrement(incrOp.toCqlIdentifier(), termFactory.create(Math.abs(incrOp.getValue().longValue())));
 	}
 
 	private static Assignment getAssignment(SetOp updateOp, TermFactory termFactory) {
