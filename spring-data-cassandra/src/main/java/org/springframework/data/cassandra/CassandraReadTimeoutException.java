@@ -18,23 +18,43 @@ package org.springframework.data.cassandra;
 import org.springframework.dao.QueryTimeoutException;
 
 /**
- * Spring data access exception for a Cassandra read timeout.
+ * Cassandra-specific exception for a server-side timeout during a read query.
  *
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 public class CassandraReadTimeoutException extends QueryTimeoutException {
 
 	private static final long serialVersionUID = -787022307935203387L;
 
-	private boolean wasDataReceived;
+	private final boolean wasDataPresent;
 
-	public CassandraReadTimeoutException(boolean wasDataReceived, String message, Throwable cause) {
-		super(message, cause);
-		this.wasDataReceived = wasDataReceived;
+	/**
+	 * Constructor for QueryTimeoutException.
+	 *
+	 * @param wasDataPresent whether the actual data was amongst the received replica responses.
+	 * @param msg the detail message.
+	 * @param cause the root cause from the data access API in use.
+	 */
+	public CassandraReadTimeoutException(boolean wasDataPresent, String msg, Throwable cause) {
+		super(msg, cause);
+		this.wasDataPresent = wasDataPresent;
 	}
 
-	// TODO: Rename wasDataPresent
+	/**
+	 * @return whether the actual data was amongst the received replica responses.
+	 * @deprecated since 3.0, use {@link #wasDataPresent()}.
+	 */
+	@Deprecated
 	public boolean getWasDataReceived() {
-		return wasDataReceived;
+		return wasDataPresent();
+	}
+
+	/**
+	 * @return whether the actual data was amongst the received replica responses.
+	 * @since 3.0
+	 */
+	public boolean wasDataPresent() {
+		return wasDataPresent;
 	}
 }
