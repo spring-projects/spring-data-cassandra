@@ -19,7 +19,6 @@ import com.datastax.oss.driver.api.core.cql.Row
 import com.datastax.oss.driver.api.core.cql.SimpleStatement
 import io.mockk.mockk
 import io.mockk.verify
-import org.junit.Ignore
 import org.junit.Test
 import org.springframework.data.cassandra.domain.Person
 
@@ -97,14 +96,6 @@ class ReactiveCqlOperationsExtensionsUnitTests {
 
 		operations.queryForFlux<Person>("", "foo", "bar")
 		verify { operations.queryForFlux("", Person::class.java, arrayOf("foo", "bar")) }
-	}
-
-	@Test // DATACASS-484
-	@Ignore("No such method: queryForFlux(CQL, RowMapper, Args), see DATACASS-538")
-	fun `queryForFlux(String, RowMapper, array) extension should call its Java counterpart`() {
-
-		//operations.queryForFlux("", 3) { rs: Row, _: Int -> rs.getInt(1) }
-		verify { operations.queryForFlux(eq(""), any<RowMapper<Int>>(), eq(3)) }
 	}
 
 	@Test // DATACASS-484

@@ -19,7 +19,6 @@ import com.datastax.oss.driver.api.core.cql.Row
 import com.datastax.oss.driver.api.core.cql.SimpleStatement
 import io.mockk.mockk
 import io.mockk.verify
-import org.junit.Ignore
 import org.junit.Test
 import org.springframework.data.cassandra.domain.Person
 import org.springframework.scheduling.annotation.AsyncResult
@@ -98,14 +97,6 @@ class AsyncCqlOperationsExtensionsUnitTests {
 
 		operations.queryForList<Person>("", "foo", "bar")
 		verify { operations.queryForList("", Person::class.java, arrayOf("foo", "bar")) }
-	}
-
-	@Test // DATACASS-484
-	@Ignore("No such method: queryForList(CQL, RowMapper, Args), see DATACASS-538")
-	fun `queryForList(String, RowMapper, array) extension should call its Java counterpart`() {
-
-		//operations.queryForList("", 3) { rs: Row, _: Int -> rs.getInt(1) }
-		verify { operations.queryForList(eq(""), any<RowMapper<Int>>(), eq(3)) }
 	}
 
 	@Test // DATACASS-484
