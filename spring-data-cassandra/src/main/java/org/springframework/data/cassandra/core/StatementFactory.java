@@ -793,8 +793,9 @@ public class StatementFactory {
 	private static Assignment getAssignment(SetOp updateOp, TermFactory termFactory) {
 
 		if (updateOp instanceof SetAtIndexOp) {
-			// return Assignment.setE(op.getColumnName().toCql(), op.getIndex(), op.getValue());
-			throw new UnsupportedOperationException("Set at index currently not supported");
+
+			return Assignment.setListValue(updateOp.toCqlIdentifier(),
+					termFactory.create(((SetAtIndexOp) updateOp).getIndex()), termFactory.create(updateOp.getValue()));
 		}
 
 		if (updateOp instanceof SetAtKeyOp) {

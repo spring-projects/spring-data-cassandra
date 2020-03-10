@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import org.springframework.data.annotation.Id;
@@ -306,8 +305,7 @@ public class StatementFactoryUnitTests {
 				.isEqualTo("UPDATE person USING TIMESTAMP 1234 SET first_name='baz' WHERE foo='bar'");
 	}
 
-	@Test // DATACASS-343
-	@Ignore("No operator for set at index yet")
+	@Test // DATACASS-343, DATACASS-712
 	public void shouldCreateSetAtIndexUpdate() {
 
 		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory
