@@ -86,8 +86,8 @@ import com.datastax.oss.driver.api.querybuilder.update.UpdateStart;
 import com.datastax.oss.driver.api.querybuilder.update.UpdateWithAssignments;
 
 /**
- * Factory to render {@link com.datastax.oss.driver.api.core.cql.Statement} objects
- * from {@link Query} and {@link Update} objects.
+ * Factory to render {@link com.datastax.oss.driver.api.core.cql.Statement} objects from {@link Query} and
+ * {@link Update} objects.
  *
  * @author Mark Paluch
  * @author John Blum
@@ -218,7 +218,7 @@ public class StatementFactory {
 		cassandraConverter.write(id, where, persistentEntity);
 
 		return StatementBuilder.of(QueryBuilder.selectFrom(tableName).all().limit(1))
-			.bind((statement, factory) -> statement.where(toRelations(where, factory)));
+				.bind((statement, factory) -> statement.where(toRelations(where, factory)));
 	}
 
 	/**
@@ -373,22 +373,18 @@ public class StatementFactory {
 
 		Update mappedUpdate = getUpdateMapper().getMappedObject(update, persistentEntity);
 
-		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> builder =
-				update(tableName, mappedUpdate, filter);
+		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> builder = update(tableName, mappedUpdate,
+				filter);
 
-		query.getQueryOptions()
-				.filter(UpdateOptions.class::isInstance)
-				.map(UpdateOptions.class::cast)
+		query.getQueryOptions().filter(UpdateOptions.class::isInstance).map(UpdateOptions.class::cast)
 				.map(UpdateOptions::getIfCondition)
 				.ifPresent(criteriaDefinitions -> applyUpdateIfCondition(builder, criteriaDefinitions));
 
-		query.getQueryOptions()
-				.filter(WriteOptions.class::isInstance)
-				.map(WriteOptions.class::cast)
+		query.getQueryOptions().filter(WriteOptions.class::isInstance).map(WriteOptions.class::cast)
 				.ifPresent(writeOptions -> builder.apply(statement -> addWriteOptions(statement, writeOptions)));
 
-		query.getQueryOptions().ifPresent(options ->
-				builder.transform(statementBuilder -> QueryOptionsUtil.addQueryOptions(statementBuilder, options)));
+		query.getQueryOptions().ifPresent(
+				options -> builder.transform(statementBuilder -> QueryOptionsUtil.addQueryOptions(statementBuilder, options)));
 
 		return builder;
 	}
@@ -442,13 +438,12 @@ public class StatementFactory {
 		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> builder = StatementBuilder
 				.of(QueryBuilder.update(tableName).set().where())
 				.bind((statement, factory) -> ((UpdateWithAssignments) statement).set(toAssignments(object, factory))
-					.where(toRelations(where, factory)))
+						.where(toRelations(where, factory)))
 				.apply(update -> addWriteOptions(update, options));
 
-		Optional.of(options).filter(UpdateOptions.class::isInstance)
-				.map(UpdateOptions.class::cast)
+		Optional.of(options).filter(UpdateOptions.class::isInstance).map(UpdateOptions.class::cast)
 				.map(UpdateOptions::getIfCondition)
-				.ifPresent(criteriaDefinitions ->  applyUpdateIfCondition(builder, criteriaDefinitions));
+				.ifPresent(criteriaDefinitions -> applyUpdateIfCondition(builder, criteriaDefinitions));
 
 		builder.transform(statement -> QueryOptionsUtil.addQueryOptions(statement, options));
 
@@ -456,8 +451,8 @@ public class StatementFactory {
 	}
 
 	/**
-	 * Create an {@literal DELETE} statement by mapping {@code id} to {@literal SELECT … WHERE}
-	 * considering {@link UpdateOptions}.
+	 * Create an {@literal DELETE} statement by mapping {@code id} to {@literal SELECT … WHERE} considering
+	 * {@link UpdateOptions}.
 	 *
 	 * @param id must not be {@literal null}.
 	 * @param persistentEntity must not be {@literal null}.
@@ -472,7 +467,7 @@ public class StatementFactory {
 		cassandraConverter.write(id, where, persistentEntity);
 
 		return StatementBuilder.of(QueryBuilder.deleteFrom(tableName).where())
-			.bind((statement, factory) -> statement.where(toRelations(where, factory)));
+				.bind((statement, factory) -> statement.where(toRelations(where, factory)));
 	}
 
 	/**
@@ -511,19 +506,15 @@ public class StatementFactory {
 
 		StatementBuilder<Delete> builder = delete(columnNames, tableName, filter);
 
-		query.getQueryOptions()
-				.filter(DeleteOptions.class::isInstance)
-				.map(DeleteOptions.class::cast)
+		query.getQueryOptions().filter(DeleteOptions.class::isInstance).map(DeleteOptions.class::cast)
 				.map(DeleteOptions::getIfCondition)
 				.ifPresent(criteriaDefinitions -> applyDeleteIfCondition(builder, criteriaDefinitions));
 
-		query.getQueryOptions()
-				.filter(WriteOptions.class::isInstance)
-				.map(WriteOptions.class::cast)
+		query.getQueryOptions().filter(WriteOptions.class::isInstance).map(WriteOptions.class::cast)
 				.ifPresent(writeOptions -> builder.apply(statement -> addWriteOptions(statement, writeOptions)));
 
-		query.getQueryOptions().ifPresent(options ->
-				builder.transform(statement -> QueryOptionsUtil.addQueryOptions(statement, options)));
+		query.getQueryOptions()
+				.ifPresent(options -> builder.transform(statement -> QueryOptionsUtil.addQueryOptions(statement, options)));
 
 		return builder;
 	}
@@ -551,14 +542,10 @@ public class StatementFactory {
 		StatementBuilder<Delete> builder = StatementBuilder.of(QueryBuilder.deleteFrom(tableName).where())
 				.bind((statement, factory) -> statement.where(toRelations(where, factory)));
 
-		Optional.of(options)
-				.filter(WriteOptions.class::isInstance)
-				.map(WriteOptions.class::cast)
+		Optional.of(options).filter(WriteOptions.class::isInstance).map(WriteOptions.class::cast)
 				.ifPresent(it -> builder.apply(statement -> addWriteOptions(statement, it)));
 
-		Optional.of(options)
-				.filter(DeleteOptions.class::isInstance)
-				.map(DeleteOptions.class::cast)
+		Optional.of(options).filter(DeleteOptions.class::isInstance).map(DeleteOptions.class::cast)
 				.map(DeleteOptions::getIfCondition)
 				.ifPresent(criteriaDefinitions -> applyDeleteIfCondition(builder, criteriaDefinitions));
 
@@ -607,8 +594,7 @@ public class StatementFactory {
 	private StatementBuilder<Select> createSelect(Query query, CassandraPersistentEntity<?> entity, Filter filter,
 			List<Selector> selectors, CqlIdentifier tableName) {
 
-		Sort sort = Optional.of(query.getSort())
-				.map(querySort -> getQueryMapper().getMappedSort(querySort, entity))
+		Sort sort = Optional.of(query.getSort()).map(querySort -> getQueryMapper().getMappedSort(querySort, entity))
 				.orElse(Sort.unsorted());
 
 		StatementBuilder<Select> select = createSelectAndOrder(selectors, tableName, filter, sort);
@@ -621,11 +607,10 @@ public class StatementFactory {
 			select.apply(Select::allowFiltering);
 		}
 
-		select.onBuild(statementBuilder ->
-			query.getPagingState().ifPresent(statementBuilder::setPagingState));
+		select.onBuild(statementBuilder -> query.getPagingState().ifPresent(statementBuilder::setPagingState));
 
-		query.getQueryOptions().ifPresent(it ->
-			select.transform(statement -> QueryOptionsUtil.addQueryOptions(statement, it)));
+		query.getQueryOptions()
+				.ifPresent(it -> select.transform(statement -> QueryOptionsUtil.addQueryOptions(statement, it)));
 
 		return select;
 	}
@@ -641,7 +626,7 @@ public class StatementFactory {
 
 			List<com.datastax.oss.driver.api.querybuilder.select.Selector> mappedSelectors = selectors.stream()
 					.map(selector -> selector.getAlias().map(it -> getSelection(selector).as(it))
-						.orElseGet(() -> getSelection(selector)))
+							.orElseGet(() -> getSelection(selector)))
 					.collect(Collectors.toList());
 
 			select = QueryBuilder.selectFrom(from).selectors(mappedSelectors);
@@ -649,16 +634,15 @@ public class StatementFactory {
 
 		StatementBuilder<Select> builder = StatementBuilder.of(select);
 
-		builder.bind((statement, factory) ->
-				statement.where(filter.stream().map(it -> toClause(it, factory)).collect(Collectors.toList())));
+		builder.bind((statement, factory) -> statement
+				.where(filter.stream().map(it -> toClause(it, factory)).collect(Collectors.toList())));
 
 		if (sort.isSorted()) {
 
 			builder.apply((statement) -> {
 
-				Map<String, ClusteringOrder> ordering = sort.stream()
-						.collect(Collectors.toMap(Sort.Order::getProperty,
-								order -> order.isAscending() ? ClusteringOrder.ASC : ClusteringOrder.DESC));
+				Map<String, ClusteringOrder> ordering = sort.stream().collect(Collectors.toMap(Sort.Order::getProperty,
+						order -> order.isAscending() ? ClusteringOrder.ASC : ClusteringOrder.DESC));
 
 				return statement.orderBy(ordering);
 			});
@@ -699,16 +683,14 @@ public class StatementFactory {
 				.bind((statement, factory) -> {
 
 					List<Assignment> assignments = mappedUpdate.getUpdateOperations().stream()
-							.map(assignmentOp -> getAssignment(assignmentOp, factory))
-							.collect(Collectors.toList());
+							.map(assignmentOp -> getAssignment(assignmentOp, factory)).collect(Collectors.toList());
 
 					return (com.datastax.oss.driver.api.querybuilder.update.Update) ((OngoingAssignment) statement)
 							.set(assignments);
 
 				}).bind((statement, factory) -> {
 
-					List<Relation> relations = filter.stream()
-							.map(criteriaDefinition -> toClause(criteriaDefinition, factory))
+					List<Relation> relations = filter.stream().map(criteriaDefinition -> toClause(criteriaDefinition, factory))
 							.collect(Collectors.toList());
 
 					return statement.where(relations);
@@ -719,8 +701,8 @@ public class StatementFactory {
 
 		List<Relation> relations = new ArrayList<>();
 
-		where.forEach((cqlIdentifier, termValue) ->
-				relations.add(Relation.column(cqlIdentifier).isEqualTo(factory.create(termValue))));
+		where.forEach((cqlIdentifier, termValue) -> relations
+				.add(Relation.column(cqlIdentifier).isEqualTo(factory.create(termValue))));
 
 		return relations;
 	}
@@ -729,8 +711,8 @@ public class StatementFactory {
 
 		List<Assignment> assignments = new ArrayList<>();
 
-		object.forEach((cqlIdentifier, termValue) ->
-				assignments.add(Assignment.setColumn(cqlIdentifier, factory.create(termValue))));
+		object.forEach(
+				(cqlIdentifier, termValue) -> assignments.add(Assignment.setColumn(cqlIdentifier, factory.create(termValue))));
 
 		return assignments;
 	}
@@ -740,8 +722,7 @@ public class StatementFactory {
 
 		update.bind((statement, factory) -> {
 
-			List<Condition> conditions = criteriaDefinitions.stream()
-					.map(it -> toCondition(it, factory))
+			List<Condition> conditions = criteriaDefinitions.stream().map(it -> toCondition(it, factory))
 					.collect(Collectors.toList());
 
 			return statement.if_(conditions);
@@ -904,8 +885,8 @@ public class StatementFactory {
 
 		Assert.notNull(update, "Update must not be null");
 
-		com.datastax.oss.driver.api.querybuilder.update.Update updateToUse =
-				QueryOptionsUtil.addWriteOptions(update, writeOptions);
+		com.datastax.oss.driver.api.querybuilder.update.Update updateToUse = QueryOptionsUtil.addWriteOptions(update,
+				writeOptions);
 
 		if (writeOptions instanceof UpdateOptions) {
 
