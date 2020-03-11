@@ -1,6 +1,15 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 3.0.0.M4 (2020-03-11)
+----------------------------------------
+* DATACASS-736 - Upgrade to Cassandra driver 4.5.0.
+* DATACASS-735 - Using long numbers with Update.incr(…) cause integer overflow.
+* DATACASS-729 - Release 3.0 M4 (Neumann).
+* DATACASS-718 - Integer Overflow using Update.
+* DATACASS-712 - Adapt to query builder API for set at list index, append multiple items to List/Set columns.
+
+
 Changes in version 2.2.5.RELEASE (2020-02-26)
 ---------------------------------------------
 * DATACASS-732 - Adapt to Reactor changes.
@@ -1155,6 +1164,7 @@ Changes in version 1.0.0.M1 (2014-03-31)
     * [DATACASS-100] - QueryOptions should only have ConsistencyLevel & RetryPolicy
     * [DATACASS-104] - Remove requirement for @PrimaryKeyClass when using composite primary keys
     * [DATACASS-107] - Support declarative query methods
+
 
 
 
