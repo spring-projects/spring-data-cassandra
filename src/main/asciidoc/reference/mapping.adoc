@@ -406,6 +406,7 @@ include::../{example-root}/mapping/Coordinates.java[tags=class]
 ----
 ====
 
+[[mapping.index-creation]]
 ==== Index Creation
 
 You can annotate particular entity properties with `@Indexed` or `@SASI` if you wish to create secondary indexes
@@ -428,27 +429,7 @@ include::../{example-root}/mapping/PersonWithIndexes.java[tags=class]
 
 CAUTION: Index creation on session initialization may have a severe performance impact on application startup.
 
-[[cassandra.mapping.explicit-converters]]
-=== Overriding Mapping with Explicit Converters
-
-When storing and querying objects, it is often convenient to have a `CassandraConverter` instance handle the mapping
-of all Java types to rows. However, sometimes you may want the `CassandraConverter` to do most of the work
-but still let you selectively handle the conversion for a particular type. Other times, you may want to optimize performance.
-
-To selectively handle the conversion yourself, register one or more `org.springframework.core.convert.converter.Converter`
-instances with `CassandraConverter`.
-
-NOTE: Spring 3.0 introduced a `o.s.core.convert` package that provides a general type conversion system.
-This system is described in detail in the Spring reference documentation section titled
-{spring-framework-docs}core.html#core-convert[`Spring Type Conversion`].
-
-The following example of a Spring `Converter` implementation converts from a row to a `Person` POJO:
-
-[source,java]
-----
-include::../{example-root}/mapping/PersonReadConverter.java[tags=class]
-----
-
+include::./converters.adoc[]
 
 [[cassandra.mapping-usage.events]]
 == Lifecycle Events

@@ -10,10 +10,7 @@ of the `MappingCassandraConverter` (perhaps for increased performance or other c
 need to create an implementation of the Spring `Converter` interface and register it with
 the `MappingCassandraConverter`.
 
-NOTE: For more information on Spring's type conversion service, see the reference docs
-{spring-framework-docs}core.html#core-convert[here].
-
-[[cassandra.custom-converters.writer]]
+[[customconversions.writer]]
 === Saving by Using a Registered Spring Converter
 
 You can combine converting and saving in a single process, basically using the converter to do the saving.
@@ -26,7 +23,7 @@ with Jackson 2:
 include::../{example-root}/PersonWriteConverter.java[tags=class]
 ----
 
-[[cassandra.custom-converters.reader]]
+[[customconversions.reader]]
 === Reading by Using a Spring Converter
 
 Similar to how you can combine saving and converting, you can also combine reading and converting.
@@ -39,7 +36,7 @@ with Jackson 2:
 include::../{example-root}/PersonReadConverter.java[tags=class]
 ----
 
-[[cassandra.custom-converters.java]]
+[[customconversions.java]]
 === Registering Spring Converters with `CassandraConverter`
 
 Spring Data for Apache Cassandra Java configuration provides a convenient way to register Spring `Converter` instances:
@@ -51,29 +48,4 @@ as well as configure `CustomConversions`:
 include::../{example-root}/ConverterConfiguration.java[tags=class]
 ----
 
-[[cassandra.converter-disambiguation]]
-=== Converter Disambiguation
-
-Generally, we inspect the `Converter` implementations for both the source and target types they convert from and to.
-Depending on whether one of those is a type Cassandra can handle natively, Spring Data registers the `Converter`
-instance as a reading or a writing converter.
-
-Consider the following samples:
-
-[source,java]
-----
-// Write converter as only the target type is one cassandra can handle natively
-class MyConverter implements Converter<Person, String> { … }
-
-// Read converter as only the source type is one cassandra can handle natively
-class MyConverter implements Converter<String, Person> { … }
-----
-
-If you implement a `Converter` whose source and target types are native Cassandra types,
-Spring Data cannot determine whether we should consider it as a reading or a writing `Converter`.
-Registering the `Converter` instance as both might lead to unwanted results.
-
-For example, a `Converter<String, Long>` is ambiguous, although it probably does not make sense to try to convert all `String`
-instances into `Long` instances when writing. To generally be able to force the infrastructure to register a `Converter`
-for one way only, we provide `@ReadingConverter` as well as `@WritingConverter` to indicate the appropriate
-`Converter` implementation.
+include::../{spring-data-commons-docs}/custom-conversions.adoc[leveloffset=+3]

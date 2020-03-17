@@ -48,7 +48,7 @@ public class Person {
 		@PrimaryKeyColumn(name = "correlated_type", ordinal = 2, type = PrimaryKeyType.CLUSTERED)
 		private String correlatedType;
 
-		// other getters/setters ommitted
+		// other getters/setters omitted
 	}
 
 	@PrimaryKey
