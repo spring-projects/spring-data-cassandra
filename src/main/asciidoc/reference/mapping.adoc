@@ -410,8 +410,8 @@ primary key column attributes, such as for clustered or partitioned. Can be used
 to indicate either a single or a composite (compound) primary key. If used on a property within the entity, make sure to apply the `@Id` annotation as well.
 * `@PrimaryKeyClass`: Applied at the class level to indicate that this class is a compound primary key class.
 Must be referenced with `@PrimaryKey` in the entity class.
-* `@Transient`: By default, all private fields are mapped to the row. This annotation excludes the field
-where it is applied from being stored in the database.
+* `@Transient`: By default, all private fields are mapped to the row. This annotation excludes the field where it is applied from being stored in the database. Transient properties cannot be used within a persistence constructor as the converter cannot materialize a value for the constructor argument.
+* `@PersistenceConstructor`: Marks a given constructor -- even a package protected one -- to use when instantiating the object from the database. Constructor arguments are mapped by name to the key values in the retrieved row.
 * `@Column`: Applied at the field level. Describes the column name as it is represented in the Cassandra table,
 thus letting the name differ from the field name of the class.
 * `@Indexed`: Applied at the field level. Describes the index to be created at session initialization.
