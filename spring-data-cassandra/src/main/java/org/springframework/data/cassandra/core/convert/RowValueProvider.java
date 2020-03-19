@@ -76,4 +76,12 @@ public class RowValueProvider implements CassandraValueProvider {
 
 		return this.reader.contains(property.getRequiredColumnName());
 	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.convert.CassandraValueProvider#getSource()
+	 */
+	@Override
+	public Object getSource() {
+		return this.reader.getRow();
+	}
 }

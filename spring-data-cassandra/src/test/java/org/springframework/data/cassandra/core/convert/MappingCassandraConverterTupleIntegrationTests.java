@@ -31,9 +31,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.core.StatementFactory;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
@@ -113,6 +115,7 @@ public class MappingCassandraConverterTupleIntegrationTests extends AbstractSpri
 					+ "mapoftuples map<text, frozen<tuple<address, list<text>, text>>>, " //
 					+ "mapoftuplevalues map<text, frozen<tuple<text, int>>>, " //
 					+ "mappedtuple frozen<tuple<address, list<text>, text>>, " //
+					+ "mappedtuplewithvalue frozen<tuple<address, list<text>, text>>, " //
 					+ "mappedtuples list<frozen<tuple<address, list<text>, text>>>, " //
 					+ "PRIMARY KEY (id));";
 			this.session.execute(ddl);
@@ -238,6 +241,20 @@ public class MappingCassandraConverterTupleIntegrationTests extends AbstractSpri
 		assertThat(mappedTuple.getCurrency()).containsSequence(Currency.getInstance("EUR"), Currency.getInstance("USD"));
 	}
 
+	@Test // DATACASS-741
+	public void shouldReadTupleWithValue() {
+
+		this.session.execute("INSERT INTO person (id,mappedtuplewithvalue) VALUES (" + "'foo'," //
+				+ "({zip:'myzip'},['EUR','USD'],'bar'));\n");
+
+		ResultSet resultSet = this.session.execute("SELECT * FROM person;");
+
+		Person person = this.converter.read(Person.class, resultSet.one());
+
+		MappedTupleWithValue mappedTuple = person.getMappedTupleWithValue();
+		assertThat(mappedTuple.myName).isEqualTo("bar");
+	}
+
 	@Data
 	@Table
 	static class Person {
@@ -246,6 +263,7 @@ public class MappingCassandraConverterTupleIntegrationTests extends AbstractSpri
 
 		TupleValue tupleValue;
 		MappedTuple mappedTuple;
+		MappedTupleWithValue mappedTupleWithValue;
 		List<MappedTuple> mappedTuples;
 		Map<String, MappedTuple> mapOfTuples;
 		Map<String, TupleValue> mapOfTupleValues;
@@ -258,6 +276,21 @@ public class MappingCassandraConverterTupleIntegrationTests extends AbstractSpri
 		@Element(0) AddressUserType addressUserType;
 		@Element(1) List<Currency> currency;
 		@Element(2) String name;
+	}
+
+	@Tuple
+	static class MappedTupleWithValue {
+
+		final @Element(0) AddressUserType addressUserType;
+		final @Element(1) List<Currency> currency;
+		final @Transient String myName;
+
+		public MappedTupleWithValue(AddressUserType addressUserType, List<Currency> currency,
+				@Value("#root.getString(2)") String myName) {
+			this.addressUserType = addressUserType;
+			this.currency = currency;
+			this.myName = myName;
+		}
 	}
 
 	@UserDefinedType("address")

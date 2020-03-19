@@ -21,7 +21,6 @@ import static org.springframework.data.cassandra.test.util.RowMockUtil.*;
 
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -39,6 +38,7 @@ import java.util.*;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.annotation.Transient;
@@ -958,6 +958,18 @@ public class MappingCassandraConverterUnitTests {
 				.doesNotContainKey(CqlIdentifier.fromCql("computedName"));
 	}
 
+	@Test // DATACASS-741
+	public void shouldComputeValueInConstructor() {
+
+		rowMock = RowMockUtil.newRowMock(RowMockUtil.column("id", "id", DataTypes.TEXT),
+				RowMockUtil.column("fn", "fn", DataTypes.TEXT));
+
+		WithValue result = this.mappingCassandraConverter.read(WithValue.class, rowMock);
+
+		assertThat(result.id).isEqualTo("id");
+		assertThat(result.firstname).isEqualTo("fn");
+	}
+
 	private static List<Object> getValues(Map<CqlIdentifier, Object> statement) {
 		return new ArrayList<>(statement.values());
 	}
@@ -1036,7 +1048,7 @@ public class MappingCassandraConverterUnitTests {
 
 	@PrimaryKeyClass
 	@RequiredArgsConstructor
-	@Value
+	@lombok.Value
 	public static class EnumAndDateCompositePrimaryKey implements Serializable {
 
 		@PrimaryKeyColumn(ordinal = 1, type = PrimaryKeyType.PARTITIONED) private final Condition condition;
@@ -1180,5 +1192,16 @@ public class MappingCassandraConverterUnitTests {
 		String lastname;
 		@Transient String displayName;
 		@ReadOnlyProperty String computedName;
+	}
+
+	static class WithValue {
+
+		final @Id String id;
+		final @Transient String firstname;
+
+		public WithValue(String id, @Value("#root.getString(1)") String firstname) {
+			this.id = id;
+			this.firstname = firstname;
+		}
 	}
 }

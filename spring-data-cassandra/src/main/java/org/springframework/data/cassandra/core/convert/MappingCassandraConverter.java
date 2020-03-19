@@ -46,13 +46,17 @@ import org.springframework.data.cassandra.core.mapping.MapId;
 import org.springframework.data.cassandra.core.mapping.MapIdentifiable;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
+import org.springframework.data.mapping.PreferredConstructor;
+import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
 import org.springframework.data.mapping.model.DefaultSpELExpressionEvaluator;
 import org.springframework.data.mapping.model.EntityInstantiator;
+import org.springframework.data.mapping.model.ParameterValueProvider;
 import org.springframework.data.mapping.model.PersistentEntityParameterValueProvider;
 import org.springframework.data.mapping.model.SpELContext;
 import org.springframework.data.mapping.model.SpELExpressionEvaluator;
+import org.springframework.data.mapping.model.SpELExpressionParameterValueProvider;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
@@ -257,7 +261,6 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 				.getRequiredPersistentEntity(typeInfo);
 
 		return readEntityFromRow(persistentEntity, row);
-
 	}
 
 	private <S> S readEntityFromRow(CassandraPersistentEntity<S> entity, Row row) {
@@ -286,12 +289,21 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 	private <S> S doReadEntity(CassandraPersistentEntity<S> entity, CassandraValueProvider valueProvider) {
 
-		PersistentEntityParameterValueProvider<CassandraPersistentProperty> parameterValueProvider = newParameterValueProvider(
-				entity, valueProvider);
+		PreferredConstructor<S, CassandraPersistentProperty> persistenceConstructor = entity.getPersistenceConstructor();
+		ParameterValueProvider<CassandraPersistentProperty> provider;
+
+		if (persistenceConstructor != null && persistenceConstructor.hasParameters()) {
+			SpELExpressionEvaluator evaluator = new DefaultSpELExpressionEvaluator(valueProvider.getSource(), spELContext);
+			PersistentEntityParameterValueProvider<CassandraPersistentProperty> parameterValueProvider = newParameterValueProvider(
+					entity, valueProvider);
+			provider = new ConverterAwareSpELExpressionParameterValueProvider(evaluator, getConversionService(),
+					parameterValueProvider);
+		} else {
+			provider = NoOpParameterValueProvider.INSTANCE;
+		}
 
 		EntityInstantiator instantiator = this.instantiators.getInstantiatorFor(entity);
-
-		S instance = instantiator.createInstance(entity, parameterValueProvider);
+		S instance = instantiator.createInstance(entity, provider);
 
 		if (entity.requiresPropertyPopulation()) {
 			ConvertingPropertyAccessor<S> propertyAccessor = newConvertingPropertyAccessor(instance, entity);
@@ -1011,6 +1023,46 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		return Map.class.isAssignableFrom(mapType) ? mapType : Map.class;
 	}
 
+	enum NoOpParameterValueProvider implements ParameterValueProvider<CassandraPersistentProperty> {
+
+		INSTANCE;
+
+		@Override
+		public <T> T getParameterValue(Parameter<T, CassandraPersistentProperty> parameter) {
+			return null;
+		}
+	}
+
+	/**
+	 * Extension of {@link SpELExpressionParameterValueProvider} to recursively trigger value conversion on the raw
+	 * resolved SpEL value.
+	 */
+	private class ConverterAwareSpELExpressionParameterValueProvider
+			extends SpELExpressionParameterValueProvider<CassandraPersistentProperty> {
+
+		/**
+		 * Creates a new {@link ConverterAwareSpELExpressionParameterValueProvider}.
+		 *
+		 * @param evaluator must not be {@literal null}.
+		 * @param conversionService must not be {@literal null}.
+		 * @param delegate must not be {@literal null}.
+		 */
+		public ConverterAwareSpELExpressionParameterValueProvider(SpELExpressionEvaluator evaluator,
+				ConversionService conversionService, ParameterValueProvider<CassandraPersistentProperty> delegate) {
+
+			super(evaluator, conversionService, delegate);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.data.mapping.model.SpELExpressionParameterValueProvider#potentiallyConvertSpelValue(java.lang.Object, org.springframework.data.mapping.PreferredConstructor.Parameter)
+		 */
+		@Override
+		protected <T> T potentiallyConvertSpelValue(Object object, Parameter<T, CassandraPersistentProperty> parameter) {
+			return (T) convertReadValue(object, parameter.getType());
+		}
+	}
+
 	/**
 	 * {@link CassandraRowValueProvider} that delegates reads to {@link CassandraValueProvider} applying mapping and
 	 * custom conversion from {@link MappingCassandraConverter}.
@@ -1039,6 +1091,14 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		@SuppressWarnings("unchecked")
 		public <T> T getPropertyValue(CassandraPersistentProperty property) {
 			return (T) getReadValue(this.parent, property);
+		}
+
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.convert.CassandraValueProvider#getSource()
+		 */
+		@Override
+		public Object getSource() {
+			return parent.getSource();
 		}
 	}
 }

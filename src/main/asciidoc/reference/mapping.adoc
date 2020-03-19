@@ -355,6 +355,7 @@ to indicate either a single or a composite (compound) primary key. If used on a 
 * `@PrimaryKeyClass`: Applied at the class level to indicate that this class is a compound primary key class.
 Must be referenced with `@PrimaryKey` in the entity class.
 * `@Transient`: By default, all private fields are mapped to the row. This annotation excludes the field
+* `@Value`: This annotation is part of the Spring Framework . Within the mapping framework it can be applied to constructor arguments. This lets you use a Spring Expression Language statement to transform a key's value retrieved in the database before it is used to construct a domain object. In order to reference a property of a given `Row`/`UdtValue`/`TupleValue` one has to use expressions like: `@Value("#root.getString(0)")` where `root` refers to the root of the given document.
 * `@ReadOnlyProperty`: Applies at the field level to mark a property as read-only. Entity-bound insert and update statements do not include this property.
 where it is applied from being stored in the database.
 * `@Column`: Applied at the field level. Describes the column name as it is represented in the Cassandra table,

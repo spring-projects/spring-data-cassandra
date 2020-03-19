@@ -81,4 +81,12 @@ public class TupleValueProvider implements CassandraValueProvider {
 	public boolean hasProperty(CassandraPersistentProperty property) {
 		return this.tupleValue.getType().getComponentTypes().size() >= property.getRequiredOrdinal();
 	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.convert.CassandraValueProvider#getSource()
+	 */
+	@Override
+	public Object getSource() {
+		return this.tupleValue;
+	}
 }

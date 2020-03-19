@@ -35,4 +35,12 @@ public interface CassandraValueProvider extends PropertyValueProvider<CassandraP
 	 *         {@link CassandraPersistentProperty}.
 	 */
 	boolean hasProperty(CassandraPersistentProperty property);
+
+	/**
+	 * Returns whether the underlying source.
+	 *
+	 * @return the underlying source for this {@link CassandraValueProvider}.
+	 * @since 3.0
+	 */
+	Object getSource();
 }

@@ -71,4 +71,12 @@ public class UdtValueProvider implements CassandraValueProvider {
 	public boolean hasProperty(CassandraPersistentProperty property) {
 		return this.udtValue.getType().contains(property.getRequiredColumnName());
 	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.convert.CassandraValueProvider#getSource()
+	 */
+	@Override
+	public Object getSource() {
+		return this.udtValue;
+	}
 }
