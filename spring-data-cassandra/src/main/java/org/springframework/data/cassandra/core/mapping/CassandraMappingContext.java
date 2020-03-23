@@ -448,7 +448,9 @@ public class CassandraMappingContext
 	 * @param entity must not be {@literal null}.
 	 * @return
 	 * @since 2.2
+	 * @deprecated will be removed in version 3.0 in favor of {@code SchemaFactory}.
 	 */
+	@Deprecated
 	public CreateTableSpecification getCreateTableSpecificationFor(CqlIdentifier tableName,
 			CassandraPersistentEntity<?> entity) {
 
@@ -496,7 +498,9 @@ public class CassandraMappingContext
 	 * @param entity must not be {@literal null}.
 	 * @return
 	 * @since 2.0
+	 * @deprecated will be removed in version 3.0 in favor of {@code SchemaFactory}.
 	 */
+	@Deprecated
 	public List<CreateIndexSpecification> getCreateIndexSpecificationsFor(CassandraPersistentEntity<?> entity) {
 
 		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
@@ -520,7 +524,9 @@ public class CassandraMappingContext
 	 * Returns a {@link CreateUserTypeSpecification} for the given entity, including all mapping information.
 	 *
 	 * @param entity must not be {@literal null}.
+	 * @deprecated will be removed in version 3.0 in favor of {@code SchemaFactory}.
 	 */
+	@Deprecated
 	public CreateUserTypeSpecification getCreateUserTypeSpecificationFor(CassandraPersistentEntity<?> entity) {
 
 		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
@@ -549,11 +555,19 @@ public class CassandraMappingContext
 	 * @see org.springframework.data.convert.CustomConversions
 	 * @see CassandraSimpleTypeHolder
 	 * @since 1.5
+	 * @deprecated will be removed in version 3.0 in favor of {@code ColumnTypeResolver}.
 	 */
+	@Deprecated
 	public DataType getDataType(Class<?> type) {
 		return doGetDataType(type, this.customConversions.getCustomWriteTarget(type).orElse(type));
 	}
 
+	/**
+	 * @param persistentEntity
+	 * @return
+	 * @deprecated will be removed in version 3.0 in favor of {@code ColumnTypeResolver}.
+	 */
+	@Deprecated
 	public TupleType getTupleType(CassandraPersistentEntity<?> persistentEntity) {
 
 		Assert.notNull(persistentEntity, "CassandraPersistentEntity must not be null");
@@ -571,7 +585,9 @@ public class CassandraMappingContext
 	 * @see org.springframework.data.convert.CustomConversions
 	 * @see CassandraSimpleTypeHolder
 	 * @since 1.5
+	 * @deprecated will be removed in version 3.0 in favor of {@code ColumnTypeResolver}.
 	 */
+	@Deprecated
 	public DataType getDataType(CassandraPersistentProperty property) {
 		return getDataTypeWithUserTypeFactory(property, DataTypeProvider.EntityUserType);
 	}

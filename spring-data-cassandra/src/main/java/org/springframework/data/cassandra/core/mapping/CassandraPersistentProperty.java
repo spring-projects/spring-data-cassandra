@@ -77,7 +77,9 @@ public interface CassandraPersistentProperty
 	 * @return the Cassandra {@link DataType}
 	 * @throws InvalidDataAccessApiUsageException if the {@link DataType} cannot be resolved
 	 * @see CassandraType
+	 * @deprecated will be removed in version 3.0 in favor of {@code ColumnTypeResolver}.
 	 */
+	@Deprecated
 	DataType getDataType();
 
 	/**

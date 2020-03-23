@@ -66,8 +66,10 @@ public interface CassandraPersistentEntity<T> extends PersistentEntity<T, Cassan
 	 * @return the {@link TupleType} matching the data types from {@link BasicCassandraPersistentTupleProperty mapped
 	 *         tuple elements}.
 	 * @since 2.1
+	 * @deprecated will be removed in version 3.0 in favor of {@code ColumnTypeResolver}.
 	 */
 	@Nullable
+	@Deprecated
 	TupleType getTupleType();
 
 	/**
@@ -81,8 +83,10 @@ public interface CassandraPersistentEntity<T> extends PersistentEntity<T, Cassan
 	 * @return the CQL {@link UserType} if the type is a mapped user defined type, otherwise {@literal null}.
 	 * @since 1.5
 	 * @see UserDefinedType
+	 * @deprecated will be removed in version 3.0 in favor of {@code ColumnTypeResolver}.
 	 */
 	@Nullable
+	@Deprecated
 	UserType getUserType();
 
 }
