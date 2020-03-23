@@ -43,7 +43,7 @@ import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.mapping.MapId;
 import org.springframework.data.cassandra.core.mapping.MapIdentifiable;
-import org.springframework.data.convert.CustomConversions;
+import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.PreferredConstructor;
@@ -91,6 +91,10 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 	private final CassandraMappingContext mappingContext;
 
+	private CodecRegistry codecRegistry;
+
+	private UserTypeResolver userTypeResolver;
+
 	private @Nullable ClassLoader beanClassLoader;
 
 	private SpELContext spELContext;
@@ -107,8 +111,11 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		CassandraCustomConversions conversions = new CassandraCustomConversions(Collections.emptyList());
 
 		this.mappingContext = newDefaultMappingContext(conversions);
+		this.codecRegistry = mappingContext.getCodecRegistry();
 		this.spELContext = new SpELContext(RowReaderPropertyAccessor.INSTANCE);
-		this.cassandraTypeResolver = new DefaultColumnTypeResolver(mappingContext);
+		this.cassandraTypeResolver = new DefaultColumnTypeResolver(mappingContext,
+				userTypeName -> getUserTypeResolver().resolveType(userTypeName), this::getCodecRegistry,
+				this::getCustomConversions);
 		this.setCustomConversions(conversions);
 	}
 
@@ -124,8 +131,11 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		Assert.notNull(mappingContext, "CassandraMappingContext must not be null");
 
 		this.mappingContext = mappingContext;
+		this.codecRegistry = mappingContext.getCodecRegistry();
 		this.spELContext = new SpELContext(RowReaderPropertyAccessor.INSTANCE);
-		this.cassandraTypeResolver = new DefaultColumnTypeResolver(mappingContext);
+		this.cassandraTypeResolver = new DefaultColumnTypeResolver(mappingContext,
+				userTypeName -> getUserTypeResolver().resolveType(userTypeName), this::getCodecRegistry,
+				this::getCustomConversions);
 		this.setCustomConversions(mappingContext.getCustomConversions());
 	}
 
@@ -141,15 +151,6 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		mappingContext.afterPropertiesSet();
 
 		return mappingContext;
-	}
-
-	@Override
-	public void setCustomConversions(CustomConversions conversions) {
-		super.setCustomConversions(conversions);
-
-		if (this.cassandraTypeResolver != null) {
-			this.cassandraTypeResolver.setCustomConversions(conversions);
-		}
 	}
 
 	/* (non-Javadoc)
@@ -169,11 +170,63 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	}
 
 	private TypeCodec<Object> getCodec(CassandraPersistentProperty property) {
-		return getCodecRegistry().codecFor(getMappingContext().getDataType(property));
+		return getCodecRegistry().codecFor(cassandraTypeResolver.resolve(property).getDataType());
 	}
 
-	private CodecRegistry getCodecRegistry() {
-		return getMappingContext().getCodecRegistry();
+	/**
+	 * Sets the {@link CodecRegistry}.
+	 *
+	 * @param codecRegistry must not be {@literal null}.
+	 * @since 3.0
+	 */
+	public void setCodecRegistry(CodecRegistry codecRegistry) {
+
+		Assert.notNull(codecRegistry, "CodecRegistry must not be null");
+
+		this.codecRegistry = codecRegistry;
+	}
+
+	/**
+	 * Returns the configured {@link CodecRegistry}.
+	 *
+	 * @return the configured {@link CodecRegistry}.
+	 * @since 3.0
+	 */
+	@Override
+	public CodecRegistry getCodecRegistry() {
+
+		if (this.codecRegistry == null) {
+			return mappingContext.getCodecRegistry();
+		}
+
+		return this.codecRegistry;
+	}
+
+	/**
+	 * Sets the {@link UserTypeResolver}.
+	 *
+	 * @param userTypeResolver must not be {@literal null}.
+	 */
+	public void setUserTypeResolver(UserTypeResolver userTypeResolver) {
+
+		Assert.notNull(userTypeResolver, "UserTypeResolver must not be null");
+
+		this.userTypeResolver = userTypeResolver;
+	}
+
+	/**
+	 * Returns the configured {@link UserTypeResolver}.
+	 *
+	 * @return the configured {@link UserTypeResolver}.
+	 * @since 3.0
+	 */
+	public UserTypeResolver getUserTypeResolver() {
+
+		if (this.userTypeResolver == null) {
+			return this.mappingContext.getUserTypeResolver();
+		}
+
+		return userTypeResolver;
 	}
 
 	/* (non-Javadoc)

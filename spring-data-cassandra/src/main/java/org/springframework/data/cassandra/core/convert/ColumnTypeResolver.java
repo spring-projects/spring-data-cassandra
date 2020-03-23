@@ -37,6 +37,7 @@ public interface ColumnTypeResolver {
 	 * @return
 	 * @see CassandraType
 	 * @see CassandraPersistentProperty
+	 * @throws org.springframework.dao.InvalidDataAccessApiUsageException
 	 */
 	default CassandraColumnType resolve(CassandraPersistentProperty property) {
 
@@ -57,6 +58,7 @@ public interface ColumnTypeResolver {
 	 * @return
 	 * @see org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder
 	 * @see CassandraCustomConversions
+	 * @throws org.springframework.dao.InvalidDataAccessApiUsageException
 	 */
 	CassandraColumnType resolve(TypeInformation<?> typeInformation);
 
@@ -67,6 +69,7 @@ public interface ColumnTypeResolver {
 	 * @return
 	 * @see CassandraType
 	 * @see CassandraPersistentProperty
+	 * @throws org.springframework.dao.InvalidDataAccessApiUsageException
 	 */
 	CassandraColumnType resolve(CassandraType annotation);
 

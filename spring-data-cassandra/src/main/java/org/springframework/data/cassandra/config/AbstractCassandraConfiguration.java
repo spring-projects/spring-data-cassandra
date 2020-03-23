@@ -68,12 +68,17 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 	@Bean
 	public CassandraConverter cassandraConverter() {
 
-		MappingCassandraConverter mappingCassandraConverter =
-				new MappingCassandraConverter(requireBeanOfType(CassandraMappingContext.class));
+		UserTypeResolver userTypeResolver = new SimpleUserTypeResolver(getRequiredSession(),
+				CqlIdentifier.fromCql(getKeyspaceName()));
 
-		mappingCassandraConverter.setCustomConversions(requireBeanOfType(CassandraCustomConversions.class));
+		MappingCassandraConverter converter = new MappingCassandraConverter(
+				requireBeanOfType(CassandraMappingContext.class));
 
-		return mappingCassandraConverter;
+		converter.setCodecRegistry(getRequiredSession().getContext().getCodecRegistry());
+		converter.setUserTypeResolver(userTypeResolver);
+		converter.setCustomConversions(requireBeanOfType(CassandraCustomConversions.class));
+
+		return converter;
 	}
 
 	/**
@@ -86,11 +91,11 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 	@Bean
 	public CassandraMappingContext cassandraMapping() throws ClassNotFoundException {
 
-		UserTypeResolver userTypeResolver =
-				new SimpleUserTypeResolver(getRequiredSession(), CqlIdentifier.fromCql(getKeyspaceName()));
+		UserTypeResolver userTypeResolver = new SimpleUserTypeResolver(getRequiredSession(),
+				CqlIdentifier.fromCql(getKeyspaceName()));
 
-		CassandraMappingContext mappingContext =
-				new CassandraMappingContext(userTypeResolver, SimpleTupleTypeFactory.DEFAULT);
+		CassandraMappingContext mappingContext = new CassandraMappingContext(userTypeResolver,
+				SimpleTupleTypeFactory.DEFAULT);
 
 		CustomConversions customConversions = requireBeanOfType(CustomConversions.class);
 
@@ -156,8 +161,8 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 	/**
 	 * Configures the Java {@link ClassLoader} used to resolve Cassandra application entity {@link Class types}.
 	 *
-	 * @param classLoader Java {@link ClassLoader} used to resolve Cassandra application entity {@link Class types};
-	 * may be {@literal null}.
+	 * @param classLoader Java {@link ClassLoader} used to resolve Cassandra application entity {@link Class types}; may
+	 *          be {@literal null}.
 	 * @see java.lang.ClassLoader
 	 */
 	@Override

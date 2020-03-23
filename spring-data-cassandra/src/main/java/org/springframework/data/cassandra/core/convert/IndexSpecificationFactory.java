@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 the original author or authors.
+ * Copyright 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.core.mapping;
+package org.springframework.data.cassandra.core.convert;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedParameterizedType;
@@ -27,6 +27,9 @@ import java.util.function.BiConsumer;
 
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
+import org.springframework.data.cassandra.core.mapping.Indexed;
+import org.springframework.data.cassandra.core.mapping.SASI;
 import org.springframework.data.cassandra.core.mapping.SASI.NonTokenizingAnalyzed;
 import org.springframework.data.cassandra.core.mapping.SASI.Normalization;
 import org.springframework.data.cassandra.core.mapping.SASI.StandardAnalyzed;

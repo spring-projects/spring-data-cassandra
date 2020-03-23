@@ -16,17 +16,9 @@
 package org.springframework.data.cassandra.core.mapping;
 
 import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import org.springframework.data.mapping.MappingException;
-import org.springframework.data.util.Lazy;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.util.Assert;
-
-import com.datastax.oss.driver.api.core.type.DataType;
-import com.datastax.oss.driver.api.core.type.TupleType;
 
 /**
  * Cassandra Tuple-specific {@link org.springframework.data.mapping.PersistentEntity} for a mapped tuples. Mapped tuples
@@ -39,28 +31,15 @@ import com.datastax.oss.driver.api.core.type.TupleType;
  */
 public class BasicCassandraPersistentTupleEntity<T> extends BasicCassandraPersistentEntity<T> {
 
-	private final Lazy<TupleType> tupleType;
-
 	/**
-	 * Creates a new {@link BasicCassandraPersistentTupleEntity} given {@link TypeInformation} and
-	 * {@link TupleTypeFactory}.
+	 * Creates a new {@link BasicCassandraPersistentTupleEntity} given {@link TypeInformation}.
 	 *
 	 * @param information must not be {@literal null}.
 	 * @param tupleTypeFactory must not be {@literal null}.
 	 */
-	public BasicCassandraPersistentTupleEntity(TypeInformation<T> information, TupleTypeFactory tupleTypeFactory) {
+	public BasicCassandraPersistentTupleEntity(TypeInformation<T> information) {
 
 		super(information, CassandraPersistentTupleMetadataVerifier.INSTANCE, TuplePropertyComparator.INSTANCE);
-
-		Assert.notNull(tupleTypeFactory, "TupleTypeFactory must not be null");
-
-		this.tupleType = Lazy.of(() -> tupleTypeFactory.create(getTupleFieldDataTypes()));
-	}
-
-	private List<DataType> getTupleFieldDataTypes() {
-
-		return StreamSupport.stream(spliterator(), false).sorted(TuplePropertyComparator.INSTANCE)
-				.map(CassandraPersistentProperty::getDataType).collect(Collectors.toList());
 	}
 
 	/* (non-Javadoc)
@@ -80,14 +59,6 @@ public class BasicCassandraPersistentTupleEntity<T> extends BasicCassandraPersis
 	@Override
 	public boolean isTupleType() {
 		return true;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity#getTupleType()
-	 */
-	@Override
-	public TupleType getTupleType() {
-		return this.tupleType.get();
 	}
 
 	/**

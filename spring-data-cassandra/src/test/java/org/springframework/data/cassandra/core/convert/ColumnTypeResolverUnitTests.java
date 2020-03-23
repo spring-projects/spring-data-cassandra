@@ -21,16 +21,20 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import org.junit.Test;
 
 import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
+import org.springframework.data.mapping.MappingException;
 import org.springframework.data.util.ClassTypeInformation;
 
 import com.datastax.oss.driver.api.core.data.TupleValue;
 import com.datastax.oss.driver.api.core.type.DataTypes;
+import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
 
 /**
  * Unit tests for {@link DefaultColumnTypeResolver}.
@@ -40,7 +44,8 @@ import com.datastax.oss.driver.api.core.type.DataTypes;
 public class ColumnTypeResolverUnitTests {
 
 	CassandraMappingContext mappingContext = new CassandraMappingContext();
-	ColumnTypeResolver resolver = new DefaultColumnTypeResolver(mappingContext);
+	ColumnTypeResolver resolver = new DefaultColumnTypeResolver(mappingContext, null, () -> CodecRegistry.DEFAULT,
+			mappingContext::getCustomConversions);
 
 	@Test // DATACASS-743
 	public void shouldResolveSimpleType() {
@@ -177,10 +182,23 @@ public class ColumnTypeResolverUnitTests {
 
 		BasicCassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(Person.class);
 
-		assertThat(resolver.resolve(entity.getRequiredPersistentProperty("tupleValue")).getType())
+		CassandraColumnType columnType = resolver.resolve(entity.getRequiredPersistentProperty("tupleValue"));
+		assertThat(columnType.getType())
 				.isEqualTo(TupleValue.class);
-		assertThat(resolver.resolve(entity.getRequiredPersistentProperty("tupleValue")).getDataType())
-				.isEqualTo(DataTypes.tupleOf());
+
+		assertThatThrownBy(columnType::getDataType).isInstanceOf(MappingException.class);
+	}
+
+	@Test // DATACASS-375, DATACASS-743
+	public void UuidshouldMapToUUIDByDefault() {
+
+		CassandraPersistentProperty uuidProperty = mappingContext.getRequiredPersistentEntity(TypeWithUUIDColumn.class)
+				.getRequiredPersistentProperty("uuid");
+		CassandraPersistentProperty timeUUIDProperty = mappingContext.getRequiredPersistentEntity(TypeWithUUIDColumn.class)
+				.getRequiredPersistentProperty("timeUUID");
+
+		assertThat(resolver.resolve(uuidProperty).getDataType()).isEqualTo(DataTypes.UUID);
+		assertThat(resolver.resolve(timeUUIDProperty).getDataType()).isEqualTo(DataTypes.TIMEUUID);
 	}
 
 	static class Person {
@@ -211,6 +229,13 @@ public class ColumnTypeResolverUnitTests {
 				typeArguments = { CassandraType.Name.INT, CassandraType.Name.TEXT }) Map<MyEnum, MyEnum> enumMapAsInt;
 
 		TupleValue tupleValue;
+	}
+
+	static class TypeWithUUIDColumn {
+
+		UUID uuid;
+
+		@CassandraType(type = CassandraType.Name.TIMEUUID) UUID timeUUID;
 	}
 
 	enum MyEnum {

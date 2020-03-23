@@ -139,6 +139,8 @@ Paging state now uses `ByteBuffer`.
 * Introduction of `StatementBuilder` to functionally build statements as the QueryBuilder API uses immutable statement types.
 * `Session` bean renamed from `session` to `cassandraSession` and `SessionFactory` bean renamed from `sessionFactory` to `cassandraSessionFactory`.
 * `ReactiveSession` bean renamed from `reactiveSession` to `reactiveCassandraSession` and `ReactiveSessionFactory` bean renamed from `reactiveSessionFactory` to `reactiveCassandraSessionFactory`.
+* Data type resolution was moved into `ColumnTypeResolver` so all `DataType`-related methods were moved from `CassandraPersistentEntity`/`CassandraPersistentProperty` into `ColumnTypeResolver` (affected methods are `MappingContext.getDataType(…)`, `CassandraPersistentProperty.getDataType()`, `CassandraPersistentEntity.getUserType()`, and `CassandraPersistentEntity.getTupleType()`).
+* Schema creation was moved from `MappingContext` to `SchemaFactory` (affected methods are `CassandraMappingContext.getCreateTableSpecificationFor(…)`, `CassandraMappingContext.getCreateIndexSpecificationsFor(…)`, and `CassandraMappingContext.getCreateUserTypeSpecificationFor(…)`).
 
 == Deprecations
 
@@ -151,6 +153,8 @@ Paging state now uses `ByteBuffer`.
 * Spring Data's `CqlIdentifier`, use the driver `CqlIdentifier` instead.
 * `forceQuote` attributes as quoting is no longer required. `CqlIdentifier` properly escapes reserved keywords and takes care of case-sensitivity.
 * `fetchSize` on  `QueryOptions` and `…CqlTemplate` types was deprecated, use `pageSize` instead
+* `CassandraMappingContext.setUserTypeResolver(…)`,  `CassandraMappingContext.setCodecRegistry(…)`, and `CassandraMappingContext.setCustomConversions(…)`: Configure these properties on `CassandraConverter`.
+* `TupleTypeFactory` and `CassandraMappingContext.setTupleTypeFactory(…)`: `TupleTypeFactory` is no longer used as the Cassandra driver ships with a `DataTypes.tupleOf(…)` factory method.
 * Schema creation via `CqlSessionFactoryBean` (`cassandra:session`) is deprecated.
 Keyspace creation via `CqlSessionFactoryBean` (`cassandra:session`) is not affected.
 

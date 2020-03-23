@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.core;
 import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.data.cassandra.core.convert.SchemaFactory;
 import org.springframework.data.cassandra.core.mapping.Table;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -33,6 +34,12 @@ import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
  * @author Fabio J. Mendes
  */
 public interface CassandraAdminOperations extends CassandraOperations {
+
+	/**
+	 * @return the {@link SchemaFactory}.
+	 * @since 3.0
+	 */
+	SchemaFactory getSchemaFactory();
 
 	/**
 	 * Create a table with the name given and fields corresponding to the given class. If the table already exists and

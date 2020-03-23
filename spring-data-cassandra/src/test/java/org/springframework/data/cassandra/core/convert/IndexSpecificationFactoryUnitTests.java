@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 the original author or authors.
+ * Copyright 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.core.mapping;
+package org.springframework.data.cassandra.core.convert;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -26,6 +26,11 @@ import org.springframework.data.annotation.AccessType;
 import org.springframework.data.annotation.AccessType.Type;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification.ColumnFunction;
+import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
+import org.springframework.data.cassandra.core.mapping.Indexed;
+import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
+import org.springframework.data.cassandra.core.mapping.SASI;
 import org.springframework.data.cassandra.core.mapping.SASI.NonTokenizingAnalyzed;
 import org.springframework.data.cassandra.core.mapping.SASI.Normalization;
 import org.springframework.data.cassandra.core.mapping.SASI.StandardAnalyzed;
@@ -91,8 +96,8 @@ public class IndexSpecificationFactoryUnitTests {
 		assertThat(simpleSasi.isCustom()).isTrue();
 		assertThat(simpleSasi.getUsing()).isEqualTo("org.apache.cassandra.index.sasi.SASIIndex");
 		assertThat(simpleSasi.getColumnFunction()).isEqualTo(ColumnFunction.NONE);
-		assertThat(simpleSasi.getOptions()).containsEntry("mode", "PREFIX")
-				.doesNotContainKeys("analyzed", "analyzer_class");
+		assertThat(simpleSasi.getOptions()).containsEntry("mode", "PREFIX").doesNotContainKeys("analyzed",
+				"analyzer_class");
 	}
 
 	@Test // DATACASS-306
@@ -101,8 +106,7 @@ public class IndexSpecificationFactoryUnitTests {
 		CreateIndexSpecification simpleSasi = createIndexFor(IndexedType.class, "sasiStandard");
 
 		assertThat(simpleSasi.getColumnFunction()).isEqualTo(ColumnFunction.NONE);
-		assertThat(simpleSasi.getOptions()).containsEntry("mode", "PREFIX")
-				.containsEntry("analyzed", "true")
+		assertThat(simpleSasi.getOptions()).containsEntry("mode", "PREFIX").containsEntry("analyzed", "true")
 				.containsEntry("tokenization_skip_stop_words", "false")
 				.containsEntry("analyzer_class", "org.apache.cassandra.index.sasi.analyzer.StandardAnalyzer")
 				.containsEntry("tokenization_locale", "de");
@@ -115,8 +119,7 @@ public class IndexSpecificationFactoryUnitTests {
 
 		assertThat(simpleSasi.getColumnFunction()).isEqualTo(ColumnFunction.NONE);
 		assertThat(simpleSasi.getOptions()).containsEntry("tokenization_skip_stop_words", "true")
-				.containsEntry("tokenization_locale", "de")
-				.containsEntry("tokenization_enable_stemming", "true")
+				.containsEntry("tokenization_locale", "de").containsEntry("tokenization_enable_stemming", "true")
 				.containsEntry("tokenization_normalize_uppercase", "true")
 				.doesNotContainKey("tokenization_normalize_lowercase");
 	}
@@ -136,8 +139,7 @@ public class IndexSpecificationFactoryUnitTests {
 
 		CreateIndexSpecification simpleSasi = createIndexFor(IndexedType.class, "sasiNontokenizing");
 
-		assertThat(simpleSasi.getOptions()).containsEntry("mode", "PREFIX")
-				.containsEntry("analyzed", "true")
+		assertThat(simpleSasi.getOptions()).containsEntry("mode", "PREFIX").containsEntry("analyzed", "true")
 				.containsEntry("case_sensitive", "true")
 				.containsEntry("analyzer_class", "org.apache.cassandra.index.sasi.analyzer.NonTokenizingAnalyzer")
 				.doesNotContainKeys("normalize_lowercase", "normalize_uppercase");
@@ -149,8 +151,7 @@ public class IndexSpecificationFactoryUnitTests {
 		CreateIndexSpecification simpleSasi = createIndexFor(IndexedType.class, "sasiNontokenizingLowercase");
 
 		assertThat(simpleSasi.getOptions()).containsEntry("normalize_lowercase", "true")
-				.containsEntry("case_sensitive", "false")
-				.doesNotContainKey("normalize_uppercase");
+				.containsEntry("case_sensitive", "false").doesNotContainKey("normalize_uppercase");
 
 	}
 

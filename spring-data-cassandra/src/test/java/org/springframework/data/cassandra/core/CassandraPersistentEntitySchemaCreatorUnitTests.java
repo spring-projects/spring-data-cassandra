@@ -33,14 +33,17 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import org.springframework.data.cassandra.core.convert.SchemaFactory;
 import org.springframework.data.cassandra.core.cql.CqlOperations;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateUserTypeSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.UserTypeNameSpecification;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.UserDefinedType;
+import org.springframework.data.convert.CustomConversions;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
 
 /**
  * Unit tests for {@link CassandraPersistentEntitySchemaCreator}.
@@ -66,6 +69,9 @@ public class CassandraPersistentEntitySchemaCreatorUnitTests extends CassandraPe
 		});
 
 		when(adminOperations.getCqlOperations()).thenReturn(operations);
+		when(adminOperations.getSchemaFactory()).thenReturn(new SchemaFactory(context,
+				new CustomConversions(CustomConversions.StoreConversions.NONE, Collections.emptyList()),
+				CodecRegistry.DEFAULT));
 	}
 
 	@Test // DATACASS-687

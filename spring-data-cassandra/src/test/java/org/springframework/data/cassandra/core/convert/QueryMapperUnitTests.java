@@ -352,8 +352,7 @@ public class QueryMapperUnitTests {
 		Filter mappedObject = this.queryMapper.getMappedObject(filter,
 				this.mappingContext.getRequiredPersistentEntity(Person.class));
 
-		TupleValue tupleValue = this.mappingContext.getRequiredPersistentEntity(MappedTuple.class).getTupleType()
-				.newValue();
+		TupleValue tupleValue = DataTypes.tupleOf(DataTypes.TEXT).newValue();
 
 		tupleValue.setString(0, "foo");
 

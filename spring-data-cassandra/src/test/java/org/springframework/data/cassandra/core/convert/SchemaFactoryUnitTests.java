@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.core.mapping;
+package org.springframework.data.cassandra.core.convert;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.cassandra.core.mapping.CassandraType.*;
 
@@ -24,10 +25,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.junit.Before;
@@ -35,42 +38,320 @@ import org.junit.Test;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.cassandra.core.convert.CassandraCustomConversions;
+import org.springframework.data.cassandra.core.cql.Ordering;
+import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.cassandra.core.cql.keyspace.ColumnSpecification;
+import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
+import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification.ColumnFunction;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
+import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
+import org.springframework.data.cassandra.core.mapping.CassandraType;
+import org.springframework.data.cassandra.core.mapping.Element;
+import org.springframework.data.cassandra.core.mapping.Indexed;
+import org.springframework.data.cassandra.core.mapping.PrimaryKey;
+import org.springframework.data.cassandra.core.mapping.PrimaryKeyClass;
+import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
+import org.springframework.data.cassandra.core.mapping.Table;
+import org.springframework.data.cassandra.core.mapping.Tuple;
 import org.springframework.data.cassandra.domain.AllPossibleTypes;
+import org.springframework.data.cassandra.support.UserDefinedTypeBuilder;
+import org.springframework.data.mapping.MappingException;
 import org.springframework.util.StringUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.data.TupleValue;
 import com.datastax.oss.driver.api.core.data.UdtValue;
 import com.datastax.oss.driver.api.core.type.DataType;
 import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.datastax.oss.driver.api.core.type.ListType;
 import com.datastax.oss.driver.api.core.type.SetType;
+import com.datastax.oss.driver.api.core.type.TupleType;
 import com.datastax.oss.driver.api.core.type.UserDefinedType;
 import com.datastax.oss.protocol.internal.ProtocolConstants;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Unit tests for {@link CassandraMappingContext} targeted on {@link CreateTableSpecification}.
+ * Unit tests for {@link SchemaFactory}.
  *
+ * @author Matthew T. Adams
  * @author Mark Paluch
- * @author Vagif Zeynalov
- * @soundtrack Black Rose - Volbeat
  */
-public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
+public class SchemaFactoryUnitTests {
 
-	private CassandraMappingContext ctx = new CassandraMappingContext();
+	CassandraMappingContext ctx = new CassandraMappingContext();
+	SchemaFactory schemaFactory;
 
 	@Before
-	public void setUp() {
+	public void before() {
 
 		List<Converter<?, ?>> converters = new ArrayList<>();
 		converters.add(new PersonReadConverter());
 		converters.add(new PersonWriteConverter());
+		converters.add(HumanToStringConverter.INSTANCE);
 
 		CassandraCustomConversions customConversions = new CassandraCustomConversions(converters);
 		ctx.setCustomConversions(customConversions);
+		schemaFactory = new SchemaFactory(new MappingCassandraConverter(ctx));
+	}
+
+	@Test // DATACASS-340
+	public void createdTableSpecificationShouldConsiderClusterColumnOrdering() {
+
+		CassandraPersistentEntity<?> persistentEntity = ctx
+				.getRequiredPersistentEntity(EntityWithOrderedClusteredColumns.class);
+
+		CreateTableSpecification tableSpecification = schemaFactory.getCreateTableSpecificationFor(persistentEntity);
+
+		assertThat(tableSpecification.getPartitionKeyColumns()).hasSize(1);
+		assertThat(tableSpecification.getClusteredKeyColumns()).hasSize(3);
+
+		ColumnSpecification breed = tableSpecification.getClusteredKeyColumns().get(0);
+		assertThat(breed.getName().toString()).isEqualTo("breed");
+		assertThat(breed.getOrdering()).isEqualTo(Ordering.ASCENDING);
+
+		ColumnSpecification color = tableSpecification.getClusteredKeyColumns().get(1);
+		assertThat(color.getName().toString()).isEqualTo("color");
+		assertThat(color.getOrdering()).isEqualTo(Ordering.DESCENDING);
+
+		ColumnSpecification kind = tableSpecification.getClusteredKeyColumns().get(2);
+		assertThat(kind.getName().toString()).isEqualTo("kind");
+		assertThat(kind.getOrdering()).isEqualTo(Ordering.ASCENDING);
+	}
+
+	@Test // DATACASS-340
+	public void createdTableSpecificationShouldConsiderPrimaryKeyClassClusterColumnOrdering() {
+
+		CassandraPersistentEntity<?> persistentEntity = ctx
+				.getRequiredPersistentEntity(EntityWithPrimaryKeyWithOrderedClusteredColumns.class);
+
+		CreateTableSpecification tableSpecification = schemaFactory.getCreateTableSpecificationFor(persistentEntity);
+
+		assertThat(tableSpecification.getPartitionKeyColumns()).hasSize(1);
+		assertThat(tableSpecification.getClusteredKeyColumns()).hasSize(3);
+
+		ColumnSpecification breed = tableSpecification.getClusteredKeyColumns().get(0);
+		assertThat(breed.getName().toString()).isEqualTo("breed");
+		assertThat(breed.getOrdering()).isEqualTo(Ordering.ASCENDING);
+
+		ColumnSpecification color = tableSpecification.getClusteredKeyColumns().get(1);
+		assertThat(color.getName().toString()).isEqualTo("color");
+		assertThat(color.getOrdering()).isEqualTo(Ordering.DESCENDING);
+
+		ColumnSpecification kind = tableSpecification.getClusteredKeyColumns().get(2);
+		assertThat(kind.getName().toString()).isEqualTo("kind");
+		assertThat(kind.getOrdering()).isEqualTo(Ordering.ASCENDING);
+	}
+
+	@Test // DATACASS-487
+	public void shouldCreateTableForMappedAndConvertedColumn() {
+
+		UserDefinedType mappedudt = UserDefinedTypeBuilder.forName("mappedudt").withField("foo", DataTypes.ASCII).build();
+
+		this.ctx.setUserTypeResolver(typeName -> mappedudt);
+
+		CassandraPersistentEntity<?> persistentEntity = this.ctx.getRequiredPersistentEntity(WithMapOfMixedTypes.class);
+
+		CreateTableSpecification tableSpecification = schemaFactory.getCreateTableSpecificationFor(persistentEntity);
+
+		assertThat(tableSpecification.getColumns()).hasSize(2);
+
+		ColumnSpecification column = tableSpecification.getColumns().get(1);
+
+		assertThat(column.getType().asCql(true, true)).isEqualTo("map<frozen<mappedudt>, list<text>>");
+	}
+
+	@PrimaryKeyClass
+	private static class CompositePrimaryKeyClassWithProperties implements Serializable {
+
+		String firstname;
+		String lastname;
+
+		@PrimaryKeyColumn(ordinal = 1, type = PrimaryKeyType.PARTITIONED)
+		public String getFirstname() {
+			return firstname;
+		}
+
+		public void setFirstname(String firstname) {
+			this.firstname = firstname;
+		}
+
+		@PrimaryKeyColumn(name = "mylastname", ordinal = 2, type = PrimaryKeyType.CLUSTERED)
+		public String getLastname() {
+			return lastname;
+		}
+
+		public void setLastname(String lastname) {
+			this.lastname = lastname;
+		}
+	}
+
+	@Table
+	static class EntityWithOrderedClusteredColumns {
+
+		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) String species;
+		@PrimaryKeyColumn(ordinal = 1, type = PrimaryKeyType.CLUSTERED, ordering = Ordering.ASCENDING) String breed;
+		@PrimaryKeyColumn(ordinal = 2, type = PrimaryKeyType.CLUSTERED, ordering = Ordering.DESCENDING) String color;
+		@PrimaryKeyColumn(ordinal = 3, type = PrimaryKeyType.CLUSTERED) String kind;
+	}
+
+	@PrimaryKeyClass
+	static class PrimaryKeyWithOrderedClusteredColumns implements Serializable {
+
+		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) String species;
+		@PrimaryKeyColumn(ordinal = 1, type = PrimaryKeyType.CLUSTERED, ordering = Ordering.ASCENDING) String breed;
+		@PrimaryKeyColumn(ordinal = 2, type = PrimaryKeyType.CLUSTERED, ordering = Ordering.DESCENDING) String color;
+		@PrimaryKeyColumn(ordinal = 3, type = PrimaryKeyType.CLUSTERED) String kind;
+	}
+
+	@Table
+	private static class EntityWithPrimaryKeyWithOrderedClusteredColumns {
+
+		@PrimaryKey PrimaryKeyWithOrderedClusteredColumns key;
+	}
+
+	@Test // DATACASS-213
+	public void createIndexShouldConsiderAnnotatedProperties() {
+
+		List<CreateIndexSpecification> specifications = schemaFactory
+				.getCreateIndexSpecificationsFor(ctx.getRequiredPersistentEntity(IndexedType.class));
+
+		CreateIndexSpecification firstname = getSpecificationFor("first_name", specifications);
+
+		assertThat(firstname.getColumnName()).isEqualTo(CqlIdentifier.fromCql("first_name"));
+		assertThat(firstname.getTableName()).isEqualTo(CqlIdentifier.fromCql("indexedtype"));
+		assertThat(firstname.getName()).isEqualTo(CqlIdentifier.fromCql("my_index"));
+		assertThat(firstname.getColumnFunction()).isEqualTo(ColumnFunction.NONE);
+
+		CreateIndexSpecification phoneNumbers = getSpecificationFor("phoneNumbers", specifications);
+
+		assertThat(phoneNumbers.getColumnName()).isEqualTo(CqlIdentifier.fromCql("phoneNumbers"));
+		assertThat(phoneNumbers.getTableName()).isEqualTo(CqlIdentifier.fromCql("indexedtype"));
+		assertThat(phoneNumbers.getName()).isNull();
+		assertThat(phoneNumbers.getColumnFunction()).isEqualTo(ColumnFunction.NONE);
+	}
+
+	@Test // DATACASS-213
+	public void createIndexForClusteredPrimaryKeyShouldConsiderAnnotatedAccessors() {
+
+		List<CreateIndexSpecification> specifications = schemaFactory
+				.getCreateIndexSpecificationsFor(ctx.getRequiredPersistentEntity(CompositeKeyEntity.class));
+
+		CreateIndexSpecification entries = getSpecificationFor("last_name", specifications);
+
+		assertThat(entries.getColumnName()).isEqualTo(CqlIdentifier.fromCql("last_name"));
+		assertThat(entries.getTableName()).isEqualTo(CqlIdentifier.fromCql("compositekeyentity"));
+		assertThat(entries.getName()).isEqualTo(CqlIdentifier.fromCql("my_index"));
+		assertThat(entries.getColumnFunction()).isEqualTo(ColumnFunction.NONE);
+	}
+
+	@Test // DATACASS-284, DATACASS-651
+	public void shouldRejectUntypedTuples() {
+
+		assertThatThrownBy(() -> this.schemaFactory
+				.getCreateTableSpecificationFor(this.ctx.getRequiredPersistentEntity(UntypedTupleEntity.class)))
+						.isInstanceOf(MappingException.class);
+
+		assertThatThrownBy(() -> this.schemaFactory
+				.getCreateTableSpecificationFor(this.ctx.getRequiredPersistentEntity(UntypedTupleMapEntity.class)))
+						.isInstanceOf(MappingException.class);
+	}
+
+	@Test // DATACASS-284
+	public void shouldCreateTableForTypedTupleType() {
+
+		CreateTableSpecification tableSpecification = this.schemaFactory
+				.getCreateTableSpecificationFor(this.ctx.getRequiredPersistentEntity(TypedTupleEntity.class));
+
+		assertThat(tableSpecification.getColumns()).hasSize(2);
+
+		ColumnSpecification column = tableSpecification.getColumns().get(1);
+
+		assertThat(column.getType()).isInstanceOf(TupleType.class);
+		assertThat(column.getType()).isEqualTo(DataTypes.tupleOf(DataTypes.TEXT, DataTypes.BIGINT));
+	}
+
+	@Test // DATACASS-651
+	public void shouldCreateTableForEntityWithMapOfTuples() {
+
+		CreateTableSpecification tableSpecification = this.schemaFactory
+				.getCreateTableSpecificationFor(this.ctx.getRequiredPersistentEntity(EntityWithMapOfTuples.class));
+
+		assertThat(tableSpecification.getColumns()).hasSize(2);
+
+		ColumnSpecification column = tableSpecification.getColumns().get(1);
+		assertThat(column.getName()).isEqualTo(CqlIdentifier.fromCql("map"));
+		assertThat(column.getType().asCql(true, true)).isEqualTo("map<text, frozen<tuple<mappedudt, human_udt, text>>>");
+	}
+
+	private static CreateIndexSpecification getSpecificationFor(String column,
+			List<CreateIndexSpecification> specifications) {
+
+		return specifications.stream().filter(it -> it.getColumnName().equals(CqlIdentifier.fromCql(column))).findFirst()
+				.orElseThrow(() -> new NoSuchElementException(column));
+	}
+
+	static class IndexedType {
+
+		@PrimaryKeyColumn("first_name") @Indexed("my_index") String firstname;
+
+		@Indexed List<String> phoneNumbers;
+	}
+
+	@PrimaryKeyClass
+	static class CompositeKeyWithIndex {
+
+		@PrimaryKeyColumn(value = "first_name", type = PrimaryKeyType.PARTITIONED) String firstname;
+		@PrimaryKeyColumn("last_name") @Indexed("my_index") String lastname;
+	}
+
+	static class CompositeKeyEntity {
+
+		@PrimaryKey CompositeKeyWithIndex key;
+	}
+
+	static class InvalidMapIndex {
+
+		@Indexed Map<@Indexed String, String> mixed;
+	}
+
+	@Test // DATACASS-506
+	public void shouldCreatedUserTypeSpecificationsWithAnnotatedTypeName() {
+
+		assertThat(schemaFactory.getCreateUserTypeSpecificationFor(ctx.getRequiredPersistentEntity(WithUdt.class)))
+				.isNotNull();
+		assertThat(schemaFactory.getCreateUserTypeSpecificationFor(ctx.getRequiredPersistentEntity(Nested.class)))
+				.isNotNull();
+	}
+
+	@Test // DATACASS-172
+	public void createTableForComplexPrimaryKeyShouldFail() {
+
+		try {
+			schemaFactory
+					.getCreateTableSpecificationFor(ctx.getRequiredPersistentEntity(EntityWithComplexPrimaryKeyColumn.class));
+			fail("Missing MappingException");
+		} catch (MappingException e) {
+			assertThat(e).hasMessageContaining(
+					"Cannot resolve DataType for type [class java.lang.Object] for property [complexObject]");
+		}
+
+		try {
+			schemaFactory.getCreateTableSpecificationFor(ctx.getRequiredPersistentEntity(EntityWithComplexId.class));
+			fail("Missing MappingException");
+		} catch (MappingException e) {
+			assertThat(e).hasMessageContaining(
+					"Cannot resolve DataType for type [class java.lang.Object] for property [complexObject]");
+		}
+
+		try {
+			schemaFactory.getCreateTableSpecificationFor(
+					ctx.getRequiredPersistentEntity(EntityWithPrimaryKeyClassWithComplexId.class));
+			fail("Missing MappingException");
+		} catch (MappingException e) {
+			assertThat(e).hasMessageContaining(
+					"Cannot resolve DataType for type [class java.lang.Object] for property [complexObject]");
+		}
 	}
 
 	@Test // DATACASS-296
@@ -78,7 +359,7 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 
 		CassandraPersistentEntity<?> persistentEntity = ctx.getRequiredPersistentEntity(Employee.class);
 
-		CreateTableSpecification specification = ctx.getCreateTableSpecificationFor(persistentEntity);
+		CreateTableSpecification specification = schemaFactory.getCreateTableSpecificationFor(persistentEntity);
 
 		assertThat(getColumnType("human", specification)).isEqualTo(DataTypes.TEXT);
 
@@ -102,7 +383,7 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 
 		CassandraPersistentEntity<?> persistentEntity = ctx.getRequiredPersistentEntity(Employee.class);
 
-		CreateTableSpecification specification = ctx.getCreateTableSpecificationFor(persistentEntity);
+		CreateTableSpecification specification = schemaFactory.getCreateTableSpecificationFor(persistentEntity);
 
 		assertThat(getColumnType("floater", specification)).isEqualTo(DataTypes.FLOAT);
 
@@ -248,26 +529,6 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 	@Test // DATACASS-172
 	public void columnsShouldMapToUdt() {
 
-		UserDefinedType human_udt = new CassandraMappingContext.ShallowUserDefinedType("human_udt", false);
-		UserDefinedType species_udt = new CassandraMappingContext.ShallowUserDefinedType("species_udt", false);
-		UserDefinedType peeps_udt = new CassandraMappingContext.ShallowUserDefinedType("peeps_udt", false);
-
-		ctx.setUserTypeResolver(typeName -> {
-
-			if (typeName.equals(human_udt.getName())) {
-				return human_udt;
-			}
-
-			if (typeName.equals(species_udt.getName())) {
-				return species_udt;
-			}
-
-			if (typeName.equals(peeps_udt.getName())) {
-				return peeps_udt;
-			}
-			return null;
-		});
-
 		CreateTableSpecification specification = getCreateTableSpecificationFor(WithUdtFields.class);
 
 		assertThat(getColumnType("human", specification).asCql(false, true)).isEqualTo("human_udt");
@@ -278,7 +539,7 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 	@Test // DATACASS-172
 	public void columnsShouldMapToMappedUserType() {
 
-		UserDefinedType mappedUdt = new CassandraMappingContext.ShallowUserDefinedType("mappedudt", true);
+		UserDefinedType mappedUdt = new SchemaFactory.ShallowUserDefinedType("mappedudt", true);
 
 		ctx.setUserTypeResolver(typeName -> {
 
@@ -336,7 +597,8 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 		CqlIdentifier customTableName = CqlIdentifier.fromCql("my_custom_came");
 
 		CassandraPersistentEntity<?> persistentEntity = ctx.getRequiredPersistentEntity(Employee.class);
-		CreateTableSpecification specification = ctx.getCreateTableSpecificationFor(customTableName, persistentEntity);
+		CreateTableSpecification specification = schemaFactory.getCreateTableSpecificationFor(persistentEntity,
+				customTableName);
 
 		assertThat(specification).isNotNull();
 		assertThat(specification.getName()).isEqualTo(customTableName);
@@ -348,7 +610,7 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 		ctx.setCustomConversions(customConversions);
 
 		CassandraPersistentEntity<?> persistentEntity = ctx.getRequiredPersistentEntity(persistentEntityClass);
-		return ctx.getCreateTableSpecificationFor(persistentEntity);
+		return schemaFactory.getCreateTableSpecificationFor(persistentEntity);
 	}
 
 	private DataType getColumnType(String columnName, CreateTableSpecification specification) {
@@ -405,10 +667,8 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 		@Id String id;
 
 		@CassandraType(type = Name.UDT, userTypeName = "human_udt") UdtValue human;
-		@CassandraType(type = Name.LIST, typeArguments = Name.UDT,
-				userTypeName = "species_udt") List<UdtValue> friends;
-		@CassandraType(type = Name.SET, typeArguments = Name.UDT,
-				userTypeName = "peeps_udt") Set<UdtValue> people;
+		@CassandraType(type = Name.LIST, typeArguments = Name.UDT, userTypeName = "species_udt") List<UdtValue> friends;
+		@CassandraType(type = Name.SET, typeArguments = Name.UDT, userTypeName = "peeps_udt") Set<UdtValue> people;
 	}
 
 	@Data
@@ -472,5 +732,99 @@ public class CreateTableSpecificationBasicCassandraMappingContextUnitTests {
 				throw new IllegalStateException(e);
 			}
 		}
+	}
+
+	@Table
+	private static class InvalidEntityWithIdAndPrimaryKeyColumn {
+		@Id String foo;
+		@PrimaryKeyColumn String bar;
+	}
+
+	@Table
+	static class EntityWithComplexPrimaryKeyColumn {
+		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) Object complexObject;
+	}
+
+	@Table
+	static class EntityWithComplexId {
+		@Id Object complexObject;
+	}
+
+	@PrimaryKeyClass
+	static class PrimaryKeyClassWithComplexId {
+		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) Object complexObject;
+	}
+
+	@Table
+	static class EntityWithPrimaryKeyClassWithComplexId {
+		@Id PrimaryKeyClassWithComplexId primaryKeyClassWithComplexId;
+	}
+
+	@Table
+	private static class X {
+		@PrimaryKey String key;
+	}
+
+	@Table
+	private static class Y {
+		@PrimaryKey String key;
+	}
+
+	@Table
+	private static class WithUdt {
+		@Id String id;
+		@CassandraType(type = Name.UDT, userTypeName = "mappedudt") UdtValue udtValue;
+		@CassandraType(type = Name.UDT, userTypeName = "NestedType") Nested nested;
+	}
+
+	@Table
+	private static class WithMapOfMixedTypes {
+		@Id String id;
+		Map<MappedUdt, List<Human>> people;
+	}
+
+	enum HumanToStringConverter implements Converter<Human, String> {
+
+		INSTANCE;
+
+		@Override
+		public String convert(Human source) {
+			return "hello";
+		}
+	}
+
+	@org.springframework.data.cassandra.core.mapping.UserDefinedType(value = "NestedType")
+	public static class Nested {
+		String s1;
+		@CassandraType(type = Name.UDT, userTypeName = "AnotherNestedType") AnotherNested anotherNested;
+	}
+
+	@org.springframework.data.cassandra.core.mapping.UserDefinedType(value = "AnotherNestedType")
+	public static class AnotherNested {
+		String str;
+	}
+
+	@Table
+	static class TypedTupleEntity {
+		@Id String id;
+		@CassandraType(type = Name.TUPLE, typeArguments = { Name.VARCHAR, Name.BIGINT }) TupleValue typed;
+	}
+
+	@Table
+	static class EntityWithMapOfTuples {
+		@Id String id;
+		Map<String, MappedTuple> map;
+	}
+
+	@Table
+	static class UntypedTupleEntity {
+		@Id String id;
+		TupleValue untyped;
+	}
+
+	@Table
+	static class UntypedTupleMapEntity {
+		@Id String id;
+		Map<String, TupleValue> untyped;
 	}
 }

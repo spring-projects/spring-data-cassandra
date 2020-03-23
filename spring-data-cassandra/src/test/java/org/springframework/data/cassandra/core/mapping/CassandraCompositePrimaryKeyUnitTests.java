@@ -27,6 +27,7 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.springframework.data.cassandra.core.convert.SchemaFactory;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.cassandra.core.cql.keyspace.ColumnSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
@@ -46,6 +47,8 @@ public class CassandraCompositePrimaryKeyUnitTests {
 
 	CassandraMappingContext context;
 
+	SchemaFactory schemaFactory;
+
 	CassandraPersistentEntity<?> entity;
 
 	CassandraPersistentEntity<?> key;
@@ -54,6 +57,7 @@ public class CassandraCompositePrimaryKeyUnitTests {
 	public void setup() {
 
 		context = new CassandraMappingContext();
+		schemaFactory = new SchemaFactory(context, context.getCustomConversions(), context.getCodecRegistry());
 		entity = context.getRequiredPersistentEntity(ClassTypeInformation.from(TypeWithCompositeKey.class));
 		key = context.getRequiredPersistentEntity(ClassTypeInformation.from(CompositeKey.class));
 	}
@@ -68,7 +72,7 @@ public class CassandraCompositePrimaryKeyUnitTests {
 		assertThat(property.isIdProperty()).isTrue();
 		assertThat(property.isCompositePrimaryKey()).isTrue();
 
-		CreateTableSpecification spec = context.getCreateTableSpecificationFor(entity);
+		CreateTableSpecification spec = schemaFactory.getCreateTableSpecificationFor(entity);
 
 		List<ColumnSpecification> partitionKeyColumns = spec.getPartitionKeyColumns();
 		assertThat(partitionKeyColumns).hasSize(1);

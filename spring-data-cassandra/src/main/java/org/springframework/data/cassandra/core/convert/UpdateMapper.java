@@ -169,7 +169,8 @@ public class UpdateMapper extends QueryMapper {
 
 			if (collection.isEmpty()) {
 
-				int protocolCode = field.getProperty().map(property -> getMappingContext().getDataType(property))
+				int protocolCode = field.getProperty()
+						.map(property -> getConverter().getColumnTypeResolver().resolve(property).getDataType())
 						.map(DataType::getProtocolCode).orElse(ProtocolConstants.DataType.LIST);
 
 				if (protocolCode == ProtocolConstants.DataType.SET) {
@@ -203,7 +204,7 @@ public class UpdateMapper extends QueryMapper {
 
 		if (field.getProperty().isPresent()) {
 
-			DataType dataType = getMappingContext().getDataType(field.getProperty().get());
+			DataType dataType = getConverter().getColumnTypeResolver().resolve(field.getProperty().get()).getDataType();
 
 			if (dataType instanceof SetType && !(mappedValue instanceof Set)) {
 				Collection<Object> collection = new HashSet<>();

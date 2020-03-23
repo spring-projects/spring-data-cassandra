@@ -35,7 +35,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
-import com.datastax.oss.driver.api.core.type.TupleType;
 
 /**
  * Cassandra specific {@link BasicPersistentEntity} implementation that adds Cassandra specific metadata.
@@ -232,15 +231,6 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity#getTupleType()
-	 */
-	@Override
-	@Nullable
-	public TupleType getTupleType() {
-		return null;
-	}
-
-	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity#isUserDefinedType()
 	 */
 	@Override
@@ -248,12 +238,4 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 		return false;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity#getUserType()
-	 */
-	@Override
-	@Nullable
-	public com.datastax.oss.driver.api.core.type.UserDefinedType getUserType() {
-		return null;
-	}
 }

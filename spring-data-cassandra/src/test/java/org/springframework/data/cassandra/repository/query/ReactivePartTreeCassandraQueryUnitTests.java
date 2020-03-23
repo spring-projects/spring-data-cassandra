@@ -47,7 +47,6 @@ import org.springframework.util.ClassUtils;
 
 import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
-import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
 
 /**
  * Unit tests for {@link ReactivePartTreeCassandraQuery}.
@@ -177,8 +176,7 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 		CassandraParameterAccessor accessor = new CassandraParametersParameterAccessor(partTreeQuery.getQueryMethod(),
 				args);
 
-		return partTreeQuery.createQuery(new ConvertingParameterAccessor(mockCassandraOperations.getConverter(), accessor,
-				CodecRegistry.DEFAULT));
+		return partTreeQuery.createQuery(new ConvertingParameterAccessor(mockCassandraOperations.getConverter(), accessor));
 	}
 
 	private ReactivePartTreeCassandraQuery createQueryForMethod(Class<?> repositoryInterface, String methodName,

@@ -15,29 +15,23 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import static org.springframework.data.cassandra.core.mapping.CassandraType.*;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedParameterizedType;
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.expression.BeanFactoryAccessor;
 import org.springframework.context.expression.BeanFactoryResolver;
 import org.springframework.core.annotation.AnnotatedElementUtils;
-import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.core.cql.Ordering;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.cassandra.util.SpelUtils;
 import org.springframework.data.mapping.Association;
-import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.model.AnnotationBasedPersistentProperty;
 import org.springframework.data.mapping.model.Property;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
@@ -50,9 +44,6 @@ import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
-import com.datastax.oss.driver.api.core.type.DataType;
-import com.datastax.oss.driver.api.core.type.DataTypes;
-import com.datastax.oss.driver.api.core.type.UserDefinedType;
 
 /**
  * Cassandra specific {@link org.springframework.data.mapping.model.AnnotationBasedPersistentProperty} implementation.
@@ -73,8 +64,6 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 	private @Nullable StandardEvaluationContext spelContext;
 
-	private final @Nullable UserTypeResolver userTypeResolver;
-
 	/**
 	 * Create a new {@link BasicCassandraPersistentProperty}.
 	 *
@@ -85,23 +74,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	public BasicCassandraPersistentProperty(Property property, CassandraPersistentEntity<?> owner,
 			SimpleTypeHolder simpleTypeHolder) {
 
-		this(property, owner, simpleTypeHolder, null);
-	}
-
-	/**
-	 * Create a new {@link BasicCassandraPersistentProperty}.
-	 *
-	 * @param property the actual {@link Property} in the domain entity corresponding to this persistent entity.
-	 * @param owner the containing object or {@link CassandraPersistentEntity} of this persistent property.
-	 * @param simpleTypeHolder mapping of Java [simple|wrapper] types to Cassandra data types.
-	 * @param userTypeResolver resolver for user-defined types.
-	 */
-	public BasicCassandraPersistentProperty(Property property, CassandraPersistentEntity<?> owner,
-			SimpleTypeHolder simpleTypeHolder, @Nullable UserTypeResolver userTypeResolver) {
-
 		super(property, owner, simpleTypeHolder);
-
-		this.userTypeResolver = userTypeResolver;
 	}
 
 	/* (non-Javadoc)
@@ -160,128 +133,6 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		PrimaryKeyColumn annotation = findAnnotation(PrimaryKeyColumn.class);
 
 		return annotation != null ? annotation.ordering() : null;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty#getDataType()
-	 */
-	@Override
-	public DataType getDataType() {
-
-		DataType dataType = findDataType();
-
-		if (dataType == null) {
-			throw new InvalidDataAccessApiUsageException(String.format(
-					"Unknown type [%s] for property [%s] in entity [%s]; only primitive types and Collections or Maps of primitive types are allowed",
-					getType(), getName(), getOwner().getName()));
-		}
-
-		return dataType;
-	}
-
-	@Nullable
-	private DataType findDataType() {
-
-		CassandraType cassandraType = findAnnotation(CassandraType.class);
-
-		if (cassandraType != null) {
-			return getDataTypeFor(cassandraType);
-		}
-
-		if (isMap()) {
-
-			List<TypeInformation<?>> args = getTypeInformation().getTypeArguments();
-
-			assertTypeArguments(args.size(), 2);
-
-			return DataTypes.mapOf(getDataTypeFor(args.get(0).getType()), getDataTypeFor(args.get(1).getType()));
-		}
-
-		if (isCollectionLike()) {
-
-			List<TypeInformation<?>> args = getTypeInformation().getTypeArguments();
-
-			assertTypeArguments(args.size(), 1);
-
-			if (Set.class.isAssignableFrom(getType())) {
-				return DataTypes.setOf(getDataTypeFor(args.get(0).getType()));
-			}
-
-			if (List.class.isAssignableFrom(getType())) {
-				return DataTypes.listOf(getDataTypeFor(args.get(0).getType()));
-			}
-		}
-
-		return CassandraSimpleTypeHolder.getDataTypeFor(getType());
-	}
-
-	private DataType getDataTypeFor(CassandraType annotation) {
-
-		Name type = annotation.type();
-
-		switch (type) {
-			case MAP:
-				assertTypeArguments(annotation.typeArguments().length, 2);
-				return DataTypes.mapOf(CassandraSimpleTypeHolder.getDataTypeFor(annotation.typeArguments()[0]),
-						CassandraSimpleTypeHolder.getDataTypeFor(annotation.typeArguments()[1]));
-			case LIST:
-				assertTypeArguments(annotation.typeArguments().length, 1);
-				return annotation.typeArguments()[0] == Name.UDT
-						? DataTypes.listOf(getUserType(annotation))
-						: DataTypes.listOf(CassandraSimpleTypeHolder.getDataTypeFor(annotation.typeArguments()[0]));
-			case SET:
-				assertTypeArguments(annotation.typeArguments().length, 1);
-				return annotation.typeArguments()[0] == Name.UDT
-						? DataTypes.setOf(getUserType(annotation))
-						: DataTypes.setOf(CassandraSimpleTypeHolder.getDataTypeFor(annotation.typeArguments()[0]));
-			case UDT:
-				return getUserType(annotation);
-			default:
-				return CassandraSimpleTypeHolder.getDataTypeFor(type);
-		}
-	}
-
-	private DataType getUserType(CassandraType annotation) {
-
-		if (!StringUtils.hasText(annotation.userTypeName())) {
-			throw new InvalidDataAccessApiUsageException(
-					String.format("Expected user type name in property ['%s'] of type ['%s'] in entity [%s]", getName(),
-							getType(), getOwner().getName()));
-		}
-
-		Assert.state(this.userTypeResolver != null, "UserTypeResolver is null");
-
-		CqlIdentifier identifier = CqlIdentifier.fromCql(annotation.userTypeName());
-
-		UserDefinedType userType = this.userTypeResolver.resolveType(identifier);
-
-		if (userType == null) {
-			throw new MappingException(String.format("User type [%s] not found", identifier));
-		}
-
-		return userType;
-	}
-
-	private DataType getDataTypeFor(Class<?> javaType) {
-
-		DataType dataType = CassandraSimpleTypeHolder.getDataTypeFor(javaType);
-
-		if (dataType == null) {
-			throw new InvalidDataAccessApiUsageException(String.format(
-					"Only primitive types are allowed inside Collections for property [%1$s] of type ['%2$s'] in entity [%3$s]",
-					getName(), getType(), getOwner().getName()));
-		}
-
-		return dataType;
-	}
-
-	private void assertTypeArguments(int args, int expected) {
-
-		if (args != expected) {
-			throw new InvalidDataAccessApiUsageException(String.format(
-					"Expected [%1$s] type arguments for property ['%2$s'] of type ['%3$s'] in entity [%4$s]; actual was [%5$d]",
-					expected, getName(), getType(), getOwner().getName(), args));
-		}
 	}
 
 	/* (non-Javadoc)

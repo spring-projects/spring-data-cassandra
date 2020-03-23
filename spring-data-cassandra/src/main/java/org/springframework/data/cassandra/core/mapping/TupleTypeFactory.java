@@ -30,8 +30,10 @@ import com.datastax.oss.driver.api.core.type.TupleType;
  * @since 2.1
  * @see SimpleTupleTypeFactory
  * @see CodecRegistryTupleTypeFactory
+ * @deprecated since 3.0
  */
 @FunctionalInterface
+@Deprecated
 public interface TupleTypeFactory {
 
 	/**

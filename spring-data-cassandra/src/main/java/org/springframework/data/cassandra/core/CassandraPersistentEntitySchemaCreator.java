@@ -63,6 +63,22 @@ public class CassandraPersistentEntitySchemaCreator {
 	 *
 	 * @param mappingContext must not be {@literal null}.
 	 * @param cassandraAdminOperations must not be {@literal null}.
+	 * @since 3.0
+	 */
+	public CassandraPersistentEntitySchemaCreator(CassandraAdminOperations cassandraAdminOperations) {
+
+		Assert.notNull(cassandraAdminOperations, "CassandraAdminOperations must not be null");
+
+		this.cassandraAdminOperations = cassandraAdminOperations;
+		this.mappingContext = cassandraAdminOperations.getConverter().getMappingContext();
+	}
+
+	/**
+	 * Create a new {@link CassandraPersistentEntitySchemaCreator} for the given {@link CassandraMappingContext} and
+	 * {@link CassandraAdminOperations}.
+	 *
+	 * @param mappingContext must not be {@literal null}.
+	 * @param cassandraAdminOperations must not be {@literal null}.
 	 */
 	public CassandraPersistentEntitySchemaCreator(CassandraMappingContext mappingContext,
 			CassandraAdminOperations cassandraAdminOperations) {
@@ -96,7 +112,8 @@ public class CassandraPersistentEntitySchemaCreator {
 
 		return this.mappingContext.getTableEntities() //
 				.stream() //
-				.map(entity -> this.mappingContext.getCreateTableSpecificationFor(entity).ifNotExists(ifNotExists)) //
+				.map(entity -> cassandraAdminOperations.getSchemaFactory().getCreateTableSpecificationFor(entity)
+						.ifNotExists(ifNotExists)) //
 				.collect(Collectors.toList());
 	}
 
@@ -122,7 +139,7 @@ public class CassandraPersistentEntitySchemaCreator {
 
 		return this.mappingContext.getTableEntities() //
 				.stream() //
-				.flatMap(entity -> this.mappingContext.getCreateIndexSpecificationsFor(entity).stream()) //
+				.flatMap(entity -> cassandraAdminOperations.getSchemaFactory().getCreateIndexSpecificationsFor(entity).stream()) //
 				.peek(it -> it.ifNotExists(ifNotExists)) //
 				.collect(Collectors.toList());
 	}
@@ -161,11 +178,10 @@ public class CassandraPersistentEntitySchemaCreator {
 			visitUserTypes(entity, udts);
 		});
 
-		specifications
-				.addAll(udts
-						.stream().map(identifier -> this.mappingContext
-								.getCreateUserTypeSpecificationFor(byTableName.get(identifier)).ifNotExists(ifNotExists))
-						.collect(Collectors.toList()));
+		specifications.addAll(udts.stream()
+				.map(identifier -> cassandraAdminOperations.getSchemaFactory()
+						.getCreateUserTypeSpecificationFor(byTableName.get(identifier)).ifNotExists(ifNotExists))
+				.collect(Collectors.toList()));
 
 		return specifications;
 	}

@@ -31,6 +31,7 @@ public interface CassandraColumnType extends ColumnType {
 	 * Returns the {@link DataType} associated with this column type.
 	 *
 	 * @return
+	 * @throws org.springframework.data.mapping.MappingException if the column cannot be mapped onto a Cassandra type.
 	 */
 	DataType getDataType();
 

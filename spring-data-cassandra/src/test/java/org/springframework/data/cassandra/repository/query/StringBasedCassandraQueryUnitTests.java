@@ -60,7 +60,6 @@ import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.data.UdtValue;
 import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.datastax.oss.driver.api.core.type.UserDefinedType;
-import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
 
 /**
  * Unit tests for {@link StringBasedCassandraQuery}.
@@ -327,8 +326,7 @@ public class StringBasedCassandraQueryUnitTests {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByCreatedDate", LocalDate.class);
 		CassandraParameterAccessor accessor = new ConvertingParameterAccessor(converter,
-				new CassandraParametersParameterAccessor(cassandraQuery.getQueryMethod(), LocalDate.of(2010, 7, 4)),
-				CodecRegistry.DEFAULT);
+				new CassandraParametersParameterAccessor(cassandraQuery.getQueryMethod(), LocalDate.of(2010, 7, 4)));
 
 		SimpleStatement actual = cassandraQuery.createQuery(accessor);
 
@@ -347,8 +345,7 @@ public class StringBasedCassandraQueryUnitTests {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByMainAddress", AddressType.class);
 		CassandraParameterAccessor accessor = new ConvertingParameterAccessor(converter,
-				new CassandraParametersParameterAccessor(cassandraQuery.getQueryMethod(), new AddressType()),
-				CodecRegistry.DEFAULT);
+				new CassandraParametersParameterAccessor(cassandraQuery.getQueryMethod(), new AddressType()));
 
 		SimpleStatement actual = cassandraQuery.createQuery(accessor);
 
@@ -360,8 +357,13 @@ public class StringBasedCassandraQueryUnitTests {
 	public void bindsUdtValuePropertyCorrectly() throws Exception {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByMainAddress", UdtValue.class);
+
+		UserDefinedType addressType = UserDefinedTypeBuilder.forName("address").withField("city", DataTypes.TEXT)
+				.withField("country", DataTypes.TEXT).build();
+		when(udtValue.getType()).thenReturn(addressType);
+
 		CassandraParameterAccessor accessor = new ConvertingParameterAccessor(converter,
-				new CassandraParametersParameterAccessor(cassandraQuery.getQueryMethod(), udtValue), CodecRegistry.DEFAULT);
+				new CassandraParametersParameterAccessor(cassandraQuery.getQueryMethod(), udtValue));
 
 		SimpleStatement actual = cassandraQuery.createQuery(accessor);
 

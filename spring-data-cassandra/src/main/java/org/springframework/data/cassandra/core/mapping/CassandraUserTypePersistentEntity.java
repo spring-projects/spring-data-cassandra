@@ -15,10 +15,7 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import org.springframework.data.mapping.MappingException;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.lang.Nullable;
-import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 
@@ -32,27 +29,16 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  */
 public class CassandraUserTypePersistentEntity<T> extends BasicCassandraPersistentEntity<T> {
 
-	private final UserTypeResolver resolver;
-
-	private final Object lock = new Object();
-
-	private volatile @Nullable com.datastax.oss.driver.api.core.type.UserDefinedType userType;
-
 	/**
 	 * Create a new {@link CassandraUserTypePersistentEntity}.
 	 *
 	 * @param typeInformation must not be {@literal null}.
 	 * @param verifier must not be {@literal null}.
-	 * @param resolver must not be {@literal null}.
 	 */
 	public CassandraUserTypePersistentEntity(TypeInformation<T> typeInformation,
-			CassandraPersistentEntityMetadataVerifier verifier, UserTypeResolver resolver) {
+			CassandraPersistentEntityMetadataVerifier verifier) {
 
 		super(typeInformation, verifier);
-
-		Assert.notNull(resolver, "UserTypeResolver must not be null");
-
-		this.resolver = resolver;
 	}
 
 	/* (non-Javadoc)
@@ -76,30 +62,5 @@ public class CassandraUserTypePersistentEntity<T> extends BasicCassandraPersiste
 	@Override
 	public boolean isUserDefinedType() {
 		return true;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity#getUserType()
-	 */
-	@Override
-	public com.datastax.oss.driver.api.core.type.UserDefinedType getUserType() {
-
-		if (userType == null) {
-			synchronized (lock) {
-				if (userType == null) {
-
-					CqlIdentifier identifier = determineTableName();
-					com.datastax.oss.driver.api.core.type.UserDefinedType userType = resolver.resolveType(identifier);
-
-					if (userType == null) {
-						throw new MappingException(String.format("User type [%s] not found", identifier));
-					}
-
-					this.userType = userType;
-				}
-			}
-		}
-
-		return userType;
 	}
 }

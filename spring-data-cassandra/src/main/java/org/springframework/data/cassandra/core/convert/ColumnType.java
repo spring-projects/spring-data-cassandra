@@ -88,8 +88,8 @@ public interface ColumnType {
 	 * @return
 	 */
 	static CassandraColumnType listOf(CassandraColumnType componentType) {
-		return new DefaultCassandraColumnType(ClassTypeInformation.LIST, DataTypes.listOf(componentType.getDataType()),
-				componentType);
+		return new DefaultCassandraColumnType(ClassTypeInformation.LIST,
+				() -> DataTypes.listOf(componentType.getDataType()), componentType);
 	}
 
 	/**
@@ -114,7 +114,7 @@ public interface ColumnType {
 	 * @return
 	 */
 	static CassandraColumnType setOf(CassandraColumnType componentType) {
-		return new DefaultCassandraColumnType(ClassTypeInformation.SET, DataTypes.setOf(componentType.getDataType()),
+		return new DefaultCassandraColumnType(ClassTypeInformation.SET, () -> DataTypes.setOf(componentType.getDataType()),
 				componentType);
 	}
 
@@ -138,7 +138,7 @@ public interface ColumnType {
 	 */
 	static CassandraColumnType mapOf(CassandraColumnType keyType, CassandraColumnType valueType) {
 		return new DefaultCassandraColumnType(ClassTypeInformation.MAP,
-				DataTypes.mapOf(keyType.getDataType(), valueType.getDataType()), keyType, valueType);
+				() -> DataTypes.mapOf(keyType.getDataType(), valueType.getDataType()), keyType, valueType);
 	}
 
 	/**

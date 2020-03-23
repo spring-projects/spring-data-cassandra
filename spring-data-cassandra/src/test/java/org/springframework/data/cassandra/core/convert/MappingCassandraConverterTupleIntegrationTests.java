@@ -44,7 +44,6 @@ import org.springframework.data.cassandra.core.cql.keyspace.CreateUserTypeSpecif
 import org.springframework.data.cassandra.core.cql.util.StatementBuilder;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.Element;
-import org.springframework.data.cassandra.core.mapping.SimpleTupleTypeFactory;
 import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.core.mapping.Tuple;
 import org.springframework.data.cassandra.core.mapping.UserDefinedType;
@@ -105,8 +104,9 @@ public class MappingCassandraConverterTupleIntegrationTests extends AbstractSpri
 			this.session.execute("DROP TABLE IF EXISTS person;");
 
 			CassandraMappingContext mappingContext = converter.getMappingContext();
+			SchemaFactory schemaFactory = new SchemaFactory(converter);
 
-			CreateUserTypeSpecification createAddress = mappingContext
+			CreateUserTypeSpecification createAddress = schemaFactory
 					.getCreateUserTypeSpecificationFor(mappingContext.getRequiredPersistentEntity(AddressUserType.class));
 
 			this.session.execute(CreateUserTypeCqlGenerator.toCql(createAddress));
@@ -127,7 +127,7 @@ public class MappingCassandraConverterTupleIntegrationTests extends AbstractSpri
 	@Test // DATACASS-651
 	public void shouldInsertRowWithTuple() {
 
-		TupleType tupleType = SimpleTupleTypeFactory.DEFAULT.create(DataTypes.TEXT, DataTypes.INT);
+		TupleType tupleType = DataTypes.tupleOf(DataTypes.TEXT, DataTypes.INT);
 
 		Person person = new Person();
 
@@ -207,7 +207,7 @@ public class MappingCassandraConverterTupleIntegrationTests extends AbstractSpri
 
 		person.setMapOfTuples(Collections.singletonMap("foo", tuple));
 
-		TupleType tupleType = SimpleTupleTypeFactory.DEFAULT.create(DataTypes.TEXT, DataTypes.INT);
+		TupleType tupleType = DataTypes.tupleOf(DataTypes.TEXT, DataTypes.INT);
 		person.setMapOfTupleValues(Collections.singletonMap("mykey", tupleType.newValue("hello", 42)));
 
 		StatementFactory statementFactory = new StatementFactory(new UpdateMapper(converter));

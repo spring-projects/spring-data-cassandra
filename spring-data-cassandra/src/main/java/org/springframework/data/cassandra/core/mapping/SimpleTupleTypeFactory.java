@@ -30,6 +30,7 @@ import com.datastax.oss.driver.internal.core.type.DefaultTupleType;
  * @author Mark Paluch
  * @since 3.0
  */
+
 public enum SimpleTupleTypeFactory implements TupleTypeFactory {
 
 	/**

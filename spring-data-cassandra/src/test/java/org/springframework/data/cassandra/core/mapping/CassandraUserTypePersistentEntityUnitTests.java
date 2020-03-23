@@ -24,7 +24,6 @@ import java.lang.annotation.Target;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import org.springframework.core.annotation.AliasFor;
@@ -39,8 +38,6 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class CassandraUserTypePersistentEntityUnitTests {
-
-	@Mock UserTypeResolver userTypeResolverMock;
 
 	@Test // DATACASS-172
 	public void isUserDefinedTypeShouldReportTrue() {
@@ -83,7 +80,7 @@ public class CassandraUserTypePersistentEntityUnitTests {
 	}
 
 	private <T> CassandraUserTypePersistentEntity<T> getEntity(Class<T> entityClass) {
-		return new CassandraUserTypePersistentEntity<>(ClassTypeInformation.from(entityClass), null, userTypeResolverMock);
+		return new CassandraUserTypePersistentEntity<>(ClassTypeInformation.from(entityClass), null);
 	}
 
 	@UserDefinedType

@@ -16,23 +16,16 @@
 package org.springframework.data.cassandra.core.mapping;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mapping.MappingException;
-
-import com.datastax.oss.driver.api.core.type.DataTypes;
-import com.datastax.oss.driver.internal.core.type.DefaultTupleType;
 
 /**
  * Unit tests for {@link BasicCassandraPersistentTupleEntity}.
@@ -43,13 +36,6 @@ import com.datastax.oss.driver.internal.core.type.DefaultTupleType;
 public class BasicCassandraPersistentTupleEntityUnitTests {
 
 	CassandraMappingContext mappingContext = new CassandraMappingContext();
-
-	@Mock TupleTypeFactory tupleTypeFactory;
-
-	@Before
-	public void before() {
-		this.mappingContext.setTupleTypeFactory(tupleTypeFactory);
-	}
 
 	@Test // DATACASS-523
 	public void shouldCreatePersistentTupleEntity() {
@@ -73,21 +59,6 @@ public class BasicCassandraPersistentTupleEntityUnitTests {
 		entity.forEach(it -> propertyNames.add(it.getName()));
 
 		assertThat(propertyNames).containsSequence("street", "city", "sortOrder");
-	}
-
-	@Test // DATACASS-523
-	public void shouldCreateTupleType() {
-
-		when(this.tupleTypeFactory.create(anyList()))
-				.thenReturn(new DefaultTupleType(Arrays.asList(DataTypes.TEXT, DataTypes.TEXT, DataTypes.INT)));
-
-		BasicCassandraPersistentEntity<?> entity = this.mappingContext.getRequiredPersistentEntity(Address.class);
-
-		entity.verify();
-
-		entity.getTupleType();
-
-		verify(tupleTypeFactory).create(Arrays.asList(DataTypes.TEXT, DataTypes.TEXT, DataTypes.INT));
 	}
 
 	@Test // DATACASS-523

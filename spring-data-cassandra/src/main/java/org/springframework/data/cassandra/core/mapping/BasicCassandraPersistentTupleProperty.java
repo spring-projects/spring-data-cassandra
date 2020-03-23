@@ -44,21 +44,7 @@ public class BasicCassandraPersistentTupleProperty extends BasicCassandraPersist
 	public BasicCassandraPersistentTupleProperty(Property property, CassandraPersistentEntity<?> owner,
 			SimpleTypeHolder simpleTypeHolder) {
 
-		this(property, owner, simpleTypeHolder, null);
-	}
-
-	/**
-	 * Create a new {@link BasicCassandraPersistentTupleProperty}.
-	 *
-	 * @param property the actual {@link Property} in the domain entity corresponding to this persistent entity.
-	 * @param owner the containing object or {@link CassandraPersistentEntity} of this persistent property.
-	 * @param simpleTypeHolder mapping of Java [simple|wrapper] types to Cassandra data types.
-	 * @param userTypeResolver resolver for user-defined types.
-	 */
-	public BasicCassandraPersistentTupleProperty(Property property, CassandraPersistentEntity<?> owner,
-			SimpleTypeHolder simpleTypeHolder, @Nullable UserTypeResolver userTypeResolver) {
-
-		super(property, owner, simpleTypeHolder, userTypeResolver);
+		super(property, owner, simpleTypeHolder);
 
 		this.ordinal = findOrdinal();
 	}

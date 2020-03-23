@@ -25,7 +25,6 @@ import java.lang.reflect.Field;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.junit.Test;
 
@@ -35,7 +34,6 @@ import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.util.ReflectionUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
-import com.datastax.oss.protocol.internal.ProtocolConstants;
 
 /**
  * Unit tests for {@link BasicCassandraPersistentProperty}.
@@ -102,26 +100,6 @@ public class BasicCassandraPersistentPropertyUnitTests {
 		assertThat(persistentProperty.isPrimaryKeyColumn()).isTrue();
 	}
 
-	@Test // DATACASS-259
-	public void shouldConsiderComposedCassandraTypeAnnotation() {
-
-		CassandraPersistentProperty persistentProperty = getPropertyFor(TypeWithComposedCassandraTypeAnnotation.class,
-				"column");
-
-		assertThat(persistentProperty.getDataType().getProtocolCode()).isEqualTo(ProtocolConstants.DataType.COUNTER);
-		assertThat(persistentProperty.findAnnotation(CassandraType.class)).isNotNull();
-	}
-
-	@Test // DATACASS-375
-	public void UuidshouldMapToUUIDByDefault() {
-
-		CassandraPersistentProperty uuidProperty = getPropertyFor(TypeWithUUIDColumn.class, "uuid");
-		CassandraPersistentProperty timeUUIDProperty = getPropertyFor(TypeWithUUIDColumn.class, "timeUUID");
-
-		assertThat(uuidProperty.getDataType().getProtocolCode()).isEqualTo(ProtocolConstants.DataType.UUID);
-		assertThat(timeUUIDProperty.getDataType().getProtocolCode()).isEqualTo(ProtocolConstants.DataType.TIMEUUID);
-	}
-
 	@Test // DATACASS-568
 	public void shouldFindAnnotationInMapTypes() {
 
@@ -142,6 +120,15 @@ public class BasicCassandraPersistentPropertyUnitTests {
 		assertThat(findAnnotatedType(TypeWithCollections.class, "unparameterized")).isNull();
 		assertThat(findAnnotatedType(TypeWithCollections.class, "unparameterizedWithAnnotation")).isNotNull();
 		assertThat(findAnnotatedType(TypeWithCollections.class, "subtype")).isNull();
+	}
+
+	@Test // DATACASS-259
+	public void shouldConsiderComposedCassandraTypeAnnotation() {
+
+		CassandraPersistentProperty persistentProperty = getPropertyFor(TypeWithComposedCassandraTypeAnnotation.class,
+				"column");
+
+		assertThat(persistentProperty.findAnnotation(CassandraType.class)).isNotNull();
 	}
 
 	private AnnotatedType findAnnotatedType(Class<?> type, String parameterized) {
@@ -219,13 +206,6 @@ public class BasicCassandraPersistentPropertyUnitTests {
 
 	static class TypeWithComposedCassandraTypeAnnotation {
 		@ComposedCassandraTypeAnnotation String column;
-	}
-
-	static class TypeWithUUIDColumn {
-
-		UUID uuid;
-
-		@CassandraType(type = Name.TIMEUUID) UUID timeUUID;
 	}
 
 	static class TypeWithMaps {

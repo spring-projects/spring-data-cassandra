@@ -19,14 +19,12 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedType;
 
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.core.cql.Ordering;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
-import com.datastax.oss.driver.api.core.type.DataType;
 
 /**
  * Cassandra specific {@link org.springframework.data.mapping.PersistentProperty} extension.
@@ -87,15 +85,6 @@ public interface CassandraPersistentProperty
 
 		return columnName;
 	}
-
-	/**
-	 * The column's data type. Not valid for a composite primary key.
-	 *
-	 * @return the Cassandra {@link DataType}
-	 * @throws InvalidDataAccessApiUsageException if the {@link DataType} cannot be resolved
-	 * @see CassandraType
-	 */
-	DataType getDataType();
 
 	/**
 	 * Whether to force-quote the column names of this property.

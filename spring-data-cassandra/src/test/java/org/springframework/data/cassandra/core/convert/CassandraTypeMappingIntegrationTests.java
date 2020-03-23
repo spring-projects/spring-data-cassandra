@@ -46,7 +46,6 @@ import org.junit.Test;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
-import org.springframework.data.cassandra.core.mapping.SimpleTupleTypeFactory;
 import org.springframework.data.cassandra.domain.AllPossibleTypes;
 import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
 import org.springframework.data.cassandra.support.CassandraVersion;
@@ -470,7 +469,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	@Test // DATACASS-284
 	public void shouldReadAndWriteTupleType() {
 
-		TupleType tupleType = SimpleTupleTypeFactory.DEFAULT.create(DataTypes.TEXT, DataTypes.BIGINT);
+		TupleType tupleType = DataTypes.tupleOf(DataTypes.TEXT, DataTypes.BIGINT);
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 
@@ -487,7 +486,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	@Test // DATACASS-284
 	public void shouldReadAndWriteListOfTuples() {
 
-		TupleType tupleType = SimpleTupleTypeFactory.DEFAULT.create(DataTypes.TEXT, DataTypes.BIGINT);
+		TupleType tupleType = DataTypes.tupleOf(DataTypes.TEXT, DataTypes.BIGINT);
 
 		ListOfTuples entity = new ListOfTuples();
 

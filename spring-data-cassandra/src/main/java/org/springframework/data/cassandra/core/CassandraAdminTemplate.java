@@ -20,6 +20,7 @@ import java.util.Optional;
 
 import org.springframework.data.cassandra.SessionFactory;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
+import org.springframework.data.cassandra.core.convert.SchemaFactory;
 import org.springframework.data.cassandra.core.cql.CqlOperations;
 import org.springframework.data.cassandra.core.cql.SessionCallback;
 import org.springframework.data.cassandra.core.cql.generator.CreateTableCqlGenerator;
@@ -48,6 +49,8 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 
 	protected static final boolean DEFAULT_DROP_TABLE_IF_EXISTS = false;
 
+	private final SchemaFactory schemaFactory;
+
 	/**
 	 * Constructor used for a basic template configuration.
 	 *
@@ -56,6 +59,8 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 	 */
 	public CassandraAdminTemplate(CqlSession session) {
 		super(session);
+
+		this.schemaFactory = new SchemaFactory(getConverter());
 	}
 
 	/**
@@ -66,6 +71,7 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 	 */
 	public CassandraAdminTemplate(CqlSession session, CassandraConverter converter) {
 		super(session, converter);
+		this.schemaFactory = new SchemaFactory(getConverter());
 	}
 
 	/**
@@ -76,6 +82,8 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 	 */
 	public CassandraAdminTemplate(SessionFactory sessionFactory, CassandraConverter converter) {
 		super(sessionFactory, converter);
+
+		this.schemaFactory = new SchemaFactory(getConverter());
 	}
 
 	/**
@@ -87,6 +95,13 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 	 */
 	public CassandraAdminTemplate(CqlOperations cqlOperations, CassandraConverter converter) {
 		super(cqlOperations, converter);
+
+		this.schemaFactory = new SchemaFactory(getConverter());
+	}
+
+	@Override
+	public SchemaFactory getSchemaFactory() {
+		return schemaFactory;
 	}
 
 	/* (non-Javadoc)
@@ -98,8 +113,8 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 
 		CassandraPersistentEntity<?> entity = getConverter().getMappingContext().getRequiredPersistentEntity(entityClass);
 
-		CreateTableSpecification createTableSpecification = getConverter().getMappingContext()
-				.getCreateTableSpecificationFor(tableName, entity).ifNotExists(ifNotExists);
+		CreateTableSpecification createTableSpecification = this.schemaFactory
+				.getCreateTableSpecificationFor(entity, tableName).ifNotExists(ifNotExists);
 
 		getCqlOperations().execute(CreateTableCqlGenerator.toCql(createTableSpecification));
 	}

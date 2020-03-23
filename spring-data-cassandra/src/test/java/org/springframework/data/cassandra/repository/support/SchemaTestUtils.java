@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.repository.support;
 import java.util.Optional;
 
 import org.springframework.data.cassandra.core.CassandraOperations;
+import org.springframework.data.cassandra.core.convert.SchemaFactory;
 import org.springframework.data.cassandra.core.cql.SessionCallback;
 import org.springframework.data.cassandra.core.cql.generator.CreateTableCqlGenerator;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
@@ -44,6 +45,7 @@ public class SchemaTestUtils {
 
 		CassandraMappingContext mappingContext = operations.getConverter().getMappingContext();
 		CassandraPersistentEntity<?> persistentEntity = mappingContext.getRequiredPersistentEntity(entityClass);
+		SchemaFactory schemaFactory = new SchemaFactory(operations.getConverter());
 
 		operations.getCqlOperations().execute((SessionCallback<Object>) session -> {
 
@@ -51,7 +53,7 @@ public class SchemaTestUtils {
 					.flatMap(it -> it.getTable(persistentEntity.getTableName()));
 
 			if (!table.isPresent()) {
-				CreateTableSpecification tableSpecification = mappingContext.getCreateTableSpecificationFor(persistentEntity);
+				CreateTableSpecification tableSpecification = schemaFactory.getCreateTableSpecificationFor(persistentEntity);
 				operations.getCqlOperations().execute(new CreateTableCqlGenerator(tableSpecification).toCql());
 			}
 			return null;

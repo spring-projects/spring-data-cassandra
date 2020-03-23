@@ -263,7 +263,7 @@ public class PartTreeCassandraQueryUnitTests {
 				args);
 
 		return partTreeQuery.createQuery(
-				new ConvertingParameterAccessor(mockCassandraOperations.getConverter(), accessor, CodecRegistry.DEFAULT));
+				new ConvertingParameterAccessor(mockCassandraOperations.getConverter(), accessor));
 	}
 
 	private PartTreeCassandraQuery createQueryForMethod(Class<?> repositoryInterface, String methodName,

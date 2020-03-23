@@ -20,30 +20,39 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.StreamSupport;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.springframework.dao.InvalidDataAccessApiUsageException;
-import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity;
-import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
+import org.springframework.data.cassandra.core.mapping.CassandraType.Name;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.mapping.MappingException;
+import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.Lazy;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.data.TupleValue;
 import com.datastax.oss.driver.api.core.data.UdtValue;
-import com.datastax.oss.driver.api.core.detach.AttachmentPoint;
 import com.datastax.oss.driver.api.core.type.DataType;
 import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.datastax.oss.driver.api.core.type.ListType;
 import com.datastax.oss.driver.api.core.type.MapType;
 import com.datastax.oss.driver.api.core.type.SetType;
 import com.datastax.oss.driver.api.core.type.UserDefinedType;
+import com.datastax.oss.driver.api.core.type.codec.CodecNotFoundException;
 import com.datastax.oss.driver.api.core.type.codec.TypeCodec;
 import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
 import com.datastax.oss.driver.api.core.type.reflect.GenericType;
@@ -56,20 +65,64 @@ import com.datastax.oss.driver.api.core.type.reflect.GenericType;
  */
 class DefaultColumnTypeResolver implements ColumnTypeResolver {
 
-	private final CassandraMappingContext mappingContext;
-	private final UserTypeResolver userTypeResolver;
-	private final CodecRegistry codecRegistry;
-	private CustomConversions customConversions;
+	private final Log log = LogFactory.getLog(getClass());
 
-	public DefaultColumnTypeResolver(CassandraMappingContext mappingContext) {
+	private final MappingContext<? extends CassandraPersistentEntity<?>, ? extends CassandraPersistentProperty> mappingContext;
+	private final UserTypeResolver userTypeResolver;
+	private final Supplier<CodecRegistry> codecRegistry;
+	private final Supplier<CustomConversions> customConversions;
+
+	/**
+	 * Creates a new {@link DefaultColumnTypeResolver}.
+	 *
+	 * @param mappingContext
+	 * @param userTypeResolver
+	 * @param codecRegistry
+	 * @param customConversions
+	 */
+	public DefaultColumnTypeResolver(
+			MappingContext<? extends CassandraPersistentEntity<?>, ? extends CassandraPersistentProperty> mappingContext,
+			UserTypeResolver userTypeResolver, Supplier<CodecRegistry> codecRegistry,
+			Supplier<CustomConversions> customConversions) {
 		this.mappingContext = mappingContext;
-		this.userTypeResolver = mappingContext.getUserTypeResolver();
-		this.codecRegistry = mappingContext.getCodecRegistry();
-		this.customConversions = mappingContext.getCustomConversions();
+		this.userTypeResolver = userTypeResolver;
+		this.codecRegistry = codecRegistry;
+		this.customConversions = customConversions;
 	}
 
-	public void setCustomConversions(CustomConversions customConversions) {
-		this.customConversions = customConversions;
+	@Override
+	public CassandraColumnType resolve(CassandraPersistentProperty property) {
+
+		Assert.notNull(property, "Property must not be null");
+
+		if (property.isAnnotationPresent(CassandraType.class)) {
+
+			CassandraType annotation = property.getRequiredAnnotation(CassandraType.class);
+
+			if (annotation.type() == Name.UDT && StringUtils.isEmpty(annotation.userTypeName())) {
+				throw new InvalidDataAccessApiUsageException(
+						String.format("Expected user type name in property ['%s'] of type ['%s'] in entity [%s]",
+								property.getName(), property.getType(), property.getOwner().getName()));
+			}
+
+			if ((annotation.type() == Name.LIST || annotation.type() == Name.SET) && annotation.typeArguments().length != 1) {
+
+				throw new InvalidDataAccessApiUsageException(String.format(
+						"Expected [%d] type arguments for property ['%s'] of type ['%s'] in entity [%s]; actual was [%d]", 1,
+						property.getName(), property.getType(), property.getOwner().getName(), annotation.typeArguments().length));
+			}
+
+			if (annotation.type() == Name.MAP && annotation.typeArguments().length != 2) {
+
+				throw new InvalidDataAccessApiUsageException(String.format(
+						"Expected [%d] type arguments for property ['%s'] of type ['%s'] in entity [%s]; actual was [%d]", 2,
+						property.getName(), property.getType(), property.getOwner().getName(), annotation.typeArguments().length));
+			}
+
+			return resolve(annotation);
+		}
+
+		return resolve(property.getTypeInformation());
 	}
 
 	/*
@@ -79,9 +132,7 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 	@Override
 	public CassandraColumnType resolve(TypeInformation<?> typeInformation) {
 
-		Optional<Class<?>> writeTarget = customConversions.getCustomWriteTarget(typeInformation.getType());
-
-		return writeTarget.map(it -> {
+		return getCustomWriteTarget(typeInformation).map(it -> {
 			return createCassandraTypeDescriptor(tryResolve(it), ClassTypeInformation.from(it));
 		}).orElseGet(() -> {
 
@@ -93,17 +144,29 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 		});
 	}
 
+	private Optional<Class<?>> getCustomWriteTarget(TypeInformation<?> typeInformation) {
+		return customConversions.get().getCustomWriteTarget(typeInformation.getType());
+	}
+
+	@Nullable
 	private DataType tryResolve(Class<?> type) {
 
 		if (TupleValue.class.isAssignableFrom(type)) {
-			return DataTypes.tupleOf();
+			return null;
 		}
 
 		if (UdtValue.class.isAssignableFrom(type)) {
-			return UnknownUserDefinedType.INSTANCE;
+			return null;
 		}
 
-		return codecRegistry.codecFor(type).getCqlType();
+		try {
+			return getCodecRegistry().codecFor(type).getCqlType();
+		} catch (CodecNotFoundException e) {
+			if (log.isDebugEnabled()) {
+				log.debug(String.format("Cannot resolve Codec for %s", type.getName()), e);
+			}
+			return null;
+		}
 	}
 
 	/*
@@ -113,7 +176,7 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 	@Override
 	public CassandraColumnType resolve(CassandraType annotation) {
 
-		CassandraType.Name type = annotation.type();
+		Name type = annotation.type();
 
 		switch (type) {
 			case MAP:
@@ -130,11 +193,10 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 			case SET:
 				assertTypeArguments(annotation.typeArguments().length, 1);
 
-				DataType componentType = annotation.typeArguments()[0] == CassandraType.Name.UDT
-						? getUserType(annotation.userTypeName())
+				DataType componentType = annotation.typeArguments()[0] == Name.UDT ? getUserType(annotation.userTypeName())
 						: CassandraSimpleTypeHolder.getDataTypeFor(annotation.typeArguments()[0]);
 
-				if (type == CassandraType.Name.SET) {
+				if (type == Name.SET) {
 					return ColumnType.setOf(createCassandraTypeDescriptor(componentType));
 				}
 
@@ -147,6 +209,11 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 
 				return ColumnType.tupleOf(DataTypes.tupleOf(dataTypes));
 			case UDT:
+
+				if (StringUtils.isEmpty(annotation.userTypeName())) {
+					throw new InvalidDataAccessApiUsageException(
+							"Cannot resolve user type for @CassandraType(type=UDT) without userTypeName");
+				}
 
 				return createCassandraTypeDescriptor(getUserType(annotation.userTypeName()));
 			default:
@@ -165,9 +232,7 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 
 			ClassTypeInformation<?> typeInformation = ClassTypeInformation.from(value.getClass());
 
-			Optional<Class<?>> writeTarget = customConversions.getCustomWriteTarget(typeInformation.getType());
-
-			return writeTarget.map(it -> {
+			return getCustomWriteTarget(typeInformation).map(it -> {
 				return (ColumnType) createCassandraTypeDescriptor(tryResolve(it), typeInformation);
 			}).orElseGet(() -> {
 
@@ -195,7 +260,7 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 					return ColumnType.tupleOf(((TupleValue) value).getType());
 				}
 
-				BasicCassandraPersistentEntity<?> persistentEntity = mappingContext.getPersistentEntity(typeInformation);
+				CassandraPersistentEntity<?> persistentEntity = mappingContext.getPersistentEntity(typeInformation);
 
 				if (persistentEntity != null) {
 
@@ -213,11 +278,12 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 
 	private CassandraColumnType createCassandraTypeDescriptor(DataType dataType) {
 
-		GenericType<Object> javaType = codecRegistry.codecFor(dataType).getJavaType();
+		GenericType<Object> javaType = getCodecRegistry().codecFor(dataType).getJavaType();
 		return ColumnType.create(javaType.getRawType(), dataType);
 	}
 
-	private CassandraColumnType createCassandraTypeDescriptor(DataType dataType, TypeInformation<?> typeInformation) {
+	private CassandraColumnType createCassandraTypeDescriptor(@Nullable DataType dataType,
+			TypeInformation<?> typeInformation) {
 
 		if (typeInformation.isCollectionLike() || typeInformation.isMap()) {
 
@@ -277,6 +343,10 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 			}
 		}
 
+		if (dataType == null) {
+			return new UnresolvableCassandraType(typeInformation);
+		}
+
 		return new DefaultCassandraColumnType(typeInformation, dataType);
 	}
 
@@ -295,12 +365,12 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 					resolve(typeInformation.getRequiredMapValueType()));
 		}
 
-		BasicCassandraPersistentEntity<?> persistentEntity = mappingContext.getPersistentEntity(typeInformation);
+		CassandraPersistentEntity<?> persistentEntity = mappingContext.getPersistentEntity(typeInformation);
 
 		if (persistentEntity != null) {
 
 			if (persistentEntity.isUserDefinedType()) {
-				return new DefaultCassandraColumnType(typeInformation, persistentEntity.getUserType());
+				return new DefaultCassandraColumnType(typeInformation, getUserType(persistentEntity));
 			}
 
 			if (persistentEntity.isTupleType()) {
@@ -316,12 +386,33 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 			return new UnresolvableCassandraType(typeInformation);
 		}
 
-		return new DefaultCassandraColumnType(typeInformation, tryResolve(typeInformation.getType()));
+		DataType dataType = tryResolve(typeInformation.getType());
+		if (dataType == null) {
+			return new UnresolvableCassandraType(typeInformation);
+		}
+
+		return new DefaultCassandraColumnType(typeInformation, dataType);
+	}
+
+	private DataType getUserType(CassandraPersistentEntity<?> persistentEntity) {
+
+		CqlIdentifier identifier = persistentEntity.getTableName();
+		com.datastax.oss.driver.api.core.type.UserDefinedType userType = userTypeResolver.resolveType(identifier);
+
+		if (userType == null) {
+			throw new MappingException(String.format("User type [%s] not found", identifier));
+		}
+
+		return userType;
 	}
 
 	private Class<?> resolveToJavaType(DataType dataType) {
-		TypeCodec<Object> codec = codecRegistry.codecFor(dataType);
+		TypeCodec<Object> codec = getCodecRegistry().codecFor(dataType);
 		return codec.getJavaType().getRawType();
+	}
+
+	private CodecRegistry getCodecRegistry() {
+		return codecRegistry.get();
 	}
 
 	private DataType getUserType(String userTypeName) {
@@ -329,13 +420,13 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 		UserDefinedType type = userTypeResolver.resolveType(CqlIdentifier.fromCql(userTypeName));
 
 		if (type == null) {
-			throw new IllegalArgumentException(String.format("Cannot resolve UserDefinedType for [%s]", userTypeName));
+			throw new MappingException(String.format("Cannot resolve UserDefinedType for [%s]", userTypeName));
 		}
 
 		return type;
 	}
 
-	private void assertTypeArguments(int args, int expected) {
+	private static void assertTypeArguments(int args, int expected) {
 
 		if (args != expected) {
 			throw new InvalidDataAccessApiUsageException(
@@ -343,147 +434,10 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 		}
 	}
 
-	enum UnknownUserDefinedType implements com.datastax.oss.driver.api.core.type.UserDefinedType {
-		INSTANCE;
-
-		UnknownUserDefinedType() {}
-
-		/*
-		 * (non-Javadoc)
-		 * @see com.datastax.oss.driver.api.core.type.UserDefinedType#getKeyspace()
-		 */
-		@Override
-		public CqlIdentifier getKeyspace() {
-			return null;
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see com.datastax.oss.driver.api.core.type.UserDefinedType#getName()
-		 */
-		@Override
-		public CqlIdentifier getName() {
-			return CqlIdentifier.fromCql("unknown");
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see com.datastax.oss.driver.api.core.type.UserDefinedType#isFrozen()
-		 */
-		@Override
-		public boolean isFrozen() {
-			return false;
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see com.datastax.oss.driver.api.core.type.UserDefinedType#getFieldNames()
-		 */
-		@Override
-		public List<CqlIdentifier> getFieldNames() {
-			throw new UnsupportedOperationException(
-					"This implementation should only be used internally, this is likely a driver bug");
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see com.datastax.oss.driver.api.core.type.UserDefinedType#firstIndexOf(com.datastax.oss.driver.api.core.CqlIdentifier)
-		 */
-		@Override
-		public int firstIndexOf(CqlIdentifier id) {
-			throw new UnsupportedOperationException(
-					"This implementation should only be used internally, this is likely a driver bug");
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see com.datastax.oss.driver.api.core.type.UserDefinedType#firstIndexOf(java.lang.String)
-		 */
-		@Override
-		public int firstIndexOf(String name) {
-			throw new UnsupportedOperationException(
-					"This implementation should only be used internally, this is likely a driver bug");
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see com.datastax.oss.driver.api.core.type.UserDefinedType#getFieldTypes()
-		 */
-		@Override
-		public List<DataType> getFieldTypes() {
-			throw new UnsupportedOperationException(
-					"This implementation should only be used internally, this is likely a driver bug");
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see com.datastax.oss.driver.api.core.type.UserDefinedType#copy(boolean)
-		 */
-		@Override
-		public com.datastax.oss.driver.api.core.type.UserDefinedType copy(boolean newFrozen) {
-			throw new UnsupportedOperationException(
-					"This implementation should only be used internally, this is likely a driver bug");
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see com.datastax.oss.driver.api.core.type.UserDefinedType#newValue()
-		 */
-		@Override
-		public UdtValue newValue() {
-			throw new UnsupportedOperationException(
-					"This implementation should only be used internally, this is likely a driver bug");
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see com.datastax.oss.driver.api.core.type.UserDefinedType#newValue(java.lang.Object[])
-		 */
-		@Override
-		public UdtValue newValue(Object... fields) {
-			throw new UnsupportedOperationException(
-					"This implementation should only be used internally, this is likely a driver bug");
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see com.datastax.oss.driver.api.core.type.UserDefinedType#getAttachmentPoint()
-		 */
-		@Override
-		public AttachmentPoint getAttachmentPoint() {
-			throw new UnsupportedOperationException(
-					"This implementation should only be used internally, this is likely a driver bug");
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see com.datastax.oss.driver.api.core.detach.Detachable#isDetached()
-		 */
-		@Override
-		public boolean isDetached() {
-			throw new UnsupportedOperationException(
-					"This implementation should only be used internally, this is likely a driver bug");
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see com.datastax.oss.driver.api.core.detach.Detachable#attach(com.datastax.oss.driver.api.core.detach.AttachmentPoint)
-		 */
-		@Override
-		public void attach(AttachmentPoint attachmentPoint) {
-			throw new UnsupportedOperationException(
-					"This implementation should only be used internally, this is likely a driver bug");
-		}
-	}
-
 	static class UnresolvableCassandraType extends DefaultCassandraColumnType {
 
 		public UnresolvableCassandraType(TypeInformation<?> type, ColumnType... parameters) {
-			super(type, null, parameters);
-		}
-
-		public UnresolvableCassandraType(Class<?> type, ColumnType... parameters) {
-			super(type, null, parameters);
+			super(type, Lazy.empty(), parameters);
 		}
 
 		/*
@@ -495,4 +449,5 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 			throw new MappingException(String.format("Cannot resolve DataType for %s", getType().getName()));
 		}
 	}
+
 }

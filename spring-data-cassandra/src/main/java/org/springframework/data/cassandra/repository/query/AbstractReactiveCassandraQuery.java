@@ -39,7 +39,6 @@ import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.Statement;
-import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
 
 /**
  * Base class for reactive {@link RepositoryQuery} implementations for Cassandra.
@@ -53,8 +52,6 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 
 	private final ReactiveCassandraOperations operations;
 
-	private final CodecRegistry codecRegistry;
-
 	/**
 	 * Create a new {@link AbstractReactiveCassandraQuery} from the given {@link CassandraQueryMethod} and
 	 * {@link CassandraOperations}.
@@ -67,7 +64,6 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 		super(method, getRequiredMappingContext(operations));
 
 		this.operations = operations;
-		this.codecRegistry = operations.getConverter().getMappingContext().getCodecRegistry();
 	}
 
 	/*
@@ -102,7 +98,7 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 				parameters);
 
 		CassandraParameterAccessor convertingParameterAccessor = new ConvertingParameterAccessor(
-				getRequiredConverter(getReactiveCassandraOperations()), parameterAccessor, codecRegistry);
+				getRequiredConverter(getReactiveCassandraOperations()), parameterAccessor);
 
 		Statement<?> statement = createQuery(convertingParameterAccessor);
 

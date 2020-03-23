@@ -15,9 +15,11 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.Lazy;
 import org.springframework.data.util.TypeInformation;
 
 import com.datastax.oss.driver.api.core.type.DataType;
@@ -31,16 +33,23 @@ import com.datastax.oss.driver.api.core.type.UserDefinedType;
  */
 class DefaultCassandraColumnType extends DefaultColumnType implements CassandraColumnType {
 
-	private final DataType dataType;
+	private final Lazy<DataType> dataType;
 
 	DefaultCassandraColumnType(Class<?> type, DataType dataType, ColumnType... parameters) {
 		this(ClassTypeInformation.from(type), dataType, parameters);
 	}
 
+	DefaultCassandraColumnType(TypeInformation<?> typeInformation, Supplier<DataType> dataType,
+			ColumnType... parameters) {
+		super(typeInformation, parameters);
+
+		this.dataType = Lazy.of(dataType);
+	}
+
 	DefaultCassandraColumnType(TypeInformation<?> typeInformation, DataType dataType, ColumnType... parameters) {
 		super(typeInformation, parameters);
 
-		this.dataType = dataType;
+		this.dataType = Lazy.of(dataType);
 	}
 
 	/*
@@ -48,7 +57,7 @@ class DefaultCassandraColumnType extends DefaultColumnType implements CassandraC
 	 * @see org.springframework.data.cassandra.core.convert.CassandraColumnType#getDataType()
 	 */
 	public DataType getDataType() {
-		return dataType;
+		return dataType.get();
 	}
 
 	/*

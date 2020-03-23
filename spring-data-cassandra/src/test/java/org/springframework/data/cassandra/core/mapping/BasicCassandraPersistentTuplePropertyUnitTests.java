@@ -15,14 +15,13 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import java.lang.reflect.Field;
 import java.util.Date;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import org.springframework.data.mapping.model.Property;
@@ -36,8 +35,6 @@ import org.springframework.util.ReflectionUtils;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class BasicCassandraPersistentTuplePropertyUnitTests {
-
-	@Mock TupleTypeFactory tupleTypeFactory;
 
 	@Test // DATACASS-523
 	public void mappedTupleShouldNotReportColumnName() {
@@ -64,7 +61,7 @@ public class BasicCassandraPersistentTuplePropertyUnitTests {
 	}
 
 	private <T> BasicCassandraPersistentEntity<T> getEntity(Class<T> type) {
-		return new BasicCassandraPersistentTupleEntity<>(ClassTypeInformation.from(type), tupleTypeFactory);
+		return new BasicCassandraPersistentTupleEntity<>(ClassTypeInformation.from(type));
 	}
 
 	@Tuple

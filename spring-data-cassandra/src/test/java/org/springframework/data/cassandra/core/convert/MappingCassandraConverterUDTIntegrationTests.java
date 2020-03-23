@@ -218,7 +218,9 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 
 		CassandraPersistentEntity<?> persistentEntity = converter.getMappingContext()
 				.getRequiredPersistentEntity(AddressUserType.class);
-		UdtValue udtValue = persistentEntity.getUserType().newValue();
+		com.datastax.oss.driver.api.core.type.UserDefinedType udtType = (com.datastax.oss.driver.api.core.type.UserDefinedType) converter
+				.getColumnTypeResolver().resolve(persistentEntity.getTypeInformation()).getDataType();
+		UdtValue udtValue = udtType.newValue();
 		udtValue.setString("zip", "69469");
 		udtValue.setString("city", "Weinheim");
 		udtValue.setList("streetlines", Arrays.asList("Heckenpfad", "14"), String.class);
@@ -256,7 +258,10 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 		CassandraPersistentEntity<?> persistentEntity = converter.getMappingContext()
 				.getRequiredPersistentEntity(AddressUserType.class);
 
-		UdtValue udtValue = persistentEntity.getUserType().newValue();
+		com.datastax.oss.driver.api.core.type.UserDefinedType udtType = (com.datastax.oss.driver.api.core.type.UserDefinedType) converter
+				.getColumnTypeResolver().resolve(persistentEntity.getTypeInformation()).getDataType();
+
+		UdtValue udtValue = udtType.newValue();
 		udtValue.setString("zip", "69469");
 		udtValue.setString("city", "Weinheim");
 		udtValue.setList("streetlines", Arrays.asList("Heckenpfad", "14"), String.class);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 the original author or authors.
+ * Copyright 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.core.mapping;
+package org.springframework.data.cassandra.core.convert;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assume.*;
@@ -29,6 +29,10 @@ import org.springframework.data.cassandra.core.cql.generator.CreateIndexCqlGener
 import org.springframework.data.cassandra.core.cql.generator.CreateTableCqlGenerator;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
+import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity;
+import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.Indexed;
+import org.springframework.data.cassandra.core.mapping.SASI;
 import org.springframework.data.cassandra.core.mapping.SASI.StandardAnalyzed;
 import org.springframework.data.cassandra.support.CassandraVersion;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
@@ -46,6 +50,7 @@ import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
 public class IndexCreationIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
 	private CassandraMappingContext mappingContext = new CassandraMappingContext();
+	private SchemaFactory schemaFactory = new SchemaFactory(new MappingCassandraConverter(mappingContext));
 	private Version cassandraVersion;
 
 	@Before
@@ -60,8 +65,8 @@ public class IndexCreationIntegrationTests extends AbstractKeyspaceCreatingInteg
 	public void shouldCreateSecondaryIndex() throws InterruptedException {
 
 		BasicCassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(WithSecondaryIndex.class);
-		CreateTableSpecification createTable = mappingContext.getCreateTableSpecificationFor(entity);
-		List<CreateIndexSpecification> createIndexes = mappingContext.getCreateIndexSpecificationsFor(entity);
+		CreateTableSpecification createTable = schemaFactory.getCreateTableSpecificationFor(entity);
+		List<CreateIndexSpecification> createIndexes = schemaFactory.getCreateIndexSpecificationsFor(entity);
 
 		session.execute(CreateTableCqlGenerator.toCql(createTable));
 		createIndexes.forEach(it -> session.execute(CreateIndexCqlGenerator.toCql(it)));
@@ -78,8 +83,8 @@ public class IndexCreationIntegrationTests extends AbstractKeyspaceCreatingInteg
 	public void shouldCreateSasiIndex() throws InterruptedException {
 
 		BasicCassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(WithSasiIndex.class);
-		CreateTableSpecification createTable = mappingContext.getCreateTableSpecificationFor(entity);
-		List<CreateIndexSpecification> createIndexes = mappingContext.getCreateIndexSpecificationsFor(entity);
+		CreateTableSpecification createTable = schemaFactory.getCreateTableSpecificationFor(entity);
+		List<CreateIndexSpecification> createIndexes = schemaFactory.getCreateIndexSpecificationsFor(entity);
 
 		session.execute(CreateTableCqlGenerator.toCql(createTable));
 		createIndexes.forEach(it -> session.execute(CreateIndexCqlGenerator.toCql(it)));

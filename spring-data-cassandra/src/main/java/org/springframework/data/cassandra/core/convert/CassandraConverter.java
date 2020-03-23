@@ -25,6 +25,8 @@ import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
+import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
+
 /**
  * Central Cassandra specific converter interface from Object to Row.
  *
@@ -41,6 +43,14 @@ public interface CassandraConverter
 	 * @return the {@link CustomConversions}.
 	 */
 	CustomConversions getCustomConversions();
+
+	/**
+	 * Returns the {@link CodecRegistry} registered in the {@link CassandraConverter}.
+	 *
+	 * @return the {@link CodecRegistry}.
+	 * @since 3.0
+	 */
+	CodecRegistry getCodecRegistry();
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.convert.EntityConverter#getMappingContext()
