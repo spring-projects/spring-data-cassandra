@@ -284,7 +284,7 @@ public class CassandraMappingContext
 	}
 
 	@Nullable
-	protected UserTypeResolver getUserTypeResolver() {
+	public UserTypeResolver getUserTypeResolver() {
 		return this.userTypeResolver;
 	}
 
@@ -753,7 +753,6 @@ public class CassandraMappingContext
 
 		DataType keyType = getDataTypeWithUserTypeFactory(keyTypeInformation, dataTypeProvider, () -> {
 
-			keyTypeInformation.getType();
 			DataType type = CassandraSimpleTypeHolder.getDataTypeFor(keyTypeInformation.getType());
 
 			if (type != null) {
@@ -765,7 +764,6 @@ public class CassandraMappingContext
 
 		DataType valueType = getDataTypeWithUserTypeFactory(valueTypeInformation, dataTypeProvider, () -> {
 
-			valueTypeInformation.getType();
 			DataType type = CassandraSimpleTypeHolder.getDataTypeFor(valueTypeInformation.getType());
 
 			if (type != null) {

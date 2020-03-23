@@ -31,10 +31,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
-import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.repository.query.ConvertingParameterAccessor.PotentiallyConvertingIterator;
-import org.springframework.data.util.ClassTypeInformation;
-import org.springframework.data.util.TypeInformation;
 
 import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
@@ -111,7 +108,6 @@ public class ConvertingParameterAccessorUnitTests {
 
 		when(mockParameterAccessor.iterator())
 				.thenReturn((Iterator) Collections.singletonList(Collections.singletonList(localDate)).iterator());
-		when(mockProperty.getTypeInformation()).thenReturn((TypeInformation) ClassTypeInformation.LIST);
 
 		PotentiallyConvertingIterator iterator = (PotentiallyConvertingIterator) convertingParameterAccessor.iterator();
 		Object converted = iterator.nextConverted(mockProperty);
@@ -121,17 +117,5 @@ public class ConvertingParameterAccessorUnitTests {
 		List<?> list = (List<?>) converted;
 
 		assertThat(list.get(0)).isInstanceOf(LocalDate.class);
-	}
-
-	@Test // DATACASS-7, DATACASS-506
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public void shouldProvideTypeBasedOnPropertyType() {
-
-		when(mockProperty.getDataType()).thenReturn(DataTypes.TEXT);
-		when(mockProperty.isAnnotationPresent(CassandraType.class)).thenReturn(true);
-		when(mockProperty.getRequiredAnnotation(CassandraType.class)).thenReturn(mock(CassandraType.class));
-		when(mockParameterAccessor.getParameterType(0)).thenReturn((Class) String.class);
-
-		assertThat(convertingParameterAccessor.getDataType(0, mockProperty)).isEqualTo(DataTypes.TEXT);
 	}
 }

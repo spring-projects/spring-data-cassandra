@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.core.convert;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -43,8 +44,6 @@ import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.data.mapping.context.MappingContext;
-import org.springframework.data.util.ClassTypeInformation;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -132,10 +131,9 @@ public class QueryMapper {
 			Predicate predicate = criteriaDefinition.getPredicate();
 
 			Object value = predicate.getValue();
+			ColumnType typeDescriptor = getColumnType(field, value, predicate.getOperator());
 
-			Object mappedValue = value != null
-					? getConverter().convertToColumnType(value, getTypeInformation(field, value))
-					: null;
+			Object mappedValue = value != null ? getConverter().convertToColumnType(value, typeDescriptor) : null;
 
 			Predicate mappedPredicate = new Predicate(predicate.getOperator(), mappedValue);
 
@@ -255,8 +253,8 @@ public class QueryMapper {
 
 			field.getProperty().ifPresent(seen::add);
 
-			columns.getSelector(column).filter(selector -> selector instanceof ColumnSelector).ifPresent(
-					columnSelector -> getCqlIdentifier(column, field).ifPresent(columnNames::add));
+			columns.getSelector(column).filter(selector -> selector instanceof ColumnSelector)
+					.ifPresent(columnSelector -> getCqlIdentifier(column, field).ifPresent(columnNames::add));
 		}
 
 		if (columns.isEmpty()) {
@@ -331,22 +329,47 @@ public class QueryMapper {
 
 	Field createPropertyField(@Nullable CassandraPersistentEntity<?> entity, ColumnName key) {
 
-		return Optional.ofNullable(entity)
-				.<Field> map(e -> new MetadataBackedField(key, e, getMappingContext()))
+		return Optional.ofNullable(entity).<Field> map(e -> new MetadataBackedField(key, e, getMappingContext()))
 				.orElseGet(() -> new Field(key));
 	}
 
-	TypeInformation<?> getTypeInformation(Field field, @Nullable Object value) {
+	ColumnType getColumnType(Field field, @Nullable Object value, @Nullable CriteriaDefinition.Operator operator) {
+
+		ColumnType typeDescriptor;
+		if (field.getProperty().isPresent()) {
+			typeDescriptor = converter.getColumnTypeResolver().resolve(field.getProperty().get());
+		} else {
+
+			typeDescriptor = converter.getColumnTypeResolver().resolve(value);
+		}
 
 		if (field.getProperty().isPresent()) {
-			return field.getProperty().get().getTypeInformation();
+
+			CassandraPersistentProperty property = field.getProperty().get();
+
+			if (property.isCollectionLike()) {
+				if (operator == CriteriaDefinition.Operators.CONTAINS) {
+					typeDescriptor = typeDescriptor.getRequiredComponentType();
+				}
+			}
+
+			if (property.isMapLike()) {
+
+				if (operator == CriteriaDefinition.Operators.CONTAINS_KEY) {
+					typeDescriptor = typeDescriptor.getRequiredComponentType();
+				}
+
+				if (operator == CriteriaDefinition.Operators.CONTAINS) {
+					typeDescriptor = typeDescriptor.getRequiredMapValueType();
+				}
+			}
 		}
 
-		if (value != null) {
-			return ClassTypeInformation.from(value.getClass());
+		if (value instanceof Collection && operator == CriteriaDefinition.Operators.IN) {
+			typeDescriptor = ColumnType.listOf(typeDescriptor);
 		}
 
-		return ClassTypeInformation.OBJECT;
+		return typeDescriptor;
 	}
 
 	/**

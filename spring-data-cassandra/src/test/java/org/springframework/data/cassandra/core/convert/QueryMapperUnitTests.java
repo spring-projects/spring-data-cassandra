@@ -216,7 +216,7 @@ public class QueryMapperUnitTests {
 	@Test // DATACASS-343
 	public void shouldMapCollectionApplyingUdtValueCollectionConversion() {
 
-		Query query = Query.query(Criteria.where("addresses").in(new Address("21 Jump-Street")));
+		Query query = Query.query(Criteria.where("address").in(new Address("21 Jump-Street")));
 
 		Filter mappedObject = queryMapper.getMappedObject(query, persistentEntity);
 

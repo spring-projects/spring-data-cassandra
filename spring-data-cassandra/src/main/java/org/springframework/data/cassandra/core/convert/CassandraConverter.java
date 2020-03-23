@@ -23,6 +23,7 @@ import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.convert.EntityConverter;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
 
 /**
  * Central Cassandra specific converter interface from Object to Row.
@@ -46,6 +47,15 @@ public interface CassandraConverter
 	 */
 	@Override
 	CassandraMappingContext getMappingContext();
+
+	/**
+	 * Returns the {@link ColumnTypeResolver} to resolve {@link ColumnType} for properties, {@link TypeInformation}, and
+	 * {@code values}.
+	 *
+	 * @return the {@link ColumnTypeResolver}
+	 * @since 3.0
+	 */
+	ColumnTypeResolver getColumnTypeResolver();
 
 	/**
 	 * Returns the Id for an entity. It can return:
@@ -82,7 +92,23 @@ public interface CassandraConverter
 	 * @return the result of the conversion.
 	 * @since 1.5
 	 */
-	Object convertToColumnType(Object value, TypeInformation<?> typeInformation);
+	default Object convertToColumnType(Object value, TypeInformation<?> typeInformation) {
+
+		Assert.notNull(value, "Value must not be null");
+		Assert.notNull(typeInformation, "TypeInformation must not be null");
+
+		return convertToColumnType(value, getColumnTypeResolver().resolve(typeInformation));
+	}
+
+	/**
+	 * Converts the given object into a value Cassandra will be able to store natively in a column.
+	 *
+	 * @param value {@link Object} to convert; must not be {@literal null}.
+	 * @param typeDescriptor {@link ColumnType} used to describe the object type; must not be {@literal null}.
+	 * @return the result of the conversion.
+	 * @since 3.0
+	 */
+	Object convertToColumnType(Object value, ColumnType typeDescriptor);
 
 	/**
 	 * Converts and writes a {@code source} object into a {@code sink} using the given {@link CassandraPersistentEntity}.

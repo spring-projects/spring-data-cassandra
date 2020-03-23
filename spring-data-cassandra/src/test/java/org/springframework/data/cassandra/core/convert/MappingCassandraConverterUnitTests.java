@@ -123,7 +123,7 @@ public class MappingCassandraConverterUnitTests {
 
 		mappingCassandraConverter.write(enumToOrdinalMapping, insert);
 
-		assertThat(getValues(insert)).contains(Integer.valueOf(Condition.USED.ordinal()));
+		assertThat(getValues(insert)).contains(Condition.USED.ordinal());
 	}
 
 	@Test // DATACASS-255, DATACASS-652
@@ -970,6 +970,45 @@ public class MappingCassandraConverterUnitTests {
 		assertThat(result.firstname).isEqualTo("fn");
 	}
 
+	@Test // DATACASS-743
+	public void shouldConsiderCassandraTypeOnList() {
+
+		TypeWithConvertedCollections value = new TypeWithConvertedCollections();
+		value.conditionList = Arrays.asList(Condition.MINT, Condition.USED);
+
+		Map<CqlIdentifier, Object> insert = new LinkedHashMap<>();
+
+		this.mappingCassandraConverter.write(value, insert);
+
+		assertThat(insert).containsEntry(CqlIdentifier.fromCql("conditionlist"), Arrays.asList(0, 1));
+	}
+
+	@Test // DATACASS-743
+	public void shouldConsiderCassandraTypeOnSet() {
+
+		TypeWithConvertedCollections value = new TypeWithConvertedCollections();
+		value.conditionSet = new LinkedHashSet<>(Arrays.asList(Condition.MINT, Condition.USED));
+
+		Map<CqlIdentifier, Object> insert = new LinkedHashMap<>();
+
+		this.mappingCassandraConverter.write(value, insert);
+
+		assertThat(insert).containsEntry(CqlIdentifier.fromCql("conditionset"), new LinkedHashSet<>(Arrays.asList(0, 1)));
+	}
+
+	@Test // DATACASS-743
+	public void shouldConsiderCassandraTypeOnMap() {
+
+		TypeWithConvertedCollections value = new TypeWithConvertedCollections();
+		value.conditionMap = Collections.singletonMap(Condition.MINT, Condition.USED);
+
+		Map<CqlIdentifier, Object> insert = new LinkedHashMap<>();
+
+		this.mappingCassandraConverter.write(value, insert);
+
+		assertThat(insert).containsEntry(CqlIdentifier.fromCql("conditionmap"), Collections.singletonMap(0, 1));
+	}
+
 	private static List<Object> getValues(Map<CqlIdentifier, Object> statement) {
 		return new ArrayList<>(statement.values());
 	}
@@ -1192,6 +1231,18 @@ public class MappingCassandraConverterUnitTests {
 		String lastname;
 		@Transient String displayName;
 		@ReadOnlyProperty String computedName;
+	}
+
+	public static class TypeWithConvertedCollections {
+
+		@CassandraType(type = CassandraType.Name.LIST,
+				typeArguments = CassandraType.Name.INT) List<Condition> conditionList;
+
+		@CassandraType(type = CassandraType.Name.SET, typeArguments = CassandraType.Name.INT) Set<Condition> conditionSet;
+
+		@CassandraType(type = CassandraType.Name.MAP,
+				typeArguments = { CassandraType.Name.INT, CassandraType.Name.INT }) Map<Condition, Condition> conditionMap;
+
 	}
 
 	static class WithValue {
