@@ -97,7 +97,7 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 		CassandraMappingContext mappingContext = new CassandraMappingContext(userTypeResolver,
 				SimpleTupleTypeFactory.DEFAULT);
 
-		CustomConversions customConversions = requireBeanOfType(CustomConversions.class);
+		CustomConversions customConversions = requireBeanOfType(CassandraCustomConversions.class);
 
 		getBeanClassLoader().ifPresent(mappingContext::setBeanClassLoader);
 
@@ -154,7 +154,7 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 	 * @since 1.5
 	 */
 	@Bean
-	public CustomConversions customConversions() {
+	public CassandraCustomConversions customConversions() {
 		return new CassandraCustomConversions(Collections.emptyList());
 	}
 
