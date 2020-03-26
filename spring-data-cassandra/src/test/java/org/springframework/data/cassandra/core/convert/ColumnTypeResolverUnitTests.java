@@ -23,17 +23,23 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
-
 import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
+import org.springframework.data.cassandra.core.mapping.Frozen;
+import org.springframework.data.cassandra.core.mapping.UserDefinedType;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.util.ClassTypeInformation;
 
 import com.datastax.oss.driver.api.core.data.TupleValue;
+import com.datastax.oss.driver.api.core.type.DataType;
 import com.datastax.oss.driver.api.core.type.DataTypes;
+import com.datastax.oss.driver.api.core.type.ListType;
+import com.datastax.oss.driver.api.core.type.MapType;
+import com.datastax.oss.driver.api.core.type.SetType;
 import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
 
 /**
@@ -44,7 +50,8 @@ import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
 public class ColumnTypeResolverUnitTests {
 
 	CassandraMappingContext mappingContext = new CassandraMappingContext();
-	ColumnTypeResolver resolver = new DefaultColumnTypeResolver(mappingContext, null, () -> CodecRegistry.DEFAULT,
+	ColumnTypeResolver resolver = new DefaultColumnTypeResolver(mappingContext,
+			SchemaFactory.ShallowUserTypeResolver.INSTANCE, () -> CodecRegistry.DEFAULT,
 			mappingContext::getCustomConversions);
 
 	@Test // DATACASS-743
@@ -183,8 +190,7 @@ public class ColumnTypeResolverUnitTests {
 		BasicCassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(Person.class);
 
 		CassandraColumnType columnType = resolver.resolve(entity.getRequiredPersistentProperty("tupleValue"));
-		assertThat(columnType.getType())
-				.isEqualTo(TupleValue.class);
+		assertThat(columnType.getType()).isEqualTo(TupleValue.class);
 
 		assertThatThrownBy(columnType::getDataType).isInstanceOf(MappingException.class);
 	}
@@ -199,6 +205,108 @@ public class ColumnTypeResolverUnitTests {
 
 		assertThat(resolver.resolve(uuidProperty).getDataType()).isEqualTo(DataTypes.UUID);
 		assertThat(resolver.resolve(timeUUIDProperty).getDataType()).isEqualTo(DataTypes.TIMEUUID);
+	}
+
+	@Test // DATACASS-465
+	public void listPropertyWithFrozenAnnotation() {
+
+		BasicCassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(Person.class);
+
+		DataType dataType = resolver.resolve(entity.getRequiredPersistentProperty("frozenList")).getDataType();
+		assertThat(dataType).isInstanceOf(ListType.class);
+		assertThat(((ListType) dataType).isFrozen()).describedAs("The list itself should be frozen").isTrue();
+	}
+
+	@Test // DATACASS-465
+	public void listPropertyWithFrozenAnnotationOnElement() {
+
+		BasicCassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(Person.class);
+
+		DataType dataType = resolver.resolve(entity.getRequiredPersistentProperty("frozenListContent")).getDataType();
+
+		assertThat(dataType).isInstanceOf(ListType.class);
+		assertThat(((ListType) dataType).isFrozen()).describedAs("The collection itself should not be frozen.").isFalse();
+
+		DataType elementType = ((ListType) dataType).getElementType();
+		assertThat(elementType).isInstanceOf(com.datastax.oss.driver.api.core.type.UserDefinedType.class);
+		assertThat(((com.datastax.oss.driver.api.core.type.UserDefinedType) elementType).isFrozen())
+				.describedAs("The element type should be frozen").isTrue();
+	}
+
+	@Test // DATACASS-465
+	public void setPropertyWithFrozenAnnotation() {
+
+		BasicCassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(Person.class);
+
+		DataType dataType = resolver.resolve(entity.getRequiredPersistentProperty("frozenSet")).getDataType();
+		assertThat(dataType).isInstanceOf(SetType.class);
+		assertThat(((SetType) dataType).isFrozen()).describedAs("The set itself should be frozen").isTrue();
+	}
+
+	@Test // DATACASS-465
+	public void setPropertyWithFrozenAnnotationOnElement() {
+
+		BasicCassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(Person.class);
+
+		DataType dataType = resolver.resolve(entity.getRequiredPersistentProperty("frozenSetContent")).getDataType();
+
+		assertThat(dataType).isInstanceOf(SetType.class);
+		assertThat(((SetType) dataType).isFrozen()).describedAs("The collection itself should not be frozen.").isFalse();
+
+		DataType elementType = ((SetType) dataType).getElementType();
+		assertThat(elementType).isInstanceOf(com.datastax.oss.driver.api.core.type.UserDefinedType.class);
+		assertThat(((com.datastax.oss.driver.api.core.type.UserDefinedType) elementType).isFrozen())
+				.describedAs("The element type should be frozen").isTrue();
+	}
+
+	@Test // DATACASS-465
+	public void mapPropertyWithFrozenAnnotationOnKey() {
+
+		BasicCassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(Person.class);
+
+		DataType dataType = resolver.resolve(entity.getRequiredPersistentProperty("frozenMapKey")).getDataType();
+
+		SoftAssertions.assertSoftly(softly -> {
+
+			softly.assertThat(dataType).isInstanceOf(MapType.class);
+			softly.assertThat(((MapType) dataType).isFrozen()).describedAs("The collection itself should not be frozen.")
+					.isFalse();
+
+			DataType keyType = ((MapType) dataType).getKeyType();
+			softly.assertThat(keyType).isInstanceOf(com.datastax.oss.driver.api.core.type.UserDefinedType.class);
+			softly.assertThat(((com.datastax.oss.driver.api.core.type.UserDefinedType) keyType).isFrozen())
+					.describedAs("The key type should be frozen").isTrue();
+
+			DataType valueType = ((MapType) dataType).getValueType();
+			softly.assertThat(valueType).isInstanceOf(com.datastax.oss.driver.api.core.type.UserDefinedType.class);
+			softly.assertThat(((com.datastax.oss.driver.api.core.type.UserDefinedType) valueType).isFrozen())
+					.describedAs("The value type should not be frozen").isFalse();
+		});
+	}
+
+	@Test // DATACASS-465
+	public void mapPropertyWithFrozenAnnotationOnValue() {
+
+		BasicCassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(Person.class);
+
+		DataType dataType = resolver.resolve(entity.getRequiredPersistentProperty("frozenMapValue")).getDataType();
+
+		SoftAssertions.assertSoftly(softly -> {
+
+			softly.assertThat(dataType).isInstanceOf(MapType.class);
+			softly.assertThat(((MapType) dataType).isFrozen()).describedAs("The collection itself should not be frozen.")
+					.isFalse();
+
+			DataType keyType = ((MapType) dataType).getKeyType();
+			softly.assertThat(keyType).isInstanceOf(com.datastax.oss.driver.api.core.type.UserDefinedType.class);
+			softly.assertThat(((com.datastax.oss.driver.api.core.type.UserDefinedType) keyType).isFrozen())
+					.describedAs("The key type should not be frozen").isFalse();
+
+			DataType valueType = ((MapType) dataType).getValueType();
+			softly.assertThat(valueType).isInstanceOf(com.datastax.oss.driver.api.core.type.UserDefinedType.class);
+			softly.assertThat(((com.datastax.oss.driver.api.core.type.UserDefinedType) valueType).isFrozen())
+					.describedAs("The value type should be frozen").isTrue();
+		});
 	}
 
 	static class Person {
@@ -229,6 +337,22 @@ public class ColumnTypeResolverUnitTests {
 				typeArguments = { CassandraType.Name.INT, CassandraType.Name.TEXT }) Map<MyEnum, MyEnum> enumMapAsInt;
 
 		TupleValue tupleValue;
+
+		@Frozen List<String> frozenList;
+		List<@Frozen MyUdt> frozenListContent;
+
+		@Frozen Set<String> frozenSet;
+		Set<@Frozen MyUdt> frozenSetContent;
+
+		Map<@Frozen MyUdt, MyUdt> frozenMapKey;
+
+		Map<MyUdt, @Frozen MyUdt> frozenMapValue;
+
+		@UserDefinedType
+		private static class MyUdt {
+			String one;
+			Integer two;
+		}
 	}
 
 	static class TypeWithUUIDColumn {

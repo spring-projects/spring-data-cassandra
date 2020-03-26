@@ -20,14 +20,15 @@ import static org.springframework.data.cassandra.core.mapping.CassandraType.*;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.reflect.AnnotatedParameterizedType;
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
-
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.data.mapping.model.Property;
 import org.springframework.data.util.ClassTypeInformation;
@@ -129,6 +130,24 @@ public class BasicCassandraPersistentPropertyUnitTests {
 				"column");
 
 		assertThat(persistentProperty.findAnnotation(CassandraType.class)).isNotNull();
+	}
+
+	/**
+	 * Demonstrates how to access annotations on type parameters.
+	 */
+	@Test // DATACASS-465
+	public void parameterAnnotations() {
+
+		AnnotatedType annotatedType = findAnnotatedType(TypeWithMaps.class, "parameterizedWithParameterAnnotation");
+		assertThat(annotatedType).isNotNull().isInstanceOf(AnnotatedParameterizedType.class);
+
+		AnnotatedParameterizedType apt = (AnnotatedParameterizedType) annotatedType;
+		AnnotatedType[] annotatedActualTypeArguments = apt.getAnnotatedActualTypeArguments();
+		assertThat(annotatedActualTypeArguments)
+				.extracting(a -> a.getType(), a -> Arrays.stream(a.getAnnotations()).map(an -> an instanceof Indexed).toArray())
+				.containsExactly(tuple(String.class, new boolean[] {}), // annotation on key type
+						tuple(String.class, new boolean[] { true }) // annotation on value type
+				);
 	}
 
 	private AnnotatedType findAnnotatedType(Class<?> type, String parameterized) {

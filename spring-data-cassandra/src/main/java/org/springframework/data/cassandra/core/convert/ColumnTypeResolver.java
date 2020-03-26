@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.core.convert;
 
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
+import org.springframework.data.cassandra.core.mapping.Frozen;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -61,6 +62,21 @@ public interface ColumnTypeResolver {
 	 * @throws org.springframework.dao.InvalidDataAccessApiUsageException
 	 */
 	CassandraColumnType resolve(TypeInformation<?> typeInformation);
+
+	/**
+	 * Resolve a {@link CassandraColumnType} from {@link TypeInformation}. Considers potentially registered custom
+	 * converters and simple type rules.
+	 *
+	 * @param typeInformation must not be {@literal null}.
+	 * @param frozen must not be {@literal null}.
+	 * @return
+	 * @see org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder
+	 * @see CassandraCustomConversions
+	 * @throws org.springframework.dao.InvalidDataAccessApiUsageException
+	 */
+	default CassandraColumnType resolve(TypeInformation<?> typeInformation, FrozenInfo frozen) {
+		return resolve(typeInformation, FrozenInfo.NOT_FROZEN);
+	}
 
 	/**
 	 * Resolve a {@link CassandraColumnType} from a {@link CassandraType} annotation.
