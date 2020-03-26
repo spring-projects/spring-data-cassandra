@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
+import java.lang.reflect.AnnotatedParameterizedType;
+import java.lang.reflect.AnnotatedType;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -25,13 +27,14 @@ import java.util.stream.StreamSupport;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
+import org.jetbrains.annotations.NotNull;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.core.mapping.CassandraType.Name;
+import org.springframework.data.cassandra.core.mapping.Frozen;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.mapping.MappingException;
@@ -95,6 +98,8 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 
 		Assert.notNull(property, "Property must not be null");
 
+		FrozenInfo frozen = getFrozenInfo(property);
+
 		if (property.isAnnotationPresent(CassandraType.class)) {
 
 			CassandraType annotation = property.getRequiredAnnotation(CassandraType.class);
@@ -122,7 +127,32 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 			return resolve(annotation);
 		}
 
-		return resolve(property.getTypeInformation());
+		TypeInformation<?> typeInformation = property.getTypeInformation();
+		return resolve(typeInformation, frozen);
+	}
+
+	private FrozenInfo getFrozenInfo(CassandraPersistentProperty property) {
+
+		FrozenInfo frozen = FrozenInfo.frozen(property.isAnnotationPresent(Frozen.class));
+		AnnotatedType annotatedType = property.findAnnotatedType(Frozen.class);
+
+		if (annotatedType instanceof AnnotatedParameterizedType) {
+
+			AnnotatedParameterizedType apt = (AnnotatedParameterizedType) annotatedType;
+			AnnotatedType[] annotatedTypes = apt.getAnnotatedActualTypeArguments();
+
+			if (annotatedTypes.length > 0) {
+
+				AnnotatedType type1 = annotatedTypes[0];
+				frozen = frozen.withFirstTypeParameter(type1.isAnnotationPresent(Frozen.class));
+				if (annotatedTypes.length > 1) {
+
+					AnnotatedType type2 = annotatedTypes[1];
+					frozen = frozen.withSecondTypeParameter(type2.isAnnotationPresent(Frozen.class));
+				}
+			}
+		}
+		return frozen;
 	}
 
 	/*
@@ -131,6 +161,15 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 	 */
 	@Override
 	public CassandraColumnType resolve(TypeInformation<?> typeInformation) {
+		return resolve(typeInformation, FrozenInfo.NOT_FROZEN);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.convert.ColumnTypeResolver#resolve(org.springframework.data.util.TypeInformation, org.springframework.data.cassandra.core.convert.FrozenInfo)
+	 */
+	@Override
+	public CassandraColumnType resolve(TypeInformation<?> typeInformation, FrozenInfo frozen) {
 
 		return getCustomWriteTarget(typeInformation).map(it -> {
 			return createCassandraTypeDescriptor(tryResolve(it), ClassTypeInformation.from(it));
@@ -140,7 +179,7 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 				return ColumnType.create(String.class, DataTypes.TEXT);
 			}
 
-			return createCassandraTypeDescriptor(typeInformation);
+			return createCassandraTypeDescriptor(typeInformation, frozen);
 		});
 	}
 
@@ -350,19 +389,27 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 		return new DefaultCassandraColumnType(typeInformation, dataType);
 	}
 
-	private CassandraColumnType createCassandraTypeDescriptor(TypeInformation<?> typeInformation) {
+	private CassandraColumnType createCassandraTypeDescriptor(TypeInformation<?> typeInformation, FrozenInfo frozen) {
 
 		if (List.class.isAssignableFrom(typeInformation.getType())) {
-			return ColumnType.listOf(resolve(typeInformation.getRequiredComponentType()));
+
+			FrozenInfo elementFrozen = frozen.forFirstTypeParameter();
+			return ColumnType.listOf(resolve(typeInformation.getRequiredComponentType(), elementFrozen), frozen);
 		}
 
 		if (Set.class.isAssignableFrom(typeInformation.getType())) {
-			return ColumnType.setOf(resolve(typeInformation.getRequiredComponentType()));
+
+			FrozenInfo elementFrozen = frozen.forFirstTypeParameter();
+			return ColumnType.setOf(resolve(typeInformation.getRequiredComponentType(), elementFrozen), frozen);
 		}
 
 		if (typeInformation.isMap()) {
-			return ColumnType.mapOf(resolve(typeInformation.getRequiredComponentType()),
-					resolve(typeInformation.getRequiredMapValueType()));
+
+			FrozenInfo frozenKey = frozen.forFirstTypeParameter();
+			FrozenInfo frozenValue = frozen.forSecondTypeParameter();
+
+			return ColumnType.mapOf(resolve(typeInformation.getRequiredComponentType(), frozenKey),
+					resolve(typeInformation.getRequiredMapValueType(), frozenValue));
 		}
 
 		CassandraPersistentEntity<?> persistentEntity = mappingContext.getPersistentEntity(typeInformation);
@@ -370,7 +417,7 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 		if (persistentEntity != null) {
 
 			if (persistentEntity.isUserDefinedType()) {
-				return new DefaultCassandraColumnType(typeInformation, getUserType(persistentEntity));
+				return new DefaultCassandraColumnType(typeInformation, getUserType(persistentEntity, frozen.self));
 			}
 
 			if (persistentEntity.isTupleType()) {
@@ -394,10 +441,11 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 		return new DefaultCassandraColumnType(typeInformation, dataType);
 	}
 
-	private DataType getUserType(CassandraPersistentEntity<?> persistentEntity) {
+	private DataType getUserType(CassandraPersistentEntity<?> persistentEntity, boolean frozen) {
 
 		CqlIdentifier identifier = persistentEntity.getTableName();
-		com.datastax.oss.driver.api.core.type.UserDefinedType userType = userTypeResolver.resolveType(identifier);
+		com.datastax.oss.driver.api.core.type.UserDefinedType userType = userTypeResolver.resolveType(identifier)
+				.copy(frozen);
 
 		if (userType == null) {
 			throw new MappingException(String.format("User type [%s] not found", identifier));

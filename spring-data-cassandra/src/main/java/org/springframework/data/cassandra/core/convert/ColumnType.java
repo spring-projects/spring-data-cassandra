@@ -88,8 +88,18 @@ public interface ColumnType {
 	 * @return
 	 */
 	static CassandraColumnType listOf(CassandraColumnType componentType) {
+		return listOf(componentType, FrozenInfo.NOT_FROZEN);
+	}
+	/**
+	 * Creates a List {@link ColumnType} given its {@link CassandraColumnType component type}.
+	 *
+	 * @param componentType must not be {@literal null}.
+	 * @param frozen
+	 * @return
+	 */
+	static CassandraColumnType listOf(CassandraColumnType componentType, FrozenInfo frozen) {
 		return new DefaultCassandraColumnType(ClassTypeInformation.LIST,
-				() -> DataTypes.listOf(componentType.getDataType()), componentType);
+				() -> DataTypes.listOf(componentType.getDataType(), frozen.self), componentType);
 	}
 
 	/**
@@ -114,7 +124,17 @@ public interface ColumnType {
 	 * @return
 	 */
 	static CassandraColumnType setOf(CassandraColumnType componentType) {
-		return new DefaultCassandraColumnType(ClassTypeInformation.SET, () -> DataTypes.setOf(componentType.getDataType()),
+		return setOf(componentType, FrozenInfo.NOT_FROZEN);
+	}
+	/**
+	 * Creates a Set {@link ColumnType} given its {@link CassandraColumnType component type}.
+	 *
+	 * @param componentType must not be {@literal null}.
+	 * @param frozen must not be {@literal null}.
+	 * @return
+	 */
+	static CassandraColumnType setOf(CassandraColumnType componentType, FrozenInfo frozen) {
+		return new DefaultCassandraColumnType(ClassTypeInformation.SET, () -> DataTypes.setOf(componentType.getDataType(),frozen.self),
 				componentType);
 	}
 

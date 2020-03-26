@@ -89,6 +89,7 @@ public class PartTreeCassandraQueryUnitTests {
 		when(attachmentPoint.getCodecRegistry()).thenReturn(CodecRegistry.DEFAULT);
 		when(attachmentPoint.getProtocolVersion()).thenReturn(ProtocolVersion.DEFAULT);
 
+		when(userTypeMock.copy(anyBoolean())).thenReturn(userTypeMock);
 		when(userTypeMock.getAttachmentPoint()).thenReturn(attachmentPoint);
 		when(userTypeMock.getFieldNames())
 				.thenReturn(Arrays.asList("city", "country").stream().map(CqlIdentifier::fromCql).collect(Collectors.toList()));
