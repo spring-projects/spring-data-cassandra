@@ -177,7 +177,8 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 	 * @since 2.1.10
 	 */
 	public static boolean requiresQuoting(CharSequence chars) {
-		return QUOTED.matcher(chars).matches() || ReservedKeyword.isReserved(chars);
+		return QUOTED.matcher(chars).matches() || ReservedKeyword.isReserved(chars)
+				|| (chars.length() > 0 && chars.charAt(0) == '_');
 	}
 
 	/**

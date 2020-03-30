@@ -68,7 +68,7 @@ public class CqlIdentifierUnitTests {
 
 	@Test
 	public void testIllegals() {
-		String[] illegals = new String[] { null, "", "a ", "a a", "a\"", "a'", "a''", "\"\"", "''", "-", "a-", "_", "_a" };
+		String[] illegals = new String[] { null, "", "a ", "a a", "a\"", "a'", "a''", "\"\"", "''", "-", "a-"};
 		for (String illegal : illegals) {
 			try {
 				of(illegal);
