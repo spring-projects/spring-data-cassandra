@@ -34,6 +34,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * @author David T. Webb
  * @author Mark Paluch
  * @author John Blum
+ * @author Christoph Strobl
  */
 public interface CassandraPersistentProperty
 		extends PersistentProperty<CassandraPersistentProperty>, ApplicationContextAware {
@@ -156,6 +157,14 @@ public interface CassandraPersistentProperty
 	 * @see #isClusterKeyColumn()
 	 */
 	boolean isPrimaryKeyColumn();
+
+	/**
+	 * @return {@literal true} if the property should be embedded.
+	 * @since 3.0
+	 */
+	default boolean isEmbedded() {
+		return findAnnotation(Embedded.class) != null;
+	}
 
 	/**
 	 * Find an {@link AnnotatedType} by {@code annotationType} derived from the property type. Annotated type is looked up

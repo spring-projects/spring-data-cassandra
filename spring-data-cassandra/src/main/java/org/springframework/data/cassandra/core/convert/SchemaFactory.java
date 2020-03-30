@@ -26,6 +26,8 @@ import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecifica
 import org.springframework.data.cassandra.core.cql.keyspace.CreateUserTypeSpecification;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
+import org.springframework.data.cassandra.core.mapping.EmbeddedEntityOperations;
+import org.springframework.data.cassandra.core.mapping.Indexed;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.mapping.MappingException;
@@ -43,6 +45,7 @@ import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
  * Factory for Cassandra Schema objects such as user-defined types, tables and indexes.
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  * @since 3.0
  * @see CreateUserTypeSpecification
  * @see CreateTableSpecification
@@ -54,6 +57,8 @@ public class SchemaFactory {
 	private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
 
 	private final ColumnTypeResolver typeResolver;
+
+	private final EmbeddedEntityOperations embeddedEntityOperations;
 
 	/**
 	 * Creates a new {@link SchemaFactory} given {@link CassandraConverter}.
@@ -67,6 +72,7 @@ public class SchemaFactory {
 		this.mappingContext = converter.getMappingContext();
 		this.typeResolver = new DefaultColumnTypeResolver(mappingContext, ShallowUserTypeResolver.INSTANCE,
 				converter::getCodecRegistry, converter::getCustomConversions);
+		this.embeddedEntityOperations = new EmbeddedEntityOperations(this.mappingContext);
 	}
 
 	/**
@@ -88,6 +94,7 @@ public class SchemaFactory {
 		this.mappingContext = mappingContext;
 		this.typeResolver = new DefaultColumnTypeResolver(mappingContext, ShallowUserTypeResolver.INSTANCE,
 				() -> codecRegistry, () -> customConversions);
+		this.embeddedEntityOperations = new EmbeddedEntityOperations(this.mappingContext);
 	}
 
 	/**
@@ -151,6 +158,16 @@ public class SchemaFactory {
 								primaryKeyProperty.getPrimaryKeyOrdering());
 					}
 				}
+			} else if (property.isEmbedded() && property.isEntity()) {
+
+				CassandraPersistentEntity<?> embeddedEntity = embeddedEntityOperations.getEntity(property);
+
+				for (CassandraPersistentProperty embeddedProperty : embeddedEntity) {
+
+					DataType dataType = getDataType(embeddedProperty);
+					specification.column(embeddedProperty.getRequiredColumnName(), dataType);
+				}
+
 			} else {
 				DataType type = UserTypeUtil.potentiallyFreeze(getDataType(property));
 
@@ -230,6 +247,17 @@ public class SchemaFactory {
 		for (CassandraPersistentProperty property : entity) {
 			if (property.isCompositePrimaryKey()) {
 				indexes.addAll(getCreateIndexSpecificationsFor(mappingContext.getRequiredPersistentEntity(property)));
+			}
+			if (property.isEmbedded() && property.isEntity()) {
+
+				if (property.isAnnotationPresent(Indexed.class)) {
+					Indexed indexed = property.findAnnotation(Indexed.class);
+					for (CassandraPersistentProperty embeddedProperty : embeddedEntityOperations.getEntity(property)) {
+						indexes.add(IndexSpecificationFactory.createIndexSpecification(indexed, embeddedProperty));
+					}
+				} else {
+					indexes.addAll(getCreateIndexSpecificationsFor(embeddedEntityOperations.getEntity(property)));
+				}
 			} else {
 				indexes.addAll(IndexSpecificationFactory.createIndexSpecifications(property));
 			}
@@ -252,8 +280,19 @@ public class SchemaFactory {
 		CreateUserTypeSpecification specification = CreateUserTypeSpecification.createType(entity.getTableName());
 
 		for (CassandraPersistentProperty property : entity) {
-			// Use frozen literal to not resolve types from Cassandra; At this stage, they might be not created yet.
-			specification.field(property.getRequiredColumnName(), UserTypeUtil.potentiallyFreeze(getDataType(property)));
+
+			if (property.isEmbedded() && property.isEntity()) {
+
+				CassandraPersistentEntity<?> embeddedEntity = embeddedEntityOperations.getEntity(property);
+				for (CassandraPersistentProperty embeddedProperty : embeddedEntity) {
+
+					DataType dataType = getDataType(embeddedProperty);
+					specification.field(embeddedProperty.getRequiredColumnName(), dataType);
+				}
+			} else {
+				// Use frozen literal to not resolve types from Cassandra; At this stage, they might be not created yet.
+				specification.field(property.getRequiredColumnName(), UserTypeUtil.potentiallyFreeze(getDataType(property)));
+			}
 		}
 
 		if (specification.getFields().isEmpty()) {

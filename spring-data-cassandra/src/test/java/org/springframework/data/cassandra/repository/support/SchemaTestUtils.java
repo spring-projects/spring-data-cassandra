@@ -21,9 +21,13 @@ import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.convert.SchemaFactory;
 import org.springframework.data.cassandra.core.cql.SessionCallback;
 import org.springframework.data.cassandra.core.cql.generator.CreateTableCqlGenerator;
+import org.springframework.data.cassandra.core.cql.generator.CreateUserTypeCqlGenerator;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
+import org.springframework.data.cassandra.core.cql.keyspace.CreateUserTypeSpecification;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
+import org.springframework.data.cassandra.core.mapping.EmbeddedEntityOperations;
 
 import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
 
@@ -32,6 +36,7 @@ import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
  * scenarios.
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  */
 public class SchemaTestUtils {
 
@@ -45,7 +50,33 @@ public class SchemaTestUtils {
 
 		CassandraMappingContext mappingContext = operations.getConverter().getMappingContext();
 		CassandraPersistentEntity<?> persistentEntity = mappingContext.getRequiredPersistentEntity(entityClass);
+
+		potentiallyCreateTableFor(persistentEntity, operations, new SchemaFactory(operations.getConverter()));
+	}
+
+	/**
+	 * Create a table and UDTs for {@code entityClass} if it not exists.
+	 *
+	 * @param entityClass must not be {@literal null}.
+	 * @param operations must not be {@literal null}.
+	 */
+	public static void createTableAndTypes(Class<?> entityClass, CassandraOperations operations) {
+
+		CassandraMappingContext mappingContext = operations.getConverter().getMappingContext();
+		CassandraPersistentEntity<?> persistentEntity = mappingContext.getRequiredPersistentEntity(entityClass);
 		SchemaFactory schemaFactory = new SchemaFactory(operations.getConverter());
+
+		potentiallyCreateUdtFor(persistentEntity, operations, schemaFactory);
+		potentiallyCreateTableFor(persistentEntity, operations, schemaFactory);
+	}
+
+	public static void potentiallyCreateUdtFor(Class<?> entityType, CassandraOperations operations) {
+		potentiallyCreateUdtFor(operations.getConverter().getMappingContext().getRequiredPersistentEntity(entityType),
+				operations, new SchemaFactory(operations.getConverter()));
+	}
+
+	private static void potentiallyCreateTableFor(CassandraPersistentEntity<?> persistentEntity,
+			CassandraOperations operations, SchemaFactory schemaFactory) {
 
 		operations.getCqlOperations().execute((SessionCallback<Object>) session -> {
 
@@ -58,6 +89,32 @@ public class SchemaTestUtils {
 			}
 			return null;
 		});
+	}
+
+	private static void potentiallyCreateUdtFor(CassandraPersistentEntity<?> persistentEntity,
+			CassandraOperations operations, SchemaFactory schemaFactory) {
+
+		if (persistentEntity.isUserDefinedType()) {
+
+			CreateUserTypeSpecification udtspec = schemaFactory.getCreateUserTypeSpecificationFor(persistentEntity)
+					.ifNotExists();
+			operations.getCqlOperations().execute(CreateUserTypeCqlGenerator.toCql(udtspec));
+
+		} else {
+
+			for (CassandraPersistentProperty property : persistentEntity) {
+				if (property.isEntity()) {
+					if (property.isEmbedded()) {
+						potentiallyCreateUdtFor(
+								new EmbeddedEntityOperations(operations.getConverter().getMappingContext()).getEntity(property),
+								operations, schemaFactory);
+					} else {
+						potentiallyCreateUdtFor(operations.getConverter().getMappingContext().getRequiredPersistentEntity(property),
+								operations, schemaFactory);
+					}
+				}
+			}
+		}
 	}
 
 	/**

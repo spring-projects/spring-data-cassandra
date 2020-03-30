@@ -18,11 +18,13 @@ package org.springframework.data.cassandra.repository;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assume.*;
 
+import lombok.Data;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -30,16 +32,19 @@ import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.cql.generator.CreateIndexCqlGenerator;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
+import org.springframework.data.cassandra.core.mapping.Embedded;
+import org.springframework.data.cassandra.core.mapping.Indexed;
+import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.core.query.CassandraPageRequest;
 import org.springframework.data.cassandra.domain.AddressType;
 import org.springframework.data.cassandra.domain.Person;
@@ -64,6 +69,7 @@ import com.datastax.oss.driver.api.core.CqlSession;
  * Integration tests for query derivation through {@link PersonRepository}.
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -77,18 +83,19 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 
 		@Override
 		protected Set<Class<?>> getInitialEntitySet() {
-			return Collections.singleton(Person.class);
+			return new HashSet<>(Arrays.asList(Person.class, PersonWithEmbedded.class));
 		}
 
 		@Override
 		public SchemaAction getSchemaAction() {
-			return SchemaAction.RECREATE_DROP_UNUSED;
+			return SchemaAction.CREATE;
 		}
 	}
 
 	@Autowired CassandraOperations template;
 	@Autowired CqlSession session;
 	@Autowired PersonRepository personRepository;
+	@Autowired EmbeddedPersonRepository personWithEmbeddedRepository;
 
 	private Person walter;
 	private Person skyler;
@@ -368,6 +375,20 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 		assertThat(personRepository.existsByLastname("Schrader")).isFalse();
 	}
 
+	@Test // DATACASS-167
+	public void derivedQueryOnPropertyOfEmbeddedEntity() {
+
+		PersonWithEmbedded source = new PersonWithEmbedded();
+		source.id = "id-1";
+		source.name = new Name();
+		source.name.firstname = "spring";
+		source.name.lastname = "data";
+
+		personWithEmbeddedRepository.save(source);
+
+		assertThat(personWithEmbeddedRepository.findByName_Firstname("spring")).isEqualTo(source);
+	}
+
 	/**
 	 * @author Mark Paluch
 	 */
@@ -438,5 +459,29 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 				this.lastname = lastname;
 			}
 		}
+	}
+
+	/**
+	 * @author Christoph Strobl
+	 */
+	static interface EmbeddedPersonRepository extends CassandraRepository<PersonWithEmbedded, String> {
+
+		PersonWithEmbedded findByName_Firstname(String firstname);
+
+	}
+
+	@Table
+	@Data
+	static class PersonWithEmbedded {
+
+		@Id String id;
+		@Embedded.Nullable Name name;
+	}
+
+	@Data
+	static class Name {
+
+		@Indexed String firstname;
+		String lastname;
 	}
 }

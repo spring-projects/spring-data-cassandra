@@ -37,15 +37,17 @@ import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.junit.Test;
-
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.CqlTemplate;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.cassandra.core.mapping.BasicMapId;
+import org.springframework.data.cassandra.core.mapping.Embedded;
 import org.springframework.data.cassandra.core.mapping.PrimaryKey;
 import org.springframework.data.cassandra.core.mapping.PrimaryKeyClass;
 import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
+import org.springframework.data.cassandra.core.mapping.SimpleUserTypeResolver;
+import org.springframework.data.cassandra.core.mapping.UserDefinedType;
 import org.springframework.data.cassandra.core.query.CassandraPageRequest;
 import org.springframework.data.cassandra.core.query.Columns;
 import org.springframework.data.cassandra.core.query.Query;
@@ -60,12 +62,14 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.util.Version;
 
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.uuid.Uuids;
 
 /**
  * Integration tests for {@link CassandraTemplate}.
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  */
 public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
 
@@ -79,6 +83,7 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 	public void setUp() {
 
 		MappingCassandraConverter converter = new MappingCassandraConverter();
+		converter.setUserTypeResolver(new SimpleUserTypeResolver(session, CqlIdentifier.fromCql(keyspace)));
 		converter.afterPropertiesSet();
 
 		cassandraVersion = CassandraVersion.get(session);
@@ -90,10 +95,20 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 		SchemaTestUtils.potentiallyCreateTableFor(BookReference.class, template);
 		SchemaTestUtils.potentiallyCreateTableFor(TimeClass.class, template);
 		SchemaTestUtils.potentiallyCreateTableFor(TypeWithCompositeKey.class, template);
+		SchemaTestUtils.potentiallyCreateTableFor(WithNullableEmbeddedType.class, template);
+		SchemaTestUtils.potentiallyCreateTableFor(WithEmptyEmbeddedType.class, template);
+		SchemaTestUtils.potentiallyCreateTableFor(WithPrefixedNullableEmbeddedType.class, template);
+		SchemaTestUtils.createTableAndTypes(OuterWithNullableEmbeddedType.class, template);
+		SchemaTestUtils.createTableAndTypes(OuterWithPrefixedNullableEmbeddedType.class, template);
 		SchemaTestUtils.truncate(User.class, template);
 		SchemaTestUtils.truncate(UserToken.class, template);
 		SchemaTestUtils.truncate(BookReference.class, template);
 		SchemaTestUtils.truncate(TypeWithCompositeKey.class, template);
+		SchemaTestUtils.truncate(WithNullableEmbeddedType.class, template);
+		SchemaTestUtils.truncate(WithEmptyEmbeddedType.class, template);
+		SchemaTestUtils.truncate(WithPrefixedNullableEmbeddedType.class, template);
+		SchemaTestUtils.truncate(OuterWithNullableEmbeddedType.class, template);
+		SchemaTestUtils.truncate(OuterWithPrefixedNullableEmbeddedType.class, template);
 	}
 
 	@Test // DATACASS-343
@@ -556,6 +571,119 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 		assertThat(iterations).isEqualTo(10);
 	}
 
+	@Test // DATACASS-167
+	public void shouldSaveAndReadPrefixedEmbeddedCorrectly() {
+
+		WithPrefixedNullableEmbeddedType entity = new WithPrefixedNullableEmbeddedType();
+		entity.id = "id-1";
+		entity.nested = new EmbeddedWithSimpleTypes();
+		entity.nested.firstname = "fn";
+		entity.nested.age = 30;
+
+		template.insert(WithPrefixedNullableEmbeddedType.class).one(entity);
+
+		WithPrefixedNullableEmbeddedType target = template.selectOne(Query.query(where("id").is("id-1")),
+				WithPrefixedNullableEmbeddedType.class);
+		assertThat(target).isEqualTo(entity);
+	}
+
+	@Test // DATACASS-167
+	public void shouldSaveAndReadEmbeddedCorrectly() {
+
+		WithNullableEmbeddedType entity = new WithNullableEmbeddedType();
+		entity.id = "id-1";
+		entity.nested = new EmbeddedWithSimpleTypes();
+		entity.nested.firstname = "fn";
+		entity.nested.age = 30;
+
+		template.insert(WithNullableEmbeddedType.class).one(entity);
+
+		WithNullableEmbeddedType target = template.selectOne(Query.query(where("id").is("id-1")),
+				WithNullableEmbeddedType.class);
+		assertThat(target).isEqualTo(entity);
+	}
+
+	@Test // DATACASS-167
+	public void shouldSaveAndReadNullableEmbeddedCorrectly() {
+
+		WithNullableEmbeddedType entity = new WithNullableEmbeddedType();
+		entity.id = "id-1";
+		entity.nested = null;
+
+		template.insert(WithNullableEmbeddedType.class).one(entity);
+
+		WithNullableEmbeddedType target = template.selectOne(Query.query(where("id").is("id-1")),
+				WithNullableEmbeddedType.class);
+		assertThat(target.id).isEqualTo("id-1");
+		assertThat(target.nested).isNull();
+	}
+
+	@Test // DATACASS-167
+	public void shouldSaveAndReadEmptyEmbeddedCorrectly() {
+
+		WithEmptyEmbeddedType entity = new WithEmptyEmbeddedType();
+		entity.id = "id-1";
+		entity.nested = null;
+
+		template.insert(WithEmptyEmbeddedType.class).one(entity);
+
+		WithEmptyEmbeddedType target = template.selectOne(Query.query(where("id").is("id-1")), WithEmptyEmbeddedType.class);
+		assertThat(target.id).isEqualTo("id-1");
+		assertThat(target.nested).isNotNull();
+	}
+
+	@Test // DATACASS-167
+	public void shouldSaveAndReadEmbeddedUDTCorrectly() {
+
+		OuterWithNullableEmbeddedType entity = new OuterWithNullableEmbeddedType();
+		entity.id = "id-1";
+		entity.udtValue = new UDTWithNullableEmbeddedType();
+		entity.udtValue.value = "value-1";
+		entity.udtValue.nested = new EmbeddedWithSimpleTypes();
+		entity.udtValue.nested.firstname = "fn";
+		entity.udtValue.nested.age = 30;
+
+		template.insert(OuterWithNullableEmbeddedType.class).one(entity);
+
+		OuterWithNullableEmbeddedType target = template.selectOne(Query.query(where("id").is("id-1")),
+				OuterWithNullableEmbeddedType.class);
+		assertThat(target).isEqualTo(entity);
+	}
+
+	@Test // DATACASS-167
+	public void shouldSaveAndReadPrefixedUdtEmbeddedCorrectly() {
+
+		OuterWithPrefixedNullableEmbeddedType entity = new OuterWithPrefixedNullableEmbeddedType();
+		entity.id = "id-1";
+		entity.udtValue = new UDTWithPrefixedNullableEmbeddedType();
+		entity.udtValue.value = "value-1";
+		entity.udtValue.nested = new EmbeddedWithSimpleTypes();
+		entity.udtValue.nested.firstname = "fn";
+		entity.udtValue.nested.age = 30;
+
+		template.insert(OuterWithPrefixedNullableEmbeddedType.class).one(entity);
+
+		OuterWithPrefixedNullableEmbeddedType target = template.selectOne(Query.query(where("id").is("id-1")),
+				OuterWithPrefixedNullableEmbeddedType.class);
+		assertThat(target).isEqualTo(entity);
+	}
+
+	@Test // DATACASS-167
+	public void shouldSaveAndReadNullEmbeddedUDTCorrectly() {
+
+		OuterWithNullableEmbeddedType entity = new OuterWithNullableEmbeddedType();
+		entity.id = "id-1";
+		entity.udtValue = new UDTWithNullableEmbeddedType();
+		entity.udtValue.value = "value-1";
+		entity.udtValue.nested = null;
+
+		template.insert(OuterWithNullableEmbeddedType.class).one(entity);
+
+		OuterWithNullableEmbeddedType target = template.selectOne(Query.query(where("id").is("id-1")),
+				OuterWithNullableEmbeddedType.class);
+		assertThat(target).isEqualTo(entity);
+	}
+
 	@Data
 	static class TimeClass {
 
@@ -577,6 +705,71 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 
 		@PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED) String firstname;
 		@PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED) String lastname;
+	}
+
+	@Data
+	static class WithNullableEmbeddedType {
+
+		@Id String id;
+
+		@Embedded.Nullable EmbeddedWithSimpleTypes nested;
+	}
+
+	@Data
+	static class WithPrefixedNullableEmbeddedType {
+
+		@Id String id;
+
+		@Embedded.Nullable(prefix = "prefix") EmbeddedWithSimpleTypes nested;
+	}
+
+	@Data
+	static class WithEmptyEmbeddedType {
+
+		@Id String id;
+
+		@Embedded.Empty EmbeddedWithSimpleTypes nested;
+	}
+
+	@Data
+	static class EmbeddedWithSimpleTypes {
+
+		String firstname;
+		Integer age;
+	}
+
+	@Data
+	static class OuterWithNullableEmbeddedType {
+
+		@Id String id;
+
+		UDTWithNullableEmbeddedType udtValue;
+	}
+
+	@Data
+	static class OuterWithPrefixedNullableEmbeddedType {
+
+		@Id String id;
+
+		UDTWithPrefixedNullableEmbeddedType udtValue;
+	}
+
+	@UserDefinedType
+	@Data
+	static class UDTWithNullableEmbeddedType {
+
+		String value;
+
+		@Embedded.Nullable EmbeddedWithSimpleTypes nested;
+	}
+
+	@UserDefinedType
+	@Data
+	static class UDTWithPrefixedNullableEmbeddedType {
+
+		String value;
+
+		@Embedded.Nullable(prefix = "prefix") EmbeddedWithSimpleTypes nested;
 	}
 
 }

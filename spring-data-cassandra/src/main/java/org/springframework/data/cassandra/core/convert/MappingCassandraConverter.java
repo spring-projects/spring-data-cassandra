@@ -27,7 +27,6 @@ import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.ApplicationContext;
@@ -41,6 +40,9 @@ import org.springframework.data.cassandra.core.mapping.BasicMapId;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
+import org.springframework.data.cassandra.core.mapping.Embedded;
+import org.springframework.data.cassandra.core.mapping.Embedded.OnEmpty;
+import org.springframework.data.cassandra.core.mapping.EmbeddedEntityOperations;
 import org.springframework.data.cassandra.core.mapping.MapId;
 import org.springframework.data.cassandra.core.mapping.MapIdentifiable;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
@@ -83,6 +85,7 @@ import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
  * @author Mark Paluch
  * @author Antoine Toulme
  * @author John Blum
+ * @author Christoph Strobl
  */
 public class MappingCassandraConverter extends AbstractCassandraConverter
 		implements ApplicationContextAware, BeanClassLoaderAware {
@@ -100,6 +103,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	private SpELContext spELContext;
 
 	private final DefaultColumnTypeResolver cassandraTypeResolver;
+	private final EmbeddedEntityOperations embeddedEntityOperations;
 
 	/**
 	 * Create a new {@link MappingCassandraConverter} with a {@link CassandraMappingContext}.
@@ -117,6 +121,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 				userTypeName -> getUserTypeResolver().resolveType(userTypeName), this::getCodecRegistry,
 				this::getCustomConversions);
 		this.setCustomConversions(conversions);
+		this.embeddedEntityOperations = new EmbeddedEntityOperations(mappingContext);
 	}
 
 	/**
@@ -137,6 +142,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 				userTypeName -> getUserTypeResolver().resolveType(userTypeName), this::getCodecRegistry,
 				this::getCustomConversions);
 		this.setCustomConversions(mappingContext.getCustomConversions());
+		this.embeddedEntityOperations = new EmbeddedEntityOperations(mappingContext);
 	}
 
 	private static ConversionService newConversionService() {
@@ -404,7 +410,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			return;
 		}
 
-		if (property.isCompositePrimaryKey() || valueProvider.hasProperty(property)) {
+		if (property.isCompositePrimaryKey() || valueProvider.hasProperty(property) || property.isEmbedded()) {
 			propertyAccessor.setProperty(property, getReadValue(valueProvider, property));
 		}
 	}
@@ -493,11 +499,21 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 				continue;
 			}
 
-			if (log.isDebugEnabled()) {
-				log.debug("Adding map.entry [{}] - [{}]", property.getRequiredColumnName(), value);
-			}
+			if (value != null && property.isEmbedded() && property.isEntity()) {
 
-			sink.put(property.getRequiredColumnName(), value);
+				if (log.isDebugEnabled()) {
+					log.debug("Mapping embedded property [{}] - [{}]", property.getRequiredColumnName(), value);
+				}
+
+				write(value, sink, embeddedEntityOperations.getEntity(property));
+			} else {
+
+				if (log.isDebugEnabled()) {
+					log.debug("Adding map.entry [{}] - [{}]", property.getRequiredColumnName(), value);
+				}
+
+				sink.put(property.getRequiredColumnName(), value);
+			}
 		}
 	}
 
@@ -625,6 +641,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 				continue;
 			}
 
+			// value resolution
 			Object value = getWriteValue(property, propertyAccessor);
 
 			if (log.isDebugEnabled()) {
@@ -634,6 +651,23 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 			if (log.isDebugEnabled()) {
 				log.debug("Adding udt.value [{}] - [{}]", property.getRequiredColumnName(), value);
+			}
+
+			if (property.isEmbedded() && property.isEntity()) {
+
+				if (log.isDebugEnabled()) {
+					log.debug("Mapping embedded property [{}] - [{}]", property.getRequiredColumnName(), value);
+				}
+
+				if (value == null) {
+					continue;
+				}
+
+				CassandraPersistentEntity<?> targetEntity = embeddedEntityOperations.getEntity(property);
+				writeUDTValue(new ConvertingPropertyAccessor<>(targetEntity.getPropertyAccessor(value), getConversionService()),
+						udtValue, targetEntity);
+
+				continue;
 			}
 
 			TypeCodec<Object> typeCodec = getCodec(property);
@@ -900,12 +934,43 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			return doReadEntity(keyEntity, valueProvider);
 		}
 
+		if (property.isEntity() && property.isEmbedded()) {
+
+			CassandraPersistentEntity<?> targetEntity = embeddedEntityOperations.getEntity(property);
+			return isNullEmbedded(targetEntity, property, valueProvider) ? null : doReadEntity(targetEntity, valueProvider);
+		}
+
 		if (!valueProvider.hasProperty(property)) {
 			return null;
 		}
 
 		Object value = valueProvider.getPropertyValue(property);
 		return value == null ? null : convertReadValue(value, property.getTypeInformation());
+	}
+
+	/**
+	 * @param entity the property domain type
+	 * @param property the current property annotated with {@link Embedded}.
+	 * @param valueProvider
+	 * @return {@literal true} if the property represents a {@link Embedded.Nullable nullable embedded} entity where all
+	 *         values obtainable from the given {@link CassandraValueProvider} are {@literal null}.
+	 * @since 3.0
+	 */
+	private boolean isNullEmbedded(CassandraPersistentEntity<?> entity, CassandraPersistentProperty property,
+			CassandraValueProvider valueProvider) {
+
+		if (OnEmpty.USE_EMPTY.equals(property.findAnnotation(Embedded.class).onEmpty())) {
+			return false;
+		}
+
+		for (CassandraPersistentProperty embeddedProperty : entity) {
+
+			if (valueProvider.hasProperty(embeddedProperty) && valueProvider.getPropertyValue(embeddedProperty) != null) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	@Nullable
@@ -1123,5 +1188,4 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			return parent.getSource();
 		}
 	}
-
 }
