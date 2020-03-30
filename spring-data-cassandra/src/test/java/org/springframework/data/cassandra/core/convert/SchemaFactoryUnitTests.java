@@ -35,7 +35,6 @@ import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
-
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.cql.Ordering;
@@ -44,16 +43,7 @@ import org.springframework.data.cassandra.core.cql.keyspace.ColumnSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification.ColumnFunction;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
-import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
-import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
-import org.springframework.data.cassandra.core.mapping.CassandraType;
-import org.springframework.data.cassandra.core.mapping.Element;
-import org.springframework.data.cassandra.core.mapping.Indexed;
-import org.springframework.data.cassandra.core.mapping.PrimaryKey;
-import org.springframework.data.cassandra.core.mapping.PrimaryKeyClass;
-import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
-import org.springframework.data.cassandra.core.mapping.Table;
-import org.springframework.data.cassandra.core.mapping.Tuple;
+import org.springframework.data.cassandra.core.mapping.*;
 import org.springframework.data.cassandra.domain.AllPossibleTypes;
 import org.springframework.data.cassandra.support.UserDefinedTypeBuilder;
 import org.springframework.data.mapping.MappingException;
@@ -76,6 +66,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  * @author Matthew T. Adams
  * @author Mark Paluch
+ * @author Christoph Strobl
  */
 public class SchemaFactoryUnitTests {
 
@@ -827,4 +818,61 @@ public class SchemaFactoryUnitTests {
 		@Id String id;
 		Map<String, TupleValue> untyped;
 	}
+
+	@Table
+	@Data
+	static class TypeWithEmbedded {
+
+		@Id String id;
+		@Embedded.Nullable EmbeddedTpe name;
+		@Embedded.Nullable(prefix = "a") EmbeddedTpe alias;
+		@Indexed @Embedded.Nullable(prefix = "aego") EmbeddedTpe alterEgo;
+	}
+
+	@Data
+	static class EmbeddedTpe {
+
+		@Indexed String firstname;
+		String lastname;
+	}
+
+	@Test // DATACASS-167
+	public void createTableSpecificationShouldConsiderEmbeddedType() {
+
+		CreateTableSpecification specification = getCreateTableSpecificationFor(TypeWithEmbedded.class);
+
+		assertThat(specification).isNotNull();
+		assertThat(getColumn("firstname", specification)).isNotNull();
+		assertThat(getColumn("lastname", specification)).isNotNull();
+		assertThat(getColumn("afirstname", specification)).isNotNull();
+		assertThat(getColumn("alastname", specification)).isNotNull();
+		assertThat(getColumn("aegofirstname", specification)).isNotNull();
+		assertThat(getColumn("aegolastname", specification)).isNotNull();
+	}
+
+	@Test // DATACASS-167
+	public void createIndexSpecificationShouldConsiderEmbeddedType() {
+
+		List<CreateIndexSpecification> specifications = schemaFactory
+				.getCreateIndexSpecificationsFor(ctx.getRequiredPersistentEntity(TypeWithEmbedded.class));
+
+		CreateIndexSpecification firstname = getSpecificationFor("firstname", specifications);
+
+		assertThat(firstname.getColumnName()).isEqualTo(CqlIdentifier.fromCql("firstname"));
+		assertThat(firstname.getName()).isNull();
+		assertThat(firstname.getColumnFunction()).isEqualTo(ColumnFunction.NONE);
+
+		CreateIndexSpecification afirstname = getSpecificationFor("afirstname", specifications);
+
+		assertThat(afirstname.getColumnName()).isEqualTo(CqlIdentifier.fromCql("afirstname"));
+		assertThat(afirstname.getName()).isNull();
+		assertThat(afirstname.getColumnFunction()).isEqualTo(ColumnFunction.NONE);
+
+		CreateIndexSpecification aegofirstname = getSpecificationFor("aegofirstname", specifications);
+		assertThat(aegofirstname.getColumnName()).isEqualTo(CqlIdentifier.fromCql("aegofirstname"));
+
+		CreateIndexSpecification aegolastname = getSpecificationFor("aegolastname", specifications);
+		assertThat(aegolastname.getColumnName()).isEqualTo(CqlIdentifier.fromCql("aegolastname"));
+	}
+
 }

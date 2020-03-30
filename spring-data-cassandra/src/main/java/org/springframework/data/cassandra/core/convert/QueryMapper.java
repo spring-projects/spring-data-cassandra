@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
+import org.springframework.data.cassandra.core.mapping.EmbeddedEntityOperations;
 import org.springframework.data.cassandra.core.query.ColumnName;
 import org.springframework.data.cassandra.core.query.Columns;
 import org.springframework.data.cassandra.core.query.Columns.ColumnSelector;
@@ -53,6 +54,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * Map {@link org.springframework.data.cassandra.core.query.Query} to CQL-specific data types.
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  * @see ColumnName
  * @see Columns
  * @see Criteria
@@ -517,10 +519,29 @@ public class QueryMapper {
 		@Override
 		public ColumnName getMappedKey() {
 
-			return path.map(PersistentPropertyPath::getLeafProperty) //
-					.map(CassandraPersistentProperty::getColumnName) //
-					.map(ColumnName::from) //
-					.orElse(name);
+			if (!path.isPresent()) {
+				return name;
+			}
+
+			boolean embedded = false;
+			CassandraPersistentEntity<?> parentEntity = null;
+			CassandraPersistentProperty leafProperty = null;
+			for (CassandraPersistentProperty p : path.get()) {
+
+				leafProperty = p;
+				if (embedded) {
+
+					embedded = false;
+					leafProperty = parentEntity.getPersistentProperty(p.getName());
+					parentEntity = null;
+				}
+				if (p.isEmbedded() && p.isEntity()) {
+					embedded = true;
+					parentEntity = new EmbeddedEntityOperations(mappingContext).getEntity(p);
+				}
+			}
+
+			return ColumnName.from(leafProperty.getColumnName());
 		}
 	}
 }

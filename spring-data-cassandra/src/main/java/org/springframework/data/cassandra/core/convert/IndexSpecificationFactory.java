@@ -42,6 +42,7 @@ import org.springframework.util.StringUtils;
  * index-annotated {@link CassandraPersistentProperty properties}.
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  * @since 2.0
  * @see Indexed
  * @see SASI
@@ -124,7 +125,7 @@ class IndexSpecificationFactory {
 		return indexes;
 	}
 
-	private static CreateIndexSpecification createIndexSpecification(Indexed annotation,
+	static CreateIndexSpecification createIndexSpecification(Indexed annotation,
 			CassandraPersistentProperty property) {
 
 		CreateIndexSpecification index;

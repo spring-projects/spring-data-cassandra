@@ -15,9 +15,11 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 import java.time.LocalTime;
 import java.util.Collections;
@@ -31,12 +33,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.Column;
 import org.springframework.data.cassandra.core.mapping.Element;
+import org.springframework.data.cassandra.core.mapping.Embedded;
+import org.springframework.data.cassandra.core.mapping.Indexed;
 import org.springframework.data.cassandra.core.mapping.Tuple;
 import org.springframework.data.cassandra.core.mapping.UserDefinedType;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
@@ -46,13 +49,11 @@ import org.springframework.data.cassandra.support.UserDefinedTypeBuilder;
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.type.DataTypes;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-
 /**
  * Unit tests for {@link UpdateMapper}.
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  */
 @RunWith(MockitoJUnitRunner.class)
 public class UpdateMapperUnitTests {
@@ -259,6 +260,26 @@ public class UpdateMapperUnitTests {
 				() -> this.updateMapper.getMappedObject(Update.empty().set("tuple.zip", "bar"), this.persistentEntity));
 	}
 
+	@Test // DATACASS-167
+	public void shouldMapEmbeddedEntity() {
+
+		Update update = this.updateMapper.getMappedObject(Update.empty().set("nested.firstname", "spring"),
+				mappingContext.getRequiredPersistentEntity(WithNullableEmbeddedType.class));
+
+		assertThat(update.getUpdateOperations()).hasSize(1);
+		assertThat(update.toString()).startsWith("firstname = 'spring'");
+	}
+
+	@Test // DATACASS-167
+	public void shouldMapPrefixedEmbeddedEntity() {
+
+		Update update = this.updateMapper.getMappedObject(Update.empty().set("nested.firstname", "spring"),
+				mappingContext.getRequiredPersistentEntity(WithPrefixedNullableEmbeddedType.class));
+
+		assertThat(update.getUpdateOperations()).hasSize(1);
+		assertThat(update.toString()).startsWith("prefixfirstname = 'spring'");
+	}
+
 	@SuppressWarnings("unused")
 	static class Person {
 
@@ -295,4 +316,30 @@ public class UpdateMapperUnitTests {
 	static class Manufacturer {
 		String name;
 	}
+
+	@Data
+	static class WithNullableEmbeddedType {
+
+		@Id String id;
+
+		@Embedded.Nullable EmbeddedWithSimpleTypes nested;
+	}
+
+	@Data
+	static class WithPrefixedNullableEmbeddedType {
+
+		@Id String id;
+
+		// @Indexed -> index for all properties of nested
+		@Embedded.Nullable(prefix = "prefix") EmbeddedWithSimpleTypes nested;
+	}
+
+	@Data
+	static class EmbeddedWithSimpleTypes {
+
+		@Indexed // single property index (IndexSpecificationFactory) | sassi index etc. :'(
+		String firstname;
+		Integer age;
+	}
+
 }

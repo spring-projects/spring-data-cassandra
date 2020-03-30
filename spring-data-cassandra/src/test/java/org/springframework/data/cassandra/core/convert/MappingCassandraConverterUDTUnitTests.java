@@ -34,9 +34,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
+import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.Embedded;
 import org.springframework.data.cassandra.core.mapping.UserDefinedType;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.support.UserDefinedTypeBuilder;
@@ -51,6 +52,7 @@ import com.datastax.oss.driver.api.core.type.DataTypes;
  * Unit tests for UDT through {@link MappingCassandraConverter}.
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  */
 @RunWith(MockitoJUnitRunner.Silent.class) // there are some unused stubbings in RowMockUtil but they're used in other
 public class MappingCassandraConverterUDTUnitTests {
@@ -61,6 +63,12 @@ public class MappingCassandraConverterUDTUnitTests {
 			.withField("name", DataTypes.TEXT).withField("displayname", DataTypes.TEXT).build();
 	com.datastax.oss.driver.api.core.type.UserDefinedType currency = UserDefinedTypeBuilder.forName("mycurrency")
 			.withField("currency", DataTypes.TEXT).build();
+	com.datastax.oss.driver.api.core.type.UserDefinedType withnullableembeddedtype = UserDefinedTypeBuilder
+			.forName("withnullableembeddedtype").withField("value", DataTypes.TEXT).withField("firstname", DataTypes.TEXT)
+			.withField("age", DataTypes.INT).build();
+	com.datastax.oss.driver.api.core.type.UserDefinedType withprefixednullableembeddedtype = UserDefinedTypeBuilder
+			.forName("withnullableembeddedtype").withField("value", DataTypes.TEXT)
+			.withField("prefixfirstname", DataTypes.TEXT).withField("prefixage", DataTypes.INT).build();
 
 	Row rowMock;
 
@@ -78,6 +86,10 @@ public class MappingCassandraConverterUDTUnitTests {
 
 		when(userTypeResolver.resolveType(CqlIdentifier.fromCql("manufacturer"))).thenReturn(manufacturer);
 		when(userTypeResolver.resolveType(CqlIdentifier.fromCql("currency"))).thenReturn(currency);
+		when(userTypeResolver.resolveType(CqlIdentifier.fromCql("withnullableembeddedtype")))
+				.thenReturn(withnullableembeddedtype);
+		when(userTypeResolver.resolveType(CqlIdentifier.fromCql("withprefixednullableembeddedtype")))
+				.thenReturn(withprefixednullableembeddedtype);
 	}
 
 	@Test // DATACASS-487, DATACASS-623
@@ -127,6 +139,99 @@ public class MappingCassandraConverterUDTUnitTests {
 				.contains("{currency:'EUR'}", "{currency:'USD'}");
 	}
 
+	@Test // DATACASS-167
+	public void writeFlattensEmbeddedType() {
+
+		OuterWithNullableEmbeddedType entity = new OuterWithNullableEmbeddedType();
+		entity.id = "id-1";
+		entity.udtValue = new WithNullableEmbeddedType();
+		entity.udtValue.value = "value-string";
+		entity.udtValue.nested = new EmbeddedWithSimpleTypes();
+		entity.udtValue.nested.firstname = "fn";
+		entity.udtValue.nested.age = 30;
+
+		Map<CqlIdentifier, Object> sink = new LinkedHashMap<>();
+
+		mappingCassandraConverter.write(entity, sink);
+
+		assertThat(sink).containsEntry(CqlIdentifier.fromInternal("id"), "id-1");
+		assertThat((UdtValue) sink.get(CqlIdentifier.fromInternal("udtvalue"))).extracting(UdtValue::getFormattedContents)
+				.isEqualTo("{value:'value-string',firstname:'fn',age:30}");
+	}
+
+	@Test // DATACASS-167
+	public void writeNullEmbeddedType() {
+
+		OuterWithNullableEmbeddedType entity = new OuterWithNullableEmbeddedType();
+		entity.id = "id-1";
+		entity.udtValue = new WithNullableEmbeddedType();
+		entity.udtValue.value = "value-string";
+		entity.udtValue.nested = null;
+
+		Map<CqlIdentifier, Object> sink = new LinkedHashMap<>();
+
+		mappingCassandraConverter.write(entity, sink);
+
+		assertThat(sink).containsEntry(CqlIdentifier.fromInternal("id"), "id-1");
+		assertThat((UdtValue) sink.get(CqlIdentifier.fromInternal("udtvalue"))).extracting(UdtValue::getFormattedContents)
+				.isEqualTo("{value:'value-string',firstname:NULL,age:NULL}");
+	}
+
+	@Test // DATACASS-167
+	public void writePrefixesEmbeddedType() {
+
+		OuterWithPrefixedNullableEmbeddedType entity = new OuterWithPrefixedNullableEmbeddedType();
+		entity.id = "id-1";
+		entity.udtValue = new WithPrefixedNullableEmbeddedType();
+		entity.udtValue.value = "value-string";
+		entity.udtValue.nested = new EmbeddedWithSimpleTypes();
+		entity.udtValue.nested.firstname = "fn";
+		entity.udtValue.nested.age = 30;
+
+		Map<CqlIdentifier, Object> sink = new LinkedHashMap<>();
+
+		mappingCassandraConverter.write(entity, sink);
+
+		assertThat(sink).containsEntry(CqlIdentifier.fromInternal("id"), "id-1");
+		assertThat((UdtValue) sink.get(CqlIdentifier.fromInternal("udtvalue"))).extracting(UdtValue::getFormattedContents)
+				.isEqualTo("{value:'value-string',prefixfirstname:'fn',prefixage:30}");
+	}
+
+	@Test // DATACASS-167
+	public void readEmbeddedType() {
+
+		UdtValue udtValue = withnullableembeddedtype.newValue().setString("value", "value-string")
+				.setString("firstname", "fn").setInt("age", 30);
+
+		rowMock = RowMockUtil.newRowMock(column("id", "id-1", DataTypes.TEXT),
+				column("udtvalue", udtValue, withnullableembeddedtype));
+
+		OuterWithNullableEmbeddedType target = mappingCassandraConverter.read(OuterWithNullableEmbeddedType.class, rowMock);
+		assertThat(target.getId()).isEqualTo("id-1");
+		assertThat(target.udtValue).isNotNull();
+		assertThat(target.udtValue.value).isEqualTo("value-string");
+		assertThat(target.udtValue.nested.firstname).isEqualTo("fn");
+		assertThat(target.udtValue.nested.age).isEqualTo(30);
+	}
+
+	@Test // DATACASS-167
+	public void readPrefixedEmbeddedType() {
+
+		UdtValue udtValue = withprefixednullableembeddedtype.newValue().setString("value", "value-string")
+				.setString("prefixfirstname", "fn").setInt("prefixage", 30);
+
+		rowMock = RowMockUtil.newRowMock(column("id", "id-1", DataTypes.TEXT),
+				column("udtvalue", udtValue, withprefixednullableembeddedtype));
+
+		OuterWithPrefixedNullableEmbeddedType target = mappingCassandraConverter
+				.read(OuterWithPrefixedNullableEmbeddedType.class, rowMock);
+		assertThat(target.getId()).isEqualTo("id-1");
+		assertThat(target.udtValue).isNotNull();
+		assertThat(target.udtValue.value).isEqualTo("value-string");
+		assertThat(target.udtValue.nested.firstname).isEqualTo("fn");
+		assertThat(target.udtValue.nested.age).isEqualTo(30);
+	}
+
 	@UserDefinedType
 	@Data
 	@AllArgsConstructor
@@ -148,4 +253,63 @@ public class MappingCassandraConverterUDTUnitTests {
 	private static class Supplier {
 		Map<Manufacturer, List<Currency>> acceptedCurrencies;
 	}
+
+	@Data
+	static class OuterWithNullableEmbeddedType {
+
+		@Id String id;
+
+		WithNullableEmbeddedType udtValue;
+	}
+
+	@Data
+	static class OuterWithPrefixedNullableEmbeddedType {
+
+		@Id String id;
+
+		WithPrefixedNullableEmbeddedType udtValue;
+	}
+
+	@UserDefinedType
+	@Data
+	static class WithNullableEmbeddedType {
+
+		String value;
+
+		@Embedded.Nullable EmbeddedWithSimpleTypes nested;
+	}
+
+	@UserDefinedType
+	@Data
+	static class WithPrefixedNullableEmbeddedType {
+
+		String value;
+
+		@Embedded.Nullable(prefix = "prefix") EmbeddedWithSimpleTypes nested;
+	}
+
+	@UserDefinedType
+	@Data
+	static class WithEmptyEmbeddedType {
+
+		String value;
+
+		@Embedded.Empty EmbeddedWithSimpleTypes nested;
+	}
+
+	@Data
+	static class EmbeddedWithSimpleTypes {
+
+		String firstname;
+		Integer age;
+
+		public String getFirstname() {
+			return firstname;
+		}
+
+		public Integer getAge() {
+			return age;
+		}
+	}
+
 }
