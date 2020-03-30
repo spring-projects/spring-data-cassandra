@@ -389,6 +389,15 @@ public class CassandraMappingContextUnitTests {
 		assertThat(mappingContext.usesTable(tableMetadata.getName())).isFalse();
 	}
 
+	@Test // DATACASS-747
+	public void shouldQuoteFieldName() {
+
+		BasicCassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(UnsupportedFieldNames.class);
+
+		CassandraPersistentProperty property = entity.getRequiredPersistentProperty("_ent1");
+		assertThat(property.getColumnName()).isEqualTo(CqlIdentifier.fromCql("\"_ent1\""));
+	}
+
 	@Table
 	private static class InvalidEntityWithIdAndPrimaryKeyColumn {
 		@Id String foo;
@@ -446,5 +455,10 @@ public class CassandraMappingContextUnitTests {
 	@org.springframework.data.cassandra.core.mapping.UserDefinedType(value = "AnotherNestedType")
 	public static class AnotherNested {
 		String str;
+	}
+
+	class UnsupportedFieldNames {
+		String _ent1;
+		String _ent2;
 	}
 }
