@@ -626,6 +626,15 @@ public class CassandraMappingContextUnitTests {
 		assertThat(mappingContext.usesTable(CqlIdentifier.of(tableMetadata.getName()))).isFalse();
 	}
 
+	@Test // DATACASS-747
+	public void shouldQuoteFieldName() {
+
+		BasicCassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(UnsupportedFieldNames.class);
+
+		CassandraPersistentProperty property = entity.getRequiredPersistentProperty("_ent1");
+		assertThat(property.getColumnName()).isEqualTo(CqlIdentifier.quoted("_ent1"));
+	}
+
 	@Table
 	private static class InvalidEntityWithIdAndPrimaryKeyColumn {
 		@Id String foo;
@@ -752,5 +761,10 @@ public class CassandraMappingContextUnitTests {
 	static class UntypedTupleMapEntity {
 		@Id String id;
 		Map<String, TupleValue> untyped;
+	}
+
+	class UnsupportedFieldNames {
+		String _ent1;
+		String _ent2;
 	}
 }
