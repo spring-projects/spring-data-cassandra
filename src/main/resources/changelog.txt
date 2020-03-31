@@ -1,6 +1,18 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 3.0.0.RC1 (2020-03-31)
+-----------------------------------------
+* DATACASS-748 - Upgrade to Cassandra driver 4.5.1.
+* DATACASS-747 - Identifiers starting with underscore are not quoted.
+* DATACASS-743 - Converter should not ignore @CassandraType for collection like type.
+* DATACASS-741 - Add support for @Value.
+* DATACASS-739 - Include custom conversions documentation from Commons.
+* DATACASS-737 - Release 3.0 RC1 (Neumann).
+* DATACASS-470 - Move Cassandra type resolution into MappingCassandraConverter.
+* DATACASS-84 - Provide support for naming strategies.
+
+
 Changes in version 2.2.6.RELEASE (2020-03-25)
 ---------------------------------------------
 * DATACASS-735 - Using long numbers with Update.incr(…) cause integer overflow.
@@ -1170,6 +1182,7 @@ Changes in version 1.0.0.M1 (2014-03-31)
     * [DATACASS-100] - QueryOptions should only have ConsistencyLevel & RetryPolicy
     * [DATACASS-104] - Remove requirement for @PrimaryKeyClass when using composite primary keys
     * [DATACASS-107] - Support declarative query methods
+
 
 
 
