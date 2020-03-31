@@ -19,7 +19,7 @@ import org.springframework.data.util.ParsingUtils;
 import org.springframework.util.Assert;
 
 /**
- * Naming strategy that renders CamelCase name parts to {@code snake_case}.
+ * Naming strategy that renders {@literal CamelCase} name parts to {@literal snake_case}.
  *
  * @author Mark Paluch
  * @since 3.0
@@ -31,21 +31,21 @@ public class SnakeCaseNamingStrategy implements NamingStrategy {
 	/**
 	 * Uses {@link Class#getSimpleName()} and separates camel case parts with '_'.
 	 */
-	public String getTableName(CassandraPersistentEntity<?> type) {
+	public String getTableName(CassandraPersistentEntity<?> entity) {
 
-		Assert.notNull(type, "CassandraPersistentEntity must not be null!");
+		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
 
-		return ParsingUtils.reconcatenateCamelCase(type.getType().getSimpleName(), "_");
+		return ParsingUtils.reconcatenateCamelCase(entity.getType().getSimpleName(), "_");
 	}
 
 	/**
 	 * Uses {@link Class#getSimpleName()} and separates camel case parts with '_'.
 	 */
-	public String getUserDefinedTypeName(CassandraPersistentEntity<?> type) {
+	public String getUserDefinedTypeName(CassandraPersistentEntity<?> entity) {
 
-		Assert.notNull(type, "CassandraPersistentEntity must not be null!");
+		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
 
-		return ParsingUtils.reconcatenateCamelCase(type.getType().getSimpleName(), "_");
+		return ParsingUtils.reconcatenateCamelCase(entity.getType().getSimpleName(), "_");
 	}
 
 	/**
@@ -53,7 +53,7 @@ public class SnakeCaseNamingStrategy implements NamingStrategy {
 	 */
 	public String getColumnName(CassandraPersistentProperty property) {
 
-		Assert.notNull(property, "CassandraPersistentProperty must not be null.");
+		Assert.notNull(property, "CassandraPersistentProperty must not be null");
 
 		return ParsingUtils.reconcatenateCamelCase(property.getName(), "_");
 	}

@@ -22,7 +22,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Supplier;
 
 import org.springframework.context.ApplicationContext;
@@ -184,7 +183,8 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 			return null;
 		}
 
-		Supplier<String> defaultName = () -> namingStrategy.getColumnName(this);
+		Supplier<String> defaultName = () -> getNamingStrategy().getColumnName(this);
+
 		String overriddenName = null;
 
 		boolean forceQuote = false;
@@ -257,6 +257,10 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		Assert.notNull(namingStrategy, "NamingStrategy must not be null");
 
 		this.namingStrategy = namingStrategy;
+	}
+
+	NamingStrategy getNamingStrategy() {
+		return this.namingStrategy;
 	}
 
 	/* (non-Javadoc)

@@ -26,8 +26,9 @@ import java.util.function.Function;
  */
 public class TransformingNamingStrategy implements NamingStrategy {
 
-	private final NamingStrategy delegate;
 	private final Function<String, String> mappingFunction;
+
+	private final NamingStrategy delegate;
 
 	public TransformingNamingStrategy(NamingStrategy delegate, Function<String, String> mappingFunction) {
 		this.delegate = delegate;
@@ -35,17 +36,17 @@ public class TransformingNamingStrategy implements NamingStrategy {
 	}
 
 	@Override
-	public String getTableName(CassandraPersistentEntity<?> type) {
-		return mappingFunction.apply(delegate.getTableName(type));
+	public String getTableName(CassandraPersistentEntity<?> entity) {
+		return this.mappingFunction.apply(this.delegate.getTableName(entity));
 	}
 
 	@Override
-	public String getUserDefinedTypeName(CassandraPersistentEntity<?> type) {
-		return mappingFunction.apply(delegate.getUserDefinedTypeName(type));
+	public String getUserDefinedTypeName(CassandraPersistentEntity<?> entity) {
+		return this.mappingFunction.apply(this.delegate.getUserDefinedTypeName(entity));
 	}
 
 	@Override
 	public String getColumnName(CassandraPersistentProperty property) {
-		return mappingFunction.apply(delegate.getColumnName(property));
+		return this.mappingFunction.apply(this.delegate.getColumnName(property));
 	}
 }

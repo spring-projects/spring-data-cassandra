@@ -199,9 +199,8 @@ public class CassandraMappingContext
 	}
 
 	/**
-	 * @return
 	 * @deprecated since 3.0. Use custom conversion through
-	 *             {@link org.springframework.data.cassandra.core.convert.MappingCassandraConverter}.
+	 * {@link org.springframework.data.cassandra.core.convert.MappingCassandraConverter}.
 	 */
 	@Deprecated
 	public CustomConversions getCustomConversions() {
@@ -255,9 +254,8 @@ public class CassandraMappingContext
 	}
 
 	/**
-	 * @return
 	 * @deprecated since 3.0. Retrieve {@link CodecRegistry} directly from
-	 *             {@link org.springframework.data.cassandra.core.convert.CassandraConverter}.
+	 * {@link org.springframework.data.cassandra.core.convert.CassandraConverter}.
 	 */
 	@Deprecated
 	public CodecRegistry getCodecRegistry() {
@@ -305,9 +303,8 @@ public class CassandraMappingContext
 	}
 
 	/**
-	 * @return
 	 * @deprecated since 3.0. Retrieve {@link UserTypeResolver} directly from
-	 *             {@link org.springframework.data.cassandra.core.convert.CassandraConverter}.
+	 * {@link org.springframework.data.cassandra.core.convert.CassandraConverter}.
 	 */
 	@Nullable
 	@Deprecated
@@ -378,8 +375,9 @@ public class CassandraMappingContext
 
 		BasicCassandraPersistentEntity<T> entity = isUserDefinedType(typeInformation)
 				? new CassandraUserTypePersistentEntity<>(typeInformation, getVerifier())
-				: isTuple(typeInformation) ? new BasicCassandraPersistentTupleEntity<>(typeInformation)
-						: new BasicCassandraPersistentEntity<>(typeInformation, getVerifier());
+				: isTuple(typeInformation)
+				? new BasicCassandraPersistentTupleEntity<>(typeInformation)
+				: new BasicCassandraPersistentEntity<>(typeInformation, getVerifier());
 
 		entity.setNamingStrategy(this.namingStrategy);
 		Optional.ofNullable(this.applicationContext).ifPresent(entity::setApplicationContext);
@@ -447,10 +445,9 @@ public class CassandraMappingContext
 
 		return getPersistentEntities().stream().flatMap(entity -> StreamSupport.stream(entity.spliterator(), false))
 				.flatMap(it -> Optionals.toStream(Optional.ofNullable(it.findAnnotation(CassandraType.class))))
-				.map(CassandraType::userTypeName) //
-				.filter(StringUtils::hasText) //
-				.map(CqlIdentifier::fromCql) //
+				.map(CassandraType::userTypeName)
+				.filter(StringUtils::hasText)
+				.map(CqlIdentifier::fromCql)
 				.anyMatch(identifier::equals);
 	}
-
 }

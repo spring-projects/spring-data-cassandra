@@ -108,13 +108,13 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 			return determineName(annotation.value(), annotation.forceQuote());
 		}
 
-		return IdentifierFactory.create(namingStrategy.getTableName(this), false);
+		return IdentifierFactory.create(getNamingStrategy().getTableName(this), false);
 	}
 
 	CqlIdentifier determineName(String value, boolean forceQuote) {
 
 		if (!StringUtils.hasText(value)) {
-			return IdentifierFactory.create(namingStrategy.getTableName(this), forceQuote);
+			return IdentifierFactory.create(getNamingStrategy().getTableName(this), forceQuote);
 		}
 
 		String name = Optional.ofNullable(this.spelContext).map(it -> SpelUtils.evaluate(value, it)).orElse(value);
@@ -256,5 +256,4 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	public boolean isUserDefinedType() {
 		return false;
 	}
-
 }

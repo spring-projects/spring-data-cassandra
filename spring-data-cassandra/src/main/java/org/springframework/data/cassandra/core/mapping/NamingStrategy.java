@@ -46,21 +46,21 @@ public interface NamingStrategy {
 	/**
 	 * Create a table name from the given {@link CassandraPersistentEntity}.
 	 */
-	default String getTableName(CassandraPersistentEntity<?> type) {
+	default String getTableName(CassandraPersistentEntity<?> entity) {
 
-		Assert.notNull(type, "CassandraPersistentEntity must not be null!");
+		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
 
-		return type.getType().getSimpleName();
+		return entity.getType().getSimpleName();
 	}
 
 	/**
 	 * Create a user-defined type name from the given {@link CassandraPersistentEntity}.
 	 */
-	default String getUserDefinedTypeName(CassandraPersistentEntity<?> type) {
+	default String getUserDefinedTypeName(CassandraPersistentEntity<?> entity) {
 
-		Assert.notNull(type, "CassandraPersistentEntity must not be null!");
+		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
 
-		return type.getType().getSimpleName();
+		return entity.getType().getSimpleName();
 	}
 
 	/**
@@ -68,14 +68,16 @@ public interface NamingStrategy {
 	 */
 	default String getColumnName(CassandraPersistentProperty property) {
 
-		Assert.notNull(property, "CassandraPersistentProperty must not be null!");
+		Assert.notNull(property, "CassandraPersistentProperty must not be null");
 
 		return property.getName();
 	}
 
 	/**
-	 * Apply a {@link UnaryOperator transformation function} to create a new {@link NamingStrategy} that applies the given
-	 * transformation to each name component. Example:
+	 * Apply a {@link UnaryOperator transformation function} to create a new {@link NamingStrategy}
+	 * that applies the given transformation to each name component.
+	 *
+	 * Example:
 	 * <p class="code">
 	 * NamingStrategy lower = NamingStrategy.INSTANCE.transform(String::toLowerCase);
 	 * </p>
@@ -85,7 +87,7 @@ public interface NamingStrategy {
 	 */
 	default NamingStrategy transform(UnaryOperator<String> mappingFunction) {
 
-		Assert.notNull(mappingFunction, "Mapping function must not be null!");
+		Assert.notNull(mappingFunction, "Mapping function must not be null");
 
 		NamingStrategy previous = this;
 
