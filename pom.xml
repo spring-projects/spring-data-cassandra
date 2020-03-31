@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.springframework.data.build</groupId>
 		<artifactId>spring-data-parent</artifactId>
-		<version>2.3.0.RC1</version>
+		<version>2.3.0.BUILD-SNAPSHOT</version>
 	</parent>
 
 	<groupId>org.springframework.data</groupId>
@@ -97,13 +97,13 @@
 		<hppc.version>0.5.4</hppc.version>
 		<multithreadedtc.version>1.01</multithreadedtc.version>
 		<project.type>multi</project.type>
-		<springdata.commons>2.3.0.RC1</springdata.commons>
+		<springdata.commons>2.3.0.BUILD-SNAPSHOT</springdata.commons>
 	</properties>
 
 	<repositories>
 		<repository>
-			<id>spring-libs-milestone</id>
-			<url>https://repo.spring.io/libs-milestone</url>
+			<id>spring-libs-snapshot</id>
+			<url>https://repo.spring.io/libs-snapshot</url>
 		</repository>
 	</repositories>
 
