@@ -377,6 +377,8 @@ Describes the index to be created at session initialization.
 Allows SASI index creation during session initialization.
 * `@CassandraType`: Applied at the field level to specify a Cassandra data type.
 Types are derived from the property declaration by default.
+* `@Frozen`: Applied at the field level to class-types and parametrized types.
+Declares a frozen UDT column or frozen collection like `List<@Frozen UserDefinedPersonType>`.
 * `@UserDefinedType`: Applied at the type level to specify a Cassandra User-defined Data Type (UDT).
 Types are derived from the declaration by default.
 * `@Tuple`: Applied at the type level to use a type as a mapped tuple.

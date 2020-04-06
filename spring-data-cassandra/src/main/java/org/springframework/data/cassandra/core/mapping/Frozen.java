@@ -22,15 +22,16 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Specifies a type as "frozen".
+ * Indicates that a persistent property should use a {@code frozen} column type.
  *
  * @author Jens Schauder
- * @see <a href="https://express-cassandra.readthedocs.io/en/stable/advanced/#frozen-collections">Documentation about frozen collections</a>
+ * @see <a href="https://express-cassandra.readthedocs.io/en/stable/advanced/#frozen-collections">Documentation about
+ *      frozen collections</a>
  * @since 3.0
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target(value = {ElementType.TYPE_USE, ElementType.FIELD, ElementType.METHOD})
+@Target(value = { ElementType.TYPE_USE, ElementType.FIELD, ElementType.METHOD })
 public @interface Frozen {
 
 }

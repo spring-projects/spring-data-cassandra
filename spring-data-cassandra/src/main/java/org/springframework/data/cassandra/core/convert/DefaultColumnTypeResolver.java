@@ -27,7 +27,8 @@ import java.util.stream.StreamSupport;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetbrains.annotations.NotNull;
+
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
@@ -98,8 +99,6 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 
 		Assert.notNull(property, "Property must not be null");
 
-		FrozenInfo frozen = getFrozenInfo(property);
-
 		if (property.isAnnotationPresent(CassandraType.class)) {
 
 			CassandraType annotation = property.getRequiredAnnotation(CassandraType.class);
@@ -128,31 +127,39 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 		}
 
 		TypeInformation<?> typeInformation = property.getTypeInformation();
-		return resolve(typeInformation, frozen);
+		return resolve(typeInformation, getFrozenInfo(property));
 	}
 
-	private FrozenInfo getFrozenInfo(CassandraPersistentProperty property) {
+	private FrozenIndicator getFrozenInfo(CassandraPersistentProperty property) {
 
-		FrozenInfo frozen = FrozenInfo.frozen(property.isAnnotationPresent(Frozen.class));
 		AnnotatedType annotatedType = property.findAnnotatedType(Frozen.class);
+
+		if (annotatedType == null) {
+			return FrozenIndicator.NOT_FROZEN;
+		}
+
+		return getFrozenIndicator(annotatedType);
+	}
+
+	private FrozenIndicator getFrozenIndicator(AnnotatedType annotatedType) {
+
+		FrozenIndicator frozen = FrozenIndicator.frozen(isFrozen(annotatedType));
 
 		if (annotatedType instanceof AnnotatedParameterizedType) {
 
 			AnnotatedParameterizedType apt = (AnnotatedParameterizedType) annotatedType;
 			AnnotatedType[] annotatedTypes = apt.getAnnotatedActualTypeArguments();
 
-			if (annotatedTypes.length > 0) {
-
-				AnnotatedType type1 = annotatedTypes[0];
-				frozen = frozen.withFirstTypeParameter(type1.isAnnotationPresent(Frozen.class));
-				if (annotatedTypes.length > 1) {
-
-					AnnotatedType type2 = annotatedTypes[1];
-					frozen = frozen.withSecondTypeParameter(type2.isAnnotationPresent(Frozen.class));
-				}
+			for (AnnotatedType type : annotatedTypes) {
+				frozen.addNested(getFrozenIndicator(type));
 			}
 		}
+
 		return frozen;
+	}
+
+	private boolean isFrozen(AnnotatedType type) {
+		return AnnotatedElementUtils.hasAnnotation(type, Frozen.class);
 	}
 
 	/*
@@ -161,15 +168,10 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 	 */
 	@Override
 	public CassandraColumnType resolve(TypeInformation<?> typeInformation) {
-		return resolve(typeInformation, FrozenInfo.NOT_FROZEN);
+		return resolve(typeInformation, FrozenIndicator.NOT_FROZEN);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.convert.ColumnTypeResolver#resolve(org.springframework.data.util.TypeInformation, org.springframework.data.cassandra.core.convert.FrozenInfo)
-	 */
-	@Override
-	public CassandraColumnType resolve(TypeInformation<?> typeInformation, FrozenInfo frozen) {
+	private CassandraColumnType resolve(TypeInformation<?> typeInformation, FrozenIndicator frozen) {
 
 		return getCustomWriteTarget(typeInformation).map(it -> {
 			return createCassandraTypeDescriptor(tryResolve(it), ClassTypeInformation.from(it));
@@ -389,24 +391,23 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 		return new DefaultCassandraColumnType(typeInformation, dataType);
 	}
 
-	private CassandraColumnType createCassandraTypeDescriptor(TypeInformation<?> typeInformation, FrozenInfo frozen) {
+	private CassandraColumnType createCassandraTypeDescriptor(TypeInformation<?> typeInformation,
+			FrozenIndicator frozen) {
 
 		if (List.class.isAssignableFrom(typeInformation.getType())) {
-
-			FrozenInfo elementFrozen = frozen.forFirstTypeParameter();
-			return ColumnType.listOf(resolve(typeInformation.getRequiredComponentType(), elementFrozen), frozen);
+			return ColumnType.listOf(resolve(typeInformation.getRequiredComponentType(), frozen.getFrozen(0)),
+					frozen.isFrozen());
 		}
 
 		if (Set.class.isAssignableFrom(typeInformation.getType())) {
-
-			FrozenInfo elementFrozen = frozen.forFirstTypeParameter();
-			return ColumnType.setOf(resolve(typeInformation.getRequiredComponentType(), elementFrozen), frozen);
+			return ColumnType.setOf(resolve(typeInformation.getRequiredComponentType(), frozen.getFrozen(0)),
+					frozen.isFrozen());
 		}
 
 		if (typeInformation.isMap()) {
 
-			FrozenInfo frozenKey = frozen.forFirstTypeParameter();
-			FrozenInfo frozenValue = frozen.forSecondTypeParameter();
+			FrozenIndicator frozenKey = frozen.getFrozen(0);
+			FrozenIndicator frozenValue = frozen.getFrozen(1);
 
 			return ColumnType.mapOf(resolve(typeInformation.getRequiredComponentType(), frozenKey),
 					resolve(typeInformation.getRequiredMapValueType(), frozenValue));
@@ -417,7 +418,7 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 		if (persistentEntity != null) {
 
 			if (persistentEntity.isUserDefinedType()) {
-				return new DefaultCassandraColumnType(typeInformation, getUserType(persistentEntity, frozen.self));
+				return new DefaultCassandraColumnType(typeInformation, getUserType(persistentEntity, frozen.isFrozen()));
 			}
 
 			if (persistentEntity.isTupleType()) {

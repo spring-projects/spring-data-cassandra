@@ -46,6 +46,7 @@ import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
  * Unit tests for {@link DefaultColumnTypeResolver}.
  *
  * @author Mark Paluch
+ * @author Jens Schauder
  */
 public class ColumnTypeResolverUnitTests {
 
