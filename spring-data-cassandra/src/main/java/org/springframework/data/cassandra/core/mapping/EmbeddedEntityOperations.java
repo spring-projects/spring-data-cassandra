@@ -29,23 +29,27 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.cassandra.core.cql.Ordering;
-import org.springframework.data.cassandra.core.mapping.Embedded.Nullable;
 import org.springframework.data.mapping.*;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.Nullable;
 import org.springframework.util.StringUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
+ * Support methods to obtain {@link PersistentProperty} and {@link PersistentEntity} for embedded properties.
+ *
  * @author Christoph Strobl
  * @since 3.0
+ * @see Embedded
  */
 public class EmbeddedEntityOperations {
 
 	private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
 
-	public EmbeddedEntityOperations(MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext) {
+	public EmbeddedEntityOperations(
+			MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext) {
 		this.mappingContext = mappingContext;
 	}
 
@@ -73,7 +77,7 @@ public class EmbeddedEntityOperations {
 	static class PrefixedCassandraPersistentEntity<T> implements CassandraPersistentEntity<T> {
 
 		private final String prefix;
-		private CassandraPersistentEntity<T> delegate;
+		private final CassandraPersistentEntity<T> delegate;
 
 		public PrefixedCassandraPersistentEntity(String prefix, CassandraPersistentEntity<T> delegate) {
 
@@ -169,7 +173,10 @@ public class EmbeddedEntityOperations {
 		@Override
 		@org.springframework.lang.Nullable
 		public CassandraPersistentProperty getPersistentProperty(String name) {
-			return new PrefixedCassandraPersistentProperty(prefix, delegate.getPersistentProperty(name));
+
+			CassandraPersistentProperty property = delegate.getPersistentProperty(name);
+
+			return property == null ? null : new PrefixedCassandraPersistentProperty(prefix, property);
 		}
 
 		@Override
@@ -180,7 +187,10 @@ public class EmbeddedEntityOperations {
 		@Override
 		@org.springframework.lang.Nullable
 		public CassandraPersistentProperty getPersistentProperty(Class<? extends Annotation> annotationType) {
-			return new PrefixedCassandraPersistentProperty(prefix, delegate.getPersistentProperty(annotationType));
+
+			CassandraPersistentProperty property = delegate.getPersistentProperty(annotationType);
+
+			return property == null ? null : new PrefixedCassandraPersistentProperty(prefix, property);
 		}
 
 		@Override
@@ -337,7 +347,6 @@ public class EmbeddedEntityOperations {
 		}
 
 		@Override
-		@org.springframework.lang.Nullable
 		public CqlIdentifier getColumnName() {
 			return CqlIdentifier.fromInternal(prefix + delegate.getColumnName().asInternal());
 		}

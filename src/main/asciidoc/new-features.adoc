@@ -9,6 +9,7 @@ This chapter summarizes changes and new features for each release.
 * Upgrade to Cassandra Driver version 4. See the <<cassandra.migration.2.x-to-3.x,2.x to 3.x migration guide for details>>.
 * Support for `NamingStrategy`.
 * Support for frozen collections and UDT columns in schema creation.
+* Support for <<mapping.embedded-entities,`@Embedded` properties>>.
 
 [[new-features.2-2-0]]
 == What's new in Spring Data for Apache Cassandra 2.2

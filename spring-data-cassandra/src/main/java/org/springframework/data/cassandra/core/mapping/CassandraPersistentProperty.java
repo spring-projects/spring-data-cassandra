@@ -163,7 +163,7 @@ public interface CassandraPersistentProperty
 	 * @since 3.0
 	 */
 	default boolean isEmbedded() {
-		return findAnnotation(Embedded.class) != null;
+		return findAnnotation(Embedded.class) != null && isEntity();
 	}
 
 	/**

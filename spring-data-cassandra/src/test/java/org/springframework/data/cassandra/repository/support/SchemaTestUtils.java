@@ -70,11 +70,6 @@ public class SchemaTestUtils {
 		potentiallyCreateTableFor(persistentEntity, operations, schemaFactory);
 	}
 
-	public static void potentiallyCreateUdtFor(Class<?> entityType, CassandraOperations operations) {
-		potentiallyCreateUdtFor(operations.getConverter().getMappingContext().getRequiredPersistentEntity(entityType),
-				operations, new SchemaFactory(operations.getConverter()));
-	}
-
 	private static void potentiallyCreateTableFor(CassandraPersistentEntity<?> persistentEntity,
 			CassandraOperations operations, SchemaFactory schemaFactory) {
 
@@ -103,15 +98,18 @@ public class SchemaTestUtils {
 		} else {
 
 			for (CassandraPersistentProperty property : persistentEntity) {
-				if (property.isEntity()) {
-					if (property.isEmbedded()) {
-						potentiallyCreateUdtFor(
-								new EmbeddedEntityOperations(operations.getConverter().getMappingContext()).getEntity(property),
-								operations, schemaFactory);
-					} else {
-						potentiallyCreateUdtFor(operations.getConverter().getMappingContext().getRequiredPersistentEntity(property),
-								operations, schemaFactory);
-					}
+
+				if (!property.isEntity()) {
+					continue;
+				}
+
+				if (property.isEmbedded()) {
+					potentiallyCreateUdtFor(
+							new EmbeddedEntityOperations(operations.getConverter().getMappingContext()).getEntity(property),
+							operations, schemaFactory);
+				} else {
+					potentiallyCreateUdtFor(operations.getConverter().getMappingContext().getRequiredPersistentEntity(property),
+							operations, schemaFactory);
 				}
 			}
 		}

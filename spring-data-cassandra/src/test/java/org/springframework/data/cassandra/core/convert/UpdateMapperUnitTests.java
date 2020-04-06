@@ -337,8 +337,7 @@ public class UpdateMapperUnitTests {
 	@Data
 	static class EmbeddedWithSimpleTypes {
 
-		@Indexed // single property index (IndexSpecificationFactory) | sassi index etc. :'(
-		String firstname;
+		@Indexed String firstname;
 		Integer age;
 	}
 

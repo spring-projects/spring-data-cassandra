@@ -434,7 +434,6 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 		Assert.notNull(source, "Value must not be null");
 
-		// TODO
 		Class<?> beanClassLoaderClass = transformClassToBeanClassLoaderClass(source.getClass());
 
 		CassandraPersistentEntity<?> entity = getMappingContext().getRequiredPersistentEntity(beanClassLoaderClass);
@@ -499,7 +498,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 				continue;
 			}
 
-			if (value != null && property.isEmbedded() && property.isEntity()) {
+			if (value != null && property.isEmbedded()) {
 
 				if (log.isDebugEnabled()) {
 					log.debug("Mapping embedded property [{}] - [{}]", property.getRequiredColumnName(), value);
@@ -653,7 +652,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 				log.debug("Adding udt.value [{}] - [{}]", property.getRequiredColumnName(), value);
 			}
 
-			if (property.isEmbedded() && property.isEntity()) {
+			if (property.isEmbedded()) {
 
 				if (log.isDebugEnabled()) {
 					log.debug("Mapping embedded property [{}] - [{}]", property.getRequiredColumnName(), value);
@@ -918,8 +917,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	}
 
 	/**
-	 * Retrieve the value to read for the given {@link CassandraPersistentProperty} from
-	 * {@link BasicCassandraRowValueProvider} and perform optionally a conversion of collection element types.
+	 * Retrieve the value to read for the given {@link CassandraPersistentProperty} from {@link CassandraValueProvider}
+	 * and perform optionally a conversion of collection element types.
 	 *
 	 * @param valueProvider the row.
 	 * @param property the property.
@@ -934,7 +933,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			return doReadEntity(keyEntity, valueProvider);
 		}
 
-		if (property.isEntity() && property.isEmbedded()) {
+		if (property.isEmbedded()) {
 
 			CassandraPersistentEntity<?> targetEntity = embeddedEntityOperations.getEntity(property);
 			return isNullEmbedded(targetEntity, property, valueProvider) ? null : doReadEntity(targetEntity, valueProvider);
@@ -959,7 +958,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	private boolean isNullEmbedded(CassandraPersistentEntity<?> entity, CassandraPersistentProperty property,
 			CassandraValueProvider valueProvider) {
 
-		if (OnEmpty.USE_EMPTY.equals(property.findAnnotation(Embedded.class).onEmpty())) {
+		if (OnEmpty.USE_EMPTY.equals(property.getRequiredAnnotation(Embedded.class).onEmpty())) {
 			return false;
 		}
 

@@ -26,13 +26,19 @@ import javax.annotation.meta.When;
 import org.springframework.core.annotation.AliasFor;
 
 /**
+ * The annotation to configure a value object as embedded in the current table.
+ * <p />
+ * Depending on the {@link OnEmpty value} of {@link #onEmpty()} the property is set to {@literal null} or an empty
+ * instance in the case all embedded values are {@literal null} when reading from the result set.
+ *
  * @author Christoph Strobl
  * @since 3.0
  */
 @Documented
 @Retention(value = RetentionPolicy.RUNTIME)
-@Target(value = { ElementType.FIELD, ElementType.ANNOTATION_TYPE })
+@Target(value = { ElementType.ANNOTATION_TYPE, ElementType.FIELD, ElementType.METHOD })
 public @interface Embedded {
+
 	/**
 	 * Set the load strategy for the embedded object if all contained fields yield {@literal null} values.
 	 * <p />
@@ -51,7 +57,6 @@ public @interface Embedded {
 	 * Load strategy to be used {@link Embedded#onEmpty()}.
 	 *
 	 * @author Christoph Strobl
-	 * @since 1.1
 	 */
 	enum OnEmpty {
 		USE_NULL, USE_EMPTY
@@ -60,27 +65,17 @@ public @interface Embedded {
 	/**
 	 * Shortcut for a nullable embedded property.
 	 *
-	 * <pre>
-	 * <code>
-	 * &#64;Embedded.Nullable
-	 * private Address address;
-	 * </code>
+	 * <pre class="code">
+	 * &#64;Embedded.Nullable private Address address;
 	 * </pre>
 	 *
 	 * as alternative to the more verbose
 	 *
-	 * <pre>
-	 * <code>
-	 *
-	 * &#64;Embedded(onEmpty = USE_NULL)
-	 * &#64;javax.annotation.Nonnull(when = When.MAYBE)
-	 * private Address address;
-	 *
-	 * </code>
+	 * <pre class="code">
+	 * &#64;Embedded(onEmpty = USE_NULL) &#64;javax.annotation.Nonnull(when = When.MAYBE) private Address address;
 	 * </pre>
 	 *
 	 * @author Christoph Strobl
-	 * @since 3.0
 	 * @see Embedded#onEmpty()
 	 */
 	@Embedded(onEmpty = OnEmpty.USE_NULL)
@@ -95,32 +90,28 @@ public @interface Embedded {
 		 */
 		@AliasFor(annotation = Embedded.class, attribute = "prefix")
 		String prefix() default "";
+
+		/**
+		 * @return value for columns in the embedded value object. An empty {@link String} by default.
+		 */
+		@AliasFor(annotation = Embedded.class, attribute = "prefix")
+		String value() default "";
 	}
 
 	/**
 	 * Shortcut for an empty embedded property.
 	 *
-	 * <pre>
-	 * <code>
-	 * &#64;Embedded.Empty
-	 * private Address address;
-	 * </code>
+	 * <pre class="code">
+	 * &#64;Embedded.Empty private Address address;
 	 * </pre>
 	 *
 	 * as alternative to the more verbose
 	 *
-	 * <pre>
-	 * <code>
-	 *
-	 * &#64;Embedded(onEmpty = USE_EMPTY)
-	 * &#64;javax.annotation.Nonnull(when = When.NEVER)
-	 * private Address address;
-	 *
-	 * </code>
+	 * <pre class="code">
+	 * &#64;Embedded(onEmpty = USE_EMPTY) &#64;javax.annotation.Nonnull(when = When.NEVER) private Address address;
 	 * </pre>
 	 *
 	 * @author Christoph Strobl
-	 * @since 3.0
 	 * @see Embedded#onEmpty()
 	 */
 	@Embedded(onEmpty = OnEmpty.USE_EMPTY)
@@ -135,5 +126,11 @@ public @interface Embedded {
 		 */
 		@AliasFor(annotation = Embedded.class, attribute = "prefix")
 		String prefix() default "";
+
+		/**
+		 * @return value for columns in the embedded value object. An empty {@link String} by default.
+		 */
+		@AliasFor(annotation = Embedded.class, attribute = "prefix")
+		String value() default "";
 	}
 }

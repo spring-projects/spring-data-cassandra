@@ -158,7 +158,7 @@ public class SchemaFactory {
 								primaryKeyProperty.getPrimaryKeyOrdering());
 					}
 				}
-			} else if (property.isEmbedded() && property.isEntity()) {
+			} else if (property.isEmbedded()) {
 
 				CassandraPersistentEntity<?> embeddedEntity = embeddedEntityOperations.getEntity(property);
 
@@ -167,7 +167,6 @@ public class SchemaFactory {
 					DataType dataType = getDataType(embeddedProperty);
 					specification.column(embeddedProperty.getRequiredColumnName(), dataType);
 				}
-
 			} else {
 				DataType type = UserTypeUtil.potentiallyFreeze(getDataType(property));
 
@@ -248,7 +247,7 @@ public class SchemaFactory {
 			if (property.isCompositePrimaryKey()) {
 				indexes.addAll(getCreateIndexSpecificationsFor(mappingContext.getRequiredPersistentEntity(property)));
 			}
-			if (property.isEmbedded() && property.isEntity()) {
+			if (property.isEmbedded()) {
 
 				if (property.isAnnotationPresent(Indexed.class)) {
 					Indexed indexed = property.findAnnotation(Indexed.class);
@@ -281,7 +280,7 @@ public class SchemaFactory {
 
 		for (CassandraPersistentProperty property : entity) {
 
-			if (property.isEmbedded() && property.isEntity()) {
+			if (property.isEmbedded()) {
 
 				CassandraPersistentEntity<?> embeddedEntity = embeddedEntityOperations.getEntity(property);
 				for (CassandraPersistentProperty embeddedProperty : embeddedEntity) {

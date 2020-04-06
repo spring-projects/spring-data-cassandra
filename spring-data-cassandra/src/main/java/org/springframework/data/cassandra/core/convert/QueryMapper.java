@@ -535,7 +535,7 @@ public class QueryMapper {
 					leafProperty = parentEntity.getPersistentProperty(p.getName());
 					parentEntity = null;
 				}
-				if (p.isEmbedded() && p.isEntity()) {
+				if (p.isEmbedded()) {
 					embedded = true;
 					parentEntity = new EmbeddedEntityOperations(mappingContext).getEntity(p);
 				}

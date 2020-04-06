@@ -1272,7 +1272,7 @@ public class MappingCassandraConverterUnitTests {
 
 		String id;
 
-		@Embedded.Nullable(prefix = "prefix") EmbeddedWithSimpleTypes nested;
+		@Embedded.Nullable("prefix") EmbeddedWithSimpleTypes nested;
 	}
 
 	@ToString
