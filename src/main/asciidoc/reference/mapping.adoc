@@ -178,6 +178,7 @@ You can override it to tell the converter where to scan for classes annotated wi
 You can add additional converters to the `MappingCassandraConverter` by overriding the `customConversions` method.
 
 NOTE: `AbstractCassandraConfiguration` creates a `CassandraTemplate` instance and registers it with the container under the name of `cassandraTemplate`.
+
 [[mapping.usage]]
 == Metadata-based Mapping
 
@@ -362,7 +363,7 @@ Opposite to this behavior `USE_EMPTY` tries to create a new instance using eithe
 
 .Sample Code of embedding objects
 ====
-[source, java]
+[source,java]
 ----
 public class User {
 
@@ -514,6 +515,7 @@ The `@Indexed` annotation can be applied to single properties of embedded entiti
 CAUTION: Index creation on session initialization may have a severe performance impact on application startup.
 
 include::./converters.adoc[]
+
 [[cassandra.mapping-usage.events]]
 == Lifecycle Events
 

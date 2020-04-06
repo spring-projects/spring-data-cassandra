@@ -13,9 +13,8 @@ This part of the reference documentation explains the core functionality offered
 
 Spring Data for Apache Cassandra allows interaction on both the CQL and the entity level.
 
-The value provided by the Spring Data for Apache Cassandra abstraction is perhaps best shown by
-the sequence of actions outlined in the table below. The table shows which actions Spring take care of
-and which actions are the responsibility of you, the application developer.
+The value provided by the Spring Data for Apache Cassandra abstraction is perhaps best shown by the sequence of actions outlined in the table below.
+The table shows which actions Spring take care of and which actions are the responsibility of you, the application developer.
 
 [[cassandra.modules.who-does-what]]
 .Spring Data for Apache Cassandra (CQL Core)- who does what?
@@ -59,25 +58,24 @@ and which actions are the responsibility of you, the application developer.
 |
 |===
 
-The core CQL support takes care of all the low-level details that can make Cassandra and CQL such a tedious API
-with which to develop. Using mapped entity objects allows schema generation, object mapping, and repository support.
+The core CQL support takes care of all the low-level details that can make Cassandra and CQL such a tedious API with which to develop.
+Using mapped entity objects allows schema generation, object mapping, and repository support.
 
 [[cassandra.choose-style]]
 === Choosing an Approach for Cassandra Database Access
 
-You can choose among several approaches to use as a basis for your Cassandra database access. Spring's support
-for Apache Cassandra comes in different flavors. Once you start using one of these approaches, you can still mix
-and match to include a feature from a different approach. The following approaches work well:
+You can choose among several approaches to use as a basis for your Cassandra database access.
+Spring's support for Apache Cassandra comes in different flavors.
+Once you start using one of these approaches, you can still mix and match to include a feature from a different approach.
+The following approaches work well:
 
-* <<cassandra.cql-template,`CqlTemplate`>> and <<cassandra.reactive.cql-template,`ReactiveCqlTemplate`>> are the
- classic Spring CQL approach and the most popular. This is the "`lowest-level`" approach. Note that components like `CassandraTemplate`
- use `CqlTemplate` under-the-hood.
-* <<cassandra.template,`CassandraTemplate`>> wraps a `CqlTemplate` to provide query result-to-object mapping
-and the use of `SELECT`, `INSERT`, `UPDATE`, and `DELETE` methods instead of writing CQL statements. This approach
-provides better documentation and ease of use.
-* <<cassandra.reactive.template,`ReactiveCassandraTemplate`>> wraps a `ReactiveCqlTemplate` to provide query
-result-to-object mapping and the use of `SELECT`, `INSERT`, `UPDATE`, and `DELETE` methods instead of writing CQL statements.
+* <<cassandra.cql-template,`CqlTemplate`>> and <<cassandra.reactive.cql-template,`ReactiveCqlTemplate`>> are the classic Spring CQL approach and the most popular.
+This is the "`lowest-level`" approach.
+Note that components like `CassandraTemplate`
+use `CqlTemplate` under-the-hood.
+* <<cassandra.template,`CassandraTemplate`>> wraps a `CqlTemplate` to provide query result-to-object mapping and the use of `SELECT`, `INSERT`, `UPDATE`, and `DELETE` methods instead of writing CQL statements.
 This approach provides better documentation and ease of use.
-* Repository Abstraction  lets you create repository declarations in your data access layer. The goal of
-Spring Data's repository abstraction is to significantly reduce the amount of boilerplate code required to implement
-data access layers for various persistence stores.
+* <<cassandra.reactive.template,`ReactiveCassandraTemplate`>> wraps a `ReactiveCqlTemplate` to provide query result-to-object mapping and the use of `SELECT`, `INSERT`, `UPDATE`, and `DELETE` methods instead of writing CQL statements.
+This approach provides better documentation and ease of use.
+* Repository Abstraction lets you create repository declarations in your data access layer.
+The goal of Spring Data's repository abstraction is to significantly reduce the amount of boilerplate code required to implement data access layers for various persistence stores.

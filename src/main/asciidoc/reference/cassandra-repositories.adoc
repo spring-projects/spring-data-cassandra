@@ -8,8 +8,8 @@ You should understand the basic concepts explained there before proceeding.
 [[cassandra-repo-usage]]
 == Usage
 
-To access domain entities stored in Apache Cassandra, you can use Spring Data's sophisticated repository support,
-which significantly eases implementing DAOs. To do so, create an interface for your repository, as the following example shows:
+To access domain entities stored in Apache Cassandra, you can use Spring Data's sophisticated repository support, which significantly eases implementing DAOs.
+To do so, create an interface for your repository, as the following example shows:
 
 .Sample Person entity
 ====
@@ -29,8 +29,7 @@ public class Person {
 ====
 
 Note that the entity has a property named `id` of type `String`.
-The default serialization mechanism used in `CassandraTemplate` (which backs the repository support)
-regards properties named `id` as being the row ID.
+The default serialization mechanism used in `CassandraTemplate` (which backs the repository support) regards properties named `id` as being the row ID.
 
 The following example shows a repository definition to persist `Person` entities:
 
@@ -49,9 +48,9 @@ Right now, the interface in the preceding example serves only typing purposes, b
 
 Next, in your Spring configuration, add the following (if you use Java for configuration):
 
-If you want to use Java configuration, use the `@EnableCassandraRepositories` annotation. The annotation carries
-the same attributes as the namespace element. If no base package is configured, the infrastructure scans
-the package of the annotated configuration class.
+If you want to use Java configuration, use the `@EnableCassandraRepositories` annotation.
+The annotation carries the same attributes as the namespace element.
+If no base package is configured, the infrastructure scans the package of the annotated configuration class.
 The following example shows how to use the `@EnableCassandraRepositories` annotation:
 
 .Java configuration for repositories
@@ -105,16 +104,12 @@ If you want to use XML configuration, then the following example shows a minimal
 ----
 ====
 
-The `cassandra:repositories` namespace element causes the base packages to be scanned for interfaces that
-extend `CrudRepository` and create Spring beans for each one found. By default, the repositories are
-wired with a `CassandraTemplate` Spring bean called `cassandraTemplate`, so you only need to configure
+The `cassandra:repositories` namespace element causes the base packages to be scanned for interfaces that extend `CrudRepository` and create Spring beans for each one found.
+By default, the repositories are wired with a `CassandraTemplate` Spring bean called `cassandraTemplate`, so you only need to configure
 `cassandra-template-ref` explicitly if you deviate from this convention.
 
-
-
 Because our domain repository extends `CrudRepository`, it provides you with basic CRUD operations.
-Working with the repository instance is a matter of injecting the repository as a dependency into a client,
-as the following example does by autowiring `PersonRepository`:
+Working with the repository instance is a matter of injecting the repository as a dependency into a client, as the following example does by autowiring `PersonRepository`:
 
 .Basic access to Person entities
 ====
@@ -136,7 +131,10 @@ public class PersonRepositoryTests {
 ----
 ====
 
-Cassandra repositories support paging and sorting for paginated and sorted access to the entities. Cassandra paging requires a paging state to forward-only navigate through pages. A `Slice` keeps track of the current paging state and allows for creation of a `Pageable` to request the next page. The following example shows how to set up paging access to `Person` entities:
+Cassandra repositories support paging and sorting for paginated and sorted access to the entities.
+Cassandra paging requires a paging state to forward-only navigate through pages.
+A `Slice` keeps track of the current paging state and allows for creation of a `Pageable` to request the next page.
+The following example shows how to set up paging access to `Person` entities:
 
 .Paging access to `Person` entities
 ====
@@ -165,15 +163,15 @@ public class PersonRepositoryTests {
 
 NOTE: Cassandra repositories do not extend `PagingAndSortingRepository`, because classic paging patterns using limit/offset are not applicable to Cassandra.
 
-The preceding example creates an application context with Spring's unit test support, which performs annotation-based
-dependency injection into the test class. Inside the test cases (the test methods), we use the repository to query
-the data store. We invoke the repository query method that requests all `Person` instances.
+The preceding example creates an application context with Spring's unit test support, which performs annotation-based dependency injection into the test class.
+Inside the test cases (the test methods), we use the repository to query the data store.
+We invoke the repository query method that requests all `Person` instances.
 
 [[cassandra.repositories.queries]]
 == Query Methods
 
-Most of the data access operations you usually trigger on a repository result in a query being executed against
-the Apache Cassandra database. Defining such a query is a matter of declaring a method on the repository interface.
+Most of the data access operations you usually trigger on a repository result in a query being executed against the Apache Cassandra database.
+Defining such a query is a matter of declaring a method on the repository interface.
 The following example shows a number of such method declarations:
 
 .PersonRepository with query methods
@@ -200,17 +198,18 @@ public interface PersonRepository extends CrudRepository<Person, String> {
     List<Person> findAllByAge(int age);                                     <8>
 }
 ----
-<1> The method shows a query for all people with the given `lastname`. The query is derived from parsing
-the method name for constraints, which can be concatenated with `And`. Thus, the method name results in
-a query expression of `SELECT * FROM person WHERE lastname = 'lastname'`.
-<2> Applies pagination to a query. You can equip your method signature with a `Pageable` parameter and let the method return a `Slice` instance, and we automatically page the query accordingly.
+<1> The method shows a query for all people with the given `lastname`.
+The query is derived from parsing the method name for constraints, which can be concatenated with `And`.
+Thus, the method name results in a query expression of `SELECT * FROM person WHERE lastname = 'lastname'`.
+<2> Applies pagination to a query.
+You can equip your method signature with a `Pageable` parameter and let the method return a `Slice` instance, and we automatically page the query accordingly.
 <3> Passing a `QueryOptions` object applies the query options to the resulting query before its execution.
-<4> Applies dynamic sorting to a query. You can add a `Sort` parameter to your method signature, and Spring Data
-automatically applies ordering to the query.
-<5> Shows that you can query based on properties that are not a primitive type by using `Converter` instances registered
-in `CustomConversions`. Throws `IncorrectResultSizeDataAccessException` if more than one match is found.
-<6> Uses the `First` keyword to restrict the query to only the first result. Unlike the preceding method, this method does
-not throw an exception if more than one match is found.
+<4> Applies dynamic sorting to a query.
+You can add a `Sort` parameter to your method signature, and Spring Data automatically applies ordering to the query.
+<5> Shows that you can query based on properties that are not a primitive type by using `Converter` instances registered in `CustomConversions`.
+Throws `IncorrectResultSizeDataAccessException` if more than one match is found.
+<6> Uses the `First` keyword to restrict the query to only the first result.
+Unlike the preceding method, this method does not throw an exception if more than one match is found.
 <7> Uses a Java 8 `Stream` to read and convert individual elements while iterating the stream.
 <8> Shows a query method annotated with `@AllowFiltering`, to allow server-side filtering.
 ====
@@ -219,7 +218,7 @@ NOTE: Querying non-primary key properties requires secondary indexes.
 
 The following table shows short examples of the keywords that you can use in query methods:
 
-[cols="1,2,3", options="header"]
+[cols="1,2,3",options="header"]
 .Supported keywords for query methods
 |===
 | Keyword
@@ -333,18 +332,16 @@ public interface PersonRepository extends CrudRepository<Person, String> {
 
 The DataStax Cassandra documentation includes https://docs.datastax.com/en/cassandra/3.0/cassandra/dml/dmlConfigConsistency.html[a good discussion of the available consistency levels].
 
-NOTE: You can control fetch size, consistency level, and retry policy defaults by configuring the following parameters
-on the CQL API instances: `CqlTemplate`, `AsyncCqlTemplate`, and `ReactiveCqlTemplate`. Defaults apply if the particular
-query option is not set.
+NOTE: You can control fetch size, consistency level, and retry policy defaults by configuring the following parameters on the CQL API instances: `CqlTemplate`, `AsyncCqlTemplate`, and `ReactiveCqlTemplate`.
+Defaults apply if the particular query option is not set.
 
 [[cassandra.repositories.misc.cdi-integration]]
 === CDI Integration
 
-Instances of the repository interfaces are usually created by a container, and the Spring container is
-the most natural choice when working with Spring Data. Spring Data for Apache Cassandra ships with
-a custom CDI extension that allows using the repository abstraction in CDI environments. The extension
-is part of the JAR. To activate it, drop the Spring Data for Apache Cassandra JAR
-into your classpath. You can now set up the infrastructure by implementing a CDI Producer for the
+Instances of the repository interfaces are usually created by a container, and the Spring container is the most natural choice when working with Spring Data.
+Spring Data for Apache Cassandra ships with a custom CDI extension that allows using the repository abstraction in CDI environments.
+The extension is part of the JAR. To activate it, drop the Spring Data for Apache Cassandra JAR into your classpath.
+You can now set up the infrastructure by implementing a CDI Producer for the
 `CassandraTemplate`, as the following examlpe shows:
 
 ====
@@ -354,10 +351,8 @@ include::../{example-root}/CassandraTemplateProducer.java[tags=class]
 ----
 ====
 
-The Spring Data for Apache Cassandra CDI extension picks up `CassandraOperations` as a CDI bean
-and creates a proxy for a Spring Data repository whenever a bean of a repository type is requested by the container.
-Thus, obtaining an instance of a Spring Data repository is a matter of declaring an injected property,
-as the following example shows:
+The Spring Data for Apache Cassandra CDI extension picks up `CassandraOperations` as a CDI bean and creates a proxy for a Spring Data repository whenever a bean of a repository type is requested by the container.
+Thus, obtaining an instance of a Spring Data repository is a matter of declaring an injected property, as the following example shows:
 
 ====
 [source,java]

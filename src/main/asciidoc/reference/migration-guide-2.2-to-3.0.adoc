@@ -81,7 +81,8 @@ We generally recommend to create `CqlTemplate` and `CassandraTemplate` objects b
 ----
 ====
 
-You will have to adapt your code in all places, where you use DataStax driver API directly. Typical cases include:
+You will have to adapt your code in all places, where you use DataStax driver API directly.
+Typical cases include:
 
 * Implementations of `ResultSetExtractor`
 * Implementations of `RowCallbackHandler`

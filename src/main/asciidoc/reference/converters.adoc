@@ -4,11 +4,8 @@
 To have more fine-grained control over the mapping process, you can register Spring `Converters` with
 `CassandraConverter` implementations, such as `MappingCassandraConverter`.
 
-`MappingCassandraConverter` first checks to see whether any Spring `Converters` can handle
-a specific class before attempting to map the object itself. To "'hijack'" the normal mapping strategies
-of the `MappingCassandraConverter` (perhaps for increased performance or other custom mapping needs), you
-need to create an implementation of the Spring `Converter` interface and register it with
-the `MappingCassandraConverter`.
+`MappingCassandraConverter` first checks to see whether any Spring `Converters` can handle a specific class before attempting to map the object itself.
+To "'hijack'" the normal mapping strategies of the `MappingCassandraConverter` (perhaps for increased performance or other custom mapping needs), you need to create an implementation of the Spring `Converter` interface and register it with the `MappingCassandraConverter`.
 
 [[customconversions.writer]]
 === Saving by Using a Registered Spring Converter
@@ -28,8 +25,7 @@ include::../{example-root}/PersonWriteConverter.java[tags=class]
 
 Similar to how you can combine saving and converting, you can also combine reading and converting.
 
-The following example uses a `Converter` that converts a `java.lang.String` into a `Person` object
-with Jackson 2:
+The following example uses a `Converter` that converts a `java.lang.String` into a `Person` object with Jackson 2:
 
 [source,java]
 ----
@@ -40,8 +36,8 @@ include::../{example-root}/PersonReadConverter.java[tags=class]
 === Registering Spring Converters with `CassandraConverter`
 
 Spring Data for Apache Cassandra Java configuration provides a convenient way to register Spring `Converter` instances:
-`MappingCassandraConverter`. The following configuration snippet shows how to manually register converters
-as well as configure `CustomConversions`:
+`MappingCassandraConverter`.
+The following configuration snippet shows how to manually register converters as well as configure `CustomConversions`:
 
 [source,java]
 ----

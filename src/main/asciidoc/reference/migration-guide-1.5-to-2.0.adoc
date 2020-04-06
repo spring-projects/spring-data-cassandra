@@ -9,8 +9,7 @@ into dedicated interfaces and templates.
 * Revised the `CqlTemplate` API to align with `JdbcTemplate`.
 * Removed the `CassandraOperations.selectBySimpleIds` method.
 * Used better names for `CassandraRepository`.
-* Removed SD Cassandra `ConsistencyLevel` and `RetryPolicy` types in favor of
-DataStax `ConsistencyLevel` and `RetryPolicy` types.
+* Removed SD Cassandra `ConsistencyLevel` and `RetryPolicy` types in favor of DataStax `ConsistencyLevel` and `RetryPolicy` types.
 * Refactored CQL specifications to value objects and configurators.
 * Refactored `QueryOptions` to be immutable objects.
 * Refactored `CassandraPersistentProperty` to single-column.
@@ -28,8 +27,9 @@ DataStax `ConsistencyLevel` and `RetryPolicy` types.
 
 == Merged Spring CQL and Spring Data Cassandra Modules
 
-Spring CQL and Spring Data Cassandra are now merged into a single module. The standalone `spring-cql` module
-is no longer available. You can find all types merged into `spring-data-cassandra`.
+Spring CQL and Spring Data Cassandra are now merged into a single module.
+The standalone `spring-cql` module is no longer available.
+You can find all types merged into `spring-data-cassandra`.
 The following listing shows how to include `spring-data-cassandra` in your maven dependencies:
 
 ====
@@ -61,21 +61,19 @@ With the merge, we merged all CQL packages into Spring Data Cassandra:
 
 We split `CqlTemplate` and `CassandraTemplate` in three ways:
 
-* `CassandraTemplate` is no longer a `CqlTemplate` but uses an instance that allows reuse and fine-grained control
-over fetch size, consistency levels, and retry policies. You can obtain the `CqlOperations` through
-`CassandraTemplate.getCqlOperations()`. Because of the change, dependency injection of `CqlTemplate` requires
-additional bean setup.
+* `CassandraTemplate` is no longer a `CqlTemplate` but uses an instance that allows reuse and fine-grained control over fetch size, consistency levels, and retry policies.
+You can obtain the `CqlOperations` through
+`CassandraTemplate.getCqlOperations()`.
+Because of the change, dependency injection of `CqlTemplate` requires additional bean setup.
 * `CqlTemplate` now reflects basic CQL operations instead of mixing high-level and low-level API calls (such as `count(…)`
-versus `execute(…)`) and the reduced method set is aligned with Spring Frameworks's `JdbcTemplate` with its convenient
-callback interfaces.
+versus `execute(…)`) and the reduced method set is aligned with Spring Frameworks's `JdbcTemplate` with its convenient callback interfaces.
 * Asynchronous methods are re-implemented on `AsyncCqlTemplate` and `AsyncCassandraTemplate` by using `ListenableFuture`.
-We removed `Cancellable` and the various async callback listeners. `ListenableFuture` is a flexible approach
-and allows transition into a `CompletableFuture`.
+We removed `Cancellable` and the various async callback listeners. `ListenableFuture` is a flexible approach and allows transition into a `CompletableFuture`.
 
 == Removed `CassandraOperations.selectBySimpleIds()`
 
-The method was removed because it did not support complex IDs. The newly introduced query DSL allows mapped
-and complex id's for single column Id's, as the following example shows:
+The method was removed because it did not support complex IDs.
+The newly introduced query DSL allows mapped and complex id's for single column Id's, as the following example shows:
 
 ====
 [source,java]
@@ -86,8 +84,7 @@ cassandraTemplate.select(Query.query(Criteria.where("id").in(…)), Person.class
 
 == Better names for `CassandraRepository`
 
-We renamed `CassandraRepository` and `TypedIdCassandraRepository` to align Spring Data Cassandra naming with other
-Spring Data modules:
+We renamed `CassandraRepository` and `TypedIdCassandraRepository` to align Spring Data Cassandra naming with other Spring Data modules:
 
 * Renamed `CassandraRepository` to `MapIdCassandraRepository`
 * Renamed `TypedIdCassandraRepository` to `CassandraRepository`
@@ -95,23 +92,22 @@ Spring Data modules:
 
 == Removed SD Cassandra `ConsistencyLevel` and `RetryPolicy` types in favor of DataStax `ConsistencyLevel` and `RetryPolicy` types
 
-Spring Data Cassandra `ConsistencyLevel` and `RetryPolicy` have been removed. Please use the types provided by
-the DataStax driver.
+Spring Data Cassandra `ConsistencyLevel` and `RetryPolicy` have been removed.
+Please use the types provided by the DataStax driver.
 
 The Spring Data Cassandra types restricted usage of available features provided in and allowed by the Cassandra native driver.
 As a result, the Spring Data Cassandra's types required an update each time newer functionality was introduced by the driver.
 
 == Refactored CQL Specifications to Value Objects and Configurators
 
-As much as possible, CQL specification types are now value types (such as `FieldSpecification`, `AlterColumnSpecification`),
-and objects are constructed by static factory methods. This allows immutability for simple value objects.
-Configurator objects (such as `AlterTableSpecification`) that operate on mandatory properties (such as a table name or
-keyspace name) are initially constructed through a a static factory method and allow further configuration until
-the desired state is created.
+As much as possible, CQL specification types are now value types (such as `FieldSpecification`, `AlterColumnSpecification`), and objects are constructed by static factory methods.
+This allows immutability for simple value objects.
+Configurator objects (such as `AlterTableSpecification`) that operate on mandatory properties (such as a table name or keyspace name) are initially constructed through a a static factory method and allow further configuration until the desired state is created.
 
 == Refactored `QueryOptions` to be Immutable Objects
 
-`QueryOptions` and `WriteOptions` are now immutable and can be created through builders. Methods accepting
+`QueryOptions` and `WriteOptions` are now immutable and can be created through builders.
+Methods accepting
 `QueryOptions` enforce non-null objects, which are available from static `empty()` factory methods.
 The following example shows how to use `QueryOptions.builder()`:
 
@@ -131,5 +127,5 @@ QueryOptions queryOptions = QueryOptions.builder()
 This change affects You only if you operate directly on the mapping model.
 
 `CassandraPersistentProperty` allowed previously multiple column names to be bound for composite primary key use.
-Columns of a `CassandraPersistentProperty` are now reduced to a single column. Resolved composite primary keys
-map to a class through `MappingContext.getRequiredPersistentEntity(…)`.
+Columns of a `CassandraPersistentProperty` are now reduced to a single column.
+Resolved composite primary keys map to a class through `MappingContext.getRequiredPersistentEntity(…)`.

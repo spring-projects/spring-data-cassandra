@@ -24,7 +24,7 @@ Spring Data for Apache Cassandra uses the `EntityCallback` API for its auditing 
 | Reactive/BeforeSaveCallback
 | `onBeforeSave(T entity, CqlIdentifier tableName, Statement statement)`
 | Invoked before a domain object is saved. +
- Can modify the target, to be persisted, `com.datastax.driver.core.Statement` containing all mapped entity information.
+Can modify the target, to be persisted, `com.datastax.driver.core.Statement` containing all mapped entity information.
 | `Ordered.LOWEST_PRECEDENCE`
 
 |===

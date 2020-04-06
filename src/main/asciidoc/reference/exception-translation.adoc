@@ -1,11 +1,9 @@
 == Exception Translation
 
 The Spring Framework provides exception translation for a wide variety of database and mapping technologies.
-This has traditionally been for JDBC and JPA. Spring Data for Apache Cassandra extends this feature to Apache Cassandra
-by providing an implementation of the `org.springframework.dao.support.PersistenceExceptionTranslator` interface.
+This has traditionally been for JDBC and JPA. Spring Data for Apache Cassandra extends this feature to Apache Cassandra by providing an implementation of the `org.springframework.dao.support.PersistenceExceptionTranslator` interface.
 
 The motivation behind mapping to Spring's {spring-framework-docs}html/dao.html#dao-exceptions[consistent data access exception hierarchy]
-is to let you write portable and descriptive exception handling code without resorting to coding against
-and handling specific Cassandra exceptions. All of Spring's data access exceptions are inherited from the
-`DataAccessException` class, so you can be sure that you can catch all database-related exceptions
-within a single try-catch block.
+is to let you write portable and descriptive exception handling code without resorting to coding against and handling specific Cassandra exceptions.
+All of Spring's data access exceptions are inherited from the
+`DataAccessException` class, so you can be sure that you can catch all database-related exceptions within a single try-catch block.
