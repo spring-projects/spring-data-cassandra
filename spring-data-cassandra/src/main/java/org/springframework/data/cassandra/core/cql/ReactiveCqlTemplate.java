@@ -742,9 +742,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 
 		applyStatementSettings(statement);
 
-		ReactiveSession session = getSession();
-
-		return Flux.defer(() -> callback.doInStatement(session, statement));
+		return getSession().flatMapMany(session -> callback.doInStatement(session, statement));
 	}
 
 	/**
@@ -759,9 +757,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 
 		applyStatementSettings(statement);
 
-		ReactiveSession session = getSession();
-
-		return Mono.defer(() -> Mono.from(callback.doInStatement(session, statement)));
+		return getSession().flatMap(session -> Mono.from(callback.doInStatement(session, statement)));
 	}
 
 	/**
@@ -774,9 +770,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 
 		Assert.notNull(callback, "ReactiveStatementCallback must not be null");
 
-		ReactiveSession session = getSession();
-
-		return Flux.defer(() -> callback.doInSession(session));
+		return getSession().flatMapMany(callback::doInSession);
 	}
 
 	/**
@@ -860,7 +854,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 		return new ArgumentPreparedStatementBinder(args);
 	}
 
-	private ReactiveSession getSession() {
+	private Mono<ReactiveSession> getSession() {
 
 		ReactiveSessionFactory sessionFactory = getSessionFactory();
 

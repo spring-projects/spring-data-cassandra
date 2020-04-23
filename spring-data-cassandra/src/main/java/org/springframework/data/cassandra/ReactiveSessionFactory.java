@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra;
 
+import reactor.core.publisher.Mono;
+
 /**
  * Strategy interface to produce {@link ReactiveSession} instances.
  * <p>
@@ -36,5 +38,5 @@ public interface ReactiveSessionFactory {
 	 *
 	 * @return a {@link ReactiveSession}.
 	 */
-	ReactiveSession getSession();
+	Mono<ReactiveSession> getSession();
 }

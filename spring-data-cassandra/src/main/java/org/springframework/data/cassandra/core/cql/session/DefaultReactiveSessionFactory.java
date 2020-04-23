@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.core.cql.session;
 
+import reactor.core.publisher.Mono;
+
 import org.springframework.data.cassandra.ReactiveSession;
 import org.springframework.data.cassandra.ReactiveSessionFactory;
 import org.springframework.data.cassandra.core.cql.ReactiveRowMapperResultSetExtractor;
@@ -29,7 +31,7 @@ import org.springframework.data.cassandra.core.cql.ReactiveRowMapperResultSetExt
  */
 public class DefaultReactiveSessionFactory implements ReactiveSessionFactory {
 
-	private final ReactiveSession session;
+	private final Mono<ReactiveSession> session;
 
 	/**
 	 * Create a new {@link ReactiveRowMapperResultSetExtractor}.
@@ -37,11 +39,11 @@ public class DefaultReactiveSessionFactory implements ReactiveSessionFactory {
 	 * @param session the {@link ReactiveSession} provides connections to Cassandra, must not be {@literal null}.
 	 */
 	public DefaultReactiveSessionFactory(ReactiveSession session) {
-		this.session = session;
+		this.session = Mono.just(session);
 	}
 
 	@Override
-	public ReactiveSession getSession() {
+	public Mono<ReactiveSession> getSession() {
 		return session;
 	}
 }

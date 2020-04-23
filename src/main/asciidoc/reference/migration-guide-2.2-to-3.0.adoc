@@ -140,6 +140,8 @@ Paging state now uses `ByteBuffer`.
 * Introduction of `StatementBuilder` to functionally build statements as the QueryBuilder API uses immutable statement types.
 * `Session` bean renamed from `session` to `cassandraSession` and `SessionFactory` bean renamed from `sessionFactory` to `cassandraSessionFactory`.
 * `ReactiveSession` bean renamed from `reactiveSession` to `reactiveCassandraSession` and `ReactiveSessionFactory` bean renamed from `reactiveSessionFactory` to `reactiveCassandraSessionFactory`.
+* `ReactiveSessionFactory.getSession()` now returns a `Mono<ReactiveSession>`.
+Previously it returned just `ReactiveSession`.
 * Data type resolution was moved into `ColumnTypeResolver` so all `DataType`-related methods were moved from `CassandraPersistentEntity`/`CassandraPersistentProperty` into `ColumnTypeResolver` (affected methods are `MappingContext.getDataType(…)`, `CassandraPersistentProperty.getDataType()`, `CassandraPersistentEntity.getUserType()`, and `CassandraPersistentEntity.getTupleType()`).
 * Schema creation was moved from `MappingContext` to `SchemaFactory` (affected methods are `CassandraMappingContext.getCreateTableSpecificationFor(…)`, `CassandraMappingContext.getCreateIndexSpecificationsFor(…)`, and `CassandraMappingContext.getCreateUserTypeSpecificationFor(…)`).
 
