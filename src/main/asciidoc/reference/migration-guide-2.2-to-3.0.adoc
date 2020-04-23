@@ -53,6 +53,9 @@ With the upgrade, schema support was moved to a new namespace element: `cassandr
 ----
 ====
 
+NOTE: Spring Data Cassandra 3.0 no longer registers default Mapping Context, Context and Template API beans when using XML namespace configuration.
+The defaulting should be applied on application or Spring Boot level.
+
 == Template API
 
 Spring Data for Apache Cassandra encapsulates most of the changes that come with the driver upgrade as the Template API and repository support if your application mainly interacts with mapped entities or primitive Java types.
@@ -188,6 +191,8 @@ Use execution profiles as replacement.
 * `cql` namespace (`http://www.springframework.org/schema/cql`, use `http://www.springframework.org/schema/data/cassandra` instead)
 * `cassandra:cluster` (endpoint properties merged to `cassandra:session`)
 * `cql:template`, use `cassandra:cql-template` instead
+* Removed implicit bean registrations Mapping Context, Context and Template API beans.
+These must be declared explicitly.
 
 == Additions
 

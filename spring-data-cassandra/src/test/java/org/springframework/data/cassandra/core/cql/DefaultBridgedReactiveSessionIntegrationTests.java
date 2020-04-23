@@ -45,7 +45,7 @@ public class DefaultBridgedReactiveSessionIntegrationTests extends AbstractKeysp
 
 		this.session.execute("DROP TABLE IF EXISTS users;");
 
-		this.reactiveSession = new DefaultBridgedReactiveSession(this.session, Schedulers.elastic());
+		this.reactiveSession = new DefaultBridgedReactiveSession(this.session);
 	}
 
 	@Test // DATACASS-335

@@ -110,19 +110,6 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 		return result;
 	}
 
-	/**
-	 * Create a {@link Insert} statement containing all properties including these with {@literal null} values.
-	 *
-	 * @param entity the entity, must not be {@literal null}.
-	 * @return the constructed {@link Insert} statement.
-	 * @deprecated since 2.1, use {@link InsertOptions#isInsertNulls()} with
-	 *             {@link CassandraOperations#insert(Object, InsertOptions)}.
-	 */
-	@Deprecated
-	protected <S extends T> Insert createInsert(S entity) {
-		return InsertUtil.createInsert(this.operations.getConverter(), entity);
-	}
-
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.repository.TypedIdCassandraRepository#insert(java.lang.Object)
 	 */

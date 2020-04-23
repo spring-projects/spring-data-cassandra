@@ -84,19 +84,6 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 		this.session = session;
 	}
 
-	/**
-	 * Create a new {@link DefaultBridgedReactiveSession} for a {@link CqlSession} and {@link Scheduler}.
-	 *
-	 * @param session must not be {@literal null}.
-	 * @param scheduler must not be {@literal null}.
-	 * @deprecated since 2.1. Use {@link #DefaultBridgedReactiveSession(CqlSession)} as a {@link Scheduler} is no longer
-	 *             required to off-load {@link AsyncResultSet}'s blocking behavior.
-	 */
-	@Deprecated
-	public DefaultBridgedReactiveSession(CqlSession session, Scheduler scheduler) {
-		this(session);
-	}
-
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.ReactiveSession#isClosed()
 	 */

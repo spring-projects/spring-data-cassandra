@@ -70,9 +70,6 @@ class CassandraMappingContextParser extends AbstractSingleBeanDefinitionParser {
 	 */
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
-
-		CassandraMappingXmlBeanFactoryPostProcessorRegistrar.ensureRegistration(element, parserContext);
-
 		parseMapping(element, builder);
 	}
 

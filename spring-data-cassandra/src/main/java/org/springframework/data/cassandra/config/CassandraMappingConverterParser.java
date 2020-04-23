@@ -57,8 +57,6 @@ class CassandraMappingConverterParser extends AbstractSingleBeanDefinitionParser
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 
-		CassandraMappingXmlBeanFactoryPostProcessorRegistrar.ensureRegistration(element, parserContext);
-
 		String mappingRef = element.getAttribute("mapping-ref");
 		if (!StringUtils.hasText(mappingRef)) {
 			mappingRef = DefaultBeanNames.CONTEXT;

@@ -57,7 +57,7 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 
 		MappingCassandraConverter converter = new MappingCassandraConverter();
 		CassandraTemplate cassandraTemplate = new CassandraTemplate(this.session, converter);
-		DefaultBridgedReactiveSession session = new DefaultBridgedReactiveSession(this.session, Schedulers.elastic());
+		DefaultBridgedReactiveSession session = new DefaultBridgedReactiveSession(this.session);
 
 		template = new ReactiveCassandraTemplate(new ReactiveCqlTemplate(session), converter);
 
