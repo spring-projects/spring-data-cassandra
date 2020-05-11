@@ -27,8 +27,10 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.junit.Test;
+
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.data.mapping.model.Property;
 import org.springframework.data.util.ClassTypeInformation;
@@ -143,10 +145,12 @@ public class BasicCassandraPersistentPropertyUnitTests {
 
 		AnnotatedParameterizedType apt = (AnnotatedParameterizedType) annotatedType;
 		AnnotatedType[] annotatedActualTypeArguments = apt.getAnnotatedActualTypeArguments();
+
 		assertThat(annotatedActualTypeArguments)
-				.extracting(a -> a.getType(), a -> Arrays.stream(a.getAnnotations()).map(an -> an instanceof Indexed).toArray())
-				.containsExactly(tuple(String.class, new boolean[] {}), // annotation on key type
-						tuple(String.class, new boolean[] { true }) // annotation on value type
+				.extracting(AnnotatedType::getType,
+						a -> Arrays.stream(a.getAnnotations()).map(Indexed.class::isInstance).findFirst())
+				.containsExactly(tuple(String.class, Optional.empty()), // annotation on key type
+						tuple(String.class, Optional.of(true)) // annotation on value type
 				);
 	}
 
