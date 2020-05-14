@@ -15,15 +15,15 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
-import org.springframework.dao.TypeMismatchDataAccessException;
-import org.springframework.lang.Nullable;
-import org.springframework.util.ClassUtils;
-import org.springframework.util.NumberUtils;
-
 import com.datastax.oss.driver.api.core.DriverException;
 import com.datastax.oss.driver.api.core.cql.ColumnDefinition;
 import com.datastax.oss.driver.api.core.cql.ColumnDefinitions;
 import com.datastax.oss.driver.api.core.cql.Row;
+
+import org.springframework.dao.TypeMismatchDataAccessException;
+import org.springframework.lang.Nullable;
+import org.springframework.util.ClassUtils;
+import org.springframework.util.NumberUtils;
 
 /**
  * {@link RowMapper} implementation that converts a single column into a single result value per row. Expects to operate

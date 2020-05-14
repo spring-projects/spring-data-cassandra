@@ -15,13 +15,12 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
-import lombok.EqualsAndHashCode;
-
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.config.DriverExecutionProfile;
@@ -33,7 +32,6 @@ import com.datastax.oss.driver.api.core.config.DriverExecutionProfile;
  * @author David Webb
  * @author Mark Paluch
  */
-@EqualsAndHashCode
 public class QueryOptions {
 
 	private static final QueryOptions EMPTY = QueryOptions.builder().build();
@@ -154,6 +152,61 @@ public class QueryOptions {
 	@Nullable
 	protected Boolean getTracing() {
 		return this.tracing;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object o) {
+
+		if (this == o) {
+			return true;
+		}
+
+		if (!(o instanceof QueryOptions)) {
+			return false;
+		}
+
+		QueryOptions options = (QueryOptions) o;
+
+		if (!ObjectUtils.nullSafeEquals(consistencyLevel, options.consistencyLevel)) {
+			return false;
+		}
+
+		if (!ObjectUtils.nullSafeEquals(executionProfileResolver, options.executionProfileResolver)) {
+			return false;
+		}
+
+		if (!ObjectUtils.nullSafeEquals(pageSize, options.pageSize)) {
+			return false;
+		}
+
+		if (!ObjectUtils.nullSafeEquals(serialConsistencyLevel, options.serialConsistencyLevel)) {
+			return false;
+		}
+
+		if (!ObjectUtils.nullSafeEquals(timeout, options.timeout)) {
+			return false;
+		}
+
+		return ObjectUtils.nullSafeEquals(tracing, options.tracing);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public int hashCode() {
+		int result = ObjectUtils.nullSafeHashCode(consistencyLevel);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(executionProfileResolver);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(pageSize);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(serialConsistencyLevel);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(timeout);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(tracing);
+		return result;
 	}
 
 	/**

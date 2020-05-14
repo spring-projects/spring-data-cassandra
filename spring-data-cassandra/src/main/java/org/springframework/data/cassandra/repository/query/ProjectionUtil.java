@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import lombok.experimental.UtilityClass;
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -32,11 +30,12 @@ import com.datastax.oss.driver.api.core.type.DataTypes;
  * @author Mark Paluch
  * @since 2.1
  */
-@UtilityClass
-class ProjectionUtil {
+abstract class ProjectionUtil {
 
 	private final static Set<DataType> NUMERIC_TYPES = new HashSet<>(Arrays.asList(DataTypes.BIGINT, DataTypes.VARINT,
 			DataTypes.SMALLINT, DataTypes.INT, DataTypes.COUNTER, DataTypes.TINYINT));
+
+	private ProjectionUtil() {}
 
 	/**
 	 * Determine whether multiple {@code boolean} flags are set. Allowed is at most a single {@literal true} value.

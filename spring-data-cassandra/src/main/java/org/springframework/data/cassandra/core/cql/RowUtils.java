@@ -23,11 +23,11 @@ import java.time.LocalTime;
 import java.util.Date;
 import java.util.UUID;
 
-import org.springframework.lang.Nullable;
-
 import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.data.TupleValue;
 import com.datastax.oss.driver.api.core.data.UdtValue;
+
+import org.springframework.lang.Nullable;
 
 /**
  * Generic utility methods for working with Cassandra. Mainly for internal use within the framework, but also useful for

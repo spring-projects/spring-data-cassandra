@@ -16,16 +16,12 @@
 package org.springframework.data.cassandra.core.cql.keyspace;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
-import lombok.EqualsAndHashCode;
-
-import org.springframework.data.cassandra.core.cql.KeyspaceIdentifier;
 
 /**
  * Object to configure a {@code ALTER KEYSPACE} specification.
  *
  * @author Mark Paluch
  */
-@EqualsAndHashCode(callSuper = true)
 public class AlterKeyspaceSpecification extends KeyspaceOptionsSpecification<AlterKeyspaceSpecification> {
 
 	private AlterKeyspaceSpecification(CqlIdentifier name) {

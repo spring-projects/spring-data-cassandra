@@ -15,13 +15,12 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
+import com.datastax.oss.driver.api.core.DriverException;
+import com.datastax.oss.driver.api.core.cql.Statement;
 import org.reactivestreams.Publisher;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.cassandra.ReactiveSession;
-
-import com.datastax.oss.driver.api.core.DriverException;
-import com.datastax.oss.driver.api.core.cql.Statement;
 
 /**
  * Generic callback interface for code that operates on a CQL {@link Statement}. Allows to execute any number of

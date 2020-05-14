@@ -17,13 +17,12 @@ package org.springframework.data.cassandra.core.cql.keyspace;
 
 import static org.springframework.data.cassandra.core.cql.keyspace.CqlStringUtils.*;
 
-import lombok.EqualsAndHashCode;
-
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.springframework.lang.Nullable;
+import org.springframework.util.ObjectUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 
@@ -40,7 +39,6 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * @author John McPeek
  * @param <T> The subtype of the {@link KeyspaceOptionsSpecification}.
  */
-@EqualsAndHashCode(callSuper = true)
 public abstract class KeyspaceOptionsSpecification<T extends KeyspaceOptionsSpecification<T>>
 		extends KeyspaceActionSpecification {
 
@@ -108,5 +106,39 @@ public abstract class KeyspaceOptionsSpecification<T extends KeyspaceOptionsSpec
 
 	public Map<String, Object> getOptions() {
 		return Collections.unmodifiableMap(options);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object o) {
+
+		if (this == o) {
+			return true;
+		}
+
+		if (!(o instanceof KeyspaceOptionsSpecification)) {
+			return false;
+		}
+
+		if (!super.equals(o)) {
+			return false;
+		}
+
+		KeyspaceOptionsSpecification<?> that = (KeyspaceOptionsSpecification<?>) o;
+		return ObjectUtils.nullSafeEquals(options, that.options);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public int hashCode() {
+		int result = super.hashCode();
+		result = 31 * result + ObjectUtils.nullSafeHashCode(options);
+		return result;
 	}
 }

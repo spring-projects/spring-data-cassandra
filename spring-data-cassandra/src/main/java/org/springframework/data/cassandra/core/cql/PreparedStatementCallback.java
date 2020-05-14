@@ -15,12 +15,12 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
-import org.springframework.dao.DataAccessException;
-import org.springframework.lang.Nullable;
-
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.DriverException;
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+
+import org.springframework.dao.DataAccessException;
+import org.springframework.lang.Nullable;
 
 /**
  * Generic callback interface for code that operates on a {@link PreparedStatement}. Allows to execute any number of

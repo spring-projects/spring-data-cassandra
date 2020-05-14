@@ -15,12 +15,12 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
+import com.datastax.oss.driver.api.core.DriverException;
+
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.data.cassandra.core.mapping.UnsupportedCassandraOperationException;
 import org.springframework.lang.Nullable;
-
-import com.datastax.oss.driver.api.core.DriverException;
 
 /**
  * Strategy interface for translating between {@link RuntimeException driver exceptions} and Spring's data access

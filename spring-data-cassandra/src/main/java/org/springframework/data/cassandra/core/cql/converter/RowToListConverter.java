@@ -18,11 +18,11 @@ package org.springframework.data.cassandra.core.cql.converter;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.data.convert.ReadingConverter;
-
 import com.datastax.oss.driver.api.core.cql.ColumnDefinitions;
 import com.datastax.oss.driver.api.core.cql.Row;
+
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.convert.ReadingConverter;
 
 /**
  * Converter to convert {@link Row}s to a {@link List} of {@link Object} representation.

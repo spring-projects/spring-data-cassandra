@@ -15,10 +15,6 @@
  */
 package org.springframework.data.cassandra.core;
 
-import lombok.AccessLevel;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import reactor.core.publisher.Mono;
 
 import org.springframework.data.cassandra.core.query.Query;
@@ -37,10 +33,13 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * @see org.springframework.data.cassandra.core.query.Update
  * @since 2.1
  */
-@RequiredArgsConstructor
 class ReactiveUpdateOperationSupport implements ReactiveUpdateOperation {
 
-	private final @NonNull ReactiveCassandraTemplate template;
+	private final ReactiveCassandraTemplate template;
+
+	public ReactiveUpdateOperationSupport(ReactiveCassandraTemplate template) {
+		this.template = template;
+	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveUpdateOperation#update(java.lang.Class)
@@ -53,17 +52,23 @@ class ReactiveUpdateOperationSupport implements ReactiveUpdateOperation {
 		return new ReactiveUpdateSupport(this.template, domainType, Query.empty(), null);
 	}
 
-	@RequiredArgsConstructor
-	@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 	static class ReactiveUpdateSupport implements ReactiveUpdate, TerminatingUpdate {
 
-		@NonNull ReactiveCassandraTemplate template;
+		private final ReactiveCassandraTemplate template;
 
-		@NonNull Class<?> domainType;
+		private final Class<?> domainType;
 
-		@NonNull Query query;
+		private final Query query;
 
-		@Nullable CqlIdentifier tableName;
+		private final @Nullable CqlIdentifier tableName;
+
+		public ReactiveUpdateSupport(ReactiveCassandraTemplate template, Class<?> domainType, Query query,
+				CqlIdentifier tableName) {
+			this.template = template;
+			this.domainType = domainType;
+			this.query = query;
+			this.tableName = tableName;
+		}
 
 		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.core.ReactiveUpdateOperation.UpdateWithTable#inTable(org.springframework.data.cassandra.core.cql.CqlIdentifier)

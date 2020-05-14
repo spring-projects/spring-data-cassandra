@@ -15,13 +15,12 @@
  */
 package org.springframework.data.cassandra.core.cql.support;
 
-import lombok.EqualsAndHashCode;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
@@ -93,7 +92,6 @@ public class MapPreparedStatementCache implements PreparedStatementCache {
 	/**
 	 * {@link CacheKey} for {@link PreparedStatement} caching.
 	 */
-	@EqualsAndHashCode
 	protected static class CacheKey {
 
 		final String sessionName;
@@ -105,6 +103,40 @@ public class MapPreparedStatementCache implements PreparedStatementCache {
 			this.sessionName = session.getName();
 			this.keyspace = session.getKeyspace().orElse(CqlIdentifier.fromCql("system")).asInternal();
 			this.cql = cql;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) {
+				return true;
+			}
+			if (!(o instanceof CacheKey)) {
+				return false;
+			}
+			CacheKey cacheKey = (CacheKey) o;
+			if (!ObjectUtils.nullSafeEquals(sessionName, cacheKey.sessionName)) {
+				return false;
+			}
+			if (!ObjectUtils.nullSafeEquals(keyspace, cacheKey.keyspace)) {
+				return false;
+			}
+			return ObjectUtils.nullSafeEquals(cql, cacheKey.cql);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public int hashCode() {
+			int result = ObjectUtils.nullSafeHashCode(sessionName);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(keyspace);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(cql);
+			return result;
 		}
 	}
 }

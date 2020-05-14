@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.core.cql.generator;
 
-import static org.springframework.data.cassandra.core.cql.PrimaryKeyType.*;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +24,8 @@ import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecifica
 import org.springframework.data.cassandra.core.cql.keyspace.Option;
 import org.springframework.data.cassandra.core.cql.keyspace.TableSpecification;
 import org.springframework.util.StringUtils;
+
+import static org.springframework.data.cassandra.core.cql.PrimaryKeyType.*;
 
 /**
  * CQL generator for generating a {@code CREATE TABLE} statement.

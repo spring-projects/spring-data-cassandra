@@ -15,9 +15,9 @@
  */
 package org.springframework.data.cassandra.core.cql.util;
 
-import org.springframework.lang.Nullable;
-
 import com.datastax.oss.driver.api.querybuilder.term.Term;
+
+import org.springframework.lang.Nullable;
 
 /**
  * Factory for {@link Term} objects encapsulating a binding {@code value}. Classes implementing this factory interface

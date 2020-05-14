@@ -15,10 +15,6 @@
  */
 package org.springframework.data.cassandra.core;
 
-import lombok.AccessLevel;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import reactor.core.publisher.Mono;
 
 import org.springframework.data.cassandra.core.query.Query;
@@ -35,10 +31,13 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * @see org.springframework.data.cassandra.core.query.Query
  * @since 2.1
  */
-@RequiredArgsConstructor
 class ReactiveDeleteOperationSupport implements ReactiveDeleteOperation {
 
-	private final @NonNull ReactiveCassandraTemplate template;
+	private final ReactiveCassandraTemplate template;
+
+	public ReactiveDeleteOperationSupport(ReactiveCassandraTemplate template) {
+		this.template = template;
+	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveDeleteOperation#remove(java.lang.Class)
@@ -51,17 +50,23 @@ class ReactiveDeleteOperationSupport implements ReactiveDeleteOperation {
 		return new ReactiveDeleteSupport(this.template, domainType, Query.empty(), null);
 	}
 
-	@RequiredArgsConstructor
-	@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 	static class ReactiveDeleteSupport implements ReactiveDelete, TerminatingDelete {
 
-		@NonNull ReactiveCassandraTemplate template;
+		private final ReactiveCassandraTemplate template;
 
-		@NonNull Class<?> domainType;
+		private final Class<?> domainType;
 
-		@NonNull Query query;
+		private final Query query;
 
-		@Nullable CqlIdentifier tableName;
+		private final @Nullable CqlIdentifier tableName;
+
+		public ReactiveDeleteSupport(ReactiveCassandraTemplate template, Class<?> domainType, Query query,
+				CqlIdentifier tableName) {
+			this.template = template;
+			this.domainType = domainType;
+			this.query = query;
+			this.tableName = tableName;
+		}
 
 		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.core.ReactiveDeleteOperation.DeleteWithTable#inTable(org.springframework.data.cassandra.core.cql.CqlIdentifier)

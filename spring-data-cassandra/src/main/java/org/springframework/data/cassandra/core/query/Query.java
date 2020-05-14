@@ -298,7 +298,8 @@ public class Query implements Filter {
 		return this.allowFiltering;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
@@ -335,14 +336,13 @@ public class Query implements Filter {
 				&& allowFilteringEqual;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public int hashCode() {
-
 		int result = 17;
-
 		result += 31 * criteriaDefinitions.hashCode();
 		result += 31 * nullSafeHashCode(columns);
 		result += 31 * nullSafeHashCode(sort);
@@ -350,11 +350,11 @@ public class Query implements Filter {
 		result += 31 * nullSafeHashCode(queryOptions);
 		result += 31 * nullSafeHashCode(limit);
 		result += (allowFiltering ? 0 : 1);
-
 		return result;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	@Override

@@ -20,11 +20,11 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-
-import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * Object to configure a {@code CREATE INDEX} specification.

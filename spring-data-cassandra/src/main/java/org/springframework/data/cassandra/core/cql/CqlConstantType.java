@@ -15,9 +15,9 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
-import static org.springframework.data.cassandra.core.cql.CqlConstantType.Regex.*;
-
 import java.util.regex.Pattern;
+
+import static org.springframework.data.cassandra.core.cql.CqlConstantType.Regex.*;
 
 public enum CqlConstantType {
 

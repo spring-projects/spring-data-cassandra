@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import lombok.AllArgsConstructor;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -27,6 +25,7 @@ import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.ApplicationContext;
@@ -1156,10 +1155,13 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 * @author Mark Paluch
 	 * @since 1.5.1
 	 */
-	@AllArgsConstructor
 	class MappingAndConvertingValueProvider implements CassandraValueProvider {
 
 		private final CassandraValueProvider parent;
+
+		public MappingAndConvertingValueProvider(CassandraValueProvider parent) {
+			this.parent = parent;
+		}
 
 		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.core.convert.CassandraValueProvider#hasProperty(org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty)

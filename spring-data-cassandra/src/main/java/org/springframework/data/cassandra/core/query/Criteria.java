@@ -15,14 +15,13 @@
  */
 package org.springframework.data.cassandra.core.query;
 
-import static org.springframework.util.ObjectUtils.*;
-
 import java.util.Arrays;
 import java.util.Collection;
 
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Basic class for creating queries. It follows a fluent API style so that you can easily create a
@@ -276,7 +275,8 @@ public class Criteria implements CriteriaDefinition {
 		return predicate;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
@@ -308,16 +308,14 @@ public class Criteria implements CriteriaDefinition {
 	 */
 	@Override
 	public int hashCode() {
-
 		int result = 17;
-
-		result += nullSafeHashCode(columnName);
-		result += nullSafeHashCode(predicate);
-
+		result += ObjectUtils.nullSafeHashCode(columnName);
+		result += ObjectUtils.nullSafeHashCode(predicate);
 		return result;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	@Override

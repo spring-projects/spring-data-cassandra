@@ -15,7 +15,6 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import lombok.NonNull;
 
 import java.util.Collections;
 
@@ -66,7 +65,7 @@ public abstract class AbstractCassandraConverter implements CassandraConverter, 
 		this.instantiators = instantiators;
 	}
 
-	@NonNull
+
 	@Override
 	public ConversionService getConversionService() {
 		return this.conversionService;

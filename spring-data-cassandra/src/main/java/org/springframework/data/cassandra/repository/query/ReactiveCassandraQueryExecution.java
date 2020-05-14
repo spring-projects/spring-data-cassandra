@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -60,11 +58,15 @@ interface ReactiveCassandraQueryExecution {
 	 * @author Mark Paluch
 	 * @since 2.1
 	 */
-	@RequiredArgsConstructor
 	final class SlicedExecution implements ReactiveCassandraQueryExecution {
 
-		private final @NonNull ReactiveCassandraOperations operations;
-		private final @NonNull Pageable pageable;
+		private final ReactiveCassandraOperations operations;
+		private final Pageable pageable;
+
+		SlicedExecution(ReactiveCassandraOperations operations, Pageable pageable) {
+			this.operations = operations;
+			this.pageable = pageable;
+		}
 
 		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.repository.query.CassandraQueryExecution#execute(java.lang.String, java.lang.Class)
@@ -99,10 +101,13 @@ interface ReactiveCassandraQueryExecution {
 	 *
 	 * @author Mark Paluch
 	 */
-	@RequiredArgsConstructor
 	final class CollectionExecution implements ReactiveCassandraQueryExecution {
 
-		private final @NonNull ReactiveCassandraOperations operations;
+		private final ReactiveCassandraOperations operations;
+
+		CollectionExecution(ReactiveCassandraOperations operations) {
+			this.operations = operations;
+		}
 
 		/*
 		 * (non-Javadoc)
@@ -119,11 +124,15 @@ interface ReactiveCassandraQueryExecution {
 	 *
 	 * @author Mark Paluch
 	 */
-	@RequiredArgsConstructor
 	final class SingleEntityExecution implements ReactiveCassandraQueryExecution {
 
-		private final @NonNull ReactiveCassandraOperations operations;
+		private final ReactiveCassandraOperations operations;
 		private final boolean limiting;
+
+		SingleEntityExecution(ReactiveCassandraOperations operations, boolean limiting) {
+			this.operations = operations;
+			this.limiting = limiting;
+		}
 
 		/*
 		 * (non-Javadoc)
@@ -154,10 +163,13 @@ interface ReactiveCassandraQueryExecution {
 	 * @author Mark Paluch
 	 * @since 2.1
 	 */
-	@RequiredArgsConstructor
 	final class ExistsExecution implements ReactiveCassandraQueryExecution {
 
-		private final @NonNull ReactiveCassandraOperations operations;
+		private final ReactiveCassandraOperations operations;
+
+		ExistsExecution(ReactiveCassandraOperations operations) {
+			this.operations = operations;
+		}
 
 		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution#execute(com.datastax.oss.driver.api.core.cql.Statement, java.lang.Class)
@@ -196,11 +208,15 @@ interface ReactiveCassandraQueryExecution {
 	 *
 	 * @author Mark Paluch
 	 */
-	@RequiredArgsConstructor
 	final class ResultProcessingExecution implements ReactiveCassandraQueryExecution {
 
-		private final @NonNull ReactiveCassandraQueryExecution delegate;
-		private final @NonNull Converter<Object, Object> converter;
+		private final ReactiveCassandraQueryExecution delegate;
+		private final Converter<Object, Object> converter;
+
+		ResultProcessingExecution(ReactiveCassandraQueryExecution delegate, Converter<Object, Object> converter) {
+			this.delegate = delegate;
+			this.converter = converter;
+		}
 
 		/*
 		 * (non-Javadoc)
@@ -217,12 +233,19 @@ interface ReactiveCassandraQueryExecution {
 	 *
 	 * @author Mark Paluch
 	 */
-	@RequiredArgsConstructor
 	final class ResultProcessingConverter implements Converter<Object, Object> {
 
-		private final @NonNull ResultProcessor processor;
-		private final @NonNull MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
-		private final @NonNull EntityInstantiators instantiators;
+		private final ResultProcessor processor;
+		private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
+		private final EntityInstantiators instantiators;
+
+		ResultProcessingConverter(ResultProcessor processor,
+				MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext,
+				EntityInstantiators instantiators) {
+			this.processor = processor;
+			this.mappingContext = mappingContext;
+			this.instantiators = instantiators;
+		}
 
 		/*
 		 * (non-Javadoc)

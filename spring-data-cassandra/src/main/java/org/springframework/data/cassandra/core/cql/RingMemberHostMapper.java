@@ -19,10 +19,10 @@ import java.util.Collection;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import org.springframework.util.Assert;
-
 import com.datastax.oss.driver.api.core.DriverException;
 import com.datastax.oss.driver.api.core.metadata.Node;
+
+import org.springframework.util.Assert;
 
 /**
  * {@link HostMapper} to to map hosts into {@link RingMember} objects.

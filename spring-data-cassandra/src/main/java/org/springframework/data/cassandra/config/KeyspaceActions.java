@@ -15,12 +15,11 @@
  */
 package org.springframework.data.cassandra.config;
 
-import lombok.Value;
-
 import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceActionSpecification;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Collection of {@link KeyspaceActionSpecification}s. Wraps none, one or multiple keyspace actions (creates, drops).
@@ -28,8 +27,7 @@ import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceActionSpecif
  * @author Mark Paluch
  * @since 2.0
  */
-@Value
-public class KeyspaceActions {
+public final class KeyspaceActions {
 
 	private final List<KeyspaceActionSpecification> actions;
 
@@ -39,5 +37,46 @@ public class KeyspaceActions {
 
 	public KeyspaceActions(List<KeyspaceActionSpecification> actions) {
 		this.actions = actions;
+	}
+
+	public List<KeyspaceActionSpecification> getActions() {
+		return this.actions;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object o) {
+
+		if (this == o) {
+			return true;
+		}
+
+		if (!(o instanceof KeyspaceActions)) {
+			return false;
+		}
+
+		KeyspaceActions that = (KeyspaceActions) o;
+		return ObjectUtils.nullSafeEquals(actions, that.actions);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public int hashCode() {
+		return ObjectUtils.nullSafeHashCode(actions);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "KeyspaceActions(actions=" + this.getActions() + ")";
 	}
 }

@@ -20,6 +20,9 @@ import java.io.LineNumberReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.ExecutionInfo;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -28,10 +31,6 @@ import org.springframework.core.io.support.EncodedResource;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-
-import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.cql.ExecutionInfo;
-import com.datastax.oss.driver.api.core.cql.ResultSet;
 
 /**
  * Generic utility methods for working with CQL scripts.

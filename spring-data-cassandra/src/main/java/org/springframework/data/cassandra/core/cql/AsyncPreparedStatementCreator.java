@@ -15,11 +15,11 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
-import org.springframework.util.concurrent.ListenableFuture;
-
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.DriverException;
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+
+import org.springframework.util.concurrent.ListenableFuture;
 
 /**
  * One of the two central callback interfaces used by the {@link AsyncCqlTemplate} class. This interface prepares a CQL

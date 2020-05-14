@@ -15,11 +15,11 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
-import org.springframework.dao.DataAccessException;
-import org.springframework.util.concurrent.ListenableFuture;
-
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.DriverException;
+
+import org.springframework.dao.DataAccessException;
+import org.springframework.util.concurrent.ListenableFuture;
 
 /**
  * Generic callback interface for code that operates asynchronously on a Cassandra {@link CqlSession}. Allows to execute

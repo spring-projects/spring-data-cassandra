@@ -19,14 +19,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.datastax.oss.driver.api.core.CqlSession;
+
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.EncodedResource;
 import org.springframework.data.cassandra.SessionFactory;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-
-import com.datastax.oss.driver.api.core.CqlSession;
 
 /**
  * Populates, initializes, or cleans up a keyspace using CQL scripts defined in external resources.

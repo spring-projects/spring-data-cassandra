@@ -15,10 +15,6 @@
  */
 package org.springframework.data.cassandra.core;
 
-import lombok.AccessLevel;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -37,10 +33,13 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * @see org.springframework.data.cassandra.core.query.Query
  * @since 2.1
  */
-@RequiredArgsConstructor
 class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 
-	private final @NonNull ReactiveCassandraTemplate template;
+	private final ReactiveCassandraTemplate template;
+
+	public ReactiveSelectOperationSupport(ReactiveCassandraTemplate template) {
+		this.template = template;
+	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveSelectOperation#query(java.lang.Class)
@@ -53,19 +52,26 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 		return new ReactiveSelectSupport<>(this.template, domainType, domainType, Query.empty(), null);
 	}
 
-	@RequiredArgsConstructor
-	@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 	static class ReactiveSelectSupport<T> implements ReactiveSelect<T> {
 
-		@NonNull ReactiveCassandraTemplate template;
+		private final ReactiveCassandraTemplate template;
 
-		@NonNull Class<?> domainType;
+		private final Class<?> domainType;
 
-		@NonNull Class<T> returnType;
+		private final Class<T> returnType;
 
-		@NonNull Query query;
+		private final Query query;
 
-		@Nullable CqlIdentifier tableName;
+		private final @Nullable CqlIdentifier tableName;
+
+		public ReactiveSelectSupport(ReactiveCassandraTemplate template, Class<?> domainType, Class<T> returnType,
+				Query query, CqlIdentifier tableName) {
+			this.template = template;
+			this.domainType = domainType;
+			this.returnType = returnType;
+			this.query = query;
+			this.tableName = tableName;
+		}
 
 		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.core.ReactiveSelectOperation.SelectWithTable#inTable(org.springframework.data.cassandra.core.cql.CqlIdentifier)

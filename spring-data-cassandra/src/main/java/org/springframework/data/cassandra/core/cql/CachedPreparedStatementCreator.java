@@ -18,15 +18,14 @@ package org.springframework.data.cassandra.core.cql;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.springframework.util.Assert;
-
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.DriverException;
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import org.springframework.util.Assert;
 
 /**
  * This {@link PreparedStatementCreator} maintains a static cache of all prepared statements for the duration of the JVM

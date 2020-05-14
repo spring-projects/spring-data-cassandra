@@ -15,11 +15,11 @@
  */
 package org.springframework.data.cassandra.core.cql.generator;
 
-import static org.springframework.data.cassandra.core.cql.keyspace.CqlStringUtils.*;
-
 import java.util.Map;
 
 import org.springframework.data.cassandra.core.cql.keyspace.Option;
+
+import static org.springframework.data.cassandra.core.cql.keyspace.CqlStringUtils.*;
 
 /**
  * @author Mark Paluch

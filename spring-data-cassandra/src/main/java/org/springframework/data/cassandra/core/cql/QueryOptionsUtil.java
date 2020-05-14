@@ -17,14 +17,14 @@ package org.springframework.data.cassandra.core.cql;
 
 import java.time.Duration;
 
-import org.springframework.util.Assert;
-
 import com.datastax.oss.driver.api.core.cql.Statement;
 import com.datastax.oss.driver.api.querybuilder.delete.Delete;
 import com.datastax.oss.driver.api.querybuilder.delete.DeleteSelection;
 import com.datastax.oss.driver.api.querybuilder.insert.Insert;
 import com.datastax.oss.driver.api.querybuilder.update.Update;
 import com.datastax.oss.driver.api.querybuilder.update.UpdateStart;
+
+import org.springframework.util.Assert;
 
 /**
  * Utility class to associate {@link QueryOptions} and {@link WriteOptions} with QueryBuilder {@link Statement}s.

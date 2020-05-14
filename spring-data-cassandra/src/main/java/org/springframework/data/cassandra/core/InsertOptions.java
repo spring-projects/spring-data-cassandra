@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.core;
 
-import lombok.EqualsAndHashCode;
-
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
@@ -34,7 +32,6 @@ import com.datastax.oss.driver.api.core.ConsistencyLevel;
  * @author Lukasz Antoniak
  * @since 2.0
  */
-@EqualsAndHashCode(callSuper = true)
 public class InsertOptions extends WriteOptions {
 
 	private static final InsertOptions EMPTY = new InsertOptionsBuilder().build();
@@ -96,6 +93,46 @@ public class InsertOptions extends WriteOptions {
 	 */
 	public boolean isInsertNulls() {
 		return this.insertNulls;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object o) {
+
+		if (this == o) {
+			return true;
+		}
+
+		if (!(o instanceof InsertOptions)) {
+			return false;
+		}
+
+		if (!super.equals(o)) {
+			return false;
+		}
+
+		InsertOptions that = (InsertOptions) o;
+
+		if (ifNotExists != that.ifNotExists) {
+			return false;
+		}
+
+		return insertNulls == that.insertNulls;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public int hashCode() {
+		int result = super.hashCode();
+		result = 31 * result + (ifNotExists ? 1 : 0);
+		result = 31 * result + (insertNulls ? 1 : 0);
+		return result;
 	}
 
 	/**

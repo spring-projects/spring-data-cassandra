@@ -15,11 +15,6 @@
  */
 package org.springframework.data.cassandra.core;
 
-import lombok.AccessLevel;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -39,10 +34,13 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * @see org.springframework.data.cassandra.core.query.Query
  * @since 2.1
  */
-@RequiredArgsConstructor
 class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 
-	private final @NonNull CassandraTemplate template;
+	private final CassandraTemplate template;
+
+	public ExecutableSelectOperationSupport(CassandraTemplate template) {
+		this.template = template;
+	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ExecutableSelectOperation#query(java.lang.Class)
@@ -55,19 +53,26 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 		return new ExecutableSelectSupport<>(this.template, domainType, domainType, Query.empty(), null);
 	}
 
-	@RequiredArgsConstructor
-	@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 	static class ExecutableSelectSupport<T> implements ExecutableSelect<T> {
 
-		@NonNull CassandraTemplate template;
+		private final CassandraTemplate template;
 
-		@NonNull Class<?> domainType;
+		private final Class<?> domainType;
 
-		@NonNull Class<T> returnType;
+		private final Class<T> returnType;
 
-		@NonNull Query query;
+		private final Query query;
 
-		@Nullable CqlIdentifier tableName;
+		private final @Nullable CqlIdentifier tableName;
+
+		public ExecutableSelectSupport(CassandraTemplate template, Class<?> domainType, Class<T> returnType, Query query,
+				CqlIdentifier tableName) {
+			this.template = template;
+			this.domainType = domainType;
+			this.returnType = returnType;
+			this.query = query;
+			this.tableName = tableName;
+		}
 
 		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.core.ExecutableSelectOperation.SelectWithTable#inTable(org.springframework.data.cassandra.core.cql.CqlIdentifier)

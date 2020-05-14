@@ -18,12 +18,12 @@ package org.springframework.data.cassandra.core.cql;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.datastax.oss.driver.api.core.DriverException;
+import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
+
 import org.springframework.dao.DataAccessException;
 import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
-
-import com.datastax.oss.driver.api.core.DriverException;
-import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
 
 /**
  * Adapter implementation of the {@link ResultSetExtractor} interface that delegates to a {@link RowMapper} which is

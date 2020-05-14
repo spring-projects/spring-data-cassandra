@@ -18,9 +18,9 @@ package org.springframework.data.cassandra.core.cql.converter;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.core.convert.converter.Converter;
-
 import com.datastax.oss.driver.api.core.cql.ResultSet;
+
+import org.springframework.core.convert.converter.Converter;
 
 /**
  * {@link Converter} from {@link ResultSet} to a single {@link String} value.

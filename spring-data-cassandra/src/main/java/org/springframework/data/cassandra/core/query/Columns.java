@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.core.query;
 
-import lombok.EqualsAndHashCode;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -217,7 +215,8 @@ public class Columns implements Iterable<ColumnName> {
 		return Optional.ofNullable(this.columns.get(columnName));
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
@@ -236,20 +235,19 @@ public class Columns implements Iterable<ColumnName> {
 		return this.columns.equals(that.columns);
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public int hashCode() {
-
 		int result = 17;
-
 		result += 31 * ObjectUtils.nullSafeHashCode(this.columns);
-
 		return result;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
@@ -305,7 +303,6 @@ public class Columns implements Iterable<ColumnName> {
 	 *
 	 * @author Mark Paluch
 	 */
-	@EqualsAndHashCode
 	public static class ColumnSelector implements Selector {
 
 		private final ColumnName columnName;
@@ -385,12 +382,41 @@ public class Columns implements Iterable<ColumnName> {
 			return getAlias().map(cqlIdentifier -> String.format("%s AS %s", getExpression(), cqlIdentifier))
 					.orElseGet(this::getExpression);
 		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) {
+				return true;
+			}
+			if (!(o instanceof ColumnSelector)) {
+				return false;
+			}
+			ColumnSelector that = (ColumnSelector) o;
+			if (!ObjectUtils.nullSafeEquals(columnName, that.columnName)) {
+				return false;
+			}
+			return ObjectUtils.nullSafeEquals(alias, that.alias);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public int hashCode() {
+			int result = ObjectUtils.nullSafeHashCode(columnName);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(alias);
+			return result;
+		}
 	}
 
 	/**
 	 * Function call selector with alias support.
 	 */
-	@EqualsAndHashCode
 	public static class FunctionCall implements Selector {
 
 		private final String expression;
@@ -460,6 +486,40 @@ public class Columns implements Iterable<ColumnName> {
 			return getAlias()
 					.map(cqlIdentifier -> String.format("%s(%s) AS %s", getExpression(), parameters, cqlIdentifier))
 					.orElseGet(() -> String.format("%s(%s)", getExpression(), parameters));
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) {
+				return true;
+			}
+			if (!(o instanceof FunctionCall)) {
+				return false;
+			}
+			FunctionCall that = (FunctionCall) o;
+			if (!ObjectUtils.nullSafeEquals(expression, that.expression)) {
+				return false;
+			}
+			if (!ObjectUtils.nullSafeEquals(params, that.params)) {
+				return false;
+			}
+			return ObjectUtils.nullSafeEquals(alias, that.alias);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public int hashCode() {
+			int result = ObjectUtils.nullSafeHashCode(expression);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(params);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(alias);
+			return result;
 		}
 	}
 }

@@ -15,9 +15,6 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import java.util.Iterator;
 import java.util.List;
 
@@ -58,11 +55,15 @@ interface CassandraQueryExecution {
 	 *
 	 * @author Mark Paluch
 	 */
-	@RequiredArgsConstructor
 	final class StreamExecution implements CassandraQueryExecution {
 
-		private final @NonNull CassandraOperations operations;
-		private final @NonNull Converter<Object, Object> resultProcessing;
+		private final CassandraOperations operations;
+		private final Converter<Object, Object> resultProcessing;
+
+		StreamExecution(CassandraOperations operations, Converter<Object, Object> resultProcessing) {
+			this.operations = operations;
+			this.resultProcessing = resultProcessing;
+		}
 
 		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.repository.query.CassandraQueryExecution#execute(java.lang.String, java.lang.Class)
@@ -78,11 +79,16 @@ interface CassandraQueryExecution {
 	 *
 	 * @author Mark Paluch
 	 */
-	@RequiredArgsConstructor
 	final class SlicedExecution implements CassandraQueryExecution {
 
-		private final @NonNull CassandraOperations operations;
-		private final @NonNull Pageable pageable;
+		private final CassandraOperations operations;
+
+		SlicedExecution(CassandraOperations operations, Pageable pageable) {
+			this.operations = operations;
+			this.pageable = pageable;
+		}
+
+		private final Pageable pageable;
 
 		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.repository.query.CassandraQueryExecution#execute(java.lang.String, java.lang.Class)
@@ -114,10 +120,13 @@ interface CassandraQueryExecution {
 	 *
 	 * @author Mark Paluch
 	 */
-	@RequiredArgsConstructor
 	final class CollectionExecution implements CassandraQueryExecution {
 
-		private final @NonNull CassandraOperations operations;
+		private final CassandraOperations operations;
+
+		CollectionExecution(CassandraOperations operations) {
+			this.operations = operations;
+		}
 
 		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.repository.query.CassandraQueryExecution#execute(java.lang.String, java.lang.Class)
@@ -133,11 +142,15 @@ interface CassandraQueryExecution {
 	 *
 	 * @author Mark Paluch
 	 */
-	@RequiredArgsConstructor
 	final class SingleEntityExecution implements CassandraQueryExecution {
 
-		private final @NonNull CassandraOperations operations;
+		private final CassandraOperations operations;
 		private final boolean limiting;
+
+		SingleEntityExecution(CassandraOperations operations, boolean limiting) {
+			this.operations = operations;
+			this.limiting = limiting;
+		}
 
 		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.repository.query.CassandraQueryExecution#execute(java.lang.String, java.lang.Class)
@@ -166,10 +179,13 @@ interface CassandraQueryExecution {
 	 * @author Mark Paluch
 	 * @since 2.1
 	 */
-	@RequiredArgsConstructor
 	final class ExistsExecution implements CassandraQueryExecution {
 
-		private final @NonNull CassandraOperations operations;
+		private final CassandraOperations operations;
+
+		ExistsExecution(CassandraOperations operations) {
+			this.operations = operations;
+		}
 
 		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.repository.query.CassandraQueryExecution#execute(java.lang.String, java.lang.Class)
@@ -204,10 +220,13 @@ interface CassandraQueryExecution {
 	 *
 	 * @author Mark Paluch
 	 */
-	@RequiredArgsConstructor
 	final class ResultSetQuery implements CassandraQueryExecution {
 
-		private final @NonNull CassandraOperations operations;
+		private final CassandraOperations operations;
+
+		ResultSetQuery(CassandraOperations operations) {
+			this.operations = operations;
+		}
 
 		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.repository.query.CassandraQueryExecution#execute(java.lang.String, java.lang.Class)
@@ -223,11 +242,15 @@ interface CassandraQueryExecution {
 	 *
 	 * @author Mark Paluch
 	 */
-	@RequiredArgsConstructor
 	final class ResultProcessingExecution implements CassandraQueryExecution {
 
-		private final @NonNull CassandraQueryExecution delegate;
-		private final @NonNull Converter<Object, Object> converter;
+		private final CassandraQueryExecution delegate;
+		private final Converter<Object, Object> converter;
+
+		ResultProcessingExecution(CassandraQueryExecution delegate, Converter<Object, Object> converter) {
+			this.delegate = delegate;
+			this.converter = converter;
+		}
 
 		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.repository.query.CassandraQueryExecution#execute(java.lang.String, java.lang.Class)
@@ -247,12 +270,19 @@ interface CassandraQueryExecution {
 	 *
 	 * @author Mark Paluch
 	 */
-	@RequiredArgsConstructor
 	final class ResultProcessingConverter implements Converter<Object, Object> {
 
-		private final @NonNull ResultProcessor processor;
-		private final @NonNull MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
-		private final @NonNull EntityInstantiators instantiators;
+		private final ResultProcessor processor;
+		private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
+		private final EntityInstantiators instantiators;
+
+		ResultProcessingConverter(ResultProcessor processor,
+				MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext,
+				EntityInstantiators instantiators) {
+			this.processor = processor;
+			this.mappingContext = mappingContext;
+			this.instantiators = instantiators;
+		}
 
 		/* (non-Javadoc)
 		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)

@@ -15,11 +15,11 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
-import org.springframework.dao.DataAccessException;
-import org.springframework.lang.Nullable;
-
 import com.datastax.oss.driver.api.core.DriverException;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
+
+import org.springframework.dao.DataAccessException;
+import org.springframework.lang.Nullable;
 
 /**
  * Callback interface used by {@link CqlTemplate}'s query methods. Implementations of this interface perform the actual

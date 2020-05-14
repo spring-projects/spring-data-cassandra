@@ -15,12 +15,12 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
+import com.datastax.oss.driver.api.core.DriverException;
+import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
+
 import org.springframework.dao.DataAccessException;
 import org.springframework.lang.Nullable;
 import org.springframework.util.concurrent.ListenableFuture;
-
-import com.datastax.oss.driver.api.core.DriverException;
-import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
 
 /**
  * Callback interface used by {@link AsyncCqlTemplate}'s query methods. Implementations of this interface perform the

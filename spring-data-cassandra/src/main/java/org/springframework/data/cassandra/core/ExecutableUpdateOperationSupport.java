@@ -15,11 +15,6 @@
  */
 package org.springframework.data.cassandra.core;
 
-import lombok.AccessLevel;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.core.query.Update;
 import org.springframework.lang.Nullable;
@@ -36,10 +31,13 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * @see org.springframework.data.cassandra.core.query.Update
  * @since 2.1
  */
-@RequiredArgsConstructor
 class ExecutableUpdateOperationSupport implements ExecutableUpdateOperation {
 
-	private final @NonNull CassandraTemplate template;
+	private final CassandraTemplate template;
+
+	public ExecutableUpdateOperationSupport(CassandraTemplate template) {
+		this.template = template;
+	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ExecutableUpdateOperation#update(java.lang.Class)
@@ -52,17 +50,23 @@ class ExecutableUpdateOperationSupport implements ExecutableUpdateOperation {
 		return new ExecutableUpdateSupport(this.template, domainType, Query.empty(), null);
 	}
 
-	@RequiredArgsConstructor
-	@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 	static class ExecutableUpdateSupport implements ExecutableUpdate, TerminatingUpdate {
 
-		@NonNull CassandraTemplate template;
+		private final CassandraTemplate template;
 
-		@NonNull Class<?> domainType;
+		private final Class<?> domainType;
 
-		@NonNull Query query;
+		private final Query query;
 
-		@Nullable CqlIdentifier tableName;
+		private final @Nullable CqlIdentifier tableName;
+
+		public ExecutableUpdateSupport(CassandraTemplate template, Class<?> domainType, Query query,
+				CqlIdentifier tableName) {
+			this.template = template;
+			this.domainType = domainType;
+			this.query = query;
+			this.tableName = tableName;
+		}
 
 		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.core.ExecutableUpdateOperation.UpdateWithTable#inTable(org.springframework.data.cassandra.core.cql.CqlIdentifier)

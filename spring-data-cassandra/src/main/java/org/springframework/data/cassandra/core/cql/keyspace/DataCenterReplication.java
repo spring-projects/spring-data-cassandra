@@ -15,14 +15,11 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
-import lombok.ToString;
-
 /**
  * Value object representing replication factor for a given data center.
  *
  * @author Mark Paluch
  */
-@ToString
 public class DataCenterReplication {
 
 	private final String dataCenter;
@@ -58,5 +55,15 @@ public class DataCenterReplication {
 	 */
 	public long getReplicationFactor() {
 		return replicationFactor;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "DataCenterReplication(dataCenter=" + this.getDataCenter() + ", replicationFactor="
+				+ this.getReplicationFactor() + ")";
 	}
 }

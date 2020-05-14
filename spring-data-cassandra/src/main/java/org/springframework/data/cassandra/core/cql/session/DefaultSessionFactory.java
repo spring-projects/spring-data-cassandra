@@ -15,10 +15,10 @@
  */
 package org.springframework.data.cassandra.core.cql.session;
 
+import com.datastax.oss.driver.api.core.CqlSession;
+
 import org.springframework.data.cassandra.SessionFactory;
 import org.springframework.util.Assert;
-
-import com.datastax.oss.driver.api.core.CqlSession;
 
 /**
  * Default {@link SessionFactory} implementation.

@@ -15,16 +15,15 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
-import lombok.EqualsAndHashCode;
-
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 
+import com.datastax.oss.driver.api.core.ConsistencyLevel;
+
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
-
-import com.datastax.oss.driver.api.core.ConsistencyLevel;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Cassandra Write Options are an extension to {@link QueryOptions} for write operations. {@link WriteOptions} allow
@@ -35,7 +34,6 @@ import com.datastax.oss.driver.api.core.ConsistencyLevel;
  * @author Lukasz Antoniak
  * @see QueryOptions
  */
-@EqualsAndHashCode(callSuper = true)
 public class WriteOptions extends QueryOptions {
 
 	private static final WriteOptions EMPTY = new WriteOptionsBuilder().build();
@@ -98,6 +96,46 @@ public class WriteOptions extends QueryOptions {
 	@Nullable
 	public Long getTimestamp() {
 		return this.timestamp;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object o) {
+
+		if (this == o) {
+			return true;
+		}
+
+		if (!(o instanceof WriteOptions)) {
+			return false;
+		}
+
+		if (!super.equals(o)) {
+			return false;
+		}
+
+		WriteOptions that = (WriteOptions) o;
+
+		if (!ObjectUtils.nullSafeEquals(ttl, that.ttl)) {
+			return false;
+		}
+
+		return ObjectUtils.nullSafeEquals(timestamp, that.timestamp);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public int hashCode() {
+		int result = super.hashCode();
+		result = 31 * result + ObjectUtils.nullSafeHashCode(ttl);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(timestamp);
+		return result;
 	}
 
 	/**

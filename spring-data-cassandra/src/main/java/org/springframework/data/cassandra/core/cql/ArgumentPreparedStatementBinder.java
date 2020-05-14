@@ -15,11 +15,11 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
-import org.springframework.lang.Nullable;
-
 import com.datastax.oss.driver.api.core.DriverException;
 import com.datastax.oss.driver.api.core.cql.BoundStatement;
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+
+import org.springframework.lang.Nullable;
 
 /**
  * Simple adapter for {@link PreparedStatementBinder} that applies a given array of arguments.

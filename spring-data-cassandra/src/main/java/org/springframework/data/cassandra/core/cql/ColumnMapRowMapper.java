@@ -17,12 +17,12 @@ package org.springframework.data.cassandra.core.cql;
 
 import java.util.Map;
 
-import org.springframework.lang.Nullable;
-import org.springframework.util.LinkedCaseInsensitiveMap;
-
 import com.datastax.oss.driver.api.core.cql.ColumnDefinition;
 import com.datastax.oss.driver.api.core.cql.ColumnDefinitions;
 import com.datastax.oss.driver.api.core.cql.Row;
+
+import org.springframework.lang.Nullable;
+import org.springframework.util.LinkedCaseInsensitiveMap;
 
 /**
  * {@link RowMapper} implementation that creates a {@code java.util.Map} for each row, representing all columns as

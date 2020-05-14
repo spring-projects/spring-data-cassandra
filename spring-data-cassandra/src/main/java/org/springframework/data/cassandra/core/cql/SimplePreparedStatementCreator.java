@@ -15,11 +15,11 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
-import org.springframework.util.Assert;
-
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.DriverException;
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+
+import org.springframework.util.Assert;
 
 /**
  * Trivial implementation of {@link PreparedStatementCreator}. This prepared statement creator simply prepares a

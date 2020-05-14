@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.core;
 
-import lombok.Value;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
@@ -929,16 +927,16 @@ public class AsyncCassandraTemplate
 		}
 	}
 
-	@Value
 	class AsyncStatementCallback implements AsyncSessionCallback<AsyncResultSet>, CqlProvider {
 
-		@lombok.NonNull SimpleStatement statement;
+		SimpleStatement statement;
 
 		AsyncStatementCallback(SimpleStatement statement) {
 			this.statement = statement;
 		}
 
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
 		 * @see org.springframework.data.cassandra.core.cql.AsyncSessionCallback#doInSession(com.datastax.oss.driver.api.core.CqlSession)
 		 */
 		@Override
@@ -949,7 +947,8 @@ public class AsyncCassandraTemplate
 							: exceptionTranslator.translateExceptionIfPossible(e));
 		}
 
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
 		 * @see org.springframework.data.cassandra.core.cql.CqlProvider#getCql()
 		 */
 		@Override

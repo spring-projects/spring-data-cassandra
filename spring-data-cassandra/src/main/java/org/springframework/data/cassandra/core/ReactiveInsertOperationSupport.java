@@ -15,10 +15,6 @@
  */
 package org.springframework.data.cassandra.core;
 
-import lombok.AccessLevel;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import reactor.core.publisher.Mono;
 
 import org.springframework.lang.Nullable;
@@ -32,10 +28,13 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * @author Mark Paluch
  * @since 2.1
  */
-@RequiredArgsConstructor
 class ReactiveInsertOperationSupport implements ReactiveInsertOperation {
 
-	private final @NonNull ReactiveCassandraTemplate template;
+	private final ReactiveCassandraTemplate template;
+
+	public ReactiveInsertOperationSupport(ReactiveCassandraTemplate template) {
+		this.template = template;
+	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveInsertOperation#insert(java.lang.Class)
@@ -48,17 +47,23 @@ class ReactiveInsertOperationSupport implements ReactiveInsertOperation {
 		return new ReactiveInsertSupport<>(this.template, domainType, InsertOptions.empty(), null);
 	}
 
-	@RequiredArgsConstructor
-	@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 	static class ReactiveInsertSupport<T> implements ReactiveInsert<T> {
 
-		@NonNull ReactiveCassandraTemplate template;
+		private final ReactiveCassandraTemplate template;
 
-		@NonNull Class<T> domainType;
+		private final Class<T> domainType;
 
-		@NonNull InsertOptions insertOptions;
+		private final InsertOptions insertOptions;
 
-		@Nullable CqlIdentifier tableName;
+		private final @Nullable CqlIdentifier tableName;
+
+		public ReactiveInsertSupport(ReactiveCassandraTemplate template, Class<T> domainType, InsertOptions insertOptions,
+				CqlIdentifier tableName) {
+			this.template = template;
+			this.domainType = domainType;
+			this.insertOptions = insertOptions;
+			this.tableName = tableName;
+		}
 
 		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.core.ReactiveInsertOperation.InsertWithTable#inTable(org.springframework.data.cassandra.core.cql.CqlIdentifier)

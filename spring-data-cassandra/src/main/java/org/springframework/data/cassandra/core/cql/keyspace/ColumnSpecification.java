@@ -205,7 +205,8 @@ public class ColumnSpecification {
 		return cql.append(name.asCql(true)).append(" ").append(type.asCql(true, true));
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	@Override

@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.core;
 
-import lombok.EqualsAndHashCode;
-
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
@@ -27,6 +25,7 @@ import org.springframework.data.cassandra.core.query.CriteriaDefinition;
 import org.springframework.data.cassandra.core.query.Filter;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
 
@@ -37,7 +36,6 @@ import com.datastax.oss.driver.api.core.ConsistencyLevel;
  * @author Lukasz Antoniak
  * @since 2.0
  */
-@EqualsAndHashCode(callSuper = true)
 public class UpdateOptions extends WriteOptions {
 
 	private static final UpdateOptions EMPTY = new UpdateOptionsBuilder().build();
@@ -100,6 +98,46 @@ public class UpdateOptions extends WriteOptions {
 	@Nullable
 	public Filter getIfCondition() {
 		return ifCondition;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object o) {
+
+		if (this == o) {
+			return true;
+		}
+
+		if (!(o instanceof UpdateOptions)) {
+			return false;
+		}
+
+		if (!super.equals(o)) {
+			return false;
+		}
+
+		UpdateOptions that = (UpdateOptions) o;
+
+		if (ifExists != that.ifExists) {
+			return false;
+		}
+
+		return ObjectUtils.nullSafeEquals(ifCondition, that.ifCondition);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public int hashCode() {
+		int result = super.hashCode();
+		result = 31 * result + (ifExists ? 1 : 0);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(ifCondition);
+		return result;
 	}
 
 	/**

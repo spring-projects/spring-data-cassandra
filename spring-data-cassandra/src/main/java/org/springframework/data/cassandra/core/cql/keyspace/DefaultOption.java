@@ -179,7 +179,8 @@ public class DefaultOption implements Option {
 		return string;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	@Override

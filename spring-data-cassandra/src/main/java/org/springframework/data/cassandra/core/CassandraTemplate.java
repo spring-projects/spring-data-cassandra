@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.core;
 
-import lombok.Value;
-
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -964,12 +962,16 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		return object;
 	}
 
-	@Value
 	static class StatementCallback implements SessionCallback<WriteResult>, CqlProvider {
 
-		@lombok.NonNull SimpleStatement statement;
+		private final SimpleStatement statement;
 
-		/* (non-Javadoc)
+		StatementCallback(SimpleStatement statement) {
+			this.statement = statement;
+		}
+
+		/*
+		 * (non-Javadoc)
 		 * @see org.springframework.data.cassandra.core.cql.SessionCallback#doInSession(org.springframework.data.cassandra.Session)
 		 */
 		@Override
@@ -977,7 +979,8 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 			return WriteResult.of(session.execute(this.statement));
 		}
 
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
 		 * @see org.springframework.data.cassandra.core.cql.CqlProvider#getCql()
 		 */
 		@Override

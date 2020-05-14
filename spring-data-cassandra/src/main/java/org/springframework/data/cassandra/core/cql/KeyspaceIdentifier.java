@@ -17,9 +17,9 @@ package org.springframework.data.cassandra.core.cql;
 
 import java.util.regex.Pattern;
 
-import org.springframework.util.Assert;
-
 import com.datastax.oss.driver.api.core.CqlIdentifier;
+
+import org.springframework.util.Assert;
 
 /**
  * This encapsulates the logic for keyspace identifiers.
@@ -107,6 +107,10 @@ public final class KeyspaceIdentifier implements Comparable<KeyspaceIdentifier> 
 		return toCql();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public int hashCode() {
 		return identifier.hashCode();

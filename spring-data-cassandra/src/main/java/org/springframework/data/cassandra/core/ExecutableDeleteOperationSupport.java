@@ -15,11 +15,6 @@
  */
 package org.springframework.data.cassandra.core;
 
-import lombok.AccessLevel;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -34,10 +29,13 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * @see org.springframework.data.cassandra.core.query.Query
  * @since 2.1
  */
-@RequiredArgsConstructor
 class ExecutableDeleteOperationSupport implements ExecutableDeleteOperation {
 
-	private final @NonNull CassandraTemplate template;
+	private final CassandraTemplate template;
+
+	public ExecutableDeleteOperationSupport(CassandraTemplate template) {
+		this.template = template;
+	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ExecutableDeleteOperation#remove(java.lang.Class)
@@ -50,17 +48,23 @@ class ExecutableDeleteOperationSupport implements ExecutableDeleteOperation {
 		return new ExecutableDeleteSupport(this.template, domainType, Query.empty(), null);
 	}
 
-	@RequiredArgsConstructor
-	@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 	static class ExecutableDeleteSupport implements ExecutableDelete, TerminatingDelete {
 
-		@NonNull CassandraTemplate template;
+		private final CassandraTemplate template;
 
-		@NonNull Class<?> domainType;
+		private final Class<?> domainType;
 
-		@NonNull Query query;
+		private final Query query;
 
-		@Nullable CqlIdentifier tableName;
+		@Nullable private final CqlIdentifier tableName;
+
+		public ExecutableDeleteSupport(CassandraTemplate template, Class<?> domainType, Query query,
+				CqlIdentifier tableName) {
+			this.template = template;
+			this.domainType = domainType;
+			this.query = query;
+			this.tableName = tableName;
+		}
 
 		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.core.ExecutableDeleteOperation.DeleteWithTable#inTable(org.springframework.data.cassandra.core.cql.CqlIdentifier)

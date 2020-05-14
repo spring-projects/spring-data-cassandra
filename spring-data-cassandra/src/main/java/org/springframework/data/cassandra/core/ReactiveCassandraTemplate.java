@@ -15,7 +15,6 @@
  */
 package org.springframework.data.cassandra.core;
 
-import lombok.Value;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.SynchronousSink;
@@ -914,12 +913,16 @@ public class ReactiveCassandraTemplate
 		return Mono.just(object);
 	}
 
-	@Value
 	static class StatementCallback implements ReactiveSessionCallback<WriteResult>, CqlProvider {
 
-		@lombok.NonNull SimpleStatement statement;
+		private final SimpleStatement statement;
 
-		/* (non-Javadoc)
+		StatementCallback(SimpleStatement statement) {
+			this.statement = statement;
+		}
+
+		/*
+		 * (non-Javadoc)
 		 * @see org.springframework.data.cassandra.core.cql.ReactiveSessionCallback#doInSession(org.springframework.data.cassandra.ReactiveSession)
 		 */
 		@Override
@@ -927,7 +930,8 @@ public class ReactiveCassandraTemplate
 			return session.execute(this.statement).flatMap(StatementCallback::toWriteResult);
 		}
 
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
 		 * @see org.springframework.data.cassandra.core.cql.CqlProvider#getCql()
 		 */
 		@Override

@@ -18,6 +18,11 @@ package org.springframework.data.cassandra.core.cql;
 import java.util.Map;
 import java.util.Optional;
 
+import com.datastax.oss.driver.api.core.ConsistencyLevel;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.cql.Statement;
+import com.datastax.oss.driver.api.core.retry.RetryPolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,12 +32,6 @@ import org.springframework.data.cassandra.SessionFactory;
 import org.springframework.data.cassandra.core.cql.session.DefaultSessionFactory;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
-
-import com.datastax.oss.driver.api.core.ConsistencyLevel;
-import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.cql.SimpleStatement;
-import com.datastax.oss.driver.api.core.cql.Statement;
-import com.datastax.oss.driver.api.core.retry.RetryPolicy;
 
 /**
  * {@link CassandraAccessor} provides access to a Cassandra {@link SessionFactory} and the

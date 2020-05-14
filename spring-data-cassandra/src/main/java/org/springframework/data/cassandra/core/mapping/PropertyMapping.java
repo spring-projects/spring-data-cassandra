@@ -15,11 +15,10 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import lombok.EqualsAndHashCode;
-
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Mapping between a persistent entity's property and its column.
@@ -27,7 +26,6 @@ import org.springframework.util.Assert;
  * @author Matthew T. Adams
  * @author John Blum
  */
-@EqualsAndHashCode
 public class PropertyMapping {
 
 	private @Nullable String columnName;
@@ -90,7 +88,48 @@ public class PropertyMapping {
 		return this.propertyName;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object o) {
+
+		if (this == o) {
+			return true;
+		}
+
+		if (!(o instanceof PropertyMapping)) {
+			return false;
+		}
+
+		PropertyMapping that = (PropertyMapping) o;
+
+		if (!ObjectUtils.nullSafeEquals(columnName, that.columnName)) {
+			return false;
+		}
+
+		if (!ObjectUtils.nullSafeEquals(forceQuote, that.forceQuote)) {
+			return false;
+		}
+
+		return ObjectUtils.nullSafeEquals(propertyName, that.propertyName);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public int hashCode() {
+		int result = ObjectUtils.nullSafeHashCode(columnName);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(forceQuote);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(propertyName);
+		return result;
+	}
+
+	/*
+	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	@Override

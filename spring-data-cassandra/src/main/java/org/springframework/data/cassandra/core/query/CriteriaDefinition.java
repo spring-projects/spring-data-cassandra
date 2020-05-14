@@ -15,13 +15,13 @@
  */
 package org.springframework.data.cassandra.core.query;
 
-import lombok.EqualsAndHashCode;
 
 import java.util.Optional;
 import java.util.function.Function;
 
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Criteria definition for a {@link ColumnName} exposing a {@link Predicate}.
@@ -50,7 +50,6 @@ public interface CriteriaDefinition {
 	 *
 	 * @author Mark Paluch
 	 */
-	@EqualsAndHashCode
 	class Predicate {
 
 		private final Operator operator;
@@ -96,6 +95,41 @@ public interface CriteriaDefinition {
 		 */
 		public <R> R as(Function<Object, ? extends R> mappingFunction) {
 			return mappingFunction.apply(this.value);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object o) {
+
+			if (this == o) {
+				return true;
+			}
+
+			if (!(o instanceof Predicate)) {
+				return false;
+			}
+
+			Predicate predicate = (Predicate) o;
+
+			if (!ObjectUtils.nullSafeEquals(operator, predicate.operator)) {
+				return false;
+			}
+
+			return ObjectUtils.nullSafeEquals(value, predicate.value);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public int hashCode() {
+			int result = ObjectUtils.nullSafeHashCode(operator);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(value);
+			return result;
 		}
 	}
 
@@ -164,6 +198,10 @@ public interface CriteriaDefinition {
 			this.operator = operator;
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
 		@Override
 		public String toString() {
 			return this.operator;

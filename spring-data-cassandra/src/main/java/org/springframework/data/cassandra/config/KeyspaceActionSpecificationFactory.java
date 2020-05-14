@@ -15,7 +15,6 @@
  */
 package org.springframework.data.cassandra.config;
 
-import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,7 +40,6 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * @author Mark Paluch
  * @since 2.0
  */
-@RequiredArgsConstructor
 class KeyspaceActionSpecificationFactory {
 
 	private final CqlIdentifier name;
@@ -53,6 +51,16 @@ class KeyspaceActionSpecificationFactory {
 	private final long replicationFactor;
 
 	private final boolean durableWrites;
+
+	KeyspaceActionSpecificationFactory(CqlIdentifier name, List<DataCenterReplication> replications,
+			ReplicationStrategy replicationStrategy, long replicationFactor, boolean durableWrites) {
+
+		this.name = name;
+		this.replications = replications;
+		this.replicationStrategy = replicationStrategy;
+		this.replicationFactor = replicationFactor;
+		this.durableWrites = durableWrites;
+	}
 
 	/**
 	 * Create a new {@link KeyspaceActionSpecificationFactoryBuilder} to configure a new

@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
-import lombok.EqualsAndHashCode;
-
 import org.springframework.data.cassandra.core.cql.KeyspaceIdentifier;
 import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceOption.ReplicationStrategy;
 import org.springframework.data.cassandra.util.MapBuilder;
@@ -29,7 +27,6 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  *
  * @author Mark Paluch
  */
-@EqualsAndHashCode(callSuper = true)
 public class CreateKeyspaceSpecification extends KeyspaceOptionsSpecification<CreateKeyspaceSpecification>
 		implements KeyspaceDescriptor {
 
@@ -161,5 +158,39 @@ public class CreateKeyspaceSpecification extends KeyspaceOptionsSpecification<Cr
 	@Override
 	public CreateKeyspaceSpecification with(String name, @Nullable Object value, boolean escape, boolean quote) {
 		return super.with(name, value, escape, quote);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object o) {
+
+		if (this == o) {
+			return true;
+		}
+
+		if (!(o instanceof CreateKeyspaceSpecification)) {
+			return false;
+		}
+
+		if (!super.equals(o)) {
+			return false;
+		}
+
+		CreateKeyspaceSpecification that = (CreateKeyspaceSpecification) o;
+		return ifNotExists == that.ifNotExists;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public int hashCode() {
+		int result = super.hashCode();
+		result = 31 * result + (ifNotExists ? 1 : 0);
+		return result;
 	}
 }

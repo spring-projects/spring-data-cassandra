@@ -15,10 +15,6 @@
  */
 package org.springframework.data.cassandra.core;
 
-import lombok.AccessLevel;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
 
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -32,10 +28,13 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * @see org.springframework.data.cassandra.core.ExecutableInsertOperation
  * @since 2.1
  */
-@RequiredArgsConstructor
 class ExecutableInsertOperationSupport implements ExecutableInsertOperation {
 
-	private final @NonNull CassandraTemplate template;
+	private final CassandraTemplate template;
+
+	ExecutableInsertOperationSupport(CassandraTemplate template) {
+		this.template = template;
+	}
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ExecutableInsertOperation#insert(java.lang.Class)
@@ -48,17 +47,23 @@ class ExecutableInsertOperationSupport implements ExecutableInsertOperation {
 		return new ExecutableInsertSupport<>(this.template, domainType, InsertOptions.empty(), null);
 	}
 
-	@RequiredArgsConstructor
-	@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 	static class ExecutableInsertSupport<T> implements ExecutableInsert<T> {
 
-		@NonNull CassandraTemplate template;
+		private final CassandraTemplate template;
 
-		@NonNull Class<T> domainType;
+		private final Class<T> domainType;
 
-		@NonNull InsertOptions insertOptions;
+		private final InsertOptions insertOptions;
 
-		@Nullable CqlIdentifier tableName;
+		@Nullable private final CqlIdentifier tableName;
+
+		public ExecutableInsertSupport(CassandraTemplate template, Class<T> domainType, InsertOptions insertOptions,
+				CqlIdentifier tableName) {
+			this.template = template;
+			this.domainType = domainType;
+			this.insertOptions = insertOptions;
+			this.tableName = tableName;
+		}
 
 		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.core.ExecutableInsertOperation.InsertWithTable#inTable(org.springframework.data.cassandra.core.cql.CqlIdentifier)

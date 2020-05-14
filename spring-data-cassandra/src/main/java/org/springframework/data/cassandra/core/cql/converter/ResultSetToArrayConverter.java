@@ -18,11 +18,11 @@ package org.springframework.data.cassandra.core.cql.converter;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.util.Assert;
-
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
+
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.util.Assert;
 
 /**
  * {@link Converter} from {@link ResultSet} to {@link Object} array.

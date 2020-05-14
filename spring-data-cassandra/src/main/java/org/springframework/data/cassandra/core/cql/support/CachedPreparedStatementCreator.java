@@ -15,15 +15,15 @@
  */
 package org.springframework.data.cassandra.core.cql.support;
 
-import org.springframework.data.cassandra.core.cql.PreparedStatementCreator;
-import org.springframework.data.cassandra.core.cql.QueryOptions;
-import org.springframework.util.Assert;
-
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.DriverException;
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.Statement;
+
+import org.springframework.data.cassandra.core.cql.PreparedStatementCreator;
+import org.springframework.data.cassandra.core.cql.QueryOptions;
+import org.springframework.util.Assert;
 
 /**
  * {@link PreparedStatementCreator} implementation using caching of prepared statements.

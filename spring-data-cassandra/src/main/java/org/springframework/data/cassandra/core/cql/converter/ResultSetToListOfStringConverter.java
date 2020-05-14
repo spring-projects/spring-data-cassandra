@@ -20,10 +20,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.datastax.oss.driver.api.core.cql.ResultSet;
+
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.util.StringUtils;
-
-import com.datastax.oss.driver.api.core.cql.ResultSet;
 
 /**
  * {@link Converter} from {@link ResultSet} to a {@link List} of {@link String}.

@@ -15,10 +15,10 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
-import org.springframework.lang.Nullable;
-
 import com.datastax.oss.driver.api.core.DriverException;
 import com.datastax.oss.driver.api.core.cql.Row;
+
+import org.springframework.lang.Nullable;
 
 /**
  * An interface used by {@link CqlTemplate} for mapping rows of a {@link com.datastax.driver.core.ResultSet} on a

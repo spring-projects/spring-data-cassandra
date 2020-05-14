@@ -15,7 +15,6 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import lombok.RequiredArgsConstructor;
 
 import java.util.Optional;
 import java.util.function.Function;
@@ -47,7 +46,6 @@ import com.datastax.oss.driver.api.core.cql.Statement;
  * @author Mark Paluch
  * @since 2.0
  */
-@RequiredArgsConstructor
 class QueryStatementCreator {
 
 	private static final Logger LOG = LoggerFactory.getLogger(QueryStatementCreator.class);
@@ -55,6 +53,12 @@ class QueryStatementCreator {
 	private final CassandraQueryMethod queryMethod;
 
 	private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
+
+	QueryStatementCreator(CassandraQueryMethod queryMethod,
+			MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext) {
+		this.queryMethod = queryMethod;
+		this.mappingContext = mappingContext;
+	}
 
 	private CassandraPersistentEntity<?> getPersistentEntity() {
 		return this.mappingContext.getRequiredPersistentEntity(this.queryMethod.getDomainClass());

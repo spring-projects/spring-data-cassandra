@@ -15,12 +15,11 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import lombok.RequiredArgsConstructor;
-
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
@@ -98,11 +97,15 @@ public abstract class CassandraRepositoryQuerySupport implements RepositoryQuery
 		return this.queryStatementCreator;
 	}
 
-	@RequiredArgsConstructor
 	class CassandraReturnedType {
 
 		private final ReturnedType returnedType;
 		private final CustomConversions customConversions;
+
+		CassandraReturnedType(ReturnedType returnedType, CustomConversions customConversions) {
+			this.returnedType = returnedType;
+			this.customConversions = customConversions;
+		}
 
 		boolean isProjecting() {
 

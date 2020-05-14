@@ -15,10 +15,10 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
-import org.springframework.util.Assert;
-
 import com.datastax.oss.driver.api.core.config.DriverExecutionProfile;
 import com.datastax.oss.driver.api.core.cql.Statement;
+
+import org.springframework.util.Assert;
 
 /**
  * Resolver for a {@link com.datastax.oss.driver.api.core.config.DriverExecutionProfile} used with

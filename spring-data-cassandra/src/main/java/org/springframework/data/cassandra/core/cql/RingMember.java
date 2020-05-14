@@ -19,9 +19,9 @@ import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
-import org.springframework.util.Assert;
-
 import com.datastax.oss.driver.api.core.metadata.Node;
+
+import org.springframework.util.Assert;
 
 /**
  * Domain object representing a Cassandra host.

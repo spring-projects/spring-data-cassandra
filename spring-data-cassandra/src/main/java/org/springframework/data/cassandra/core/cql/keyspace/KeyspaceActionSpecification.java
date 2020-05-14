@@ -15,9 +15,8 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
-import lombok.EqualsAndHashCode;
-
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 
@@ -28,7 +27,6 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * @author David Webb
  * @param <T> The subtype of the {@link KeyspaceActionSpecification}
  */
-@EqualsAndHashCode
 public abstract class KeyspaceActionSpecification {
 
 	/**
@@ -45,5 +43,37 @@ public abstract class KeyspaceActionSpecification {
 
 	public CqlIdentifier getName() {
 		return name;
+	}
+
+	protected boolean canEqual(final Object other) {
+		return other instanceof KeyspaceActionSpecification;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object o) {
+
+		if (this == o) {
+			return true;
+		}
+
+		if (!(o instanceof KeyspaceActionSpecification)) {
+			return false;
+		}
+
+		KeyspaceActionSpecification that = (KeyspaceActionSpecification) o;
+		return ObjectUtils.nullSafeEquals(name, that.name);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public int hashCode() {
+		return ObjectUtils.nullSafeHashCode(name);
 	}
 }

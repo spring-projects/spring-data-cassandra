@@ -217,7 +217,8 @@ public class Update {
 		return new Update(map);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
@@ -523,7 +524,8 @@ public class Update {
 			return this.mode;
 		}
 
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
 		 * @see java.lang.Object#toString()
 		 */
 		@Override
@@ -556,7 +558,8 @@ public class Update {
 			return value;
 		}
 
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
 		 * @see java.lang.Object#toString()
 		 */
 		@Override
@@ -582,7 +585,8 @@ public class Update {
 			return value;
 		}
 
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
 		 * @see java.lang.Object#toString()
 		 */
 		@Override
@@ -611,8 +615,9 @@ public class Update {
 			return index;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.query.Update.SetOp#toString()
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#toString()
 		 */
 		@Override
 		public String toString() {
@@ -647,8 +652,9 @@ public class Update {
 			return value;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.query.Update.SetOp#toString()
+		/*
+		 * (non-Javadoc)
+		 * @see java.lang.Object#toString()
 		 */
 		@Override
 		public String toString() {
@@ -672,7 +678,8 @@ public class Update {
 			return value;
 		}
 
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
 		 * @see java.lang.Object#toString()
 		 */
 		@Override
@@ -702,7 +709,8 @@ public class Update {
 			return value;
 		}
 
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
 		 * @see java.lang.Object#toString()
 		 */
 		@Override

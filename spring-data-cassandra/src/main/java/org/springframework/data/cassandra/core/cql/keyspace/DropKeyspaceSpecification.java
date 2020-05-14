@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
-import lombok.EqualsAndHashCode;
-
 import org.springframework.data.cassandra.core.cql.KeyspaceIdentifier;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -26,7 +24,6 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  *
  * @author Mark Paluch
  */
-@EqualsAndHashCode(callSuper = true)
 public class DropKeyspaceSpecification extends KeyspaceActionSpecification {
 
 	private boolean ifExists;
@@ -91,5 +88,39 @@ public class DropKeyspaceSpecification extends KeyspaceActionSpecification {
 
 	public boolean getIfExists() {
 		return ifExists;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object o) {
+
+		if (this == o) {
+			return true;
+		}
+
+		if (!(o instanceof DropKeyspaceSpecification)) {
+			return false;
+		}
+
+		if (!super.equals(o)) {
+			return false;
+		}
+
+		DropKeyspaceSpecification that = (DropKeyspaceSpecification) o;
+		return ifExists == that.ifExists;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public int hashCode() {
+		int result = super.hashCode();
+		result = 31 * result + (ifExists ? 1 : 0);
+		return result;
 	}
 }

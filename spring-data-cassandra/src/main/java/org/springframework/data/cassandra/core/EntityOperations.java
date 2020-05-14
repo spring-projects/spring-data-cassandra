@@ -15,11 +15,6 @@
  */
 package org.springframework.data.cassandra.core;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.cassandra.core.cql.util.StatementBuilder;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
@@ -46,10 +41,14 @@ import com.datastax.oss.driver.api.querybuilder.update.Update;
  * @see ReactiveCassandraTemplate
  * @since 2.2
  */
-@RequiredArgsConstructor
 class EntityOperations {
 
-	@NonNull @Getter(AccessLevel.PROTECTED) private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
+	private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
+
+	public EntityOperations(
+			MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext) {
+		this.mappingContext = mappingContext;
+	}
 
 	/**
 	 * Creates a new {@link Entity} for the given bean.
@@ -98,6 +97,11 @@ class EntityOperations {
 	 */
 	CqlIdentifier getTableName(Class<?> entityClass) {
 		return getRequiredPersistentEntity(entityClass).getTableName();
+	}
+
+
+	protected MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> getMappingContext() {
+		return this.mappingContext;
 	}
 
 	/**
@@ -196,11 +200,15 @@ class EntityOperations {
 
 	}
 
-	@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 	private static class MappedEntity<T> implements Entity<T> {
 
-		private final @NonNull CassandraPersistentEntity<?> entity;
-		private final @NonNull PersistentPropertyAccessor<T> propertyAccessor;
+		private final CassandraPersistentEntity<?> entity;
+		private final PersistentPropertyAccessor<T> propertyAccessor;
+
+		protected MappedEntity(CassandraPersistentEntity<?> entity, PersistentPropertyAccessor<T> propertyAccessor) {
+			this.entity = entity;
+			this.propertyAccessor = propertyAccessor;
+		}
 
 		private static <T> MappedEntity<T> of(T bean,
 				MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> context) {
