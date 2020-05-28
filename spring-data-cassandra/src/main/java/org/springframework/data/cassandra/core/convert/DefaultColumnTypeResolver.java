@@ -65,6 +65,7 @@ import com.datastax.oss.driver.api.core.type.reflect.GenericType;
  * Default {@link ColumnTypeResolver} implementation backed by {@link CustomConversions} and {@link CodecRegistry}.
  *
  * @author Mark Paluch
+ * @author Marko Janković
  * @since 3.0
  */
 class DefaultColumnTypeResolver implements ColumnTypeResolver {
@@ -290,7 +291,7 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 				}
 
 				if (value instanceof Set) {
-					return ColumnType.listOf(DefaultColumnType.OBJECT);
+					return ColumnType.setOf(DefaultColumnType.OBJECT);
 				}
 
 				if (value instanceof UdtValue) {
