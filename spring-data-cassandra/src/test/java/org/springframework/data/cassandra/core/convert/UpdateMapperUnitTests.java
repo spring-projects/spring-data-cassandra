@@ -54,6 +54,7 @@ import com.datastax.oss.driver.api.core.type.DataTypes;
  *
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Marko Janković
  */
 @RunWith(MockitoJUnitRunner.class)
 public class UpdateMapperUnitTests {
@@ -205,6 +206,35 @@ public class UpdateMapperUnitTests {
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update.toString()).isEqualTo("list = []");
+	}
+
+	@Test // DATACASS-770
+	public void shouldPrependAllToSet() {
+
+		Update update = updateMapper.getMappedObject(Update.empty().addTo("set").prependAll("foo", currency),
+				persistentEntity);
+
+		assertThat(update.getUpdateOperations()).hasSize(1);
+		assertThat(update.toString()).isEqualTo("set_col = {'foo','Euro'} + set_col");
+	}
+
+	@Test // DATACASS-770
+	public void shouldAppendAllToSet() {
+
+		Update update = updateMapper.getMappedObject(Update.empty().addTo("set").appendAll("foo", currency),
+				persistentEntity);
+
+		assertThat(update.getUpdateOperations()).hasSize(1);
+		assertThat(update.toString()).isEqualTo("set_col = set_col + {'foo','Euro'}");
+	}
+
+	@Test // DATACASS-770
+	public void shouldRemoveFromSet() {
+
+		Update update = updateMapper.getMappedObject(Update.empty().remove("set", currency), persistentEntity);
+
+		assertThat(update.getUpdateOperations()).hasSize(1);
+		assertThat(update.toString()).isEqualTo("set_col = set_col - {'Euro'}");
 	}
 
 	@Test // DATACASS-343
