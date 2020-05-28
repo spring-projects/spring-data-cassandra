@@ -27,6 +27,7 @@ import java.util.Currency;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.LinkedHashSet;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -54,6 +55,7 @@ import com.datastax.oss.driver.api.core.type.DataTypes;
  *
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Marko Janković
  */
 @RunWith(MockitoJUnitRunner.class)
 public class UpdateMapperUnitTests {
@@ -63,6 +65,7 @@ public class UpdateMapperUnitTests {
 	CassandraPersistentEntity<?> persistentEntity;
 
 	Currency currency = Currency.getInstance("EUR");
+	Currency currencyUSD = Currency.getInstance("USD");
 
 	MappingCassandraConverter cassandraConverter;
 
@@ -205,6 +208,79 @@ public class UpdateMapperUnitTests {
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update.toString()).isEqualTo("list = []");
+	}
+
+	@Test // DATACASS-770
+	public void shouldPrependAllToSet() {
+
+		Update update = updateMapper.getMappedObject(Update.empty().addTo("set").prependAll(currencyUSD, currency),
+				persistentEntity);
+
+		assertThat(update.getUpdateOperations()).hasSize(1);
+		assertThat(update.toString()).isEqualTo("set_col = {'US Dollar','Euro'} + set_col");
+	}
+
+	@Test // DATACASS-770
+	public void shouldAppendAllToSet() {
+
+		Update update = updateMapper.getMappedObject(Update.empty().addTo("set").appendAll(currencyUSD, currency),
+				persistentEntity);
+
+		assertThat(update.getUpdateOperations()).hasSize(1);
+		assertThat(update.toString()).isEqualTo("set_col = set_col + {'US Dollar','Euro'}");
+	}
+
+	@Test // DATACASS-770
+	public void shouldPrependAllToSetViaColumnNameCollectionOfElements() {
+		Set<Currency> tmp = new LinkedHashSet<>();
+		tmp.add(currencyUSD);
+		tmp.add(currency);
+		Update update = updateMapper.getMappedObject(Update.empty().addTo("set_col").prependAll(tmp),
+				persistentEntity);
+
+		assertThat(update.getUpdateOperations()).hasSize(1);
+		assertThat(update.toString()).isEqualTo("set_col = {'US Dollar','Euro'} + set_col");
+	}
+
+	@Test // DATACASS-770
+	public void shouldAppendAllToSetViaColumnNameCollectionOfElements() {
+		Set<Currency> tmp = new LinkedHashSet<>();
+		tmp.add(currencyUSD);
+		tmp.add(currency);
+		Update update = updateMapper.getMappedObject(Update.empty().addTo("set_col").appendAll(tmp),
+				persistentEntity);
+
+		assertThat(update.getUpdateOperations()).hasSize(1);
+		assertThat(update.toString()).isEqualTo("set_col = set_col + {'US Dollar','Euro'}");
+	}
+
+	@Test // DATACASS-770
+	public void shouldAppendToSet() {
+
+		Update update = updateMapper.getMappedObject(Update.empty().addTo("set").append(currency),
+				persistentEntity);
+
+		assertThat(update.getUpdateOperations()).hasSize(1);
+		assertThat(update.toString()).isEqualTo("set_col = set_col + {'Euro'}");
+	}
+
+	@Test // DATACASS-770
+	public void shouldPrependToSet() {
+
+		Update update = updateMapper.getMappedObject(Update.empty().addTo("set").prepend(currency),
+				persistentEntity);
+
+		assertThat(update.getUpdateOperations()).hasSize(1);
+		assertThat(update.toString()).isEqualTo("set_col = {'Euro'} + set_col");
+	}
+
+	@Test // DATACASS-770
+	public void shouldRemoveFromSet() {
+
+		Update update = updateMapper.getMappedObject(Update.empty().remove("set", currency), persistentEntity);
+
+		assertThat(update.getUpdateOperations()).hasSize(1);
+		assertThat(update.toString()).isEqualTo("set_col = set_col - {'Euro'}");
 	}
 
 	@Test // DATACASS-343
