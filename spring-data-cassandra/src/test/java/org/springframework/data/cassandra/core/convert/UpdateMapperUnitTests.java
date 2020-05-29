@@ -22,18 +22,20 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.time.LocalTime;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Currency;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.LinkedHashSet;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
@@ -64,7 +66,7 @@ public class UpdateMapperUnitTests {
 
 	CassandraPersistentEntity<?> persistentEntity;
 
-	Currency currency = Currency.getInstance("EUR");
+	Currency currencyEUR = Currency.getInstance("EUR");
 	Currency currencyUSD = Currency.getInstance("USD");
 
 	MappingCassandraConverter cassandraConverter;
@@ -102,7 +104,7 @@ public class UpdateMapperUnitTests {
 		Update update = updateMapper.getMappedObject(Update.empty().set("firstName", "foo"), persistentEntity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
-		assertThat(update.toString()).isEqualTo("first_name = 'foo'");
+		assertThat(update).hasToString("first_name = 'foo'");
 	}
 
 	@Test // DATACASS-487
@@ -110,32 +112,34 @@ public class UpdateMapperUnitTests {
 
 		Manufacturer manufacturer = new Manufacturer("foobar");
 
-		Map<Manufacturer, Currency> map = Collections.singletonMap(manufacturer, currency);
+		Map<Manufacturer, Currency> map = Collections.singletonMap(manufacturer, currencyEUR);
 
 		Update update = Update.empty().set("manufacturers", map);
 
 		Update mappedUpdate = updateMapper.getMappedObject(update, persistentEntity);
 
 		assertThat(mappedUpdate.getUpdateOperations()).hasSize(1);
-		assertThat(mappedUpdate.toString()).isEqualTo("manufacturers = {{name:'foobar'}:'Euro'}");
+		assertThat(mappedUpdate).hasToString("manufacturers = {{name:'foobar'}:'Euro'}");
 	}
 
 	@Test // DATACASS-343
 	public void shouldCreateSetAtIndexUpdate() {
 
-		Update update = updateMapper.getMappedObject(Update.empty().set("list").atIndex(10).to(currency), persistentEntity);
+		Update update = updateMapper.getMappedObject(Update.empty().set("list").atIndex(10).to(currencyEUR),
+				persistentEntity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
-		assertThat(update.toString()).isEqualTo("list[10] = 'Euro'");
+		assertThat(update).hasToString("list[10] = 'Euro'");
 	}
 
 	@Test // DATACASS-343
 	public void shouldCreateSetAtKeyUpdate() {
 
-		Update update = updateMapper.getMappedObject(Update.empty().set("map").atKey("baz").to(currency), persistentEntity);
+		Update update = updateMapper.getMappedObject(Update.empty().set("map").atKey("baz").to(currencyEUR),
+				persistentEntity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
-		assertThat(update.toString()).isEqualTo("map['baz'] = 'Euro'");
+		assertThat(update).hasToString("map['baz'] = 'Euro'");
 	}
 
 	@Test // DATACASS-487
@@ -143,20 +147,22 @@ public class UpdateMapperUnitTests {
 
 		Manufacturer manufacturer = new Manufacturer("foobar");
 
-		Update update = updateMapper.getMappedObject(Update.empty().set("manufacturers").atKey(manufacturer).to(currency),
+		Update update = updateMapper
+				.getMappedObject(Update.empty().set("manufacturers").atKey(manufacturer).to(currencyEUR),
 				persistentEntity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
-		assertThat(update.toString()).isEqualTo("manufacturers[{name:'foobar'}] = 'Euro'");
+		assertThat(update).hasToString("manufacturers[{name:'foobar'}] = 'Euro'");
 	}
 
 	@Test // DATACASS-343
 	public void shouldAddToMap() {
 
-		Update update = updateMapper.getMappedObject(Update.empty().addTo("map").entry("foo", currency), persistentEntity);
+		Update update = updateMapper.getMappedObject(Update.empty().addTo("map").entry("foo", currencyEUR),
+				persistentEntity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
-		assertThat(update.toString()).isEqualTo("map = map + {'foo':'Euro'}");
+		assertThat(update).hasToString("map = map + {'foo':'Euro'}");
 	}
 
 	@Test // DATACASS-487
@@ -164,41 +170,41 @@ public class UpdateMapperUnitTests {
 
 		Manufacturer manufacturer = new Manufacturer("foobar");
 
-		Update update = Update.empty().addTo("manufacturers").entry(manufacturer, currency);
+		Update update = Update.empty().addTo("manufacturers").entry(manufacturer, currencyEUR);
 
 		Update mappedUpdate = updateMapper.getMappedObject(update, persistentEntity);
 
 		assertThat(mappedUpdate.getUpdateOperations()).hasSize(1);
-		assertThat(mappedUpdate.toString()).isEqualTo("manufacturers = manufacturers + {{name:'foobar'}:'Euro'}");
+		assertThat(mappedUpdate).hasToString("manufacturers = manufacturers + {{name:'foobar'}:'Euro'}");
 	}
 
 	@Test // DATACASS-343
 	public void shouldPrependAllToList() {
 
-		Update update = updateMapper.getMappedObject(Update.empty().addTo("list").prependAll("foo", currency),
+		Update update = updateMapper.getMappedObject(Update.empty().addTo("list").prependAll("foo", currencyEUR),
 				persistentEntity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
-		assertThat(update.toString()).isEqualTo("list = ['foo','Euro'] + list");
+		assertThat(update).hasToString("list = ['foo','Euro'] + list");
 	}
 
 	@Test // DATACASS-343
 	public void shouldAppendAllToList() {
 
-		Update update = updateMapper.getMappedObject(Update.empty().addTo("list").appendAll("foo", currency),
+		Update update = updateMapper.getMappedObject(Update.empty().addTo("list").appendAll("foo", currencyEUR),
 				persistentEntity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
-		assertThat(update.toString()).isEqualTo("list = list + ['foo','Euro']");
+		assertThat(update).hasToString("list = list + ['foo','Euro']");
 	}
 
 	@Test // DATACASS-343
 	public void shouldRemoveFromList() {
 
-		Update update = updateMapper.getMappedObject(Update.empty().remove("list", currency), persistentEntity);
+		Update update = updateMapper.getMappedObject(Update.empty().remove("list", currencyEUR), persistentEntity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
-		assertThat(update.toString()).isEqualTo("list = list - ['Euro']");
+		assertThat(update).hasToString("list = list - ['Euro']");
 	}
 
 	@Test // DATACASS-343
@@ -207,80 +213,78 @@ public class UpdateMapperUnitTests {
 		Update update = updateMapper.getMappedObject(Update.empty().clear("list"), persistentEntity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
-		assertThat(update.toString()).isEqualTo("list = []");
+		assertThat(update).hasToString("list = []");
 	}
 
 	@Test // DATACASS-770
 	public void shouldPrependAllToSet() {
 
-		Update update = updateMapper.getMappedObject(Update.empty().addTo("set").prependAll(currencyUSD, currency),
+		Update update = updateMapper.getMappedObject(Update.empty().addTo("set").prependAll(currencyUSD, currencyEUR),
 				persistentEntity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
-		assertThat(update.toString()).isEqualTo("set_col = {'US Dollar','Euro'} + set_col");
+		assertThat(update).hasToString("set_col = {'US Dollar','Euro'} + set_col");
 	}
 
 	@Test // DATACASS-770
 	public void shouldAppendAllToSet() {
 
-		Update update = updateMapper.getMappedObject(Update.empty().addTo("set").appendAll(currencyUSD, currency),
+		Update update = updateMapper.getMappedObject(Update.empty().addTo("set").appendAll(currencyUSD, currencyEUR),
 				persistentEntity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
-		assertThat(update.toString()).isEqualTo("set_col = set_col + {'US Dollar','Euro'}");
+		assertThat(update).hasToString("set_col = set_col + {'US Dollar','Euro'}");
 	}
 
 	@Test // DATACASS-770
 	public void shouldPrependAllToSetViaColumnNameCollectionOfElements() {
-		Set<Currency> tmp = new LinkedHashSet<>();
-		tmp.add(currencyUSD);
-		tmp.add(currency);
-		Update update = updateMapper.getMappedObject(Update.empty().addTo("set_col").prependAll(tmp),
+
+		Update update = updateMapper.getMappedObject(
+				Update.empty().addTo("set_col").prependAll(new LinkedHashSet<>(Arrays.asList(currencyUSD, currencyEUR))),
 				persistentEntity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
-		assertThat(update.toString()).isEqualTo("set_col = {'US Dollar','Euro'} + set_col");
+		assertThat(update).hasToString("set_col = {'US Dollar','Euro'} + set_col");
 	}
 
 	@Test // DATACASS-770
 	public void shouldAppendAllToSetViaColumnNameCollectionOfElements() {
-		Set<Currency> tmp = new LinkedHashSet<>();
-		tmp.add(currencyUSD);
-		tmp.add(currency);
-		Update update = updateMapper.getMappedObject(Update.empty().addTo("set_col").appendAll(tmp),
+
+		Update update = updateMapper.getMappedObject(
+				Update.empty().addTo("set_col").appendAll(new LinkedHashSet<>(Arrays.asList(currencyUSD, currencyEUR))),
 				persistentEntity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
-		assertThat(update.toString()).isEqualTo("set_col = set_col + {'US Dollar','Euro'}");
+		assertThat(update).hasToString("set_col = set_col + {'US Dollar','Euro'}");
 	}
 
 	@Test // DATACASS-770
 	public void shouldAppendToSet() {
 
-		Update update = updateMapper.getMappedObject(Update.empty().addTo("set").append(currency),
+		Update update = updateMapper.getMappedObject(Update.empty().addTo("set").append(currencyEUR),
 				persistentEntity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
-		assertThat(update.toString()).isEqualTo("set_col = set_col + {'Euro'}");
+		assertThat(update).hasToString("set_col = set_col + {'Euro'}");
 	}
 
 	@Test // DATACASS-770
 	public void shouldPrependToSet() {
 
-		Update update = updateMapper.getMappedObject(Update.empty().addTo("set").prepend(currency),
+		Update update = updateMapper.getMappedObject(Update.empty().addTo("set").prepend(currencyEUR),
 				persistentEntity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
-		assertThat(update.toString()).isEqualTo("set_col = {'Euro'} + set_col");
+		assertThat(update).hasToString("set_col = {'Euro'} + set_col");
 	}
 
 	@Test // DATACASS-770
 	public void shouldRemoveFromSet() {
 
-		Update update = updateMapper.getMappedObject(Update.empty().remove("set", currency), persistentEntity);
+		Update update = updateMapper.getMappedObject(Update.empty().remove("set", currencyEUR), persistentEntity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
-		assertThat(update.toString()).isEqualTo("set_col = set_col - {'Euro'}");
+		assertThat(update).hasToString("set_col = set_col - {'Euro'}");
 	}
 
 	@Test // DATACASS-343
@@ -289,7 +293,7 @@ public class UpdateMapperUnitTests {
 		Update update = updateMapper.getMappedObject(Update.empty().clear("set"), persistentEntity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
-		assertThat(update.toString()).isEqualTo("set_col = {}");
+		assertThat(update).hasToString("set_col = {}");
 	}
 
 	@Test // DATACASS-343
@@ -298,7 +302,7 @@ public class UpdateMapperUnitTests {
 		Update update = updateMapper.getMappedObject(Update.empty().increment("number"), persistentEntity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
-		assertThat(update.toString()).isEqualTo("number = number + 1");
+		assertThat(update).hasToString("number = number + 1");
 	}
 
 	@Test // DATACASS-343
@@ -307,7 +311,7 @@ public class UpdateMapperUnitTests {
 		Update update = updateMapper.getMappedObject(Update.empty().decrement("number"), persistentEntity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
-		assertThat(update.toString()).isEqualTo("number = number - 1");
+		assertThat(update).hasToString("number = number - 1");
 	}
 
 	@Test // DATACASS-523
@@ -317,7 +321,7 @@ public class UpdateMapperUnitTests {
 				this.persistentEntity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
-		assertThat(update.toString()).isEqualTo("tuple = ('foo')");
+		assertThat(update).hasToString("tuple = ('foo')");
 	}
 
 	@Test // DATACASS-302, DATACASS-694

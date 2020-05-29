@@ -323,7 +323,7 @@ public class Update {
 		 */
 		@Override
 		public Update prepend(Object value) {
-			return prependAll(Collections.singleton(value));
+			return prependAll(Collections.singletonList(value));
 		}
 
 		/* (non-Javadoc)
@@ -353,7 +353,7 @@ public class Update {
 		 */
 		@Override
 		public Update append(Object value) {
-			return appendAll(Collections.singleton(value));
+			return appendAll(Collections.singletonList(value));
 		}
 
 		/* (non-Javadoc)
