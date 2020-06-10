@@ -1,6 +1,12 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 2.1.18.RELEASE (2020-06-10)
+----------------------------------------------
+* DATACASS-757 - Remove Travis CI.
+* DATACASS-754 - Release 2.1.18 (Lovelace SR18).
+
+
 Changes in version 3.0.0.RELEASE (2020-05-12)
 ---------------------------------------------
 * DATACASS-760 - Upgrade to Cassandra driver 4.6.1.
