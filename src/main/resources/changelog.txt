@@ -1,6 +1,13 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 3.0.1.RELEASE (2020-06-10)
+---------------------------------------------
+* DATACASS-771 - Consider return type of suspended methods returning Flow.
+* DATACASS-770 - Adding element to set via update query fails.
+* DATACASS-761 - Release 3.0.1 (Neumann SR1).
+
+
 Changes in version 2.2.8.RELEASE (2020-06-10)
 ---------------------------------------------
 * DATACASS-757 - Remove Travis CI.
@@ -1216,6 +1223,7 @@ Changes in version 1.0.0.M1 (2014-03-31)
     * [DATACASS-100] - QueryOptions should only have ConsistencyLevel & RetryPolicy
     * [DATACASS-104] - Remove requirement for @PrimaryKeyClass when using composite primary keys
     * [DATACASS-107] - Support declarative query methods
+
 
 
 
