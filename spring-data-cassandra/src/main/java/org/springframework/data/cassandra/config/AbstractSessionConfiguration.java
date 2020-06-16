@@ -290,8 +290,7 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 
 				if (StringUtils.hasText(getSessionName())) {
 					options.add(DefaultDriverOption.SESSION_NAME, getSessionName());
-				}
-				else if (StringUtils.hasText(getClusterName())) {
+				} else if (StringUtils.hasText(getClusterName())) {
 					options.add(DefaultDriverOption.SESSION_NAME, getClusterName());
 				}
 
@@ -303,12 +302,11 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 
 				ConfigFactory.invalidateCaches();
 
-				return ConfigFactory.defaultOverrides()
-						.withFallback(options.build())
-						.withFallback(ConfigFactory.defaultReference())
-						.resolve();
+				return ConfigFactory.defaultOverrides().withFallback(options.build()) //
+						.withFallback(ConfigFactory.defaultReference()) //
+						.getConfig(DefaultDriverConfigLoader.DEFAULT_ROOT_PATH);
 
-			}, DefaultDriverConfigLoader.DEFAULT_ROOT_PATH);
+			});
 
 			sessionBuilder.withConfigLoader(builder.build());
 
