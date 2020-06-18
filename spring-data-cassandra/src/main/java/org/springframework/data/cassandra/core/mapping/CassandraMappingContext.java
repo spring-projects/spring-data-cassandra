@@ -17,7 +17,7 @@ package org.springframework.data.cassandra.core.mapping;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
@@ -79,7 +79,7 @@ public class CassandraMappingContext
 	private @Deprecated CodecRegistry codecRegistry = CodecRegistry.DEFAULT;
 
 	// caches
-	private final Map<CqlIdentifier, Set<CassandraPersistentEntity<?>>> entitySetsByTableName = new HashMap<>();
+	private final Map<CqlIdentifier, Set<CassandraPersistentEntity<?>>> entitySetsByTableName = new ConcurrentHashMap<>();
 
 	private final Set<BasicCassandraPersistentEntity<?>> tableEntities = new HashSet<>();
 	private final Set<BasicCassandraPersistentEntity<?>> userDefinedTypes = new HashSet<>();
