@@ -15,7 +15,6 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import static org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification.*;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -86,7 +85,7 @@ public class CassandraMappingContext
 	private CodecRegistry codecRegistry = CodecRegistry.DEFAULT_INSTANCE;
 
 	// caches
-	private final Map<CqlIdentifier, Set<CassandraPersistentEntity<?>>> entitySetsByTableName = new HashMap<>();
+	private final Map<CqlIdentifier, Set<CassandraPersistentEntity<?>>> entitySetsByTableName = new ConcurrentHashMap<>();
 
 	private final Set<BasicCassandraPersistentEntity<?>> tableEntities = new HashSet<>();
 	private final Set<BasicCassandraPersistentEntity<?>> userDefinedTypes = new HashSet<>();
