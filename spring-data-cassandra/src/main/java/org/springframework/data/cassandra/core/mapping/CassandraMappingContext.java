@@ -15,8 +15,8 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 import java.util.stream.StreamSupport;
 
@@ -87,8 +87,9 @@ public class CassandraMappingContext
 	// caches
 	private final Map<CqlIdentifier, Set<CassandraPersistentEntity<?>>> entitySetsByTableName = new ConcurrentHashMap<>();
 
-	private final Set<BasicCassandraPersistentEntity<?>> tableEntities = new HashSet<>();
-	private final Set<BasicCassandraPersistentEntity<?>> userDefinedTypes = new HashSet<>();
+	private final Set<BasicCassandraPersistentEntity<?>> tableEntities = ConcurrentHashMap.newKeySet();
+
+	private final Set<BasicCassandraPersistentEntity<?>> userDefinedTypes = ConcurrentHashMap.newKeySet();
 
 	/**
 	 * Create a new {@link CassandraMappingContext}.
@@ -315,7 +316,7 @@ public class CassandraMappingContext
 			// now do some caching of the entity
 
 			Set<CassandraPersistentEntity<?>> entities = this.entitySetsByTableName.computeIfAbsent(entity.getTableName(),
-					cqlIdentifier -> new HashSet<>());
+					cqlIdentifier -> ConcurrentHashMap.newKeySet());
 
 			entities.add(entity);
 
@@ -456,7 +457,7 @@ public class CassandraMappingContext
 		Assert.notNull(tableName, "Table name must not be null");
 		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
 
-		CreateTableSpecification specification = createTable(tableName);
+		CreateTableSpecification specification = CreateTableSpecification.createTable(tableName);
 
 		for (CassandraPersistentProperty property : entity) {
 
