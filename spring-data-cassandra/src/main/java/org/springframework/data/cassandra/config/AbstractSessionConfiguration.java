@@ -302,11 +302,11 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 
 				ConfigFactory.invalidateCaches();
 
-				return ConfigFactory.defaultOverrides().withFallback(options.build()) //
-						.withFallback(ConfigFactory.defaultReference()) //
-						.getConfig(DefaultDriverConfigLoader.DEFAULT_ROOT_PATH);
+				return ConfigFactory.defaultOverrides() //
+						.withFallback(options.build()) //
+						.withFallback(ConfigFactory.defaultReference());
 
-			});
+			}, DefaultDriverConfigLoader.DEFAULT_ROOT_PATH);
 
 			sessionBuilder.withConfigLoader(builder.build());
 
@@ -334,8 +334,7 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 		private final Map<String, String> options = new LinkedHashMap<>();
 
 		private CassandraDriverOptions add(DriverOption option, String value) {
-			String key = createKeyFor(option);
-			this.options.put(key, value);
+			this.options.put(option.getPath(), value);
 			return this;
 		}
 
@@ -347,8 +346,5 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 			return ConfigFactory.parseMap(this.options, "Environment");
 		}
 
-		private static String createKeyFor(DriverOption option) {
-			return String.format("%s.%s", DefaultDriverConfigLoader.DEFAULT_ROOT_PATH, option.getPath());
-		}
 	}
 }
