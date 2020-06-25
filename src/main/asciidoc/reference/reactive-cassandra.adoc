@@ -25,7 +25,7 @@ First, you need to set up a running Apache Cassandra server.
 See the
 https://cassandra.apache.org/doc/latest/getting_started/index.html[Apache Cassandra Quick Start Guide]
 for an explanation on how to start Apache Cassandra.
-Once installed, starting Cassandra is typically a matter of executing the following command: `CASSANDRA_HOME/bin/cassandra -f`.
+Once installed, starting Cassandra is typically a matter of running the following command: `CASSANDRA_HOME/bin/cassandra -f`.
 
 To create a Spring project in STS, go to File -> New -> Spring Template Project -> Simple Spring Utility Project and press Yes when prompted.
 Then enter a project and a package name, such as `org.spring.data.cassandra.example`.
@@ -121,7 +121,7 @@ as well as the detailed documentation {spring-framework-docs}core.html#beans-jav
 === Registering a Session instance using Java-based metadata
 
 You can configure Reactive Cassandra support by using <<cassandra.cassandra-java-config,Java Configuration classes>>.
-Reactive Cassandra support adapts a `CqlSession` to provide a reactive execution model on top of an asynchronous driver.
+Reactive Cassandra support adapts a `CqlSession` to provide a reactive processing model on top of an asynchronous driver.
 
 A reactive `CqlSession` is configured similarly to an imperative `CqlSession`.
 We provide supporting configuration classes that come with predefined defaults and require only environment-specific information to configure Spring Data for Apache Cassandra.
@@ -145,8 +145,8 @@ See <<cassandra.schema-management>> for further details.
 
 The `ReactiveCqlTemplate` class is the central class in the core CQL package.
 It handles the creation and release of resources.
-It performs the basic tasks of the core CQL workflow, such as statement creation and execution, leaving application code to provide CQL and extract results.
-The `ReactiveCqlTemplate` class executes CQL queries and update statements and performs iteration over `ResultSet` instances and extraction of returned parameter values.
+It performs the basic tasks of the core CQL workflow, such as creating and running statements, leaving application code to provide CQL and extract results.
+The `ReactiveCqlTemplate` class runs CQL queries and update statements and performs iteration over `ResultSet` instances and extraction of returned parameter values.
 It also catches CQL exceptions and translates them into the generic, more informative, exception hierarchy defined in the `org.springframework.dao` package.
 
 When you use the `ReactiveCqlTemplate` in your code, you need only implement callback interfaces, which have a clearly defined contract.
@@ -261,7 +261,7 @@ include::../{example-root}/ReactiveCqlTemplateExamples.java[tags=delete]
 include::exception-translation.adoc[]
 
 `ReactiveCqlTemplate` and `ReactiveCassandraTemplate` propagate exceptions as early as possible.
-Exceptions that occur during execution of the reactive sequence are emitted as error signals.
+Exceptions that occur during the processing of the reactive sequence are emitted as error signals.
 
 [[cassandra.reactive.template]]
 == Introduction to `ReactiveCassandraTemplate`
