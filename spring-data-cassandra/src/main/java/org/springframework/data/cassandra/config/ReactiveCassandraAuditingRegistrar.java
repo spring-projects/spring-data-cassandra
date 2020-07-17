@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 the original author or authors.
+ * Copyright 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,20 +23,20 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.type.AnnotationMetadata;
-import org.springframework.data.auditing.IsNewAwareAuditingHandler;
+import org.springframework.data.auditing.ReactiveIsNewAwareAuditingHandler;
 import org.springframework.data.auditing.config.AuditingBeanDefinitionRegistrarSupport;
 import org.springframework.data.auditing.config.AuditingConfiguration;
-import org.springframework.data.cassandra.core.mapping.event.AuditingEntityCallback;
+import org.springframework.data.cassandra.core.mapping.event.ReactiveAuditingEntityCallback;
 import org.springframework.data.config.ParsingUtils;
 import org.springframework.util.Assert;
 
 /**
- * {@link ImportBeanDefinitionRegistrar} to enable {@link EnableCassandraAuditing} annotation.
+ * {@link ImportBeanDefinitionRegistrar} to enable {@link EnableReactiveCassandraAuditing} annotation.
  *
  * @author Mark Paluch
- * @since 2.2
+ * @since 3.1
  */
-class CassandraAuditingRegistrar extends AuditingBeanDefinitionRegistrarSupport {
+class ReactiveCassandraAuditingRegistrar extends AuditingBeanDefinitionRegistrarSupport {
 
 	/*
 	 * (non-Javadoc)
@@ -44,7 +44,7 @@ class CassandraAuditingRegistrar extends AuditingBeanDefinitionRegistrarSupport 
 	 */
 	@Override
 	protected Class<? extends Annotation> getAnnotation() {
-		return EnableCassandraAuditing.class;
+		return EnableReactiveCassandraAuditing.class;
 	}
 
 	/*
@@ -78,7 +78,7 @@ class CassandraAuditingRegistrar extends AuditingBeanDefinitionRegistrarSupport 
 
 		Assert.notNull(configuration, "AuditingConfiguration must not be null!");
 
-		BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(IsNewAwareAuditingHandler.class);
+		BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(ReactiveIsNewAwareAuditingHandler.class);
 
 		BeanDefinitionBuilder definition = BeanDefinitionBuilder.genericBeanDefinition(PersistentEntitiesFactoryBean.class);
 		definition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_CONSTRUCTOR);
@@ -98,14 +98,13 @@ class CassandraAuditingRegistrar extends AuditingBeanDefinitionRegistrarSupport 
 		Assert.notNull(auditingHandlerDefinition, "BeanDefinition must not be null!");
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null!");
 
-		BeanDefinitionBuilder listenerBeanDefinitionBuilder = BeanDefinitionBuilder
-				.rootBeanDefinition(AuditingEntityCallback.class);
-		listenerBeanDefinitionBuilder
-				.addConstructorArgValue(ParsingUtils.getObjectFactoryBeanDefinition(getAuditingHandlerBeanName(), registry));
+		BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(ReactiveAuditingEntityCallback.class);
 
-		registerInfrastructureBeanWithId(listenerBeanDefinitionBuilder.getBeanDefinition(),
-				AuditingEntityCallback.class.getName(), registry);
+		builder.addConstructorArgValue(ParsingUtils.getObjectFactoryBeanDefinition(getAuditingHandlerBeanName(), registry));
+		builder.getRawBeanDefinition().setSource(auditingHandlerDefinition.getSource());
 
+		registerInfrastructureBeanWithId(builder.getBeanDefinition(), ReactiveAuditingEntityCallback.class.getName(),
+				registry);
 	}
 
 }

@@ -31,3 +31,23 @@ class Config {
 
 If you expose a bean of type `AuditorAware` to the `ApplicationContext`, the auditing infrastructure picks it up automatically and uses it to determine the current user to be set on domain types.
 If you have multiple implementations registered in the `ApplicationContext`, you can select the one to be used by explicitly setting the `auditorAwareRef` attribute of `@EnableCassandraAuditing`.
+
+To enable auditing, leveraging a reactive programming model, use the `@EnableReactiveCassandraAuditing` annotation. +
+If you expose a bean of type `ReactiveAuditorAware` to the `ApplicationContext`, the auditing infrastructure picks it up automatically and uses it to determine the current user to be set on domain types.
+If you have multiple implementations registered in the `ApplicationContext`, you can select the one to be used by explicitly setting the `auditorAwareRef` attribute of `@EnableReactiveCassandraAuditing`.
+
+.Activating reactive auditing using JavaConfig
+====
+[source,java]
+----
+@Configuration
+@EnableReactiveCassandraAuditing
+class Config {
+
+  @Bean
+  public ReactiveAuditorAware<AuditableUser> myAuditorProvider() {
+      return new AuditorAwareImpl();
+  }
+}
+----
+====

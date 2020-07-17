@@ -3,6 +3,11 @@
 
 This chapter summarizes changes and new features for each release.
 
+[[new-features.3-1-0]]
+== What's new in Spring Data for Apache Cassandra 3.1
+
+* <<cassandra.auditing,Reactive auditing>> enabled through `@EnableReactiveCassandraAuditing`. `@EnableCassandraAuditing` no longer registers `ReactiveAuditingEntityCallback`.
+
 [[new-features.3-0-0]]
 == What's new in Spring Data for Apache Cassandra 3.0
 
