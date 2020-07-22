@@ -1,6 +1,12 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 2.1.19.RELEASE (2020-07-22)
+----------------------------------------------
+* DATACASS-777 - ConcurrentModificationException in CassandraTemplate.getTableName.
+* DATACASS-773 - Release 2.1.19 (Lovelace SR19).
+
+
 Changes in version 3.1.0-M1 (2020-06-25)
 ----------------------------------------
 * DATACASS-779 - Upgrade to Cassandra driver 4.7.2.
@@ -1244,6 +1250,7 @@ Changes in version 1.0.0.M1 (2014-03-31)
     * [DATACASS-100] - QueryOptions should only have ConsistencyLevel & RetryPolicy
     * [DATACASS-104] - Remove requirement for @PrimaryKeyClass when using composite primary keys
     * [DATACASS-107] - Support declarative query methods
+
 
 
 
