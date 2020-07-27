@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-import org.springframework.data.cassandra.repository.query.ExpressionEvaluatingParameterBinder.ParameterBinding;
+import org.springframework.data.cassandra.repository.query.BindingContext.ParameterBinding;
 import org.springframework.data.cassandra.repository.query.StringBasedQuery.ParameterBindingParser;
 
 /**

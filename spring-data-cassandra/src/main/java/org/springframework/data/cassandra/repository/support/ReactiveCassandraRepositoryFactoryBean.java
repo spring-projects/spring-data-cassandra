@@ -15,11 +15,16 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
+import java.util.Optional;
+
+import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
+import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
+import org.springframework.data.repository.query.ReactiveExtensionAwareQueryMethodEvaluationContextProvider;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -78,6 +83,16 @@ public class ReactiveCassandraRepositoryFactoryBean<T extends Repository<S, ID>,
 		Assert.state(operations != null, "ReactiveCassandraOperations must not be null");
 
 		return getFactoryInstance(operations);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport#createDefaultQueryMethodEvaluationContextProvider(ListableBeanFactory)
+	 */
+	@Override
+	protected Optional<QueryMethodEvaluationContextProvider> createDefaultQueryMethodEvaluationContextProvider(
+			ListableBeanFactory beanFactory) {
+		return Optional.of(new ReactiveExtensionAwareQueryMethodEvaluationContextProvider(beanFactory));
 	}
 
 	/**

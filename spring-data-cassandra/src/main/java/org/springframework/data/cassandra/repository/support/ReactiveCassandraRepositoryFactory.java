@@ -34,7 +34,9 @@ import org.springframework.data.repository.core.support.ReactiveRepositoryFactor
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
+import org.springframework.data.repository.query.ReactiveQueryMethodEvaluationContextProvider;
 import org.springframework.data.repository.query.RepositoryQuery;
+import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -64,6 +66,8 @@ public class ReactiveCassandraRepositoryFactory extends ReactiveRepositoryFactor
 
 		this.operations = cassandraOperations;
 		this.mappingContext = cassandraOperations.getConverter().getMappingContext();
+
+		setEvaluationContextProvider(ReactiveQueryMethodEvaluationContextProvider.DEFAULT);
 	}
 
 	/* (non-Javadoc)
@@ -91,7 +95,8 @@ public class ReactiveCassandraRepositoryFactory extends ReactiveRepositoryFactor
 	@Override
 	protected Optional<QueryLookupStrategy> getQueryLookupStrategy(@Nullable Key key,
 			QueryMethodEvaluationContextProvider evaluationContextProvider) {
-		return Optional.of(new CassandraQueryLookupStrategy(operations, evaluationContextProvider, mappingContext));
+		return Optional.of(new CassandraQueryLookupStrategy(operations,
+				(ReactiveQueryMethodEvaluationContextProvider) evaluationContextProvider, mappingContext));
 	}
 
 	/* (non-Javadoc)
@@ -113,12 +118,16 @@ public class ReactiveCassandraRepositoryFactory extends ReactiveRepositoryFactor
 	 */
 	private static class CassandraQueryLookupStrategy implements QueryLookupStrategy {
 
-		private final QueryMethodEvaluationContextProvider evaluationContextProvider;
+		private final ReactiveQueryMethodEvaluationContextProvider evaluationContextProvider;
+
 		private final ReactiveCassandraOperations operations;
+
 		private final MappingContext<? extends CassandraPersistentEntity<?>, ? extends CassandraPersistentProperty> mappingContext;
 
+		private final ExpressionParser expressionParser = new CachingExpressionParser(EXPRESSION_PARSER);
+
 		CassandraQueryLookupStrategy(ReactiveCassandraOperations operations,
-				QueryMethodEvaluationContextProvider evaluationContextProvider,
+				ReactiveQueryMethodEvaluationContextProvider evaluationContextProvider,
 				MappingContext<? extends CassandraPersistentEntity<?>, ? extends CassandraPersistentProperty> mappingContext) {
 
 			this.evaluationContextProvider = evaluationContextProvider;
@@ -141,10 +150,10 @@ public class ReactiveCassandraRepositoryFactory extends ReactiveRepositoryFactor
 			if (namedQueries.hasQuery(namedQueryName)) {
 				String namedQuery = namedQueries.getQuery(namedQueryName);
 
-				return new ReactiveStringBasedCassandraQuery(namedQuery, queryMethod, operations, EXPRESSION_PARSER,
+				return new ReactiveStringBasedCassandraQuery(namedQuery, queryMethod, operations, expressionParser,
 						evaluationContextProvider);
 			} else if (queryMethod.hasAnnotatedQuery()) {
-				return new ReactiveStringBasedCassandraQuery(queryMethod, operations, EXPRESSION_PARSER,
+				return new ReactiveStringBasedCassandraQuery(queryMethod, operations, expressionParser,
 						evaluationContextProvider);
 			} else {
 				return new ReactivePartTreeCassandraQuery(queryMethod, operations);

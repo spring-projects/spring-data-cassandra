@@ -49,7 +49,7 @@ import com.datastax.oss.driver.api.core.cql.Statement;
 @FunctionalInterface
 interface ReactiveCassandraQueryExecution {
 
-	Object execute(Statement<?> statement, Class<?> type);
+	Publisher<? extends Object> execute(Statement<?> statement, Class<?> type);
 
 	/**
 	 * {@link ReactiveCassandraQueryExecution} for a {@link org.springframework.data.domain.Slice}.
@@ -72,7 +72,7 @@ interface ReactiveCassandraQueryExecution {
 		 * @see org.springframework.data.cassandra.repository.query.CassandraQueryExecution#execute(java.lang.String, java.lang.Class)
 		 */
 		@Override
-		public Object execute(Statement<?> statement, Class<?> type) {
+		public Publisher<? extends Object> execute(Statement<?> statement, Class<?> type) {
 
 			CassandraPageRequest.validatePageable(pageable);
 
@@ -114,7 +114,7 @@ interface ReactiveCassandraQueryExecution {
 		 * @see org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution#execute(java.lang.String, java.lang.Class)
 		 */
 		@Override
-		public Object execute(Statement<?> statement, Class<?> type) {
+		public Publisher<? extends Object> execute(Statement<?> statement, Class<?> type) {
 			return operations.select(statement, type);
 		}
 	}
@@ -139,7 +139,7 @@ interface ReactiveCassandraQueryExecution {
 		 * @see org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution#execute(java.lang.String, java.lang.Class)
 		 */
 		@Override
-		public Object execute(Statement<?> statement, Class<?> type) {
+		public Publisher<? extends Object> execute(Statement<?> statement, Class<?> type) {
 
 			return operations.select(statement, type).buffer(2).map(objects -> {
 
@@ -175,7 +175,7 @@ interface ReactiveCassandraQueryExecution {
 		 * @see org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution#execute(com.datastax.oss.driver.api.core.cql.Statement, java.lang.Class)
 		 */
 		@Override
-		public Object execute(Statement<?> statement, Class<?> type) {
+		public Publisher<? extends Object> execute(Statement<?> statement, Class<?> type) {
 
 			Mono<List<Row>> rows = this.operations.getReactiveCqlOperations().queryForRows(statement).buffer(2).next();
 
@@ -223,8 +223,8 @@ interface ReactiveCassandraQueryExecution {
 		 * @see org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution#execute(java.lang.String, java.lang.Class)
 		 */
 		@Override
-		public Object execute(Statement<?> statement, Class<?> type) {
-			return converter.convert(delegate.execute(statement, type));
+		public Publisher<? extends Object> execute(Statement<?> statement, Class<?> type) {
+			return (Publisher) converter.convert(delegate.execute(statement, type));
 		}
 	}
 

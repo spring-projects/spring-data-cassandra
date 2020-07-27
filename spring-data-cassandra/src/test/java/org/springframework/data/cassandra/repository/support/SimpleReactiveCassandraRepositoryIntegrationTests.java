@@ -107,7 +107,6 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractE
 		factory.setRepositoryBaseClass(SimpleReactiveCassandraRepository.class);
 		factory.setBeanClassLoader(classLoader);
 		factory.setBeanFactory(beanFactory);
-		factory.setEvaluationContextProvider(ExtensionAwareQueryMethodEvaluationContextProvider.DEFAULT);
 
 		repository = factory.getRepository(UserRepostitory.class);
 

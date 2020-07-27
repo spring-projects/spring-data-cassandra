@@ -176,7 +176,8 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 		CassandraParameterAccessor accessor = new CassandraParametersParameterAccessor(partTreeQuery.getQueryMethod(),
 				args);
 
-		return partTreeQuery.createQuery(new ConvertingParameterAccessor(mockCassandraOperations.getConverter(), accessor));
+		return partTreeQuery.createQuery(new ConvertingParameterAccessor(mockCassandraOperations.getConverter(), accessor))
+				.block();
 	}
 
 	private ReactivePartTreeCassandraQuery createQueryForMethod(Class<?> repositoryInterface, String methodName,

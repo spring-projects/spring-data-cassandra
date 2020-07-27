@@ -31,6 +31,7 @@ import org.springframework.data.cassandra.core.query.Columns;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.repository.Query.Idempotency;
 import org.springframework.data.mapping.context.MappingContext;
+import org.springframework.data.mapping.model.SpELExpressionEvaluator;
 import org.springframework.data.repository.query.QueryCreationException;
 import org.springframework.data.repository.query.ResultProcessor;
 import org.springframework.data.repository.query.ReturnedType;
@@ -229,11 +230,12 @@ class QueryStatementCreator {
 	 * @param parameterAccessor must not be {@literal null}.
 	 * @return the {@link Statement}.
 	 */
-	SimpleStatement select(StringBasedQuery stringBasedQuery, CassandraParameterAccessor parameterAccessor) {
+	SimpleStatement select(StringBasedQuery stringBasedQuery, CassandraParameterAccessor parameterAccessor,
+			SpELExpressionEvaluator evaluator) {
 
 		try {
 
-			SimpleStatement boundQuery = stringBasedQuery.bindQuery(parameterAccessor, this.queryMethod);
+			SimpleStatement boundQuery = stringBasedQuery.bindQuery(parameterAccessor, evaluator);
 
 			Optional<QueryOptions> queryOptions = Optional.ofNullable(parameterAccessor.getQueryOptions());
 

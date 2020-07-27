@@ -38,7 +38,6 @@ import org.springframework.data.repository.query.ResultProcessor;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
-import com.datastax.oss.driver.api.core.cql.Statement;
 
 /**
  * Base class for reactive {@link RepositoryQuery} implementations for Cassandra.
@@ -81,18 +80,10 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 	 */
 	@Override
 	public Object execute(Object[] parameters) {
-
-		return getQueryMethod().hasReactiveWrapperParameter() ? executeDeferred(parameters) : executeNow(parameters);
+		return Flux.defer(() -> executeLater(parameters));
 	}
 
-	@SuppressWarnings("unchecked")
-	private Object executeDeferred(Object[] parameters) {
-
-		return getQueryMethod().isCollectionQuery() ? Flux.defer(() -> (Publisher<Object>) execute(parameters))
-				: Mono.defer(() -> (Mono<Object>) execute(parameters));
-	}
-
-	private Object executeNow(Object[] parameters) {
+	private Publisher<Object> executeLater(Object[] parameters) {
 
 		ReactiveCassandraParameterAccessor parameterAccessor = new ReactiveCassandraParameterAccessor(getQueryMethod(),
 				parameters);
@@ -100,7 +91,7 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 		CassandraParameterAccessor convertingParameterAccessor = new ConvertingParameterAccessor(
 				getRequiredConverter(getReactiveCassandraOperations()), parameterAccessor);
 
-		Statement<?> statement = createQuery(convertingParameterAccessor);
+		Mono<SimpleStatement> statement = createQuery(convertingParameterAccessor);
 
 		ResultProcessor resultProcessor = getQueryMethod().getResultProcessor()
 				.withDynamicProjection(convertingParameterAccessor);
@@ -110,7 +101,7 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 
 		Class<?> resultType = resolveResultType(resultProcessor);
 
-		return queryExecution.execute(statement, resultType);
+		return statement.flatMapMany(it -> queryExecution.execute(it, resultType));
 	}
 
 	private Class<?> resolveResultType(ResultProcessor resultProcessor) {
@@ -126,7 +117,7 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 	 *
 	 * @param accessor must not be {@literal null}.
 	 */
-	protected abstract SimpleStatement createQuery(CassandraParameterAccessor accessor);
+	protected abstract Mono<SimpleStatement> createQuery(CassandraParameterAccessor accessor);
 
 	protected ReactiveCassandraOperations getReactiveCassandraOperations() {
 		return this.operations;

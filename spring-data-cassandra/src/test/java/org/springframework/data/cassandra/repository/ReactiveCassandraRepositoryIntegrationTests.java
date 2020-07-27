@@ -111,7 +111,6 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractSpringD
 		factory.setRepositoryBaseClass(SimpleReactiveCassandraRepository.class);
 		factory.setBeanClassLoader(classLoader);
 		factory.setBeanFactory(beanFactory);
-		factory.setEvaluationContextProvider(QueryMethodEvaluationContextProvider.DEFAULT);
 
 		repository = factory.getRepository(UserRepository.class);
 		groupRepostitory = factory.getRepository(GroupRepository.class);
