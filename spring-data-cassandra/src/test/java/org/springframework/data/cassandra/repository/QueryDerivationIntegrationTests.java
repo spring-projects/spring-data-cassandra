@@ -29,9 +29,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.assertj.core.api.Assertions;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Configuration;
@@ -60,8 +60,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.util.Version;
 import org.springframework.lang.Nullable;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 
@@ -71,10 +70,9 @@ import com.datastax.oss.driver.api.core.CqlSession;
  * @author Mark Paluch
  * @author Christoph Strobl
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+@SpringJUnitConfig
 @SuppressWarnings("all")
-public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
+class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
 
 	@Configuration
 	@EnableCassandraRepositories(considerNestedRepositories = true,
@@ -102,7 +100,7 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 	private Person flynn;
 	private Version cassandraVersion;
 
-	@Before
+	@BeforeEach
 	public void before() {
 
 		deleteAllEntities();
@@ -130,9 +128,10 @@ public class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedC
 		assertThat(result).contains(walter, skyler, flynn);
 	}
 
-	@Test(expected = IncorrectResultSizeDataAccessException.class) // DATACASS-525
+	@Test // DATACASS-525
 	public void findOneWithManyResultsShouldFail() {
-		personRepository.findSomeByLastname("White");
+		assertThatExceptionOfType(IncorrectResultSizeDataAccessException.class)
+				.isThrownBy(() -> personRepository.findSomeByLastname("White"));
 	}
 
 	@Test // DATACASS-525

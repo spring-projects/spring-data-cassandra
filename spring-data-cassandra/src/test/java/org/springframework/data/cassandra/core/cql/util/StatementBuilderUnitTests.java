@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.Collections;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
@@ -32,10 +32,10 @@ import com.datastax.oss.driver.api.querybuilder.relation.Relation;
  *
  * @author Mark Paluch
  */
-public class StatementBuilderUnitTests {
+class StatementBuilderUnitTests {
 
 	@Test // DATACASS-656
-	public void shouldCreateSimpleStatement() {
+	void shouldCreateSimpleStatement() {
 
 		SimpleStatement statement = StatementBuilder.of(QueryBuilder.selectFrom("person").all()).build();
 
@@ -43,7 +43,7 @@ public class StatementBuilderUnitTests {
 	}
 
 	@Test // DATACASS-656
-	public void shouldApplyBuilderFunction() {
+	void shouldApplyBuilderFunction() {
 
 		SimpleStatement statement = StatementBuilder.of(QueryBuilder.selectFrom("person").all())
 				.apply(select -> select.orderBy("foo", ClusteringOrder.ASC)).build();
@@ -52,7 +52,7 @@ public class StatementBuilderUnitTests {
 	}
 
 	@Test // DATACASS-656
-	public void shouldApplyBindFunction() {
+	void shouldApplyBindFunction() {
 
 		SimpleStatement statement = StatementBuilder.of(QueryBuilder.selectFrom("person").all())
 				.bind((select, factory) -> select.where(Relation.column("foo").isEqualTo(factory.create("bar")))).build();
@@ -61,7 +61,7 @@ public class StatementBuilderUnitTests {
 	}
 
 	@Test // DATACASS-656
-	public void shouldBindByIndex() {
+	void shouldBindByIndex() {
 
 		SimpleStatement statement = StatementBuilder.of(QueryBuilder.selectFrom("person").all())
 				.bind((select, factory) -> select.where(Relation.column("foo").isEqualTo(factory.create("bar"))))
@@ -72,7 +72,7 @@ public class StatementBuilderUnitTests {
 	}
 
 	@Test // DATACASS-656
-	public void shouldBindList() {
+	void shouldBindList() {
 
 		SimpleStatement statement = StatementBuilder.of(QueryBuilder.selectFrom("person").all())
 				.bind((select, factory) -> select
@@ -83,7 +83,7 @@ public class StatementBuilderUnitTests {
 	}
 
 	@Test // DATACASS-656
-	public void shouldBindSet() {
+	void shouldBindSet() {
 
 		SimpleStatement statement = StatementBuilder.of(QueryBuilder.selectFrom("person").all())
 				.bind((select, factory) -> select
@@ -94,7 +94,7 @@ public class StatementBuilderUnitTests {
 	}
 
 	@Test // DATACASS-656
-	public void shouldBindMap() {
+	void shouldBindMap() {
 
 		SimpleStatement statement = StatementBuilder.of(QueryBuilder.selectFrom("person").all())
 				.bind((select, factory) -> select
@@ -105,7 +105,7 @@ public class StatementBuilderUnitTests {
 	}
 
 	@Test // DATACASS-656
-	public void shouldBindByName() {
+	void shouldBindByName() {
 
 		SimpleStatement statement = StatementBuilder.of(QueryBuilder.selectFrom("person").all())
 				.bind((select, factory) -> select.where(Relation.column("foo").isEqualTo(factory.create("bar"))))
@@ -116,7 +116,7 @@ public class StatementBuilderUnitTests {
 	}
 
 	@Test // DATACASS-656
-	public void shouldApplyFunctionsInOrder() {
+	void shouldApplyFunctionsInOrder() {
 
 		SimpleStatement statement = StatementBuilder.of(QueryBuilder.selectFrom("person").all())
 				.bind((select, factory) -> select.where(Relation.column("foo").isEqualTo(factory.create("bar"))))
@@ -129,7 +129,7 @@ public class StatementBuilderUnitTests {
 	}
 
 	@Test // DATACASS-656
-	public void shouldNotifyOnBuild() {
+	void shouldNotifyOnBuild() {
 
 		SimpleStatement statement = StatementBuilder.of(QueryBuilder.selectFrom("person").all())
 				.onBuild(statementBuilder -> statementBuilder.addPositionalValue("foo"))
@@ -141,7 +141,7 @@ public class StatementBuilderUnitTests {
 	}
 
 	@Test // DATACASS-708
-	public void shouldTransformBuiltStatement() {
+	void shouldTransformBuiltStatement() {
 
 		SimpleStatement statement = StatementBuilder.of(QueryBuilder.selectFrom("person").all())
 				.transform(statement1 -> statement1.setExecutionProfileName("foo"))

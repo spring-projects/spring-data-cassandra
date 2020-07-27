@@ -19,12 +19,12 @@ import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assume.*;
 import static org.springframework.data.cassandra.core.cql.generator.AlterUserTypeCqlGenerator.*;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.data.cassandra.core.cql.keyspace.AlterUserTypeSpecification;
 import org.springframework.data.cassandra.support.CassandraVersion;
-import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
 import org.springframework.data.util.Version;
 
 import com.datastax.oss.driver.api.core.type.DataTypes;
@@ -34,15 +34,15 @@ import com.datastax.oss.driver.api.core.type.DataTypes;
  *
  * @author Mark Paluch
  */
-public class AlterUserTypeCqlGeneratorIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
+class AlterUserTypeCqlGeneratorIntegrationTests extends AbstractKeyspaceCreatingIntegrationTests {
 
-	static final Version CASSANDRA_3_10 = Version.parse("3.10");
-	static final Version CASSANDRA_3_0_10 = Version.parse("3.0.10");
+	private static final Version CASSANDRA_3_10 = Version.parse("3.10");
+	private static final Version CASSANDRA_3_0_10 = Version.parse("3.0.10");
 
-	Version cassandraVersion;
+	private Version cassandraVersion;
 
-	@Before
-	public void setUp() throws Exception {
+	@BeforeEach
+	void setUp() throws Exception {
 
 		cassandraVersion = CassandraVersion.get(session);
 
@@ -51,7 +51,7 @@ public class AlterUserTypeCqlGeneratorIntegrationTests extends AbstractKeyspaceC
 	}
 
 	@Test // DATACASS-172
-	public void alterTypeShouldAddField() {
+	void alterTypeShouldAddField() {
 
 		AlterUserTypeSpecification spec = AlterUserTypeSpecification.alterType("address")//
 				.add("street", DataTypes.TEXT);
@@ -60,7 +60,7 @@ public class AlterUserTypeCqlGeneratorIntegrationTests extends AbstractKeyspaceC
 	}
 
 	@Test // DATACASS-172, DATACASS-429
-	public void alterTypeShouldAlterField() {
+	void alterTypeShouldAlterField() {
 
 		assumeTrue(cassandraVersion.isLessThan(CASSANDRA_3_10) && cassandraVersion.isLessThan(CASSANDRA_3_0_10));
 
@@ -71,7 +71,7 @@ public class AlterUserTypeCqlGeneratorIntegrationTests extends AbstractKeyspaceC
 	}
 
 	@Test // DATACASS-172
-	public void alterTypeShouldRenameField() {
+	void alterTypeShouldRenameField() {
 
 		AlterUserTypeSpecification spec = AlterUserTypeSpecification.alterType("address")//
 				.rename("zip", "zap");
@@ -80,7 +80,7 @@ public class AlterUserTypeCqlGeneratorIntegrationTests extends AbstractKeyspaceC
 	}
 
 	@Test // DATACASS-172
-	public void alterTypeShouldRenameFields() {
+	void alterTypeShouldRenameFields() {
 
 		AlterUserTypeSpecification spec = AlterUserTypeSpecification.alterType("address")//
 				.rename("zip", "zap") //
@@ -90,12 +90,12 @@ public class AlterUserTypeCqlGeneratorIntegrationTests extends AbstractKeyspaceC
 	}
 
 	@Test // DATACASS-172
-	public void generationFailsIfNameIsNotSet() {
+	void generationFailsIfNameIsNotSet() {
 		assertThatNullPointerException().isThrownBy(() -> toCql(AlterUserTypeSpecification.alterType(null)));
 	}
 
 	@Test // DATACASS-172
-	public void generationFailsWithoutFields() {
+	void generationFailsWithoutFields() {
 		assertThatIllegalArgumentException().isThrownBy(() -> toCql(AlterUserTypeSpecification.alterType("hello")));
 	}
 }

@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import java.time.Duration;
 import java.time.Instant;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.data.cassandra.core.query.Query;
 
@@ -31,10 +31,10 @@ import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
  *
  * @author Mark Paluch
  */
-public class DeleteOptionsUnitTests {
+class DeleteOptionsUnitTests {
 
 	@Test // DATACASS-575, DATACASS-708
-	public void shouldConfigureDeleteOptions() {
+	void shouldConfigureDeleteOptions() {
 
 		Instant now = Instant.ofEpochSecond(1234);
 
@@ -54,7 +54,7 @@ public class DeleteOptionsUnitTests {
 	}
 
 	@Test // DATACASS-575
-	public void buildDeleteOptionsMutate() {
+	void buildDeleteOptionsMutate() {
 
 		DeleteOptions deleteOptions = DeleteOptions.builder() //
 				.ttl(10) //
@@ -73,7 +73,7 @@ public class DeleteOptionsUnitTests {
 	}
 
 	@Test // DATACASS-575
-	public void shouldApplyFilterCondition() {
+	void shouldApplyFilterCondition() {
 
 		DeleteOptions deleteOptions = DeleteOptions.builder() //
 				.withIfExists() //

@@ -21,10 +21,10 @@ import static org.springframework.data.cassandra.core.mapping.CassandraType.*;
 import java.lang.reflect.Method;
 import java.util.List;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
@@ -44,16 +44,16 @@ import com.datastax.oss.driver.api.core.type.DataTypes;
  *
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner.class)
-public class CassandraParametersParameterAccessorUnitTests {
+@ExtendWith(MockitoExtension.class)
+class CassandraParametersParameterAccessorUnitTests {
 
 	@Mock ProjectionFactory projectionFactory;
 
-	RepositoryMetadata metadata = new DefaultRepositoryMetadata(PossibleRepository.class);
-	CassandraMappingContext context = new CassandraMappingContext();
+	private RepositoryMetadata metadata = new DefaultRepositoryMetadata(PossibleRepository.class);
+	private CassandraMappingContext context = new CassandraMappingContext();
 
 	@Test // DATACASS-296, DATACASS-146
-	public void returnsCassandraSimpleType() throws Exception {
+	void returnsCassandraSimpleType() throws Exception {
 
 		Method method = PossibleRepository.class.getMethod("findByFirstname", String.class);
 		CassandraParameterAccessor accessor = new CassandraParametersParameterAccessor(getCassandraQueryMethod(method),
@@ -64,7 +64,7 @@ public class CassandraParametersParameterAccessorUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void shouldReturnNoTypeForComplexTypes() throws Exception {
+	void shouldReturnNoTypeForComplexTypes() throws Exception {
 
 		Method method = PossibleRepository.class.getMethod("findByBpLocalDateTime", LocalDateTime.class);
 		CassandraParameterAccessor accessor = new CassandraParametersParameterAccessor(getCassandraQueryMethod(method),
@@ -74,7 +74,7 @@ public class CassandraParametersParameterAccessorUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void returnTypeForAnnotatedParameter() throws Exception {
+	void returnTypeForAnnotatedParameter() throws Exception {
 
 		Method method = PossibleRepository.class.getMethod("findByAnnotatedBpLocalDateTime", LocalDateTime.class);
 		CassandraParameterAccessor accessor = new CassandraParametersParameterAccessor(getCassandraQueryMethod(method),
@@ -84,7 +84,7 @@ public class CassandraParametersParameterAccessorUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void returnTypeForAnnotatedParameterWhenUsingStringValue() throws Exception {
+	void returnTypeForAnnotatedParameterWhenUsingStringValue() throws Exception {
 
 		Method method = PossibleRepository.class.getMethod("findByAnnotatedObject", Object.class);
 		CassandraParameterAccessor accessor = new CassandraParametersParameterAccessor(getCassandraQueryMethod(method), "");
@@ -93,7 +93,7 @@ public class CassandraParametersParameterAccessorUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void returnTypeForAnnotatedParameterWhenUsingNullValue() throws Exception {
+	void returnTypeForAnnotatedParameterWhenUsingNullValue() throws Exception {
 
 		Method method = PossibleRepository.class.getMethod("findByAnnotatedObject", Object.class);
 		CassandraParameterAccessor accessor = new CassandraParametersParameterAccessor(getCassandraQueryMethod(method), "");
@@ -102,7 +102,7 @@ public class CassandraParametersParameterAccessorUnitTests {
 	}
 
 	@Test // DATACASS-146
-	public void shouldProvideQueryOptions() throws Exception {
+	void shouldProvideQueryOptions() throws Exception {
 
 		QueryOptions options = QueryOptions.builder().build();
 

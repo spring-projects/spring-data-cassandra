@@ -19,32 +19,28 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.List;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.cassandra.repository.MapIdCassandraRepository;
-import org.springframework.data.cassandra.repository.NamedQueryIntegrationTests.PersonRepositoryWithNamedQueries;
 import org.springframework.data.cassandra.repository.Query;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import com.datastax.oss.driver.api.core.data.UdtValue;
 import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;
 
 /**
- * Integration tests for query argument conversion through {@link PersonRepositoryWithNamedQueries}.
+ * Integration tests for query argument conversion through {@link ContactStringQueryRepository}.
  *
  * @author Mark Paluch
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = ParameterConversionTestSupport.Config.class)
-public class StringQueryMethodsParameterConversionIntegrationTests extends ParameterConversionTestSupport {
+@SpringJUnitConfig(classes = ParameterConversionTestSupport.Config.class)
+class StringQueryMethodsParameterConversionIntegrationTests extends ParameterConversionTestSupport {
 
 	@Autowired ContactStringQueryRepository contactRepository;
 
 	@Test // DATACASS-172
-	public void shouldFindByConvertedParameter() {
+	void shouldFindByConvertedParameter() {
 
 		List<Contact> contacts = contactRepository.findByAddress(walter.getAddress());
 
@@ -52,7 +48,7 @@ public class StringQueryMethodsParameterConversionIntegrationTests extends Param
 	}
 
 	@Test // DATACASS-172
-	public void shouldFindByStringParameter() {
+	void shouldFindByStringParameter() {
 
 		String parameter = AddressWriteConverter.INSTANCE.convert(walter.getAddress());
 		List<Contact> contacts = contactRepository.findByAddress(parameter);
@@ -61,19 +57,19 @@ public class StringQueryMethodsParameterConversionIntegrationTests extends Param
 	}
 
 	@Test // DATACASS-172
-	public void findByAddressesIn() {
+	void findByAddressesIn() {
 
 		assertThat(contactRepository.findByAddressesContains(flynn.address)).contains(flynn, walter);
 		assertThat(contactRepository.findByAddressesContains(walter.addresses.get(1))).contains(walter);
 	}
 
 	@Test // DATACASS-172
-	public void findByMainPhone() {
+	void findByMainPhone() {
 		assertThat(contactRepository.findByMainPhone(walter.getMainPhone())).contains(walter);
 	}
 
 	@Test // DATACASS-172
-	public void findByMainPhoneUdtValue() {
+	void findByMainPhoneUdtValue() {
 
 		KeyspaceMetadata keyspace = adminOperations.getKeyspaceMetadata();
 		UdtValue udtValue = keyspace.getUserDefinedType("phone").get().newValue();
@@ -83,14 +79,14 @@ public class StringQueryMethodsParameterConversionIntegrationTests extends Param
 	}
 
 	@Test // DATACASS-172
-	public void findByAlternativePhones() {
+	void findByAlternativePhones() {
 
 		Phone phone = walter.getAlternativePhones().get(0);
 		assertThat(contactRepository.findByAlternativePhonesContains(phone)).contains(walter);
 	}
 
 	@Test // DATACASS-172
-	public void findByAlternativePhonesUdtValue() {
+	void findByAlternativePhonesUdtValue() {
 
 		Phone phone = walter.getAlternativePhones().get(0);
 

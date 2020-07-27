@@ -38,8 +38,8 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.*;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
@@ -76,13 +76,13 @@ import com.datastax.oss.driver.api.core.type.DataTypes;
  */
 public class MappingCassandraConverterUnitTests {
 
-	Row rowMock;
+	private Row rowMock;
 
-	CassandraMappingContext mappingContext;
-	MappingCassandraConverter mappingCassandraConverter;
+	private CassandraMappingContext mappingContext;
+	private MappingCassandraConverter mappingCassandraConverter;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		this.mappingContext = new CassandraMappingContext();
 
@@ -91,7 +91,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-260
-	public void insertEnumShouldMapToString() {
+	void insertEnumShouldMapToString() {
 
 		WithEnumColumns withEnumColumns = new WithEnumColumns();
 
@@ -105,7 +105,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-260
-	public void shouldWriteEnumSet() {
+	void shouldWriteEnumSet() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setSetOfEnum(Collections.singleton(CassandraTypeMappingIntegrationTests.Condition.MINT));
@@ -118,7 +118,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-255
-	public void insertEnumMapsToOrdinal() {
+	void insertEnumMapsToOrdinal() {
 
 		EnumToOrdinalMapping enumToOrdinalMapping = new EnumToOrdinalMapping();
 		enumToOrdinalMapping.setAsOrdinal(Condition.USED);
@@ -131,7 +131,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-255, DATACASS-652
-	public void selectEnumMapsToOrdinal() {
+	void selectEnumMapsToOrdinal() {
 
 		rowMock = RowMockUtil.newRowMock(column("asOrdinal", 1, DataTypes.INT));
 
@@ -141,7 +141,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-260
-	public void insertEnumAsPrimaryKeyShouldMapToString() {
+	void insertEnumAsPrimaryKeyShouldMapToString() {
 
 		EnumPrimaryKey key = new EnumPrimaryKey();
 		key.setCondition(Condition.MINT);
@@ -154,7 +154,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-260
-	public void insertEnumInCompositePrimaryKeyShouldMapToString() {
+	void insertEnumInCompositePrimaryKeyShouldMapToString() {
 
 		EnumCompositePrimaryKey key = new EnumCompositePrimaryKey();
 		key.setCondition(Condition.MINT);
@@ -170,7 +170,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-260
-	public void updateEnumAsPrimaryKeyShouldMapToString() {
+	void updateEnumAsPrimaryKeyShouldMapToString() {
 
 		EnumPrimaryKey key = new EnumPrimaryKey();
 		key.setCondition(Condition.MINT);
@@ -183,7 +183,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-260
-	public void writeWhereEnumInCompositePrimaryKeyShouldMapToString() {
+	void writeWhereEnumInCompositePrimaryKeyShouldMapToString() {
 
 		EnumCompositePrimaryKey key = new EnumCompositePrimaryKey();
 		key.setCondition(Condition.MINT);
@@ -199,7 +199,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-260
-	public void writeWhereEnumAsPrimaryKeyShouldMapToString() {
+	void writeWhereEnumAsPrimaryKeyShouldMapToString() {
 
 		EnumPrimaryKey key = new EnumPrimaryKey();
 		key.setCondition(Condition.MINT);
@@ -212,7 +212,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-280
-	public void shouldReadStringCorrectly() {
+	void shouldReadStringCorrectly() {
 
 		rowMock = RowMockUtil.newRowMock(column("foo", "foo", DataTypes.TEXT));
 
@@ -222,7 +222,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-280
-	public void shouldReadIntegerCorrectly() {
+	void shouldReadIntegerCorrectly() {
 
 		rowMock = RowMockUtil.newRowMock(column("foo", 2, DataTypes.VARINT));
 
@@ -232,7 +232,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-280
-	public void shouldReadLongCorrectly() {
+	void shouldReadLongCorrectly() {
 
 		rowMock = RowMockUtil.newRowMock(column("foo", 2, DataTypes.VARINT));
 
@@ -242,7 +242,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-280
-	public void shouldReadDoubleCorrectly() {
+	void shouldReadDoubleCorrectly() {
 
 		rowMock = RowMockUtil.newRowMock(column("foo", 2D, DataTypes.DOUBLE));
 
@@ -252,7 +252,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-280
-	public void shouldReadFloatCorrectly() {
+	void shouldReadFloatCorrectly() {
 
 		rowMock = RowMockUtil.newRowMock(column("foo", 2F, DataTypes.DOUBLE));
 
@@ -262,7 +262,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-280
-	public void shouldReadBigIntegerCorrectly() {
+	void shouldReadBigIntegerCorrectly() {
 
 		rowMock = RowMockUtil.newRowMock(column("foo", BigInteger.valueOf(2), DataTypes.BIGINT));
 
@@ -272,7 +272,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-280
-	public void shouldReadBigDecimalCorrectly() {
+	void shouldReadBigDecimalCorrectly() {
 
 		rowMock = RowMockUtil.newRowMock(column("foo", BigDecimal.valueOf(2), DataTypes.DECIMAL));
 
@@ -282,7 +282,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-280
-	public void shouldReadUUIDCorrectly() {
+	void shouldReadUUIDCorrectly() {
 
 		UUID uuid = UUID.randomUUID();
 
@@ -294,7 +294,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-280
-	public void shouldReadInetAddressCorrectly() throws UnknownHostException {
+	void shouldReadInetAddressCorrectly() throws UnknownHostException {
 
 		InetAddress localHost = InetAddress.getLoopbackAddress();
 		rowMock = RowMockUtil.newRowMock(column("foo", localHost, DataTypes.UUID));
@@ -305,7 +305,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-280, DATACASS-271
-	public void shouldReadTimestampCorrectly() {
+	void shouldReadTimestampCorrectly() {
 
 		Instant instant = Instant.now();
 
@@ -317,7 +317,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-280, DATACASS-271
-	public void shouldReadInstantTimestampCorrectly() {
+	void shouldReadInstantTimestampCorrectly() {
 
 		Instant instant = Instant.now();
 
@@ -329,7 +329,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-656
-	public void shouldReadAndWriteTimestampFromObject() {
+	void shouldReadAndWriteTimestampFromObject() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setInstant(Instant.now());
@@ -344,7 +344,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-656, DATACASS-727
-	public void shouldReadAndWriteTimestampFromObjectWithConversion() {
+	void shouldReadAndWriteTimestampFromObjectWithConversion() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setInstant(Instant.now());
@@ -361,7 +361,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-656
-	public void shouldReadAndWriteTimeFromObjectWithConversion() {
+	void shouldReadAndWriteTimeFromObjectWithConversion() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 
@@ -375,7 +375,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-271
-	public void shouldReadDateCorrectly() {
+	void shouldReadDateCorrectly() {
 
 		LocalDate date = LocalDate.ofEpochDay(1234);
 
@@ -387,7 +387,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-280
-	public void shouldReadBooleanCorrectly() {
+	void shouldReadBooleanCorrectly() {
 
 		rowMock = RowMockUtil.newRowMock(column("foo", true, DataTypes.BOOLEAN));
 
@@ -397,7 +397,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void shouldReadLocalDateCorrectly() {
+	void shouldReadLocalDateCorrectly() {
 
 		LocalDateTime now = LocalDateTime.now();
 		Instant instant = now.toInstant(ZoneOffset.UTC);
@@ -413,7 +413,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void shouldCreateInsertWithLocalDateCorrectly() {
+	void shouldCreateInsertWithLocalDateCorrectly() {
 
 		java.time.LocalDate now = java.time.LocalDate.now();
 
@@ -428,7 +428,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void shouldCreateUpdateWithLocalDateCorrectly() {
+	void shouldCreateUpdateWithLocalDateCorrectly() {
 
 		java.time.LocalDate now = java.time.LocalDate.now();
 
@@ -443,7 +443,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void shouldCreateInsertWithLocalDateListUsingCassandraDate() {
+	void shouldCreateInsertWithLocalDateListUsingCassandraDate() {
 
 		java.time.LocalDate now = java.time.LocalDate.now();
 		java.time.LocalDate localDate = java.time.LocalDate.of(2010, 7, 4);
@@ -462,7 +462,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void shouldCreateInsertWithLocalDateSetUsingCassandraDate() {
+	void shouldCreateInsertWithLocalDateSetUsingCassandraDate() {
 
 		java.time.LocalDate now = java.time.LocalDate.now();
 		java.time.LocalDate localDate = java.time.LocalDate.of(2010, 7, 4);
@@ -481,7 +481,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void shouldReadLocalDateTimeUsingCassandraDateCorrectly() {
+	void shouldReadLocalDateTimeUsingCassandraDateCorrectly() {
 
 		rowMock = RowMockUtil.newRowMock(column("id", "my-id", DataTypes.ASCII),
 				column("localDate", LocalDate.of(2010, 7, 4), DataTypes.DATE));
@@ -496,7 +496,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-296, DATACASS-400
-	public void shouldCreateInsertWithLocalDateUsingCassandraDateCorrectly() {
+	void shouldCreateInsertWithLocalDateUsingCassandraDateCorrectly() {
 
 		TypeWithLocalDateMappedToDate typeWithLocalDate = new TypeWithLocalDateMappedToDate(null,
 				java.time.LocalDate.of(2010, 7, 4));
@@ -509,7 +509,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void shouldCreateUpdateWithLocalDateUsingCassandraDateCorrectly() {
+	void shouldCreateUpdateWithLocalDateUsingCassandraDateCorrectly() {
 
 		TypeWithLocalDateMappedToDate typeWithLocalDate = new TypeWithLocalDateMappedToDate(null,
 				java.time.LocalDate.of(2010, 7, 4));
@@ -522,7 +522,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void shouldReadLocalDateTimeCorrectly() {
+	void shouldReadLocalDateTimeCorrectly() {
 
 		LocalDateTime now = LocalDateTime.now();
 		Instant instant = now.toInstant(ZoneOffset.UTC);
@@ -538,7 +538,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void shouldReadInstantCorrectly() {
+	void shouldReadInstantCorrectly() {
 
 		LocalDateTime now = LocalDateTime.now();
 		Instant instant = now.toInstant(ZoneOffset.UTC);
@@ -553,7 +553,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void shouldReadZoneIdCorrectly() {
+	void shouldReadZoneIdCorrectly() {
 
 		rowMock = RowMockUtil.newRowMock(column("id", "my-id", DataTypes.ASCII),
 				column("zoneId", "Europe/Paris", DataTypes.TEXT));
@@ -565,7 +565,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void shouldReadJodaLocalDateTimeUsingCassandraDateCorrectly() {
+	void shouldReadJodaLocalDateTimeUsingCassandraDateCorrectly() {
 
 		rowMock = RowMockUtil.newRowMock(column("id", "my-id", DataTypes.ASCII),
 				column("localDate", LocalDate.of(2010, 7, 4), DataTypes.DATE));
@@ -580,7 +580,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void shouldCreateInsertWithJodaLocalDateUsingCassandraDateCorrectly() {
+	void shouldCreateInsertWithJodaLocalDateUsingCassandraDateCorrectly() {
 
 		TypeWithJodaLocalDateMappedToDate typeWithLocalDate = new TypeWithJodaLocalDateMappedToDate();
 		typeWithLocalDate.localDate = new org.joda.time.LocalDate(2010, 7, 4);
@@ -593,7 +593,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void shouldCreateUpdateWithJodaLocalDateUsingCassandraDateCorrectly() {
+	void shouldCreateUpdateWithJodaLocalDateUsingCassandraDateCorrectly() {
 
 		TypeWithJodaLocalDateMappedToDate typeWithLocalDate = new TypeWithJodaLocalDateMappedToDate();
 		typeWithLocalDate.localDate = new org.joda.time.LocalDate(2010, 7, 4);
@@ -606,7 +606,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void shouldReadThreeTenBpLocalDateTimeUsingCassandraDateCorrectly() {
+	void shouldReadThreeTenBpLocalDateTimeUsingCassandraDateCorrectly() {
 
 		rowMock = RowMockUtil.newRowMock(column("id", "my-id", DataTypes.ASCII),
 				column("localDate", LocalDate.of(2010, 7, 4), DataTypes.DATE));
@@ -621,7 +621,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void shouldCreateInsertWithThreeTenBpLocalDateUsingCassandraDateCorrectly() {
+	void shouldCreateInsertWithThreeTenBpLocalDateUsingCassandraDateCorrectly() {
 
 		TypeWithThreeTenBpLocalDateMappedToDate typeWithLocalDate = new TypeWithThreeTenBpLocalDateMappedToDate();
 		typeWithLocalDate.localDate = org.threeten.bp.LocalDate.of(2010, 7, 4);
@@ -634,7 +634,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void shouldCreateUpdateWithThreeTenBpLocalDateUsingCassandraDateCorrectly() {
+	void shouldCreateUpdateWithThreeTenBpLocalDateUsingCassandraDateCorrectly() {
 
 		TypeWithThreeTenBpLocalDateMappedToDate typeWithLocalDate = new TypeWithThreeTenBpLocalDateMappedToDate();
 		typeWithLocalDate.localDate = org.threeten.bp.LocalDate.of(2010, 7, 4);
@@ -647,7 +647,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-206
-	public void updateShouldUseSpecifiedColumnNames() {
+	void updateShouldUseSpecifiedColumnNames() {
 
 		UserToken userToken = new UserToken();
 		userToken.setUserId(UUID.randomUUID());
@@ -667,7 +667,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-308
-	public void shouldWriteWhereConditionUsingPlainId() {
+	void shouldWriteWhereConditionUsingPlainId() {
 
 		Where where = new Where();
 
@@ -677,7 +677,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-308
-	public void shouldWriteWhereConditionUsingEntity() {
+	void shouldWriteWhereConditionUsingEntity() {
 
 		Where where = new Where();
 
@@ -689,14 +689,15 @@ public class MappingCassandraConverterUnitTests {
 		assertThat(where).containsEntry(CqlIdentifier.fromCql("id"), "42");
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACASS-308
-	public void shouldFailWriteWhereConditionUsingEntityWithNullId() {
+	@Test // DATACASS-308
+	void shouldFailWriteWhereConditionUsingEntityWithNullId() {
 
-		mappingCassandraConverter.write(new User(), new Where(), mappingContext.getRequiredPersistentEntity(User.class));
+		assertThatIllegalArgumentException().isThrownBy(() -> mappingCassandraConverter.write(new User(), new Where(),
+				mappingContext.getRequiredPersistentEntity(User.class)));
 	}
 
 	@Test // DATACASS-308
-	public void shouldWriteWhereConditionUsingMapId() {
+	void shouldWriteWhereConditionUsingMapId() {
 
 		Where where = new Where();
 
@@ -706,7 +707,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-308
-	public void shouldWriteWhereConditionForCompositeKeyUsingEntity() {
+	void shouldWriteWhereConditionForCompositeKeyUsingEntity() {
 
 		Where where = new Where();
 
@@ -722,7 +723,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-308
-	public void shouldWriteWhereConditionForCompositeKeyUsingMapId() {
+	void shouldWriteWhereConditionForCompositeKeyUsingMapId() {
 
 		Where where = new Where();
 
@@ -734,7 +735,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-308
-	public void shouldWriteWhereConditionForMapIdKeyUsingEntity() {
+	void shouldWriteWhereConditionForMapIdKeyUsingEntity() {
 
 		Where where = new Where();
 
@@ -749,7 +750,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-308
-	public void shouldWriteEnumWhereCondition() {
+	void shouldWriteEnumWhereCondition() {
 
 		Where where = new Where();
 
@@ -760,7 +761,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-308
-	public void shouldWriteWhereConditionForMapIdKeyUsingMapId() {
+	void shouldWriteWhereConditionForMapIdKeyUsingMapId() {
 
 		Where where = new Where();
 
@@ -772,7 +773,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-308
-	public void shouldWriteWhereConditionForTypeWithPkClassKeyUsingEntity() {
+	void shouldWriteWhereConditionForTypeWithPkClassKeyUsingEntity() {
 
 		Where where = new Where();
 
@@ -789,15 +790,15 @@ public class MappingCassandraConverterUnitTests {
 		assertThat(where).containsEntry(CqlIdentifier.fromCql("lastname"), "White");
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACASS-308
-	public void shouldFailWritingWhereConditionForTypeWithPkClassKeyUsingEntityWithNullId() {
+	@Test // DATACASS-308
+	void shouldFailWritingWhereConditionForTypeWithPkClassKeyUsingEntityWithNullId() {
 
-		mappingCassandraConverter.write(new TypeWithKeyClass(), new Where(),
-				mappingContext.getRequiredPersistentEntity(TypeWithKeyClass.class));
+		assertThatIllegalArgumentException().isThrownBy(() -> mappingCassandraConverter.write(new TypeWithKeyClass(),
+				new Where(), mappingContext.getRequiredPersistentEntity(TypeWithKeyClass.class)));
 	}
 
 	@Test // DATACASS-308
-	public void shouldWriteWhereConditionForTypeWithPkClassKeyUsingKey() {
+	void shouldWriteWhereConditionForTypeWithPkClassKeyUsingKey() {
 
 		Where where = new Where();
 
@@ -812,7 +813,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-463
-	public void shouldReadTypeWithCompositePrimaryKeyCorrectly() {
+	void shouldReadTypeWithCompositePrimaryKeyCorrectly() {
 
 		// condition, localDate
 		Row row = RowMockUtil.newRowMock(column("condition", "MINT", DataTypes.TEXT),
@@ -825,7 +826,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-672
-	public void shouldReadTypeCompositePrimaryKeyUsingEntityInstantiatorAndPropertyPopulationInKeyCorrectly() {
+	void shouldReadTypeCompositePrimaryKeyUsingEntityInstantiatorAndPropertyPopulationInKeyCorrectly() {
 
 		// condition, localDate
 		Row row = RowMockUtil.newRowMock(column("firstname", "Walter", DataTypes.TEXT),
@@ -839,7 +840,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-308
-	public void shouldWriteWhereConditionForTypeWithPkClassKeyUsingMapId() {
+	void shouldWriteWhereConditionForTypeWithPkClassKeyUsingMapId() {
 
 		Where where = new Where();
 
@@ -850,15 +851,15 @@ public class MappingCassandraConverterUnitTests {
 		assertThat(where).containsEntry(CqlIdentifier.fromCql("lastname"), "White");
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACASS-308
-	public void shouldFailWhereConditionForTypeWithPkClassKeyUsingMapIdHavingUnknownProperty() {
+	@Test // DATACASS-308
+	void shouldFailWhereConditionForTypeWithPkClassKeyUsingMapIdHavingUnknownProperty() {
 
-		mappingCassandraConverter.write(id("unknown", "Walter"), new Where(),
-				mappingContext.getRequiredPersistentEntity(TypeWithMapId.class));
+		assertThatIllegalArgumentException().isThrownBy(() -> mappingCassandraConverter.write(id("unknown", "Walter"),
+				new Where(), mappingContext.getRequiredPersistentEntity(TypeWithMapId.class)));
 	}
 
 	@Test // DATACASS-362
-	public void shouldWriteWhereCompositeIdUsingCompositeKeyClass() {
+	void shouldWriteWhereCompositeIdUsingCompositeKeyClass() {
 
 		Where where = new Where();
 
@@ -873,7 +874,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-362
-	public void writeWhereCompositeIdUsingCompositeKeyClassViaMapId() {
+	void writeWhereCompositeIdUsingCompositeKeyClassViaMapId() {
 
 		Where where = new Where();
 
@@ -886,7 +887,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-487
-	public void shouldReadConvertedMap() {
+	void shouldReadConvertedMap() {
 
 		LocalDate date1 = LocalDate.of(2018, 1, 1);
 		LocalDate date2 = LocalDate.of(2019, 1, 1);
@@ -906,7 +907,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-487
-	public void shouldWriteConvertedMap() {
+	void shouldWriteConvertedMap() {
 
 		java.time.LocalDate date1 = java.time.LocalDate.of(2018, 1, 1);
 		java.time.LocalDate date2 = java.time.LocalDate.of(2019, 1, 1);
@@ -931,7 +932,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-189
-	public void writeShouldSkipTransientProperties() {
+	void writeShouldSkipTransientProperties() {
 
 		WithTransient withTransient = new WithTransient();
 		withTransient.firstname = "Foo";
@@ -947,7 +948,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-623
-	public void writeShouldSkipTransientReadProperties() {
+	void writeShouldSkipTransientReadProperties() {
 
 		WithTransient withTransient = new WithTransient();
 		withTransient.firstname = "Foo";
@@ -962,7 +963,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-741
-	public void shouldComputeValueInConstructor() {
+	void shouldComputeValueInConstructor() {
 
 		rowMock = RowMockUtil.newRowMock(RowMockUtil.column("id", "id", DataTypes.TEXT),
 				RowMockUtil.column("fn", "fn", DataTypes.TEXT));
@@ -974,7 +975,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-743
-	public void shouldConsiderCassandraTypeOnList() {
+	void shouldConsiderCassandraTypeOnList() {
 
 		TypeWithConvertedCollections value = new TypeWithConvertedCollections();
 		value.conditionList = Arrays.asList(Condition.MINT, Condition.USED);
@@ -987,7 +988,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-743
-	public void shouldConsiderCassandraTypeOnSet() {
+	void shouldConsiderCassandraTypeOnSet() {
 
 		TypeWithConvertedCollections value = new TypeWithConvertedCollections();
 		value.conditionSet = new LinkedHashSet<>(Arrays.asList(Condition.MINT, Condition.USED));
@@ -1000,7 +1001,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-743
-	public void shouldConsiderCassandraTypeOnMap() {
+	void shouldConsiderCassandraTypeOnMap() {
 
 		TypeWithConvertedCollections value = new TypeWithConvertedCollections();
 		value.conditionMap = Collections.singletonMap(Condition.MINT, Condition.USED);
@@ -1021,7 +1022,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Table
-	public static class EnumToOrdinalMapping {
+	private static class EnumToOrdinalMapping {
 
 		@PrimaryKey private String id;
 
@@ -1035,17 +1036,17 @@ public class MappingCassandraConverterUnitTests {
 			this.id = id;
 		}
 
-		public Condition getAsOrdinal() {
+		private Condition getAsOrdinal() {
 			return asOrdinal;
 		}
 
-		public void setAsOrdinal(Condition asOrdinal) {
+		private void setAsOrdinal(Condition asOrdinal) {
 			this.asOrdinal = asOrdinal;
 		}
 	}
 
 	@Table
-	public static class WithEnumColumns {
+	private static class WithEnumColumns {
 
 		@PrimaryKey private String id;
 
@@ -1063,7 +1064,7 @@ public class MappingCassandraConverterUnitTests {
 			return condition;
 		}
 
-		public void setCondition(Condition condition) {
+		private void setCondition(Condition condition) {
 			this.condition = condition;
 		}
 	}
@@ -1073,7 +1074,7 @@ public class MappingCassandraConverterUnitTests {
 
 		@PrimaryKeyColumn(ordinal = 1, type = PrimaryKeyType.PARTITIONED) private Condition condition;
 
-		public EnumCompositePrimaryKey() {}
+		private EnumCompositePrimaryKey() {}
 
 		public EnumCompositePrimaryKey(Condition condition) {
 			this.condition = condition;
@@ -1083,7 +1084,7 @@ public class MappingCassandraConverterUnitTests {
 			return condition;
 		}
 
-		public void setCondition(Condition condition) {
+		private void setCondition(Condition condition) {
 			this.condition = condition;
 		}
 	}
@@ -1105,7 +1106,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Table
-	public static class EnumPrimaryKey {
+	private static class EnumPrimaryKey {
 
 		@PrimaryKey private Condition condition;
 
@@ -1113,17 +1114,17 @@ public class MappingCassandraConverterUnitTests {
 			return condition;
 		}
 
-		public void setCondition(Condition condition) {
+		private void setCondition(Condition condition) {
 			this.condition = condition;
 		}
 	}
 
 	@Table
-	public static class CompositeKeyThing {
+	private static class CompositeKeyThing {
 
 		@PrimaryKey private EnumCompositePrimaryKey key;
 
-		public CompositeKeyThing() {}
+		private CompositeKeyThing() {}
 
 		public CompositeKeyThing(EnumCompositePrimaryKey key) {
 			this.key = key;
@@ -1133,7 +1134,7 @@ public class MappingCassandraConverterUnitTests {
 			return key;
 		}
 
-		public void setKey(EnumCompositePrimaryKey key) {
+		private void setKey(EnumCompositePrimaryKey key) {
 			this.key = key;
 		}
 	}
@@ -1143,10 +1144,10 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@PrimaryKeyClass
-	public static class CompositeKeyWithPropertyAccessors {
+	private static class CompositeKeyWithPropertyAccessors {
 
-		@PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED) String firstname;
-		@PrimaryKeyColumn String lastname;
+		@PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED) private String firstname;
+		@PrimaryKeyColumn private String lastname;
 	}
 
 	@Table
@@ -1157,15 +1158,15 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Table
-	public static class TypeWithLocalDate {
+	private static class TypeWithLocalDate {
 
 		@PrimaryKey private String id;
 
-		java.time.LocalDate localDate;
-		java.time.LocalDateTime localDateTime;
+		private java.time.LocalDate localDate;
+		private java.time.LocalDateTime localDateTime;
 
-		List<java.time.LocalDate> list;
-		Set<java.time.LocalDate> set;
+		private List<java.time.LocalDate> list;
+		private Set<java.time.LocalDate> set;
 	}
 
 	/**
@@ -1184,76 +1185,78 @@ public class MappingCassandraConverterUnitTests {
 	 * Uses Cassandra's {@link Name#DATE} which maps by default to Joda {@link LocalDate}
 	 */
 	@Table
-	public static class TypeWithJodaLocalDateMappedToDate {
+	private static class TypeWithJodaLocalDateMappedToDate {
 
 		@PrimaryKey private String id;
 
-		@CassandraType(type = CassandraType.Name.DATE) org.joda.time.LocalDate localDate;
+		@CassandraType(type = CassandraType.Name.DATE) private org.joda.time.LocalDate localDate;
 	}
 
 	/**
 	 * Uses Cassandra's {@link Name#DATE} which maps by default to Joda {@link LocalDate}
 	 */
 	@Table
-	public static class TypeWithThreeTenBpLocalDateMappedToDate {
+	private static class TypeWithThreeTenBpLocalDateMappedToDate {
 
 		@PrimaryKey private String id;
 
-		@CassandraType(type = CassandraType.Name.DATE) org.threeten.bp.LocalDate localDate;
+		@CassandraType(type = CassandraType.Name.DATE) private org.threeten.bp.LocalDate localDate;
 	}
 
 	@Table
-	public static class TypeWithInstant {
+	private static class TypeWithInstant {
 
 		@PrimaryKey private String id;
 
-		Instant instant;
+		private Instant instant;
 	}
 
 	@Table
-	public static class TypeWithZoneId {
+	private static class TypeWithZoneId {
 
 		@PrimaryKey private String id;
 
-		ZoneId zoneId;
+		private ZoneId zoneId;
 	}
 
 	@Table
-	public static class TypeWithConvertedMap {
+	private static class TypeWithConvertedMap {
 
 		@PrimaryKey private String id;
 
-		Map<ZoneId, List<java.time.LocalDate>> times;
+		private Map<ZoneId, List<java.time.LocalDate>> times;
 	}
 
-	static class WithTransient {
+	private static class WithTransient {
 
 		@Id String id;
 
-		String firstname;
-		String lastname;
-		@Transient String displayName;
-		@ReadOnlyProperty String computedName;
+		private String firstname;
+		private String lastname;
+		@Transient private String displayName;
+		@ReadOnlyProperty private String computedName;
 	}
 
-	public static class TypeWithConvertedCollections {
+	private static class TypeWithConvertedCollections {
 
 		@CassandraType(type = CassandraType.Name.LIST,
-				typeArguments = CassandraType.Name.INT) List<Condition> conditionList;
+				typeArguments = CassandraType.Name.INT) private List<Condition> conditionList;
 
-		@CassandraType(type = CassandraType.Name.SET, typeArguments = CassandraType.Name.INT) Set<Condition> conditionSet;
+		@CassandraType(type = CassandraType.Name.SET,
+				typeArguments = CassandraType.Name.INT) private Set<Condition> conditionSet;
 
 		@CassandraType(type = CassandraType.Name.MAP,
-				typeArguments = { CassandraType.Name.INT, CassandraType.Name.INT }) Map<Condition, Condition> conditionMap;
+				typeArguments = { CassandraType.Name.INT,
+						CassandraType.Name.INT }) private Map<Condition, Condition> conditionMap;
 
 	}
 
-	static class WithValue {
+	private static class WithValue {
 
-		final @Id String id;
-		final @Transient String firstname;
+		private final @Id String id;
+		private final @Transient String firstname;
 
-		public WithValue(String id, @Value("#root.getString(1)") String firstname) {
+		private WithValue(String id, @Value("#root.getString(1)") String firstname) {
 			this.id = id;
 			this.firstname = firstname;
 		}
@@ -1295,7 +1298,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-167
-	public void writeFlattensEmbeddedType() {
+	void writeFlattensEmbeddedType() {
 
 		WithNullableEmbeddedType entity = new WithNullableEmbeddedType();
 		entity.id = "id-1";
@@ -1316,7 +1319,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-167
-	public void writePrefixesEmbeddedType() {
+	void writePrefixesEmbeddedType() {
 
 		WithPrefixedNullableEmbeddedType entity = new WithPrefixedNullableEmbeddedType();
 		entity.id = "id-1";
@@ -1337,7 +1340,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-167
-	public void writeNullEmbeddedType() {
+	void writeNullEmbeddedType() {
 
 		WithNullableEmbeddedType entity = new WithNullableEmbeddedType();
 		entity.id = "id-1";
@@ -1355,7 +1358,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-167
-	public void readEmbeddedType() {
+	void readEmbeddedType() {
 
 		Row source = RowMockUtil.newRowMock(column("id", "id-1", DataTypes.TEXT), column("age", 30, DataTypes.INT),
 				column("firstname", "fn", DataTypes.TEXT));
@@ -1365,7 +1368,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-167
-	public void readPrefixedEmbeddedType() {
+	void readPrefixedEmbeddedType() {
 
 		Row source = RowMockUtil.newRowMock(column("id", "id-1", DataTypes.TEXT), column("prefixage", 30, DataTypes.INT),
 				column("prefixfirstname", "fn", DataTypes.TEXT));
@@ -1375,7 +1378,7 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Test // DATACASS-167
-	public void readEmbeddedTypeWhenSourceDoesNotContainValues() {
+	void readEmbeddedTypeWhenSourceDoesNotContainValues() {
 
 		Row source = RowMockUtil.newRowMock(column("id", "id-1", DataTypes.TEXT));
 

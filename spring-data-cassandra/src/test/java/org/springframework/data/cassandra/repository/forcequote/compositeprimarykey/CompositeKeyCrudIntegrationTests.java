@@ -22,15 +22,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.repository.forcequote.compositeprimarykey.entity.CorrelationEntity;
 import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
-import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
 
 import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
@@ -40,14 +40,14 @@ import com.datastax.oss.driver.api.querybuilder.select.Select;
 /**
  * @author Mark Paluch
  */
-public class CompositeKeyCrudIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
+class CompositeKeyCrudIntegrationTests extends AbstractKeyspaceCreatingIntegrationTests {
 
-	CassandraOperations operations;
+	private CassandraOperations operations;
 
 	private CorrelationEntity correlationEntity1, correlationEntity2;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		operations = new CassandraTemplate(session);
 
@@ -66,7 +66,7 @@ public class CompositeKeyCrudIntegrationTests extends AbstractKeyspaceCreatingIn
 	}
 
 	@Test
-	public void test() {
+	void test() {
 
 		operations.insert(correlationEntity1);
 		operations.insert(correlationEntity2);

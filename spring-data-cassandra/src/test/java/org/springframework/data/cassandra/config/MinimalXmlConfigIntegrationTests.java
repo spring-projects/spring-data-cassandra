@@ -18,16 +18,15 @@ package org.springframework.data.cassandra.config;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.support.KeyspaceTestUtils;
-import org.springframework.data.cassandra.test.util.AbstractEmbeddedCassandraIntegrationTest;
-import org.springframework.data.cassandra.test.util.KeyspaceRule;
+import org.springframework.data.cassandra.test.util.IntegrationTestsSupport;
+import org.springframework.data.cassandra.test.util.TestKeyspaceName;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 
@@ -36,29 +35,28 @@ import com.datastax.oss.driver.api.core.CqlSession;
  * @author Oliver Gierke
  * @author Mark Paluch
  */
-public class MinimalXmlConfigIntegrationTests extends AbstractEmbeddedCassandraIntegrationTest {
+@TestKeyspaceName(MinimalXmlConfigIntegrationTests.KEYSPACE)
+class MinimalXmlConfigIntegrationTests extends IntegrationTestsSupport {
 
-	public static final String KEYSPACE = "minimalxmlconfigtest";
+	static final String KEYSPACE = "minimalxmlconfigtest";
 
 	private CqlSession session;
 	private ConfigurableApplicationContext context;
 
-	@Rule public final KeyspaceRule keyspaceRule = new KeyspaceRule(cassandraEnvironment, KEYSPACE);
-
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		this.context = new ClassPathXmlApplicationContext("MinimalXmlConfigIntegrationTests-context.xml", getClass());
 		this.session = context.getBean(CqlSession.class);
 	}
 
 	@After
-	public void tearDown() {
+	void tearDown() {
 		context.close();
 	}
 
 	@Test
-	public void test() {
+	void test() {
 
 		KeyspaceTestUtils.assertKeyspaceExists(KEYSPACE, session);
 

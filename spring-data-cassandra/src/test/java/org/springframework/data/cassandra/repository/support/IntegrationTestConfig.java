@@ -41,10 +41,10 @@ import org.springframework.data.cassandra.support.RandomKeyspaceName;
 @Configuration
 public class IntegrationTestConfig extends AbstractReactiveCassandraConfiguration {
 
-	public static final CassandraConnectionProperties PROPS = new CassandraConnectionProperties();
-	public static final int PORT = PROPS.getCassandraPort();
+	private static final CassandraConnectionProperties PROPS = new CassandraConnectionProperties();
+	private static final int PORT = PROPS.getCassandraPort();
 
-	public String keyspaceName = RandomKeyspaceName.create();
+	private String keyspaceName = RandomKeyspaceName.create();
 
 	@Override
 	protected int getPort() {

@@ -30,11 +30,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
@@ -59,27 +61,29 @@ import com.datastax.oss.driver.api.core.type.DataTypes;
  * @author Christoph Strobl
  * @author Marko Janković
  */
-@RunWith(MockitoJUnitRunner.class)
-public class UpdateMapperUnitTests {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class UpdateMapperUnitTests {
 
-	CassandraMappingContext mappingContext = new CassandraMappingContext();
+	private CassandraMappingContext mappingContext = new CassandraMappingContext();
 
-	CassandraPersistentEntity<?> persistentEntity;
+	private CassandraPersistentEntity<?> persistentEntity;
 
-	Currency currencyEUR = Currency.getInstance("EUR");
-	Currency currencyUSD = Currency.getInstance("USD");
+	private Currency currencyEUR = Currency.getInstance("EUR");
+	private Currency currencyUSD = Currency.getInstance("USD");
 
-	MappingCassandraConverter cassandraConverter;
+	private MappingCassandraConverter cassandraConverter;
 
-	UpdateMapper updateMapper;
+	private UpdateMapper updateMapper;
 
-	com.datastax.oss.driver.api.core.type.UserDefinedType manufacturer = UserDefinedTypeBuilder.forName("manufacturer")
+	private com.datastax.oss.driver.api.core.type.UserDefinedType manufacturer = UserDefinedTypeBuilder
+			.forName("manufacturer")
 			.withField("name", DataTypes.TEXT).build();
 
 	@Mock UserTypeResolver userTypeResolver;
 
-	@Before
-	public void before() {
+	@BeforeEach
+	void before() {
 
 		CassandraCustomConversions customConversions = new CassandraCustomConversions(
 				Collections.singletonList(CurrencyConverter.INSTANCE));
@@ -99,7 +103,7 @@ public class UpdateMapperUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldCreateSimpleUpdate() {
+	void shouldCreateSimpleUpdate() {
 
 		Update update = updateMapper.getMappedObject(Update.empty().set("firstName", "foo"), persistentEntity);
 
@@ -108,7 +112,7 @@ public class UpdateMapperUnitTests {
 	}
 
 	@Test // DATACASS-487
-	public void shouldReplaceUdtMap() {
+	void shouldReplaceUdtMap() {
 
 		Manufacturer manufacturer = new Manufacturer("foobar");
 
@@ -123,7 +127,7 @@ public class UpdateMapperUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldCreateSetAtIndexUpdate() {
+	void shouldCreateSetAtIndexUpdate() {
 
 		Update update = updateMapper.getMappedObject(Update.empty().set("list").atIndex(10).to(currencyEUR),
 				persistentEntity);
@@ -133,7 +137,7 @@ public class UpdateMapperUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldCreateSetAtKeyUpdate() {
+	void shouldCreateSetAtKeyUpdate() {
 
 		Update update = updateMapper.getMappedObject(Update.empty().set("map").atKey("baz").to(currencyEUR),
 				persistentEntity);
@@ -143,7 +147,7 @@ public class UpdateMapperUnitTests {
 	}
 
 	@Test // DATACASS-487
-	public void shouldCreateSetAtUdtKeyUpdate() {
+	void shouldCreateSetAtUdtKeyUpdate() {
 
 		Manufacturer manufacturer = new Manufacturer("foobar");
 
@@ -156,7 +160,7 @@ public class UpdateMapperUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldAddToMap() {
+	void shouldAddToMap() {
 
 		Update update = updateMapper.getMappedObject(Update.empty().addTo("map").entry("foo", currencyEUR),
 				persistentEntity);
@@ -166,7 +170,7 @@ public class UpdateMapperUnitTests {
 	}
 
 	@Test // DATACASS-487
-	public void shouldAddUdtToMap() {
+	void shouldAddUdtToMap() {
 
 		Manufacturer manufacturer = new Manufacturer("foobar");
 
@@ -179,7 +183,7 @@ public class UpdateMapperUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldPrependAllToList() {
+	void shouldPrependAllToList() {
 
 		Update update = updateMapper.getMappedObject(Update.empty().addTo("list").prependAll("foo", currencyEUR),
 				persistentEntity);
@@ -189,7 +193,7 @@ public class UpdateMapperUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldAppendAllToList() {
+	void shouldAppendAllToList() {
 
 		Update update = updateMapper.getMappedObject(Update.empty().addTo("list").appendAll("foo", currencyEUR),
 				persistentEntity);
@@ -199,7 +203,7 @@ public class UpdateMapperUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldRemoveFromList() {
+	void shouldRemoveFromList() {
 
 		Update update = updateMapper.getMappedObject(Update.empty().remove("list", currencyEUR), persistentEntity);
 
@@ -208,7 +212,7 @@ public class UpdateMapperUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldClearList() {
+	void shouldClearList() {
 
 		Update update = updateMapper.getMappedObject(Update.empty().clear("list"), persistentEntity);
 
@@ -217,7 +221,7 @@ public class UpdateMapperUnitTests {
 	}
 
 	@Test // DATACASS-770
-	public void shouldPrependAllToSet() {
+	void shouldPrependAllToSet() {
 
 		Update update = updateMapper.getMappedObject(Update.empty().addTo("set").prependAll(currencyUSD, currencyEUR),
 				persistentEntity);
@@ -227,7 +231,7 @@ public class UpdateMapperUnitTests {
 	}
 
 	@Test // DATACASS-770
-	public void shouldAppendAllToSet() {
+	void shouldAppendAllToSet() {
 
 		Update update = updateMapper.getMappedObject(Update.empty().addTo("set").appendAll(currencyUSD, currencyEUR),
 				persistentEntity);
@@ -237,7 +241,7 @@ public class UpdateMapperUnitTests {
 	}
 
 	@Test // DATACASS-770
-	public void shouldPrependAllToSetViaColumnNameCollectionOfElements() {
+	void shouldPrependAllToSetViaColumnNameCollectionOfElements() {
 
 		Update update = updateMapper.getMappedObject(
 				Update.empty().addTo("set_col").prependAll(new LinkedHashSet<>(Arrays.asList(currencyUSD, currencyEUR))),
@@ -248,7 +252,7 @@ public class UpdateMapperUnitTests {
 	}
 
 	@Test // DATACASS-770
-	public void shouldAppendAllToSetViaColumnNameCollectionOfElements() {
+	void shouldAppendAllToSetViaColumnNameCollectionOfElements() {
 
 		Update update = updateMapper.getMappedObject(
 				Update.empty().addTo("set_col").appendAll(new LinkedHashSet<>(Arrays.asList(currencyUSD, currencyEUR))),
@@ -259,7 +263,7 @@ public class UpdateMapperUnitTests {
 	}
 
 	@Test // DATACASS-770
-	public void shouldAppendToSet() {
+	void shouldAppendToSet() {
 
 		Update update = updateMapper.getMappedObject(Update.empty().addTo("set").append(currencyEUR),
 				persistentEntity);
@@ -269,7 +273,7 @@ public class UpdateMapperUnitTests {
 	}
 
 	@Test // DATACASS-770
-	public void shouldPrependToSet() {
+	void shouldPrependToSet() {
 
 		Update update = updateMapper.getMappedObject(Update.empty().addTo("set").prepend(currencyEUR),
 				persistentEntity);
@@ -279,7 +283,7 @@ public class UpdateMapperUnitTests {
 	}
 
 	@Test // DATACASS-770
-	public void shouldRemoveFromSet() {
+	void shouldRemoveFromSet() {
 
 		Update update = updateMapper.getMappedObject(Update.empty().remove("set", currencyEUR), persistentEntity);
 
@@ -288,7 +292,7 @@ public class UpdateMapperUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldClearSet() {
+	void shouldClearSet() {
 
 		Update update = updateMapper.getMappedObject(Update.empty().clear("set"), persistentEntity);
 
@@ -297,7 +301,7 @@ public class UpdateMapperUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldCreateIncrementUpdate() {
+	void shouldCreateIncrementUpdate() {
 
 		Update update = updateMapper.getMappedObject(Update.empty().increment("number"), persistentEntity);
 
@@ -306,7 +310,7 @@ public class UpdateMapperUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldCreateDecrementUpdate() {
+	void shouldCreateDecrementUpdate() {
 
 		Update update = updateMapper.getMappedObject(Update.empty().decrement("number"), persistentEntity);
 
@@ -315,7 +319,7 @@ public class UpdateMapperUnitTests {
 	}
 
 	@Test // DATACASS-523
-	public void shouldMapTuple() {
+	void shouldMapTuple() {
 
 		Update update = this.updateMapper.getMappedObject(Update.empty().set("tuple", new MappedTuple("foo")),
 				this.persistentEntity);
@@ -325,7 +329,7 @@ public class UpdateMapperUnitTests {
 	}
 
 	@Test // DATACASS-302, DATACASS-694
-	public void shouldMapTime() {
+	void shouldMapTime() {
 
 		Update update = this.updateMapper.getMappedObject(Update.empty().set("localTime", LocalTime.of(1, 2, 3)),
 				this.persistentEntity);
@@ -335,13 +339,13 @@ public class UpdateMapperUnitTests {
 	}
 
 	@Test // DATACASS-523
-	public void referencingTupleElementsInQueryShouldFail() {
+	void referencingTupleElementsInQueryShouldFail() {
 		assertThatIllegalArgumentException().isThrownBy(
 				() -> this.updateMapper.getMappedObject(Update.empty().set("tuple.zip", "bar"), this.persistentEntity));
 	}
 
 	@Test // DATACASS-167
-	public void shouldMapEmbeddedEntity() {
+	void shouldMapEmbeddedEntity() {
 
 		Update update = this.updateMapper.getMappedObject(Update.empty().set("nested.firstname", "spring"),
 				mappingContext.getRequiredPersistentEntity(WithNullableEmbeddedType.class));
@@ -351,7 +355,7 @@ public class UpdateMapperUnitTests {
 	}
 
 	@Test // DATACASS-167
-	public void shouldMapPrefixedEmbeddedEntity() {
+	void shouldMapPrefixedEmbeddedEntity() {
 
 		Update update = this.updateMapper.getMappedObject(Update.empty().set("nested.firstname", "spring"),
 				mappingContext.getRequiredPersistentEntity(WithPrefixedNullableEmbeddedType.class));

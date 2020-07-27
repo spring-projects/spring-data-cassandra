@@ -22,10 +22,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Method;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.domain.Person;
@@ -35,13 +35,13 @@ import org.springframework.data.cassandra.domain.Person;
  *
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner.class)
-public class CassandraParametersUnitTests {
+@ExtendWith(MockitoExtension.class)
+class CassandraParametersUnitTests {
 
 	@Mock CassandraQueryMethod queryMethod;
 
 	@Test // DATACASS-296
-	public void shouldReturnUnknownDataTypeForSimpleType() throws Exception {
+	void shouldReturnUnknownDataTypeForSimpleType() throws Exception {
 
 		Method method = PersonRepository.class.getMethod("findByFirstname", String.class);
 		CassandraParameters cassandraParameters = new CassandraParameters(method);
@@ -50,7 +50,7 @@ public class CassandraParametersUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void shouldReturnDataTypeForAnnotatedSimpleType() throws Exception {
+	void shouldReturnDataTypeForAnnotatedSimpleType() throws Exception {
 
 		Method method = PersonRepository.class.getMethod("findByFirstTime", String.class);
 		CassandraParameters cassandraParameters = new CassandraParameters(method);
@@ -60,7 +60,7 @@ public class CassandraParametersUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void shouldReturnNoTypeForComplexType() throws Exception {
+	void shouldReturnNoTypeForComplexType() throws Exception {
 
 		Method method = PersonRepository.class.getMethod("findByObject", Object.class);
 		CassandraParameters cassandraParameters = new CassandraParameters(method);
@@ -69,7 +69,7 @@ public class CassandraParametersUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void shouldReturnTypeForAnnotatedType() throws Exception {
+	void shouldReturnTypeForAnnotatedType() throws Exception {
 
 		Method method = PersonRepository.class.getMethod("findByAnnotatedObject", Object.class);
 		CassandraParameters cassandraParameters = new CassandraParameters(method);
@@ -79,7 +79,7 @@ public class CassandraParametersUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void shouldReturnTypeForComposedAnnotationType() throws Exception {
+	void shouldReturnTypeForComposedAnnotationType() throws Exception {
 
 		Method method = PersonRepository.class.getMethod("findByComposedAnnotationObject", Object.class);
 		CassandraParameters cassandraParameters = new CassandraParameters(method);
@@ -103,6 +103,6 @@ public class CassandraParametersUnitTests {
 
 	@Retention(RetentionPolicy.RUNTIME)
 	@CassandraType(type = Name.BOOLEAN)
-	@interface ComposedCassandraTypeAnnotation {
+	private @interface ComposedCassandraTypeAnnotation {
 	}
 }

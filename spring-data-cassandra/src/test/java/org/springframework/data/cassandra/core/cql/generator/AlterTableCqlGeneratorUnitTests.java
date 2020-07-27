@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.data.cassandra.core.cql.keyspace.AlterTableSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.TableOption;
@@ -36,10 +36,10 @@ import com.datastax.oss.driver.api.core.type.DataTypes;
  * @author David Webb
  * @author Mark Paluch
  */
-public class AlterTableCqlGeneratorUnitTests {
+class AlterTableCqlGeneratorUnitTests {
 
 	@Test // DATACASS-192
-	public void alterTableAlterColumnType() {
+	void alterTableAlterColumnType() {
 
 		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily").alter("lastKnownLocation",
 				DataTypes.UUID);
@@ -48,7 +48,7 @@ public class AlterTableCqlGeneratorUnitTests {
 	}
 
 	@Test // DATACASS-192
-	public void alterTableAlterListColumnType() {
+	void alterTableAlterListColumnType() {
 
 		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily").alter("lastKnownLocation",
 				DataTypes.listOf(DataTypes.ASCII));
@@ -57,7 +57,7 @@ public class AlterTableCqlGeneratorUnitTests {
 	}
 
 	@Test // DATACASS-192
-	public void alterTableAddColumn() {
+	void alterTableAddColumn() {
 
 		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily").add("gravesite", DataTypes.TEXT);
 
@@ -65,7 +65,7 @@ public class AlterTableCqlGeneratorUnitTests {
 	}
 
 	@Test // DATACASS-192
-	public void alterTableAddListColumn() {
+	void alterTableAddListColumn() {
 
 		AlterTableSpecification spec = AlterTableSpecification.alterTable("users").add("top_places",
 				DataTypes.listOf(DataTypes.ASCII));
@@ -74,7 +74,7 @@ public class AlterTableCqlGeneratorUnitTests {
 	}
 
 	@Test // DATACASS-192
-	public void alterTableDropColumn() {
+	void alterTableDropColumn() {
 
 		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily").drop("gender");
 
@@ -82,7 +82,7 @@ public class AlterTableCqlGeneratorUnitTests {
 	}
 
 	@Test // DATACASS-192
-	public void alterTableRenameColumn() {
+	void alterTableRenameColumn() {
 
 		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily").rename("firstname", "lastname");
 
@@ -90,7 +90,7 @@ public class AlterTableCqlGeneratorUnitTests {
 	}
 
 	@Test // DATACASS-192
-	public void alterTableAddCommentAndTableOption() {
+	void alterTableAddCommentAndTableOption() {
 
 		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily")
 				.with(TableOption.READ_REPAIR_CHANCE, 0.2f).with(TableOption.COMMENT, "A most excellent and useful table");
@@ -100,7 +100,7 @@ public class AlterTableCqlGeneratorUnitTests {
 	}
 
 	@Test // DATACASS-192
-	public void alterTableAddColumnAndComment() {
+	void alterTableAddColumnAndComment() {
 
 		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily")
 				.add("top_places", DataTypes.listOf(DataTypes.ASCII)).add("other", DataTypes.listOf(DataTypes.ASCII))
@@ -111,7 +111,7 @@ public class AlterTableCqlGeneratorUnitTests {
 	}
 
 	@Test // DATACASS-192
-	public void alterTableAddCaching() {
+	void alterTableAddCaching() {
 
 		Map<Object, Object> cachingMap = new LinkedHashMap<>();
 		cachingMap.put(CachingOption.KEYS, KeyCachingOption.NONE);

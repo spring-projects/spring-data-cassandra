@@ -28,9 +28,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -48,8 +47,7 @@ import org.springframework.data.cassandra.repository.support.AbstractSpringDataE
 import org.springframework.data.cassandra.repository.support.IntegrationTestConfig;
 import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 
@@ -58,10 +56,9 @@ import com.datastax.oss.driver.api.core.CqlSession;
  *
  * @author Mark Paluch
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+@SpringJUnitConfig
 @SuppressWarnings("Since15")
-public class RepositoryQueryMethodParameterTypesIntegrationTests
+class RepositoryQueryMethodParameterTypesIntegrationTests
 		extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
 
 	@Configuration
@@ -85,13 +82,13 @@ public class RepositoryQueryMethodParameterTypesIntegrationTests
 	@Autowired CassandraMappingContext mappingContext;
 	@Autowired MappingCassandraConverter converter;
 
-	@Before
-	public void setUp() throws Exception {
+	@BeforeEach
+	void setUp() throws Exception {
 		allPossibleTypesRepository.deleteAll();
 	}
 
 	@Test // DATACASS-296
-	public void shouldFindByLocalDate() {
+	void shouldFindByLocalDate() {
 
 		session.execute("CREATE INDEX IF NOT EXISTS allpossibletypes_localdate ON allpossibletypes ( date )");
 
@@ -104,12 +101,11 @@ public class RepositoryQueryMethodParameterTypesIntegrationTests
 
 		List<AllPossibleTypes> result = allPossibleTypesRepository.findWithCreatedDate(allPossibleTypes.getDate());
 
-		assertThat(result).hasSize(1);
-		assertThat(result).contains(allPossibleTypes);
+		assertThat(result).hasSize(1).contains(allPossibleTypes);
 	}
 
 	@Test // DATACASS-296
-	public void shouldFindByAnnotatedDateParameter() {
+	void shouldFindByAnnotatedDateParameter() {
 
 		CustomConversions customConversions = new CassandraCustomConversions(
 				Collections.singletonList(new DateToLocalDateConverter()));
@@ -132,18 +128,19 @@ public class RepositoryQueryMethodParameterTypesIntegrationTests
 
 		List<AllPossibleTypes> result = allPossibleTypesRepository.findWithAnnotatedDateParameter(Date.from(instant));
 
-		assertThat(result).hasSize(1);
-		assertThat(result).contains(allPossibleTypes);
+		assertThat(result).hasSize(1).contains(allPossibleTypes);
 	}
 
-	@Test(expected = CassandraInvalidQueryException.class) // DATACASS-296, DATACASS-304
-	public void shouldThrowExceptionUsingWrongMethodParameter() {
+	@Test // DATACASS-296, DATACASS-304
+	void shouldThrowExceptionUsingWrongMethodParameter() {
 		session.execute("CREATE INDEX IF NOT EXISTS allpossibletypes_date ON allpossibletypes ( date )");
-		allPossibleTypesRepository.findWithDateParameter(Date.from(Instant.ofEpochSecond(44234123421L)));
+
+		assertThatExceptionOfType(CassandraInvalidQueryException.class).isThrownBy(
+				() -> allPossibleTypesRepository.findWithDateParameter(Date.from(Instant.ofEpochSecond(44234123421L))));
 	}
 
 	@Test // DATACASS-296
-	public void shouldFindByZoneId() {
+	void shouldFindByZoneId() {
 
 		ZoneId zoneId = ZoneId.of("Europe/Paris");
 		session.execute("CREATE INDEX IF NOT EXISTS allpossibletypes_zoneid ON allpossibletypes ( zoneid )");
@@ -157,12 +154,11 @@ public class RepositoryQueryMethodParameterTypesIntegrationTests
 
 		List<AllPossibleTypes> result = allPossibleTypesRepository.findWithZoneId(zoneId);
 
-		assertThat(result).hasSize(1);
-		assertThat(result).contains(allPossibleTypes);
+		assertThat(result).hasSize(1).contains(allPossibleTypes);
 	}
 
 	@Test // DATACASS-296
-	public void shouldFindByOptionalOfZoneId() {
+	void shouldFindByOptionalOfZoneId() {
 
 		ZoneId zoneId = ZoneId.of("Europe/Paris");
 		session.execute("CREATE INDEX IF NOT EXISTS allpossibletypes_zoneid ON allpossibletypes ( zoneid )");
@@ -176,8 +172,7 @@ public class RepositoryQueryMethodParameterTypesIntegrationTests
 
 		List<AllPossibleTypes> result = allPossibleTypesRepository.findWithZoneId(Optional.of(zoneId));
 
-		assertThat(result).hasSize(1);
-		assertThat(result).contains(allPossibleTypes);
+		assertThat(result).hasSize(1).contains(allPossibleTypes);
 	}
 
 	private interface AllPossibleTypesRepository extends CrudRepository<AllPossibleTypes, String> {

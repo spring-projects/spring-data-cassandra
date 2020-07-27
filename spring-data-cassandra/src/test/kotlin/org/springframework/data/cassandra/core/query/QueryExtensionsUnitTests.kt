@@ -16,7 +16,7 @@
 package org.springframework.data.cassandra.core.query
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 /**
  * Unit tests for [QueryExtensions].

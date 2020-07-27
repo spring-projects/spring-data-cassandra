@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.*;
 import java.util.Collections;
 import java.util.Set;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -33,7 +33,8 @@ import org.springframework.data.cassandra.core.cql.session.init.KeyspacePopulato
 import org.springframework.data.cassandra.core.cql.session.init.ResourceKeyspacePopulator;
 import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.cassandra.repository.support.IntegrationTestConfig;
-import org.springframework.data.cassandra.test.util.AbstractEmbeddedCassandraIntegrationTest;
+import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
+import org.springframework.data.cassandra.test.util.IntegrationTestsSupport;
 import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.core.CqlSession;
@@ -46,13 +47,13 @@ import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
  *
  * @author John Blum
  * @author Mark Paluch
- * @see org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest
+ * @see AbstractKeyspaceCreatingIntegrationTests
  */
-public class SchemaActionIntegrationTests extends AbstractEmbeddedCassandraIntegrationTest {
+class SchemaActionIntegrationTests extends IntegrationTestsSupport {
 
-	protected static final String CREATE_PERSON_TABLE_CQL = "CREATE TABLE IF NOT EXISTS person (id int, firstName text, lastName text, PRIMARY KEY(id));";
+	private static final String CREATE_PERSON_TABLE_CQL = "CREATE TABLE IF NOT EXISTS person (id int, firstName text, lastName text, PRIMARY KEY(id));";
 
-	protected ConfigurableApplicationContext newApplicationContext(Class<?>... annotatedClasses) {
+	ConfigurableApplicationContext newApplicationContext(Class<?>... annotatedClasses) {
 
 		AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext(annotatedClasses);
 
@@ -89,7 +90,7 @@ public class SchemaActionIntegrationTests extends AbstractEmbeddedCassandraInteg
 	}
 
 	@Test
-	public void createWithNoExistingTableCreatesTableFromEntity() {
+	void createWithNoExistingTableCreatesTableFromEntity() {
 
 		doInSessionWithConfiguration(CreateWithNoExistingTableConfiguration.class, session -> {
 
@@ -101,7 +102,7 @@ public class SchemaActionIntegrationTests extends AbstractEmbeddedCassandraInteg
 	}
 
 	@Test
-	public void createWithExistingTableThrowsErrorWhenCreatingTableFromEntity() {
+	void createWithExistingTableThrowsErrorWhenCreatingTableFromEntity() {
 
 		try {
 
@@ -119,7 +120,7 @@ public class SchemaActionIntegrationTests extends AbstractEmbeddedCassandraInteg
 	}
 
 	@Test
-	public void createIfNotExistsWithNoExistingTableCreatesTableFromEntity() {
+	void createIfNotExistsWithNoExistingTableCreatesTableFromEntity() {
 
 		doInSessionWithConfiguration(CreateIfNotExistsWithNoExistingTableConfiguration.class, session -> {
 
@@ -131,7 +132,7 @@ public class SchemaActionIntegrationTests extends AbstractEmbeddedCassandraInteg
 	}
 
 	@Test
-	public void createIfNotExistsWithExistingTableUsesExistingTable() {
+	void createIfNotExistsWithExistingTableUsesExistingTable() {
 
 		doInSessionWithConfiguration(CreateIfNotExistsWithExistingTableConfiguration.class, session -> {
 
@@ -142,7 +143,7 @@ public class SchemaActionIntegrationTests extends AbstractEmbeddedCassandraInteg
 	}
 
 	@Test
-	public void recreateTableFromEntityDropsExistingTable() {
+	void recreateTableFromEntityDropsExistingTable() {
 
 		doInSessionWithConfiguration(RecreateSchemaActionWithExistingTableConfiguration.class, session -> {
 

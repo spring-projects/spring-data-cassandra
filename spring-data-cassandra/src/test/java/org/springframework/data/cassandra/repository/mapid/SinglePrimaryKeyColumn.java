@@ -41,7 +41,7 @@ public class SinglePrimaryKeyColumn {
 		return key;
 	}
 
-	public void setKey(String key) {
+	private void setKey(String key) {
 		this.key = key;
 	}
 

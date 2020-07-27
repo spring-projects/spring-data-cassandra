@@ -28,7 +28,7 @@ import org.springframework.data.cassandra.core.mapping.UserDefinedType;
  *
  * @author Mark Paluch
  */
-public abstract class CassandraPersistentEntitySchemaTestSupport {
+abstract class CassandraPersistentEntitySchemaTestSupport {
 
 	@UserDefinedType
 	static class UniverseType {
@@ -48,7 +48,7 @@ public abstract class CassandraPersistentEntitySchemaTestSupport {
 	}
 
 	@UserDefinedType
-	static class AstronautType {
+	private static class AstronautType {
 		String name;
 	}
 

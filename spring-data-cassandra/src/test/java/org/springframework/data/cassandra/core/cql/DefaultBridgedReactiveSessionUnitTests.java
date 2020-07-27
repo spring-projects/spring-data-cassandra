@@ -27,12 +27,14 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import org.springframework.data.cassandra.ReactiveResultSet;
 import org.springframework.data.cassandra.core.cql.session.DefaultBridgedReactiveSession;
@@ -50,18 +52,19 @@ import com.datastax.oss.driver.api.core.cql.Statement;
  *
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner.Silent.class)
-public class DefaultBridgedReactiveSessionUnitTests {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class DefaultBridgedReactiveSessionUnitTests {
 
 	@Mock CqlSession sessionMock;
 
-	CompletableFuture<AsyncResultSet> future = new CompletableFuture<>();
-	CompletableFuture<PreparedStatement> preparedStatementFuture = new CompletableFuture<>();
+	private CompletableFuture<AsyncResultSet> future = new CompletableFuture<>();
+	private CompletableFuture<PreparedStatement> preparedStatementFuture = new CompletableFuture<>();
 
 	private DefaultBridgedReactiveSession reactiveSession;
 
-	@Before
-	public void before() {
+	@BeforeEach
+	void before() {
 
 		reactiveSession = new DefaultBridgedReactiveSession(sessionMock);
 
@@ -69,7 +72,7 @@ public class DefaultBridgedReactiveSessionUnitTests {
 	}
 
 	@Test // DATACASS-335
-	public void executeStatementShouldForwardStatementToSession() {
+	void executeStatementShouldForwardStatementToSession() {
 
 		Statement<?> statement = SimpleStatement.newInstance("SELECT *");
 
@@ -79,7 +82,7 @@ public class DefaultBridgedReactiveSessionUnitTests {
 	}
 
 	@Test // DATACASS-335
-	public void executeShouldForwardStatementToSession() {
+	void executeShouldForwardStatementToSession() {
 
 		reactiveSession.execute("SELECT *").subscribe();
 
@@ -87,7 +90,7 @@ public class DefaultBridgedReactiveSessionUnitTests {
 	}
 
 	@Test // DATACASS-335
-	public void executeWithValuesShouldForwardStatementToSession() {
+	void executeWithValuesShouldForwardStatementToSession() {
 
 		reactiveSession.execute("SELECT * WHERE a = ? and b = ?", "A", "B").subscribe();
 
@@ -95,7 +98,7 @@ public class DefaultBridgedReactiveSessionUnitTests {
 	}
 
 	@Test // DATACASS-335
-	public void executeWithValueMapShouldForwardStatementToSession() {
+	void executeWithValueMapShouldForwardStatementToSession() {
 
 		reactiveSession.execute("SELECT * WHERE a = ?", Collections.singletonMap("a", "value")).subscribe();
 
@@ -104,7 +107,7 @@ public class DefaultBridgedReactiveSessionUnitTests {
 	}
 
 	@Test // DATACASS-335
-	public void testPrepareQuery() {
+	void testPrepareQuery() {
 
 		when(sessionMock.prepareAsync(any(SimpleStatement.class))).thenReturn(preparedStatementFuture);
 
@@ -114,7 +117,7 @@ public class DefaultBridgedReactiveSessionUnitTests {
 	}
 
 	@Test // DATACASS-335
-	public void testPrepareStatement() {
+	void testPrepareStatement() {
 
 		when(sessionMock.prepareAsync(any(SimpleStatement.class))).thenReturn(preparedStatementFuture);
 
@@ -125,7 +128,7 @@ public class DefaultBridgedReactiveSessionUnitTests {
 	}
 
 	@Test // DATACASS-335
-	public void testClose() {
+	void testClose() {
 
 		reactiveSession.close();
 
@@ -133,7 +136,7 @@ public class DefaultBridgedReactiveSessionUnitTests {
 	}
 
 	@Test // DATACASS-335
-	public void testIsClosed() {
+	void testIsClosed() {
 
 		when(reactiveSession.isClosed()).thenReturn(true);
 
@@ -144,7 +147,7 @@ public class DefaultBridgedReactiveSessionUnitTests {
 	}
 
 	@Test // DATACASS-509
-	public void shouldNotReadMoreThanAvailable() {
+	void shouldNotReadMoreThanAvailable() {
 
 		AsyncResultSet resultSet = mock(AsyncResultSet.class);
 
@@ -162,7 +165,7 @@ public class DefaultBridgedReactiveSessionUnitTests {
 	}
 
 	@Test // DATACASS-529
-	public void shouldReadAvailableResults() {
+	void shouldReadAvailableResults() {
 
 		AsyncResultSet resultSet = mock(AsyncResultSet.class);
 		when(resultSet.remaining()).thenReturn(10);
@@ -179,7 +182,7 @@ public class DefaultBridgedReactiveSessionUnitTests {
 	}
 
 	@Test // DATACASS-509
-	public void shouldFetchMore() {
+	void shouldFetchMore() {
 
 		Iterator<Row> rows = mockIterator();
 

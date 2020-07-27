@@ -20,7 +20,7 @@ import static org.springframework.data.domain.Sort.Order.*;
 
 import java.nio.ByteBuffer;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -31,12 +31,12 @@ import org.springframework.data.domain.Sort.Direction;
  *
  * @author Mark Paluch
  */
-public class CassandraPageRequestUnitTests {
+class CassandraPageRequestUnitTests {
 
-	ByteBuffer pagingState = ByteBuffer.allocate(1);
+	private ByteBuffer pagingState = ByteBuffer.allocate(1);
 
 	@Test // DATACASS-56
-	public void shouldNotAllowNonZeroPageConstruction() {
+	void shouldNotAllowNonZeroPageConstruction() {
 
 		assertThatThrownBy(() -> CassandraPageRequest.of(1, 1)).isInstanceOf(IllegalArgumentException.class);
 		assertThatThrownBy(() -> CassandraPageRequest.of(1, 1, Sort.unsorted()))
@@ -46,7 +46,7 @@ public class CassandraPageRequestUnitTests {
 	}
 
 	@Test // DATACASS-56
-	public void shouldCreateFirstUnsortedPageRequest() {
+	void shouldCreateFirstUnsortedPageRequest() {
 
 		CassandraPageRequest pageRequest = CassandraPageRequest.first(10);
 
@@ -56,7 +56,7 @@ public class CassandraPageRequestUnitTests {
 	}
 
 	@Test // DATACASS-56
-	public void shouldCreateFirstSortedPageRequest() {
+	void shouldCreateFirstSortedPageRequest() {
 
 		CassandraPageRequest pageRequest = CassandraPageRequest.first(10, Direction.ASC, "foo");
 
@@ -66,7 +66,7 @@ public class CassandraPageRequestUnitTests {
 	}
 
 	@Test // DATACASS-56
-	public void shouldFailIfNoNextPageIsAvailable() {
+	void shouldFailIfNoNextPageIsAvailable() {
 
 		CassandraPageRequest pageRequest = CassandraPageRequest.first(10, Direction.ASC, "foo");
 
@@ -74,7 +74,7 @@ public class CassandraPageRequestUnitTests {
 	}
 
 	@Test // DATACASS-56
-	public void shouldCreateNextPageRequest() {
+	void shouldCreateNextPageRequest() {
 
 		CassandraPageRequest pageRequest = CassandraPageRequest.first(10, Direction.ASC, "foo");
 		CassandraPageRequest next = CassandraPageRequest.of(pageRequest, pagingState).next();
@@ -84,7 +84,7 @@ public class CassandraPageRequestUnitTests {
 	}
 
 	@Test // DATACASS-56
-	public void shouldNotAllowPreviousPageNavigationToIntermediatePages() {
+	void shouldNotAllowPreviousPageNavigationToIntermediatePages() {
 
 		CassandraPageRequest next = CassandraPageRequest.of(PageRequest.of(5, 10), pagingState);
 
@@ -92,7 +92,7 @@ public class CassandraPageRequestUnitTests {
 	}
 
 	@Test // DATACASS-56
-	public void shouldCheckEquality() {
+	void shouldCheckEquality() {
 
 		CassandraPageRequest first = CassandraPageRequest.first(10);
 		CassandraPageRequest anotherFirst = CassandraPageRequest.first(10);

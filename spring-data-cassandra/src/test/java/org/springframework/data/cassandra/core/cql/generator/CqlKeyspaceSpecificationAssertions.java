@@ -29,7 +29,7 @@ import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;
 /**
  * @author John McPeek
  */
-public class CqlKeyspaceSpecificationAssertions {
+class CqlKeyspaceSpecificationAssertions {
 
 	@SuppressWarnings("unchecked")
 	public static void assertKeyspace(KeyspaceDescriptor expected, String keyspace, CqlSession session) {

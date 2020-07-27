@@ -17,7 +17,7 @@ package org.springframework.data.cassandra.core;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
@@ -29,10 +29,10 @@ import com.datastax.oss.driver.api.querybuilder.select.Select;
  *
  * @author Mark Paluch
  */
-public class EntityQueryUtilsUnitTests {
+class EntityQueryUtilsUnitTests {
 
 	@Test // DATACASS-106
-	public void shouldRetrieveTableNameFromSelect() {
+	void shouldRetrieveTableNameFromSelect() {
 
 		Select select = QueryBuilder.selectFrom("ks", "tbl").all().where();
 
@@ -42,7 +42,7 @@ public class EntityQueryUtilsUnitTests {
 	}
 
 	@Test // DATACASS-642
-	public void shouldRetrieveQuotedTableNameFromSelect() {
+	void shouldRetrieveQuotedTableNameFromSelect() {
 
 		Select select = QueryBuilder.selectFrom(CqlIdentifier.fromCql("\"table\"")).all().where();
 
@@ -52,7 +52,7 @@ public class EntityQueryUtilsUnitTests {
 	}
 
 	@Test // DATACASS-106
-	public void shouldRetrieveTableNameFromSimpleStatement() {
+	void shouldRetrieveTableNameFromSimpleStatement() {
 
 		assertThat(EntityQueryUtils.getTableName(SimpleStatement.newInstance("SELECT * FROM table")))
 				.isEqualTo(CqlIdentifier.fromInternal("table"));
@@ -61,7 +61,7 @@ public class EntityQueryUtilsUnitTests {
 	}
 
 	@Test // DATACASS-106
-	public void shouldRetrieveQuotedTableNameFromSimpleStatement() {
+	void shouldRetrieveQuotedTableNameFromSimpleStatement() {
 
 		CqlIdentifier tableName = EntityQueryUtils.getTableName(SimpleStatement.newInstance("SELECT * from \"table\""));
 

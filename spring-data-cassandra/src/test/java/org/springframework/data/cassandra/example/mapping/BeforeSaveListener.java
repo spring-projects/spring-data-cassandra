@@ -19,7 +19,7 @@ import org.springframework.data.cassandra.core.mapping.event.AbstractCassandraEv
 import org.springframework.data.cassandra.core.mapping.event.BeforeSaveEvent;
 
 // tag::class[]
-public class BeforeSaveListener extends AbstractCassandraEventListener<Person> {
+class BeforeSaveListener extends AbstractCassandraEventListener<Person> {
 	@Override
 	public void onBeforeSave(BeforeSaveEvent<Person> event) {
 		// … change values, delete them, whatever …

@@ -49,7 +49,7 @@ class EmbeddedCassandraServerHelper {
 	private static Logger log = LoggerFactory.getLogger(EmbeddedCassandraServerHelper.class);
 
 	public static final long DEFAULT_STARTUP_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(20);
-	public static final String DEFAULT_TMP_DIR = "target/embeddedCassandra";
+	private static final String DEFAULT_TMP_DIR = "target/embeddedCassandra";
 
 	private static final AtomicReference<Object> sync = new AtomicReference<>();
 	private static final AtomicReference<CassandraDaemon> cassandraRef = new AtomicReference<>();
@@ -111,7 +111,7 @@ class EmbeddedCassandraServerHelper {
 	 * @param timeout
 	 * @throws Exception
 	 */
-	public static void startEmbeddedCassandra(String yamlResource, String tmpDir, long timeout) throws Exception {
+	private static void startEmbeddedCassandra(String yamlResource, String tmpDir, long timeout) throws Exception {
 
 		if (cassandraRef.get() != null) {
 			/* Nothing to do; Cassandra is already started */

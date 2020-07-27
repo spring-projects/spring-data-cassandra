@@ -24,13 +24,15 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import org.springframework.data.cassandra.ReactiveResultSet;
 import org.springframework.data.cassandra.ReactiveSession;
@@ -57,8 +59,9 @@ import com.datastax.oss.driver.api.core.type.DataTypes;
  *
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner.class)
-public class ReactiveCassandraTemplateUnitTests {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class ReactiveCassandraTemplateUnitTests {
 
 	@Mock ReactiveSession session;
 	@Mock ReactiveResultSet reactiveResultSet;
@@ -68,14 +71,14 @@ public class ReactiveCassandraTemplateUnitTests {
 
 	@Captor ArgumentCaptor<SimpleStatement> statementCaptor;
 
-	ReactiveCassandraTemplate template;
+	private ReactiveCassandraTemplate template;
 
-	Object beforeSave;
+	private Object beforeSave;
 
-	Object beforeConvert;
+	private Object beforeConvert;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		template = new ReactiveCassandraTemplate(session);
 
@@ -102,7 +105,7 @@ public class ReactiveCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-335
-	public void selectUsingCqlShouldReturnMappedResults() {
+	void selectUsingCqlShouldReturnMappedResults() {
 
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
 		when(columnDefinitions.contains(any(CqlIdentifier.class))).thenReturn(true);
@@ -127,7 +130,7 @@ public class ReactiveCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-335
-	public void selectShouldTranslateException() {
+	void selectShouldTranslateException() {
 
 		when(reactiveResultSet.rows()).thenThrow(new NoNodeAvailableException());
 
@@ -138,7 +141,7 @@ public class ReactiveCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-335
-	public void selectOneByIdShouldReturnMappedResults() {
+	void selectOneByIdShouldReturnMappedResults() {
 
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
 		when(columnDefinitions.contains(any(CqlIdentifier.class))).thenReturn(true);
@@ -162,7 +165,7 @@ public class ReactiveCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-313
-	public void selectProjectedOneShouldReturnMappedResults() {
+	void selectProjectedOneShouldReturnMappedResults() {
 
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
 		when(columnDefinitions.contains(any(CqlIdentifier.class))).thenReturn(true);
@@ -185,7 +188,7 @@ public class ReactiveCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-696
-	public void selectOneShouldNull() {
+	void selectOneShouldNull() {
 
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
 
@@ -194,7 +197,7 @@ public class ReactiveCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-335
-	public void existsShouldReturnExistingElement() {
+	void existsShouldReturnExistingElement() {
 
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
 
@@ -205,7 +208,7 @@ public class ReactiveCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-335
-	public void existsShouldReturnNonExistingElement() {
+	void existsShouldReturnNonExistingElement() {
 
 		when(reactiveResultSet.rows()).thenReturn(Flux.empty());
 
@@ -216,7 +219,7 @@ public class ReactiveCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-512
-	public void existsByQueryShouldReturnExistingElement() {
+	void existsByQueryShouldReturnExistingElement() {
 
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
 
@@ -227,7 +230,7 @@ public class ReactiveCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-512
-	public void existsByQueryShouldReturnNonExistingElement() {
+	void existsByQueryShouldReturnNonExistingElement() {
 
 		when(reactiveResultSet.rows()).thenReturn(Flux.empty());
 
@@ -238,7 +241,7 @@ public class ReactiveCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-335
-	public void countShouldExecuteCountQueryElement() {
+	void countShouldExecuteCountQueryElement() {
 
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
 		when(row.getLong(0)).thenReturn(42L);
@@ -251,7 +254,7 @@ public class ReactiveCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-512
-	public void countByQueryShouldExecuteCountQueryElement() {
+	void countByQueryShouldExecuteCountQueryElement() {
 
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
 		when(row.getLong(0)).thenReturn(42L);
@@ -264,7 +267,7 @@ public class ReactiveCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-335, DATACASS-618
-	public void insertShouldInsertEntity() {
+	void insertShouldInsertEntity() {
 
 		when(reactiveResultSet.wasApplied()).thenReturn(true);
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
@@ -280,7 +283,7 @@ public class ReactiveCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-618
-	public void insertShouldInsertVersionedEntity() {
+	void insertShouldInsertVersionedEntity() {
 
 		when(reactiveResultSet.wasApplied()).thenReturn(true);
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
@@ -296,7 +299,7 @@ public class ReactiveCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-335
-	public void insertShouldTranslateException() {
+	void insertShouldTranslateException() {
 
 		reset(session);
 		when(session.execute(any(Statement.class))).thenReturn(Mono.error(new NoNodeAvailableException()));
@@ -309,7 +312,7 @@ public class ReactiveCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-335, DATACASS-618
-	public void updateShouldUpdateEntity() {
+	void updateShouldUpdateEntity() {
 
 		when(reactiveResultSet.wasApplied()).thenReturn(true);
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
@@ -326,7 +329,7 @@ public class ReactiveCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-618
-	public void updateShouldUpdateVersionedEntity() {
+	void updateShouldUpdateVersionedEntity() {
 
 		when(reactiveResultSet.wasApplied()).thenReturn(true);
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
@@ -344,7 +347,7 @@ public class ReactiveCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-575
-	public void updateShouldUpdateEntityWithOptions() {
+	void updateShouldUpdateEntityWithOptions() {
 
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
 
@@ -362,7 +365,7 @@ public class ReactiveCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-575
-	public void updateShouldUpdateEntityWithLwt() {
+	void updateShouldUpdateEntityWithLwt() {
 
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
 
@@ -380,7 +383,7 @@ public class ReactiveCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-575
-	public void updateShouldApplyUpdateQuery() {
+	void updateShouldApplyUpdateQuery() {
 
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
 
@@ -398,7 +401,7 @@ public class ReactiveCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-575
-	public void updateShouldApplyUpdateQueryWitLwt() {
+	void updateShouldApplyUpdateQueryWitLwt() {
 
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
 
@@ -420,7 +423,7 @@ public class ReactiveCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-335
-	public void deleteShouldRemoveEntity() {
+	void deleteShouldRemoveEntity() {
 
 		when(reactiveResultSet.wasApplied()).thenReturn(true);
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
@@ -434,7 +437,7 @@ public class ReactiveCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-575
-	public void deleteShouldRemoveEntityWithLwt() {
+	void deleteShouldRemoveEntityWithLwt() {
 
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
 
@@ -452,7 +455,7 @@ public class ReactiveCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-575
-	public void deleteShouldRemoveByQueryWithLwt() {
+	void deleteShouldRemoveByQueryWithLwt() {
 
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
 
@@ -470,7 +473,7 @@ public class ReactiveCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-335
-	public void truncateShouldRemoveEntities() {
+	void truncateShouldRemoveEntities() {
 
 		template.truncate(User.class).as(StepVerifier::create).verifyComplete();
 
@@ -478,7 +481,7 @@ public class ReactiveCassandraTemplateUnitTests {
 		assertThat(statementCaptor.getValue().getQuery()).isEqualTo("TRUNCATE users");
 	}
 
-	interface UserProjection {
+	private interface UserProjection {
 		String getFirstname();
 	}
 }

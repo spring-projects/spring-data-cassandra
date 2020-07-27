@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.data.mapping.model.Property;
@@ -44,26 +44,26 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * @author Alex Shvid
  * @author Mark Paluch
  */
-public class BasicCassandraPersistentPropertyUnitTests {
+class BasicCassandraPersistentPropertyUnitTests {
 
 	@Test
-	public void usesAnnotatedColumnName() {
+	void usesAnnotatedColumnName() {
 		assertThat(getPropertyFor(Timeline.class, "text").getRequiredColumnName()).hasToString("message");
 	}
 
 	@Test
-	public void usesReservedColumnName() {
+	void usesReservedColumnName() {
 		assertThat(getPropertyFor(Timeline.class, "keyspace").getRequiredColumnName().asCql(true))
 				.isEqualTo("\"keyspace\"");
 	}
 
 	@Test
-	public void usesReservedAnnotatedColumnName() {
+	void usesReservedAnnotatedColumnName() {
 		assertThat(getPropertyFor(Timeline.class, "table").getRequiredColumnName().asCql(true)).isEqualTo("\"table\"");
 	}
 
 	@Test
-	public void checksIdProperty() {
+	void checksIdProperty() {
 
 		CassandraPersistentProperty property = getPropertyFor(Timeline.class, "id");
 
@@ -71,12 +71,12 @@ public class BasicCassandraPersistentPropertyUnitTests {
 	}
 
 	@Test
-	public void returnsPropertyNameForUnannotatedProperty() {
+	void returnsPropertyNameForUnannotatedProperty() {
 		assertThat(getPropertyFor(Timeline.class, "time").getRequiredColumnName()).hasToString("time");
 	}
 
 	@Test // DATACASS-259
-	public void shouldConsiderComposedColumnAnnotation() {
+	void shouldConsiderComposedColumnAnnotation() {
 
 		CassandraPersistentProperty persistentProperty = getPropertyFor(TypeWithComposedColumnAnnotation.class, "column");
 
@@ -84,7 +84,7 @@ public class BasicCassandraPersistentPropertyUnitTests {
 	}
 
 	@Test // DATACASS-259
-	public void shouldConsiderComposedPrimaryKeyAnnotation() {
+	void shouldConsiderComposedPrimaryKeyAnnotation() {
 
 		CassandraPersistentProperty persistentProperty = getPropertyFor(TypeWithComposedPrimaryKeyAnnotation.class,
 				"column");
@@ -94,7 +94,7 @@ public class BasicCassandraPersistentPropertyUnitTests {
 	}
 
 	@Test // DATACASS-259
-	public void shouldConsiderComposedPrimaryKeyColumnAnnotation() {
+	void shouldConsiderComposedPrimaryKeyColumnAnnotation() {
 
 		CassandraPersistentProperty persistentProperty = getPropertyFor(TypeWithComposedPrimaryKeyColumnAnnotation.class,
 				"column");
@@ -104,7 +104,7 @@ public class BasicCassandraPersistentPropertyUnitTests {
 	}
 
 	@Test // DATACASS-568
-	public void shouldFindAnnotationInMapTypes() {
+	void shouldFindAnnotationInMapTypes() {
 
 		assertThat(findAnnotatedType(TypeWithMaps.class, "parameterized")).isNull();
 		assertThat(findAnnotatedType(TypeWithMaps.class, "parameterizedWithAnnotation")).isNotNull();
@@ -115,7 +115,7 @@ public class BasicCassandraPersistentPropertyUnitTests {
 	}
 
 	@Test // DATACASS-568
-	public void shouldFindAnnotationInCollectionTypes() {
+	void shouldFindAnnotationInCollectionTypes() {
 
 		assertThat(findAnnotatedType(TypeWithCollections.class, "parameterized")).isNull();
 		assertThat(findAnnotatedType(TypeWithCollections.class, "parameterizedWithAnnotation")).isNotNull();
@@ -126,7 +126,7 @@ public class BasicCassandraPersistentPropertyUnitTests {
 	}
 
 	@Test // DATACASS-259
-	public void shouldConsiderComposedCassandraTypeAnnotation() {
+	void shouldConsiderComposedCassandraTypeAnnotation() {
 
 		CassandraPersistentProperty persistentProperty = getPropertyFor(TypeWithComposedCassandraTypeAnnotation.class,
 				"column");
@@ -138,7 +138,7 @@ public class BasicCassandraPersistentPropertyUnitTests {
 	 * Demonstrates how to access annotations on type parameters.
 	 */
 	@Test // DATACASS-465
-	public void parameterAnnotations() {
+	void parameterAnnotations() {
 
 		AnnotatedType annotatedType = findAnnotatedType(TypeWithMaps.class, "parameterizedWithParameterAnnotation");
 		assertThat(annotatedType).isNotNull().isInstanceOf(AnnotatedParameterizedType.class);
@@ -170,7 +170,7 @@ public class BasicCassandraPersistentPropertyUnitTests {
 		return new BasicCassandraPersistentEntity<>(ClassTypeInformation.from(type));
 	}
 
-	static class Timeline {
+	private static class Timeline {
 
 		@PrimaryKey String id;
 
@@ -185,7 +185,7 @@ public class BasicCassandraPersistentPropertyUnitTests {
 
 	@Retention(RetentionPolicy.RUNTIME)
 	@Column(forceQuote = true)
-	@interface ComposedColumnAnnotation {
+	private @interface ComposedColumnAnnotation {
 
 		@AliasFor(annotation = Column.class)
 		String value();
@@ -193,7 +193,7 @@ public class BasicCassandraPersistentPropertyUnitTests {
 
 	@Retention(RetentionPolicy.RUNTIME)
 	@PrimaryKey(forceQuote = true)
-	@interface ComposedPrimaryKeyAnnotation {
+	private @interface ComposedPrimaryKeyAnnotation {
 
 		@AliasFor(annotation = PrimaryKey.class)
 		String value() default "primary-key";
@@ -201,7 +201,7 @@ public class BasicCassandraPersistentPropertyUnitTests {
 
 	@Retention(RetentionPolicy.RUNTIME)
 	@PrimaryKeyColumn(forceQuote = true)
-	@interface ComposedPrimaryKeyColumnAnnotation {
+	private @interface ComposedPrimaryKeyColumnAnnotation {
 
 		@AliasFor(annotation = PrimaryKeyColumn.class)
 		String value();
@@ -212,26 +212,26 @@ public class BasicCassandraPersistentPropertyUnitTests {
 
 	@Retention(RetentionPolicy.RUNTIME)
 	@CassandraType(type = Name.COUNTER)
-	@interface ComposedCassandraTypeAnnotation {
+	private @interface ComposedCassandraTypeAnnotation {
 	}
 
-	static class TypeWithComposedColumnAnnotation {
+	private static class TypeWithComposedColumnAnnotation {
 		@ComposedColumnAnnotation("mycolumn") String column;
 	}
 
-	static class TypeWithComposedPrimaryKeyAnnotation {
+	private static class TypeWithComposedPrimaryKeyAnnotation {
 		@ComposedPrimaryKeyAnnotation String column;
 	}
 
-	static class TypeWithComposedPrimaryKeyColumnAnnotation {
+	private static class TypeWithComposedPrimaryKeyColumnAnnotation {
 		@ComposedPrimaryKeyColumnAnnotation("mycolumn") String column;
 	}
 
-	static class TypeWithComposedCassandraTypeAnnotation {
+	private static class TypeWithComposedCassandraTypeAnnotation {
 		@ComposedCassandraTypeAnnotation String column;
 	}
 
-	static class TypeWithMaps {
+	private static class TypeWithMaps {
 
 		Map<String, String> parameterized;
 
@@ -246,7 +246,7 @@ public class BasicCassandraPersistentPropertyUnitTests {
 		MapType subtype;
 	}
 
-	static class TypeWithCollections {
+	private static class TypeWithCollections {
 
 		List<String> parameterized;
 

@@ -15,15 +15,13 @@
  */
 package org.springframework.data.cassandra.config;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.support.AbstractTestJavaConfig;
-import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 
@@ -31,9 +29,8 @@ import com.datastax.oss.driver.api.core.CqlSession;
  * @author Matthew T. Adams
  * @author Mark Paluch
  */
-@RunWith(SpringRunner.class)
-@ContextConfiguration(classes = ConfigIntegrationTests.Config.class)
-public class ConfigIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
+@SpringJUnitConfig(classes = ConfigIntegrationTests.Config.class)
+class ConfigIntegrationTests extends AbstractKeyspaceCreatingIntegrationTests {
 
 	@Configuration
 	static class Config extends AbstractTestJavaConfig {
@@ -47,7 +44,7 @@ public class ConfigIntegrationTests extends AbstractKeyspaceCreatingIntegrationT
 	@Autowired CqlSession session;
 
 	@Test
-	public void test() {
+	void test() {
 
 		session.execute("DROP KEYSPACE IF EXISTS ConfigTest");
 

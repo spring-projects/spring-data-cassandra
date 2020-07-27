@@ -24,8 +24,8 @@ import java.lang.reflect.Field;
 import java.util.Date;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.data.cassandra.core.convert.SchemaFactory;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
@@ -43,18 +43,18 @@ import com.datastax.oss.driver.api.core.type.DataTypes;
  * @author Matthew T. Adams
  * @author Mark Paluch
  */
-public class CassandraCompositePrimaryKeyUnitTests {
+class CassandraCompositePrimaryKeyUnitTests {
 
-	CassandraMappingContext context;
+	private CassandraMappingContext context;
 
-	SchemaFactory schemaFactory;
+	private SchemaFactory schemaFactory;
 
-	CassandraPersistentEntity<?> entity;
+	private CassandraPersistentEntity<?> entity;
 
-	CassandraPersistentEntity<?> key;
+	private CassandraPersistentEntity<?> key;
 
-	@Before
-	public void setup() {
+	@BeforeEach
+	void setup() {
 
 		context = new CassandraMappingContext();
 		schemaFactory = new SchemaFactory(context, context.getCustomConversions(), context.getCodecRegistry());
@@ -63,7 +63,7 @@ public class CassandraCompositePrimaryKeyUnitTests {
 	}
 
 	@Test // DATACASS-507
-	public void validateMappingInfo() {
+	void validateMappingInfo() {
 
 		Field field = ReflectionUtils.findField(TypeWithCompositeKey.class, "id");
 		CassandraPersistentProperty property = new BasicCassandraPersistentProperty(
@@ -101,7 +101,7 @@ public class CassandraCompositePrimaryKeyUnitTests {
 	}
 
 	@Table
-	static class TypeWithCompositeKey {
+	private static class TypeWithCompositeKey {
 
 		@PrimaryKey CompositeKey id;
 

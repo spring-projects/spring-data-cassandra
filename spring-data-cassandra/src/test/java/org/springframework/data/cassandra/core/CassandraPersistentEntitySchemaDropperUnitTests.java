@@ -23,13 +23,13 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.support.UserDefinedTypeBuilder;
@@ -39,6 +39,8 @@ import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;
 import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
 import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.datastax.oss.driver.api.core.type.UserDefinedType;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 /**
  * Unit tests for {@link CassandraPersistentEntitySchemaDropper}.
@@ -46,24 +48,27 @@ import com.datastax.oss.driver.api.core.type.UserDefinedType;
  * @author Mark Paluch.
  */
 @SuppressWarnings("unchecked")
-@RunWith(MockitoJUnitRunner.class)
-public class CassandraPersistentEntitySchemaDropperUnitTests extends CassandraPersistentEntitySchemaTestSupport {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class CassandraPersistentEntitySchemaDropperUnitTests extends CassandraPersistentEntitySchemaTestSupport {
 
 	@Mock CassandraAdminOperations operations;
 	@Mock KeyspaceMetadata metadata;
-	UserDefinedType universetype = UserDefinedTypeBuilder.forName("universetype").withField("name", DataTypes.TEXT)
+	private UserDefinedType universetype = UserDefinedTypeBuilder.forName("universetype")
+			.withField("name", DataTypes.TEXT)
 			.build();
-	UserDefinedType moontype = UserDefinedTypeBuilder.forName("moontype").withField("universeType", universetype).build();
-	UserDefinedType planettype = UserDefinedTypeBuilder.forName("planettype")
+	private UserDefinedType moontype = UserDefinedTypeBuilder.forName("moontype").withField("universeType", universetype)
+			.build();
+	private UserDefinedType planettype = UserDefinedTypeBuilder.forName("planettype")
 			.withField("moonType", DataTypes.setOf(moontype)).withField("universeType", universetype).build();
 	@Mock TableMetadata person;
 	@Mock TableMetadata contact;
 
-	CassandraMappingContext context = new CassandraMappingContext();
+	private CassandraMappingContext context = new CassandraMappingContext();
 
 	// DATACASS-355
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		context.setUserTypeResolver(typeName -> metadata.getUserDefinedType(typeName).get());
 
@@ -73,7 +78,7 @@ public class CassandraPersistentEntitySchemaDropperUnitTests extends CassandraPe
 	}
 
 	@Test // DATACASS-355, DATACASS-546
-	public void shouldDropTypesInOrderOfDependencies() {
+	void shouldDropTypesInOrderOfDependencies() {
 
 		when(metadata.getUserDefinedTypes()).thenReturn(createTypes(universetype, moontype, planettype));
 
@@ -86,7 +91,7 @@ public class CassandraPersistentEntitySchemaDropperUnitTests extends CassandraPe
 	}
 
 	@Test // DATACASS-355
-	public void dropUserTypesShouldRetainUnusedTypes() {
+	void dropUserTypesShouldRetainUnusedTypes() {
 
 		context.setInitialEntitySet(new HashSet<>(Arrays.asList(MoonType.class, UniverseType.class)));
 		context.afterPropertiesSet();
@@ -105,7 +110,7 @@ public class CassandraPersistentEntitySchemaDropperUnitTests extends CassandraPe
 	}
 
 	@Test // DATACASS-355
-	public void shouldDropTables() {
+	void shouldDropTables() {
 
 		context.setInitialEntitySet(Collections.singleton(Person.class));
 		context.afterPropertiesSet();
@@ -125,7 +130,7 @@ public class CassandraPersistentEntitySchemaDropperUnitTests extends CassandraPe
 	}
 
 	@Test
-	public void dropTablesShouldRetainUnusedTables() {
+	void dropTablesShouldRetainUnusedTables() {
 
 		context.setInitialEntitySet(Collections.singleton(Person.class));
 		context.afterPropertiesSet();

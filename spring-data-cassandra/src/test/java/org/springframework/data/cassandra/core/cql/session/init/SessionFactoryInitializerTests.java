@@ -17,7 +17,7 @@ package org.springframework.data.cassandra.core.cql.session.init;
 
 import static org.mockito.Mockito.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -35,7 +35,7 @@ import com.datastax.oss.driver.api.core.cql.ResultSet;
 public class SessionFactoryInitializerTests {
 
 	@Test // DATACASS-704
-	public void shouldInitializeKeyspace() {
+	void shouldInitializeKeyspace() {
 
 		CqlSession session = initialize("initialize-keyspace.xml");
 
@@ -45,7 +45,7 @@ public class SessionFactoryInitializerTests {
 	}
 
 	@Test // DATACASS-704
-	public void shouldInitializeAndCleanupKeyspace() {
+	void shouldInitializeAndCleanupKeyspace() {
 
 		CqlSession session = initialize("initialize-and-cleanup-keyspace.xml");
 

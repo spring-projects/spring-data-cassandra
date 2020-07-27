@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
-import org.springframework.data.cassandra.test.util.AbstractEmbeddedCassandraIntegrationTest;
+import org.springframework.data.cassandra.test.util.IntegrationTestsSupport;
 
 /**
  * Base class to support integration tests and provide a {@link CassandraOperations} instance.
@@ -28,7 +28,7 @@ import org.springframework.data.cassandra.test.util.AbstractEmbeddedCassandraInt
  * @author Mark Paluch
  */
 public abstract class AbstractSpringDataEmbeddedCassandraIntegrationTest
-		extends AbstractEmbeddedCassandraIntegrationTest {
+		extends IntegrationTestsSupport {
 
 	@Autowired @SuppressWarnings("unused")
 	private CassandraOperations template;
@@ -36,7 +36,7 @@ public abstract class AbstractSpringDataEmbeddedCassandraIntegrationTest
 	/**
 	 * Truncate tables for all known {@link org.springframework.data.mapping.PersistentEntity entities}.
 	 */
-	public void deleteAllEntities() {
+	protected void deleteAllEntities() {
 
 		Stream<? extends CassandraPersistentEntity<?>> stream =
 				this.template.getConverter().getMappingContext().getTableEntities().stream();

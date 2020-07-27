@@ -25,7 +25,7 @@ import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
 
 // tag::class[]
 @PrimaryKeyClass
-public class LoginEventKey implements Serializable {
+class LoginEventKey implements Serializable {
 
   @PrimaryKeyColumn(name = "person_id", ordinal = 0, type = PrimaryKeyType.PARTITIONED)
   private String personId;

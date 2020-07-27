@@ -17,7 +17,7 @@ package org.springframework.data.cassandra.core.cql.generator;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.cassandra.core.cql.keyspace.DropIndexSpecification;
 
 /**
@@ -31,19 +31,19 @@ public class DropIndexCqlGeneratorUnitTests {
 	/**
 	 * Asserts that the preamble is first & correctly formatted in the given CQL string.
 	 */
-	public static void assertStatement(String indexName, boolean ifExists, String cql) {
-		assertThat(cql.equals("DROP INDEX " + (ifExists ? "IF EXISTS " : "") + indexName + ";")).isTrue();
+	private static void assertStatement(String indexName, boolean ifExists, String cql) {
+		assertThat(cql).isEqualTo("DROP INDEX " + (ifExists ? "IF EXISTS " : "") + indexName + ";");
 	}
 
 	/**
 	 * Convenient base class that other test classes can use so as not to repeat the generics declarations.
 	 */
-	public static abstract class DropIndexTest
+	static abstract class DropIndexTest
 			extends AbstractIndexOperationCqlGeneratorTest<DropIndexSpecification, DropIndexCqlGenerator> {}
 
-	public static class BasicTest extends DropIndexTest {
+	static class BasicTest extends DropIndexTest {
 
-		public String name = "myindex";
+		private String name = "myindex";
 
 		public DropIndexSpecification specification() {
 			return DropIndexSpecification.dropIndex(name);
@@ -54,7 +54,7 @@ public class DropIndexCqlGeneratorUnitTests {
 		}
 
 		@Test
-		public void test() {
+		void test() {
 			prepare();
 
 			assertStatement(name, false, cql);
@@ -62,9 +62,9 @@ public class DropIndexCqlGeneratorUnitTests {
 
 	}
 
-	public static class IfExistsTest extends DropIndexTest {
+	static class IfExistsTest extends DropIndexTest {
 
-		public String name = "myindex";
+		private String name = "myindex";
 
 		public DropIndexSpecification specification() {
 			return DropIndexSpecification.dropIndex(name)
@@ -77,7 +77,7 @@ public class DropIndexCqlGeneratorUnitTests {
 		}
 
 		@Test
-		public void test() {
+		void test() {
 			prepare();
 
 			// assertStatement(name, true, cql);

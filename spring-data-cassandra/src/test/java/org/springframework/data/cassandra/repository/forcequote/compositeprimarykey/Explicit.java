@@ -30,9 +30,10 @@ public class Explicit {
 	public static final String TABLE_NAME = "JavaExplicitTable";
 	public static final String STRING_VALUE_COLUMN_NAME = "JavaExplicitStringValue";
 
-	@PrimaryKey ExplicitKey primaryKey;
+	@PrimaryKey private ExplicitKey primaryKey;
 
-	@Column(value = STRING_VALUE_COLUMN_NAME, forceQuote = true) String stringValue = UUID.randomUUID().toString();
+	@Column(value = STRING_VALUE_COLUMN_NAME,
+			forceQuote = true) private String stringValue = UUID.randomUUID().toString();
 
 	@SuppressWarnings("unused")
 	private Explicit() {}
@@ -45,7 +46,7 @@ public class Explicit {
 		return primaryKey;
 	}
 
-	public void setPrimaryKey(ExplicitKey primaryKey) {
+	private void setPrimaryKey(ExplicitKey primaryKey) {
 		this.primaryKey = primaryKey;
 	}
 

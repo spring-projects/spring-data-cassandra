@@ -15,18 +15,18 @@
  */
 package org.springframework.data.cassandra.repository.forcequote.compositeprimarykey;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ContextConfiguration;
 
 /**
  * @author Matthew T. Adams
  */
 @ContextConfiguration
-public class ForceQuotedCompositePrimaryKeyRepositoryXmlConfigIntegrationTests
+class ForceQuotedCompositePrimaryKeyRepositoryXmlConfigIntegrationTests
 		extends ForceQuotedCompositePrimaryKeyRepositoryIntegrationTestsDelegator {
 
 	@Test
-	public void testExplicit() {
+	void testExplicit() {
 		testExplicit(String.format("\"%s\"", "XmlExplicitTable"), String.format("\"%s\"", "XmlExplicitStringValue"),
 				String.format("\"%s\"", "XmlExplicitKeyZero"), String.format("\"%s\"", "XmlExplicitKeyOne"));
 	}

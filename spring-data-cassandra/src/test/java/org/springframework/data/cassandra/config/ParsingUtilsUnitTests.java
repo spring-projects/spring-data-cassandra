@@ -19,7 +19,7 @@ package org.springframework.data.cassandra.config;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.cassandra.support.BeanDefinitionTestUtils.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
@@ -30,10 +30,10 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
  *
  * @author John Blum
  */
-public class ParsingUtilsUnitTests {
+class ParsingUtilsUnitTests {
 
 	@Test // DATACASS-298
-	public void addOptionalReferencePropertyUsesDefault() {
+	void addOptionalReferencePropertyUsesDefault() {
 
 		BeanDefinitionBuilder builder = ParsingUtils.addProperty(BeanDefinitionBuilder.genericBeanDefinition(),
 				"referenceProperty", null, "defaultBeanReference", false, true);
@@ -45,7 +45,7 @@ public class ParsingUtilsUnitTests {
 	}
 
 	@Test // DATACASS-298
-	public void addOptionalReferencePropertyWithNoValueDoesReturnsWithoutAdding() {
+	void addOptionalReferencePropertyWithNoValueDoesReturnsWithoutAdding() {
 
 		BeanDefinitionBuilder builder = ParsingUtils.addProperty(BeanDefinitionBuilder.genericBeanDefinition(),
 				"referenceProperty", null, null, false, false);
@@ -57,7 +57,7 @@ public class ParsingUtilsUnitTests {
 	}
 
 	@Test // DATACASS-298
-	public void addOptionalValuePropertyUsesDefault() {
+	void addOptionalValuePropertyUsesDefault() {
 
 		BeanDefinitionBuilder builder = ParsingUtils.addProperty(BeanDefinitionBuilder.genericBeanDefinition(),
 				"valueProperty", null, "defaultValue", false, false);
@@ -68,7 +68,7 @@ public class ParsingUtilsUnitTests {
 	}
 
 	@Test // DATACASS-298
-	public void addOptionalValuePropertyWithNoValueDoesReturnsWithoutAdding() {
+	void addOptionalValuePropertyWithNoValueDoesReturnsWithoutAdding() {
 
 		BeanDefinitionBuilder builder = ParsingUtils.addProperty(BeanDefinitionBuilder.genericBeanDefinition(),
 				"valueProperty", null, null, false, false);
@@ -80,7 +80,7 @@ public class ParsingUtilsUnitTests {
 	}
 
 	@Test // DATACASS-298
-	public void addRequiredReferencePropertyIsSuccessful() {
+	void addRequiredReferencePropertyIsSuccessful() {
 
 		BeanDefinitionBuilder builder = ParsingUtils.addProperty(BeanDefinitionBuilder.genericBeanDefinition(),
 				"referenceProperty", "reference", null, true, true);
@@ -92,7 +92,7 @@ public class ParsingUtilsUnitTests {
 	}
 
 	@Test // DATACASS-298
-	public void addRequiredReferencePropertyWithNoReferenceFails() {
+	void addRequiredReferencePropertyWithNoReferenceFails() {
 
 		assertThatIllegalArgumentException()
 				.isThrownBy(() -> ParsingUtils.addProperty(BeanDefinitionBuilder.genericBeanDefinition(), "referenceProperty",
@@ -101,7 +101,7 @@ public class ParsingUtilsUnitTests {
 	}
 
 	@Test // DATACASS-298
-	public void addRequiredValuePropertyIsSuccessful() {
+	void addRequiredValuePropertyIsSuccessful() {
 
 		BeanDefinitionBuilder builder = ParsingUtils.addProperty(BeanDefinitionBuilder.genericBeanDefinition(),
 				"valueProperty", "value", null, true, false);
@@ -112,7 +112,7 @@ public class ParsingUtilsUnitTests {
 	}
 
 	@Test // DATACASS-298
-	public void addRequiredValuePropertyWithNoValueFails() {
+	void addRequiredValuePropertyWithNoValueFails() {
 
 		assertThatIllegalArgumentException()
 				.isThrownBy(() -> ParsingUtils.addProperty(BeanDefinitionBuilder.genericBeanDefinition(), "valueProperty", null,
@@ -121,7 +121,7 @@ public class ParsingUtilsUnitTests {
 	}
 
 	@Test // DATACASS-298
-	public void addPropertyThrowsIllegalArgumentExceptionForNullBuilder() {
+	void addPropertyThrowsIllegalArgumentExceptionForNullBuilder() {
 
 		assertThatIllegalArgumentException()
 				.isThrownBy(() -> ParsingUtils.addProperty(null, "propertyName", "value", "defaultValue", false, false))
@@ -129,7 +129,7 @@ public class ParsingUtilsUnitTests {
 	}
 
 	@Test // DATACASS-298
-	public void addPropertyThrowsIllegalArgumentExceptionForNullPropertyName() {
+	void addPropertyThrowsIllegalArgumentExceptionForNullPropertyName() {
 
 		assertThatIllegalArgumentException().isThrownBy(() -> ParsingUtils
 				.addProperty(BeanDefinitionBuilder.genericBeanDefinition(), null, "value", "defaultValue", false, true))

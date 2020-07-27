@@ -22,42 +22,43 @@ import static org.mockito.Mockito.*;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.Value;
+import lombok.With;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+import reactor.core.publisher.Mono;
 
 import java.util.Collections;
 import java.util.Date;
 
-import lombok.With;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.AdditionalAnswers;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.core.Ordered;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.auditing.IsNewAwareAuditingHandler;
 import org.springframework.data.auditing.ReactiveIsNewAwareAuditingHandler;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
-import reactor.core.publisher.Mono;
 
 /**
  * Unit tests for {@link ReactiveAuditingEntityCallback}.
  *
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner.class)
-public class ReactiveAuditingEntityCallbackUnitTests {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class ReactiveAuditingEntityCallbackUnitTests {
 
-	ReactiveIsNewAwareAuditingHandler handler;
-	ReactiveAuditingEntityCallback callback;
+	private ReactiveIsNewAwareAuditingHandler handler;
+	private ReactiveAuditingEntityCallback callback;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		CassandraMappingContext mappingContext = new CassandraMappingContext();
 		mappingContext.getPersistentEntity(Sample.class);
@@ -72,12 +73,12 @@ public class ReactiveAuditingEntityCallbackUnitTests {
 	}
 
 	@Test // DATACASS-4
-	public void rejectsNullAuditingHandler() {
+	void rejectsNullAuditingHandler() {
 		assertThatIllegalArgumentException().isThrownBy(() -> new AuditingEntityCallback(null));
 	}
 
 	@Test // DATACASS-4
-	public void triggersCreationMarkForObjectWithEmptyId() {
+	void triggersCreationMarkForObjectWithEmptyId() {
 
 		Sample sample = new Sample();
 		callback.onBeforeConvert(sample, CqlIdentifier.fromCql("foo"));
@@ -87,7 +88,7 @@ public class ReactiveAuditingEntityCallbackUnitTests {
 	}
 
 	@Test // DATACASS-4
-	public void triggersModificationMarkForObjectWithSetId() {
+	void triggersModificationMarkForObjectWithSetId() {
 
 		Sample sample = new Sample();
 		sample.id = "id";
@@ -98,14 +99,14 @@ public class ReactiveAuditingEntityCallbackUnitTests {
 	}
 
 	@Test // DATACASS-4
-	public void hasExplicitOrder() {
+	void hasExplicitOrder() {
 
 		assertThat(callback).isInstanceOf(Ordered.class);
 		assertThat(callback.getOrder()).isEqualTo(100);
 	}
 
 	@Test // DATACASS-4, DATACASS-784
-	public void propagatesChangedInstanceToEvent() {
+	void propagatesChangedInstanceToEvent() {
 
 		ImmutableSample sample = new ImmutableSample();
 
@@ -119,9 +120,9 @@ public class ReactiveAuditingEntityCallbackUnitTests {
 		assertThat(result).isSameAs(newSample);
 	}
 
-	static class Sample {
+	private static class Sample {
 
-		@Id String id;
+		@Id private String id;
 		@CreatedDate Date created;
 		@LastModifiedDate Date modified;
 	}

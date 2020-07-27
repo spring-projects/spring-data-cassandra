@@ -18,10 +18,11 @@ package org.springframework.data.cassandra.core.cql.lookup;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.data.cassandra.SessionFactory;
@@ -33,19 +34,19 @@ import org.springframework.data.cassandra.core.cql.session.lookup.SessionFactory
  *
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner.class)
-public class BeanFactorySessionFactoryLookupUnitTests {
+@ExtendWith(MockitoExtension.class)
+class BeanFactorySessionFactoryLookupUnitTests {
 
 	@Mock BeanFactory beanFactory;
 	@Mock SessionFactory sessionFactory;
 
 	@Test // DATACASS-330
-	public void shouldRejectNullBeanFactory() {
+	void shouldRejectNullBeanFactory() {
 		assertThatIllegalArgumentException().isThrownBy(() -> new BeanFactorySessionFactoryLookup(null));
 	}
 
 	@Test // DATACASS-330
-	public void shouldResolveSessionFactoryFromBeanFactory() throws Exception {
+	void shouldResolveSessionFactoryFromBeanFactory() throws Exception {
 
 		when(beanFactory.getBean("factory", SessionFactory.class)).thenReturn(sessionFactory);
 
@@ -59,7 +60,7 @@ public class BeanFactorySessionFactoryLookupUnitTests {
 	}
 
 	@Test // DATACASS-330
-	public void shouldThrowExceptionIfLookupFails() throws Exception {
+	void shouldThrowExceptionIfLookupFails() throws Exception {
 
 		when(beanFactory.getBean("factory", SessionFactory.class)).thenThrow(new NoSuchBeanDefinitionException("factory"));
 

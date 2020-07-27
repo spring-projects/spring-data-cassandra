@@ -28,15 +28,15 @@ import org.springframework.data.cassandra.core.mapping.Table;
 @Table
 public class ImplicitProperties {
 
-	@PrimaryKey(forceQuote = true) String primaryKey;
+	@PrimaryKey(forceQuote = true) private String primaryKey;
 
-	@Column(forceQuote = true) String stringValue = UUID.randomUUID().toString();
+	@Column(forceQuote = true) private String stringValue = UUID.randomUUID().toString();
 
 	public ImplicitProperties() {
 		this(UUID.randomUUID().toString());
 	}
 
-	public ImplicitProperties(String primaryKey) {
+	private ImplicitProperties(String primaryKey) {
 		setPrimaryKey(primaryKey);
 	}
 
@@ -44,7 +44,7 @@ public class ImplicitProperties {
 		return primaryKey;
 	}
 
-	public void setPrimaryKey(String primaryKey) {
+	private void setPrimaryKey(String primaryKey) {
 		this.primaryKey = primaryKey;
 	}
 

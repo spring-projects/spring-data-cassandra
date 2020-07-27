@@ -20,9 +20,9 @@ import static org.assertj.core.api.Assertions.*;
 import java.lang.reflect.Field;
 import java.util.Date;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.data.mapping.model.Property;
 import org.springframework.data.util.ClassTypeInformation;
@@ -33,11 +33,11 @@ import org.springframework.util.ReflectionUtils;
  *
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner.class)
-public class BasicCassandraPersistentTuplePropertyUnitTests {
+@ExtendWith(MockitoExtension.class)
+class BasicCassandraPersistentTuplePropertyUnitTests {
 
 	@Test // DATACASS-523
-	public void mappedTupleShouldNotReportColumnName() {
+	void mappedTupleShouldNotReportColumnName() {
 
 		CassandraPersistentProperty property = getPropertyFor(MappedTuple.class, "date");
 
@@ -45,7 +45,7 @@ public class BasicCassandraPersistentTuplePropertyUnitTests {
 	}
 
 	@Test // DATACASS-523
-	public void mappedTupleShouldReportOrdinal() {
+	void mappedTupleShouldReportOrdinal() {
 
 		CassandraPersistentProperty property = getPropertyFor(MappedTuple.class, "time");
 
@@ -65,7 +65,7 @@ public class BasicCassandraPersistentTuplePropertyUnitTests {
 	}
 
 	@Tuple
-	static class MappedTuple {
+	private static class MappedTuple {
 		@Element(0) Date date;
 		@Element(1) Date time;
 	}

@@ -21,8 +21,8 @@ import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.mapping.PropertyHandler;
@@ -33,16 +33,16 @@ import org.springframework.data.mapping.PropertyHandler;
  * @author David Webb
  * @author Mark Paluch
  */
-public class CassandraPersistentEntityOrderPropertiesUnitTests {
+class CassandraPersistentEntityOrderPropertiesUnitTests {
 
 	private List<CassandraPersistentProperty> expected;
 	private CassandraMappingContext mappingContext = new CassandraMappingContext();
 
-	@Before
-	public void init() {}
+	@BeforeEach
+	void init() {}
 
 	@Test
-	public void testCompositeKeyPropertyOrder() {
+	void testCompositeKeyPropertyOrder() {
 
 		CassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(CompositePK.class);
 
@@ -59,7 +59,7 @@ public class CassandraPersistentEntityOrderPropertiesUnitTests {
 	}
 
 	@Test
-	public void testTablePropertyOrder() {
+	void testTablePropertyOrder() {
 
 		CassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(CompositeKeyEntity.class);
 
@@ -77,7 +77,7 @@ public class CassandraPersistentEntityOrderPropertiesUnitTests {
 	}
 
 	@Table
-	static class CompositeKeyEntity {
+	private static class CompositeKeyEntity {
 
 		@PrimaryKey private CompositePK key;
 
@@ -91,7 +91,7 @@ public class CassandraPersistentEntityOrderPropertiesUnitTests {
 	 * This is intentionally using dumb ordinals
 	 */
 	@PrimaryKeyClass
-	static class CompositePK implements Serializable {
+	private static class CompositePK implements Serializable {
 
 		@PrimaryKeyColumn(ordinal = 2, type = PrimaryKeyType.PARTITIONED) private String key0;
 
@@ -139,7 +139,7 @@ public class CassandraPersistentEntityOrderPropertiesUnitTests {
 	}
 
 	@Table
-	static class SimpleKeyEntity {
+	private static class SimpleKeyEntity {
 
 		@Id private String id;
 

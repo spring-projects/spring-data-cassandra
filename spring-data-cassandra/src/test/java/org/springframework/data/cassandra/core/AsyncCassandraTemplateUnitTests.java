@@ -27,13 +27,15 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import org.springframework.data.cassandra.CassandraConnectionFailureException;
 import org.springframework.data.cassandra.core.mapping.event.BeforeConvertCallback;
@@ -62,7 +64,8 @@ import com.datastax.oss.driver.api.core.type.DataTypes;
  *
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class AsyncCassandraTemplateUnitTests {
 
 	@Mock CqlSession session;
@@ -73,14 +76,14 @@ public class AsyncCassandraTemplateUnitTests {
 
 	@Captor ArgumentCaptor<SimpleStatement> statementCaptor;
 
-	AsyncCassandraTemplate template;
+	private AsyncCassandraTemplate template;
 
-	Object beforeSave;
+	private Object beforeSave;
 
-	Object beforeConvert;
+	private Object beforeConvert;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		template = new AsyncCassandraTemplate(session);
 
@@ -107,7 +110,7 @@ public class AsyncCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-292
-	public void selectUsingCqlShouldReturnMappedResults() {
+	void selectUsingCqlShouldReturnMappedResults() {
 
 		when(resultSet.currentPage()).thenReturn(Collections.singleton(row));
 		when(columnDefinitions.contains(any(CqlIdentifier.class))).thenReturn(true);
@@ -131,7 +134,7 @@ public class AsyncCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-292
-	public void selectUsingCqlShouldInvokeCallbackWithMappedResults() {
+	void selectUsingCqlShouldInvokeCallbackWithMappedResults() {
 
 		when(resultSet.currentPage()).thenReturn(Collections.singletonList(row));
 		when(columnDefinitions.contains(any(CqlIdentifier.class))).thenReturn(true);
@@ -157,7 +160,7 @@ public class AsyncCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-292
-	public void selectShouldTranslateException() throws Exception {
+	void selectShouldTranslateException() throws Exception {
 
 		when(resultSet.currentPage()).thenThrow(new NoNodeAvailableException());
 
@@ -174,7 +177,7 @@ public class AsyncCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-292
-	public void selectOneShouldReturnMappedResults() {
+	void selectOneShouldReturnMappedResults() {
 
 		when(resultSet.currentPage()).thenReturn(Collections.singleton(row));
 		when(columnDefinitions.contains(any(CqlIdentifier.class))).thenReturn(true);
@@ -198,7 +201,7 @@ public class AsyncCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-292
-	public void selectOneByIdShouldReturnMappedResults() {
+	void selectOneByIdShouldReturnMappedResults() {
 
 		when(resultSet.currentPage()).thenReturn(Collections.singleton(row));
 		when(columnDefinitions.contains(any(CqlIdentifier.class))).thenReturn(true);
@@ -221,7 +224,7 @@ public class AsyncCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-696
-	public void selectOneShouldNull() {
+	void selectOneShouldNull() {
 
 		when(resultSet.currentPage()).thenReturn(Collections.singleton(row));
 
@@ -231,7 +234,7 @@ public class AsyncCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-292
-	public void existsShouldReturnExistingElement() {
+	void existsShouldReturnExistingElement() {
 
 		when(resultSet.one()).thenReturn(row);
 
@@ -243,7 +246,7 @@ public class AsyncCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-292
-	public void existsShouldReturnNonExistingElement() {
+	void existsShouldReturnNonExistingElement() {
 
 		ListenableFuture<Boolean> future = template.exists("myid", User.class);
 
@@ -253,7 +256,7 @@ public class AsyncCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-512
-	public void existsByQueryShouldReturnExistingElement() {
+	void existsByQueryShouldReturnExistingElement() {
 
 		when(resultSet.one()).thenReturn(row);
 
@@ -265,7 +268,7 @@ public class AsyncCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-292
-	public void countShouldExecuteCountQueryElement() {
+	void countShouldExecuteCountQueryElement() {
 
 		when(resultSet.currentPage()).thenReturn(Collections.singleton(row));
 		when(row.getLong(0)).thenReturn(42L);
@@ -279,7 +282,7 @@ public class AsyncCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-292
-	public void countByQueryShouldExecuteCountQueryElement() {
+	void countByQueryShouldExecuteCountQueryElement() {
 
 		when(resultSet.currentPage()).thenReturn(Collections.singleton(row));
 		when(row.getLong(0)).thenReturn(42L);
@@ -293,7 +296,7 @@ public class AsyncCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-292, DATACASS-618
-	public void insertShouldInsertEntity() {
+	void insertShouldInsertEntity() {
 
 		when(resultSet.wasApplied()).thenReturn(true);
 
@@ -310,7 +313,7 @@ public class AsyncCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-618
-	public void insertShouldInsertVersionedEntity() {
+	void insertShouldInsertVersionedEntity() {
 
 		when(resultSet.wasApplied()).thenReturn(true);
 
@@ -327,7 +330,7 @@ public class AsyncCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-292
-	public void insertShouldTranslateException() throws Exception {
+	void insertShouldTranslateException() throws Exception {
 
 		reset(session);
 		when(session.executeAsync(any(Statement.class)))
@@ -346,7 +349,7 @@ public class AsyncCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-292, DATACASS-618
-	public void updateShouldUpdateEntity() {
+	void updateShouldUpdateEntity() {
 
 		when(resultSet.wasApplied()).thenReturn(true);
 
@@ -363,7 +366,7 @@ public class AsyncCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-618
-	public void updateShouldUpdateVersionedEntity() {
+	void updateShouldUpdateVersionedEntity() {
 
 		when(resultSet.wasApplied()).thenReturn(true);
 
@@ -381,7 +384,7 @@ public class AsyncCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-575
-	public void updateShouldUpdateEntityWithOptions() {
+	void updateShouldUpdateEntityWithOptions() {
 
 		UpdateOptions updateOptions = UpdateOptions.builder().withIfExists().build();
 		User user = new User("heisenberg", "Walter", "White");
@@ -394,7 +397,7 @@ public class AsyncCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-575
-	public void updateShouldUpdateEntityWithLwt() {
+	void updateShouldUpdateEntityWithLwt() {
 
 		UpdateOptions options = UpdateOptions.builder().ifCondition(where("firstname").is("Walter")).build();
 		User user = new User("heisenberg", "Walter", "White");
@@ -407,7 +410,7 @@ public class AsyncCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-575
-	public void updateShouldApplyUpdateQuery() {
+	void updateShouldApplyUpdateQuery() {
 
 		Query query = Query.query(where("id").is("heisenberg"));
 		Update update = Update.update("firstname", "Walter");
@@ -420,7 +423,7 @@ public class AsyncCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-575
-	public void updateShouldApplyUpdateQueryWitLwt() {
+	void updateShouldApplyUpdateQueryWitLwt() {
 
 		Filter ifCondition = Filter.from(where("firstname").is("Walter"), where("lastname").is("White"));
 
@@ -437,7 +440,7 @@ public class AsyncCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-292
-	public void updateShouldTranslateException() throws Exception {
+	void updateShouldTranslateException() throws Exception {
 
 		reset(session);
 		when(session.executeAsync(any(Statement.class)))
@@ -456,7 +459,7 @@ public class AsyncCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-292
-	public void deleteByIdShouldRemoveEntity() {
+	void deleteByIdShouldRemoveEntity() {
 
 		when(resultSet.wasApplied()).thenReturn(true);
 
@@ -470,7 +473,7 @@ public class AsyncCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-292
-	public void deleteShouldRemoveEntity() {
+	void deleteShouldRemoveEntity() {
 
 		when(resultSet.wasApplied()).thenReturn(true);
 
@@ -484,7 +487,7 @@ public class AsyncCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-575
-	public void deleteShouldRemoveEntityWithLwt() {
+	void deleteShouldRemoveEntityWithLwt() {
 
 		User user = new User("heisenberg", "Walter", "White");
 		DeleteOptions options = DeleteOptions.builder().ifCondition(where("firstname").is("Walter")).build();
@@ -497,7 +500,7 @@ public class AsyncCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-575
-	public void deleteShouldRemoveByQueryWithLwt() {
+	void deleteShouldRemoveByQueryWithLwt() {
 
 		DeleteOptions options = DeleteOptions.builder().ifCondition(where("firstname").is("Walter")).build();
 		Query query = Query.query(where("id").is("heisenberg")).queryOptions(options);
@@ -510,7 +513,7 @@ public class AsyncCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-292
-	public void deleteShouldTranslateException() throws Exception {
+	void deleteShouldTranslateException() throws Exception {
 
 		reset(session);
 		when(session.executeAsync(any(Statement.class)))
@@ -529,7 +532,7 @@ public class AsyncCassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-292
-	public void truncateShouldRemoveEntities() {
+	void truncateShouldRemoveEntities() {
 
 		template.truncate(User.class);
 
@@ -548,9 +551,9 @@ public class AsyncCassandraTemplateUnitTests {
 
 	private static class TestResultSetFuture extends CompletableFuture<AsyncResultSet> {
 
-		public TestResultSetFuture() {}
+		private TestResultSetFuture() {}
 
-		public TestResultSetFuture(AsyncResultSet resultSet) {
+		private TestResultSetFuture(AsyncResultSet resultSet) {
 			complete(resultSet);
 		}
 
@@ -560,7 +563,7 @@ public class AsyncCassandraTemplateUnitTests {
 		 * @param throwable must not be {@literal null}.
 		 * @return the completed/failed {@link TestResultSetFuture}.
 		 */
-		public static TestResultSetFuture failed(Throwable throwable) {
+		private static TestResultSetFuture failed(Throwable throwable) {
 
 			TestResultSetFuture future = new TestResultSetFuture();
 			future.completeExceptionally(throwable);

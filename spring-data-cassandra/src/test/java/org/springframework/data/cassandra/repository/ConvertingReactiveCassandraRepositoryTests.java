@@ -28,9 +28,8 @@ import rx.Single;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.reactivestreams.Publisher;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,8 +42,7 @@ import org.springframework.data.cassandra.repository.support.IntegrationTestConf
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.data.repository.reactive.RxJava2CrudRepository;
 import org.springframework.stereotype.Repository;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
@@ -56,9 +54,8 @@ import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
  * @author Mark Paluch
  * @author Christoph Strobl
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = ConvertingReactiveCassandraRepositoryTests.Config.class)
-public class ConvertingReactiveCassandraRepositoryTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
+@SpringJUnitConfig(classes = ConvertingReactiveCassandraRepositoryTests.Config.class)
+class ConvertingReactiveCassandraRepositoryTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
 
 	@EnableReactiveCassandraRepositories(includeFilters = @Filter(value = Repository.class),
 			considerNestedRepositories = true)
@@ -77,10 +74,13 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractSpringDa
 	@Autowired RxJava1UserRepository rxJava1UserRepository;
 	@Autowired RxJava2UserRepository rxJava2UserRepository;
 
-	User dave, oliver, carter, boyd;
+	private User dave;
+	private User oliver;
+	private User carter;
+	private User boyd;
 
-	@Before
-	public void setUp() throws Exception {
+	@BeforeEach
+	void setUp() throws Exception {
 
 		TableMetadata users = session.getKeyspace().flatMap(it -> session.getMetadata().getKeyspace(it))
 				.flatMap(it -> it.getTable(CqlIdentifier.fromCql("users"))).get();
@@ -102,17 +102,17 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractSpringDa
 	}
 
 	@Test // DATACASS-335
-	public void reactiveStreamsMethodsShouldWork() {
+	void reactiveStreamsMethodsShouldWork() {
 		reactiveUserRepostitory.existsById(dave.getId()).as(StepVerifier::create).expectNext(true).verifyComplete();
 	}
 
 	@Test // DATACASS-335
-	public void reactiveStreamsQueryMethodsShouldWork() {
+	void reactiveStreamsQueryMethodsShouldWork() {
 		StepVerifier.create(reactiveUserRepostitory.findByLastname(boyd.getLastname())).expectNext(boyd).verifyComplete();
 	}
 
 	@Test // DATACASS-360
-	public void dtoProjectionShouldWork() {
+	void dtoProjectionShouldWork() {
 
 		reactiveUserRepostitory.findProjectedByLastname(boyd.getLastname()).as(StepVerifier::create)
 				.consumeNextWith(actual -> {
@@ -123,7 +123,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractSpringDa
 	}
 
 	@Test // DATACASS-335
-	public void simpleRxJava1MethodsShouldWork() {
+	void simpleRxJava1MethodsShouldWork() {
 
 		rxJava1UserRepository.existsById(dave.getId()) //
 				.test() //
@@ -134,7 +134,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractSpringDa
 	}
 
 	@Test // DATACASS-335
-	public void existsWithSingleRxJava1IdMethodsShouldWork() {
+	void existsWithSingleRxJava1IdMethodsShouldWork() {
 
 		rxJava1UserRepository.existsById(Single.just(dave.getId())) //
 				.test() //
@@ -145,7 +145,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractSpringDa
 	}
 
 	@Test // DATACASS-335
-	public void singleRxJava1QueryMethodShouldWork() {
+	void singleRxJava1QueryMethodShouldWork() {
 
 		rxJava1UserRepository.findManyByLastname(dave.getLastname()) //
 				.test() //
@@ -156,7 +156,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractSpringDa
 	}
 
 	@Test // DATACASS-335
-	public void singleProjectedRxJava1QueryMethodShouldWork() {
+	void singleProjectedRxJava1QueryMethodShouldWork() {
 
 		List<ProjectedUser> values = rxJava1UserRepository.findProjectedByLastname(carter.getLastname()) //
 				.test() //
@@ -171,7 +171,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractSpringDa
 	}
 
 	@Test // DATACASS-335
-	public void observableRxJava1QueryMethodShouldWork() {
+	void observableRxJava1QueryMethodShouldWork() {
 
 		rxJava1UserRepository.findByLastname(boyd.getLastname()) //
 				.test() //
@@ -182,7 +182,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractSpringDa
 	}
 
 	@Test // DATACASS-398
-	public void simpleRxJava2MethodsShouldWork() {
+	void simpleRxJava2MethodsShouldWork() {
 
 		rxJava2UserRepository.existsById(dave.getId()) //
 				.test()//
@@ -193,7 +193,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractSpringDa
 	}
 
 	@Test // DATACASS-398
-	public void existsWithSingleRxJava2IdMethodsShouldWork() {
+	void existsWithSingleRxJava2IdMethodsShouldWork() {
 
 		rxJava2UserRepository.existsById(io.reactivex.Single.just(dave.getId())).test() //
 				.assertValue(true) //
@@ -203,7 +203,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractSpringDa
 	}
 
 	@Test // DATACASS-398
-	public void flowableRxJava2QueryMethodShouldWork() {
+	void flowableRxJava2QueryMethodShouldWork() {
 
 		rxJava2UserRepository.findManyByLastname(dave.getLastname()) //
 				.test() //
@@ -214,7 +214,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractSpringDa
 	}
 
 	@Test // DATACASS-398
-	public void singleProjectedRxJava2QueryMethodShouldWork() {
+	void singleProjectedRxJava2QueryMethodShouldWork() {
 
 		rxJava2UserRepository.findProjectedByLastname(Maybe.just(carter.getLastname())) //
 				.test() //
@@ -228,7 +228,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractSpringDa
 	}
 
 	@Test // DATACASS-398
-	public void observableProjectedRxJava2QueryMethodShouldWork() {
+	void observableProjectedRxJava2QueryMethodShouldWork() {
 
 		rxJava2UserRepository.findProjectedByLastname(Single.just(carter.getLastname())) //
 				.test() //
@@ -242,7 +242,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractSpringDa
 	}
 
 	@Test // DATACASS-398
-	public void maybeRxJava2QueryMethodShouldWork() {
+	void maybeRxJava2QueryMethodShouldWork() {
 
 		rxJava2UserRepository.findByLastname(boyd.getLastname()) //
 				.test() //
@@ -253,7 +253,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractSpringDa
 	}
 
 	@Test // DATACASS-335
-	public void mixedRepositoryShouldWork() {
+	void mixedRepositoryShouldWork() {
 
 		reactiveRepository.findByLastname(boyd.getLastname()) //
 				.test() //
@@ -264,7 +264,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractSpringDa
 	}
 
 	@Test // DATACASS-335
-	public void shouldFindByIdByPublisherOfLastName() {
+	void shouldFindByIdByPublisherOfLastName() {
 
 		reactiveRepository.findByLastname(Single.just(this.carter.getLastname())).as(StepVerifier::create) //
 				.expectNext(carter) //
@@ -313,16 +313,17 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractSpringDa
 		Mono<User> findByLastname(Single<String> lastname);
 	}
 
-	interface ProjectedUser {
+	private interface ProjectedUser {
 
 		String getId();
 
 		String getFirstname();
 	}
 
-	static class UserDto {
+	private static class UserDto {
 
-		public String firstname, lastname;
+		private String firstname;
+		private String lastname;
 
 		public UserDto(String firstname, String lastname) {
 

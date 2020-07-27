@@ -24,7 +24,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.assertj.core.api.SoftAssertions;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
@@ -50,13 +50,13 @@ import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
  */
 public class ColumnTypeResolverUnitTests {
 
-	CassandraMappingContext mappingContext = new CassandraMappingContext();
-	ColumnTypeResolver resolver = new DefaultColumnTypeResolver(mappingContext,
+	private CassandraMappingContext mappingContext = new CassandraMappingContext();
+	private ColumnTypeResolver resolver = new DefaultColumnTypeResolver(mappingContext,
 			SchemaFactory.ShallowUserTypeResolver.INSTANCE, () -> CodecRegistry.DEFAULT,
 			mappingContext::getCustomConversions);
 
 	@Test // DATACASS-743
-	public void shouldResolveSimpleType() {
+	void shouldResolveSimpleType() {
 
 		assertThat(resolver.resolve("foo").getType()).isEqualTo(String.class);
 		assertThat(resolver.resolve(ClassTypeInformation.from(String.class)).getType()).isEqualTo(String.class);
@@ -69,7 +69,7 @@ public class ColumnTypeResolverUnitTests {
 	}
 
 	@Test // DATACASS-743
-	public void shouldResolveEnumType() {
+	void shouldResolveEnumType() {
 
 		assertThat(resolver.resolve(MyEnum.INSTANCE).getType()).isEqualTo(String.class);
 		assertThat(resolver.resolve(ClassTypeInformation.from(MyEnum.class)).getType()).isEqualTo(String.class);
@@ -84,7 +84,7 @@ public class ColumnTypeResolverUnitTests {
 	}
 
 	@Test // DATACASS-743
-	public void shouldConsiderCassandraType() {
+	void shouldConsiderCassandraType() {
 
 		BasicCassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(Person.class);
 
@@ -94,7 +94,7 @@ public class ColumnTypeResolverUnitTests {
 	}
 
 	@Test // DATACASS-743
-	public void shouldResolveSimpleListType() {
+	void shouldResolveSimpleListType() {
 
 		BasicCassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(Person.class);
 
@@ -104,7 +104,7 @@ public class ColumnTypeResolverUnitTests {
 	}
 
 	@Test // DATACASS-743
-	public void shouldResolveListOfEnumType() {
+	void shouldResolveListOfEnumType() {
 
 		BasicCassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(Person.class);
 
@@ -114,7 +114,7 @@ public class ColumnTypeResolverUnitTests {
 	}
 
 	@Test // DATACASS-743
-	public void shouldConsiderListWithCassandraType() {
+	void shouldConsiderListWithCassandraType() {
 
 		BasicCassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(Person.class);
 
@@ -124,7 +124,7 @@ public class ColumnTypeResolverUnitTests {
 	}
 
 	@Test // DATACASS-743
-	public void shouldResolveSimpleSetType() {
+	void shouldResolveSimpleSetType() {
 
 		BasicCassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(Person.class);
 
@@ -134,7 +134,7 @@ public class ColumnTypeResolverUnitTests {
 	}
 
 	@Test // DATACASS-743
-	public void shouldResolveSetOfEnumType() {
+	void shouldResolveSetOfEnumType() {
 
 		BasicCassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(Person.class);
 
@@ -145,7 +145,7 @@ public class ColumnTypeResolverUnitTests {
 	}
 
 	@Test // DATACASS-743
-	public void shouldConsiderSetWithCassandraType() {
+	void shouldConsiderSetWithCassandraType() {
 
 		BasicCassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(Person.class);
 
@@ -155,7 +155,7 @@ public class ColumnTypeResolverUnitTests {
 	}
 
 	@Test // DATACASS-743
-	public void shouldResolveSimpleMapType() {
+	void shouldResolveSimpleMapType() {
 
 		BasicCassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(Person.class);
 
@@ -165,7 +165,7 @@ public class ColumnTypeResolverUnitTests {
 	}
 
 	@Test // DATACASS-743
-	public void shouldResolveMapOfEnumType() {
+	void shouldResolveMapOfEnumType() {
 
 		BasicCassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(Person.class);
 
@@ -176,7 +176,7 @@ public class ColumnTypeResolverUnitTests {
 	}
 
 	@Test // DATACASS-743
-	public void shouldConsiderMapWithCassandraType() {
+	void shouldConsiderMapWithCassandraType() {
 
 		BasicCassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(Person.class);
 
@@ -186,7 +186,7 @@ public class ColumnTypeResolverUnitTests {
 	}
 
 	@Test // DATACASS-743
-	public void shouldReportEmptyTupleType() {
+	void shouldReportEmptyTupleType() {
 
 		BasicCassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(Person.class);
 
@@ -197,7 +197,7 @@ public class ColumnTypeResolverUnitTests {
 	}
 
 	@Test // DATACASS-375, DATACASS-743
-	public void UuidshouldMapToUUIDByDefault() {
+	void UuidshouldMapToUUIDByDefault() {
 
 		CassandraPersistentProperty uuidProperty = mappingContext.getRequiredPersistentEntity(TypeWithUUIDColumn.class)
 				.getRequiredPersistentProperty("uuid");
@@ -209,7 +209,7 @@ public class ColumnTypeResolverUnitTests {
 	}
 
 	@Test // DATACASS-465
-	public void listPropertyWithFrozenAnnotation() {
+	void listPropertyWithFrozenAnnotation() {
 
 		BasicCassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(Person.class);
 
@@ -219,7 +219,7 @@ public class ColumnTypeResolverUnitTests {
 	}
 
 	@Test // DATACASS-465
-	public void listPropertyWithFrozenAnnotationOnElement() {
+	void listPropertyWithFrozenAnnotationOnElement() {
 
 		BasicCassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(Person.class);
 
@@ -235,7 +235,7 @@ public class ColumnTypeResolverUnitTests {
 	}
 
 	@Test // DATACASS-465
-	public void setPropertyWithFrozenAnnotation() {
+	void setPropertyWithFrozenAnnotation() {
 
 		BasicCassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(Person.class);
 
@@ -245,7 +245,7 @@ public class ColumnTypeResolverUnitTests {
 	}
 
 	@Test // DATACASS-465
-	public void setPropertyWithFrozenAnnotationOnElement() {
+	void setPropertyWithFrozenAnnotationOnElement() {
 
 		BasicCassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(Person.class);
 
@@ -261,7 +261,7 @@ public class ColumnTypeResolverUnitTests {
 	}
 
 	@Test // DATACASS-465
-	public void mapPropertyWithFrozenAnnotationOnKey() {
+	void mapPropertyWithFrozenAnnotationOnKey() {
 
 		BasicCassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(Person.class);
 
@@ -286,7 +286,7 @@ public class ColumnTypeResolverUnitTests {
 	}
 
 	@Test // DATACASS-465
-	public void mapPropertyWithFrozenAnnotationOnValue() {
+	void mapPropertyWithFrozenAnnotationOnValue() {
 
 		BasicCassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(Person.class);
 
@@ -356,7 +356,7 @@ public class ColumnTypeResolverUnitTests {
 		}
 	}
 
-	static class TypeWithUUIDColumn {
+	private static class TypeWithUUIDColumn {
 
 		UUID uuid;
 

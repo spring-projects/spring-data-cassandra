@@ -21,7 +21,7 @@ import static org.springframework.data.cassandra.core.cql.generator.CreateTableC
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.data.cassandra.core.cql.Ordering;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
@@ -43,10 +43,10 @@ import com.datastax.oss.driver.api.core.type.DataTypes;
  * @author David Webb
  * @author Mark Paluch
  */
-public class CreateTableCqlGeneratorUnitTests {
+class CreateTableCqlGeneratorUnitTests {
 
 	@Test
-	public void shouldGenerateCorrectCQL() {
+	void shouldGenerateCorrectCQL() {
 
 		CqlIdentifier name = CqlIdentifier.fromCql("mytable");
 		DataType partitionKeyType0 = DataTypes.TEXT;
@@ -64,7 +64,7 @@ public class CreateTableCqlGeneratorUnitTests {
 	}
 
 	@Test
-	public void shouldGenerateCompositePrimaryKey() {
+	void shouldGenerateCompositePrimaryKey() {
 
 		CqlIdentifier name = CqlIdentifier.fromCql("composite_partition_key_table");
 		DataType partKeyType0 = DataTypes.TEXT;
@@ -86,7 +86,7 @@ public class CreateTableCqlGeneratorUnitTests {
 	}
 
 	@Test
-	public void shouldGenerateTableOptions() {
+	void shouldGenerateTableOptions() {
 
 		CqlIdentifier name = CqlIdentifier.fromCql("mytable");
 		DataType partitionKeyType0 = DataTypes.TEXT;
@@ -110,7 +110,7 @@ public class CreateTableCqlGeneratorUnitTests {
 	}
 
 	@Test
-	public void shouldGenerateMultipleOptions() {
+	void shouldGenerateMultipleOptions() {
 
 		CqlIdentifier name = CqlIdentifier.fromCql("timeseries_table");
 		DataType partitionKeyType0 = DataTypes.TIMEUUID;
@@ -163,7 +163,7 @@ public class CreateTableCqlGeneratorUnitTests {
 	}
 
 	@Test // DATACASS-518
-	public void createTableWithOrderedClustering() {
+	void createTableWithOrderedClustering() {
 
 		CreateTableSpecification table = CreateTableSpecification.createTable("person") //
 				.partitionKeyColumn("id", DataTypes.ASCII) //
@@ -176,7 +176,7 @@ public class CreateTableCqlGeneratorUnitTests {
 	}
 
 	@Test // DATACASS-518
-	public void createTableWithOrderedClusteringAndOptions() {
+	void createTableWithOrderedClusteringAndOptions() {
 
 		CreateTableSpecification table = CreateTableSpecification.createTable("person") //
 				.partitionKeyColumn("id", DataTypes.ASCII) //

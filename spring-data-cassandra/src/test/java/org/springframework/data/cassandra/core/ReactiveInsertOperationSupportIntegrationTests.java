@@ -23,15 +23,15 @@ import reactor.test.StepVerifier;
 
 import java.util.Collections;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.session.DefaultBridgedReactiveSession;
 import org.springframework.data.cassandra.core.mapping.Indexed;
 import org.springframework.data.cassandra.core.mapping.Table;
-import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 
@@ -40,17 +40,17 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  *
  * @author Mark Paluch
  */
-public class ReactiveInsertOperationSupportIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
+class ReactiveInsertOperationSupportIntegrationTests extends AbstractKeyspaceCreatingIntegrationTests {
 
-	CassandraAdminTemplate admin;
+	private CassandraAdminTemplate admin;
 
-	ReactiveCassandraTemplate template;
+	private ReactiveCassandraTemplate template;
 
-	Person han;
-	Person luke;
+	private Person han;
+	private Person luke;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		admin = new CassandraAdminTemplate(session, new MappingCassandraConverter());
 		template = new ReactiveCassandraTemplate(new DefaultBridgedReactiveSession(session));
@@ -75,22 +75,22 @@ public class ReactiveInsertOperationSupportIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-485
-	public void domainTypeIsRequired() {
+	void domainTypeIsRequired() {
 		assertThatIllegalArgumentException().isThrownBy(() -> this.template.insert((Class) null));
 	}
 
 	@Test // DATACASS-485
-	public void optionsIsRequiredOnSet() {
+	void optionsIsRequiredOnSet() {
 		assertThatIllegalArgumentException().isThrownBy(() -> this.template.insert(Person.class).withOptions(null));
 	}
 
 	@Test // DATACASS-485
-	public void tableIsRequiredOnSet() {
+	void tableIsRequiredOnSet() {
 		assertThatIllegalArgumentException().isThrownBy(() -> this.template.insert(Person.class).inTable((String) null));
 	}
 
 	@Test // DATACASS-485, DATACASS-573
-	public void insertOne() {
+	void insertOne() {
 
 		Mono<EntityWriteResult<Person>> writeResult = this.template.insert(Person.class).inTable("person").one(han);
 
@@ -104,7 +104,7 @@ public class ReactiveInsertOperationSupportIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-485, DATACASS-573
-	public void insertOneWithOptions() {
+	void insertOneWithOptions() {
 
 		this.template.insert(Person.class).inTable("person").one(han);
 

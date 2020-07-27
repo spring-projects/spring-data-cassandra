@@ -18,7 +18,7 @@ package org.springframework.data.cassandra.core.cql.generator;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.cassandra.core.cql.generator.DropUserTypeCqlGenerator.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.cassandra.core.cql.keyspace.DropUserTypeSpecification;
 
 /**
@@ -26,10 +26,10 @@ import org.springframework.data.cassandra.core.cql.keyspace.DropUserTypeSpecific
  *
  * @author Mark Paluch
  */
-public class DropUserTypeCqlGeneratorUnitTests {
+class DropUserTypeCqlGeneratorUnitTests {
 
 	@Test // DATACASS-172
-	public void shouldDropUserType() {
+	void shouldDropUserType() {
 
 		DropUserTypeSpecification spec = DropUserTypeSpecification.dropType("address");
 
@@ -37,7 +37,7 @@ public class DropUserTypeCqlGeneratorUnitTests {
 	}
 
 	@Test // DATACASS-172
-	public void shouldDropUserTypeIfExists() {
+	void shouldDropUserTypeIfExists() {
 
 		DropUserTypeSpecification spec = DropUserTypeSpecification.dropType("address").ifExists();
 

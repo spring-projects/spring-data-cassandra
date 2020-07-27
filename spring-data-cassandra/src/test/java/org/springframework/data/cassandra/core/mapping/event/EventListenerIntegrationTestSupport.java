@@ -23,15 +23,15 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
-import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
@@ -42,13 +42,13 @@ import com.datastax.oss.driver.api.core.cql.SimpleStatement;
  * @author Lukasz Antoniak
  * @author Mark Paluch
  */
-public abstract class EventListenerIntegrationTestSupport extends AbstractKeyspaceCreatingIntegrationTest {
+public abstract class EventListenerIntegrationTestSupport extends AbstractKeyspaceCreatingIntegrationTests {
 
 	private CaptureEventListener listener = new CaptureEventListener();
 	User firstUser = null;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		CassandraTemplate setup = new CassandraTemplate(session);
 
@@ -62,18 +62,18 @@ public abstract class EventListenerIntegrationTestSupport extends AbstractKeyspa
 		listener.clear();
 	}
 
-	public CaptureEventListener getListener() {
+	CaptureEventListener getListener() {
 		return listener;
 	}
 
-	public ApplicationEventPublisher getApplicationEventPublisher() {
+	ApplicationEventPublisher getApplicationEventPublisher() {
 		return it -> listener.onApplicationEvent((CassandraMappingEvent) it);
 	}
 
-	public abstract CassandraOperationsAccessor getAccessor();
+	protected abstract CassandraOperationsAccessor getAccessor();
 
 	@Test // DATACASS-106
-	public void selectByIdShouldEmitLoadEvents() {
+	void selectByIdShouldEmitLoadEvents() {
 
 		User loaded = getAccessor().selectOneById(firstUser.getId(), User.class);
 
@@ -83,7 +83,7 @@ public abstract class EventListenerIntegrationTestSupport extends AbstractKeyspa
 	}
 
 	@Test // DATACASS-106
-	public void selectByQueryShouldEmitLoadEvents() {
+	void selectByQueryShouldEmitLoadEvents() {
 
 		List<User> loaded = getAccessor().select(query(where("id").is(firstUser.getId())), User.class);
 
@@ -93,7 +93,7 @@ public abstract class EventListenerIntegrationTestSupport extends AbstractKeyspa
 	}
 
 	@Test // DATACASS-106
-	public void selectByStatementShouldEmitLoadEvents() {
+	void selectByStatementShouldEmitLoadEvents() {
 
 		List<User> loaded = getAccessor().select(SimpleStatement.newInstance("SELECT * FROM users"), User.class);
 
@@ -103,7 +103,7 @@ public abstract class EventListenerIntegrationTestSupport extends AbstractKeyspa
 	}
 
 	@Test // DATACASS-106
-	public void insertShouldEmitEvents() {
+	void insertShouldEmitEvents() {
 
 		User user = new User("id-2", "Lukasz", "Antoniak");
 		getAccessor().insert(user);
@@ -113,7 +113,7 @@ public abstract class EventListenerIntegrationTestSupport extends AbstractKeyspa
 	}
 
 	@Test // DATACASS-106
-	public void updateShouldEmitEvents() {
+	void updateShouldEmitEvents() {
 
 		firstUser.setLastname("Wayne");
 		getAccessor().update(firstUser);
@@ -123,7 +123,7 @@ public abstract class EventListenerIntegrationTestSupport extends AbstractKeyspa
 	}
 
 	@Test // DATACASS-106
-	public void deleteShouldEmitEvents() {
+	void deleteShouldEmitEvents() {
 
 		getAccessor().delete(firstUser);
 
@@ -134,7 +134,7 @@ public abstract class EventListenerIntegrationTestSupport extends AbstractKeyspa
 	}
 
 	@Test // DATACASS-106
-	public void deleteByIdShouldEmitEvents() {
+	void deleteByIdShouldEmitEvents() {
 
 		getAccessor().deleteById(firstUser.getId(), User.class);
 
@@ -145,7 +145,7 @@ public abstract class EventListenerIntegrationTestSupport extends AbstractKeyspa
 	}
 
 	@Test // DATACASS-106
-	public void deleteByQueryShouldEmitEvents() {
+	void deleteByQueryShouldEmitEvents() {
 
 		getAccessor().delete(query(where("id").is(firstUser.getId())), User.class);
 
@@ -156,7 +156,7 @@ public abstract class EventListenerIntegrationTestSupport extends AbstractKeyspa
 	}
 
 	@Test // DATACASS-106
-	public void truncateShouldEmitEvents() {
+	void truncateShouldEmitEvents() {
 
 		getAccessor().truncate(User.class);
 
@@ -167,7 +167,7 @@ public abstract class EventListenerIntegrationTestSupport extends AbstractKeyspa
 	}
 
 	@Test // DATACASS-106
-	public void shouldEmitMultipleEvents() {
+	void shouldEmitMultipleEvents() {
 
 		User user = new User("id-2", "Lukasz", "Antoniak");
 		getAccessor().insert(user);
@@ -221,19 +221,19 @@ public abstract class EventListenerIntegrationTestSupport extends AbstractKeyspa
 			events.clear();
 		}
 
-		List<BeforeSaveEvent<User>> getBeforeSave() {
+		private List<BeforeSaveEvent<User>> getBeforeSave() {
 			return filter(BeforeSaveEvent.class);
 		}
 
-		List<AfterSaveEvent<User>> getAfterSave() {
+		private List<AfterSaveEvent<User>> getAfterSave() {
 			return filter(AfterSaveEvent.class);
 		}
 
-		List<BeforeDeleteEvent<User>> getBeforeDelete() {
+		private List<BeforeDeleteEvent<User>> getBeforeDelete() {
 			return filter(BeforeDeleteEvent.class);
 		}
 
-		List<AfterDeleteEvent<User>> getAfterDelete() {
+		private List<AfterDeleteEvent<User>> getAfterDelete() {
 			return filter(AfterDeleteEvent.class);
 		}
 

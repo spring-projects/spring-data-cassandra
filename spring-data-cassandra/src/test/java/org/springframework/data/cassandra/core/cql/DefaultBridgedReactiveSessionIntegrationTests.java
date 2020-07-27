@@ -18,15 +18,14 @@ package org.springframework.data.cassandra.core.cql;
 import static org.assertj.core.api.Assertions.*;
 
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 import reactor.test.StepVerifier;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.data.cassandra.ReactiveResultSet;
 import org.springframework.data.cassandra.core.cql.session.DefaultBridgedReactiveSession;
-import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
 
 import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;
 import com.datastax.oss.driver.api.core.servererrors.SyntaxError;
@@ -36,12 +35,12 @@ import com.datastax.oss.driver.api.core.servererrors.SyntaxError;
  *
  * @author Mark Paluch
  */
-public class DefaultBridgedReactiveSessionIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
+class DefaultBridgedReactiveSessionIntegrationTests extends AbstractKeyspaceCreatingIntegrationTests {
 
-	DefaultBridgedReactiveSession reactiveSession;
+	private DefaultBridgedReactiveSession reactiveSession;
 
-	@Before
-	public void before() {
+	@BeforeEach
+	void before() {
 
 		this.session.execute("DROP TABLE IF EXISTS users;");
 
@@ -49,7 +48,7 @@ public class DefaultBridgedReactiveSessionIntegrationTests extends AbstractKeysp
 	}
 
 	@Test // DATACASS-335
-	public void executeShouldExecuteDeferred() {
+	void executeShouldExecuteDeferred() {
 
 		String query = "CREATE TABLE users (\n" + "  userid text PRIMARY KEY,\n" + "  first_name text\n" + ");";
 
@@ -64,12 +63,12 @@ public class DefaultBridgedReactiveSessionIntegrationTests extends AbstractKeysp
 	}
 
 	@Test // DATACASS-335
-	public void executeShouldTransportExceptionsInMono() {
+	void executeShouldTransportExceptionsInMono() {
 		reactiveSession.execute("INSERT INTO dummy;").as(StepVerifier::create).expectError(SyntaxError.class).verify();
 	}
 
 	@Test // DATACASS-335
-	public void executeShouldReturnRows() {
+	void executeShouldReturnRows() {
 
 		session.execute("CREATE TABLE users (\n" + "  userid text PRIMARY KEY,\n" + "  first_name text\n" + ");");
 		session.execute("INSERT INTO users (userid, first_name) VALUES ('White', 'Walter');");
@@ -81,7 +80,7 @@ public class DefaultBridgedReactiveSessionIntegrationTests extends AbstractKeysp
 	}
 
 	@Test // DATACASS-335
-	public void executeShouldPrepareStatement() {
+	void executeShouldPrepareStatement() {
 
 		session.execute("CREATE TABLE users (\n" + "  userid text PRIMARY KEY,\n" + "  first_name text\n" + ");");
 

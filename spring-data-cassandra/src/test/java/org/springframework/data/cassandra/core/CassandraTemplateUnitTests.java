@@ -23,13 +23,15 @@ import static org.springframework.data.cassandra.core.query.Criteria.*;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import org.springframework.data.cassandra.CassandraConnectionFailureException;
 import org.springframework.data.cassandra.core.mapping.event.BeforeConvertCallback;
@@ -57,8 +59,9 @@ import com.datastax.oss.driver.api.core.type.DataTypes;
  *
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner.class)
-public class CassandraTemplateUnitTests {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class CassandraTemplateUnitTests {
 
 	@Mock CqlSession session;
 	@Mock ResultSet resultSet;
@@ -68,14 +71,14 @@ public class CassandraTemplateUnitTests {
 
 	@Captor ArgumentCaptor<SimpleStatement> statementCaptor;
 
-	CassandraTemplate template;
+	private CassandraTemplate template;
 
-	Object beforeSave;
+	private Object beforeSave;
 
-	Object beforeConvert;
+	private Object beforeConvert;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		template = new CassandraTemplate(session);
 
@@ -102,7 +105,7 @@ public class CassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-292
-	public void selectUsingCqlShouldReturnMappedResults() {
+	void selectUsingCqlShouldReturnMappedResults() {
 
 		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
 		when(columnDefinitions.contains(any(CqlIdentifier.class))).thenReturn(true);
@@ -126,7 +129,7 @@ public class CassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-292
-	public void selectShouldTranslateException() {
+	void selectShouldTranslateException() {
 
 		when(resultSet.iterator()).thenThrow(new NoNodeAvailableException());
 
@@ -140,7 +143,7 @@ public class CassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-292
-	public void selectOneShouldReturnMappedResults() {
+	void selectOneShouldReturnMappedResults() {
 
 		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
 		when(columnDefinitions.contains(any(CqlIdentifier.class))).thenReturn(true);
@@ -163,7 +166,7 @@ public class CassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-696
-	public void selectOneShouldNull() {
+	void selectOneShouldNull() {
 
 		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
 
@@ -173,7 +176,7 @@ public class CassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-292
-	public void selectOneByIdShouldReturnMappedResults() {
+	void selectOneByIdShouldReturnMappedResults() {
 
 		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
 		when(columnDefinitions.contains(any(CqlIdentifier.class))).thenReturn(true);
@@ -196,7 +199,7 @@ public class CassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-313
-	public void selectProjectedOneShouldReturnMappedResults() {
+	void selectProjectedOneShouldReturnMappedResults() {
 
 		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
 		when(columnDefinitions.contains(any(CqlIdentifier.class))).thenReturn(true);
@@ -215,7 +218,7 @@ public class CassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-292
-	public void existsShouldReturnExistingElement() {
+	void existsShouldReturnExistingElement() {
 
 		when(resultSet.one()).thenReturn(row);
 
@@ -227,7 +230,7 @@ public class CassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-292
-	public void existsShouldReturnNonExistingElement() {
+	void existsShouldReturnNonExistingElement() {
 
 		boolean exists = template.exists("myid", User.class);
 
@@ -237,7 +240,7 @@ public class CassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-512
-	public void existsByQueryShouldReturnExistingElement() {
+	void existsByQueryShouldReturnExistingElement() {
 
 		when(resultSet.one()).thenReturn(row);
 
@@ -249,7 +252,7 @@ public class CassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-292
-	public void countShouldExecuteCountQueryElement() {
+	void countShouldExecuteCountQueryElement() {
 
 		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
 		when(row.getLong(0)).thenReturn(42L);
@@ -263,7 +266,7 @@ public class CassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-512
-	public void countByQueryShouldExecuteCountQueryElement() {
+	void countByQueryShouldExecuteCountQueryElement() {
 
 		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
 		when(row.getLong(0)).thenReturn(42L);
@@ -277,7 +280,7 @@ public class CassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-292, DATACASS-618
-	public void insertShouldInsertEntity() {
+	void insertShouldInsertEntity() {
 
 		when(resultSet.wasApplied()).thenReturn(true);
 
@@ -293,7 +296,7 @@ public class CassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-618
-	public void insertShouldInsertVersionedEntity() {
+	void insertShouldInsertVersionedEntity() {
 
 		when(resultSet.wasApplied()).thenReturn(true);
 
@@ -309,7 +312,7 @@ public class CassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-250
-	public void insertShouldInsertWithOptionsEntity() {
+	void insertShouldInsertWithOptionsEntity() {
 
 		InsertOptions insertOptions = InsertOptions.builder().withIfNotExists().build();
 
@@ -325,7 +328,7 @@ public class CassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-560
-	public void insertShouldInsertWithNulls() {
+	void insertShouldInsertWithNulls() {
 
 		InsertOptions insertOptions = InsertOptions.builder().withInsertNulls().build();
 
@@ -341,7 +344,7 @@ public class CassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-292
-	public void insertShouldTranslateException() {
+	void insertShouldTranslateException() {
 
 		reset(session);
 		when(session.execute(any(Statement.class))).thenThrow(new NoNodeAvailableException());
@@ -356,7 +359,7 @@ public class CassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-292
-	public void insertShouldNotApplyInsert() {
+	void insertShouldNotApplyInsert() {
 
 		when(resultSet.wasApplied()).thenReturn(false);
 
@@ -368,7 +371,7 @@ public class CassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-292, DATACASS-618
-	public void updateShouldUpdateEntity() {
+	void updateShouldUpdateEntity() {
 
 		when(resultSet.wasApplied()).thenReturn(true);
 
@@ -384,7 +387,7 @@ public class CassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-618
-	public void updateShouldUpdateVersionedEntity() {
+	void updateShouldUpdateVersionedEntity() {
 
 		when(resultSet.wasApplied()).thenReturn(true);
 
@@ -401,7 +404,7 @@ public class CassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-250
-	public void updateShouldUpdateEntityWithOptions() {
+	void updateShouldUpdateEntityWithOptions() {
 
 		when(resultSet.wasApplied()).thenReturn(true);
 
@@ -418,7 +421,7 @@ public class CassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-575
-	public void updateShouldUpdateEntityWithLwt() {
+	void updateShouldUpdateEntityWithLwt() {
 
 		UpdateOptions options = UpdateOptions.builder().ifCondition(where("firstname").is("Walter")).build();
 		User user = new User("heisenberg", "Walter", "White");
@@ -431,7 +434,7 @@ public class CassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-575
-	public void updateShouldApplyUpdateQuery() {
+	void updateShouldApplyUpdateQuery() {
 
 		Query query = Query.query(where("id").is("heisenberg"));
 		Update update = Update.update("firstname", "Walter");
@@ -444,7 +447,7 @@ public class CassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-575
-	public void updateShouldApplyUpdateQueryWitLwt() {
+	void updateShouldApplyUpdateQueryWitLwt() {
 
 		Filter ifCondition = Filter.from(where("firstname").is("Walter"), where("lastname").is("White"));
 
@@ -461,7 +464,7 @@ public class CassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-292
-	public void updateShouldTranslateException() {
+	void updateShouldTranslateException() {
 
 		reset(session);
 		when(session.execute(any(Statement.class))).thenThrow(new NoNodeAvailableException());
@@ -476,7 +479,7 @@ public class CassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-292
-	public void deleteByIdShouldRemoveEntity() {
+	void deleteByIdShouldRemoveEntity() {
 
 		when(resultSet.wasApplied()).thenReturn(true);
 
@@ -490,7 +493,7 @@ public class CassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-292
-	public void deleteShouldRemoveEntity() {
+	void deleteShouldRemoveEntity() {
 
 		User user = new User("heisenberg", "Walter", "White");
 
@@ -501,7 +504,7 @@ public class CassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-575
-	public void deleteShouldRemoveEntityWithLwt() {
+	void deleteShouldRemoveEntityWithLwt() {
 
 		User user = new User("heisenberg", "Walter", "White");
 		DeleteOptions options = DeleteOptions.builder().ifCondition(where("firstname").is("Walter")).build();
@@ -514,7 +517,7 @@ public class CassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-575
-	public void deleteShouldRemoveByQueryWithLwt() {
+	void deleteShouldRemoveByQueryWithLwt() {
 
 		DeleteOptions options = DeleteOptions.builder().ifCondition(where("firstname").is("Walter")).build();
 		Query query = Query.query(where("id").is("heisenberg")).queryOptions(options);
@@ -527,7 +530,7 @@ public class CassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-292
-	public void deleteShouldTranslateException() {
+	void deleteShouldTranslateException() {
 
 		reset(session);
 		when(session.execute(any(Statement.class))).thenThrow(new NoNodeAvailableException());
@@ -542,7 +545,7 @@ public class CassandraTemplateUnitTests {
 	}
 
 	@Test // DATACASS-292
-	public void truncateShouldRemoveEntities() {
+	void truncateShouldRemoveEntities() {
 
 		template.truncate(User.class);
 
@@ -550,7 +553,7 @@ public class CassandraTemplateUnitTests {
 		assertThat(statementCaptor.getValue().getQuery()).isEqualTo("TRUNCATE users");
 	}
 
-	interface UserProjection {
+	private interface UserProjection {
 		String getFirstname();
 	}
 }

@@ -20,7 +20,7 @@ import static org.springframework.data.domain.Sort.Order.*;
 
 import java.nio.ByteBuffer;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -31,10 +31,10 @@ import org.springframework.data.domain.Sort.Direction;
  *
  * @author Mark Paluch
  */
-public class QueryUnitTests {
+class QueryUnitTests {
 
 	@Test // DATACASS-343
-	public void shouldCreateFromChainedCriteria() {
+	void shouldCreateFromChainedCriteria() {
 
 		Query query = Query.query(Criteria.where("userId").is("foo")).and(Criteria.where("userComment").is("bar"));
 
@@ -44,7 +44,7 @@ public class QueryUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldRepresentQueryToString() {
+	void shouldRepresentQueryToString() {
 
 		Query query = Query.query(Criteria.where("userId").is("foo")).and(Criteria.where("userComment").is("bar"))
 				.sort(Sort.by("foo", "bar")) //
@@ -56,7 +56,7 @@ public class QueryUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldConfigureQueryObject() {
+	void shouldConfigureQueryObject() {
 
 		Query query = Query.query(Criteria.where("foo").is("bar"));
 		Sort sort = Sort.by("a", "b");
@@ -72,7 +72,7 @@ public class QueryUnitTests {
 	}
 
 	@Test // DATACASS-56
-	public void shouldApplyPageRequests() {
+	void shouldApplyPageRequests() {
 
 		ByteBuffer pagingState = ByteBuffer.allocate(0);
 

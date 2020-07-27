@@ -26,8 +26,8 @@ import reactor.test.StepVerifier;
 
 import java.util.Collections;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
@@ -36,7 +36,7 @@ import org.springframework.data.cassandra.core.mapping.Column;
 import org.springframework.data.cassandra.core.mapping.Indexed;
 import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.core.query.Query;
-import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 
@@ -45,17 +45,17 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  *
  * @author Mark Paluch
  */
-public class ReactiveUpdateOperationSupportIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
+class ReactiveUpdateOperationSupportIntegrationTests extends AbstractKeyspaceCreatingIntegrationTests {
 
-	CassandraAdminTemplate admin;
+	private CassandraAdminTemplate admin;
 
-	ReactiveCassandraTemplate template;
+	private ReactiveCassandraTemplate template;
 
-	Person han;
-	Person luke;
+	private Person han;
+	private Person luke;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		admin = new CassandraAdminTemplate(session, new MappingCassandraConverter());
 		template = new ReactiveCassandraTemplate(new DefaultBridgedReactiveSession(session));
@@ -76,23 +76,23 @@ public class ReactiveUpdateOperationSupportIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-485
-	public void domainTypeIsRequired() {
+	void domainTypeIsRequired() {
 		assertThatIllegalArgumentException().isThrownBy(() -> this.template.update(null));
 	}
 
 	@Test // DATACASS-485
-	public void queryIsRequired() {
+	void queryIsRequired() {
 		assertThatIllegalArgumentException().isThrownBy(() -> this.template.update(Person.class).matching(null));
 	}
 
 	@Test // DATACASS-485
-	public void tableIsRequiredOnSet() {
+	void tableIsRequiredOnSet() {
 		assertThatIllegalArgumentException()
 				.isThrownBy(() -> this.template.update(Person.class).inTable((CqlIdentifier) null));
 	}
 
 	@Test // DATACASS-485
-	public void updateAllMatching() {
+	void updateAllMatching() {
 
 		Mono<WriteResult> writeResult = this.template.update(Person.class).matching(queryHan())
 				.apply(update("firstname", "Han"));
@@ -101,7 +101,7 @@ public class ReactiveUpdateOperationSupportIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-485
-	public void updateWithDifferentDomainClassAndCollection() {
+	void updateWithDifferentDomainClassAndCollection() {
 
 		Mono<WriteResult> writeResult = this.template.update(Jedi.class).inTable("person")
 				.matching(query(where("id").is(han.getId()))).apply(update("name", "Han"));

@@ -18,7 +18,7 @@ package org.springframework.data.cassandra.core.query
 import io.mockk.mockk
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 /**
  * Unit tests for [CriteriaExtensions].

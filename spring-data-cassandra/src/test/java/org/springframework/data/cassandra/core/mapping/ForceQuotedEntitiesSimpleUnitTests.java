@@ -18,7 +18,7 @@ package org.springframework.data.cassandra.core.mapping;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.util.ClassTypeInformation;
 
 /**
@@ -26,10 +26,10 @@ import org.springframework.data.util.ClassTypeInformation;
  *
  * @author Matthew T. Adams
  */
-public class ForceQuotedEntitiesSimpleUnitTests {
+class ForceQuotedEntitiesSimpleUnitTests {
 
 	@Test
-	public void testImplicitTableNameForceQuoted() {
+	void testImplicitTableNameForceQuoted() {
 		BasicCassandraPersistentEntity<ImplicitTableNameForceQuoted> entity = new BasicCassandraPersistentEntity<>(
 				ClassTypeInformation.from(ImplicitTableNameForceQuoted.class));
 
@@ -39,12 +39,12 @@ public class ForceQuotedEntitiesSimpleUnitTests {
 	}
 
 	@Table(forceQuote = true)
-	public static class ImplicitTableNameForceQuoted {}
+	private static class ImplicitTableNameForceQuoted {}
 
-	public static final String EXPLICIT_TABLE_NAME = "Xx";
+	private static final String EXPLICIT_TABLE_NAME = "Xx";
 
 	@Test
-	public void testExplicitTableNameForceQuoted() {
+	void testExplicitTableNameForceQuoted() {
 		BasicCassandraPersistentEntity<ExplicitTableNameForceQuoted> entity = new BasicCassandraPersistentEntity<>(
 				ClassTypeInformation.from(ExplicitTableNameForceQuoted.class));
 
@@ -53,10 +53,10 @@ public class ForceQuotedEntitiesSimpleUnitTests {
 	}
 
 	@Table(value = EXPLICIT_TABLE_NAME, forceQuote = true)
-	public static class ExplicitTableNameForceQuoted {}
+	private static class ExplicitTableNameForceQuoted {}
 
 	@Test
-	public void testDefaultTableNameForceQuoted() {
+	void testDefaultTableNameForceQuoted() {
 		BasicCassandraPersistentEntity<DefaultTableNameForceQuoted> entity = new BasicCassandraPersistentEntity<>(
 				ClassTypeInformation.from(DefaultTableNameForceQuoted.class));
 
@@ -67,5 +67,5 @@ public class ForceQuotedEntitiesSimpleUnitTests {
 	}
 
 	@Table
-	public static class DefaultTableNameForceQuoted {}
+	private static class DefaultTableNameForceQuoted {}
 }

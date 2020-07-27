@@ -23,9 +23,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.reactivestreams.Publisher;
 
 import org.springframework.beans.BeansException;
@@ -47,10 +46,8 @@ import org.springframework.data.cassandra.repository.support.SimpleReactiveCassa
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.data.util.Streamable;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
@@ -61,9 +58,8 @@ import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
  *
  * @author Mark Paluch
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
-public class ReactiveCassandraRepositoryIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest
+@SpringJUnitConfig
+class ReactiveCassandraRepositoryIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest
 		implements BeanClassLoaderAware, BeanFactoryAware {
 
 	@Configuration
@@ -78,13 +74,16 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractSpringD
 	@Autowired ReactiveCassandraOperations operations;
 	@Autowired CqlSession session;
 
-	ReactiveCassandraRepositoryFactory factory;
-	ClassLoader classLoader;
-	BeanFactory beanFactory;
-	UserRepository repository;
-	GroupRepository groupRepostitory;
+	private ReactiveCassandraRepositoryFactory factory;
+	private ClassLoader classLoader;
+	private BeanFactory beanFactory;
+	private UserRepository repository;
+	private GroupRepository groupRepostitory;
 
-	User dave, oliver, carter, boyd;
+	private User dave;
+	private User oliver;
+	private User carter;
+	private User boyd;
 
 	@Override
 	public void setBeanClassLoader(ClassLoader classLoader) {
@@ -96,8 +95,8 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractSpringD
 		this.beanFactory = beanFactory;
 	}
 
-	@Before
-	public void setUp() throws Exception {
+	@BeforeEach
+	void setUp() throws Exception {
 
 		TableMetadata users = session.getKeyspace().flatMap(it -> session.getMetadata().getKeyspace(it))
 				.flatMap(it -> it.getTable(CqlIdentifier.fromCql("users"))).get();
@@ -127,57 +126,57 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractSpringD
 	}
 
 	@Test // DATACASS-335
-	public void shouldFindByLastName() {
+	void shouldFindByLastName() {
 		repository.findByLastname(dave.getLastname()).as(StepVerifier::create).expectNextCount(2).verifyComplete();
 	}
 
 	@Test // DATACASS-529
-	public void shouldFindSliceByLastName() {
+	void shouldFindSliceByLastName() {
 		repository.findByLastname(carter.getLastname(), CassandraPageRequest.first(1)).as(StepVerifier::create)
 				.expectNextMatches(users -> users.getSize() == 1 && users.hasNext()).verifyComplete();
 	}
 
 	@Test // DATACASS-529
-	public void shouldFindEmpptySliceByLastName() {
+	void shouldFindEmpptySliceByLastName() {
 		repository.findByLastname("foo", CassandraPageRequest.first(1)).as(StepVerifier::create)
 				.expectNextMatches(Streamable::isEmpty).verifyComplete();
 	}
 
 	@Test // DATACASS-525
-	public void findOneWithManyResultsShouldFail() {
+	void findOneWithManyResultsShouldFail() {
 		repository.findOneByLastname(dave.getLastname()).as(StepVerifier::create)
 				.expectError(IncorrectResultSizeDataAccessException.class).verify();
 	}
 
 	@Test // DATACASS-525
-	public void findOneWithNoResultsShouldNotEmitItem() {
+	void findOneWithNoResultsShouldNotEmitItem() {
 		repository.findByLastname("foo").as(StepVerifier::create).verifyComplete();
 	}
 
 	@Test // DATACASS-525
-	public void findFirstWithManyResultsShouldEmitFirstItem() {
+	void findFirstWithManyResultsShouldEmitFirstItem() {
 		repository.findFirstByLastname(dave.getLastname()).as(StepVerifier::create).expectNextCount(1).verifyComplete();
 	}
 
 	@Test // DATACASS-335
-	public void shouldFindByIdByLastName() {
+	void shouldFindByIdByLastName() {
 		repository.findOneByLastname(carter.getLastname()).as(StepVerifier::create).expectNext(carter).verifyComplete();
 	}
 
 	@Test // DATACASS-335
-	public void shouldFindByIdByPublisherOfLastName() {
+	void shouldFindByIdByPublisherOfLastName() {
 		repository.findByLastname(Mono.just(carter.getLastname())).as(StepVerifier::create).expectNext(carter)
 				.verifyComplete();
 	}
 
 	@Test // DATACASS-335
-	public void shouldFindUsingPublishersInStringQuery() {
+	void shouldFindUsingPublishersInStringQuery() {
 		repository.findStringQuery(Mono.just(dave.getLastname())).as(StepVerifier::create).expectNextCount(2)
 				.verifyComplete();
 	}
 
 	@Test // DATACASS-335
-	public void shouldFindByLastNameAndSort() {
+	void shouldFindByLastNameAndSort() {
 
 		GroupKey key1 = new GroupKey("Simpsons", "hash", "Bart");
 		GroupKey key2 = new GroupKey("Simpsons", "hash", "Homer");
@@ -196,7 +195,7 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractSpringD
 	}
 
 	@Test // DATACASS-512
-	public void shouldCountRecords() {
+	void shouldCountRecords() {
 
 		repository.countByLastname("Matthews").as(StepVerifier::create).expectNext(2L).verifyComplete();
 		repository.countByLastname("None").as(StepVerifier::create).expectNext(0L).verifyComplete();
@@ -206,7 +205,7 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractSpringD
 	}
 
 	@Test // DATACASS-611
-	public void shouldDeleteRecords() {
+	void shouldDeleteRecords() {
 
 		repository.deleteVoidById(dave.getId()).as(StepVerifier::create).verifyComplete();
 
@@ -214,7 +213,7 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractSpringD
 	}
 
 	@Test // DATACASS-611
-	public void shouldDeleteRecordsReturingWasApplied() {
+	void shouldDeleteRecordsReturingWasApplied() {
 
 		repository.deleteAllById(dave.getId()).as(StepVerifier::create).expectNext(true).verifyComplete();
 
@@ -222,7 +221,7 @@ public class ReactiveCassandraRepositoryIntegrationTests extends AbstractSpringD
 	}
 
 	@Test // DATACASS-512
-	public void shouldApplyExistsProjection() {
+	void shouldApplyExistsProjection() {
 
 		repository.existsByLastname("Matthews").as(StepVerifier::create).expectNext(true).verifyComplete();
 		repository.existsByLastname("None").as(StepVerifier::create).expectNext(false).verifyComplete();

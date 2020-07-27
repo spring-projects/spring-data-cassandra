@@ -18,7 +18,7 @@ package org.springframework.data.cassandra.core.cql.generator;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.cassandra.core.cql.generator.AlterUserTypeCqlGenerator.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.data.cassandra.core.cql.keyspace.AlterUserTypeSpecification;
 
@@ -29,10 +29,10 @@ import com.datastax.oss.driver.api.core.type.DataTypes;
  *
  * @author Mark Paluch
  */
-public class AlterUserTypeCqlGeneratorUnitTests {
+class AlterUserTypeCqlGeneratorUnitTests {
 
 	@Test // DATACASS-172
-	public void alterTypeShouldAddField() {
+	void alterTypeShouldAddField() {
 
 		AlterUserTypeSpecification spec = AlterUserTypeSpecification.alterType("address") //
 				.add("zip", DataTypes.TEXT);
@@ -41,7 +41,7 @@ public class AlterUserTypeCqlGeneratorUnitTests {
 	}
 
 	@Test // DATACASS-172
-	public void alterTypeShouldAlterField() {
+	void alterTypeShouldAlterField() {
 
 		AlterUserTypeSpecification spec = AlterUserTypeSpecification.alterType("address") //
 				.alter("zip", DataTypes.TEXT);
@@ -50,7 +50,7 @@ public class AlterUserTypeCqlGeneratorUnitTests {
 	}
 
 	@Test // DATACASS-172
-	public void alterTypeShouldRenameField() {
+	void alterTypeShouldRenameField() {
 
 		AlterUserTypeSpecification spec = AlterUserTypeSpecification.alterType("address") //
 				.rename("zip", "zap");
@@ -59,7 +59,7 @@ public class AlterUserTypeCqlGeneratorUnitTests {
 	}
 
 	@Test // DATACASS-172
-	public void alterTypeShouldRenameFields() {
+	void alterTypeShouldRenameFields() {
 
 		AlterUserTypeSpecification spec = AlterUserTypeSpecification.alterType("address") //
 				.rename("zip", "zap") //
@@ -70,7 +70,7 @@ public class AlterUserTypeCqlGeneratorUnitTests {
 
 
 	@Test // DATACASS-172
-	public void generationFailsWithoutFields() {
+	void generationFailsWithoutFields() {
 		assertThatIllegalArgumentException().isThrownBy(() -> toCql(AlterUserTypeSpecification.alterType("hello")));
 	}
 }

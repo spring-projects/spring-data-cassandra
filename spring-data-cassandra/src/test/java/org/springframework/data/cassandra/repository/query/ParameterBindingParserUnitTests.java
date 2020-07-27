@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.cassandra.repository.query.BindingContext.ParameterBinding;
 import org.springframework.data.cassandra.repository.query.StringBasedQuery.ParameterBindingParser;
 
@@ -29,10 +29,10 @@ import org.springframework.data.cassandra.repository.query.StringBasedQuery.Para
  *
  * @author Mark Paluch
  */
-public class ParameterBindingParserUnitTests {
+class ParameterBindingParserUnitTests {
 
 	@Test // DATACASS-117
-	public void parseWithoutParameters() {
+	void parseWithoutParameters() {
 
 		String query = "SELECT * FROM hello_world";
 		List<ParameterBinding> bindings = new ArrayList<>();
@@ -45,7 +45,7 @@ public class ParameterBindingParserUnitTests {
 	}
 
 	@Test // DATACASS-117
-	public void parseWithStaticParameters() {
+	void parseWithStaticParameters() {
 
 		String query = "SELECT * FROM hello_world WHERE a = 1 AND b = {'list'} AND c = {'key':'value'}";
 		List<ParameterBinding> bindings = new ArrayList<>();
@@ -58,7 +58,7 @@ public class ParameterBindingParserUnitTests {
 	}
 
 	@Test // DATACASS-117
-	public void parseWithPositionalParameters() {
+	void parseWithPositionalParameters() {
 
 		String query = "SELECT * FROM hello_world WHERE a = ?0 and b = ?13";
 		List<ParameterBinding> bindings = new ArrayList<>();
@@ -74,7 +74,7 @@ public class ParameterBindingParserUnitTests {
 	}
 
 	@Test // DATACASS-117
-	public void parseWithNamedParameters() {
+	void parseWithNamedParameters() {
 
 		String query = "SELECT * FROM hello_world WHERE a = :hello and b = :world";
 		List<ParameterBinding> bindings = new ArrayList<>();
@@ -87,7 +87,7 @@ public class ParameterBindingParserUnitTests {
 	}
 
 	@Test // DATACASS-117
-	public void parseWithIndexExpressionParameters() {
+	void parseWithIndexExpressionParameters() {
 
 		String query = "SELECT * FROM hello_world WHERE a = ?#{[0]} and b = ?#{[2]}";
 		List<ParameterBinding> bindings = new ArrayList<>();
@@ -100,7 +100,7 @@ public class ParameterBindingParserUnitTests {
 	}
 
 	@Test // DATACASS-117
-	public void parseWithNameExpressionParameters() {
+	void parseWithNameExpressionParameters() {
 
 		String query = "SELECT * FROM hello_world WHERE a = :#{#a} and b = :#{#b}";
 		List<ParameterBinding> bindings = new ArrayList<>();
@@ -113,7 +113,7 @@ public class ParameterBindingParserUnitTests {
 	}
 
 	@Test // DATACASS-117
-	public void parseWithMixedParameters() {
+	void parseWithMixedParameters() {
 
 		String query = "SELECT * FROM hello_world WHERE (a = ?1 and b = :name) and c = (:#{#a}) and (d = ?#{[1]})";
 		List<ParameterBinding> bindings = new ArrayList<>();

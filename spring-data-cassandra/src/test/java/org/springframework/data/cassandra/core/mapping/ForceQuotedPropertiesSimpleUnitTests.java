@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.io.Serializable;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 
@@ -31,17 +31,17 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * @author Matthew T. Adams
  * @author Mark Paluch
  */
-public class ForceQuotedPropertiesSimpleUnitTests {
+class ForceQuotedPropertiesSimpleUnitTests {
 
-	public static final String EXPLICIT_PRIMARY_KEY_NAME = "ThePrimaryKey";
-	public static final String EXPLICIT_COLUMN_NAME = "AnotherColumn";
-	public static final String EXPLICIT_KEY_0 = "TheFirstKeyField";
-	public static final String EXPLICIT_KEY_1 = "TheSecondKeyField";
+	private static final String EXPLICIT_PRIMARY_KEY_NAME = "ThePrimaryKey";
+	private static final String EXPLICIT_COLUMN_NAME = "AnotherColumn";
+	private static final String EXPLICIT_KEY_0 = "TheFirstKeyField";
+	private static final String EXPLICIT_KEY_1 = "TheSecondKeyField";
 
-	CassandraMappingContext context = new CassandraMappingContext();
+	private CassandraMappingContext context = new CassandraMappingContext();
 
 	@Test
-	public void testImplicit() {
+	void testImplicit() {
 
 		CassandraPersistentEntity<?> entity = context.getRequiredPersistentEntity(Implicit.class);
 
@@ -53,7 +53,7 @@ public class ForceQuotedPropertiesSimpleUnitTests {
 	}
 
 	@Table
-	public static class Implicit {
+	private static class Implicit {
 
 		@PrimaryKey(forceQuote = true) String primaryKey;
 
@@ -61,7 +61,7 @@ public class ForceQuotedPropertiesSimpleUnitTests {
 	}
 
 	@Test
-	public void testDefault() {
+	void testDefault() {
 
 		CassandraPersistentEntity<?> entity = context.getRequiredPersistentEntity(Default.class);
 
@@ -73,7 +73,7 @@ public class ForceQuotedPropertiesSimpleUnitTests {
 	}
 
 	@Table
-	public static class Default {
+	private static class Default {
 
 		@PrimaryKey String primaryKey;
 
@@ -81,7 +81,7 @@ public class ForceQuotedPropertiesSimpleUnitTests {
 	}
 
 	@Test
-	public void testExplicit() {
+	void testExplicit() {
 
 		CassandraPersistentEntity<?> entity = context.getRequiredPersistentEntity(Explicit.class);
 
@@ -93,7 +93,7 @@ public class ForceQuotedPropertiesSimpleUnitTests {
 	}
 
 	@Table
-	public static class Explicit {
+	private static class Explicit {
 
 		@PrimaryKey(value = EXPLICIT_PRIMARY_KEY_NAME, forceQuote = true) String primaryKey;
 
@@ -101,7 +101,7 @@ public class ForceQuotedPropertiesSimpleUnitTests {
 	}
 
 	@Test
-	public void testImplicitComposite() {
+	void testImplicitComposite() {
 
 		CassandraPersistentEntity<?> key = context.getRequiredPersistentEntity(ImplicitKey.class);
 
@@ -113,7 +113,7 @@ public class ForceQuotedPropertiesSimpleUnitTests {
 	}
 
 	@PrimaryKeyClass
-	public static class ImplicitKey implements Serializable {
+	static class ImplicitKey implements Serializable {
 
 		private static final long serialVersionUID = -1956747638065267667L;
 
@@ -123,7 +123,7 @@ public class ForceQuotedPropertiesSimpleUnitTests {
 	}
 
 	@Table
-	public static class ImplicitComposite {
+	private static class ImplicitComposite {
 
 		@PrimaryKey(forceQuote = true) ImplicitKey primaryKey;
 
@@ -131,7 +131,7 @@ public class ForceQuotedPropertiesSimpleUnitTests {
 	}
 
 	@Test
-	public void testDefaultComposite() {
+	void testDefaultComposite() {
 
 		CassandraPersistentEntity<?> key = context.getRequiredPersistentEntity(DefaultKey.class);
 
@@ -145,7 +145,7 @@ public class ForceQuotedPropertiesSimpleUnitTests {
 	}
 
 	@PrimaryKeyClass
-	public static class DefaultKey implements Serializable {
+	static class DefaultKey implements Serializable {
 
 		private static final long serialVersionUID = -1956747638065267667L;
 
@@ -155,7 +155,7 @@ public class ForceQuotedPropertiesSimpleUnitTests {
 	}
 
 	@Table
-	public static class DefaultComposite {
+	private static class DefaultComposite {
 
 		@PrimaryKey DefaultKey primaryKey;
 
@@ -163,7 +163,7 @@ public class ForceQuotedPropertiesSimpleUnitTests {
 	}
 
 	@Test
-	public void testExplicitComposite() {
+	void testExplicitComposite() {
 
 		CassandraPersistentEntity<?> key = context.getRequiredPersistentEntity(ExplicitKey.class);
 
@@ -178,7 +178,7 @@ public class ForceQuotedPropertiesSimpleUnitTests {
 	}
 
 	@PrimaryKeyClass
-	public static class ExplicitKey implements Serializable {
+	static class ExplicitKey implements Serializable {
 
 		private static final long serialVersionUID = -1956747638065267667L;
 
@@ -189,7 +189,7 @@ public class ForceQuotedPropertiesSimpleUnitTests {
 	}
 
 	@Table
-	public static class ExplicitComposite {
+	private static class ExplicitComposite {
 
 		@PrimaryKey(forceQuote = true) ExplicitKey primaryKey;
 

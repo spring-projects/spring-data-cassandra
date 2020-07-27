@@ -26,12 +26,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import org.springframework.data.cassandra.core.convert.SchemaFactory;
 import org.springframework.data.cassandra.core.cql.CqlOperations;
@@ -51,22 +53,17 @@ import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
  * @author Mark Paluch
  * @author Jens Schauder
  */
-@RunWith(MockitoJUnitRunner.class)
-public class CassandraPersistentEntitySchemaCreatorUnitTests extends CassandraPersistentEntitySchemaTestSupport {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class CassandraPersistentEntitySchemaCreatorUnitTests extends CassandraPersistentEntitySchemaTestSupport {
 
 	@Mock CassandraAdminOperations adminOperations;
 	@Mock CqlOperations operations;
 
-	CassandraMappingContext context = new CassandraMappingContext();
+	private CassandraMappingContext context = new CassandraMappingContext();
 
-	@Before
-	public void setUp() {
-
-		context.setUserTypeResolver(typeName -> {
-			// make sure that calls to this method pop up. Calling UserTypeResolver while resolving
-			// to be created user types isn't a good idea because they do not exist at resolution time.
-			throw new IllegalArgumentException(String.format("Type %s not found", typeName));
-		});
+	@BeforeEach
+	void setUp() {
 
 		when(adminOperations.getCqlOperations()).thenReturn(operations);
 		when(adminOperations.getSchemaFactory()).thenReturn(new SchemaFactory(context,
@@ -75,7 +72,7 @@ public class CassandraPersistentEntitySchemaCreatorUnitTests extends CassandraPe
 	}
 
 	@Test // DATACASS-687
-	public void shouldConsiderProperUdtOrdering() {
+	void shouldConsiderProperUdtOrdering() {
 
 		List<Class<?>> ordered = new ArrayList<>(Arrays.asList(Udt2.class, Udt1.class, RequiredByAll.class));
 
@@ -104,7 +101,7 @@ public class CassandraPersistentEntitySchemaCreatorUnitTests extends CassandraPe
 	}
 
 	@Test // DATACASS-172, DATACASS-406
-	public void createsCorrectTypeForSimpleTypes() {
+	void createsCorrectTypeForSimpleTypes() {
 
 		context.getPersistentEntity(MoonType.class);
 		context.getPersistentEntity(PlanetType.class);
@@ -118,7 +115,7 @@ public class CassandraPersistentEntitySchemaCreatorUnitTests extends CassandraPe
 	}
 
 	@Test // DATACASS-406
-	public void createsCorrectTypeForSets() {
+	void createsCorrectTypeForSets() {
 
 		List<Class<?>> ordered = new ArrayList<>(Arrays.asList(UniverseType.class, PlanetType.class, MoonType.class));
 
@@ -146,7 +143,7 @@ public class CassandraPersistentEntitySchemaCreatorUnitTests extends CassandraPe
 	}
 
 	@Test // DATACASS-406
-	public void createsCorrectTypeForLists() {
+	void createsCorrectTypeForLists() {
 
 		context.getPersistentEntity(SpaceAgencyType.class);
 
@@ -161,7 +158,7 @@ public class CassandraPersistentEntitySchemaCreatorUnitTests extends CassandraPe
 	}
 
 	@Test // DATACASS-406
-	public void createsCorrectTypesForNestedTypes() {
+	void createsCorrectTypesForNestedTypes() {
 
 		context.getPersistentEntity(PlanetType.class);
 
@@ -174,7 +171,7 @@ public class CassandraPersistentEntitySchemaCreatorUnitTests extends CassandraPe
 	}
 
 	@Test // DATACASS-213
-	public void createsIndexes() {
+	void createsIndexes() {
 
 		context.getPersistentEntity(IndexedEntity.class);
 
@@ -205,18 +202,18 @@ public class CassandraPersistentEntitySchemaCreatorUnitTests extends CassandraPe
 	}
 
 	@UserDefinedType
-	static class RequiredByAll {
+	private static class RequiredByAll {
 		private String name;
 	}
 
 	@UserDefinedType
-	static class Udt1 {
+	private static class Udt1 {
 
 		private RequiredByAll attachment;
 	}
 
 	@UserDefinedType
-	static class Udt2 extends AbstractModel {
+	private static class Udt2 extends AbstractModel {
 
 		private Udt1 u1;
 	}

@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.cql.generator;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.cassandra.core.cql.keyspace.IndexNameSpecification;
 
 /**
@@ -28,24 +28,24 @@ import org.springframework.data.cassandra.core.cql.keyspace.IndexNameSpecificati
  * @param <S> The type of the {@link IndexNameSpecification}
  * @param <G> The type of the {@link IndexNameCqlGenerator}
  */
-public abstract class AbstractIndexOperationCqlGeneratorTest<S extends IndexNameSpecification<?>, G extends IndexNameCqlGenerator<?>> {
+abstract class AbstractIndexOperationCqlGeneratorTest<S extends IndexNameSpecification<?>, G extends IndexNameCqlGenerator<?>> {
 
-	public abstract S specification();
+	protected abstract S specification();
 
-	public abstract G generator();
+	protected abstract G generator();
 
 	public String indexName;
-	public S specification;
-	public G generator;
-	public String cql;
+	S specification;
+	private G generator;
+	String cql;
 
-	public void prepare() {
+	void prepare() {
 		this.specification = specification();
 		this.generator = generator();
 		this.cql = generateCql();
 	}
 
-	public String generateCql() {
+	private String generateCql() {
 		return generator.toCql();
 	}
 }

@@ -25,7 +25,7 @@ import org.springframework.data.cassandra.core.mapping.Table;
 
 // tag::class[]
 @Table
-public class PersonWithIndexes {
+class PersonWithIndexes {
 
   @Id
   private String key;

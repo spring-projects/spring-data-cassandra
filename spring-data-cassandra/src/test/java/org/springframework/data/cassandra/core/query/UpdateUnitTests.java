@@ -17,7 +17,7 @@ package org.springframework.data.cassandra.core.query;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.cassandra.core.query.Update.IncrOp;
 
 /**
@@ -26,10 +26,10 @@ import org.springframework.data.cassandra.core.query.Update.IncrOp;
  * @author Mark Paluch
  * @author Chema Vinacua
  */
-public class UpdateUnitTests {
+class UpdateUnitTests {
 
 	@Test // DATACASS-343
-	public void shouldCreateSimpleUpdate() {
+	void shouldCreateSimpleUpdate() {
 
 		Update update = Update.update("foo", "bar");
 
@@ -38,7 +38,7 @@ public class UpdateUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldCreateSetAtIndexUpdate() {
+	void shouldCreateSetAtIndexUpdate() {
 
 		Update update = Update.empty().set("foo").atIndex(10).to("bar");
 
@@ -47,7 +47,7 @@ public class UpdateUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldCreateSetAtKeyUpdate() {
+	void shouldCreateSetAtKeyUpdate() {
 
 		Update update = Update.empty().set("foo").atKey("baz").to("bar");
 
@@ -56,7 +56,7 @@ public class UpdateUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldAddToMap() {
+	void shouldAddToMap() {
 
 		Update update = Update.empty().addTo("foo").entry("foo", "bar");
 
@@ -65,7 +65,7 @@ public class UpdateUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldPrependAllToList() {
+	void shouldPrependAllToList() {
 
 		Update update = Update.empty().addTo("foo").prependAll("foo", "bar");
 
@@ -74,7 +74,7 @@ public class UpdateUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldAppendAllToList() {
+	void shouldAppendAllToList() {
 
 		Update update = Update.empty().addTo("foo").appendAll("foo", "bar");
 
@@ -83,7 +83,7 @@ public class UpdateUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldRemoveFromList() {
+	void shouldRemoveFromList() {
 
 		Update update = Update.empty().remove("foo", "bar");
 
@@ -92,7 +92,7 @@ public class UpdateUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldClearCollection() {
+	void shouldClearCollection() {
 
 		Update update = Update.empty().clear("foo");
 
@@ -101,7 +101,7 @@ public class UpdateUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldCreateIncrementUpdate() {
+	void shouldCreateIncrementUpdate() {
 
 		Update update = Update.empty().increment("foo");
 
@@ -110,7 +110,7 @@ public class UpdateUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldCreateDecrementUpdate() {
+	void shouldCreateDecrementUpdate() {
 
 		Update update = Update.empty().decrement("foo");
 
@@ -119,7 +119,7 @@ public class UpdateUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldCreateUpdateForTwoColumns() {
+	void shouldCreateUpdateForTwoColumns() {
 
 		Update update = Update.empty().increment("foo").decrement("bar");
 
@@ -128,7 +128,7 @@ public class UpdateUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldCreateSingleUpdateForTheSameColumn() {
+	void shouldCreateSingleUpdateForTheSameColumn() {
 
 		Update update = Update.empty().set("foo", "bar").decrement("foo");
 
@@ -137,7 +137,7 @@ public class UpdateUnitTests {
 	}
 
 	@Test // DATACASS-718
-	public void shouldCreateIncrementLongUpdate() {
+	void shouldCreateIncrementLongUpdate() {
 
 		Update update = Update.empty().increment("foo", 2400000000L);
 
@@ -146,7 +146,7 @@ public class UpdateUnitTests {
 	}
 
 	@Test // DATACASS-718
-	public void shouldCreateDecrementLongUpdate() {
+	void shouldCreateDecrementLongUpdate() {
 
 		Update update = Update.empty().decrement("foo", 2400000000L);
 

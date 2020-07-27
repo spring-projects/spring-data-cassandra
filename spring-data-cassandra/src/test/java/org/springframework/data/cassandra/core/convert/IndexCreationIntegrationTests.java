@@ -21,8 +21,8 @@ import static org.junit.Assume.*;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.cql.generator.CreateIndexCqlGenerator;
@@ -35,7 +35,7 @@ import org.springframework.data.cassandra.core.mapping.Indexed;
 import org.springframework.data.cassandra.core.mapping.SASI;
 import org.springframework.data.cassandra.core.mapping.SASI.StandardAnalyzed;
 import org.springframework.data.cassandra.support.CassandraVersion;
-import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
 import org.springframework.data.util.Version;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -47,14 +47,14 @@ import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
  *
  * @author Mark Paluch
  */
-public class IndexCreationIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
+class IndexCreationIntegrationTests extends AbstractKeyspaceCreatingIntegrationTests {
 
 	private CassandraMappingContext mappingContext = new CassandraMappingContext();
 	private SchemaFactory schemaFactory = new SchemaFactory(new MappingCassandraConverter(mappingContext));
 	private Version cassandraVersion;
 
-	@Before
-	public void before() {
+	@BeforeEach
+	void before() {
 
 		cassandraVersion = CassandraVersion.get(session);
 
@@ -62,7 +62,7 @@ public class IndexCreationIntegrationTests extends AbstractKeyspaceCreatingInteg
 	}
 
 	@Test
-	public void shouldCreateSecondaryIndex() throws InterruptedException {
+	void shouldCreateSecondaryIndex() throws InterruptedException {
 
 		BasicCassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(WithSecondaryIndex.class);
 		CreateTableSpecification createTable = schemaFactory.getCreateTableSpecificationFor(entity);
@@ -80,7 +80,7 @@ public class IndexCreationIntegrationTests extends AbstractKeyspaceCreatingInteg
 	}
 
 	@Test
-	public void shouldCreateSasiIndex() throws InterruptedException {
+	void shouldCreateSasiIndex() throws InterruptedException {
 
 		BasicCassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(WithSasiIndex.class);
 		CreateTableSpecification createTable = schemaFactory.getCreateTableSpecificationFor(entity);
@@ -100,7 +100,7 @@ public class IndexCreationIntegrationTests extends AbstractKeyspaceCreatingInteg
 		return session.refreshSchema().getKeyspace(session.getKeyspace().get()).flatMap(it -> it.getTable(tableName)).get();
 	}
 
-	static class WithSecondaryIndex {
+	private static class WithSecondaryIndex {
 
 		@Id String id;
 
@@ -109,7 +109,7 @@ public class IndexCreationIntegrationTests extends AbstractKeyspaceCreatingInteg
 		Map<String, @Indexed String> map;
 	}
 
-	static class WithSasiIndex {
+	private static class WithSasiIndex {
 
 		@Id String id;
 

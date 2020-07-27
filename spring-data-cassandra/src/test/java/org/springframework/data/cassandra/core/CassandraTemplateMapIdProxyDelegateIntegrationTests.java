@@ -18,15 +18,15 @@ package org.springframework.data.cassandra.core;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.cassandra.core.mapping.MapIdFactory.*;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.cassandra.core.mapping.Column;
 import org.springframework.data.cassandra.core.mapping.MapId;
 import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
 import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
-import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
 
 /**
  * Integration tests for {@link org.springframework.data.cassandra.core.CassandraTemplate} using {@link MapId}.
@@ -34,12 +34,12 @@ import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingInte
  * @author Matthew T. Adams
  * @author Mark Paluch
  */
-public class CassandraTemplateMapIdProxyDelegateIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
+public class CassandraTemplateMapIdProxyDelegateIntegrationTests extends AbstractKeyspaceCreatingIntegrationTests {
 
-	CassandraOperations operations;
+	private CassandraOperations operations;
 
-	@Before
-	public void before() {
+	@BeforeEach
+	void before() {
 
 		operations = new CassandraTemplate(session);
 
@@ -51,7 +51,7 @@ public class CassandraTemplateMapIdProxyDelegateIntegrationTests extends Abstrac
 	}
 
 	@Test
-	public void testSinglePkc() {
+	void testSinglePkc() {
 
 		// insert
 		SinglePkc inserted = new SinglePkc(uuid());
@@ -84,35 +84,35 @@ public class CassandraTemplateMapIdProxyDelegateIntegrationTests extends Abstrac
 	}
 
 	@Table
-	public static class SinglePkc {
+	private static class SinglePkc {
 
-		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) String key;
+		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) private String key;
 
-		@Column String value;
+		@Column private String value;
 
-		public SinglePkc(String key) {
+		private SinglePkc(String key) {
 			setKey(key);
 		}
 
-		public String getKey() {
+		private String getKey() {
 			return key;
 		}
 
-		public void setKey(String key) {
+		private void setKey(String key) {
 			this.key = key;
 		}
 
-		public String getValue() {
+		private String getValue() {
 			return value;
 		}
 
-		public void setValue(String value) {
+		private void setValue(String value) {
 			this.value = value;
 		}
 	}
 
 	@Test
-	public void testMultiPkc() {
+	void testMultiPkc() {
 
 		// insert
 		MultiPkc inserted = new MultiPkc(uuid(), uuid());
@@ -150,40 +150,40 @@ public class CassandraTemplateMapIdProxyDelegateIntegrationTests extends Abstrac
 	}
 
 	@Table
-	public static class MultiPkc {
+	private static class MultiPkc {
 
-		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) String key0;
+		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) private String key0;
 
-		@PrimaryKeyColumn(ordinal = 1) String key1;
+		@PrimaryKeyColumn(ordinal = 1) private String key1;
 
-		@Column String value;
+		@Column private String value;
 
-		public MultiPkc(String key0, String key1) {
+		private MultiPkc(String key0, String key1) {
 			setKey0(key0);
 			setKey1(key1);
 		}
 
-		public String getKey0() {
+		private String getKey0() {
 			return key0;
 		}
 
-		public void setKey0(String key0) {
+		private void setKey0(String key0) {
 			this.key0 = key0;
 		}
 
-		public String getKey1() {
+		private String getKey1() {
 			return key1;
 		}
 
-		public void setKey1(String key1) {
+		private void setKey1(String key1) {
 			this.key1 = key1;
 		}
 
-		public String getValue() {
+		private String getValue() {
 			return value;
 		}
 
-		public void setValue(String value) {
+		private void setValue(String value) {
 			this.value = value;
 		}
 	}

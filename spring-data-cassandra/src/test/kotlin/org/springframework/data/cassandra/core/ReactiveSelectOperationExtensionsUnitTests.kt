@@ -22,7 +22,7 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatExceptionOfType
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import org.springframework.data.cassandra.domain.Person
 import org.springframework.data.cassandra.domain.User
 import reactor.core.publisher.Flux

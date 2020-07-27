@@ -47,7 +47,7 @@ import com.datastax.oss.driver.api.core.CqlSession;
  */
 class CassandraOperationsProducer {
 
-	public static final String KEYSPACE_NAME = RandomKeyspaceName.create();
+	private static final String KEYSPACE_NAME = RandomKeyspaceName.create();
 
 	@Produces
 	@Singleton

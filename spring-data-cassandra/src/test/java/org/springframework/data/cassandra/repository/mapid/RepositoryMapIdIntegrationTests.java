@@ -21,9 +21,8 @@ import static org.springframework.data.cassandra.core.mapping.BasicMapId.*;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -34,8 +33,7 @@ import org.springframework.data.cassandra.core.mapping.MapId;
 import org.springframework.data.cassandra.repository.config.EnableCassandraRepositories;
 import org.springframework.data.cassandra.repository.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.data.cassandra.repository.support.IntegrationTestConfig;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 /**
  * Integration tests for repositories using {@link MapId}.
@@ -43,9 +41,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @author Matthew T. Adams
  * @author Mark Paluch
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
-public class RepositoryMapIdIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
+@SpringJUnitConfig
+class RepositoryMapIdIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
 
 	@Configuration
 	@EnableCassandraRepositories(basePackageClasses = RepositoryMapIdIntegrationTests.class)
@@ -61,15 +58,15 @@ public class RepositoryMapIdIntegrationTests extends AbstractSpringDataEmbeddedC
 	@Autowired SinglePrimaryKecColumnRepository singlePrimaryKeyColumnRepository;
 	@Autowired MultiPrimaryKeyColumnsRepository multiPrimaryKeyColumnsRepository;
 
-	@Before
-	public void before() {
+	@BeforeEach
+	void before() {
 		assertThat(template).isNotNull();
 		assertThat(singlePrimaryKeyColumnRepository).isNotNull();
 		assertThat(multiPrimaryKeyColumnsRepository).isNotNull();
 	}
 
 	@Test
-	public void testSinglePkc() {
+	void testSinglePkc() {
 
 		// insert
 		SinglePrimaryKeyColumn inserted = new SinglePrimaryKeyColumn(uuid());
@@ -103,13 +100,13 @@ public class RepositoryMapIdIntegrationTests extends AbstractSpringDataEmbeddedC
 	}
 
 	@Test // DATACASS-661
-	public void findAllByIdRejectsEmptyMapId() {
+	void findAllByIdRejectsEmptyMapId() {
 		assertThatThrownBy(() -> multiPrimaryKeyColumnsRepository.findAllById(Collections.singletonList(BasicMapId.id())))
 				.isInstanceOf(InvalidDataAccessApiUsageException.class);
 	}
 
 	@Test
-	public void testMultiPkc() {
+	void testMultiPkc() {
 
 		// insert
 		MultiPrimaryKeyColumns inserted = new MultiPrimaryKeyColumns(uuid(), uuid());

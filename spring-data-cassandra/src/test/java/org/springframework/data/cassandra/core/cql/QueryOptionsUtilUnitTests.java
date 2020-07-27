@@ -20,10 +20,10 @@ import static org.mockito.Mockito.*;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
@@ -34,13 +34,13 @@ import com.datastax.oss.driver.api.core.cql.SimpleStatement;
  * @author John Blum
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner.class)
-public class QueryOptionsUtilUnitTests {
+@ExtendWith(MockitoExtension.class)
+class QueryOptionsUtilUnitTests {
 
 	@Mock SimpleStatement simpleStatement;
 
 	@Test // DATACASS-202, DATACASS-708
-	public void addPreparedStatementOptionsShouldAddDriverQueryOptions() {
+	void addPreparedStatementOptionsShouldAddDriverQueryOptions() {
 
 		when(simpleStatement.setConsistencyLevel(any())).thenReturn(simpleStatement);
 		when(simpleStatement.setSerialConsistencyLevel(any())).thenReturn(simpleStatement);
@@ -60,7 +60,7 @@ public class QueryOptionsUtilUnitTests {
 	}
 
 	@Test // DATACASS-202
-	public void addStatementQueryOptionsShouldNotAddOptions() {
+	void addStatementQueryOptionsShouldNotAddOptions() {
 
 		QueryOptions queryOptions = QueryOptions.builder().build();
 
@@ -70,7 +70,7 @@ public class QueryOptionsUtilUnitTests {
 	}
 
 	@Test // DATACASS-202
-	public void addStatementQueryOptionsShouldAddGenericQueryOptions() {
+	void addStatementQueryOptionsShouldAddGenericQueryOptions() {
 
 		when(simpleStatement.setPageSize(anyInt())).thenReturn(simpleStatement);
 		when(simpleStatement.setTimeout(any())).thenReturn(simpleStatement);

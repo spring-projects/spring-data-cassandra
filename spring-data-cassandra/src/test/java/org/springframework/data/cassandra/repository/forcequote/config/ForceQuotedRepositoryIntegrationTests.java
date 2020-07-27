@@ -15,18 +15,18 @@
  */
 package org.springframework.data.cassandra.repository.forcequote.config;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.repository.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 /**
  * @author Matthew T. Adams
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@SpringJUnitConfig
 public abstract class ForceQuotedRepositoryIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
 
 	@Autowired CassandraOperations template;
@@ -37,8 +37,8 @@ public abstract class ForceQuotedRepositoryIntegrationTests extends AbstractSpri
 
 	ForceQuotedRepositoryTests tests;
 
-	@Before
-	public void before() {
+	@BeforeEach
+	void before() {
 		tests = new ForceQuotedRepositoryTests();
 		tests.implicitRepository = implicitRepository;
 		tests.implicitPropertiesRepository = implicitPropertiesRepository;
@@ -50,19 +50,19 @@ public abstract class ForceQuotedRepositoryIntegrationTests extends AbstractSpri
 	}
 
 	@Test
-	public void testImplicit() {
+	void testImplicit() {
 		tests.testImplicit();
 	}
 
 	/**
 	 * Not a @Test -- used by subclasses!
 	 */
-	public void testExplicit(String tableName) {
+	void testExplicit(String tableName) {
 		tests.testExplicit(tableName);
 	}
 
 	@Test
-	public void testImplicitProperties() {
+	void testImplicitProperties() {
 		tests.testImplicitProperties();
 	}
 
@@ -72,7 +72,7 @@ public abstract class ForceQuotedRepositoryIntegrationTests extends AbstractSpri
 	 * @see ForceQuotedRepositoryJavaConfigIntegrationTests#testExplicitPropertiesWithJavaValues()
 	 * @see ForceQuotedRepositoryXmlConfigIntegrationTests#testExplicitPropertiesWithXmlValues()
 	 */
-	public void testExplicitProperties(String stringValueColumnName, String primaryKeyColumnName) {
+	void testExplicitProperties(String stringValueColumnName, String primaryKeyColumnName) {
 		tests.testExplicitProperties(stringValueColumnName, primaryKeyColumnName);
 	}
 }

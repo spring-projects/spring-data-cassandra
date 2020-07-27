@@ -21,17 +21,17 @@ import static org.springframework.data.cassandra.core.query.SerializationUtils.*
 import java.util.Arrays;
 import java.util.HashSet;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link Criteria}.
  *
  * @author Mark Paluch
  */
-public class CriteriaUnitTests {
+class CriteriaUnitTests {
 
 	@Test // DATACASS-343
-	public void shouldCreateIsEqualTo() {
+	void shouldCreateIsEqualTo() {
 
 		CriteriaDefinition criteria = Criteria.where("foo").is("bar");
 
@@ -39,7 +39,7 @@ public class CriteriaUnitTests {
 	}
 
 	@Test // DATACASS-549
-	public void shouldCreateIsNotEqualTo() {
+	void shouldCreateIsNotEqualTo() {
 
 		CriteriaDefinition criteria = Criteria.where("foo").ne("bar");
 
@@ -47,7 +47,7 @@ public class CriteriaUnitTests {
 	}
 
 	@Test // DATACASS-549
-	public void shouldCreateIsNotNull() {
+	void shouldCreateIsNotNull() {
 
 		CriteriaDefinition criteria = Criteria.where("foo").isNotNull();
 
@@ -55,7 +55,7 @@ public class CriteriaUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldCreateIsGreater() {
+	void shouldCreateIsGreater() {
 
 		CriteriaDefinition criteria = Criteria.where("foo").gt(17);
 
@@ -63,7 +63,7 @@ public class CriteriaUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldCreateIsGreaterOrEquals() {
+	void shouldCreateIsGreaterOrEquals() {
 
 		CriteriaDefinition criteria = Criteria.where("foo").gte(17);
 
@@ -71,7 +71,7 @@ public class CriteriaUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldCreateIsLess() {
+	void shouldCreateIsLess() {
 
 		CriteriaDefinition criteria = Criteria.where("foo").lt(17);
 
@@ -79,7 +79,7 @@ public class CriteriaUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldCreateIsLessOrEquals() {
+	void shouldCreateIsLessOrEquals() {
 
 		CriteriaDefinition criteria = Criteria.where("foo").lte(17);
 
@@ -87,7 +87,7 @@ public class CriteriaUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldCreateIsInArray() {
+	void shouldCreateIsInArray() {
 
 		CriteriaDefinition criteria = Criteria.where("foo").in("a", "b", "c");
 
@@ -95,7 +95,7 @@ public class CriteriaUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldCreateIsInCollection() {
+	void shouldCreateIsInCollection() {
 
 		CriteriaDefinition criteria = Criteria.where("foo").in(Arrays.asList("a", "b", "c"));
 
@@ -103,7 +103,7 @@ public class CriteriaUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldCreateIsInListOfObject() {
+	void shouldCreateIsInListOfObject() {
 
 		CriteriaDefinition criteria = Criteria.where("foo").in(Arrays.asList("a", "b", new Object()));
 
@@ -111,7 +111,7 @@ public class CriteriaUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldCreateIsInSet() {
+	void shouldCreateIsInSet() {
 
 		CriteriaDefinition criteria = Criteria.where("foo").in(new HashSet<>(Arrays.asList("a", "b", "c")));
 
@@ -119,7 +119,7 @@ public class CriteriaUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldCreateLike() {
+	void shouldCreateLike() {
 
 		CriteriaDefinition criteria = Criteria.where("foo").like("a%");
 
@@ -127,7 +127,7 @@ public class CriteriaUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldCreateContains() {
+	void shouldCreateContains() {
 
 		CriteriaDefinition criteria = Criteria.where("foo").contains("a");
 
@@ -135,7 +135,7 @@ public class CriteriaUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldCreateContainsKey() {
+	void shouldCreateContainsKey() {
 
 		CriteriaDefinition criteria = Criteria.where("foo").containsKey("a");
 

@@ -48,7 +48,7 @@ public class UserDefinedTypeBuilder {
 		return forName(CqlIdentifier.fromCql(typeName));
 	}
 
-	public static UserDefinedTypeBuilder forName(CqlIdentifier typeName) {
+	private static UserDefinedTypeBuilder forName(CqlIdentifier typeName) {
 		return new UserDefinedTypeBuilder(typeName);
 	}
 
@@ -64,10 +64,10 @@ public class UserDefinedTypeBuilder {
 		return new UserDefinedTypeWrapper(type);
 	}
 
-	static class UserDefinedTypeWrapper implements UserDefinedType {
+	private static class UserDefinedTypeWrapper implements UserDefinedType {
 		private final UserDefinedType delegate;
 
-		UserDefinedTypeWrapper(UserDefinedType delegate) {
+		private UserDefinedTypeWrapper(UserDefinedType delegate) {
 			this.delegate = delegate;
 		}
 

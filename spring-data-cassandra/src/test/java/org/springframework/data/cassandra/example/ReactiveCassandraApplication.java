@@ -35,7 +35,7 @@ public class ReactiveCassandraApplication {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ReactiveCassandraApplication.class);
 
-	protected static Person newPerson(String name, int age) {
+	private static Person newPerson(String name, int age) {
 		return new Person(UUID.randomUUID().toString(), name, age);
 	}
 

@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.repository.support;
 
 import org.springframework.data.cassandra.config.CqlSessionFactoryBean;
+import org.springframework.data.cassandra.test.util.CassandraExtension;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.CqlSessionBuilder;
@@ -27,13 +28,12 @@ class SharedCqlSessionFactoryBean extends CqlSessionFactoryBean {
 
 	@Override
 	protected CqlSession buildSystemSession(CqlSessionBuilder sessionBuilder) {
-
-		return AbstractSpringDataEmbeddedCassandraIntegrationTest.cassandraEnvironment.getSystemSession();
+		return CassandraExtension.currentSystemSession();
 	}
 
 	@Override
 	protected CqlSession buildSession(CqlSessionBuilder sessionBuilder) {
-		CqlSession session = AbstractSpringDataEmbeddedCassandraIntegrationTest.cassandraEnvironment.getSession();
+		CqlSession session = CassandraExtension.currentCqlSession();
 
 		session.execute("USE " + getKeyspaceName());
 		return session;

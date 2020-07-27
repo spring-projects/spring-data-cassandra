@@ -22,8 +22,8 @@ import static org.springframework.data.cassandra.core.query.Query.*;
 import java.util.List;
 import java.util.concurrent.Future;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.data.cassandra.core.AsyncCassandraTemplate;
 import org.springframework.data.cassandra.core.query.Query;
@@ -37,12 +37,12 @@ import com.datastax.oss.driver.api.core.cql.SimpleStatement;
  *
  * @author Mark Paluch
  */
-public class AsyncCassandraTemplateEventIntegrationTests extends EventListenerIntegrationTestSupport {
+class AsyncCassandraTemplateEventIntegrationTests extends EventListenerIntegrationTestSupport {
 
-	AsyncCassandraTemplate template;
+	private AsyncCassandraTemplate template;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		template = new AsyncCassandraTemplate(session);
 		template.setApplicationEventPublisher(getApplicationEventPublisher());
@@ -51,7 +51,7 @@ public class AsyncCassandraTemplateEventIntegrationTests extends EventListenerIn
 	}
 
 	@Test // DATACASS-106
-	public void selectWithCallbackShouldEmitEvents() {
+	void selectWithCallbackShouldEmitEvents() {
 
 		getUninterruptibly(template.select("SELECT * FROM users;", it -> {}, User.class));
 
@@ -61,7 +61,7 @@ public class AsyncCassandraTemplateEventIntegrationTests extends EventListenerIn
 	}
 
 	@Test // DATACASS-106
-	public void selectByQueryWithCallbackShouldEmitEvents() {
+	void selectByQueryWithCallbackShouldEmitEvents() {
 
 		getUninterruptibly(template.select(query(where("id").is(firstUser.getId())), it -> {}, User.class));
 
@@ -71,7 +71,7 @@ public class AsyncCassandraTemplateEventIntegrationTests extends EventListenerIn
 	}
 
 	@Test // DATACASS-106
-	public void sliceShouldEmitEvents() {
+	void sliceShouldEmitEvents() {
 
 		getUninterruptibly(template.slice(Query.empty(), User.class));
 

@@ -24,10 +24,10 @@ import rx.Single;
 
 import java.lang.reflect.Method;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
@@ -48,19 +48,16 @@ import com.datastax.oss.driver.api.core.type.DataTypes;
  * @author Mark Paluch
  * @soundtrack Ace Of Base - Cruel Summer (Album Edit)
  */
-@RunWith(MockitoJUnitRunner.class)
-public class ReactiveCassandraParameterAccessorUnitTests {
-
-	private ReactiveCassandraParameterAccessor accessor;
-	private GenericConversionService conversionService = new GenericConversionService();
+@ExtendWith(MockitoExtension.class)
+class ReactiveCassandraParameterAccessorUnitTests {
 
 	@Mock ProjectionFactory projectionFactory;
 
-	RepositoryMetadata metadata = new DefaultRepositoryMetadata(PossibleRepository.class);
-	CassandraMappingContext context = new CassandraMappingContext();
+	private RepositoryMetadata metadata = new DefaultRepositoryMetadata(PossibleRepository.class);
+	private CassandraMappingContext context = new CassandraMappingContext();
 
 	@Test // DATACASS-335
-	public void returnsCassandraSimpleType() throws Exception {
+	void returnsCassandraSimpleType() throws Exception {
 
 		Method method = PossibleRepository.class.getMethod("findByFirstname", Flux.class);
 		ReactiveCassandraParameterAccessor accessor = new ReactiveCassandraParameterAccessor(
@@ -70,7 +67,7 @@ public class ReactiveCassandraParameterAccessorUnitTests {
 	}
 
 	@Test // DATACASS-335
-	public void shouldReturnNoTypeForComplexTypes() throws Exception {
+	void shouldReturnNoTypeForComplexTypes() throws Exception {
 
 		Method method = PossibleRepository.class.getMethod("findByLocalDateTime", Mono.class);
 		ReactiveCassandraParameterAccessor accessor = new ReactiveCassandraParameterAccessor(
@@ -81,7 +78,7 @@ public class ReactiveCassandraParameterAccessorUnitTests {
 	}
 
 	@Test // DATACASS-335
-	public void returnTypeForAnnotatedParameter() throws Exception {
+	void returnTypeForAnnotatedParameter() throws Exception {
 
 		Method method = PossibleRepository.class.getMethod("findByAnnotatedByLocalDateTime", Single.class);
 		ReactiveCassandraParameterAccessor accessor = new ReactiveCassandraParameterAccessor(
@@ -91,7 +88,7 @@ public class ReactiveCassandraParameterAccessorUnitTests {
 	}
 
 	@Test // DATACASS-335
-	public void returnTypeForAnnotatedParameterWhenUsingStringValue() throws Exception {
+	void returnTypeForAnnotatedParameterWhenUsingStringValue() throws Exception {
 
 		Method method = PossibleRepository.class.getMethod("findByAnnotatedObject", Mono.class);
 		ReactiveCassandraParameterAccessor accessor = new ReactiveCassandraParameterAccessor(
@@ -101,7 +98,7 @@ public class ReactiveCassandraParameterAccessorUnitTests {
 	}
 
 	@Test // DATACASS-335
-	public void returnTypeForAnnotatedParameterWhenUsingNullValue() throws Exception {
+	void returnTypeForAnnotatedParameterWhenUsingNullValue() throws Exception {
 
 		Method method = PossibleRepository.class.getMethod("findByAnnotatedObject", Mono.class);
 		ReactiveCassandraParameterAccessor accessor = new ReactiveCassandraParameterAccessor(

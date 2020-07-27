@@ -23,8 +23,9 @@ import rx.Single;
 
 import java.lang.reflect.Method;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.projection.ProjectionFactory;
@@ -37,17 +38,17 @@ import org.springframework.data.repository.core.support.DefaultRepositoryMetadat
  *
  * @author Mark Paluch
  */
-public class ReactiveCassandraQueryMethodUnitTests {
+class ReactiveCassandraQueryMethodUnitTests {
 
-	CassandraMappingContext context;
+	private CassandraMappingContext context;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 		context = new CassandraMappingContext();
 	}
 
 	@Test // DATACASS-335
-	public void considersMethodAsStreamQuery() throws Exception {
+	void considersMethodAsStreamQuery() throws Exception {
 
 		ReactiveCassandraQueryMethod queryMethod = queryMethod(SampleRepository.class, "method");
 
@@ -55,7 +56,7 @@ public class ReactiveCassandraQueryMethodUnitTests {
 	}
 
 	@Test // DATACASS-335
-	public void considersMethodAsCollectionQuery() throws Exception {
+	void considersMethodAsCollectionQuery() throws Exception {
 
 		ReactiveCassandraQueryMethod queryMethod = queryMethod(SampleRepository.class, "method");
 
@@ -63,7 +64,7 @@ public class ReactiveCassandraQueryMethodUnitTests {
 	}
 
 	@Test // DATACASS-335
-	public void considersMonoMethodAsEntityQuery() throws Exception {
+	void considersMonoMethodAsEntityQuery() throws Exception {
 
 		ReactiveCassandraQueryMethod queryMethod = queryMethod(SampleRepository.class, "mono");
 
@@ -72,7 +73,7 @@ public class ReactiveCassandraQueryMethodUnitTests {
 	}
 
 	@Test // DATACASS-335
-	public void considersSingleMethodAsEntityQuery() throws Exception {
+	void considersSingleMethodAsEntityQuery() throws Exception {
 
 		ReactiveCassandraQueryMethod queryMethod = queryMethod(SampleRepository.class, "single");
 

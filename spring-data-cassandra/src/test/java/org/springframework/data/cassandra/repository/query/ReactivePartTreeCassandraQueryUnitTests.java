@@ -25,11 +25,11 @@ import rx.Single;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
@@ -53,16 +53,16 @@ import com.datastax.oss.driver.api.core.cql.SimpleStatement;
  *
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner.class)
-public class ReactivePartTreeCassandraQueryUnitTests {
+@ExtendWith(MockitoExtension.class)
+class ReactivePartTreeCassandraQueryUnitTests {
 
 	@Mock ReactiveCassandraOperations mockCassandraOperations;
 	@Mock UserTypeResolver userTypeResolver;
 
 	private CassandraMappingContext mappingContext;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		mappingContext = new CassandraMappingContext();
 		mappingContext.setUserTypeResolver(userTypeResolver);
@@ -71,7 +71,7 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 	}
 
 	@Test // DATACASS-335
-	public void shouldDeriveSimpleQuery() {
+	void shouldDeriveSimpleQuery() {
 
 		String query = deriveQueryFromMethod("findByLastname", "foo");
 
@@ -79,7 +79,7 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 	}
 
 	@Test // DATACASS-335
-	public void shouldDeriveSimpleQueryWithoutNames() {
+	void shouldDeriveSimpleQueryWithoutNames() {
 
 		String query = deriveQueryFromMethod("findPersonBy");
 
@@ -87,7 +87,7 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 	}
 
 	@Test // DATACASS-335
-	public void shouldDeriveAndQuery() {
+	void shouldDeriveAndQuery() {
 
 		String query = deriveQueryFromMethod("findByFirstnameAndLastname", "foo", "bar");
 
@@ -95,7 +95,7 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 	}
 
 	@Test // DATACASS-376
-	public void shouldAllowFiltering() {
+	void shouldAllowFiltering() {
 
 		String query = deriveQueryFromMethod("findPersonByFirstname", "foo");
 
@@ -103,7 +103,7 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 	}
 
 	@Test // DATACASS-335, DATACASS-313
-	public void usesDynamicProjection() {
+	void usesDynamicProjection() {
 
 		String query = deriveQueryFromMethod("findDynamicallyProjectedBy", PersonProjection.class);
 
@@ -111,7 +111,7 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 	}
 
 	@Test // DATACASS-146
-	public void shouldApplyQueryOptions() {
+	void shouldApplyQueryOptions() {
 
 		QueryOptions queryOptions = QueryOptions.builder().pageSize(777).build();
 		SimpleStatement statement = deriveQueryFromMethod(Repo.class, "findByFirstname",
@@ -122,7 +122,7 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 	}
 
 	@Test // DATACASS-146
-	public void shouldApplyConsistencyLevel() {
+	void shouldApplyConsistencyLevel() {
 
 		SimpleStatement statement = deriveQueryFromMethod(Repo.class, "findPersonBy", new Class[0]);
 
@@ -131,7 +131,7 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 	}
 
 	@Test // DATACASS-512
-	public void shouldCreateCountQuery() {
+	void shouldCreateCountQuery() {
 
 		SimpleStatement statement = deriveQueryFromMethod(PartTreeCassandraQueryUnitTests.Repo.class, "countBy",
 				new Class[0]);
@@ -140,7 +140,7 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 	}
 
 	@Test // DATACASS-611
-	public void shouldCreateDeleteQuery() {
+	void shouldCreateDeleteQuery() {
 
 		SimpleStatement statement = deriveQueryFromMethod(PartTreeCassandraQueryUnitTests.Repo.class, "deleteAllByLastname",
 				new Class[] { String.class }, "Walter");
@@ -149,7 +149,7 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 	}
 
 	@Test // DATACASS-512
-	public void shouldCreateExistsQuery() {
+	void shouldCreateExistsQuery() {
 
 		SimpleStatement statement = deriveQueryFromMethod(PartTreeCassandraQueryUnitTests.Repo.class, "existsBy",
 				new Class[0]);
@@ -226,7 +226,7 @@ public class ReactivePartTreeCassandraQueryUnitTests {
 		<T> Single<T> findDynamicallyProjectedBy(Class<T> type);
 	}
 
-	interface PersonProjection {
+	private interface PersonProjection {
 
 		String getFirstname();
 

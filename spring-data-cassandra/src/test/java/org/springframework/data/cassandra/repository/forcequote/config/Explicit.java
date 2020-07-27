@@ -28,15 +28,15 @@ public class Explicit {
 
 	public static final String TABLE_NAME = "Xx";
 
-	@PrimaryKey String primaryKey;
+	@PrimaryKey private String primaryKey;
 
-	String stringValue = UUID.randomUUID().toString();
+	private String stringValue = UUID.randomUUID().toString();
 
 	public Explicit() {
 		this(UUID.randomUUID().toString());
 	}
 
-	public Explicit(String primaryKey) {
+	private Explicit(String primaryKey) {
 		setPrimaryKey(primaryKey);
 	}
 
@@ -44,7 +44,7 @@ public class Explicit {
 		return primaryKey;
 	}
 
-	public void setPrimaryKey(String primaryKey) {
+	private void setPrimaryKey(String primaryKey) {
 		this.primaryKey = primaryKey;
 	}
 

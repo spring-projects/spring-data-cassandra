@@ -19,10 +19,10 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
 
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
@@ -33,12 +33,12 @@ import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
  *
  * @author Mark Paluch
  */
-public class CachedPreparedStatementCreatorIntegrationTest extends AbstractKeyspaceCreatingIntegrationTest {
+class CachedPreparedStatementCreatorIntegrationTest extends AbstractKeyspaceCreatingIntegrationTests {
 
 	private static final AtomicBoolean initialized = new AtomicBoolean();
 
-	@Before
-	public void before() throws Exception {
+	@BeforeEach
+	void before() throws Exception {
 
 		if (initialized.compareAndSet(false, true)) {
 			getSession().execute("CREATE TABLE IF NOT EXISTS user (id text PRIMARY KEY, username text);");
@@ -48,7 +48,7 @@ public class CachedPreparedStatementCreatorIntegrationTest extends AbstractKeysp
 	}
 
 	@Test // DATACASS-403
-	public void shouldRetainIdempotencyFlag() {
+	void shouldRetainIdempotencyFlag() {
 
 		SimpleStatement insert = QueryBuilder.insertInto("user").value("id", QueryBuilder.bindMarker())
 				.value("username", QueryBuilder.bindMarker()).build();

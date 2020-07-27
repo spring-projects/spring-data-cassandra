@@ -21,7 +21,7 @@ import org.springframework.data.cassandra.core.mapping.Tuple;
 
 // tag::class[]
 @Tuple
-public class Coordinates {
+class Coordinates {
 
   @Element(0)
   @CassandraType(type = CassandraType.Name.VARCHAR)

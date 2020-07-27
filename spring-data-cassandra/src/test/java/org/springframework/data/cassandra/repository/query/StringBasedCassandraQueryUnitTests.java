@@ -27,11 +27,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
@@ -68,8 +68,8 @@ import com.datastax.oss.driver.api.core.type.UserDefinedType;
  * @author Oliver Gierke
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner.class)
-public class StringBasedCassandraQueryUnitTests {
+@ExtendWith(MockitoExtension.class)
+class StringBasedCassandraQueryUnitTests {
 
 	private static final SpelExpressionParser PARSER = new SpelExpressionParser();
 
@@ -81,8 +81,8 @@ public class StringBasedCassandraQueryUnitTests {
 	private MappingCassandraConverter converter;
 	private ProjectionFactory factory;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		CassandraMappingContext mappingContext = new CassandraMappingContext();
 
@@ -98,7 +98,7 @@ public class StringBasedCassandraQueryUnitTests {
 	}
 
 	@Test // DATACASS-117
-	public void bindsIndexParameterCorrectly() {
+	void bindsIndexParameterCorrectly() {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByLastname", String.class);
 		CassandraParametersParameterAccessor accessor = new CassandraParametersParameterAccessor(
@@ -111,7 +111,7 @@ public class StringBasedCassandraQueryUnitTests {
 	}
 
 	@Test // DATACASS-259
-	public void bindsIndexParameterForComposedQueryAnnotationCorrectly() {
+	void bindsIndexParameterForComposedQueryAnnotationCorrectly() {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByComposedQueryAnnotation", String.class);
 		CassandraParametersParameterAccessor accessor = new CassandraParametersParameterAccessor(
@@ -124,7 +124,7 @@ public class StringBasedCassandraQueryUnitTests {
 	}
 
 	@Test // DATACASS-117
-	public void bindsAndEscapesIndexParameterCorrectly() {
+	void bindsAndEscapesIndexParameterCorrectly() {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByLastname", String.class);
 		CassandraParametersParameterAccessor accessor = new CassandraParametersParameterAccessor(
@@ -137,7 +137,7 @@ public class StringBasedCassandraQueryUnitTests {
 	}
 
 	@Test // DATACASS-117, DATACASS-454
-	public void bindsAndEscapesBytesIndexParameterCorrectly() {
+	void bindsAndEscapesBytesIndexParameterCorrectly() {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByLastname", String.class);
 		CassandraParametersParameterAccessor accessor = new CassandraParametersParameterAccessor(
@@ -151,7 +151,7 @@ public class StringBasedCassandraQueryUnitTests {
 	}
 
 	@Test // DATACASS-454
-	public void shouldConsiderNonIdempotentOverride() {
+	void shouldConsiderNonIdempotentOverride() {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("nonIdempotentSelect", String.class);
 		CassandraParametersParameterAccessor accessor = new CassandraParametersParameterAccessor(
@@ -163,7 +163,7 @@ public class StringBasedCassandraQueryUnitTests {
 	}
 
 	@Test // DATACASS-454
-	public void shouldNotApplyIdempotencyToNonSelectStatement() {
+	void shouldNotApplyIdempotencyToNonSelectStatement() {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("nonIdempotentDelete");
 		CassandraParametersParameterAccessor accessor = new CassandraParametersParameterAccessor(
@@ -175,7 +175,7 @@ public class StringBasedCassandraQueryUnitTests {
 	}
 
 	@Test // DATACASS-117
-	public void bindsIndexParameterInListCorrectly() {
+	void bindsIndexParameterInListCorrectly() {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByLastNameIn", Collection.class);
 		CassandraParametersParameterAccessor accessor = new CassandraParametersParameterAccessor(
@@ -188,7 +188,7 @@ public class StringBasedCassandraQueryUnitTests {
 	}
 
 	@Test // DATACASS-117
-	public void bindsIndexParameterIsListCorrectly() {
+	void bindsIndexParameterIsListCorrectly() {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByLastNamesAndAge", Collection.class, int.class);
 		CassandraParametersParameterAccessor accessor = new CassandraParametersParameterAccessor(
@@ -201,28 +201,28 @@ public class StringBasedCassandraQueryUnitTests {
 		assertThat(actual.getPositionalValues().get(1)).isEqualTo(42);
 	}
 
-	@Test(expected = QueryCreationException.class) // DATACASS-117
-	public void referencingUnknownIndexedParameterShouldFail() {
+	@Test // DATACASS-117
+	void referencingUnknownIndexedParameterShouldFail() {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByOutOfBoundsLastNameShouldFail", String.class);
 		CassandraParametersParameterAccessor accessor = new CassandraParametersParameterAccessor(
 				cassandraQuery.getQueryMethod(), "Hello");
 
-		cassandraQuery.createQuery(accessor);
+		assertThatExceptionOfType(QueryCreationException.class).isThrownBy(() -> cassandraQuery.createQuery(accessor));
 	}
 
-	@Test(expected = QueryCreationException.class) // DATACASS-117
-	public void referencingUnknownNamedParameterShouldFail() {
+	@Test // DATACASS-117
+	void referencingUnknownNamedParameterShouldFail() {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByUnknownParameterLastNameShouldFail", String.class);
 		CassandraParametersParameterAccessor accessor = new CassandraParametersParameterAccessor(
 				cassandraQuery.getQueryMethod(), "Hello");
 
-		cassandraQuery.createQuery(accessor);
+		assertThatExceptionOfType(QueryCreationException.class).isThrownBy(() -> cassandraQuery.createQuery(accessor));
 	}
 
 	@Test // DATACASS-117
-	public void bindsIndexParameterInSetCorrectly() {
+	void bindsIndexParameterInSetCorrectly() {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByLastNameIn", Collection.class);
 		CassandraParametersParameterAccessor accessor = new CassandraParametersParameterAccessor(
@@ -235,7 +235,7 @@ public class StringBasedCassandraQueryUnitTests {
 	}
 
 	@Test // DATACASS-117
-	public void bindsNamedParameterCorrectly() {
+	void bindsNamedParameterCorrectly() {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByNamedParameter", String.class, String.class);
 		CassandraParametersParameterAccessor accessor = new CassandraParametersParameterAccessor(
@@ -248,7 +248,7 @@ public class StringBasedCassandraQueryUnitTests {
 	}
 
 	@Test // DATACASS-117
-	public void bindsIndexExpressionParameterCorrectly() {
+	void bindsIndexExpressionParameterCorrectly() {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByIndexExpressionParameter", String.class);
 		CassandraParametersParameterAccessor accessor = new CassandraParametersParameterAccessor(
@@ -261,7 +261,7 @@ public class StringBasedCassandraQueryUnitTests {
 	}
 
 	@Test // DATACASS-117
-	public void bindsExpressionParameterCorrectly() {
+	void bindsExpressionParameterCorrectly() {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByExpressionParameter", String.class);
 		CassandraParametersParameterAccessor accessor = new CassandraParametersParameterAccessor(
@@ -274,7 +274,7 @@ public class StringBasedCassandraQueryUnitTests {
 	}
 
 	@Test // DATACASS-117
-	public void bindsConditionalExpressionParameterCorrectly() {
+	void bindsConditionalExpressionParameterCorrectly() {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByConditionalExpressionParameter", String.class);
 		CassandraParametersParameterAccessor accessor = new CassandraParametersParameterAccessor(
@@ -294,7 +294,7 @@ public class StringBasedCassandraQueryUnitTests {
 	}
 
 	@Test // DATACASS-117
-	public void bindsReusedParametersCorrectly() {
+	void bindsReusedParametersCorrectly() {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByLastnameUsedTwice", String.class);
 		CassandraParametersParameterAccessor accessor = new CassandraParametersParameterAccessor(
@@ -308,7 +308,7 @@ public class StringBasedCassandraQueryUnitTests {
 	}
 
 	@Test // DATACASS-117
-	public void bindsMultipleParametersCorrectly() {
+	void bindsMultipleParametersCorrectly() {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByLastnameAndFirstname", String.class, String.class);
 		CassandraParametersParameterAccessor accessor = new CassandraParametersParameterAccessor(
@@ -322,7 +322,7 @@ public class StringBasedCassandraQueryUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void bindsConvertedParameterCorrectly() {
+	void bindsConvertedParameterCorrectly() {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByCreatedDate", LocalDate.class);
 		CassandraParameterAccessor accessor = new ConvertingParameterAccessor(converter,
@@ -336,7 +336,7 @@ public class StringBasedCassandraQueryUnitTests {
 	}
 
 	@Test // DATACASS-172
-	public void bindsMappedUdtPropertyCorrectly() throws Exception {
+	void bindsMappedUdtPropertyCorrectly() throws Exception {
 
 		UserDefinedType addressType = UserDefinedTypeBuilder.forName("address").withField("city", DataTypes.TEXT)
 				.withField("country", DataTypes.TEXT).build();
@@ -354,7 +354,7 @@ public class StringBasedCassandraQueryUnitTests {
 	}
 
 	@Test // DATACASS-172
-	public void bindsUdtValuePropertyCorrectly() throws Exception {
+	void bindsUdtValuePropertyCorrectly() throws Exception {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByMainAddress", UdtValue.class);
 
@@ -372,7 +372,7 @@ public class StringBasedCassandraQueryUnitTests {
 	}
 
 	@Test // DATACASS-146
-	public void shouldApplyQueryOptions() {
+	void shouldApplyQueryOptions() {
 
 		QueryOptions queryOptions = QueryOptions.builder().pageSize(777).build();
 
@@ -389,7 +389,7 @@ public class StringBasedCassandraQueryUnitTests {
 	}
 
 	@Test // DATACASS-146
-	public void shouldApplyConsistencyLevel() {
+	void shouldApplyConsistencyLevel() {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByLastname", String.class);
 
@@ -478,7 +478,7 @@ public class StringBasedCassandraQueryUnitTests {
 
 	@Retention(RetentionPolicy.RUNTIME)
 	@Query("SELECT * FROM person WHERE lastname = ?0;")
-	@interface ComposedQueryAnnotation {
+	private @interface ComposedQueryAnnotation {
 	}
 
 }

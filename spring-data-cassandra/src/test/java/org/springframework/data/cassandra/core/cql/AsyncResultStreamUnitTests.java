@@ -25,7 +25,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.util.concurrent.ListenableFuture;
 
@@ -37,15 +37,15 @@ import com.datastax.oss.driver.api.core.cql.Row;
  *
  * @author Mark Paluch
  */
-public class AsyncResultStreamUnitTests {
+class AsyncResultStreamUnitTests {
 
-	AsyncResultSet first = mock(AsyncResultSet.class);
-	AsyncResultSet last = mock(AsyncResultSet.class);
-	Row row1 = mock(Row.class);
-	Row row2 = mock(Row.class);
+	private AsyncResultSet first = mock(AsyncResultSet.class);
+	private AsyncResultSet last = mock(AsyncResultSet.class);
+	private Row row1 = mock(Row.class);
+	private Row row2 = mock(Row.class);
 
 	@Test // DATACASS-656
-	public void shouldIterateFirstPage() {
+	void shouldIterateFirstPage() {
 
 		when(first.currentPage()).thenReturn(Collections.singletonList(row1));
 
@@ -57,7 +57,7 @@ public class AsyncResultStreamUnitTests {
 	}
 
 	@Test // DATACASS-656
-	public void shouldIterateMappedFirstPage() {
+	void shouldIterateMappedFirstPage() {
 
 		when(first.currentPage()).thenReturn(Collections.singletonList(row1));
 
@@ -69,7 +69,7 @@ public class AsyncResultStreamUnitTests {
 	}
 
 	@Test // DATACASS-656
-	public void shouldIterateMappedPages() {
+	void shouldIterateMappedPages() {
 
 		when(first.currentPage()).thenReturn(Collections.singletonList(row1));
 		when(last.currentPage()).thenReturn(Collections.singletonList(row2));
@@ -84,7 +84,7 @@ public class AsyncResultStreamUnitTests {
 	}
 
 	@Test // DATACASS-656
-	public void shouldPropagateExceptionOnIterate() {
+	void shouldPropagateExceptionOnIterate() {
 
 		when(first.currentPage()).thenReturn(Collections.singletonList(row1));
 
@@ -102,7 +102,7 @@ public class AsyncResultStreamUnitTests {
 	}
 
 	@Test // DATACASS-656
-	public void shouldCollectFirstPage() throws ExecutionException, InterruptedException {
+	void shouldCollectFirstPage() throws ExecutionException, InterruptedException {
 
 		when(first.currentPage()).thenReturn(Collections.singletonList(row1));
 
@@ -112,7 +112,7 @@ public class AsyncResultStreamUnitTests {
 	}
 
 	@Test // DATACASS-656
-	public void shouldCollectMappedPages() throws ExecutionException, InterruptedException {
+	void shouldCollectMappedPages() throws ExecutionException, InterruptedException {
 
 		when(first.currentPage()).thenReturn(Collections.singletonList(row1));
 		when(last.currentPage()).thenReturn(Collections.singletonList(row2));
@@ -126,7 +126,7 @@ public class AsyncResultStreamUnitTests {
 	}
 
 	@Test // DATACASS-656
-	public void shouldPropagateExceptionOnCollect() {
+	void shouldPropagateExceptionOnCollect() {
 
 		when(first.currentPage()).thenReturn(Collections.singletonList(row1));
 

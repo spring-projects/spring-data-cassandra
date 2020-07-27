@@ -26,9 +26,9 @@ import org.springframework.data.cassandra.core.mapping.Table;
 @Table(forceQuote = true)
 public class Implicit {
 
-	@PrimaryKey ImplicitKey primaryKey;
+	@PrimaryKey private ImplicitKey primaryKey;
 
-	String stringValue = UUID.randomUUID().toString();
+	private String stringValue = UUID.randomUUID().toString();
 
 	@SuppressWarnings("unused")
 	private Implicit() {}
@@ -41,7 +41,7 @@ public class Implicit {
 		return primaryKey;
 	}
 
-	public void setPrimaryKey(ImplicitKey primaryKey) {
+	private void setPrimaryKey(ImplicitKey primaryKey) {
 		this.primaryKey = primaryKey;
 	}
 

@@ -22,9 +22,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.data.util.ClassTypeInformation;
@@ -36,11 +36,11 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  *
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner.class)
-public class CassandraUserTypePersistentEntityUnitTests {
+@ExtendWith(MockitoExtension.class)
+class CassandraUserTypePersistentEntityUnitTests {
 
 	@Test // DATACASS-172
-	public void isUserDefinedTypeShouldReportTrue() {
+	void isUserDefinedTypeShouldReportTrue() {
 
 		CassandraUserTypePersistentEntity<MappedUdt> type = getEntity(MappedUdt.class);
 
@@ -48,7 +48,7 @@ public class CassandraUserTypePersistentEntityUnitTests {
 	}
 
 	@Test // DATACASS-172
-	public void getTableNameShouldReturnDefaultName() {
+	void getTableNameShouldReturnDefaultName() {
 
 		CassandraUserTypePersistentEntity<MappedUdt> type = getEntity(MappedUdt.class);
 
@@ -56,7 +56,7 @@ public class CassandraUserTypePersistentEntityUnitTests {
 	}
 
 	@Test // DATACASS-172
-	public void getTableNameShouldReturnDefinedName() {
+	void getTableNameShouldReturnDefinedName() {
 
 		CassandraUserTypePersistentEntity<WithName> type = getEntity(WithName.class);
 
@@ -64,7 +64,7 @@ public class CassandraUserTypePersistentEntityUnitTests {
 	}
 
 	@Test // DATACASS-172
-	public void getTableNameShouldReturnDefinedNameUsingForceQuote() {
+	void getTableNameShouldReturnDefinedNameUsingForceQuote() {
 
 		CassandraUserTypePersistentEntity<WithForceQuote> type = getEntity(WithForceQuote.class);
 
@@ -72,7 +72,7 @@ public class CassandraUserTypePersistentEntityUnitTests {
 	}
 
 	@Test // DATACASS-259
-	public void shouldConsiderComposedUserDefinedTypeAnnotation() {
+	void shouldConsiderComposedUserDefinedTypeAnnotation() {
 
 		CassandraUserTypePersistentEntity<TypeWithComposedAnnotation> type = getEntity(TypeWithComposedAnnotation.class);
 
@@ -84,23 +84,23 @@ public class CassandraUserTypePersistentEntityUnitTests {
 	}
 
 	@UserDefinedType
-	static class MappedUdt {}
+	private static class MappedUdt {}
 
 	@UserDefinedType("withname")
-	static class WithName {}
+	private static class WithName {}
 
 	@UserDefinedType(value = "UpperCase", forceQuote = true)
-	static class WithForceQuote {}
+	private static class WithForceQuote {}
 
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target({ ElementType.TYPE })
 	@UserDefinedType(forceQuote = true)
-	@interface ComposedUserDefinedTypeAnnotation {
+	private @interface ComposedUserDefinedTypeAnnotation {
 
 		@AliasFor(annotation = UserDefinedType.class)
 		String value() default "mytype";
 	}
 
 	@ComposedUserDefinedTypeAnnotation()
-	static class TypeWithComposedAnnotation {}
+	private static class TypeWithComposedAnnotation {}
 }

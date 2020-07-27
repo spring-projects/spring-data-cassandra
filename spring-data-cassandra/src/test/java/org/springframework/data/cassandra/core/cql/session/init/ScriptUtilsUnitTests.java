@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.support.EncodedResource;
@@ -31,10 +31,10 @@ import org.springframework.core.io.support.EncodedResource;
  *
  * @author Mark Paluch
  */
-public class ScriptUtilsUnitTests {
+class ScriptUtilsUnitTests {
 
 	@Test // DATACASS-704
-	public void splitCqlScriptDelimitedWithSemicolon() {
+	void splitCqlScriptDelimitedWithSemicolon() {
 
 		String rawStatement1 = "insert into customer (id, name)\nvalues (1, 'Walter ; White'), (2, 'Hank \n Schrader')";
 		String cleanedStatement1 = "insert into customer (id, name) values (1, 'Walter ; White'), (2, 'Hank \n Schrader')";
@@ -53,7 +53,7 @@ public class ScriptUtilsUnitTests {
 	}
 
 	@Test // DATACASS-704
-	public void splitCqlScriptDelimitedWithNewLine() {
+	void splitCqlScriptDelimitedWithNewLine() {
 
 		String statement1 = "insert into customer (id, name) values (1, 'Walter ; White'), (2, 'Hank \n Schrader')";
 		String statement2 = "insert into orders(id, order_date, customer_id) values (1, '2008-01-02', 2)";
@@ -69,7 +69,7 @@ public class ScriptUtilsUnitTests {
 	}
 
 	@Test // DATACASS-704
-	public void splitCqlScriptDelimitedWithNewLineButDefaultDelimiterSpecified() {
+	void splitCqlScriptDelimitedWithNewLineButDefaultDelimiterSpecified() {
 
 		String statement1 = "do something";
 		String statement2 = "do something else";
@@ -84,7 +84,7 @@ public class ScriptUtilsUnitTests {
 	}
 
 	@Test // DATACASS-704
-	public void splitScriptWithSingleQuotesNestedInsideDoubleQuotes() {
+	void splitScriptWithSingleQuotesNestedInsideDoubleQuotes() {
 
 		String statement1 = "select '1' as \"Hank's owner's\" from dual";
 		String statement2 = "select '2' as \"Hank's\" from dual";
@@ -98,7 +98,7 @@ public class ScriptUtilsUnitTests {
 	}
 
 	@Test // DATACASS-704
-	public void readAndSplitScriptWithMultipleNewlinesAsSeparator() throws IOException {
+	void readAndSplitScriptWithMultipleNewlinesAsSeparator() throws IOException {
 
 		String script = readScript("db-test-data-multi-newline.cql");
 		List<String> statements = new ArrayList<>();
@@ -112,7 +112,7 @@ public class ScriptUtilsUnitTests {
 	}
 
 	@Test // DATACASS-704
-	public void readAndSplitScriptContainingComments() throws Exception {
+	void readAndSplitScriptContainingComments() throws Exception {
 
 		String script = readScript("test-data-with-comments.cql");
 
@@ -120,13 +120,13 @@ public class ScriptUtilsUnitTests {
 	}
 
 	@Test // DATACASS-704
-	public void readAndSplitScriptContainingCommentsWithWindowsLineEnding() throws Exception {
+	void readAndSplitScriptContainingCommentsWithWindowsLineEnding() throws Exception {
 		String script = readScript("test-data-with-comments.cql").replaceAll("\n", "\r\n");
 		splitScriptContainingComments(script, ScriptUtils.DEFAULT_COMMENT_PREFIXES);
 	}
 
 	@Test // DATACASS-704
-	public void readAndSplitScriptContainingCommentsWithMultiplePrefixes() throws Exception {
+	void readAndSplitScriptContainingCommentsWithMultiplePrefixes() throws Exception {
 		String script = readScript("test-data-with-multi-prefix-comments.cql");
 		splitScriptContainingComments(script, "--", "#", "^");
 	}
@@ -148,7 +148,7 @@ public class ScriptUtilsUnitTests {
 	}
 
 	@Test // DATACASS-704
-	public void readAndSplitScriptContainingCommentsWithLeadingTabs() throws Exception {
+	void readAndSplitScriptContainingCommentsWithLeadingTabs() throws Exception {
 
 		String script = readScript("test-data-with-comments-and-leading-tabs.cql");
 		List<String> statements = new ArrayList<>();
@@ -163,7 +163,7 @@ public class ScriptUtilsUnitTests {
 	}
 
 	@Test // DATACASS-704
-	public void readAndSplitScriptContainingMultiLineComments() throws Exception {
+	void readAndSplitScriptContainingMultiLineComments() throws Exception {
 
 		String script = readScript("test-data-with-multi-line-comments.cql");
 		List<String> statements = new ArrayList<>();
@@ -177,7 +177,7 @@ public class ScriptUtilsUnitTests {
 	}
 
 	@Test // DATACASS-704
-	public void readAndSplitScriptContainingMultiLineNestedComments() throws Exception {
+	void readAndSplitScriptContainingMultiLineNestedComments() throws Exception {
 
 		String script = readScript("test-data-with-multi-line-nested-comments.cql");
 		List<String> statements = new ArrayList<>();
@@ -191,7 +191,7 @@ public class ScriptUtilsUnitTests {
 	}
 
 	@Test // DATACASS-704
-	public void containsDelimiters() {
+	void containsDelimiters() {
 
 		assertThat(ScriptUtils.containsCqlScriptDelimiters("select 1\n select ';'", ";")).isFalse();
 		assertThat(ScriptUtils.containsCqlScriptDelimiters("select 1; select 2", ";")).isTrue();

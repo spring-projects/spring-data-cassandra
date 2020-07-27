@@ -22,8 +22,7 @@ import reactor.test.StepVerifier;
 
 import java.time.LocalDateTime;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -41,7 +40,6 @@ import org.springframework.data.cassandra.core.mapping.event.ReactiveBeforeConve
 import org.springframework.data.domain.ReactiveAuditorAware;
 import org.springframework.data.mapping.callback.ReactiveEntityCallbacks;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 
@@ -50,9 +48,8 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  *
  * @author Mark Paluch
  */
-@RunWith(SpringRunner.class)
 @ContextConfiguration
-public class ReactiveAuditingTests {
+class ReactiveAuditingTests {
 
 	@Autowired ApplicationContext context;
 
@@ -77,7 +74,7 @@ public class ReactiveAuditingTests {
 	}
 
 	@Test // DATACASS-784
-	public void enablesAuditingAndSetsPropertiesAccordingly() {
+	void enablesAuditingAndSetsPropertiesAccordingly() {
 
 		CassandraMappingContext mappingContext = context.getBean(CassandraMappingContext.class);
 		mappingContext.getPersistentEntity(Entity.class);
@@ -94,12 +91,13 @@ public class ReactiveAuditingTests {
 	}
 
 	@Table
+	private
 	class Entity {
 
 		@Id Long id;
-		@CreatedDate LocalDateTime created;
-		@CreatedBy String createdBy;
-		LocalDateTime modified;
+		@CreatedDate private LocalDateTime created;
+		@CreatedBy private String createdBy;
+		private LocalDateTime modified;
 
 		@LastModifiedDate
 		public LocalDateTime getModified() {

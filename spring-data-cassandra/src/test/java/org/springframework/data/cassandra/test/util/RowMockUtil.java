@@ -159,7 +159,7 @@ public class RowMockUtil {
 		private final Object value;
 		private final DataType type;
 
-		Column(String name, Object value, DataType type) {
+		private Column(String name, Object value, DataType type) {
 			this.name = name;
 			this.value = value;
 			this.type = type;

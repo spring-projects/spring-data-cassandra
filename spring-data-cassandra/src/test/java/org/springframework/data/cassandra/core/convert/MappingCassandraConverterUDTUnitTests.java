@@ -29,11 +29,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
@@ -54,29 +57,31 @@ import com.datastax.oss.driver.api.core.type.DataTypes;
  * @author Mark Paluch
  * @author Christoph Strobl
  */
-@RunWith(MockitoJUnitRunner.Silent.class) // there are some unused stubbings in RowMockUtil but they're used in other
-public class MappingCassandraConverterUDTUnitTests {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class MappingCassandraConverterUDTUnitTests {
 
 	@Mock UserTypeResolver userTypeResolver;
 
-	com.datastax.oss.driver.api.core.type.UserDefinedType manufacturer = UserDefinedTypeBuilder.forName("manufacturer")
+	private com.datastax.oss.driver.api.core.type.UserDefinedType manufacturer = UserDefinedTypeBuilder
+			.forName("manufacturer")
 			.withField("name", DataTypes.TEXT).withField("displayname", DataTypes.TEXT).build();
-	com.datastax.oss.driver.api.core.type.UserDefinedType currency = UserDefinedTypeBuilder.forName("mycurrency")
+	private com.datastax.oss.driver.api.core.type.UserDefinedType currency = UserDefinedTypeBuilder.forName("mycurrency")
 			.withField("currency", DataTypes.TEXT).build();
-	com.datastax.oss.driver.api.core.type.UserDefinedType withnullableembeddedtype = UserDefinedTypeBuilder
+	private com.datastax.oss.driver.api.core.type.UserDefinedType withnullableembeddedtype = UserDefinedTypeBuilder
 			.forName("withnullableembeddedtype").withField("value", DataTypes.TEXT).withField("firstname", DataTypes.TEXT)
 			.withField("age", DataTypes.INT).build();
-	com.datastax.oss.driver.api.core.type.UserDefinedType withprefixednullableembeddedtype = UserDefinedTypeBuilder
+	private com.datastax.oss.driver.api.core.type.UserDefinedType withprefixednullableembeddedtype = UserDefinedTypeBuilder
 			.forName("withnullableembeddedtype").withField("value", DataTypes.TEXT)
 			.withField("prefixfirstname", DataTypes.TEXT).withField("prefixage", DataTypes.INT).build();
 
-	Row rowMock;
+	private Row rowMock;
 
-	CassandraMappingContext mappingContext;
-	MappingCassandraConverter mappingCassandraConverter;
+	private CassandraMappingContext mappingContext;
+	private MappingCassandraConverter mappingCassandraConverter;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		mappingContext = new CassandraMappingContext();
 		mappingContext.setUserTypeResolver(userTypeResolver);
@@ -93,7 +98,7 @@ public class MappingCassandraConverterUDTUnitTests {
 	}
 
 	@Test // DATACASS-487, DATACASS-623
-	public void shouldReadMappedUdtInMap() {
+	void shouldReadMappedUdtInMap() {
 
 		UdtValue key = manufacturer.newValue().setString("name", "a good one").setString("displayname", "my displayName");
 		UdtValue value1 = currency.newValue().setString("currency", "EUR");
@@ -116,7 +121,7 @@ public class MappingCassandraConverterUDTUnitTests {
 	}
 
 	@Test // DATACASS-487, DATACASS-623
-	public void shouldWriteMappedUdtInMap() {
+	void shouldWriteMappedUdtInMap() {
 
 		Map<Manufacturer, List<Currency>> currencies = Collections.singletonMap(new Manufacturer("a good one", "foo"),
 				Arrays.asList(new Currency("EUR"), new Currency("USD")));
@@ -140,7 +145,7 @@ public class MappingCassandraConverterUDTUnitTests {
 	}
 
 	@Test // DATACASS-167
-	public void writeFlattensEmbeddedType() {
+	void writeFlattensEmbeddedType() {
 
 		OuterWithNullableEmbeddedType entity = new OuterWithNullableEmbeddedType();
 		entity.id = "id-1";
@@ -160,7 +165,7 @@ public class MappingCassandraConverterUDTUnitTests {
 	}
 
 	@Test // DATACASS-167
-	public void writeNullEmbeddedType() {
+	void writeNullEmbeddedType() {
 
 		OuterWithNullableEmbeddedType entity = new OuterWithNullableEmbeddedType();
 		entity.id = "id-1";
@@ -178,7 +183,7 @@ public class MappingCassandraConverterUDTUnitTests {
 	}
 
 	@Test // DATACASS-167
-	public void writePrefixesEmbeddedType() {
+	void writePrefixesEmbeddedType() {
 
 		OuterWithPrefixedNullableEmbeddedType entity = new OuterWithPrefixedNullableEmbeddedType();
 		entity.id = "id-1";
@@ -198,7 +203,7 @@ public class MappingCassandraConverterUDTUnitTests {
 	}
 
 	@Test // DATACASS-167
-	public void readEmbeddedType() {
+	void readEmbeddedType() {
 
 		UdtValue udtValue = withnullableembeddedtype.newValue().setString("value", "value-string")
 				.setString("firstname", "fn").setInt("age", 30);
@@ -215,7 +220,7 @@ public class MappingCassandraConverterUDTUnitTests {
 	}
 
 	@Test // DATACASS-167
-	public void readPrefixedEmbeddedType() {
+	void readPrefixedEmbeddedType() {
 
 		UdtValue udtValue = withprefixednullableembeddedtype.newValue().setString("value", "value-string")
 				.setString("prefixfirstname", "fn").setInt("prefixage", 30);

@@ -21,8 +21,9 @@ import static org.springframework.data.cassandra.core.mapping.CassandraPrimaryKe
 import java.sql.Timestamp;
 import java.util.UUID;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
 import org.springframework.data.cassandra.core.cql.Ordering;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 
@@ -33,16 +34,16 @@ import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
  * @author John Blum
  * @author Mark Paluch
  */
-public class CassandraPrimaryKeyColumnAnnotationComparatorUnitTests {
+class CassandraPrimaryKeyColumnAnnotationComparatorUnitTests {
 
-	static PrimaryKeyColumn entityOne;
-	static PrimaryKeyColumn entityTwo;
-	static PrimaryKeyColumn entityThree;
-	static PrimaryKeyColumn entityFour;
-	static PrimaryKeyColumn entityFive;
+	private static PrimaryKeyColumn entityOne;
+	private static PrimaryKeyColumn entityTwo;
+	private static PrimaryKeyColumn entityThree;
+	private static PrimaryKeyColumn entityFour;
+	private static PrimaryKeyColumn entityFive;
 
-	@BeforeClass
-	public static void setup() throws Exception {
+	@BeforeAll
+	static void setup() throws Exception {
 
 		entityOne = EntityOne.class.getDeclaredField("id").getAnnotation(PrimaryKeyColumn.class);
 		entityTwo = EntityTwo.class.getDeclaredField("id").getAnnotation(PrimaryKeyColumn.class);
@@ -52,7 +53,7 @@ public class CassandraPrimaryKeyColumnAnnotationComparatorUnitTests {
 	}
 
 	@Test // DATACASS-248
-	public void compareTypes() {
+	void compareTypes() {
 
 		assertThat(INSTANCE.compare(entityOne, entityTwo)).isEqualTo(1);
 		assertThat(INSTANCE.compare(entityTwo, entityTwo)).isEqualTo(0);
@@ -60,7 +61,7 @@ public class CassandraPrimaryKeyColumnAnnotationComparatorUnitTests {
 	}
 
 	@Test // DATACASS-248
-	public void compareOrdinals() {
+	void compareOrdinals() {
 
 		assertThat(INSTANCE.compare(entityOne, entityThree)).isEqualTo(-1);
 		assertThat(INSTANCE.compare(entityThree, entityThree)).isEqualTo(0);
@@ -68,7 +69,7 @@ public class CassandraPrimaryKeyColumnAnnotationComparatorUnitTests {
 	}
 
 	@Test // DATACASS-248
-	public void compareName() {
+	void compareName() {
 
 		assertThat(INSTANCE.compare(entityOne, entityFour)).isEqualTo(-1);
 		assertThat(INSTANCE.compare(entityFour, entityFour)).isEqualTo(0);
@@ -76,34 +77,35 @@ public class CassandraPrimaryKeyColumnAnnotationComparatorUnitTests {
 	}
 
 	@Test // DATACASS-248
-	public void compareOrdering() {
+	void compareOrdering() {
 
 		assertThat(INSTANCE.compare(entityOne, entityFive)).isEqualTo(-1);
 		assertThat(INSTANCE.compare(entityFive, entityFive)).isEqualTo(0);
 		assertThat(INSTANCE.compare(entityFive, entityOne)).isEqualTo(1);
 	}
 
-	static class EntityOne {
+	private static class EntityOne {
 		@PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, ordinal = 1, name = "A",
-				ordering = Ordering.ASCENDING) Integer id;
+				ordering = Ordering.ASCENDING) private Integer id;
 	}
 
-	static class EntityTwo {
+	private static class EntityTwo {
 		@PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, ordinal = 1, name = "A",
-				ordering = Ordering.ASCENDING) Long id;
+				ordering = Ordering.ASCENDING) private Long id;
 	}
 
-	static class EntityThree {
+	private static class EntityThree {
 		@PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, ordinal = 2, name = "A",
-				ordering = Ordering.ASCENDING) String id;
+				ordering = Ordering.ASCENDING) private String id;
 	}
 
-	static class EntityFour {
+	private static class EntityFour {
 		@PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, ordinal = 1, name = "B",
-				ordering = Ordering.ASCENDING) Timestamp id;
+				ordering = Ordering.ASCENDING) private Timestamp id;
 	}
 
-	static class EntityFive {
-		@PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, ordinal = 1, name = "A", ordering = Ordering.DESCENDING) UUID id;
+	private static class EntityFive {
+		@PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, ordinal = 1, name = "A",
+				ordering = Ordering.DESCENDING) private UUID id;
 	}
 }

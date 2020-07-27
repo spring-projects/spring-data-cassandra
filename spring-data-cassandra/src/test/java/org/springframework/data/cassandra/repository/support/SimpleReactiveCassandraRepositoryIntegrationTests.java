@@ -30,9 +30,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -46,14 +45,12 @@ import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.domain.UserToken;
 import org.springframework.data.cassandra.repository.ReactiveCassandraRepository;
 import org.springframework.data.cassandra.support.CassandraVersion;
-import org.springframework.data.cassandra.test.util.AbstractEmbeddedCassandraIntegrationTest;
+import org.springframework.data.cassandra.test.util.IntegrationTestsSupport;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.repository.query.ExtensionAwareQueryMethodEvaluationContextProvider;
 import org.springframework.data.util.Version;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 
@@ -63,12 +60,11 @@ import com.datastax.oss.driver.api.core.CqlSession;
  * @author Mark Paluch
  * @author Christoph Strobl
  */
-@RunWith(SpringRunner.class)
-@ContextConfiguration
-public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractEmbeddedCassandraIntegrationTest
+@SpringJUnitConfig
+public class SimpleReactiveCassandraRepositoryIntegrationTests extends IntegrationTestsSupport
 		implements BeanClassLoaderAware, BeanFactoryAware {
 
-	static final Version CASSANDRA_3 = Version.parse("3.0");
+	private static final Version CASSANDRA_3 = Version.parse("3.0");
 
 	@Configuration
 	public static class Config extends IntegrationTestConfig {
@@ -100,8 +96,8 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractE
 		this.beanFactory = beanFactory;
 	}
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		factory = new ReactiveCassandraRepositoryFactory(operations);
 		factory.setRepositoryBaseClass(SimpleReactiveCassandraRepository.class);
@@ -130,7 +126,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractE
 	}
 
 	@Test // DATACASS-335
-	public void existsByIdShouldReturnTrueForExistingObject() {
+	void existsByIdShouldReturnTrueForExistingObject() {
 
 		insertTestData();
 
@@ -138,12 +134,12 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractE
 	}
 
 	@Test // DATACASS-335
-	public void existsByIdShouldReturnFalseForAbsentObject() {
+	void existsByIdShouldReturnFalseForAbsentObject() {
 		repository.existsById("unknown").as(StepVerifier::create).expectNext(false).verifyComplete();
 	}
 
 	@Test // DATACASS-335
-	public void existsByMonoOfIdShouldReturnTrueForExistingObject() {
+	void existsByMonoOfIdShouldReturnTrueForExistingObject() {
 
 		insertTestData();
 
@@ -151,7 +147,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractE
 	}
 
 	@Test // DATACASS-462
-	public void existsByIdUsingFluxShouldReturnTrueForExistingObject() {
+	void existsByIdUsingFluxShouldReturnTrueForExistingObject() {
 
 		insertTestData();
 
@@ -160,12 +156,12 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractE
 	}
 
 	@Test // DATACASS-335
-	public void existsByEmptyMonoOfIdShouldReturnEmptyMono() {
+	void existsByEmptyMonoOfIdShouldReturnEmptyMono() {
 		repository.existsById(Mono.empty()).as(StepVerifier::create).verifyComplete();
 	}
 
 	@Test // DATACASS-335
-	public void findByIdShouldReturnObject() {
+	void findByIdShouldReturnObject() {
 
 		insertTestData();
 
@@ -173,12 +169,12 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractE
 	}
 
 	@Test // DATACASS-335
-	public void findByIdShouldCompleteWithoutValueForAbsentObject() {
+	void findByIdShouldCompleteWithoutValueForAbsentObject() {
 		repository.findById("unknown").as(StepVerifier::create).verifyComplete();
 	}
 
 	@Test // DATACASS-335
-	public void findByIdByMonoOfIdShouldReturnTrueForExistingObject() {
+	void findByIdByMonoOfIdShouldReturnTrueForExistingObject() {
 
 		insertTestData();
 
@@ -186,7 +182,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractE
 	}
 
 	@Test // DATACASS-462
-	public void findByIdUsingFluxShouldReturnTrueForExistingObject() {
+	void findByIdUsingFluxShouldReturnTrueForExistingObject() {
 
 		insertTestData();
 
@@ -195,12 +191,12 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractE
 	}
 
 	@Test // DATACASS-335
-	public void findByIdByEmptyMonoOfIdShouldReturnEmptyMono() {
+	void findByIdByEmptyMonoOfIdShouldReturnEmptyMono() {
 		repository.findById(Mono.empty()).as(StepVerifier::create).verifyComplete();
 	}
 
 	@Test // DATACASS-335
-	public void findAllShouldReturnAllResults() {
+	void findAllShouldReturnAllResults() {
 
 		insertTestData();
 
@@ -208,7 +204,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractE
 	}
 
 	@Test // DATACASS-335
-	public void findAllByIterableOfIdShouldReturnResults() {
+	void findAllByIterableOfIdShouldReturnResults() {
 
 		insertTestData();
 
@@ -218,7 +214,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractE
 	}
 
 	@Test // DATACASS-335
-	public void findAllByPublisherOfIdShouldReturnResults() {
+	void findAllByPublisherOfIdShouldReturnResults() {
 
 		insertTestData();
 
@@ -228,12 +224,12 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractE
 	}
 
 	@Test // DATACASS-335
-	public void findAllByEmptyPublisherOfIdShouldReturnResults() {
+	void findAllByEmptyPublisherOfIdShouldReturnResults() {
 		repository.findAllById(Flux.empty()).as(StepVerifier::create).verifyComplete();
 	}
 
 	@Test // DATACASS-700
-	public void findAllWithPagingAndSorting() {
+	void findAllWithPagingAndSorting() {
 
 		assumeTrue(cassandraVersion.isGreaterThan(CASSANDRA_3));
 
@@ -266,7 +262,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractE
 	}
 
 	@Test // DATACASS-335
-	public void countShouldReturnNumberOfRecords() {
+	void countShouldReturnNumberOfRecords() {
 
 		insertTestData();
 
@@ -274,7 +270,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractE
 	}
 
 	@Test // DATACASS-335
-	public void insertEntityShouldInsertEntity() {
+	void insertEntityShouldInsertEntity() {
 
 		User person = new User("36", "Homer", "Simpson");
 
@@ -284,7 +280,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractE
 	}
 
 	@Test // DATACASS-335
-	public void insertShouldDeferredWrite() {
+	void insertShouldDeferredWrite() {
 
 		User person = new User("36", "Homer", "Simpson");
 
@@ -294,7 +290,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractE
 	}
 
 	@Test // DATACASS-335
-	public void insertIterableOfEntitiesShouldInsertEntity() {
+	void insertIterableOfEntitiesShouldInsertEntity() {
 
 		repository.insert(Arrays.asList(dave, oliver, boyd)).as(StepVerifier::create).expectNextCount(3L).verifyComplete();
 
@@ -302,7 +298,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractE
 	}
 
 	@Test // DATACASS-335
-	public void insertPublisherOfEntitiesShouldInsertEntity() {
+	void insertPublisherOfEntitiesShouldInsertEntity() {
 
 		repository.insert(Flux.just(dave, oliver, boyd)).as(StepVerifier::create).expectNextCount(3L).verifyComplete();
 
@@ -310,7 +306,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractE
 	}
 
 	@Test // DATACASS-335
-	public void saveEntityShouldUpdateExistingEntity() {
+	void saveEntityShouldUpdateExistingEntity() {
 
 		dave.setFirstname("Hello, Dave");
 		dave.setLastname("Bowman");
@@ -325,7 +321,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractE
 	}
 
 	@Test // DATACASS-335
-	public void saveEntityShouldInsertNewEntity() {
+	void saveEntityShouldInsertNewEntity() {
 
 		User person = new User("36", "Homer", "Simpson");
 
@@ -335,7 +331,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractE
 	}
 
 	@Test // DATACASS-335
-	public void saveIterableOfNewEntitiesShouldInsertEntity() {
+	void saveIterableOfNewEntitiesShouldInsertEntity() {
 
 		repository.saveAll(Arrays.asList(dave, oliver, boyd)).as(StepVerifier::create).expectNextCount(3).verifyComplete();
 
@@ -343,7 +339,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractE
 	}
 
 	@Test // DATACASS-335
-	public void saveIterableOfMixedEntitiesShouldInsertEntity() {
+	void saveIterableOfMixedEntitiesShouldInsertEntity() {
 
 		User person = new User("36", "Homer", "Simpson");
 
@@ -358,7 +354,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractE
 	}
 
 	@Test // DATACASS-335
-	public void savePublisherOfEntitiesShouldInsertEntity() {
+	void savePublisherOfEntitiesShouldInsertEntity() {
 
 		repository.saveAll(Flux.just(dave, oliver, boyd)).as(StepVerifier::create).expectNextCount(3).verifyComplete();
 
@@ -366,7 +362,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractE
 	}
 
 	@Test // DATACASS-335
-	public void deleteAllShouldRemoveEntities() {
+	void deleteAllShouldRemoveEntities() {
 
 		insertTestData();
 
@@ -376,7 +372,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractE
 	}
 
 	@Test // DATACASS-335
-	public void deleteByIdShouldRemoveEntity() {
+	void deleteByIdShouldRemoveEntity() {
 
 		insertTestData();
 
@@ -386,7 +382,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractE
 	}
 
 	@Test // DATACASS-462
-	public void deleteByIdUsingMonoShouldRemoveEntity() {
+	void deleteByIdUsingMonoShouldRemoveEntity() {
 
 		insertTestData();
 
@@ -396,7 +392,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractE
 	}
 
 	@Test // DATACASS-462
-	public void deleteByIdUsingFluxShouldRemoveFirstEntity() {
+	void deleteByIdUsingFluxShouldRemoveFirstEntity() {
 
 		insertTestData();
 
@@ -407,7 +403,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractE
 	}
 
 	@Test // DATACASS-335
-	public void deleteShouldRemoveEntity() {
+	void deleteShouldRemoveEntity() {
 
 		insertTestData();
 
@@ -417,7 +413,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractE
 	}
 
 	@Test // DATACASS-335
-	public void deleteIterableOfEntitiesShouldRemoveEntities() {
+	void deleteIterableOfEntitiesShouldRemoveEntities() {
 
 		insertTestData();
 
@@ -427,7 +423,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends AbstractE
 	}
 
 	@Test // DATACASS-335
-	public void deletePublisherOfEntitiesShouldRemoveEntities() {
+	void deletePublisherOfEntitiesShouldRemoveEntities() {
 
 		insertTestData();
 

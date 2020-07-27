@@ -15,10 +15,10 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.data.annotation.Id;
 
@@ -29,12 +29,12 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  *
  * @author Mark Paluch
  */
-public class NamingStrategyUnitTests {
+class NamingStrategyUnitTests {
 
-	CassandraMappingContext context = new CassandraMappingContext();
+	private CassandraMappingContext context = new CassandraMappingContext();
 
-	@Before
-	public void before() {
+	@BeforeEach
+	void before() {
 		context.setUserTypeResolver(typeName -> {
 			throw new IllegalStateException("");
 		});
@@ -42,7 +42,7 @@ public class NamingStrategyUnitTests {
 	}
 
 	@Test // DATACASS-84
-	public void shouldDeriveTableName() {
+	void shouldDeriveTableName() {
 
 		BasicCassandraPersistentEntity<?> entity = context.getRequiredPersistentEntity(PersonTable.class);
 
@@ -50,7 +50,7 @@ public class NamingStrategyUnitTests {
 	}
 
 	@Test // DATACASS-84
-	public void shouldDeriveUserDefinedTypeName() {
+	void shouldDeriveUserDefinedTypeName() {
 
 		BasicCassandraPersistentEntity<?> entity = context.getRequiredPersistentEntity(MyUserType.class);
 
@@ -58,7 +58,7 @@ public class NamingStrategyUnitTests {
 	}
 
 	@Test // DATACASS-84
-	public void shouldDeriveColumnName() {
+	void shouldDeriveColumnName() {
 
 		BasicCassandraPersistentEntity<?> entity = context.getRequiredPersistentEntity(PersonTable.class);
 
@@ -66,7 +66,7 @@ public class NamingStrategyUnitTests {
 	}
 
 	@Test // DATACASS-84
-	public void shouldDeriveCaseSensitiveTableName() {
+	void shouldDeriveCaseSensitiveTableName() {
 
 		BasicCassandraPersistentEntity<?> entity = context.getRequiredPersistentEntity(QuotedPersonTable.class);
 
@@ -74,7 +74,7 @@ public class NamingStrategyUnitTests {
 	}
 
 	@Test // DATACASS-84
-	public void shouldDeriveCaseSensitiveUserDefinedTypeName() {
+	void shouldDeriveCaseSensitiveUserDefinedTypeName() {
 
 		BasicCassandraPersistentEntity<?> entity = context.getRequiredPersistentEntity(QuotedMyUserType.class);
 
@@ -82,7 +82,7 @@ public class NamingStrategyUnitTests {
 	}
 
 	@Test // DATACASS-84
-	public void shouldDeriveCaseSensitiveColumnName() {
+	void shouldDeriveCaseSensitiveColumnName() {
 
 		BasicCassandraPersistentEntity<?> entity = context.getRequiredPersistentEntity(QuotedPersonTable.class);
 
@@ -90,7 +90,7 @@ public class NamingStrategyUnitTests {
 	}
 
 	@Test // DATACASS-84
-	public void shouldApplyTransformedNamingStrategy() {
+	void shouldApplyTransformedNamingStrategy() {
 
 		context.setNamingStrategy(NamingStrategy.INSTANCE.transform(String::toUpperCase));
 
@@ -100,25 +100,25 @@ public class NamingStrategyUnitTests {
 		assertThat(entity.getRequiredIdProperty().getColumnName()).isEqualTo(CqlIdentifier.fromInternal("FIRSTNAME"));
 	}
 
-	static class PersonTable {
+	private static class PersonTable {
 
 		@Id String firstName;
 	}
 
 	@UserDefinedType
-	static class MyUserType {
+	private static class MyUserType {
 
 		String firstName;
 	}
 
 	@Table(forceQuote = true)
-	static class QuotedPersonTable {
+	private static class QuotedPersonTable {
 
 		@Id @PrimaryKey(forceQuote = true) String firstName;
 	}
 
 	@UserDefinedType(forceQuote = true)
-	static class QuotedMyUserType {
+	private static class QuotedMyUserType {
 
 		String firstName;
 	}

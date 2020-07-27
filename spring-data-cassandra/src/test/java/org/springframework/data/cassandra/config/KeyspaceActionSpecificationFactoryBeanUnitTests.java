@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.data.cassandra.core.cql.keyspace.AlterKeyspaceSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateKeyspaceSpecification;
@@ -35,12 +35,12 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  *
  * @author Mark Paluch
  */
-public class KeyspaceActionSpecificationFactoryBeanUnitTests {
+class KeyspaceActionSpecificationFactoryBeanUnitTests {
 
-	KeyspaceActionSpecificationFactoryBean bean = new KeyspaceActionSpecificationFactoryBean();
+	private KeyspaceActionSpecificationFactoryBean bean = new KeyspaceActionSpecificationFactoryBean();
 
 	@Test // DATACASS-502
-	public void shouldCreateKeyspace() {
+	void shouldCreateKeyspace() {
 
 		bean.setAction(KeyspaceAction.CREATE);
 		bean.setName("my_keyspace");
@@ -60,7 +60,7 @@ public class KeyspaceActionSpecificationFactoryBeanUnitTests {
 	}
 
 	@Test // DATACASS-502
-	public void shouldCreateAndDropKeyspace() {
+	void shouldCreateAndDropKeyspace() {
 
 		bean.setAction(KeyspaceAction.CREATE_DROP);
 		bean.setName("my_keyspace");
@@ -78,7 +78,7 @@ public class KeyspaceActionSpecificationFactoryBeanUnitTests {
 	}
 
 	@Test // DATACASS-502
-	public void shouldAlterKeyspace() {
+	void shouldAlterKeyspace() {
 
 		bean.setAction(KeyspaceAction.ALTER);
 		bean.setDurableWrites(true);
@@ -100,7 +100,7 @@ public class KeyspaceActionSpecificationFactoryBeanUnitTests {
 	}
 
 	@Test // DATACASS-502
-	public void shouldAlterKeyspaceWithSimpleReplication() {
+	void shouldAlterKeyspaceWithSimpleReplication() {
 
 		bean.setAction(KeyspaceAction.ALTER);
 		bean.setDurableWrites(true);
@@ -120,7 +120,7 @@ public class KeyspaceActionSpecificationFactoryBeanUnitTests {
 	}
 
 	@Test // DATACASS-502
-	public void shouldAlterKeyspaceWithoutReplication() {
+	void shouldAlterKeyspaceWithoutReplication() {
 
 		bean.setAction(KeyspaceAction.ALTER);
 		bean.setDurableWrites(true);

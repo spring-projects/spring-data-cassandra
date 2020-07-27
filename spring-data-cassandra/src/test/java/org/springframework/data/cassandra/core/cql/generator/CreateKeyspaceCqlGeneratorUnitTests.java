@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateKeyspaceSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.DefaultOption;
 import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceAttributes;
@@ -39,22 +39,22 @@ public class CreateKeyspaceCqlGeneratorUnitTests {
 	/**
 	 * Asserts that the preamble is first & correctly formatted in the given CQL string.
 	 */
-	public static void assertPreamble(String keyspaceName, String cql) {
-		assertThat(cql.startsWith("CREATE KEYSPACE " + keyspaceName + " ")).isTrue();
+	private static void assertPreamble(String keyspaceName, String cql) {
+		assertThat(cql).startsWith("CREATE KEYSPACE " + keyspaceName + " ");
 	}
 
 	private static void assertReplicationMap(Map<Option, Object> replicationMap, String cql) {
-		assertThat(cql.contains(" WITH replication = { ")).isTrue();
+		assertThat(cql).contains(" WITH replication = { ");
 
 		for (Map.Entry<Option, Object> entry : replicationMap.entrySet()) {
 			String keyValuePair = "'" + entry.getKey().getName() + "' : " + (entry.getKey().quotesValue() ? "'" : "")
 					+ entry.getValue().toString() + (entry.getKey().quotesValue() ? "'" : "");
-			assertThat(cql.contains(keyValuePair)).isTrue();
+			assertThat(cql).contains(keyValuePair);
 		}
 	}
 
-	public static void assertDurableWrites(Boolean durableWrites, String cql) {
-		assertThat(cql.contains(" AND durable_writes = " + durableWrites)).isTrue();
+	private static void assertDurableWrites(Boolean durableWrites, String cql) {
+		assertThat(cql).contains(" AND durable_writes = " + durableWrites);
 	}
 
 	/**
@@ -70,12 +70,12 @@ public class CreateKeyspaceCqlGeneratorUnitTests {
 		}
 	}
 
-	public static class BasicTest extends CreateKeyspaceTest {
+	static class BasicTest extends CreateKeyspaceTest {
 
-		public String name = RandomKeyspaceName.create();
-		public Boolean durableWrites = true;
+		private String name = RandomKeyspaceName.create();
+		private Boolean durableWrites = true;
 
-		public Map<Option, Object> replicationMap = KeyspaceAttributes.newSimpleReplication();
+		private Map<Option, Object> replicationMap = KeyspaceAttributes.newSimpleReplication();
 
 		@Override
 		public CreateKeyspaceSpecification specification() {
@@ -86,7 +86,7 @@ public class CreateKeyspaceCqlGeneratorUnitTests {
 		}
 
 		@Test
-		public void test() {
+		void test() {
 			prepare();
 
 			assertPreamble(keyspace, cql);
@@ -95,12 +95,12 @@ public class CreateKeyspaceCqlGeneratorUnitTests {
 		}
 	}
 
-	public static class NoOptionsBasicTest extends CreateKeyspaceTest {
+	static class NoOptionsBasicTest extends CreateKeyspaceTest {
 
-		public String name = RandomKeyspaceName.create();
-		public Boolean durableWrites = true;
+		private String name = RandomKeyspaceName.create();
+		private Boolean durableWrites = true;
 
-		public Map<Option, Object> replicationMap = KeyspaceAttributes.newSimpleReplication();
+		private Map<Option, Object> replicationMap = KeyspaceAttributes.newSimpleReplication();
 
 		@Override
 		public CreateKeyspaceSpecification specification() {
@@ -110,7 +110,7 @@ public class CreateKeyspaceCqlGeneratorUnitTests {
 		}
 
 		@Test
-		public void test() {
+		void test() {
 			prepare();
 
 			assertPreamble(keyspace, cql);
@@ -119,12 +119,12 @@ public class CreateKeyspaceCqlGeneratorUnitTests {
 		}
 	}
 
-	public static class NetworkTopologyTest extends CreateKeyspaceTest {
+	static class NetworkTopologyTest extends CreateKeyspaceTest {
 
-		public String name = RandomKeyspaceName.create();
-		public Boolean durableWrites = false;
+		private String name = RandomKeyspaceName.create();
+		private Boolean durableWrites = false;
 
-		public Map<Option, Object> replicationMap = new HashMap<>();
+		private Map<Option, Object> replicationMap = new HashMap<>();
 
 		@Override
 		public CreateKeyspaceSpecification specification() {
@@ -139,7 +139,7 @@ public class CreateKeyspaceCqlGeneratorUnitTests {
 		}
 
 		@Test
-		public void test() {
+		void test() {
 			prepare();
 
 			assertPreamble(keyspace, cql);

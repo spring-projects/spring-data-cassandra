@@ -39,9 +39,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.CassandraOperations;
@@ -49,7 +48,7 @@ import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.domain.AllPossibleTypes;
 import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
 import org.springframework.data.cassandra.support.CassandraVersion;
-import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
 import org.springframework.data.util.Version;
 
 import com.datastax.oss.driver.api.core.cql.ResultSet;
@@ -68,16 +67,16 @@ import com.datastax.oss.driver.api.core.type.TupleType;
  * @soundtrack DJ THT meets Scarlet - Live 2 Dance (Extended Mix) (Zgin Remix)
  */
 @SuppressWarnings("Since15")
-public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
+public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreatingIntegrationTests {
 
-	static final Version VERSION_3_10 = Version.parse("3.10");
-	static boolean initialized = false;
+	private static final Version VERSION_3_10 = Version.parse("3.10");
+	private static boolean initialized = false;
 
-	CassandraOperations operations;
-	Version cassandraVersion;
+	private CassandraOperations operations;
+	private Version cassandraVersion;
 
-	@Before
-	public void before() {
+	@BeforeEach
+	void before() {
 
 		operations = new CassandraTemplate(session);
 		cassandraVersion = CassandraVersion.get(session);
@@ -104,7 +103,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-280
-	public void shouldReadAndWriteInetAddress() throws Exception {
+	void shouldReadAndWriteInetAddress() throws Exception {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setInet(InetAddress.getByName("127.0.0.1"));
@@ -116,7 +115,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-280
-	public void shouldReadAndWriteUUID() {
+	void shouldReadAndWriteUUID() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setUuid(UUID.randomUUID());
@@ -128,7 +127,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-280
-	public void shouldReadAndWriteBoxedShort() {
+	void shouldReadAndWriteBoxedShort() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setBoxedShort(Short.MAX_VALUE);
@@ -140,7 +139,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-280
-	public void shouldReadAndWritePrimitiveShort() {
+	void shouldReadAndWritePrimitiveShort() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setPrimitiveShort(Short.MAX_VALUE);
@@ -152,7 +151,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-271
-	public void shouldReadAndWriteBoxedByte() {
+	void shouldReadAndWriteBoxedByte() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setBoxedByte(Byte.MAX_VALUE);
@@ -164,7 +163,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-271
-	public void shouldReadAndWritePrimitiveByte() {
+	void shouldReadAndWritePrimitiveByte() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setPrimitiveByte(Byte.MAX_VALUE);
@@ -176,7 +175,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-280
-	public void shouldReadAndWriteBoxedLong() {
+	void shouldReadAndWriteBoxedLong() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setBoxedLong(Long.MAX_VALUE);
@@ -188,7 +187,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-280
-	public void shouldReadAndWritePrimitiveLong() {
+	void shouldReadAndWritePrimitiveLong() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setPrimitiveLong(Long.MAX_VALUE);
@@ -200,7 +199,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-280
-	public void shouldReadAndWriteBoxedInteger() {
+	void shouldReadAndWriteBoxedInteger() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setBoxedInteger(Integer.MAX_VALUE);
@@ -212,7 +211,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-280
-	public void shouldReadAndWritePrimitiveInteger() {
+	void shouldReadAndWritePrimitiveInteger() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setPrimitiveInteger(Integer.MAX_VALUE);
@@ -224,7 +223,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-280
-	public void shouldReadAndWriteBoxedFloat() {
+	void shouldReadAndWriteBoxedFloat() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setBoxedFloat(Float.MAX_VALUE);
@@ -236,7 +235,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-280
-	public void shouldReadAndWritePrimitiveFloat() {
+	void shouldReadAndWritePrimitiveFloat() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setPrimitiveFloat(Float.MAX_VALUE);
@@ -248,7 +247,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-280
-	public void shouldReadAndWriteBoxedDouble() {
+	void shouldReadAndWriteBoxedDouble() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setBoxedDouble(Double.MAX_VALUE);
@@ -260,7 +259,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-280
-	public void shouldReadAndWritePrimitiveDouble() {
+	void shouldReadAndWritePrimitiveDouble() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setPrimitiveDouble(Double.MAX_VALUE);
@@ -272,7 +271,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-280
-	public void shouldReadAndWriteBoxedBoolean() {
+	void shouldReadAndWriteBoxedBoolean() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setBoxedBoolean(Boolean.TRUE);
@@ -284,7 +283,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-280
-	public void shouldReadAndWritePrimitiveBoolean() {
+	void shouldReadAndWritePrimitiveBoolean() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setPrimitiveBoolean(Boolean.TRUE);
@@ -296,7 +295,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-280, DATACASS-271
-	public void shouldReadAndWriteTimestamp() {
+	void shouldReadAndWriteTimestamp() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setTimestamp(new Date(1));
@@ -308,7 +307,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-271
-	public void shouldReadAndWriteDate() {
+	void shouldReadAndWriteDate() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setDate(LocalDate.ofEpochDay(1));
@@ -320,7 +319,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-280
-	public void shouldReadAndWriteBigInteger() {
+	void shouldReadAndWriteBigInteger() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setBigInteger(new BigInteger("123456"));
@@ -332,7 +331,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-280
-	public void shouldReadAndWriteBigDecimal() {
+	void shouldReadAndWriteBigDecimal() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setBigDecimal(new BigDecimal("123456.7890123"));
@@ -344,7 +343,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-280
-	public void shouldReadAndWriteBlob() {
+	void shouldReadAndWriteBlob() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setBlob(ByteBuffer.wrap("Hello".getBytes()));
@@ -359,7 +358,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-280
-	public void shouldReadAndWriteSetOfString() {
+	void shouldReadAndWriteSetOfString() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setSetOfString(Collections.singleton("hello"));
@@ -371,7 +370,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-280
-	public void shouldReadAndWriteEmptySetOfString() {
+	void shouldReadAndWriteEmptySetOfString() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setSetOfString(new HashSet<>());
@@ -383,7 +382,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-280
-	public void shouldReadAndWriteListOfString() {
+	void shouldReadAndWriteListOfString() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setListOfString(Collections.singletonList("hello"));
@@ -395,7 +394,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-280
-	public void shouldReadAndWriteEmptyListOfString() {
+	void shouldReadAndWriteEmptyListOfString() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setListOfString(new ArrayList<>());
@@ -407,7 +406,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-280
-	public void shouldReadAndWriteMapOfString() {
+	void shouldReadAndWriteMapOfString() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setMapOfString(Collections.singletonMap("hello", "world"));
@@ -419,7 +418,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-280
-	public void shouldReadAndWriteEmptyMapOfString() {
+	void shouldReadAndWriteEmptyMapOfString() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setMapOfString(new HashMap<>());
@@ -431,7 +430,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-280
-	public void shouldReadAndWriteEnum() {
+	void shouldReadAndWriteEnum() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setAnEnum(Condition.MINT);
@@ -443,7 +442,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-280
-	public void shouldReadAndWriteListOfEnum() {
+	void shouldReadAndWriteListOfEnum() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setListOfEnum(Collections.singletonList(Condition.MINT));
@@ -455,7 +454,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-280
-	public void shouldReadAndWriteSetOfEnum() {
+	void shouldReadAndWriteSetOfEnum() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 		entity.setSetOfEnum(Collections.singleton(Condition.MINT));
@@ -467,7 +466,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-284
-	public void shouldReadAndWriteTupleType() {
+	void shouldReadAndWriteTupleType() {
 
 		TupleType tupleType = DataTypes.tupleOf(DataTypes.TEXT, DataTypes.BIGINT);
 
@@ -484,7 +483,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-284
-	public void shouldReadAndWriteListOfTuples() {
+	void shouldReadAndWriteListOfTuples() {
 
 		TupleType tupleType = DataTypes.tupleOf(DataTypes.TEXT, DataTypes.BIGINT);
 
@@ -502,7 +501,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-271
-	public void shouldReadAndWriteTime() {
+	void shouldReadAndWriteTime() {
 
 		// writing of time is not supported with Insert/Update statements as they mix up types.
 		// The only way to insert a time right now seems a PreparedStatement
@@ -518,7 +517,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-296
-	public void shouldReadAndWriteLocalDate() {
+	void shouldReadAndWriteLocalDate() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 
@@ -532,7 +531,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-296
-	public void shouldReadAndWriteLocalDateTime() {
+	void shouldReadAndWriteLocalDateTime() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 
@@ -546,7 +545,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-296, DATACASS-563
-	public void shouldReadAndWriteLocalTime() {
+	void shouldReadAndWriteLocalTime() {
 
 		assumeTrue(cassandraVersion.isGreaterThanOrEqualTo(VERSION_3_10));
 
@@ -562,7 +561,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-694, DATACASS-727
-	public void shouldReadLocalTimeFromDriver() {
+	void shouldReadLocalTimeFromDriver() {
 
 		assumeTrue(cassandraVersion.isGreaterThanOrEqualTo(VERSION_3_10));
 
@@ -578,7 +577,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-694, DATACASS-727
-	public void shouldWriteLocalTimeThroughDriver() {
+	void shouldWriteLocalTimeThroughDriver() {
 
 		assumeTrue(cassandraVersion.isGreaterThanOrEqualTo(VERSION_3_10));
 
@@ -591,7 +590,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-296, DATACASS-563
-	public void shouldReadAndWriteJodaLocalTime() {
+	void shouldReadAndWriteJodaLocalTime() {
 
 		assumeTrue(cassandraVersion.isGreaterThanOrEqualTo(VERSION_3_10));
 
@@ -607,7 +606,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-296
-	public void shouldReadAndWriteInstant() {
+	void shouldReadAndWriteInstant() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 
@@ -622,7 +621,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-296
-	public void shouldReadAndWriteZoneId() {
+	void shouldReadAndWriteZoneId() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 
@@ -636,7 +635,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-296
-	public void shouldReadAndWriteJodaLocalDate() {
+	void shouldReadAndWriteJodaLocalDate() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 
@@ -650,7 +649,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-296, DATACASS-727
-	public void shouldReadAndWriteJodaDateTime() {
+	void shouldReadAndWriteJodaDateTime() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 
@@ -664,7 +663,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-296
-	public void shouldReadAndWriteBpLocalDate() {
+	void shouldReadAndWriteBpLocalDate() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 
@@ -678,7 +677,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-296
-	public void shouldReadAndWriteBpLocalDateTime() {
+	void shouldReadAndWriteBpLocalDateTime() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 
@@ -692,7 +691,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-296, DATACASS-563
-	public void shouldReadAndWriteBpLocalTime() {
+	void shouldReadAndWriteBpLocalTime() {
 
 		assumeTrue(cassandraVersion.isGreaterThanOrEqualTo(VERSION_3_10));
 
@@ -708,7 +707,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-296, DATACASS-727
-	public void shouldReadAndWriteBpInstant() {
+	void shouldReadAndWriteBpInstant() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 
@@ -722,7 +721,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 	}
 
 	@Test // DATACASS-296
-	public void shouldReadAndWriteBpZoneId() {
+	void shouldReadAndWriteBpZoneId() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("1");
 
@@ -735,23 +734,8 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 		assertThat(loaded.getBpZoneId()).isEqualTo(entity.getBpZoneId());
 	}
 
-	@Test // DATACASS-285
-	@Ignore("Counter columns are not supported with Spring Data Cassandra as the value of counter columns can only be incremented/decremented, not set")
-	public void shouldReadAndWriteCounter() {
-
-		CounterEntity entity = new CounterEntity("1");
-
-		entity.setCount(1);
-
-		operations.update(entity);
-
-		CounterEntity loaded = operations.selectOneById(entity.getId(), CounterEntity.class);
-
-		assertThat(loaded.getCount()).isEqualTo(entity.getCount());
-	}
-
 	@Test // DATACASS-429, DATACASS-727
-	public void shouldReadAndWriteDuration() {
+	void shouldReadAndWriteDuration() {
 
 		assumeTrue(cassandraVersion.isGreaterThanOrEqualTo(VERSION_3_10));
 

@@ -22,16 +22,18 @@ import static org.mockito.Mockito.*;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.Value;
-import lombok.experimental.Wither;
+import lombok.With;
 
 import java.util.Collections;
 import java.util.Date;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.AdditionalAnswers;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import org.springframework.core.Ordered;
 import org.springframework.data.annotation.CreatedDate;
@@ -48,14 +50,15 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  *
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner.class)
-public class AuditingEntityCallbackUnitTests {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class AuditingEntityCallbackUnitTests {
 
-	IsNewAwareAuditingHandler handler;
-	AuditingEntityCallback callback;
+	private IsNewAwareAuditingHandler handler;
+	private AuditingEntityCallback callback;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		CassandraMappingContext mappingContext = new CassandraMappingContext();
 		mappingContext.getPersistentEntity(Sample.class);
@@ -69,12 +72,12 @@ public class AuditingEntityCallbackUnitTests {
 	}
 
 	@Test // DATACASS-4
-	public void rejectsNullAuditingHandler() {
+	void rejectsNullAuditingHandler() {
 		assertThatIllegalArgumentException().isThrownBy(() -> new AuditingEntityCallback(null));
 	}
 
 	@Test // DATACASS-4
-	public void triggersCreationMarkForObjectWithEmptyId() {
+	void triggersCreationMarkForObjectWithEmptyId() {
 
 		Sample sample = new Sample();
 		callback.onBeforeConvert(sample, CqlIdentifier.fromCql("foo"));
@@ -84,7 +87,7 @@ public class AuditingEntityCallbackUnitTests {
 	}
 
 	@Test // DATACASS-4
-	public void triggersModificationMarkForObjectWithSetId() {
+	void triggersModificationMarkForObjectWithSetId() {
 
 		Sample sample = new Sample();
 		sample.id = "id";
@@ -95,14 +98,14 @@ public class AuditingEntityCallbackUnitTests {
 	}
 
 	@Test // DATACASS-4
-	public void hasExplicitOrder() {
+	void hasExplicitOrder() {
 
 		assertThat(callback).isInstanceOf(Ordered.class);
 		assertThat(callback.getOrder()).isEqualTo(100);
 	}
 
 	@Test // DATACASS-4
-	public void propagatesChangedInstanceToEvent() {
+	void propagatesChangedInstanceToEvent() {
 
 		ImmutableSample sample = new ImmutableSample();
 
@@ -116,15 +119,15 @@ public class AuditingEntityCallbackUnitTests {
 		assertThat(result).isSameAs(newSample);
 	}
 
-	static class Sample {
+	private static class Sample {
 
-		@Id String id;
+		@Id private String id;
 		@CreatedDate Date created;
 		@LastModifiedDate Date modified;
 	}
 
 	@Value
-	@Wither
+	@With
 	@AllArgsConstructor
 	@NoArgsConstructor(force = true)
 	static class ImmutableSample {

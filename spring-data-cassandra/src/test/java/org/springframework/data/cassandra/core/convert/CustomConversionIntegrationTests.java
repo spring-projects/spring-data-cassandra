@@ -29,8 +29,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.annotation.Id;
@@ -38,7 +38,7 @@ import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
-import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
 import org.springframework.data.convert.CustomConversions;
 import org.springframework.util.StringUtils;
 
@@ -51,12 +51,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  * @author Mark Paluch
  */
-public class CustomConversionIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
+class CustomConversionIntegrationTests extends AbstractKeyspaceCreatingIntegrationTests {
 
-	CassandraTemplate cassandraOperations;
+	private CassandraTemplate cassandraOperations;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		MappingCassandraConverter converter = createConverter();
 		cassandraOperations = new CassandraTemplate(session, converter);
@@ -66,7 +66,7 @@ public class CustomConversionIntegrationTests extends AbstractKeyspaceCreatingIn
 	}
 
 	@Test // DATACASS-296
-	public void shouldInsertCustomConvertedObject() {
+	void shouldInsertCustomConvertedObject() {
 
 		Employee employee = new Employee();
 		employee.setId("employee-id");
@@ -81,7 +81,7 @@ public class CustomConversionIntegrationTests extends AbstractKeyspaceCreatingIn
 	}
 
 	@Test // DATACASS-296
-	public void shouldUpdateCustomConvertedObject() {
+	void shouldUpdateCustomConvertedObject() {
 
 		Employee employee = new Employee();
 		employee.setId("employee-id");
@@ -98,7 +98,7 @@ public class CustomConversionIntegrationTests extends AbstractKeyspaceCreatingIn
 	}
 
 	@Test // DATACASS-296
-	public void shouldInsertCustomConvertedObjectWithCollections() {
+	void shouldInsertCustomConvertedObjectWithCollections() {
 
 		Employee employee = new Employee();
 		employee.setId("employee-id");
@@ -118,7 +118,7 @@ public class CustomConversionIntegrationTests extends AbstractKeyspaceCreatingIn
 	}
 
 	@Test // DATACASS-296
-	public void shouldUpdateCustomConvertedObjectWithCollections() {
+	void shouldUpdateCustomConvertedObjectWithCollections() {
 
 		Employee employee = new Employee();
 		employee.setId("employee-id");
@@ -137,7 +137,7 @@ public class CustomConversionIntegrationTests extends AbstractKeyspaceCreatingIn
 	}
 
 	@Test // DATACASS-296
-	public void shouldLoadCustomConvertedObject() {
+	void shouldLoadCustomConvertedObject() {
 
 		cassandraOperations.getCqlOperations().execute(
 				"INSERT INTO employee (id, person) VALUES('employee-id', '{\"firstname\":\"Homer\",\"lastname\":\"Simpson\"}')");
@@ -151,7 +151,7 @@ public class CustomConversionIntegrationTests extends AbstractKeyspaceCreatingIn
 	}
 
 	@Test // DATACASS-296
-	public void shouldLoadCustomConvertedWithCollectionsObject() {
+	void shouldLoadCustomConvertedWithCollectionsObject() {
 
 		cassandraOperations.getCqlOperations().execute(
 				"INSERT INTO employee (id, people) VALUES('employee-id', {'{\"firstname\":\"Apu\",\"lastname\":\"Nahasapeemapetilon\"}'})");
@@ -165,7 +165,7 @@ public class CustomConversionIntegrationTests extends AbstractKeyspaceCreatingIn
 	}
 
 	@Test // DATACASS-607
-	public void shouldApplyCustomReadConverterIfOnlyReadIsCustomized() {
+	void shouldApplyCustomReadConverterIfOnlyReadIsCustomized() {
 
 		MappingCassandraConverter converter = createConverter(converters -> {
 			converters.add(new PersonReadConverter());
@@ -234,7 +234,7 @@ public class CustomConversionIntegrationTests extends AbstractKeyspaceCreatingIn
 	/**
 	 * @author Mark Paluch
 	 */
-	static class PersonReadConverter implements Converter<String, Person> {
+	private static class PersonReadConverter implements Converter<String, Person> {
 
 		public Person convert(String source) {
 
@@ -253,7 +253,7 @@ public class CustomConversionIntegrationTests extends AbstractKeyspaceCreatingIn
 	/**
 	 * @author Mark Paluch
 	 */
-	static class PersonWriteConverter implements Converter<Person, String> {
+	private static class PersonWriteConverter implements Converter<Person, String> {
 
 		public String convert(Person source) {
 

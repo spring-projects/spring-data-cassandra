@@ -17,7 +17,7 @@ package org.springframework.data.cassandra.core.cql.generator;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
 
 /**
@@ -27,10 +27,10 @@ import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecifica
  * @author David Webb
  * @author Mark Paluch
  */
-public class CreateIndexCqlGeneratorUnitTests {
+class CreateIndexCqlGeneratorUnitTests {
 
 	@Test // DATACASS-213
-	public void createIndex() {
+	void createIndex() {
 
 		CreateIndexSpecification spec = CreateIndexSpecification.createIndex("myindex").tableName("mytable")
 				.columnName("column");
@@ -39,7 +39,7 @@ public class CreateIndexCqlGeneratorUnitTests {
 	}
 
 	@Test // DATACASS-213
-	public void createCustomIndex() {
+	void createCustomIndex() {
 
 		CreateIndexSpecification spec = CreateIndexSpecification.createIndex("myindex").tableName("mytable")
 				.columnName("column").using("indexclass");
@@ -49,7 +49,7 @@ public class CreateIndexCqlGeneratorUnitTests {
 	}
 
 	@Test // DATACASS-213
-	public void createIndexOnKeys() {
+	void createIndexOnKeys() {
 
 		CreateIndexSpecification spec = CreateIndexSpecification.createIndex().tableName("mytable").keys()
 				.columnName("column");
@@ -58,7 +58,7 @@ public class CreateIndexCqlGeneratorUnitTests {
 	}
 
 	@Test // DATACASS-213
-	public void createIndexIfNotExists() {
+	void createIndexIfNotExists() {
 
 		CreateIndexSpecification spec = CreateIndexSpecification.createIndex().tableName("mytable").columnName("column")
 				.ifNotExists();
@@ -67,7 +67,7 @@ public class CreateIndexCqlGeneratorUnitTests {
 	}
 
 	@Test // DATACASS-306
-	public void createIndexWithOptions() {
+	void createIndexWithOptions() {
 
 		CreateIndexSpecification spec = CreateIndexSpecification.createIndex().tableName("mytable").columnName("column")
 				.withOption("foo", "b'a'r").withOption("type", "PREFIX");

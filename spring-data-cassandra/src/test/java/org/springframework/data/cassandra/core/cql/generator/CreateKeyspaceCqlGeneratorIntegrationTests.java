@@ -15,11 +15,11 @@
  */
 package org.springframework.data.cassandra.core.cql.generator;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.cassandra.core.cql.generator.CreateKeyspaceCqlGeneratorUnitTests.BasicTest;
 import org.springframework.data.cassandra.core.cql.generator.CreateKeyspaceCqlGeneratorUnitTests.CreateKeyspaceTest;
 import org.springframework.data.cassandra.core.cql.generator.CreateKeyspaceCqlGeneratorUnitTests.NetworkTopologyTest;
-import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
 
 /**
  * Integration tests that reuse unit tests.
@@ -28,20 +28,20 @@ import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingInte
  * @author Oliver Gierke
  * @author Mark Paluch
  */
-public class CreateKeyspaceCqlGeneratorIntegrationTests {
+class CreateKeyspaceCqlGeneratorIntegrationTests {
 
 	/**
 	 * Integration test base class that knows how to do everything except instantiate the concrete unit test type T.
 	 *
 	 * @param <T> The concrete unit test class to which this integration test corresponds.
 	 */
-	public static abstract class Base<T extends CreateKeyspaceTest> extends AbstractKeyspaceCreatingIntegrationTest {
-		T unit;
+	static abstract class Base<T extends CreateKeyspaceTest> extends AbstractKeyspaceCreatingIntegrationTests {
+		private T unit;
 
-		public abstract T unit();
+		protected abstract T unit();
 
 		@Test
-		public void test() {
+		void test() {
 			unit = unit();
 			unit.prepare();
 
@@ -53,7 +53,7 @@ public class CreateKeyspaceCqlGeneratorIntegrationTests {
 		}
 	}
 
-	public static class BasicIntegrationTest extends Base<BasicTest> {
+	static class BasicIntegrationTest extends Base<BasicTest> {
 
 		@Override
 		public BasicTest unit() {
@@ -61,7 +61,7 @@ public class CreateKeyspaceCqlGeneratorIntegrationTests {
 		}
 	}
 
-	public static class NetworkTopologyIntegrationTest extends Base<NetworkTopologyTest> {
+	static class NetworkTopologyIntegrationTest extends Base<NetworkTopologyTest> {
 
 		@Override
 		public NetworkTopologyTest unit() {

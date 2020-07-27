@@ -19,8 +19,8 @@ import reactor.test.StepVerifier;
 
 import java.util.Collections;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.core.ReactiveCassandraTemplate;
@@ -29,22 +29,22 @@ import org.springframework.data.cassandra.core.mapping.BasicMapId;
 import org.springframework.data.cassandra.core.mapping.MapId;
 import org.springframework.data.cassandra.domain.TypeWithMapId;
 import org.springframework.data.cassandra.domain.User;
-import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
 
 /**
  * Integration tests for {@link SimpleReactiveCassandraRepository} using MapId.
  *
  * @author Mark Paluch
  */
-public class SimpleReactiveCassandraRepositoryMapIdIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
+class SimpleReactiveCassandraRepositoryMapIdIntegrationTests extends AbstractKeyspaceCreatingIntegrationTests {
 
 	private SimpleReactiveCassandraRepository<User, MapId> simple;
 
 	private SimpleReactiveCassandraRepository<TypeWithMapId, MapId> composite;
 
-	@Before
+	@BeforeEach
 	@SuppressWarnings("unchecked")
-	public void setUp() {
+	void setUp() {
 
 		CassandraTemplate template = new CassandraTemplate(this.session);
 		SchemaTestUtils.potentiallyCreateTableFor(User.class, template);
@@ -66,7 +66,7 @@ public class SimpleReactiveCassandraRepositoryMapIdIntegrationTests extends Abst
 	}
 
 	@Test // DATACASS-661
-	public void shouldFindByIdWithSimpleKey() {
+	void shouldFindByIdWithSimpleKey() {
 
 		User user = new User();
 		user.setId("heisenberg");
@@ -85,7 +85,7 @@ public class SimpleReactiveCassandraRepositoryMapIdIntegrationTests extends Abst
 	}
 
 	@Test // DATACASS-661
-	public void shouldFindByIdWithCompositeKey() {
+	void shouldFindByIdWithCompositeKey() {
 
 		TypeWithMapId withMapId = new TypeWithMapId();
 		withMapId.setFirstname("Walter");

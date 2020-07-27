@@ -23,7 +23,7 @@ import static org.springframework.data.cassandra.core.mapping.MapIdFactory.*;
 import java.io.Serializable;
 import java.util.Random;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link MapIdFactory}.
@@ -54,7 +54,7 @@ public class MapIdFactoryUnitTests {
 	}
 
 	@Test
-	public void testHappyExtendingMapId() {
+	void testHappyExtendingMapId() {
 		Random r = new Random();
 		String s = "" + r.nextInt();
 		Integer i = new Integer(r.nextInt());
@@ -138,7 +138,7 @@ public class MapIdFactoryUnitTests {
 	}
 
 	@Test
-	public void testHappyExtendingNothing() {
+	void testHappyExtendingNothing() {
 		Random r = new Random();
 		String s = "" + r.nextInt();
 		Integer i = new Integer(r.nextInt());
@@ -205,48 +205,48 @@ public class MapIdFactoryUnitTests {
 		assertThat(mapid.get("number")).isNull();
 	}
 
-	class IdClass {}
+	private class IdClass {}
 
 	interface Foo {}
 
-	interface LiteralGet {
+	private interface LiteralGet {
 		String get();
 	}
 
-	interface GetterReturningVoid {
+	private interface GetterReturningVoid {
 		void getString();
 	}
 
-	interface GetReturningVoid {
+	private interface GetReturningVoid {
 		void string();
 	}
 
-	interface MethodWithMoreThanOneArgument {
+	private interface MethodWithMoreThanOneArgument {
 		void foo(Object a, Object b);
 	}
 
-	interface LiteralSet {
+	private interface LiteralSet {
 		void set(String s);
 	}
 
-	interface LiteralWith {
+	private interface LiteralWith {
 		void with(String s);
 	}
 
-	interface SetterMethodNotReturningVoidOrThis {
+	private interface SetterMethodNotReturningVoidOrThis {
 		String string(String s);
 	}
 
-	interface SetMethodNotReturningVoidOrThis {
+	private interface SetMethodNotReturningVoidOrThis {
 		String setString(String s);
 	}
 
-	interface WithMethodNotReturningVoidOrThis {
+	private interface WithMethodNotReturningVoidOrThis {
 		String withString(String s);
 	}
 
 	@Test
-	public void testUnhappies() {
+	void testUnhappies() {
 
 		Class<?>[] interfaces = new Class<?>[] { IdClass.class, LiteralGet.class, GetterReturningVoid.class,
 				GetReturningVoid.class, MethodWithMoreThanOneArgument.class, LiteralSet.class, LiteralWith.class,

@@ -17,7 +17,7 @@ package org.springframework.data.cassandra.core.cql.generator;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.cassandra.core.cql.keyspace.DropKeyspaceSpecification;
 import org.springframework.data.cassandra.support.RandomKeyspaceName;
 
@@ -28,24 +28,24 @@ import org.springframework.data.cassandra.support.RandomKeyspaceName;
  * @author Matthew T. Adams
  * @author David Webb
  */
-public class DropKeyspaceCqlGeneratorUnitTests {
+class DropKeyspaceCqlGeneratorUnitTests {
 
 	/**
 	 * Asserts that the preamble is first & correctly formatted in the given CQL string.
 	 */
-	public static void assertStatement(String tableName, String cql) {
-		assertThat(cql.equals("DROP KEYSPACE " + tableName + ";")).isTrue();
+	private static void assertStatement(String tableName, String cql) {
+		assertThat(cql).isEqualTo("DROP KEYSPACE " + tableName + ";");
 	}
 
 	/**
 	 * Convenient base class that other test classes can use so as not to repeat the generics declarations.
 	 */
-	public static abstract class DropTableTest
+	static abstract class DropTableTest
 			extends AbstractKeyspaceOperationCqlGeneratorTest<DropKeyspaceSpecification, DropKeyspaceCqlGenerator> {}
 
-	public static class BasicTest extends DropTableTest {
+	static class BasicTest extends DropTableTest {
 
-		public String name = RandomKeyspaceName.create();
+		private String name = RandomKeyspaceName.create();
 
 		@Override
 		public DropKeyspaceSpecification specification() {
@@ -58,7 +58,7 @@ public class DropKeyspaceCqlGeneratorUnitTests {
 		}
 
 		@Test
-		public void test() {
+		void test() {
 			prepare();
 
 			assertStatement(name, cql);

@@ -26,8 +26,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.annotation.Id;
@@ -38,24 +38,24 @@ import org.springframework.data.cassandra.core.mapping.Indexed;
 import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
-import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
 
 /**
  * Integration tests for {@link ExecutableSelectOperationSupport}.
  *
  * @author Mark Paluch
  */
-public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
+class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeyspaceCreatingIntegrationTests {
 
-	CassandraAdminTemplate admin;
+	private CassandraAdminTemplate admin;
 
-	ReactiveCassandraTemplate template;
+	private ReactiveCassandraTemplate template;
 
-	Person han;
-	Person luke;
+	private Person han;
+	private Person luke;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		admin = new CassandraAdminTemplate(session, new MappingCassandraConverter());
 		template = new ReactiveCassandraTemplate(new DefaultBridgedReactiveSession(session));
@@ -85,22 +85,22 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-485
-	public void domainTypeIsRequired() {
+	void domainTypeIsRequired() {
 		assertThatIllegalArgumentException().isThrownBy(() -> this.template.query(null));
 	}
 
 	@Test // DATACASS-485
-	public void returnTypeIsRequiredOnSet() {
+	void returnTypeIsRequiredOnSet() {
 		assertThatIllegalArgumentException().isThrownBy(() -> this.template.query(Person.class).as(null));
 	}
 
 	@Test // DATACASS-485
-	public void tableIsRequiredOnSet() {
+	void tableIsRequiredOnSet() {
 		assertThatIllegalArgumentException().isThrownBy(() -> this.template.query(Person.class).inTable((String) null));
 	}
 
 	@Test // DATACASS-485
-	public void findAll() {
+	void findAll() {
 
 		Flux<Person> result = this.template.query(Person.class).all();
 
@@ -111,7 +111,7 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-485
-	public void findAllWithCollection() {
+	void findAllWithCollection() {
 
 		Flux<Human> result = this.template.query(Human.class).inTable("person").all();
 
@@ -119,7 +119,7 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-485
-	public void findAllWithProjection() {
+	void findAllWithProjection() {
 
 		Flux<Jedi> result = this.template.query(Person.class).as(Jedi.class).all();
 
@@ -130,7 +130,7 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-485
-	public void findByReturningAllValuesAsClosedInterfaceProjection() {
+	void findByReturningAllValuesAsClosedInterfaceProjection() {
 
 		Flux<PersonProjection> result = this.template.query(Person.class).as(PersonProjection.class).all();
 
@@ -141,7 +141,7 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-485
-	public void findAllBy() {
+	void findAllBy() {
 
 		Flux<Person> result = this.template.query(Person.class).matching(queryLuke()).all();
 
@@ -149,7 +149,7 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-485
-	public void findAllByWithCollectionUsingMappingInformation() {
+	void findAllByWithCollectionUsingMappingInformation() {
 
 		Flux<Jedi> result = this.template.query(Jedi.class).inTable("person").all();
 
@@ -160,7 +160,7 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-485
-	public void findAllByWithCollection() {
+	void findAllByWithCollection() {
 
 		Flux<Human> result = this.template.query(Human.class).inTable("person").matching(queryLuke()).all();
 
@@ -168,7 +168,7 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-485
-	public void findAllByWithProjection() {
+	void findAllByWithProjection() {
 
 		Flux<Jedi> result = this.template.query(Person.class).as(Jedi.class).all();
 
@@ -179,7 +179,7 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-485
-	public void findBy() {
+	void findBy() {
 
 		Mono<Person> result = this.template.query(Person.class).matching(queryLuke()).one();
 
@@ -187,7 +187,7 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-485
-	public void findByNoMatch() {
+	void findByNoMatch() {
 
 		Mono<Person> result = this.template.query(Person.class).matching(querySpock()).one();
 
@@ -195,7 +195,7 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-485
-	public void findByTooManyResults() {
+	void findByTooManyResults() {
 
 		Mono<Person> result = this.template.query(Person.class).one();
 
@@ -203,7 +203,7 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-485
-	public void findByReturningFirst() {
+	void findByReturningFirst() {
 
 		Mono<Person> result = this.template.query(Person.class).matching(queryLuke()).first();
 
@@ -211,7 +211,7 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-485
-	public void findByReturningFirstForManyResults() {
+	void findByReturningFirstForManyResults() {
 
 		Mono<Person> result = this.template.query(Person.class).first();
 
@@ -221,7 +221,7 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-485
-	public void findByReturningFirstAsClosedInterfaceProjection() {
+	void findByReturningFirstAsClosedInterfaceProjection() {
 
 		Mono<PersonProjection> result = this.template
 				.query(Person.class)
@@ -236,7 +236,7 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-485
-	public void findByReturningFirstAsOpenInterfaceProjection() {
+	void findByReturningFirstAsOpenInterfaceProjection() {
 
 		Mono<PersonSpELProjection> result = this.template
 				.query(Person.class)
@@ -251,7 +251,7 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-485
-	public void countShouldReturnNumberOfElementsInCollectionWhenNoQueryPresent() {
+	void countShouldReturnNumberOfElementsInCollectionWhenNoQueryPresent() {
 
 		Mono<Long> count = this.template.query(Person.class).count();
 
@@ -259,7 +259,7 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-485
-	public void countShouldReturnNrOfElementsMatchingQuery() {
+	void countShouldReturnNrOfElementsMatchingQuery() {
 
 		Mono<Long> count = this.template
 				.query(Person.class)
@@ -270,7 +270,7 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-485
-	public void existsShouldReturnTrueIfAtLeastOneElementExistsInCollection() {
+	void existsShouldReturnTrueIfAtLeastOneElementExistsInCollection() {
 
 		Mono<Boolean> exists = this.template.query(Person.class).exists();
 
@@ -278,7 +278,7 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-485
-	public void existsShouldReturnFalseIfNoElementExistsInCollection() {
+	void existsShouldReturnFalseIfNoElementExistsInCollection() {
 
 		this.template.truncate(Person.class).as(StepVerifier::create).verifyComplete();
 
@@ -288,7 +288,7 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-485
-	public void existsShouldReturnTrueIfAtLeastOneElementMatchesQuery() {
+	void existsShouldReturnTrueIfAtLeastOneElementMatchesQuery() {
 
 		Mono<Boolean> exists = this.template.query(Person.class).matching(queryLuke()).exists();
 
@@ -296,7 +296,7 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-485
-	public void existsShouldReturnFalseWhenNoElementMatchesQuery() {
+	void existsShouldReturnFalseWhenNoElementMatchesQuery() {
 
 		Mono<Boolean> exists = this.template.query(Person.class).matching(querySpock()).exists();
 
@@ -304,7 +304,7 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-485
-	public void returnsTargetObjectDirectlyIfProjectionInterfaceIsImplemented() {
+	void returnsTargetObjectDirectlyIfProjectionInterfaceIsImplemented() {
 
 		Flux<Contact> result = this.template.query(Person.class).as(Contact.class).all();
 
@@ -322,7 +322,7 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 		return query(where("firstname").is("spock")).withAllowFiltering();
 	}
 
-	interface Contact {}
+	private interface Contact {}
 
 	@Data
 	@Table
@@ -332,7 +332,7 @@ public class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeys
 		@Indexed String lastname;
 	}
 
-	interface PersonProjection {
+	private interface PersonProjection {
 		String getFirstname();
 	}
 

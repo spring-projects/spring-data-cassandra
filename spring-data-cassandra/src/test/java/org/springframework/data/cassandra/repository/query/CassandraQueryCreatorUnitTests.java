@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.annotation.Id;
@@ -56,13 +56,13 @@ import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
  *
  * @author Mark Paluch
  */
-public class CassandraQueryCreatorUnitTests {
+class CassandraQueryCreatorUnitTests {
 
-	CassandraMappingContext context;
-	CassandraConverter converter;
+	private CassandraMappingContext context;
+	private CassandraConverter converter;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		context = new CassandraMappingContext();
 		context.setUserTypeResolver(mock(UserTypeResolver.class));
@@ -71,7 +71,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	@Test // DATACASS-7
-	public void createsQueryCorrectly() {
+	void createsQueryCorrectly() {
 
 		String query = createQuery("findByFirstname", Person.class, "Walter");
 
@@ -79,7 +79,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	@Test // DATACASS-7
-	public void createsQueryWithSortCorrectly() {
+	void createsQueryWithSortCorrectly() {
 
 		String query = createQuery("findByFirstnameOrderByLastname", Person.class, "Walter");
 
@@ -87,25 +87,27 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	@Test // DATACASS-7
-	public void createsAndQueryCorrectly() {
+	void createsAndQueryCorrectly() {
 
 		String query = createQuery("findByFirstnameAndLastname", Person.class, "Walter", "White");
 
 		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname='Walter' AND lastname='White'");
 	}
 
-	@Test(expected = InvalidDataAccessApiUsageException.class) // DATACASS-7
-	public void rejectsNegatingQuery() {
-		createQuery("findByFirstnameNot", Person.class, "Walter");
-	}
-
-	@Test(expected = InvalidDataAccessApiUsageException.class) // DATACASS-7
-	public void rejectsOrQuery() {
-		createQuery("findByFirstnameOrLastname", Person.class, "Walter", "White");
+	@Test // DATACASS-7
+	void rejectsNegatingQuery() {
+		assertThatExceptionOfType(InvalidDataAccessApiUsageException.class)
+				.isThrownBy(() -> createQuery("findByFirstnameNot", Person.class, "Walter"));
 	}
 
 	@Test // DATACASS-7
-	public void createsGreaterThanQueryCorrectly() {
+	void rejectsOrQuery() {
+		assertThatExceptionOfType(InvalidDataAccessApiUsageException.class)
+				.isThrownBy(() -> createQuery("findByFirstnameOrLastname", Person.class, "Walter", "White"));
+	}
+
+	@Test // DATACASS-7
+	void createsGreaterThanQueryCorrectly() {
 
 		String query = createQuery("findByFirstnameGreaterThan", Person.class, "Walter");
 
@@ -113,7 +115,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	@Test // DATACASS-7
-	public void createsGreaterThanEqualQueryCorrectly() {
+	void createsGreaterThanEqualQueryCorrectly() {
 
 		String query = createQuery("findByFirstnameGreaterThanEqual", Person.class, "Walter");
 
@@ -121,7 +123,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	@Test // DATACASS-7
-	public void createsLessThanQueryCorrectly() {
+	void createsLessThanQueryCorrectly() {
 
 		String query = createQuery("findByFirstnameLessThan", Person.class, "Walter");
 
@@ -129,7 +131,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	@Test // DATACASS-7
-	public void createsLessThanEqualQueryCorrectly() {
+	void createsLessThanEqualQueryCorrectly() {
 
 		String query = createQuery("findByFirstnameLessThanEqual", Person.class, "Walter");
 
@@ -137,7 +139,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	@Test // DATACASS-627
-	public void createsBetweenQueryCorrectly() {
+	void createsBetweenQueryCorrectly() {
 
 		String query = createQuery("findByFirstnameBetween", Person.class, 1, 2);
 
@@ -145,7 +147,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	@Test // DATACASS-627
-	public void createsBetweenQueryWithRangeCorrectly() {
+	void createsBetweenQueryWithRangeCorrectly() {
 
 		String query = createQuery("findByFirstnameBetween", Person.class,
 				Range.from(Range.Bound.inclusive(1)).to(Range.Bound.exclusive(2)));
@@ -154,7 +156,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	@Test // DATACASS-7
-	public void createsInQueryCorrectly() {
+	void createsInQueryCorrectly() {
 
 		String query = createQuery("findByFirstnameIn", Person.class, "Walter");
 
@@ -162,7 +164,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	@Test // DATACASS-7
-	public void createsInQueryWithListCorrectly() {
+	void createsInQueryWithListCorrectly() {
 
 		String query = createQuery("findByFirstnameIn", Person.class, Arrays.asList("Walter", "Gus"));
 
@@ -170,7 +172,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	@Test // DATACASS-7
-	public void createsInQueryWithArrayCorrectly() {
+	void createsInQueryWithArrayCorrectly() {
 
 		String query = createQuery("findByFirstnameInAndLastname", Person.class, new String[] { "Walter", "Gus" }, "Fring");
 
@@ -178,7 +180,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	@Test // DATACASS-7
-	public void createsLikeQueryCorrectly() {
+	void createsLikeQueryCorrectly() {
 
 		assertThat(createQuery("findByFirstnameLike", Person.class, "Wal%ter"))
 				.isEqualTo("SELECT * FROM person WHERE firstname LIKE 'Wal%ter'");
@@ -188,7 +190,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	@Test // DATACASS-7
-	public void createsStartsWithQueryCorrectly() {
+	void createsStartsWithQueryCorrectly() {
 
 		String query = createQuery("findByFirstnameStartsWith", Person.class, "Walter");
 
@@ -196,7 +198,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	@Test // DATACASS-7
-	public void createsEndsWithQueryCorrectly() {
+	void createsEndsWithQueryCorrectly() {
 
 		String query = createQuery("findByFirstnameEndsWith", Person.class, "Walter");
 
@@ -204,7 +206,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	@Test // DATACASS-7
-	public void createsContainsQueryOnSimplePropertyCorrectly() {
+	void createsContainsQueryOnSimplePropertyCorrectly() {
 
 		String query = createQuery("findByFirstnameContains", Person.class, "Walter");
 
@@ -212,7 +214,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	@Test // DATACASS-7
-	public void createsContainsQueryOnSetPropertyCorrectly() {
+	void createsContainsQueryOnSetPropertyCorrectly() {
 
 		String query = createQuery("findByMysetContains", TypeWithSet.class, "Walter");
 
@@ -220,7 +222,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	@Test // DATACASS-7
-	public void createsContainsQueryOnListPropertyCorrectly() {
+	void createsContainsQueryOnListPropertyCorrectly() {
 
 		String query = createQuery("findByMylistContains", TypeWithList.class, "Walter");
 
@@ -228,7 +230,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	@Test // DATACASS-7
-	public void createsContainsQueryOnMapPropertyCorrectly() {
+	void createsContainsQueryOnMapPropertyCorrectly() {
 
 		String query = createQuery("findByMymapContains", TypeWithMap.class, "Walter");
 
@@ -236,7 +238,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	@Test // DATACASS-7
-	public void createsIsTrueQueryCorrectly() {
+	void createsIsTrueQueryCorrectly() {
 
 		String query = createQuery("findByFirstnameIsTrue", Person.class, "Walter");
 
@@ -244,7 +246,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	@Test // DATACASS-7
-	public void createsIsFalseQueryCorrectly() {
+	void createsIsFalseQueryCorrectly() {
 
 		String query = createQuery("findByFirstnameIsFalse", Person.class, "Walter");
 
@@ -252,7 +254,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	@Test // DATACASS-7
-	public void createsQueryUsingQuotingCorrectly() {
+	void createsQueryUsingQuotingCorrectly() {
 
 		String query = createQuery("findByIdAndSet", QuotedType.class, "Walter", "White");
 
@@ -260,7 +262,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	@Test // DATACASS-7
-	public void createsFindByPrimaryKeyPartCorrectly() {
+	void createsFindByPrimaryKeyPartCorrectly() {
 
 		String query = createQuery("findByKeyFirstname", TypeWithCompositeId.class, "Walter");
 
@@ -268,7 +270,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	@Test // DATACASS-7
-	public void createsFindByPrimaryKeyPartWithSortCorrectly() {
+	void createsFindByPrimaryKeyPartWithSortCorrectly() {
 
 		String query = createQuery("findByKeyFirstnameOrderByKeyLastnameAsc", TypeWithCompositeId.class, "Walter");
 
@@ -276,7 +278,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	@Test // DATACASS-7
-	public void createsFindByPrimaryKeyPartOfPrimaryKeyClassCorrectly() {
+	void createsFindByPrimaryKeyPartOfPrimaryKeyClassCorrectly() {
 
 		String query = createQuery("findByFirstname", Key.class, "Walter");
 
@@ -285,7 +287,7 @@ public class CassandraQueryCreatorUnitTests {
 	}
 
 	@Test // DATACASS-7
-	public void createsFindByPrimaryKey2PartCorrectly() {
+	void createsFindByPrimaryKey2PartCorrectly() {
 		assertThatIllegalArgumentException()
 				.isThrownBy(() -> createQuery("findByKey", TypeWithCompositeId.class, new Key()));
 	}

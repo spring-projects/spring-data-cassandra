@@ -24,13 +24,13 @@ import org.springframework.data.cassandra.core.mapping.Table;
  * @author Matthew T. Adams
  */
 @Table
-public class MultiPrimaryKeyColumns {
+class MultiPrimaryKeyColumns {
 
-	@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) String key0;
+	@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) private String key0;
 
-	@PrimaryKeyColumn(ordinal = 1) String key1;
+	@PrimaryKeyColumn(ordinal = 1) private String key1;
 
-	@Column String value;
+	@Column private String value;
 
 	public MultiPrimaryKeyColumns(String key0, String key1) {
 		setKey0(key0);
@@ -41,7 +41,7 @@ public class MultiPrimaryKeyColumns {
 		return key0;
 	}
 
-	public void setKey0(String key0) {
+	private void setKey0(String key0) {
 		this.key0 = key0;
 	}
 
@@ -49,7 +49,7 @@ public class MultiPrimaryKeyColumns {
 		return key1;
 	}
 
-	public void setKey1(String key1) {
+	private void setKey1(String key1) {
 		this.key1 = key1;
 	}
 

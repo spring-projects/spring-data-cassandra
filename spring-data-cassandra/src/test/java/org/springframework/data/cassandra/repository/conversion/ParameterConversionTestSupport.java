@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -84,7 +84,7 @@ abstract class ParameterConversionTestSupport extends AbstractSpringDataEmbedded
 
 	Contact walter, flynn;
 
-	@Before
+	@BeforeEach
 	public void before() {
 
 		deleteAllEntities();

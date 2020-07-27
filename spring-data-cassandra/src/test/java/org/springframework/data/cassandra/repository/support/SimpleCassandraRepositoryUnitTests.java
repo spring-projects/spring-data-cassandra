@@ -21,11 +21,11 @@ import lombok.Data;
 
 import java.io.Serializable;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
@@ -50,15 +50,15 @@ import com.datastax.oss.driver.api.core.type.UserDefinedType;
  *
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 @SuppressWarnings("unchecked")
-public class SimpleCassandraRepositoryUnitTests {
+class SimpleCassandraRepositoryUnitTests {
 
-	CassandraMappingContext mappingContext = new CassandraMappingContext();
+	private CassandraMappingContext mappingContext = new CassandraMappingContext();
 
-	MappingCassandraConverter converter = new MappingCassandraConverter(mappingContext);
+	private MappingCassandraConverter converter = new MappingCassandraConverter(mappingContext);
 
-	SimpleCassandraRepository<Object, ? extends Serializable> repository;
+	private SimpleCassandraRepository<Object, ? extends Serializable> repository;
 
 	@Mock CassandraOperations cassandraOperations;
 	@Mock CqlOperations cqlOperations;
@@ -66,14 +66,14 @@ public class SimpleCassandraRepositoryUnitTests {
 	@Mock UserTypeResolver userTypeResolver;
 	@Mock EntityWriteResult writeResult;
 
-	@Before
-	public void before() {
+	@BeforeEach
+	void before() {
 		mappingContext.setUserTypeResolver(userTypeResolver);
 		when(cassandraOperations.getConverter()).thenReturn(converter);
 	}
 
 	@Test // DATACASS-428, DATACASS-560, DATACASS-573
-	public void saveShouldInsertNewPrimaryKeyOnlyEntity() {
+	void saveShouldInsertNewPrimaryKeyOnlyEntity() {
 
 		CassandraPersistentEntity<?> entity = converter.getMappingContext().getRequiredPersistentEntity(SimplePerson.class);
 
@@ -91,7 +91,7 @@ public class SimpleCassandraRepositoryUnitTests {
 	}
 
 	@Test // DATACASS-576
-	public void shouldInsertNewVersionedEntity() {
+	void shouldInsertNewVersionedEntity() {
 
 		when(cassandraOperations.insert(any(), any(InsertOptions.class))).thenReturn(writeResult);
 
@@ -109,7 +109,7 @@ public class SimpleCassandraRepositoryUnitTests {
 	}
 
 	@Test // DATACASS-576
-	public void shouldUpdateExistingVersionedEntity() {
+	void shouldUpdateExistingVersionedEntity() {
 
 		CassandraPersistentEntity<?> entity = converter.getMappingContext()
 				.getRequiredPersistentEntity(VersionedPerson.class);
@@ -127,7 +127,7 @@ public class SimpleCassandraRepositoryUnitTests {
 	}
 
 	@Test // DATACASS-428, DATACASS-560, DATACASS-573
-	public void saveShouldUpdateNewEntity() {
+	void saveShouldUpdateNewEntity() {
 
 		CassandraPersistentEntity<?> entity = converter.getMappingContext().getRequiredPersistentEntity(Person.class);
 
@@ -145,7 +145,7 @@ public class SimpleCassandraRepositoryUnitTests {
 	}
 
 	@Test // DATACASS-428, DATACASS-560, DATACASS-573
-	public void saveShouldUpdateExistingEntity() {
+	void saveShouldUpdateExistingEntity() {
 
 		CassandraPersistentEntity<?> entity = converter.getMappingContext().getRequiredPersistentEntity(Person.class);
 
@@ -166,7 +166,7 @@ public class SimpleCassandraRepositoryUnitTests {
 	}
 
 	@Test // DATACASS-428
-	public void insertShouldInsertEntity() {
+	void insertShouldInsertEntity() {
 
 		CassandraPersistentEntity<?> entity = converter.getMappingContext().getRequiredPersistentEntity(Person.class);
 
@@ -181,7 +181,7 @@ public class SimpleCassandraRepositoryUnitTests {
 	}
 
 	@Test // DATACASS-56
-	public void shouldSelectWithPaging() {
+	void shouldSelectWithPaging() {
 
 		CassandraPageRequest pageRequest = CassandraPageRequest.first(10, Direction.ASC, "foo");
 

@@ -26,9 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,8 +49,7 @@ import org.springframework.data.cassandra.core.mapping.UserDefinedType;
 import org.springframework.data.cassandra.domain.AllPossibleTypes;
 import org.springframework.data.cassandra.repository.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.data.cassandra.repository.support.IntegrationTestConfig;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
@@ -66,8 +64,7 @@ import com.datastax.oss.driver.api.querybuilder.insert.RegularInsert;
  *
  * @author Mark Paluch
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+@SpringJUnitConfig
 public class MappingCassandraConverterTupleIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
 
 	private static AtomicBoolean initialized = new AtomicBoolean();
@@ -95,8 +92,8 @@ public class MappingCassandraConverterTupleIntegrationTests extends AbstractSpri
 	@Autowired MappingCassandraConverter converter;
 	@Autowired CqlSession session;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		if (initialized.compareAndSet(false, true)) {
 
@@ -125,7 +122,7 @@ public class MappingCassandraConverterTupleIntegrationTests extends AbstractSpri
 	}
 
 	@Test // DATACASS-651
-	public void shouldInsertRowWithTuple() {
+	void shouldInsertRowWithTuple() {
 
 		TupleType tupleType = DataTypes.tupleOf(DataTypes.TEXT, DataTypes.INT);
 
@@ -147,7 +144,7 @@ public class MappingCassandraConverterTupleIntegrationTests extends AbstractSpri
 	}
 
 	@Test // DATACASS-523
-	public void shouldInsertRowWithComplexTuple() {
+	void shouldInsertRowWithComplexTuple() {
 
 		Person person = new Person();
 
@@ -174,7 +171,7 @@ public class MappingCassandraConverterTupleIntegrationTests extends AbstractSpri
 	}
 
 	@Test // DATACASS-523
-	public void shouldReadRowWithComplexTuple() {
+	void shouldReadRowWithComplexTuple() {
 
 		this.session.execute("INSERT INTO person (id,mappedtuple,mappedtuples) VALUES (" + "'foo'," //
 				+ "({zip:'myzip'},['EUR','USD'],'bar')," //
@@ -196,7 +193,7 @@ public class MappingCassandraConverterTupleIntegrationTests extends AbstractSpri
 	}
 
 	@Test // DATACASS-651
-	public void shouldInsertRowWithTupleMap() {
+	void shouldInsertRowWithTupleMap() {
 
 		Person person = new Person();
 		person.setId("foo");
@@ -224,7 +221,7 @@ public class MappingCassandraConverterTupleIntegrationTests extends AbstractSpri
 	}
 
 	@Test // DATACASS-651
-	public void shouldReadRowWithMapOfTuples() {
+	void shouldReadRowWithMapOfTuples() {
 
 		this.session.execute("INSERT INTO person (id,mapoftuples,mapoftuplevalues) VALUES "
 				+ "('foo',{'foo':(NULL,['EUR','USD'],'bar')},{'mykey':('hello',42)});\n");
@@ -242,7 +239,7 @@ public class MappingCassandraConverterTupleIntegrationTests extends AbstractSpri
 	}
 
 	@Test // DATACASS-741
-	public void shouldReadTupleWithValue() {
+	void shouldReadTupleWithValue() {
 
 		this.session.execute("INSERT INTO person (id,mappedtuplewithvalue) VALUES (" + "'foo'," //
 				+ "({zip:'myzip'},['EUR','USD'],'bar'));\n");
@@ -281,9 +278,9 @@ public class MappingCassandraConverterTupleIntegrationTests extends AbstractSpri
 	@Tuple
 	static class MappedTupleWithValue {
 
-		final @Element(0) AddressUserType addressUserType;
-		final @Element(1) List<Currency> currency;
-		final @Transient String myName;
+		private final @Element(0) AddressUserType addressUserType;
+		private final @Element(1) List<Currency> currency;
+		private final @Transient String myName;
 
 		public MappedTupleWithValue(AddressUserType addressUserType, List<Currency> currency,
 				@Value("#root.getString(2)") String myName) {

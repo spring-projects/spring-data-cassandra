@@ -17,13 +17,13 @@ package org.springframework.data.cassandra.core.cql.generator;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.data.cassandra.core.cql.Ordering;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.TableOption;
-import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
 
 import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
 import com.datastax.oss.driver.api.core.type.DataTypes;
@@ -35,17 +35,17 @@ import com.datastax.oss.driver.api.core.type.DataTypes;
  * @author Oliver Gierke
  * @author Mark Paluch
  */
-public class CreateTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
+class CreateTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCreatingIntegrationTests {
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		session.execute("DROP TABLE IF EXISTS person;");
 		session.execute("DROP TABLE IF EXISTS address;");
 	}
 
 	@Test // DATACASS-518
-	public void shouldGenerateSimpleTable() {
+	void shouldGenerateSimpleTable() {
 
 		CreateTableSpecification table = CreateTableSpecification.createTable("person") //
 				.partitionKeyColumn("id", DataTypes.ASCII) //
@@ -56,7 +56,7 @@ public class CreateTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCre
 	}
 
 	@Test // DATACASS-518
-	public void shouldGenerateTableWithClusterKeyOrdering() {
+	void shouldGenerateTableWithClusterKeyOrdering() {
 
 		CreateTableSpecification table = CreateTableSpecification.createTable("person") //
 				.partitionKeyColumn("id", DataTypes.ASCII) //
@@ -73,7 +73,7 @@ public class CreateTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCre
 	}
 
 	@Test // DATACASS-518
-	public void shouldGenerateTableWithClusterKeyAndOptions() {
+	void shouldGenerateTableWithClusterKeyAndOptions() {
 
 		CreateTableSpecification table = CreateTableSpecification.createTable("person") //
 				.partitionKeyColumn("id", DataTypes.ASCII) //

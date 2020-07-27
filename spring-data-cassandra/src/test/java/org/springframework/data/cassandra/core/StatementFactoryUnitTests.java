@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
@@ -53,19 +53,21 @@ import com.datastax.oss.driver.api.querybuilder.select.Select;
  *
  * @author Mark Paluch
  */
-public class StatementFactoryUnitTests {
+class StatementFactoryUnitTests {
 
-	CassandraConverter converter = new MappingCassandraConverter();
+	private CassandraConverter converter = new MappingCassandraConverter();
 
-	UpdateMapper updateMapper = new UpdateMapper(converter);
+	private UpdateMapper updateMapper = new UpdateMapper(converter);
 
-	StatementFactory statementFactory = new StatementFactory(updateMapper, updateMapper);
+	private StatementFactory statementFactory = new StatementFactory(updateMapper, updateMapper);
 
-	CassandraPersistentEntity<?> groupEntity = converter.getMappingContext().getRequiredPersistentEntity(Group.class);
-	CassandraPersistentEntity<?> personEntity = converter.getMappingContext().getRequiredPersistentEntity(Person.class);
+	private CassandraPersistentEntity<?> groupEntity = converter.getMappingContext()
+			.getRequiredPersistentEntity(Group.class);
+	private CassandraPersistentEntity<?> personEntity = converter.getMappingContext()
+			.getRequiredPersistentEntity(Person.class);
 
 	@Test // DATACASS-343
-	public void shouldMapSimpleSelectQuery() {
+	void shouldMapSimpleSelectQuery() {
 
 		StatementBuilder<Select> select = statementFactory.select(Query.empty(),
 				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
@@ -74,7 +76,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-708
-	public void selectShouldApplyQueryOptions() {
+	void selectShouldApplyQueryOptions() {
 
 		QueryOptions queryOptions = QueryOptions.builder() //
 				.executionProfile("foo") //
@@ -90,7 +92,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldMapSelectQueryWithColumnsAndCriteria() {
+	void shouldMapSelectQueryWithColumnsAndCriteria() {
 
 		Query query = Query.query(Criteria.where("foo").is("bar")).columns(Columns.from("age"));
 
@@ -100,7 +102,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-549
-	public void shouldMapSelectQueryNotEquals() {
+	void shouldMapSelectQueryNotEquals() {
 
 		Query query = Query.query(Criteria.where("foo").ne("bar")).columns(Columns.from("age"));
 
@@ -110,7 +112,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-549
-	public void shouldMapSelectQueryIsNotNull() {
+	void shouldMapSelectQueryIsNotNull() {
 
 		Query query = Query.query(Criteria.where("foo").isNotNull()).columns(Columns.from("age"));
 
@@ -121,7 +123,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldMapSelectQueryWithTtlColumns() {
+	void shouldMapSelectQueryWithTtlColumns() {
 
 		Query query = Query.empty().columns(Columns.empty().ttl("email"));
 
@@ -132,7 +134,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldMapSelectQueryWithSortLimitAndAllowFiltering() {
+	void shouldMapSelectQueryWithSortLimitAndAllowFiltering() {
 
 		Query query = Query.empty().sort(Sort.by("id.hashPrefix")).limit(10).withAllowFiltering();
 
@@ -144,7 +146,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldMapDeleteQueryWithColumns() {
+	void shouldMapDeleteQueryWithColumns() {
 
 		Query query = Query.empty().columns(Columns.from("age"));
 
@@ -155,7 +157,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldMapDeleteQueryWithTimestampColumns() {
+	void shouldMapDeleteQueryWithTimestampColumns() {
 
 		DeleteOptions options = DeleteOptions.builder().timestamp(1234).build();
 		Query query = Query.query(Criteria.where("foo").is("bar")).queryOptions(options);
@@ -168,7 +170,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-708
-	public void deleteShouldApplyQueryOptions() {
+	void deleteShouldApplyQueryOptions() {
 
 		Person person = new Person();
 		person.id = "foo";
@@ -187,7 +189,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-656
-	public void shouldCreateInsert() {
+	void shouldCreateInsert() {
 
 		Person person = new Person();
 		person.id = "foo";
@@ -198,7 +200,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-708
-	public void insertShouldApplyQueryOptions() {
+	void insertShouldApplyQueryOptions() {
 
 		Person person = new Person();
 		person.id = "foo";
@@ -216,7 +218,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-656
-	public void shouldCreateInsertIfNotExists() {
+	void shouldCreateInsertIfNotExists() {
 
 		InsertOptions options = InsertOptions.builder().withIfNotExists().build();
 		Person person = new Person();
@@ -229,7 +231,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-656
-	public void shouldCreateSetInsertNulls() {
+	void shouldCreateSetInsertNulls() {
 
 		InsertOptions options = InsertOptions.builder().withInsertNulls().build();
 		Person person = new Person();
@@ -242,7 +244,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-656
-	public void shouldCreateSetInsertWithTtl() {
+	void shouldCreateSetInsertWithTtl() {
 
 		WriteOptions options = WriteOptions.builder().ttl(Duration.ofMinutes(1)).build();
 		Person person = new Person();
@@ -255,7 +257,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-656
-	public void shouldCreateSetInsertWithTimestamp() {
+	void shouldCreateSetInsertWithTimestamp() {
 
 		WriteOptions options = WriteOptions.builder().timestamp(1234).build();
 		Person person = new Person();
@@ -268,7 +270,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldCreateSetUpdate() {
+	void shouldCreateSetUpdate() {
 
 		Query query = Query.query(Criteria.where("foo").is("bar"));
 
@@ -280,7 +282,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-656
-	public void shouldCreateSetUpdateWithTtl() {
+	void shouldCreateSetUpdateWithTtl() {
 
 		WriteOptions options = WriteOptions.builder().ttl(Duration.ofMinutes(1)).build();
 		Query query = Query.query(Criteria.where("foo").is("bar")).queryOptions(options);
@@ -293,7 +295,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-656
-	public void shouldCreateSetUpdateWithTimestamp() {
+	void shouldCreateSetUpdateWithTimestamp() {
 
 		WriteOptions options = WriteOptions.builder().timestamp(1234).build();
 		Query query = Query.query(Criteria.where("foo").is("bar")).queryOptions(options);
@@ -306,7 +308,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-343, DATACASS-712
-	public void shouldCreateSetAtIndexUpdate() {
+	void shouldCreateSetAtIndexUpdate() {
 
 		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory
 				.update(Query.empty(), Update.empty().set("list").atIndex(10).to("Euro"), personEntity);
@@ -315,7 +317,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldCreateSetAtKeyUpdate() {
+	void shouldCreateSetAtKeyUpdate() {
 
 		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory
 				.update(Query.empty(), Update.empty().set("map").atKey("baz").to("Euro"), personEntity);
@@ -324,7 +326,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldAddToMap() {
+	void shouldAddToMap() {
 
 		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory
 				.update(Query.empty(), Update.empty().addTo("map").entry("foo", "Euro"), personEntity);
@@ -333,7 +335,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldPrependAllToList() {
+	void shouldPrependAllToList() {
 
 		Update update = Update.empty().addTo("list").prependAll("foo", "Euro");
 
@@ -345,7 +347,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldAppendAllToList() {
+	void shouldAppendAllToList() {
 
 		Update update = Update.empty().addTo("list").appendAll("foo", "Euro");
 
@@ -357,7 +359,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldRemoveFromList() {
+	void shouldRemoveFromList() {
 
 		Update update = Update.empty().remove("list", "Euro");
 
@@ -369,7 +371,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldClearList() {
+	void shouldClearList() {
 
 		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory
 				.update(Query.empty(), Update.empty().clear("list"), personEntity);
@@ -378,7 +380,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldAddAllToSet() {
+	void shouldAddAllToSet() {
 
 		Update update = Update.empty().addTo("set").appendAll("foo", "Euro");
 
@@ -390,7 +392,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldRemoveFromSet() {
+	void shouldRemoveFromSet() {
 
 		Update update = Update.empty().remove("set", "Euro");
 
@@ -402,7 +404,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldClearSet() {
+	void shouldClearSet() {
 
 		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory
 				.update(Query.empty(), Update.empty().clear("set"), personEntity);
@@ -411,7 +413,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldCreateIncrementUpdate() {
+	void shouldCreateIncrementUpdate() {
 
 		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory
 				.update(Query.empty(), Update.empty().increment("number"), personEntity);
@@ -420,7 +422,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-735
-	public void shouldCreateIncrementLongUpdate() {
+	void shouldCreateIncrementLongUpdate() {
 
 		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory
 				.update(Query.empty(), Update.empty().increment("number", Long.MAX_VALUE), personEntity);
@@ -430,7 +432,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void shouldCreateDecrementUpdate() {
+	void shouldCreateDecrementUpdate() {
 
 		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory
 				.update(Query.empty(), Update.empty().decrement("number"), personEntity);
@@ -439,7 +441,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-735
-	public void shouldCreateDecrementLongUpdate() {
+	void shouldCreateDecrementLongUpdate() {
 
 		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory
 				.update(Query.empty(), Update.empty().decrement("number", Long.MAX_VALUE), personEntity);
@@ -449,7 +451,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-569
-	public void shouldCreateSetUpdateIfExists() {
+	void shouldCreateSetUpdateIfExists() {
 
 		Query query = Query.query(Criteria.where("foo").is("bar"))
 				.queryOptions(UpdateOptions.builder().withIfExists().build());
@@ -462,7 +464,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-656
-	public void shouldCreateSetUpdateIfCondition() {
+	void shouldCreateSetUpdateIfCondition() {
 
 		Query query = Query.query(Criteria.where("foo").is("bar"))
 				.queryOptions(UpdateOptions.builder().ifCondition(Criteria.where("foo").is("baz")).build());
@@ -475,7 +477,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-708
-	public void updateShouldApplyQueryOptions() {
+	void updateShouldApplyQueryOptions() {
 
 		UpdateOptions queryOptions = UpdateOptions.builder() //
 				.executionProfile("foo") //
@@ -493,7 +495,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-656
-	public void shouldCreateSetUpdateFromObject() {
+	void shouldCreateSetUpdateFromObject() {
 
 		Person person = new Person();
 		person.id = "foo";
@@ -507,7 +509,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-656
-	public void shouldCreateSetUpdateFromObjectIfExists() {
+	void shouldCreateSetUpdateFromObjectIfExists() {
 
 		UpdateOptions options = UpdateOptions.builder().withIfExists().build();
 		Person person = new Person();
@@ -521,7 +523,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-656
-	public void shouldCreateSetUpdateFromObjectIfCondition() {
+	void shouldCreateSetUpdateFromObjectIfCondition() {
 
 		UpdateOptions options = UpdateOptions.builder().ifCondition(Criteria.where("foo").is("bar")).build();
 		Person person = new Person();
@@ -535,7 +537,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-656
-	public void shouldCreateSetUpdateFromObjectWithTtl() {
+	void shouldCreateSetUpdateFromObjectWithTtl() {
 
 		WriteOptions options = WriteOptions.builder().ttl(Duration.ofMinutes(1)).build();
 		Person person = new Person();
@@ -548,7 +550,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-656
-	public void shouldCreateSetUpdateFromObjectWithTimestamp() {
+	void shouldCreateSetUpdateFromObjectWithTimestamp() {
 
 		WriteOptions options = WriteOptions.builder().timestamp(1234).build();
 		Person person = new Person();
@@ -561,7 +563,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-656
-	public void shouldCreateSetUpdateFromObjectWithEmptyCollections() {
+	void shouldCreateSetUpdateFromObjectWithEmptyCollections() {
 
 		Person person = new Person();
 		person.id = "foo";
@@ -576,7 +578,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-708
-	public void updateObjectShouldApplyQueryOptions() {
+	void updateObjectShouldApplyQueryOptions() {
 
 		WriteOptions queryOptions = WriteOptions.builder() //
 				.executionProfile("foo") //
@@ -597,7 +599,7 @@ public class StatementFactoryUnitTests {
 	}
 
 	@Test // DATACASS-512
-	public void shouldCreateCountQuery() {
+	void shouldCreateCountQuery() {
 
 		Query query = Query.query(Criteria.where("foo").is("bar"));
 
@@ -611,16 +613,16 @@ public class StatementFactoryUnitTests {
 	@SuppressWarnings("unused")
 	static class Person {
 
-		@Id String id;
+		@Id private String id;
 
 		Integer number;
 
-		List<String> list;
+		private List<String> list;
 
 		Map<String, String> map;
 
-		@Column("set_col") Set<String> set;
+		@Column("set_col") private Set<String> set;
 
-		@Column("first_name") String firstName;
+		@Column("first_name") private String firstName;
 	}
 }

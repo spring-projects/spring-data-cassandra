@@ -18,8 +18,8 @@ package org.springframework.data.cassandra.core.mapping;
 import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Fail.fail;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.cql.Ordering;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
@@ -30,38 +30,38 @@ import org.springframework.data.mapping.MappingException;
  *
  * @author Mark Paluch
  */
-public class CompositeCassandraPersistentEntityMetadataVerifierUnitTests {
+class CompositeCassandraPersistentEntityMetadataVerifierUnitTests {
 
 	private CompositeCassandraPersistentEntityMetadataVerifier verifier = new CompositeCassandraPersistentEntityMetadataVerifier();
 	private CassandraMappingContext context = new CassandraMappingContext();
 
-	@Before
-	public void setUp() throws Exception {
+	@BeforeEach
+	void setUp() throws Exception {
 		context.setVerifier(verifier);
 	}
 
 	@Test // DATACASS-258
-	public void shouldAllowInterfaceTypes() {
+	void shouldAllowInterfaceTypes() {
 		verifier.verify(context.getRequiredPersistentEntity(MyInterface.class));
 	}
 
 	@Test // DATACASS-258
-	public void testPrimaryKeyClass() {
+	void testPrimaryKeyClass() {
 		verifier.verify(context.getRequiredPersistentEntity(Animal.class));
 	}
 
 	@Test // DATACASS-258
-	public void testNonPrimaryKeyClass() {
+	void testNonPrimaryKeyClass() {
 		verifier.verify(context.getRequiredPersistentEntity(Person.class));
 	}
 
 	@Test // DATACASS-258, DATACASS-359
-	public void shouldNotFailWithNonPersistentClasses() {
+	void shouldNotFailWithNonPersistentClasses() {
 		verifier.verify(context.getRequiredPersistentEntity(NonPersistentClass.class));
 	}
 
 	@Test // DATACASS-258
-	public void shouldFailWithPersistentAndPrimaryKeyClassAnnotations() {
+	void shouldFailWithPersistentAndPrimaryKeyClassAnnotations() {
 
 		try {
 			verifier.verify(context.getRequiredPersistentEntity(TooManyAnnotations.class));
@@ -71,9 +71,9 @@ public class CompositeCassandraPersistentEntityMetadataVerifierUnitTests {
 		}
 	}
 
-	interface MyInterface {}
+	private interface MyInterface {}
 
-	static class NonPersistentClass {
+	private static class NonPersistentClass {
 
 		@Id String id;
 
@@ -83,7 +83,7 @@ public class CompositeCassandraPersistentEntityMetadataVerifierUnitTests {
 
 	@Table
 	@PrimaryKeyClass
-	static class TooManyAnnotations {}
+	private static class TooManyAnnotations {}
 
 	@Table
 	static class Person {
@@ -95,7 +95,7 @@ public class CompositeCassandraPersistentEntityMetadataVerifierUnitTests {
 	}
 
 	@Table
-	static class Animal {
+	private static class Animal {
 
 		@PrimaryKey AnimalPK key;
 		private String name;

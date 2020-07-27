@@ -22,7 +22,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
 
@@ -32,10 +32,10 @@ import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
  * @author Mark Paluch
  * @author Lukasz Antoniak
  */
-public class InsertOptionsUnitTests {
+class InsertOptionsUnitTests {
 
 	@Test // DATACASS-250, DATACASS-155, DATACASS-708
-	public void shouldConfigureInsertOptions() {
+	void shouldConfigureInsertOptions() {
 
 		Instant now = LocalDateTime.now().toInstant(ZoneOffset.UTC);
 
@@ -53,7 +53,7 @@ public class InsertOptionsUnitTests {
 	}
 
 	@Test // DATACASS-56
-	public void buildInsertOptionsMutate() {
+	void buildInsertOptionsMutate() {
 
 		InsertOptions insertOptions = InsertOptions.builder().ttl(10).timestamp(1519222753).withIfNotExists().build();
 

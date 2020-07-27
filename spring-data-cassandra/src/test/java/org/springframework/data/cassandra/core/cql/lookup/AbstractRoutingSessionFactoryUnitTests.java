@@ -15,17 +15,18 @@
  */
 package org.springframework.data.cassandra.core.cql.lookup;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
 import java.util.Collections;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.data.cassandra.core.cql.session.DefaultSessionFactory;
 import org.springframework.data.cassandra.core.cql.session.lookup.AbstractRoutingSessionFactory;
@@ -39,23 +40,23 @@ import com.datastax.oss.driver.api.core.CqlSession;
  *
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner.class)
-public class AbstractRoutingSessionFactoryUnitTests {
+@ExtendWith(MockitoExtension.class)
+class AbstractRoutingSessionFactoryUnitTests {
 
 	@Mock CqlSession defaultSession;
 	@Mock CqlSession routedSession;
 
-	StubbedRoutingSessionFactory sut;
+	private StubbedRoutingSessionFactory sut;
 
-	@Before
-	public void before() throws Exception {
+	@BeforeEach
+	void before() throws Exception {
 
 		sut = new StubbedRoutingSessionFactory();
 		sut.setDefaultTargetSessionFactory(new DefaultSessionFactory(defaultSession));
 	}
 
 	@Test // DATACASS-330
-	public void shouldDetermineRoutedRepository() {
+	void shouldDetermineRoutedRepository() {
 
 		sut.setTargetSessionFactories(Collections.singletonMap("key", new DefaultSessionFactory(routedSession)));
 		sut.afterPropertiesSet();
@@ -65,7 +66,7 @@ public class AbstractRoutingSessionFactoryUnitTests {
 	}
 
 	@Test // DATACASS-330
-	public void shouldFallbackToDefaultSession() {
+	void shouldFallbackToDefaultSession() {
 
 		sut.setTargetSessionFactories(Collections.singletonMap("key", new DefaultSessionFactory(routedSession)));
 		sut.afterPropertiesSet();
@@ -75,7 +76,7 @@ public class AbstractRoutingSessionFactoryUnitTests {
 	}
 
 	@Test // DATACASS-330
-	public void initializationShouldFailUnsupportedLookupKey() {
+	void initializationShouldFailUnsupportedLookupKey() {
 
 		sut.setTargetSessionFactories(Collections.singletonMap("key", new Object()));
 
@@ -88,7 +89,7 @@ public class AbstractRoutingSessionFactoryUnitTests {
 	}
 
 	@Test // DATACASS-330
-	public void initializationShouldFailUnresolvableKey() {
+	void initializationShouldFailUnresolvableKey() {
 
 		sut.setTargetSessionFactories(Collections.singletonMap("key", "value"));
 		sut.setSessionFactoryLookup(new MapSessionFactoryLookup());
@@ -101,18 +102,19 @@ public class AbstractRoutingSessionFactoryUnitTests {
 		}
 	}
 
-	@Test(expected = IllegalStateException.class) // DATACASS-330
-	public void unresolvableSessionRetrievalShouldFail() {
+	@Test // DATACASS-330
+	void unresolvableSessionRetrievalShouldFail() {
 
 		sut.setLenientFallback(false);
 		sut.setTargetSessionFactories(Collections.singletonMap("key", new DefaultSessionFactory(routedSession)));
 		sut.afterPropertiesSet();
 		sut.setLookupKey("unknown");
-		sut.getSession();
+
+		assertThatIllegalStateException().isThrownBy(() -> sut.getSession());
 	}
 
 	@Test // DATACASS-330
-	public void sessionRetrievalWithoutLookupKeyShouldReturnDefaultSession() {
+	void sessionRetrievalWithoutLookupKeyShouldReturnDefaultSession() {
 
 		sut.setTargetSessionFactories(Collections.singletonMap("key", new DefaultSessionFactory(routedSession)));
 		sut.afterPropertiesSet();
@@ -122,7 +124,7 @@ public class AbstractRoutingSessionFactoryUnitTests {
 	}
 
 	@Test // DATACASS-330
-	public void shouldLookupFromMap() {
+	void shouldLookupFromMap() {
 
 		MapSessionFactoryLookup lookup = new MapSessionFactoryLookup("lookup-key",
 				new DefaultSessionFactory(routedSession));
@@ -137,7 +139,7 @@ public class AbstractRoutingSessionFactoryUnitTests {
 	}
 
 	@Test // DATACASS-330
-	public void shouldAllowModificationsAfterInitialization() {
+	void shouldAllowModificationsAfterInitialization() {
 
 		MapSessionFactoryLookup lookup = new MapSessionFactoryLookup();
 
@@ -156,9 +158,9 @@ public class AbstractRoutingSessionFactoryUnitTests {
 
 	static class StubbedRoutingSessionFactory extends AbstractRoutingSessionFactory {
 
-		String lookupKey;
+		private String lookupKey;
 
-		void setLookupKey(String lookupKey) {
+		private void setLookupKey(String lookupKey) {
 			this.lookupKey = lookupKey;
 		}
 

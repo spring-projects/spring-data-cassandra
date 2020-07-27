@@ -20,8 +20,8 @@ import static org.assertj.core.api.Assertions.*;
 import java.lang.reflect.Method;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.projection.ProjectionFactory;
@@ -34,17 +34,17 @@ import org.springframework.data.repository.core.support.DefaultRepositoryMetadat
  *
  * @author Mark Paluch
  */
-public class CassandraQueryMethodUnitTests {
+class CassandraQueryMethodUnitTests {
 
-	CassandraMappingContext context;
+	private CassandraMappingContext context;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 		context = new CassandraMappingContext();
 	}
 
 	@Test // DATACASS-7
-	public void detectsCollectionFromRepoTypeIfReturnTypeNotAssignable() throws Exception {
+	void detectsCollectionFromRepoTypeIfReturnTypeNotAssignable() throws Exception {
 
 		CassandraQueryMethod queryMethod = queryMethod(SampleRepository.class, "method");
 		CassandraEntityMetadata<?> metadata = queryMethod.getEntityInformation();
@@ -53,17 +53,19 @@ public class CassandraQueryMethodUnitTests {
 		assertThat(metadata.getTableName().toString()).isEqualTo("users");
 	}
 
-	@Test(expected = IllegalArgumentException.class) // DATACASS-7
-	public void rejectsNullMappingContext() throws Exception {
+	@Test // DATACASS-7
+	void rejectsNullMappingContext() throws Exception {
 
 		Method method = SampleRepository.class.getMethod("method");
 
+		assertThatIllegalArgumentException().isThrownBy(
+				() ->
 		new CassandraQueryMethod(method, new DefaultRepositoryMetadata(SampleRepository.class),
-				new SpelAwareProxyProjectionFactory(), null);
+						new SpelAwareProxyProjectionFactory(), null));
 	}
 
 	@Test // DATACASS-7
-	public void considersMethodAsCollectionQuery() throws Exception {
+	void considersMethodAsCollectionQuery() throws Exception {
 
 		CassandraQueryMethod queryMethod = queryMethod(SampleRepository.class, "method");
 
@@ -71,7 +73,7 @@ public class CassandraQueryMethodUnitTests {
 	}
 
 	@Test // DATACASS-479
-	public void considersManagedEntityAsEntityInformation() throws Exception {
+	void considersManagedEntityAsEntityInformation() throws Exception {
 
 		CassandraQueryMethod queryMethod = queryMethod(SampleRepository.class, "findAllBy");
 

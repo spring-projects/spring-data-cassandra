@@ -22,7 +22,7 @@ import com.datastax.oss.driver.api.core.cql.Row;
 
 // tag::class[]
 @ReadingConverter
-public class PersonReadConverter implements Converter<Row, Person> {
+class PersonReadConverter implements Converter<Row, Person> {
 
 	public Person convert(Row source) {
 		Person person = new Person(source.getInt("id"));

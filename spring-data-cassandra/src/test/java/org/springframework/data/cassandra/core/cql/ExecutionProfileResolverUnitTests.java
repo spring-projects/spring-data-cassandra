@@ -17,7 +17,7 @@ package org.springframework.data.cassandra.core.cql;
 
 import static org.mockito.Mockito.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.datastax.oss.driver.api.core.config.DriverExecutionProfile;
 import com.datastax.oss.driver.api.core.cql.Statement;
@@ -27,10 +27,10 @@ import com.datastax.oss.driver.api.core.cql.Statement;
  *
  * @author Mark Paluch
  */
-public class ExecutionProfileResolverUnitTests {
+class ExecutionProfileResolverUnitTests {
 
 	@Test // DATACASS-708
-	public void shouldSetProfileName() {
+	void shouldSetProfileName() {
 
 		Statement statement = mock(Statement.class);
 
@@ -40,7 +40,7 @@ public class ExecutionProfileResolverUnitTests {
 	}
 
 	@Test // DATACASS-708
-	public void shouldSetProfileObject() {
+	void shouldSetProfileObject() {
 
 		Statement statement = mock(Statement.class);
 		DriverExecutionProfile profile = mock(DriverExecutionProfile.class);

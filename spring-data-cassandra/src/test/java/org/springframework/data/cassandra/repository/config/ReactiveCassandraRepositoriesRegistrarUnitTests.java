@@ -17,8 +17,8 @@ package org.springframework.data.cassandra.repository.config;
 
 import static org.mockito.Mockito.*;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -32,16 +32,14 @@ import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.cassandra.repository.ReactiveCassandraRepository;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 /**
  * Unit tests for {@link ReactiveCassandraRepositoriesRegistrar}.
  *
  * @author Mark Paluch
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+@SpringJUnitConfig
 public class ReactiveCassandraRepositoriesRegistrarUnitTests {
 
 	@Configuration
@@ -65,7 +63,7 @@ public class ReactiveCassandraRepositoriesRegistrarUnitTests {
 	@Autowired ReactivePersonRepository personRepository;
 
 	@Test // DATACASS-335
-	public void testConfiguration() {}
+	void testConfiguration() {}
 
 	interface ReactivePersonRepository extends ReactiveCassandraRepository<Person, String> {}
 }

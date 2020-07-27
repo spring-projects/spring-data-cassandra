@@ -15,29 +15,29 @@
  */
 package org.springframework.data.cassandra.repository.forcequote.compositeprimarykey;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.repository.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 /**
  * @author Matthew T. Adams
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@SpringJUnitConfig
 public abstract class ForceQuotedCompositePrimaryKeyRepositoryIntegrationTestsDelegator
 		extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
 
-	ForceQuotedCompositePrimaryKeyRepositoryTests tests = new ForceQuotedCompositePrimaryKeyRepositoryTests();
+	private ForceQuotedCompositePrimaryKeyRepositoryTests tests = new ForceQuotedCompositePrimaryKeyRepositoryTests();
 
 	@Autowired ImplicitRepository implicitRepository;
 	@Autowired ExplicitRepository explicitRepository;
 	@Autowired CassandraTemplate cassandraTemplate;
 
-	@Before
-	public void before() {
+	@BeforeEach
+	void before() {
 
 		tests.implicitRepository = implicitRepository;
 		tests.explicitRepository = explicitRepository;
@@ -47,11 +47,11 @@ public abstract class ForceQuotedCompositePrimaryKeyRepositoryIntegrationTestsDe
 	}
 
 	@Test
-	public void testImplicit() {
+	void testImplicit() {
 		tests.testImplicit();
 	}
 
-	public void testExplicit(String tableName, String stringValueColumnName, String keyZeroColumnName,
+	void testExplicit(String tableName, String stringValueColumnName, String keyZeroColumnName,
 			String keyOneColumnName) {
 
 		tests.testExplicit(tableName, stringValueColumnName, keyZeroColumnName, keyOneColumnName);

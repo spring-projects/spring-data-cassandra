@@ -21,14 +21,14 @@ import lombok.Data;
 
 import java.util.Collections;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.mapping.Indexed;
 import org.springframework.data.cassandra.core.mapping.Table;
-import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 
@@ -37,15 +37,15 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  *
  * @author Mark Paluch
  */
-public class ExecutableInsertOperationSupportIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
+class ExecutableInsertOperationSupportIntegrationTests extends AbstractKeyspaceCreatingIntegrationTests {
 
-	CassandraAdminTemplate template;
+	private CassandraAdminTemplate template;
 
-	Person han;
-	Person luke;
+	private Person han;
+	private Person luke;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		template = new CassandraAdminTemplate(session, new MappingCassandraConverter());
 		template.dropTable(true, CqlIdentifier.fromCql("person"));
@@ -68,22 +68,22 @@ public class ExecutableInsertOperationSupportIntegrationTests extends AbstractKe
 	}
 
 	@Test // DATACASS-485
-	public void domainTypeIsRequired() {
+	void domainTypeIsRequired() {
 		assertThatIllegalArgumentException().isThrownBy(() -> this.template.insert((Class) null));
 	}
 
 	@Test // DATACASS-485
-	public void tableIsRequiredOnSet() {
+	void tableIsRequiredOnSet() {
 		assertThatIllegalArgumentException().isThrownBy(() -> this.template.insert(Person.class).inTable((String) null));
 	}
 
 	@Test // DATACASS-485
-	public void optionsIsRequiredOnSet() {
+	void optionsIsRequiredOnSet() {
 		assertThatIllegalArgumentException().isThrownBy(() -> this.template.insert(Person.class).withOptions(null));
 	}
 
 	@Test // DATACASS-485
-	public void insertOne() {
+	void insertOne() {
 
 		WriteResult insertResult = this.template.insert(Person.class).inTable("person").one(han);
 
@@ -92,7 +92,7 @@ public class ExecutableInsertOperationSupportIntegrationTests extends AbstractKe
 	}
 
 	@Test // DATACASS-485
-	public void insertOneWithOptions() {
+	void insertOneWithOptions() {
 
 		this.template.insert(Person.class).inTable("person").one(han);
 

@@ -18,7 +18,7 @@ package org.springframework.data.cassandra.core.cql.lookup;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.cassandra.SessionFactory;
 import org.springframework.data.cassandra.core.cql.session.lookup.SingleSessionFactoryLookup;
 
@@ -27,15 +27,15 @@ import org.springframework.data.cassandra.core.cql.session.lookup.SingleSessionF
  *
  * @author Mark Paluch
  */
-public class SingleSessionFactoryLookupUnitTests {
+class SingleSessionFactoryLookupUnitTests {
 
 	@Test // DATACASS-330
-	public void shouldRejectNullSessionFactory() {
+	void shouldRejectNullSessionFactory() {
 		assertThatIllegalArgumentException().isThrownBy(() -> new SingleSessionFactoryLookup(null));
 	}
 
 	@Test // DATACASS-330
-	public void shouldResolveSessionFactory() {
+	void shouldResolveSessionFactory() {
 
 		SessionFactory sessionFactory = mock(SessionFactory.class);
 		SessionFactory result = new SingleSessionFactoryLookup(sessionFactory).getSessionFactory("any");

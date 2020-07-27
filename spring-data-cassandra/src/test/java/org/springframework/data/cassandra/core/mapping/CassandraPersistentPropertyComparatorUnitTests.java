@@ -19,10 +19,10 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.cassandra.core.mapping.CassandraPersistentPropertyComparator.*;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 
@@ -34,15 +34,15 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * @author Mark Paluch
  * @since 1.5.0
  */
-@RunWith(MockitoJUnitRunner.class)
-public class CassandraPersistentPropertyComparatorUnitTests {
+@ExtendWith(MockitoExtension.class)
+class CassandraPersistentPropertyComparatorUnitTests {
 
 	@Mock CassandraPersistentProperty left;
 
 	@Mock CassandraPersistentProperty right;
 
 	@Test // DATACASS-248
-	public void leftAndRightAreNullReturnsZero() {
+	void leftAndRightAreNullReturnsZero() {
 
 		assertThat(INSTANCE.compare(null, null)).isEqualTo(0);
 
@@ -51,7 +51,7 @@ public class CassandraPersistentPropertyComparatorUnitTests {
 	}
 
 	@Test // DATACASS-248
-	public void leftIsNotNullAndRightIsNullReturnsOne() {
+	void leftIsNotNullAndRightIsNullReturnsOne() {
 
 		assertThat(INSTANCE.compare(left, null)).isEqualTo(1);
 
@@ -60,7 +60,7 @@ public class CassandraPersistentPropertyComparatorUnitTests {
 	}
 
 	@Test // DATACASS-248
-	public void leftIsNullAndRightIsNotNullReturnsMinusOne() {
+	void leftIsNullAndRightIsNotNullReturnsMinusOne() {
 
 		assertThat(INSTANCE.compare(null, right)).isEqualTo(-1);
 
@@ -69,7 +69,7 @@ public class CassandraPersistentPropertyComparatorUnitTests {
 	}
 
 	@Test // DATACASS-248
-	public void leftAndRightAreEqualReturnsZero() {
+	void leftAndRightAreEqualReturnsZero() {
 
 		assertThat(INSTANCE.compare(left, left)).isEqualTo(0);
 		assertThat(INSTANCE.compare(right, right)).isEqualTo(0);
@@ -79,7 +79,7 @@ public class CassandraPersistentPropertyComparatorUnitTests {
 	}
 
 	@Test // DATACASS-248
-	public void leftAndRightAreCompositePrimaryKeysReturnsZero() {
+	void leftAndRightAreCompositePrimaryKeysReturnsZero() {
 
 		when(left.isCompositePrimaryKey()).thenReturn(true);
 		when(right.isCompositePrimaryKey()).thenReturn(true);
@@ -91,7 +91,7 @@ public class CassandraPersistentPropertyComparatorUnitTests {
 	}
 
 	@Test // DATACASS-248
-	public void leftIsCompositePrimaryKeyReturnsMinusOne() {
+	void leftIsCompositePrimaryKeyReturnsMinusOne() {
 
 		when(left.isCompositePrimaryKey()).thenReturn(true);
 		when(left.isPrimaryKeyColumn()).thenReturn(false);
@@ -107,7 +107,7 @@ public class CassandraPersistentPropertyComparatorUnitTests {
 	}
 
 	@Test // DATACASS-248
-	public void leftIsPrimaryKeyColumnReturnsMinusOne() {
+	void leftIsPrimaryKeyColumnReturnsMinusOne() {
 
 		when(left.isCompositePrimaryKey()).thenReturn(false);
 		when(left.isPrimaryKeyColumn()).thenReturn(true);
@@ -123,7 +123,7 @@ public class CassandraPersistentPropertyComparatorUnitTests {
 	}
 
 	@Test // DATACASS-248
-	public void rightIsCompositePrimaryKeyReturnsOne() {
+	void rightIsCompositePrimaryKeyReturnsOne() {
 
 		when(left.isCompositePrimaryKey()).thenReturn(false);
 		when(left.isPrimaryKeyColumn()).thenReturn(false);
@@ -139,7 +139,7 @@ public class CassandraPersistentPropertyComparatorUnitTests {
 	}
 
 	@Test // DATACASS-248
-	public void rightIsPrimaryKeyColumnReturnsOne() {
+	void rightIsPrimaryKeyColumnReturnsOne() {
 
 		when(left.isCompositePrimaryKey()).thenReturn(false);
 		when(left.isPrimaryKeyColumn()).thenReturn(false);
@@ -155,7 +155,7 @@ public class CassandraPersistentPropertyComparatorUnitTests {
 	}
 
 	@Test // DATACASS-248
-	public void compareLeftAndRightNamesReturnsNegativeValue() {
+	void compareLeftAndRightNamesReturnsNegativeValue() {
 
 		when(left.isCompositePrimaryKey()).thenReturn(false);
 		when(left.isPrimaryKeyColumn()).thenReturn(true);
@@ -175,7 +175,7 @@ public class CassandraPersistentPropertyComparatorUnitTests {
 	}
 
 	@Test // DATACASS-352
-	public void columnNameComparisonShouldHonorContract() throws Exception {
+	void columnNameComparisonShouldHonorContract() throws Exception {
 
 		CassandraMappingContext context = new CassandraMappingContext();
 		CassandraPersistentEntity<?> persistentEntity = context.getRequiredPersistentEntity(TwoColumns.class);
@@ -189,7 +189,7 @@ public class CassandraPersistentPropertyComparatorUnitTests {
 		assertThat(INSTANCE.compare(another, another)).isEqualTo(0);
 	}
 
-	static class TwoColumns {
+	private static class TwoColumns {
 
 		@Column("annotated") String annotated;
 

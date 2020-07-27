@@ -23,17 +23,18 @@ import javax.enterprise.inject.se.SeContainer;
 import javax.enterprise.inject.se.SeContainerInitializer;
 
 import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import org.springframework.data.cassandra.domain.User;
-import org.springframework.data.cassandra.test.util.AbstractEmbeddedCassandraIntegrationTest;
+import org.springframework.data.cassandra.test.util.IntegrationTestsSupport;
 
 /**
  * @author Mohsin Husen
  * @author Mark Paluch
  */
-public class CdiRepositoryTests extends AbstractEmbeddedCassandraIntegrationTest {
+class CdiRepositoryTests extends IntegrationTestsSupport {
 
 	private static SeContainer cdiContainer;
 
@@ -41,8 +42,8 @@ public class CdiRepositoryTests extends AbstractEmbeddedCassandraIntegrationTest
 	private SamplePersonRepository personRepository;
 	private QualifiedUserRepository qualifiedUserRepository;
 
-	@BeforeClass
-	public static void init() throws Exception {
+	@BeforeAll
+	static void init() throws Exception {
 
 		// CDI container is booted before the @Rule can be triggered.
 		// Ensure that we have a usable Cassandra instance otherwise the container won't boot
@@ -55,12 +56,12 @@ public class CdiRepositoryTests extends AbstractEmbeddedCassandraIntegrationTest
 	}
 
 	@AfterClass
-	public static void shutdown() throws Exception {
+	static void shutdown() throws Exception {
 		cdiContainer.close();
 	}
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		CdiRepositoryClient client = cdiContainer.select(CdiRepositoryClient.class).get();
 		repository = client.getRepository();
@@ -69,7 +70,7 @@ public class CdiRepositoryTests extends AbstractEmbeddedCassandraIntegrationTest
 	}
 
 	@Test // DATACASS-149, DATACASS-495
-	public void testCdiRepository() {
+	void testCdiRepository() {
 
 		assertThat(repository).isNotNull();
 
@@ -102,7 +103,7 @@ public class CdiRepositoryTests extends AbstractEmbeddedCassandraIntegrationTest
 	}
 
 	@Test // DATACASS-249, DATACASS-495
-	public void testQualifiedCdiRepository() {
+	void testQualifiedCdiRepository() {
 
 		assertThat(qualifiedUserRepository).isNotNull();
 		qualifiedUserRepository.deleteAll();
@@ -118,7 +119,7 @@ public class CdiRepositoryTests extends AbstractEmbeddedCassandraIntegrationTest
 	}
 
 	@Test // DATACASS-149, DATACASS-495
-	public void returnOneFromCustomImpl() {
+	void returnOneFromCustomImpl() {
 		assertThat(personRepository.returnOne()).isEqualTo(1);
 	}
 }

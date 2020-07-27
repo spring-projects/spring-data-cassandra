@@ -15,11 +15,11 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.*;
 
 import org.joda.time.LocalTime;
+import org.junit.jupiter.api.Test;
+
 import org.springframework.data.cassandra.core.convert.CassandraJodaTimeConverters.LocalTimeToMillisOfDayConverter;
 import org.springframework.data.cassandra.core.convert.CassandraJodaTimeConverters.MillisOfDayToLocalTimeConverter;
 
@@ -28,17 +28,17 @@ import org.springframework.data.cassandra.core.convert.CassandraJodaTimeConverte
  *
  * @author Mark Paluch
  */
-public class CassandraJodaTimeConvertersUnitTests {
+class CassandraJodaTimeConvertersUnitTests {
 
 	@Test // DATACASS-302
-	public void shouldConvertLongToLocalTime() {
+	void shouldConvertLongToLocalTime() {
 
 		assertThat(MillisOfDayToLocalTimeConverter.INSTANCE.convert(3723000L))
 				.isEqualTo(LocalTime.fromMillisOfDay(3723000L));
 	}
 
 	@Test // DATACASS-302
-	public void shouldConvertLocalTimeToLong() {
+	void shouldConvertLocalTimeToLong() {
 
 		assertThat(LocalTimeToMillisOfDayConverter.INSTANCE.convert(LocalTime.MIDNIGHT)).isZero();
 		assertThat(LocalTimeToMillisOfDayConverter.INSTANCE.convert(LocalTime.fromMillisOfDay(3723000L)))

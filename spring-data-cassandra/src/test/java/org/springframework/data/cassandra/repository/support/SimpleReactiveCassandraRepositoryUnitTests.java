@@ -22,11 +22,11 @@ import reactor.core.publisher.Mono;
 
 import java.io.Serializable;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
@@ -45,28 +45,28 @@ import com.datastax.oss.driver.api.core.type.UserDefinedType;
  *
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 @SuppressWarnings("unchecked")
-public class SimpleReactiveCassandraRepositoryUnitTests {
+class SimpleReactiveCassandraRepositoryUnitTests {
 
-	CassandraMappingContext mappingContext = new CassandraMappingContext();
-	MappingCassandraConverter converter = new MappingCassandraConverter(mappingContext);
+	private CassandraMappingContext mappingContext = new CassandraMappingContext();
+	private MappingCassandraConverter converter = new MappingCassandraConverter(mappingContext);
 
-	SimpleReactiveCassandraRepository<Object, ? extends Serializable> repository;
+	private SimpleReactiveCassandraRepository<Object, ? extends Serializable> repository;
 
 	@Mock ReactiveCassandraOperations cassandraOperations;
 	@Mock UserTypeResolver userTypeResolver;
 	@Mock UserDefinedType userType;
 	@Mock EntityWriteResult writeResult;
 
-	@Before
-	public void before() {
+	@BeforeEach
+	void before() {
 		mappingContext.setUserTypeResolver(userTypeResolver);
 		when(cassandraOperations.getConverter()).thenReturn(converter);
 	}
 
 	@Test // DATACASS-576
-	public void shouldInsertNewVersionedEntity() {
+	void shouldInsertNewVersionedEntity() {
 
 		when(cassandraOperations.insert(any(), any(InsertOptions.class))).thenReturn(Mono.just(writeResult));
 
@@ -84,7 +84,7 @@ public class SimpleReactiveCassandraRepositoryUnitTests {
 	}
 
 	@Test // DATACASS-576
-	public void shouldUpdateExistingVersionedEntity() {
+	void shouldUpdateExistingVersionedEntity() {
 
 		CassandraPersistentEntity<?> entity = converter.getMappingContext()
 				.getRequiredPersistentEntity(VersionedPerson.class);

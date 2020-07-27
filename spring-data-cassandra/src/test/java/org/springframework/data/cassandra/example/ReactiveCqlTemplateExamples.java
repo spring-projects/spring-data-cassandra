@@ -31,7 +31,7 @@ import com.datastax.oss.driver.api.core.cql.Row;
 //@formatter:off
 public class ReactiveCqlTemplateExamples {
 
-	ReactiveCqlTemplate reactiveCqlTemplate = null;
+	private ReactiveCqlTemplate reactiveCqlTemplate = null;
 
 	void examples() {
 		// tag::rowCount[]
@@ -77,7 +77,7 @@ public class ReactiveCqlTemplateExamples {
 	}
 
 	// tag::findAllActors[]
-	public Flux<Actor> findAllActors() {
+	Flux<Actor> findAllActors() {
 		return reactiveCqlTemplate.query("SELECT first_name, last_name FROM t_actor", ActorMapper.INSTANCE);
 	}
 
@@ -126,10 +126,10 @@ public class ReactiveCqlTemplateExamples {
 
 	static class Actor {
 
-		public void setFirstName(String first_name) {
+		void setFirstName(String first_name) {
 
 		}
 
-		public void setLastName(String last_name) {}
+		void setLastName(String last_name) {}
 	}
 }

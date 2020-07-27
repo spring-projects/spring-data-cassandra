@@ -22,7 +22,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
 
@@ -31,10 +31,10 @@ import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
  *
  * @author Mark Paluch
  */
-public class WriteOptionsUnitTests {
+class WriteOptionsUnitTests {
 
 	@Test // DATACASS-202
-	public void buildWriteOptions() {
+	void buildWriteOptions() {
 
 		WriteOptions writeOptions = WriteOptions.builder()
 				.consistencyLevel(DefaultConsistencyLevel.ANY)
@@ -54,7 +54,7 @@ public class WriteOptionsUnitTests {
 	}
 
 	@Test // DATACASS-202
-	public void buildReadTimeoutOptionsWriteOptions() {
+	void buildReadTimeoutOptionsWriteOptions() {
 
 		WriteOptions writeOptions = WriteOptions.builder().timeout(Duration.ofMinutes(1)).build();
 
@@ -65,7 +65,7 @@ public class WriteOptionsUnitTests {
 
 
 	@Test // DATACASS-56
-	public void buildWriteOptionsMutate() {
+	void buildWriteOptionsMutate() {
 		Instant now = LocalDateTime.now().toInstant(ZoneOffset.UTC);
 
 		WriteOptions writeOptions = WriteOptions.builder()

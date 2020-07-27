@@ -20,8 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -30,9 +29,8 @@ import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceAttributes;
 import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceOption;
 import org.springframework.data.cassandra.support.AbstractTestJavaConfig;
 import org.springframework.data.cassandra.support.KeyspaceTestUtils;
-import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 
@@ -40,14 +38,13 @@ import com.datastax.oss.driver.api.core.CqlSession;
  * @author Matthew T. Adams
  * @author Mark Paluch
  */
-@RunWith(SpringRunner.class)
-@ContextConfiguration(classes = KeyspaceCreatingJavaConfigIntegrationTests.KeyspaceCreatingJavaConfig.class)
-public class KeyspaceCreatingJavaConfigIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
+@SpringJUnitConfig(classes = KeyspaceCreatingJavaConfigIntegrationTests.KeyspaceCreatingJavaConfig.class)
+class KeyspaceCreatingJavaConfigIntegrationTests extends AbstractKeyspaceCreatingIntegrationTests {
 
 	@Autowired CqlSession session;
 
 	@Test
-	public void test() {
+	void test() {
 
 		assertThat(session).isNotNull();
 		KeyspaceTestUtils.assertKeyspaceExists(KeyspaceCreatingJavaConfig.KEYSPACE_NAME, session);
@@ -62,7 +59,7 @@ public class KeyspaceCreatingJavaConfigIntegrationTests extends AbstractKeyspace
 	@Configuration
 	static class KeyspaceCreatingJavaConfig extends AbstractTestJavaConfig {
 
-		public static final String KEYSPACE_NAME = "foo";
+		private static final String KEYSPACE_NAME = "foo";
 
 		@Override
 		protected String getKeyspaceName() {

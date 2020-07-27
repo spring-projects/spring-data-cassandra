@@ -28,7 +28,7 @@ import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
  * @author Matthew T. Adams
  * @author Antoine Toulme
  */
-public class CqlIndexSpecificationAssertions {
+class CqlIndexSpecificationAssertions {
 
 	/**
 	 * Assert the existence of an index using the index name.

@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.repository.forcequote.config;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.repository.config.EnableCassandraRepositories;
 import org.springframework.data.cassandra.repository.support.IntegrationTestConfig;
@@ -25,19 +25,19 @@ import org.springframework.test.context.ContextConfiguration;
  * @author Matthew T. Adams
  */
 @ContextConfiguration
-public class ForceQuotedRepositoryJavaConfigIntegrationTests extends ForceQuotedRepositoryIntegrationTests {
+class ForceQuotedRepositoryJavaConfigIntegrationTests extends ForceQuotedRepositoryIntegrationTests {
 
 	@Configuration
 	@EnableCassandraRepositories(basePackageClasses = ForceQuotedRepositoryTests.class)
 	public static class Config extends IntegrationTestConfig {}
 
 	@Test
-	public void testExplicit() {
+	void testExplicit() {
 		tests.testExplicit(Explicit.TABLE_NAME);
 	}
 
 	@Test
-	public void testExplicitPropertiesWithJavaValues() {
+	void testExplicitPropertiesWithJavaValues() {
 		tests.testExplicitProperties(ExplicitProperties.EXPLICIT_STRING_VALUE, ExplicitProperties.EXPLICIT_PRIMARY_KEY);
 	}
 }

@@ -28,46 +28,49 @@ import java.lang.reflect.Proxy;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 /**
  * Unit tests for {@link CachedPreparedStatementCreator}.
  *
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner.class)
-public class CachedPreparedStatementCreatorUnitTests {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class CachedPreparedStatementCreatorUnitTests {
 
-	PreparedStatement preparedStatement;
+	private PreparedStatement preparedStatement;
 	@Mock CqlSession sessionMock;
 
-	@Before
-	public void before() throws Exception {
+	@BeforeEach
+	void before() throws Exception {
 
 		preparedStatement = newProxy(PreparedStatement.class, new TestInvocationHandler());
 		when(sessionMock.prepare(anyString())).thenReturn(preparedStatement);
 	}
 
 	@Test // DATACASS-253
-	public void shouldRejectEmptyCql() {
+	void shouldRejectEmptyCql() {
 		assertThatIllegalArgumentException().isThrownBy(() -> new CachedPreparedStatementCreator(""));
 	}
 
 	@Test // DATACASS-253
-	public void shouldRejectNullCql() {
+	void shouldRejectNullCql() {
 		assertThatIllegalArgumentException().isThrownBy(() -> new CachedPreparedStatementCreator(null));
 	}
 
 	@Test // DATACASS-253
-	public void shouldCreatePreparedStatement() {
+	void shouldCreatePreparedStatement() {
 
 		CachedPreparedStatementCreator cachedPreparedStatementCreator = new CachedPreparedStatementCreator("my cql");
 
@@ -78,7 +81,7 @@ public class CachedPreparedStatementCreatorUnitTests {
 	}
 
 	@Test // DATACASS-253
-	public void shouldCacheCreatePreparedStatement() {
+	void shouldCacheCreatePreparedStatement() {
 
 		CachedPreparedStatementCreator cachedPreparedStatementCreator = new CachedPreparedStatementCreator("my cql");
 
@@ -92,7 +95,7 @@ public class CachedPreparedStatementCreatorUnitTests {
 	}
 
 	@Test // DATACASS-253
-	public void concurrentAccessToCreateStatementShouldBeSynchronized() throws Throwable {
+	void concurrentAccessToCreateStatementShouldBeSynchronized() throws Throwable {
 
 		CreatePreparedStatementIsThreadSafe concurrentPrepareStatement = new CreatePreparedStatementIsThreadSafe(
 				preparedStatement, new CachedPreparedStatementCreator("my cql"));
@@ -104,10 +107,10 @@ public class CachedPreparedStatementCreatorUnitTests {
 	private static class CreatePreparedStatementIsThreadSafe extends MultithreadedTestCase {
 
 		final AtomicInteger atomicInteger = new AtomicInteger();
-		final CachedPreparedStatementCreator preparedStatementCreator;
-		final CqlSession session;
+		private final CachedPreparedStatementCreator preparedStatementCreator;
+		private final CqlSession session;
 
-		public CreatePreparedStatementIsThreadSafe(final PreparedStatement preparedStatement,
+		private CreatePreparedStatementIsThreadSafe(final PreparedStatement preparedStatement,
 				CachedPreparedStatementCreator preparedStatementCreator) {
 
 			this.preparedStatementCreator = preparedStatementCreator;

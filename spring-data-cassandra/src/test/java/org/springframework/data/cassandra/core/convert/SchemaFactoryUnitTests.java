@@ -33,8 +33,8 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.cql.Ordering;
@@ -70,11 +70,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class SchemaFactoryUnitTests {
 
-	CassandraMappingContext ctx = new CassandraMappingContext();
-	SchemaFactory schemaFactory;
+	private CassandraMappingContext ctx = new CassandraMappingContext();
+	private SchemaFactory schemaFactory;
 
-	@Before
-	public void before() {
+	@BeforeEach
+	void before() {
 
 		List<Converter<?, ?>> converters = new ArrayList<>();
 		converters.add(new PersonReadConverter());
@@ -87,7 +87,7 @@ public class SchemaFactoryUnitTests {
 	}
 
 	@Test // DATACASS-340
-	public void createdTableSpecificationShouldConsiderClusterColumnOrdering() {
+	void createdTableSpecificationShouldConsiderClusterColumnOrdering() {
 
 		CassandraPersistentEntity<?> persistentEntity = ctx
 				.getRequiredPersistentEntity(EntityWithOrderedClusteredColumns.class);
@@ -111,7 +111,7 @@ public class SchemaFactoryUnitTests {
 	}
 
 	@Test // DATACASS-340
-	public void createdTableSpecificationShouldConsiderPrimaryKeyClassClusterColumnOrdering() {
+	void createdTableSpecificationShouldConsiderPrimaryKeyClassClusterColumnOrdering() {
 
 		CassandraPersistentEntity<?> persistentEntity = ctx
 				.getRequiredPersistentEntity(EntityWithPrimaryKeyWithOrderedClusteredColumns.class);
@@ -135,7 +135,7 @@ public class SchemaFactoryUnitTests {
 	}
 
 	@Test // DATACASS-487
-	public void shouldCreateTableForMappedAndConvertedColumn() {
+	void shouldCreateTableForMappedAndConvertedColumn() {
 
 		UserDefinedType mappedudt = UserDefinedTypeBuilder.forName("mappedudt").withField("foo", DataTypes.ASCII).build();
 
@@ -155,8 +155,8 @@ public class SchemaFactoryUnitTests {
 	@PrimaryKeyClass
 	private static class CompositePrimaryKeyClassWithProperties implements Serializable {
 
-		String firstname;
-		String lastname;
+		private String firstname;
+		private String lastname;
 
 		@PrimaryKeyColumn(ordinal = 1, type = PrimaryKeyType.PARTITIONED)
 		public String getFirstname() {
@@ -178,7 +178,7 @@ public class SchemaFactoryUnitTests {
 	}
 
 	@Table
-	static class EntityWithOrderedClusteredColumns {
+	private static class EntityWithOrderedClusteredColumns {
 
 		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) String species;
 		@PrimaryKeyColumn(ordinal = 1, type = PrimaryKeyType.CLUSTERED, ordering = Ordering.ASCENDING) String breed;
@@ -202,7 +202,7 @@ public class SchemaFactoryUnitTests {
 	}
 
 	@Test // DATACASS-213
-	public void createIndexShouldConsiderAnnotatedProperties() {
+	void createIndexShouldConsiderAnnotatedProperties() {
 
 		List<CreateIndexSpecification> specifications = schemaFactory
 				.getCreateIndexSpecificationsFor(ctx.getRequiredPersistentEntity(IndexedType.class));
@@ -223,7 +223,7 @@ public class SchemaFactoryUnitTests {
 	}
 
 	@Test // DATACASS-213
-	public void createIndexForClusteredPrimaryKeyShouldConsiderAnnotatedAccessors() {
+	void createIndexForClusteredPrimaryKeyShouldConsiderAnnotatedAccessors() {
 
 		List<CreateIndexSpecification> specifications = schemaFactory
 				.getCreateIndexSpecificationsFor(ctx.getRequiredPersistentEntity(CompositeKeyEntity.class));
@@ -237,7 +237,7 @@ public class SchemaFactoryUnitTests {
 	}
 
 	@Test // DATACASS-284, DATACASS-651
-	public void shouldRejectUntypedTuples() {
+	void shouldRejectUntypedTuples() {
 
 		assertThatThrownBy(() -> this.schemaFactory
 				.getCreateTableSpecificationFor(this.ctx.getRequiredPersistentEntity(UntypedTupleEntity.class)))
@@ -249,7 +249,7 @@ public class SchemaFactoryUnitTests {
 	}
 
 	@Test // DATACASS-284
-	public void shouldCreateTableForTypedTupleType() {
+	void shouldCreateTableForTypedTupleType() {
 
 		CreateTableSpecification tableSpecification = this.schemaFactory
 				.getCreateTableSpecificationFor(this.ctx.getRequiredPersistentEntity(TypedTupleEntity.class));
@@ -263,7 +263,7 @@ public class SchemaFactoryUnitTests {
 	}
 
 	@Test // DATACASS-651
-	public void shouldCreateTableForEntityWithMapOfTuples() {
+	void shouldCreateTableForEntityWithMapOfTuples() {
 
 		CreateTableSpecification tableSpecification = this.schemaFactory
 				.getCreateTableSpecificationFor(this.ctx.getRequiredPersistentEntity(EntityWithMapOfTuples.class));
@@ -282,7 +282,7 @@ public class SchemaFactoryUnitTests {
 				.orElseThrow(() -> new NoSuchElementException(column));
 	}
 
-	static class IndexedType {
+	private static class IndexedType {
 
 		@PrimaryKeyColumn("first_name") @Indexed("my_index") String firstname;
 
@@ -296,18 +296,18 @@ public class SchemaFactoryUnitTests {
 		@PrimaryKeyColumn("last_name") @Indexed("my_index") String lastname;
 	}
 
-	static class CompositeKeyEntity {
+	private static class CompositeKeyEntity {
 
 		@PrimaryKey CompositeKeyWithIndex key;
 	}
 
-	static class InvalidMapIndex {
+	private static class InvalidMapIndex {
 
 		@Indexed Map<@Indexed String, String> mixed;
 	}
 
 	@Test // DATACASS-506
-	public void shouldCreatedUserTypeSpecificationsWithAnnotatedTypeName() {
+	void shouldCreatedUserTypeSpecificationsWithAnnotatedTypeName() {
 
 		assertThat(schemaFactory.getCreateUserTypeSpecificationFor(ctx.getRequiredPersistentEntity(WithUdt.class)))
 				.isNotNull();
@@ -316,7 +316,7 @@ public class SchemaFactoryUnitTests {
 	}
 
 	@Test // DATACASS-172
-	public void createTableForComplexPrimaryKeyShouldFail() {
+	void createTableForComplexPrimaryKeyShouldFail() {
 
 		try {
 			schemaFactory
@@ -346,7 +346,7 @@ public class SchemaFactoryUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void customConversionTestShouldCreateCorrectTableDefinition() {
+	void customConversionTestShouldCreateCorrectTableDefinition() {
 
 		CassandraPersistentEntity<?> persistentEntity = ctx.getRequiredPersistentEntity(Employee.class);
 
@@ -370,7 +370,7 @@ public class SchemaFactoryUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void customConversionTestShouldHonorTypeAnnotationAndCreateCorrectTableDefinition() {
+	void customConversionTestShouldHonorTypeAnnotationAndCreateCorrectTableDefinition() {
 
 		CassandraPersistentEntity<?> persistentEntity = ctx.getRequiredPersistentEntity(Employee.class);
 
@@ -387,7 +387,7 @@ public class SchemaFactoryUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void columnsShouldMapToVarchar() {
+	void columnsShouldMapToVarchar() {
 
 		CreateTableSpecification specification = getCreateTableSpecificationFor(AllPossibleTypes.class);
 
@@ -398,7 +398,7 @@ public class SchemaFactoryUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void columnsShouldMapToTinyInt() {
+	void columnsShouldMapToTinyInt() {
 
 		CreateTableSpecification specification = getCreateTableSpecificationFor(AllPossibleTypes.class);
 
@@ -407,7 +407,7 @@ public class SchemaFactoryUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void columnsShouldMapToSmallInt() {
+	void columnsShouldMapToSmallInt() {
 
 		CreateTableSpecification specification = getCreateTableSpecificationFor(AllPossibleTypes.class);
 
@@ -416,7 +416,7 @@ public class SchemaFactoryUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void columnsShouldMapToBigInt() {
+	void columnsShouldMapToBigInt() {
 
 		CreateTableSpecification specification = getCreateTableSpecificationFor(AllPossibleTypes.class);
 
@@ -425,7 +425,7 @@ public class SchemaFactoryUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void columnsShouldMapToVarInt() {
+	void columnsShouldMapToVarInt() {
 
 		CreateTableSpecification specification = getCreateTableSpecificationFor(AllPossibleTypes.class);
 
@@ -433,7 +433,7 @@ public class SchemaFactoryUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void columnsShouldMapToDecimal() {
+	void columnsShouldMapToDecimal() {
 
 		CreateTableSpecification specification = getCreateTableSpecificationFor(AllPossibleTypes.class);
 
@@ -441,7 +441,7 @@ public class SchemaFactoryUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void columnsShouldMapToInt() {
+	void columnsShouldMapToInt() {
 
 		CreateTableSpecification specification = getCreateTableSpecificationFor(AllPossibleTypes.class);
 
@@ -450,7 +450,7 @@ public class SchemaFactoryUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void columnsShouldMapToFloat() {
+	void columnsShouldMapToFloat() {
 
 		CreateTableSpecification specification = getCreateTableSpecificationFor(AllPossibleTypes.class);
 
@@ -459,7 +459,7 @@ public class SchemaFactoryUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void columnsShouldMapToDouble() {
+	void columnsShouldMapToDouble() {
 
 		CreateTableSpecification specification = getCreateTableSpecificationFor(AllPossibleTypes.class);
 
@@ -468,7 +468,7 @@ public class SchemaFactoryUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void columnsShouldMapToBoolean() {
+	void columnsShouldMapToBoolean() {
 
 		CreateTableSpecification specification = getCreateTableSpecificationFor(AllPossibleTypes.class);
 
@@ -477,7 +477,7 @@ public class SchemaFactoryUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void columnsShouldMapToDate() {
+	void columnsShouldMapToDate() {
 
 		CreateTableSpecification specification = getCreateTableSpecificationFor(AllPossibleTypes.class);
 
@@ -487,7 +487,7 @@ public class SchemaFactoryUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void columnsShouldMapToTimestamp() {
+	void columnsShouldMapToTimestamp() {
 
 		CreateTableSpecification specification = getCreateTableSpecificationFor(AllPossibleTypes.class);
 
@@ -501,7 +501,7 @@ public class SchemaFactoryUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void columnsShouldMapToTimestampUsingOverrides() {
+	void columnsShouldMapToTimestampUsingOverrides() {
 
 		CreateTableSpecification specification = getCreateTableSpecificationFor(TypeWithOverrides.class);
 
@@ -510,7 +510,7 @@ public class SchemaFactoryUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void columnsShouldMapToBlob() {
+	void columnsShouldMapToBlob() {
 
 		CreateTableSpecification specification = getCreateTableSpecificationFor(AllPossibleTypes.class);
 
@@ -518,7 +518,7 @@ public class SchemaFactoryUnitTests {
 	}
 
 	@Test // DATACASS-172
-	public void columnsShouldMapToUdt() {
+	void columnsShouldMapToUdt() {
 
 		CreateTableSpecification specification = getCreateTableSpecificationFor(WithUdtFields.class);
 
@@ -528,7 +528,7 @@ public class SchemaFactoryUnitTests {
 	}
 
 	@Test // DATACASS-172
-	public void columnsShouldMapToMappedUserType() {
+	void columnsShouldMapToMappedUserType() {
 
 		UserDefinedType mappedUdt = new SchemaFactory.ShallowUserDefinedType("mappedudt", true);
 
@@ -550,7 +550,7 @@ public class SchemaFactoryUnitTests {
 	}
 
 	@Test // DATACASS-523
-	public void columnsShouldMapToTuple() {
+	void columnsShouldMapToTuple() {
 
 		UserDefinedType mappedUdt = mock(UserDefinedType.class, "mappedudt");
 		UserDefinedType human_udt = mock(UserDefinedType.class, "human_udt");
@@ -583,7 +583,7 @@ public class SchemaFactoryUnitTests {
 	}
 
 	@Test // DATACASS-678
-	public void createTableSpecificationShouldConsiderCustomTableName() {
+	void createTableSpecificationShouldConsiderCustomTableName() {
 
 		CqlIdentifier customTableName = CqlIdentifier.fromCql("my_custom_came");
 
@@ -732,12 +732,12 @@ public class SchemaFactoryUnitTests {
 	}
 
 	@Table
-	static class EntityWithComplexPrimaryKeyColumn {
+	private static class EntityWithComplexPrimaryKeyColumn {
 		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) Object complexObject;
 	}
 
 	@Table
-	static class EntityWithComplexId {
+	private static class EntityWithComplexId {
 		@Id Object complexObject;
 	}
 
@@ -747,7 +747,7 @@ public class SchemaFactoryUnitTests {
 	}
 
 	@Table
-	static class EntityWithPrimaryKeyClassWithComplexId {
+	private static class EntityWithPrimaryKeyClassWithComplexId {
 		@Id PrimaryKeyClassWithComplexId primaryKeyClassWithComplexId;
 	}
 
@@ -785,36 +785,36 @@ public class SchemaFactoryUnitTests {
 	}
 
 	@org.springframework.data.cassandra.core.mapping.UserDefinedType(value = "NestedType")
-	public static class Nested {
+	static class Nested {
 		String s1;
 		@CassandraType(type = Name.UDT, userTypeName = "AnotherNestedType") AnotherNested anotherNested;
 	}
 
 	@org.springframework.data.cassandra.core.mapping.UserDefinedType(value = "AnotherNestedType")
-	public static class AnotherNested {
+	static class AnotherNested {
 		String str;
 	}
 
 	@Table
-	static class TypedTupleEntity {
+	private static class TypedTupleEntity {
 		@Id String id;
 		@CassandraType(type = Name.TUPLE, typeArguments = { Name.VARCHAR, Name.BIGINT }) TupleValue typed;
 	}
 
 	@Table
-	static class EntityWithMapOfTuples {
+	private static class EntityWithMapOfTuples {
 		@Id String id;
 		Map<String, MappedTuple> map;
 	}
 
 	@Table
-	static class UntypedTupleEntity {
+	private static class UntypedTupleEntity {
 		@Id String id;
 		TupleValue untyped;
 	}
 
 	@Table
-	static class UntypedTupleMapEntity {
+	private static class UntypedTupleMapEntity {
 		@Id String id;
 		Map<String, TupleValue> untyped;
 	}
@@ -837,7 +837,7 @@ public class SchemaFactoryUnitTests {
 	}
 
 	@Test // DATACASS-167
-	public void createTableSpecificationShouldConsiderEmbeddedType() {
+	void createTableSpecificationShouldConsiderEmbeddedType() {
 
 		CreateTableSpecification specification = getCreateTableSpecificationFor(TypeWithEmbedded.class);
 
@@ -851,7 +851,7 @@ public class SchemaFactoryUnitTests {
 	}
 
 	@Test // DATACASS-167
-	public void createIndexSpecificationShouldConsiderEmbeddedType() {
+	void createIndexSpecificationShouldConsiderEmbeddedType() {
 
 		List<CreateIndexSpecification> specifications = schemaFactory
 				.getCreateIndexSpecificationsFor(ctx.getRequiredPersistentEntity(TypeWithEmbedded.class));

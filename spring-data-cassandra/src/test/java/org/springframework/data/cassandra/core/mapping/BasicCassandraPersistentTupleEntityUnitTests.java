@@ -20,9 +20,9 @@ import static org.assertj.core.api.Assertions.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mapping.MappingException;
@@ -32,13 +32,13 @@ import org.springframework.data.mapping.MappingException;
  *
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner.class)
-public class BasicCassandraPersistentTupleEntityUnitTests {
+@ExtendWith(MockitoExtension.class)
+class BasicCassandraPersistentTupleEntityUnitTests {
 
-	CassandraMappingContext mappingContext = new CassandraMappingContext();
+	private CassandraMappingContext mappingContext = new CassandraMappingContext();
 
 	@Test // DATACASS-523
-	public void shouldCreatePersistentTupleEntity() {
+	void shouldCreatePersistentTupleEntity() {
 
 		BasicCassandraPersistentEntity<?> entity = this.mappingContext.getRequiredPersistentEntity(Address.class);
 
@@ -48,7 +48,7 @@ public class BasicCassandraPersistentTupleEntityUnitTests {
 	}
 
 	@Test // DATACASS-523
-	public void shouldCreateElementsInOrder() {
+	void shouldCreateElementsInOrder() {
 
 		List<String> propertyNames = new ArrayList<>();
 
@@ -62,14 +62,14 @@ public class BasicCassandraPersistentTupleEntityUnitTests {
 	}
 
 	@Test // DATACASS-523
-	public void shouldReportDuplicateMappings() {
+	void shouldReportDuplicateMappings() {
 
 		assertThatThrownBy(() -> this.mappingContext.getRequiredPersistentEntity(DuplicateElement.class))
 				.isInstanceOf(MappingException.class).hasMessageContaining("Duplicate ordinal [0]");
 	}
 
 	@Test // DATACASS-523
-	public void shouldReportMissingOrdinalMappings() {
+	void shouldReportMissingOrdinalMappings() {
 
 		assertThatThrownBy(() -> this.mappingContext.getRequiredPersistentEntity(MissingElementOrdinals.class))
 				.isInstanceOf(MappingException.class).hasMessageContaining("Mapped tuple has no")
@@ -77,7 +77,7 @@ public class BasicCassandraPersistentTupleEntityUnitTests {
 	}
 
 	@Test // DATACASS-523
-	public void shouldReportNegativeOrdinalIndex() {
+	void shouldReportNegativeOrdinalIndex() {
 
 		assertThatThrownBy(() -> this.mappingContext.getRequiredPersistentEntity(NegativeIndex.class))
 				.isInstanceOf(IllegalArgumentException.class)
@@ -85,7 +85,7 @@ public class BasicCassandraPersistentTupleEntityUnitTests {
 	}
 
 	@Test // DATACASS-523
-	public void shouldReportNoElements() {
+	void shouldReportNoElements() {
 
 		assertThatThrownBy(() -> this.mappingContext.getRequiredPersistentEntity(NoElements.class))
 				.isInstanceOf(MappingException.class)
@@ -93,7 +93,7 @@ public class BasicCassandraPersistentTupleEntityUnitTests {
 	}
 
 	@Test // DATACASS-523
-	public void shouldReportMissingAnnotations() {
+	void shouldReportMissingAnnotations() {
 
 		assertThatThrownBy(() -> this.mappingContext.getRequiredPersistentEntity(MissingAnnotation.class))
 				.isInstanceOf(MappingException.class)
@@ -109,31 +109,31 @@ public class BasicCassandraPersistentTupleEntityUnitTests {
 	}
 
 	@Tuple
-	static class DuplicateElement {
+	private static class DuplicateElement {
 
 		@Element(0) String street;
 		@Element(0) String city;
 	}
 
 	@Tuple
-	static class NegativeIndex {
+	private static class NegativeIndex {
 		@Element(-1) String street;
 	}
 
 	@Tuple
-	static class MissingElementOrdinals {
+	private static class MissingElementOrdinals {
 
 		@Element(1) String street;
 		@Element(3) String city;
 	}
 
 	@Tuple
-	static class NoElements {
+	private static class NoElements {
 		@Transient String springDataTransient;
 	}
 
 	@Tuple
-	static class MissingAnnotation {
+	private static class MissingAnnotation {
 
 		String street;
 		String city;

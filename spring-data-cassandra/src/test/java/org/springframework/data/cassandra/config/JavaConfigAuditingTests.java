@@ -17,14 +17,12 @@ package org.springframework.data.cassandra.config;
 
 import static org.mockito.Mockito.*;
 
-import org.junit.runner.RunWith;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 
@@ -33,14 +31,13 @@ import com.datastax.oss.driver.api.core.CqlSession;
  *
  * @author Mark Paluch
  */
-@RunWith(SpringRunner.class)
-@ContextConfiguration
-public class JavaConfigAuditingTests extends AbstractAuditingTests {
+@SpringJUnitConfig
+class JavaConfigAuditingTests extends AbstractAuditingTests {
 
 	@Autowired ApplicationContext context;
 
 	@Override
-	protected ApplicationContext getApplicationContext() {
+	public ApplicationContext getApplicationContext() {
 		return context;
 	}
 

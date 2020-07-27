@@ -18,7 +18,7 @@ package org.springframework.data.cassandra.core.cql.generator;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.cassandra.core.cql.generator.CreateUserTypeCqlGenerator.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.data.cassandra.core.cql.keyspace.CreateUserTypeSpecification;
 
@@ -29,10 +29,10 @@ import com.datastax.oss.driver.api.core.type.DataTypes;
  *
  * @author Mark Paluch
  */
-public class CreateUserTypeCqlGeneratorUnitTests {
+class CreateUserTypeCqlGeneratorUnitTests {
 
 	@Test // DATACASS-172
-	public void createUserType() {
+	void createUserType() {
 
 		CreateUserTypeSpecification spec = CreateUserTypeSpecification //
 				.createType("address") //
@@ -42,7 +42,7 @@ public class CreateUserTypeCqlGeneratorUnitTests {
 	}
 
 	@Test // DATACASS-172
-	public void createMultiFieldUserType() {
+	void createMultiFieldUserType() {
 
 		CreateUserTypeSpecification spec = CreateUserTypeSpecification //
 				.createType("address") //
@@ -53,7 +53,7 @@ public class CreateUserTypeCqlGeneratorUnitTests {
 	}
 
 	@Test // DATACASS-172
-	public void createUserTypeIfNotExists() {
+	void createUserTypeIfNotExists() {
 
 		CreateUserTypeSpecification spec = CreateUserTypeSpecification //
 				.createType("address").ifNotExists().field("zip", DataTypes.ASCII) //
@@ -63,7 +63,7 @@ public class CreateUserTypeCqlGeneratorUnitTests {
 	}
 
 	@Test // DATACASS-172
-	public void generationFailsWithoutFields() {
+	void generationFailsWithoutFields() {
 		assertThatIllegalArgumentException().isThrownBy(() -> toCql(CreateUserTypeSpecification.createType("hello")));
 	}
 }

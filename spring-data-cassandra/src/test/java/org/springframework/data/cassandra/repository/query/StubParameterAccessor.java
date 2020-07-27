@@ -52,7 +52,7 @@ class StubParameterAccessor implements CassandraParameterAccessor {
 	}
 
 	@SuppressWarnings("unchecked")
-	public StubParameterAccessor(Object... values) {
+	private StubParameterAccessor(Object... values) {
 		this.values = values;
 	}
 

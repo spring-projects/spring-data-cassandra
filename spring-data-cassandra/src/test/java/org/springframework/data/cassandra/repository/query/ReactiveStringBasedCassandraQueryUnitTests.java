@@ -23,11 +23,11 @@ import reactor.core.publisher.Mono;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.data.cassandra.ReactiveSession;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
@@ -58,8 +58,8 @@ import com.datastax.oss.driver.api.core.cql.SimpleStatement;
  *
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner.class)
-public class ReactiveStringBasedCassandraQueryUnitTests {
+@ExtendWith(MockitoExtension.class)
+class ReactiveStringBasedCassandraQueryUnitTests {
 
 	private static final SpelExpressionParser PARSER = new SpelExpressionParser();
 
@@ -71,9 +71,9 @@ public class ReactiveStringBasedCassandraQueryUnitTests {
 	private ProjectionFactory factory;
 	private RepositoryMetadata metadata;
 
-	@Before
+	@BeforeEach
 	@SuppressWarnings("unchecked")
-	public void setUp() {
+	void setUp() {
 
 		this.metadata = AbstractRepositoryMetadata.getMetadata(SampleRepository.class);
 		this.converter = new MappingCassandraConverter(new CassandraMappingContext());
@@ -85,7 +85,7 @@ public class ReactiveStringBasedCassandraQueryUnitTests {
 	}
 
 	@Test // DATACASS-335
-	public void bindsSimplePropertyCorrectly() {
+	void bindsSimplePropertyCorrectly() {
 
 		ReactiveStringBasedCassandraQuery cassandraQuery = getQueryMethod("findByLastname", String.class);
 		CassandraParametersParameterAccessor accessor = new CassandraParametersParameterAccessor(
@@ -98,7 +98,7 @@ public class ReactiveStringBasedCassandraQueryUnitTests {
 	}
 
 	@Test // DATACASS-146
-	public void shouldApplyQueryOptions() {
+	void shouldApplyQueryOptions() {
 
 		QueryOptions queryOptions = QueryOptions.builder().pageSize(777).build();
 
@@ -116,7 +116,7 @@ public class ReactiveStringBasedCassandraQueryUnitTests {
 	}
 
 	@Test // DATACASS-146
-	public void shouldApplyConsistencyLevel() {
+	void shouldApplyConsistencyLevel() {
 
 		ReactiveStringBasedCassandraQuery cassandraQuery = getQueryMethod("findByLastname", String.class);
 
@@ -131,7 +131,7 @@ public class ReactiveStringBasedCassandraQueryUnitTests {
 	}
 
 	@Test // DATACASS-788
-	public void shouldUseSpelExtension() {
+	void shouldUseSpelExtension() {
 
 		ReactiveStringBasedCassandraQuery cassandraQuery = getQueryMethod("findBySpel");
 

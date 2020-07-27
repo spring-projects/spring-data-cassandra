@@ -20,4 +20,4 @@ import org.springframework.data.cassandra.repository.MapIdCassandraRepository;
 /**
  * @author Matthew T. Adams
  */
-public interface SinglePrimaryKecColumnRepository extends MapIdCassandraRepository<SinglePrimaryKeyColumn> {}
+interface SinglePrimaryKecColumnRepository extends MapIdCassandraRepository<SinglePrimaryKeyColumn> {}

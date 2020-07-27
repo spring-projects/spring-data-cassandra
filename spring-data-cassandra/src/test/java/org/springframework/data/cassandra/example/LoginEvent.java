@@ -25,7 +25,7 @@ import org.springframework.data.cassandra.core.mapping.Table;
 
 // tag::class[]
 @Table(value = "login_event")
-public class LoginEvent {
+class LoginEvent {
 
   @PrimaryKeyColumn(name = "person_id", ordinal = 0, type = PrimaryKeyType.PARTITIONED)
   private String personId;

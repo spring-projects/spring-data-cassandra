@@ -37,11 +37,11 @@ public class Person {
 		return id;
 	}
 
-	public String getName() {
+	private String getName() {
 		return name;
 	}
 
-	public int getAge() {
+	private int getAge() {
 		return age;
 	}
 

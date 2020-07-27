@@ -26,8 +26,8 @@ import java.util.Collections;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.cassandra.ReactiveResultSet;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.ReactiveCqlTemplate;
@@ -37,7 +37,7 @@ import org.springframework.data.cassandra.domain.FlatGroup;
 import org.springframework.data.cassandra.domain.Group;
 import org.springframework.data.cassandra.domain.GroupKey;
 import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
-import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
 
 /**
  * Integration tests for {@link ReactiveCassandraBatchTemplate}.
@@ -45,15 +45,15 @@ import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingInte
  * @author Oleh Dokuka
  * @author Mark Paluch
  */
-public class ReactiveCassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
+class ReactiveCassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrationTests {
 
-	ReactiveCassandraTemplate template;
+	private ReactiveCassandraTemplate template;
 
-	Group walter = new Group(new GroupKey("users", "0x1", "walter"));
-	Group mike = new Group(new GroupKey("users", "0x1", "mike"));
+	private Group walter = new Group(new GroupKey("users", "0x1", "walter"));
+	private Group mike = new Group(new GroupKey("users", "0x1", "mike"));
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		MappingCassandraConverter converter = new MappingCassandraConverter();
 		CassandraTemplate cassandraTemplate = new CassandraTemplate(this.session, converter);
@@ -74,7 +74,7 @@ public class ReactiveCassandraBatchTemplateIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-574
-	public void shouldInsertEntities() {
+	void shouldInsertEntities() {
 
 		ReactiveCassandraBatchOperations batchOperations = new ReactiveCassandraBatchTemplate(template);
 		Mono<WriteResult> execution = batchOperations.insert(walter).insert(mike).execute();
@@ -88,7 +88,7 @@ public class ReactiveCassandraBatchTemplateIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-574
-	public void shouldInsertCollectionOfEntities() {
+	void shouldInsertCollectionOfEntities() {
 
 		ReactiveCassandraBatchOperations batchOperations = new ReactiveCassandraBatchTemplate(template);
 		Mono<Group> loadedMono = batchOperations.insert(Arrays.asList(walter, mike)).execute()
@@ -101,7 +101,7 @@ public class ReactiveCassandraBatchTemplateIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-574
-	public void shouldInsertCollectionOfEntitiesWithTtl() {
+	void shouldInsertCollectionOfEntitiesWithTtl() {
 
 		walter.setEmail("walter@white.com");
 		mike.setEmail("mike@sauls.com");
@@ -120,7 +120,7 @@ public class ReactiveCassandraBatchTemplateIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-574
-	public void shouldInsertMonoOfEntitiesWithTtl() {
+	void shouldInsertMonoOfEntitiesWithTtl() {
 
 		walter.setEmail("walter@white.com");
 		mike.setEmail("mike@sauls.com");
@@ -139,7 +139,7 @@ public class ReactiveCassandraBatchTemplateIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-574
-	public void shouldUpdateEntities() {
+	void shouldUpdateEntities() {
 
 		walter.setEmail("walter@white.com");
 		mike.setEmail("mike@sauls.com");
@@ -154,7 +154,7 @@ public class ReactiveCassandraBatchTemplateIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-574
-	public void shouldUpdateMonoEntities() {
+	void shouldUpdateMonoEntities() {
 
 		walter.setEmail("walter@white.com");
 		mike.setEmail("mike@sauls.com");
@@ -169,7 +169,7 @@ public class ReactiveCassandraBatchTemplateIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-574
-	public void shouldUpdateCollectionOfEntities() {
+	void shouldUpdateCollectionOfEntities() {
 
 		walter.setEmail("walter@white.com");
 		mike.setEmail("mike@sauls.com");
@@ -184,7 +184,7 @@ public class ReactiveCassandraBatchTemplateIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-574
-	public void shouldUpdateCollectionOfEntitiesWithTtl() {
+	void shouldUpdateCollectionOfEntitiesWithTtl() {
 
 		walter.setEmail("walter@white.com");
 		mike.setEmail("mike@sauls.com");
@@ -204,7 +204,7 @@ public class ReactiveCassandraBatchTemplateIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-574
-	public void shouldUpdateMonoCollectionOfEntitiesWithTtl() {
+	void shouldUpdateMonoCollectionOfEntitiesWithTtl() {
 
 		walter.setEmail("walter@white.com");
 		mike.setEmail("mike@sauls.com");
@@ -224,7 +224,7 @@ public class ReactiveCassandraBatchTemplateIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-574
-	public void shouldUpdateMonoOfEntities() {
+	void shouldUpdateMonoOfEntities() {
 
 		FlatGroup walter = new FlatGroup("users", "0x1", "walter");
 		FlatGroup mike = new FlatGroup("users", "0x1", "mike");
@@ -242,7 +242,7 @@ public class ReactiveCassandraBatchTemplateIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-574
-	public void shouldUpdateMonoCollectionOfEntities() {
+	void shouldUpdateMonoCollectionOfEntities() {
 
 		FlatGroup walter = new FlatGroup("users", "0x1", "walter");
 		FlatGroup mike = new FlatGroup("users", "0x1", "mike");
@@ -261,7 +261,7 @@ public class ReactiveCassandraBatchTemplateIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-574
-	public void shouldDeleteEntities() {
+	void shouldDeleteEntities() {
 
 		ReactiveCassandraBatchOperations batchOperations = new ReactiveCassandraBatchTemplate(template);
 
@@ -274,7 +274,7 @@ public class ReactiveCassandraBatchTemplateIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-574
-	public void shouldDeleteCollectionOfEntities() {
+	void shouldDeleteCollectionOfEntities() {
 
 		ReactiveCassandraBatchOperations batchOperations = new ReactiveCassandraBatchTemplate(template);
 
@@ -287,7 +287,7 @@ public class ReactiveCassandraBatchTemplateIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-574
-	public void shouldDeleteMonoOfEntities() {
+	void shouldDeleteMonoOfEntities() {
 
 		ReactiveCassandraBatchOperations batchOperations = new ReactiveCassandraBatchTemplate(template);
 
@@ -300,7 +300,7 @@ public class ReactiveCassandraBatchTemplateIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-574
-	public void shouldApplyTimestampToAllEntities() {
+	void shouldApplyTimestampToAllEntities() {
 
 		walter.setEmail("walter@white.com");
 		mike.setEmail("mike@sauls.com");
@@ -318,7 +318,7 @@ public class ReactiveCassandraBatchTemplateIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-574
-	public void shouldNotExecuteTwice() {
+	void shouldNotExecuteTwice() {
 
 		ReactiveCassandraBatchOperations batchOperations = new ReactiveCassandraBatchTemplate(template);
 
@@ -329,7 +329,7 @@ public class ReactiveCassandraBatchTemplateIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-574
-	public void shouldNotAllowModificationAfterExecution() {
+	void shouldNotAllowModificationAfterExecution() {
 
 		ReactiveCassandraBatchOperations batchOperations = new ReactiveCassandraBatchTemplate(template);
 
@@ -339,7 +339,7 @@ public class ReactiveCassandraBatchTemplateIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-574
-	public void shouldNotAllowModificationAfterExecutionMonoCase() {
+	void shouldNotAllowModificationAfterExecutionMonoCase() {
 
 		ReactiveCassandraBatchOperations batchOperations = new ReactiveCassandraBatchTemplate(template);
 
@@ -350,7 +350,7 @@ public class ReactiveCassandraBatchTemplateIntegrationTests extends AbstractKeys
 	}
 
 	@Test // DATACASS-574
-	public void shouldSupportMultithreadedMerge() {
+	void shouldSupportMultithreadedMerge() {
 
 		ReactiveCassandraBatchOperations batchOperations = new ReactiveCassandraBatchTemplate(template);
 		Random random = new Random();

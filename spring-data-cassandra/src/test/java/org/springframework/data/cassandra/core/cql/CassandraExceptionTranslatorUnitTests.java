@@ -23,7 +23,7 @@ import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Collections;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataAccessResourceFailureException;
@@ -52,15 +52,15 @@ import com.datastax.oss.driver.internal.core.metadata.DefaultEndPoint;
  * @author Matthew T. Adams
  * @author Mark Paluch
  */
-public class CassandraExceptionTranslatorUnitTests {
+class CassandraExceptionTranslatorUnitTests {
 
-	InetSocketAddress socketAddress = new InetSocketAddress("localhost", 42);
-	EndPoint endPoint = new DefaultEndPoint(socketAddress);
-	Node node = mock(Node.class);
-	CassandraExceptionTranslator sut = new CassandraExceptionTranslator();
+	private InetSocketAddress socketAddress = new InetSocketAddress("localhost", 42);
+	private EndPoint endPoint = new DefaultEndPoint(socketAddress);
+	private Node node = mock(Node.class);
+	private CassandraExceptionTranslator sut = new CassandraExceptionTranslator();
 
 	@Test // DATACASS-402
-	public void shouldTranslateAuthenticationException() {
+	void shouldTranslateAuthenticationException() {
 
 		DataAccessException result = sut.translateExceptionIfPossible(new AuthenticationException(endPoint, "message"));
 
@@ -69,7 +69,7 @@ public class CassandraExceptionTranslatorUnitTests {
 	}
 
 	@Test // DATACASS-402
-	public void shouldTranslateNoHostAvailableException() {
+	void shouldTranslateNoHostAvailableException() {
 
 		DataAccessException result = sut.translateExceptionIfPossible(new NoNodeAvailableException());
 
@@ -78,7 +78,7 @@ public class CassandraExceptionTranslatorUnitTests {
 	}
 
 	@Test // DATACASS-402
-	public void shouldTranslateInvalidQueryException() {
+	void shouldTranslateInvalidQueryException() {
 
 		DataAccessException result = sut.translateExceptionIfPossible(new InvalidQueryException(node, "message"));
 
@@ -87,7 +87,7 @@ public class CassandraExceptionTranslatorUnitTests {
 	}
 
 	@Test // DATACASS-402
-	public void shouldTranslateInvalidConfigurationInQueryException() {
+	void shouldTranslateInvalidConfigurationInQueryException() {
 
 		DataAccessException result = sut
 				.translateExceptionIfPossible(new InvalidConfigurationInQueryException(node, "message"));
@@ -97,7 +97,7 @@ public class CassandraExceptionTranslatorUnitTests {
 	}
 
 	@Test // DATACASS-402
-	public void shouldTranslateUnauthorizedException() {
+	void shouldTranslateUnauthorizedException() {
 
 		DataAccessException result = sut.translateExceptionIfPossible(new UnauthorizedException(node, "message"));
 
@@ -106,7 +106,7 @@ public class CassandraExceptionTranslatorUnitTests {
 	}
 
 	@Test // DATACASS-402
-	public void shouldTranslateSyntaxError() {
+	void shouldTranslateSyntaxError() {
 
 		DataAccessException result = sut.translateExceptionIfPossible(new SyntaxError(node, "message"));
 
@@ -115,7 +115,7 @@ public class CassandraExceptionTranslatorUnitTests {
 	}
 
 	@Test // DATACASS-402
-	public void shouldTranslateKeyspaceExistsException() {
+	void shouldTranslateKeyspaceExistsException() {
 
 		AlreadyExistsException cx = new AlreadyExistsException(node, "keyspace", "");
 		DataAccessException result = sut.translateExceptionIfPossible(cx);
@@ -127,7 +127,7 @@ public class CassandraExceptionTranslatorUnitTests {
 	}
 
 	@Test // DATACASS-402
-	public void shouldTranslateUnavailableException() {
+	void shouldTranslateUnavailableException() {
 
 		DataAccessException result = sut
 				.translateExceptionIfPossible(new UnavailableException(node, DefaultConsistencyLevel.ALL, 5, 1));
@@ -137,7 +137,7 @@ public class CassandraExceptionTranslatorUnitTests {
 	}
 
 	@Test // DATACASS-402
-	public void shouldTranslateBootstrappingException() {
+	void shouldTranslateBootstrappingException() {
 
 		DataAccessException result = sut.translateExceptionIfPossible(new BootstrappingException(node));
 
@@ -146,7 +146,7 @@ public class CassandraExceptionTranslatorUnitTests {
 	}
 
 	@Test // DATACASS-402
-	public void shouldTranslateOverloadedException() {
+	void shouldTranslateOverloadedException() {
 
 		DataAccessException result = sut.translateExceptionIfPossible(new OverloadedException(node));
 
@@ -155,7 +155,7 @@ public class CassandraExceptionTranslatorUnitTests {
 	}
 
 	@Test // DATACASS-402
-	public void shouldTranslateTruncateException() {
+	void shouldTranslateTruncateException() {
 
 		DataAccessException result = sut.translateExceptionIfPossible(new TruncateException(node, "message"));
 
@@ -164,7 +164,7 @@ public class CassandraExceptionTranslatorUnitTests {
 	}
 
 	@Test // DATACASS-402
-	public void shouldTranslateWriteFailureException() {
+	void shouldTranslateWriteFailureException() {
 
 		DataAccessException result = sut.translateExceptionIfPossible(
 				new WriteFailureException(node, DefaultConsistencyLevel.ALL, 1, 5, WriteType.BATCH, 1, Collections.emptyMap()));
@@ -174,7 +174,7 @@ public class CassandraExceptionTranslatorUnitTests {
 	}
 
 	@Test // DATACASS-402
-	public void shouldTranslateReadFailureException() {
+	void shouldTranslateReadFailureException() {
 
 		DataAccessException result = sut.translateExceptionIfPossible(
 				new ReadFailureException(node, DefaultConsistencyLevel.ALL, 1, 5, 1, true, Collections.emptyMap()));
@@ -184,7 +184,7 @@ public class CassandraExceptionTranslatorUnitTests {
 	}
 
 	@Test // DATACASS-402
-	public void shouldTranslateWriteTimeoutException() {
+	void shouldTranslateWriteTimeoutException() {
 
 		DataAccessException result = sut.translateExceptionIfPossible(
 				new WriteTimeoutException(node, DefaultConsistencyLevel.ALL, 1, 5, WriteType.BATCH));
@@ -194,7 +194,7 @@ public class CassandraExceptionTranslatorUnitTests {
 	}
 
 	@Test // DATACASS-402
-	public void shouldTranslateReadTimeoutException() {
+	void shouldTranslateReadTimeoutException() {
 
 		DataAccessException result = sut
 				.translateExceptionIfPossible(new ReadTimeoutException(node, DefaultConsistencyLevel.ALL, 1, 5, true));
@@ -204,7 +204,7 @@ public class CassandraExceptionTranslatorUnitTests {
 	}
 
 	@Test // DATACASS-402
-	public void shouldTranslateBusyConnectionException() {
+	void shouldTranslateBusyConnectionException() {
 
 		DataAccessException result = sut.translateExceptionIfPossible(new BusyConnectionException(2));
 
@@ -213,7 +213,7 @@ public class CassandraExceptionTranslatorUnitTests {
 	}
 
 	@Test // DATACASS-402
-	public void shouldTranslateFrameTooLongException() {
+	void shouldTranslateFrameTooLongException() {
 
 		DataAccessException result = sut.translateExceptionIfPossible(new FrameTooLongException(socketAddress, "foo"));
 
@@ -222,7 +222,7 @@ public class CassandraExceptionTranslatorUnitTests {
 	}
 
 	@Test // DATACASS-402
-	public void shouldTranslateToUncategorized() {
+	void shouldTranslateToUncategorized() {
 
 		assertThat(
 				sut.translateExceptionIfPossible(new CodecNotFoundException(DataTypes.ASCII, GenericType.of(String.class))))
@@ -233,7 +233,7 @@ public class CassandraExceptionTranslatorUnitTests {
 	}
 
 	@Test // DATACASS-335
-	public void shouldTranslateWithCqlMessage() {
+	void shouldTranslateWithCqlMessage() {
 
 		InvalidConfigurationInQueryException cx = new InvalidConfigurationInQueryException(node, "err");
 		DataAccessException dax = sut.translate("Query", "SELECT * FROM person", cx);
@@ -243,7 +243,7 @@ public class CassandraExceptionTranslatorUnitTests {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> T createInstance(String className, Class<?> argTypes[], Object... args)
+	<T> T createInstance(String className, Class<?> argTypes[], Object... args)
 			throws ReflectiveOperationException {
 
 		Class<T> exceptionClass = (Class) ClassUtils.forName(className, getClass().getClassLoader());

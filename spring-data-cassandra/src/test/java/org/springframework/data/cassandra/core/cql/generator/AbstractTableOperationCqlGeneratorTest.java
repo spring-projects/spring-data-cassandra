@@ -26,23 +26,23 @@ import org.springframework.data.cassandra.core.cql.keyspace.TableNameSpecificati
  * @param <S> The type of the {@link TableNameSpecification}
  * @param <G> The type of the {@link TableNameCqlGenerator}
  */
-public abstract class AbstractTableOperationCqlGeneratorTest<S extends TableNameSpecification, G extends TableNameCqlGenerator<?>> {
+abstract class AbstractTableOperationCqlGeneratorTest<S extends TableNameSpecification, G extends TableNameCqlGenerator<?>> {
 
-	public abstract S specification();
+	protected abstract S specification();
 
-	public abstract G generator();
+	protected abstract G generator();
 
-	public S specification;
-	public G generator;
-	public String cql;
+	S specification;
+	private G generator;
+	String cql;
 
-	public void prepare() {
+	void prepare() {
 		this.specification = specification();
 		this.generator = generator();
 		this.cql = generateCql();
 	}
 
-	public String generateCql() {
+	private String generateCql() {
 		return generator.toCql();
 	}
 }

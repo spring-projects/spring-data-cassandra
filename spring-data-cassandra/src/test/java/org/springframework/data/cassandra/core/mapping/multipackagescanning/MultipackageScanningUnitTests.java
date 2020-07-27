@@ -20,8 +20,8 @@ import static org.assertj.core.api.Assertions.*;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.cassandra.config.CassandraEntityClassScanner;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
@@ -36,13 +36,13 @@ import org.springframework.data.mapping.context.MappingContext;
  *
  * @author Matthew T. Adams
  */
-public class MultipackageScanningUnitTests {
+class MultipackageScanningUnitTests {
 
-	MappingContext<? extends CassandraPersistentEntity<?>, ? extends CassandraPersistentProperty> context;
-	String pkg = getClass().getPackage().getName();
+	private MappingContext<? extends CassandraPersistentEntity<?>, ? extends CassandraPersistentProperty> context;
+	private String pkg = getClass().getPackage().getName();
 
-	@Before
-	public void before() throws ClassNotFoundException {
+	@BeforeEach
+	void before() throws ClassNotFoundException {
 
 		CassandraMappingContext context = new CassandraMappingContext();
 
@@ -52,7 +52,7 @@ public class MultipackageScanningUnitTests {
 	}
 
 	@Test
-	public void test() {
+	void test() {
 
 		Collection<? extends CassandraPersistentEntity<?>> entities = context.getPersistentEntities();
 

@@ -19,14 +19,14 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.Collection;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.generator.DropTableCqlGenerator;
 import org.springframework.data.cassandra.core.cql.keyspace.DropTableSpecification;
 import org.springframework.data.cassandra.domain.User;
-import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.metadata.Metadata;
@@ -38,12 +38,12 @@ import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
  *
  * @author Mark Paluch
  */
-public class CassandraAdminTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
+class CassandraAdminTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrationTests {
 
 	private CassandraAdminTemplate cassandraAdminTemplate;
 
-	@Before
-	public void before() {
+	@BeforeEach
+	void before() {
 
 		cassandraAdminTemplate = new CassandraAdminTemplate(session, new MappingCassandraConverter());
 
@@ -61,7 +61,7 @@ public class CassandraAdminTemplateIntegrationTests extends AbstractKeyspaceCrea
 	}
 
 	@Test // DATACASS-173
-	public void testCreateTables() {
+	void testCreateTables() {
 
 		assertThat(getKeyspaceMetadata().getTables()).hasSize(0);
 
@@ -73,7 +73,7 @@ public class CassandraAdminTemplateIntegrationTests extends AbstractKeyspaceCrea
 	}
 
 	@Test
-	public void testDropTable() {
+	void testDropTable() {
 
 		cassandraAdminTemplate.createTable(true, CqlIdentifier.fromCql("users"), User.class, null);
 		assertThat(getKeyspaceMetadata().getTables()).hasSize(1);

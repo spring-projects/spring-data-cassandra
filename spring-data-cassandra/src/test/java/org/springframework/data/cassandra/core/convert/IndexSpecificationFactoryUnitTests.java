@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.data.annotation.AccessType;
 import org.springframework.data.annotation.AccessType.Type;
@@ -42,12 +42,12 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  *
  * @author Mark Paluch
  */
-public class IndexSpecificationFactoryUnitTests {
+class IndexSpecificationFactoryUnitTests {
 
-	CassandraMappingContext mappingContext = new CassandraMappingContext();
+	private CassandraMappingContext mappingContext = new CassandraMappingContext();
 
 	@Test // DATACASS-213
-	public void createIndexShouldConsiderAnnotatedProperties() {
+	void createIndexShouldConsiderAnnotatedProperties() {
 
 		CreateIndexSpecification firstname = createIndexFor(IndexedType.class, "firstname");
 
@@ -65,7 +65,7 @@ public class IndexSpecificationFactoryUnitTests {
 	}
 
 	@Test // DATACASS-213
-	public void createMapKeyIndexShouldConsiderAnnotatedAccessors() {
+	void createMapKeyIndexShouldConsiderAnnotatedAccessors() {
 
 		CreateIndexSpecification entries = createIndexFor(IndexedMapKeyProperty.class, "entries");
 
@@ -76,7 +76,7 @@ public class IndexSpecificationFactoryUnitTests {
 	}
 
 	@Test // DATACASS-213
-	public void createMapValueIndexShouldConsiderAnnotatedAccessors() {
+	void createMapValueIndexShouldConsiderAnnotatedAccessors() {
 
 		CreateIndexSpecification entries = createIndexFor(MapValueIndexProperty.class, "entries");
 
@@ -87,7 +87,7 @@ public class IndexSpecificationFactoryUnitTests {
 	}
 
 	@Test // DATACASS-306
-	public void createIndexForSimpleSasiShouldApplyIndexOptions() {
+	void createIndexForSimpleSasiShouldApplyIndexOptions() {
 
 		CreateIndexSpecification simpleSasi = createIndexFor(IndexedType.class, "simpleSasi");
 
@@ -101,7 +101,7 @@ public class IndexSpecificationFactoryUnitTests {
 	}
 
 	@Test // DATACASS-306
-	public void createIndexForStandardAnalyzedSasiShouldApplyIndexOptions() {
+	void createIndexForStandardAnalyzedSasiShouldApplyIndexOptions() {
 
 		CreateIndexSpecification simpleSasi = createIndexFor(IndexedType.class, "sasiStandard");
 
@@ -113,7 +113,7 @@ public class IndexSpecificationFactoryUnitTests {
 	}
 
 	@Test // DATACASS-306
-	public void createIndexForStandardAnalyzedSasiWithOptionsShouldApplyIndexOptions() {
+	void createIndexForStandardAnalyzedSasiWithOptionsShouldApplyIndexOptions() {
 
 		CreateIndexSpecification simpleSasi = createIndexFor(IndexedType.class, "sasiStandardWithOptions");
 
@@ -125,7 +125,7 @@ public class IndexSpecificationFactoryUnitTests {
 	}
 
 	@Test // DATACASS-306
-	public void createIndexForStandardAnalyzedSasiWithLowercaseShouldApplyIndexOptions() {
+	void createIndexForStandardAnalyzedSasiWithLowercaseShouldApplyIndexOptions() {
 
 		CreateIndexSpecification simpleSasi = createIndexFor(IndexedType.class, "sasiStandardLowercase");
 
@@ -135,7 +135,7 @@ public class IndexSpecificationFactoryUnitTests {
 	}
 
 	@Test // DATACASS-306
-	public void createIndexForNonTokenizingAnalyzedSasiShouldApplyIndexOptions() {
+	void createIndexForNonTokenizingAnalyzedSasiShouldApplyIndexOptions() {
 
 		CreateIndexSpecification simpleSasi = createIndexFor(IndexedType.class, "sasiNontokenizing");
 
@@ -146,7 +146,7 @@ public class IndexSpecificationFactoryUnitTests {
 	}
 
 	@Test // DATACASS-306
-	public void createIndexForNonTokenizingAnalyzedSasiWithLowercaseShouldApplyIndexOptions() {
+	void createIndexForNonTokenizingAnalyzedSasiWithLowercaseShouldApplyIndexOptions() {
 
 		CreateIndexSpecification simpleSasi = createIndexFor(IndexedType.class, "sasiNontokenizingLowercase");
 
@@ -164,7 +164,7 @@ public class IndexSpecificationFactoryUnitTests {
 		return mappingContext.getRequiredPersistentEntity(type).getRequiredPersistentProperty(property);
 	}
 
-	static class IndexedType {
+	private static class IndexedType {
 
 		@PrimaryKeyColumn("first_name") @Indexed("my_index") String firstname;
 
@@ -190,7 +190,7 @@ public class IndexSpecificationFactoryUnitTests {
 	}
 
 	@AccessType(Type.PROPERTY)
-	static class IndexedMapKeyProperty {
+	private static class IndexedMapKeyProperty {
 
 		public Map<@Indexed String, String> getEntries() {
 			return null;
@@ -200,7 +200,7 @@ public class IndexSpecificationFactoryUnitTests {
 	}
 
 	@AccessType(Type.PROPERTY)
-	static class MapValueIndexProperty {
+	private static class MapValueIndexProperty {
 
 		public Map<String, String> getEntries() {
 			return null;

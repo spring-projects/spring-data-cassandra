@@ -20,7 +20,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import org.springframework.data.cassandra.core.query.Update
 import org.springframework.data.cassandra.domain.Person
 import reactor.core.publisher.Mono

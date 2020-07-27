@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import java.time.Duration;
 import java.time.Instant;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.data.cassandra.core.query.Query;
 
@@ -32,10 +32,10 @@ import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
  * @author Mark Paluch
  * @author Lukasz Antoniak
  */
-public class UpdateOptionsUnitTests {
+class UpdateOptionsUnitTests {
 
 	@Test // DATACASS-250, DATACASS-155, DATACASS-708
-	public void shouldConfigureUpdateOptions() {
+	void shouldConfigureUpdateOptions() {
 
 		Instant now = Instant.ofEpochSecond(1234);
 
@@ -54,7 +54,7 @@ public class UpdateOptionsUnitTests {
 	}
 
 	@Test // DATACASS-56, DATACASS-155
-	public void buildUpdateOptionsMutate() {
+	void buildUpdateOptionsMutate() {
 
 		UpdateOptions updateOptions = UpdateOptions.builder() //
 				.ttl(10) //
@@ -76,7 +76,7 @@ public class UpdateOptionsUnitTests {
 	}
 
 	@Test // DATACASS-575
-	public void shouldApplyFilterCondition() {
+	void shouldApplyFilterCondition() {
 
 		UpdateOptions updateOptions = UpdateOptions.builder() //
 				.withIfExists() //

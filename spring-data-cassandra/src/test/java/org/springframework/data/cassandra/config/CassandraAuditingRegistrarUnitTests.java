@@ -17,10 +17,10 @@ package org.springframework.data.cassandra.config;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.core.type.AnnotationMetadata;
@@ -30,21 +30,21 @@ import org.springframework.core.type.AnnotationMetadata;
  *
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner.class)
-public class CassandraAuditingRegistrarUnitTests {
+@ExtendWith(MockitoExtension.class)
+class CassandraAuditingRegistrarUnitTests {
 
-	CassandraAuditingRegistrar registrar = new CassandraAuditingRegistrar();
+	private CassandraAuditingRegistrar registrar = new CassandraAuditingRegistrar();
 
 	@Mock AnnotationMetadata metadata;
 	@Mock BeanDefinitionRegistry registry;
 
 	@Test // DATACASS-4
-	public void rejectsNullAnnotationMetadata() {
+	void rejectsNullAnnotationMetadata() {
 		assertThatIllegalArgumentException().isThrownBy(() -> registrar.registerBeanDefinitions(null, registry));
 	}
 
 	@Test // DATACASS-4
-	public void rejectsNullBeanDefinitionRegistry() {
+	void rejectsNullBeanDefinitionRegistry() {
 		assertThatIllegalArgumentException().isThrownBy(() -> registrar.registerBeanDefinitions(metadata, null));
 	}
 }

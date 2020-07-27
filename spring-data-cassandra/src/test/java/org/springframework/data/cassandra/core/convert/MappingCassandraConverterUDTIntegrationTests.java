@@ -28,9 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -47,8 +46,7 @@ import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.domain.AllPossibleTypes;
 import org.springframework.data.cassandra.repository.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.data.cassandra.repository.support.IntegrationTestConfig;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
@@ -61,8 +59,7 @@ import com.datastax.oss.driver.api.core.data.UdtValue;
  *
  * @author Mark Paluch
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+@SpringJUnitConfig
 public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
 
 	private static AtomicBoolean initialized = new AtomicBoolean();
@@ -90,8 +87,8 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 	@Autowired CqlSession session;
 	@Autowired MappingCassandraConverter converter;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		if (initialized.compareAndSet(false, true)) {
 
@@ -129,7 +126,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 	}
 
 	@Test // DATACASS-172
-	public void shouldReadMappedUdt() {
+	void shouldReadMappedUdt() {
 
 		session.execute("INSERT INTO addressbook (id, currentaddress) " + "VALUES ('1', "
 				+ "{zip:'69469', city: 'Weinheim', streetlines: ['Heckenpfad', '14']})");
@@ -146,7 +143,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 	}
 
 	@Test // DATACASS-172
-	public void shouldWriteMappedUdt() {
+	void shouldWriteMappedUdt() {
 
 		AddressUserType addressUserType = new AddressUserType();
 		addressUserType.setZip("69469");
@@ -164,7 +161,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 	}
 
 	@Test // DATACASS-172
-	public void shouldReadMappedUdtCollection() {
+	void shouldReadMappedUdtCollection() {
 
 		session.execute("INSERT INTO addressbook (id,  previousaddresses) " + "VALUES ('1', "
 				+ " [{zip:'53773', city: 'Bonn'}, {zip:'12345', city: 'Bonn'}])");
@@ -182,7 +179,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 	}
 
 	@Test // DATACASS-172
-	public void shouldWriteMappedUdtCollection() {
+	void shouldWriteMappedUdtCollection() {
 
 		AddressUserType addressUserType = new AddressUserType();
 		addressUserType.setZip("69469");
@@ -200,7 +197,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 	}
 
 	@Test // DATACASS-172
-	public void shouldReadUdt() {
+	void shouldReadUdt() {
 
 		session.execute("INSERT INTO addressbook (id, alternate) " + "VALUES ('1', "
 				+ "{zip:'69469', city: 'Weinheim', streetlines: ['Heckenpfad', '14']})");
@@ -214,7 +211,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 	}
 
 	@Test // DATACASS-172
-	public void shouldWriteUdt() {
+	void shouldWriteUdt() {
 
 		CassandraPersistentEntity<?> persistentEntity = converter.getMappingContext()
 				.getRequiredPersistentEntity(AddressUserType.class);
@@ -236,7 +233,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 	}
 
 	@Test // DATACASS-172
-	public void shouldWriteUdtPk() {
+	void shouldWriteUdtPk() {
 
 		AddressUserType addressUserType = new AddressUserType();
 		addressUserType.setZip("69469");
@@ -253,7 +250,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 	}
 
 	@Test // DATACASS-172
-	public void shouldWriteMappedUdtPk() {
+	void shouldWriteMappedUdtPk() {
 
 		CassandraPersistentEntity<?> persistentEntity = converter.getMappingContext()
 				.getRequiredPersistentEntity(AddressUserType.class);
@@ -276,7 +273,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 	}
 
 	@Test // DATACASS-172
-	public void shouldReadUdtWithCustomConversion() {
+	void shouldReadUdtWithCustomConversion() {
 
 		session.execute("INSERT INTO bank (id, currency) " + "VALUES ('1', {currency:'EUR'})");
 
@@ -288,7 +285,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 	}
 
 	@Test // DATACASS-172
-	public void shouldReadUdtListWithCustomConversion() {
+	void shouldReadUdtListWithCustomConversion() {
 
 		session.execute("INSERT INTO bank (id, othercurrencies) " + "VALUES ('1', [{currency:'EUR'}])");
 
@@ -299,7 +296,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 	}
 
 	@Test // DATACASS-172, DATACASS-400
-	public void shouldWriteUdtWithCustomConversion() {
+	void shouldWriteUdtWithCustomConversion() {
 
 		Bank bank = new Bank(null, Currency.getInstance("EUR"), null);
 
@@ -309,7 +306,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 	}
 
 	@Test // DATACASS-172
-	public void shouldWriteUdtWhereWherePrimaryKeyWithCustomConversion() {
+	void shouldWriteUdtWhereWherePrimaryKeyWithCustomConversion() {
 
 		Money money = new Money();
 		money.setCurrency(Currency.getInstance("EUR"));
@@ -323,7 +320,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 	}
 
 	@Test // DATACASS-172, DATACASS-400
-	public void shouldWriteUdtUpdateAssignmentsWithCustomConversion() {
+	void shouldWriteUdtUpdateAssignmentsWithCustomConversion() {
 
 		MoneyTransfer money = new MoneyTransfer("1", Currency.getInstance("EUR"));
 
@@ -333,7 +330,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 	}
 
 	@Test // DATACASS-172, DATACASS-400
-	public void shouldWriteUdtListWithCustomConversion() {
+	void shouldWriteUdtListWithCustomConversion() {
 
 		Bank bank = new Bank(null, null, Collections.singletonList(Currency.getInstance("EUR")));
 
@@ -343,7 +340,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 	}
 
 	@Test // DATACASS-172
-	public void shouldReadNestedUdt() {
+	void shouldReadNestedUdt() {
 
 		session.execute("INSERT INTO car (id, engine)  VALUES ('1',  {manufacturer: {name:'a good one'}})");
 
@@ -356,7 +353,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 	}
 
 	@Test // DATACASS-172, DATACASS-400
-	public void shouldWriteNestedUdt() {
+	void shouldWriteNestedUdt() {
 
 		Engine engine = new Engine(new Manufacturer("a good one"));
 
@@ -369,7 +366,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 	}
 
 	@Test // DATACASS-487
-	public void shouldReadUdtInMap() {
+	void shouldReadUdtInMap() {
 
 		this.session.execute("INSERT INTO supplier (id, acceptedCurrencies)"
 				+ " VALUES ('1', {{name:'a good one'}:[{currency:'EUR'},{currency:'USD'}]})");
@@ -485,7 +482,7 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 
 	private static class CurrencyToUDTConverter implements Converter<Currency, UdtValue> {
 
-		final UserTypeResolver userTypeResolver;
+		private final UserTypeResolver userTypeResolver;
 
 		CurrencyToUDTConverter(UserTypeResolver userTypeResolver) {
 			this.userTypeResolver = userTypeResolver;

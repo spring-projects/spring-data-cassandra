@@ -17,7 +17,7 @@ package org.springframework.data.cassandra.core.query;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 
@@ -26,10 +26,10 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  *
  * @author Mark Paluch
  */
-public class ColumnNameUnitTests {
+class ColumnNameUnitTests {
 
 	@Test // DATACASS-343
-	public void stringBasedShouldEqual() {
+	void stringBasedShouldEqual() {
 
 		ColumnName first = ColumnName.from("foo");
 		ColumnName second = ColumnName.from("foo");
@@ -45,7 +45,7 @@ public class ColumnNameUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void cqlBasedShouldEqual() {
+	void cqlBasedShouldEqual() {
 
 		ColumnName first = ColumnName.from(CqlIdentifier.fromCql("foo"));
 		ColumnName second = ColumnName.from(CqlIdentifier.fromCql("Foo"));
@@ -62,7 +62,7 @@ public class ColumnNameUnitTests {
 	}
 
 	@Test // DATACASS-343
-	public void stringAndCqlComparisonShouldEqual() {
+	void stringAndCqlComparisonShouldEqual() {
 
 		ColumnName first = ColumnName.from("foo");
 		ColumnName second = ColumnName.from(CqlIdentifier.fromCql("foo"));

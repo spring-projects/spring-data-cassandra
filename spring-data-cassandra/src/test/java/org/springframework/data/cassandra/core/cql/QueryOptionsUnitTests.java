@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.time.Duration;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
 
@@ -28,10 +28,10 @@ import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
  *
  * @author Mark Paluch
  */
-public class QueryOptionsUnitTests {
+class QueryOptionsUnitTests {
 
 	@Test // DATACASS-202
-	public void buildQueryOptions() {
+	void buildQueryOptions() {
 
 		QueryOptions queryOptions = QueryOptions.builder().consistencyLevel(DefaultConsistencyLevel.ANY)
 				.timeout(Duration.ofSeconds(1)).pageSize(10).tracing(true).build();
@@ -44,7 +44,7 @@ public class QueryOptionsUnitTests {
 	}
 
 	@Test // DATACASS-56
-	public void buildQueryOptionsMutate() {
+	void buildQueryOptionsMutate() {
 
 		QueryOptions queryOptions = QueryOptions.builder().consistencyLevel(DefaultConsistencyLevel.ANY)
 				.timeout(Duration.ofSeconds(1)).pageSize(10).tracing(true).build();

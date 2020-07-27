@@ -29,9 +29,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -44,8 +43,7 @@ import org.springframework.data.cassandra.repository.config.EnableCassandraRepos
 import org.springframework.data.cassandra.repository.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.data.cassandra.repository.support.IntegrationTestConfig;
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 
 /**
@@ -53,10 +51,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  *
  * @author Mark Paluch
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
-@SuppressWarnings("Since15")
-public class RepositoryReturnTypesIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
+@SpringJUnitConfig
+class RepositoryReturnTypesIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
 
 	@Configuration
 	@EnableCassandraRepositories(basePackageClasses = RepositoryReturnTypesIntegrationTests.class,
@@ -76,35 +72,34 @@ public class RepositoryReturnTypesIntegrationTests extends AbstractSpringDataEmb
 
 	@Autowired AllPossibleTypesRepository allPossibleTypesRepository;
 
-	@Before
-	public void setUp() throws Exception {
+	@BeforeEach
+	void setUp() throws Exception {
 		allPossibleTypesRepository.deleteAll();
 	}
 
 	@Test // DATACASS-271
-	public void shouldReturnOptional() {
+	void shouldReturnOptional() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("123");
 		allPossibleTypesRepository.save(entity);
 
 		Optional<AllPossibleTypes> result = allPossibleTypesRepository.findOptionalById(entity.getId());
-		assertThat(result.isPresent()).isTrue();
+		assertThat(result).isPresent();
 		assertThat(result.get()).isInstanceOf(AllPossibleTypes.class);
 	}
 
 	@Test // DATACASS-271
-	public void shouldReturnList() {
+	void shouldReturnList() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("123");
 		allPossibleTypesRepository.save(entity);
 
 		List<AllPossibleTypes> result = allPossibleTypesRepository.findManyById(entity.getId());
-		assertThat(result.isEmpty()).isFalse();
-		assertThat(result).contains(entity);
+		assertThat(result).isNotEmpty().contains(entity);
 	}
 
 	@Test // DATACASS-271
-	public void shouldReturnInetAddress() throws UnknownHostException {
+	void shouldReturnInetAddress() throws UnknownHostException {
 
 		AllPossibleTypes entity = new AllPossibleTypes("123");
 		entity.setInet(InetAddress.getByName("localhost"));
@@ -115,19 +110,18 @@ public class RepositoryReturnTypesIntegrationTests extends AbstractSpringDataEmb
 	}
 
 	@Test // DATACASS-271
-	public void shouldReturnOptionalInetAddress() throws UnknownHostException {
+	void shouldReturnOptionalInetAddress() throws UnknownHostException {
 
 		AllPossibleTypes entity = new AllPossibleTypes("123");
 		entity.setInet(InetAddress.getByName("localhost"));
 		allPossibleTypesRepository.save(entity);
 
 		Optional<InetAddress> result = allPossibleTypesRepository.findOptionalInetById(entity.getId());
-		assertThat(result.isPresent()).isTrue();
-		assertThat(result.get()).isEqualTo(entity.getInet());
+		assertThat(result).isPresent().contains(entity.getInet());
 	}
 
 	@Test // DATACASS-271
-	public void shouldReturnBoxedByte() {
+	void shouldReturnBoxedByte() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("123");
 		entity.setBoxedByte(Byte.valueOf("1"));
@@ -138,7 +132,7 @@ public class RepositoryReturnTypesIntegrationTests extends AbstractSpringDataEmb
 	}
 
 	@Test // DATACASS-271
-	public void shouldReturnPrimitiveByte() {
+	void shouldReturnPrimitiveByte() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("123");
 		entity.setPrimitiveByte(Byte.MAX_VALUE);
@@ -149,7 +143,7 @@ public class RepositoryReturnTypesIntegrationTests extends AbstractSpringDataEmb
 	}
 
 	@Test // DATACASS-271
-	public void shouldReturnBoxedShort() {
+	void shouldReturnBoxedShort() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("123");
 		entity.setBoxedShort(Short.MAX_VALUE);
@@ -160,7 +154,7 @@ public class RepositoryReturnTypesIntegrationTests extends AbstractSpringDataEmb
 	}
 
 	@Test // DATACASS-271
-	public void shouldReturnBoxedLong() {
+	void shouldReturnBoxedLong() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("123");
 		entity.setBoxedLong(Long.MAX_VALUE);
@@ -171,7 +165,7 @@ public class RepositoryReturnTypesIntegrationTests extends AbstractSpringDataEmb
 	}
 
 	@Test // DATACASS-271
-	public void shouldReturnBoxedInteger() {
+	void shouldReturnBoxedInteger() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("123");
 		entity.setBoxedInteger(Integer.MAX_VALUE);
@@ -182,7 +176,7 @@ public class RepositoryReturnTypesIntegrationTests extends AbstractSpringDataEmb
 	}
 
 	@Test // DATACASS-271
-	public void shouldReturnBoxedDouble() {
+	void shouldReturnBoxedDouble() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("123");
 		entity.setBoxedDouble(Double.MAX_VALUE);
@@ -193,7 +187,7 @@ public class RepositoryReturnTypesIntegrationTests extends AbstractSpringDataEmb
 	}
 
 	@Test // DATACASS-271
-	public void shouldReturnBoxedDoubleFromInteger() {
+	void shouldReturnBoxedDoubleFromInteger() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("123");
 		entity.setBoxedInteger(Integer.MAX_VALUE);
@@ -204,7 +198,7 @@ public class RepositoryReturnTypesIntegrationTests extends AbstractSpringDataEmb
 	}
 
 	@Test // DATACASS-271
-	public void shouldReturnBoxedBoolean() {
+	void shouldReturnBoxedBoolean() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("123");
 		entity.setBoxedBoolean(true);
@@ -215,7 +209,7 @@ public class RepositoryReturnTypesIntegrationTests extends AbstractSpringDataEmb
 	}
 
 	@Test // DATACASS-271
-	public void shouldReturnDate() {
+	void shouldReturnDate() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("123");
 		entity.setDate(LocalDate.ofEpochDay(1));
@@ -226,7 +220,7 @@ public class RepositoryReturnTypesIntegrationTests extends AbstractSpringDataEmb
 	}
 
 	@Test // DATACASS-271
-	public void shouldReturnTimestamp() {
+	void shouldReturnTimestamp() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("123");
 		entity.setTimestamp(new Date(1));
@@ -237,7 +231,7 @@ public class RepositoryReturnTypesIntegrationTests extends AbstractSpringDataEmb
 	}
 
 	@Test // DATACASS-271
-	public void shouldReturnBigDecimal() {
+	void shouldReturnBigDecimal() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("123");
 		entity.setBigDecimal(BigDecimal.ONE);
@@ -248,7 +242,7 @@ public class RepositoryReturnTypesIntegrationTests extends AbstractSpringDataEmb
 	}
 
 	@Test // DATACASS-271
-	public void shouldReturnBigInteger() {
+	void shouldReturnBigInteger() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("123");
 		entity.setBigInteger(BigInteger.ONE);
@@ -259,7 +253,7 @@ public class RepositoryReturnTypesIntegrationTests extends AbstractSpringDataEmb
 	}
 
 	@Test // DATACASS-271
-	public void shouldReturnEntityAsMap() {
+	void shouldReturnEntityAsMap() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("123");
 
@@ -269,13 +263,13 @@ public class RepositoryReturnTypesIntegrationTests extends AbstractSpringDataEmb
 
 		Map<String, Object> result = allPossibleTypesRepository.findEntityAsMapById(entity.getId());
 
-		assertThat(result.size()).isGreaterThan(30);
+		assertThat(result).hasSizeGreaterThan(30);
 		assertThat(result.get("primitiveinteger")).isEqualTo((Object) Integer.valueOf(123));
 		assertThat(result.get("biginteger")).isEqualTo((Object) BigInteger.ONE);
 	}
 
 	@Test // DATACASS-512
-	public void shouldApplyCountProjection() {
+	void shouldApplyCountProjection() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("123");
 		allPossibleTypesRepository.save(entity);
@@ -285,7 +279,7 @@ public class RepositoryReturnTypesIntegrationTests extends AbstractSpringDataEmb
 	}
 
 	@Test // DATACASS-512
-	public void shouldApplyExistsProjection() {
+	void shouldApplyExistsProjection() {
 
 		AllPossibleTypes entity = new AllPossibleTypes("123");
 		allPossibleTypesRepository.save(entity);

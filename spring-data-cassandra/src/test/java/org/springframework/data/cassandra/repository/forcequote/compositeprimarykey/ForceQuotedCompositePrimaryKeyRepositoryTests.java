@@ -25,7 +25,7 @@ import org.springframework.data.cassandra.core.CassandraTemplate;
  * @author Matthew T. Adams
  * @author Mark Paluch
  */
-public class ForceQuotedCompositePrimaryKeyRepositoryTests {
+class ForceQuotedCompositePrimaryKeyRepositoryTests {
 
 	ImplicitRepository implicitRepository;
 	ExplicitRepository explicitRepository;
@@ -35,7 +35,7 @@ public class ForceQuotedCompositePrimaryKeyRepositoryTests {
 		cassandraTemplate.truncate(Implicit.class);
 	}
 
-	public String query(String columnName, String tableName, String keyZeroColumnName, String keyZero,
+	private String query(String columnName, String tableName, String keyZeroColumnName, String keyZero,
 			String keyOneColumnName, String keyOne) {
 
 		return cassandraTemplate.getCqlOperations()

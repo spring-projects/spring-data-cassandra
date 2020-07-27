@@ -24,10 +24,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.context.ApplicationContext;
@@ -46,13 +46,13 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * @author John Blum
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner.class)
-public class BasicCassandraPersistentEntityUnitTests {
+@ExtendWith(MockitoExtension.class)
+class BasicCassandraPersistentEntityUnitTests {
 
 	@Mock ApplicationContext context;
 
 	@Test
-	public void subclassInheritsAtDocumentAnnotation() {
+	void subclassInheritsAtDocumentAnnotation() {
 
 		BasicCassandraPersistentEntity<Notification> entity = new BasicCassandraPersistentEntity<>(
 				ClassTypeInformation.from(Notification.class));
@@ -61,7 +61,7 @@ public class BasicCassandraPersistentEntityUnitTests {
 	}
 
 	@Test
-	public void evaluatesSpELExpression() {
+	void evaluatesSpELExpression() {
 
 		BasicCassandraPersistentEntity<Area> entity = new BasicCassandraPersistentEntity<>(
 				ClassTypeInformation.from(Area.class));
@@ -72,7 +72,7 @@ public class BasicCassandraPersistentEntityUnitTests {
 	}
 
 	@Test
-	public void tableAllowsReferencingSpringBean() {
+	void tableAllowsReferencingSpringBean() {
 
 		TableNameHolderThingy bean = new TableNameHolderThingy();
 		bean.tableName = "my_user_line";
@@ -88,7 +88,7 @@ public class BasicCassandraPersistentEntityUnitTests {
 	}
 
 	@Test
-	public void setForceQuoteCallsSetTableName() {
+	void setForceQuoteCallsSetTableName() {
 
 		BasicCassandraPersistentEntity<Message> entitySpy = spy(
 				new BasicCassandraPersistentEntity<>(ClassTypeInformation.from(Message.class)));
@@ -107,7 +107,7 @@ public class BasicCassandraPersistentEntityUnitTests {
 	}
 
 	@Test
-	public void setForceQuoteDoesNothing() {
+	void setForceQuoteDoesNothing() {
 
 		BasicCassandraPersistentEntity<Message> entitySpy = spy(
 				new BasicCassandraPersistentEntity<>(ClassTypeInformation.from(Message.class)));
@@ -123,7 +123,7 @@ public class BasicCassandraPersistentEntityUnitTests {
 	}
 
 	@Test // DATACASS-172
-	public void isUserDefinedTypeShouldReturnFalse() {
+	void isUserDefinedTypeShouldReturnFalse() {
 
 		BasicCassandraPersistentEntity<UserLine> entity = new BasicCassandraPersistentEntity<>(
 				ClassTypeInformation.from(UserLine.class));
@@ -132,7 +132,7 @@ public class BasicCassandraPersistentEntityUnitTests {
 	}
 
 	@Test // DATACASS-259
-	public void shouldConsiderComposedTableAnnotation() {
+	void shouldConsiderComposedTableAnnotation() {
 
 		BasicCassandraPersistentEntity<TableWithComposedAnnotation> entity = new BasicCassandraPersistentEntity<>(
 				ClassTypeInformation.from(TableWithComposedAnnotation.class));
@@ -141,7 +141,7 @@ public class BasicCassandraPersistentEntityUnitTests {
 	}
 
 	@Test // DATACASS-259
-	public void shouldConsiderComposedPrimaryKeyClassAnnotation() {
+	void shouldConsiderComposedPrimaryKeyClassAnnotation() {
 
 		BasicCassandraPersistentEntity<PrimaryKeyClassWithComposedAnnotation> entity = new BasicCassandraPersistentEntity<>(
 				ClassTypeInformation.from(PrimaryKeyClassWithComposedAnnotation.class));
@@ -151,7 +151,7 @@ public class BasicCassandraPersistentEntityUnitTests {
 
 	@Test // DATACASS-633
 	@SuppressWarnings("unchecked")
-	public void shouldRejectAssociationCreation() {
+	void shouldRejectAssociationCreation() {
 
 		BasicCassandraPersistentEntity<PrimaryKeyClassWithComposedAnnotation> entity = new BasicCassandraPersistentEntity<>(
 				ClassTypeInformation.from(PrimaryKeyClassWithComposedAnnotation.class));
@@ -162,7 +162,7 @@ public class BasicCassandraPersistentEntityUnitTests {
 
 	@Test // DATACASS-633
 	@SuppressWarnings("unchecked")
-	public void shouldNoOpOnDoWithAssociations() {
+	void shouldNoOpOnDoWithAssociations() {
 
 		BasicCassandraPersistentEntity<PrimaryKeyClassWithComposedAnnotation> entity = new BasicCassandraPersistentEntity<>(
 				ClassTypeInformation.from(PrimaryKeyClassWithComposedAnnotation.class));
@@ -176,17 +176,17 @@ public class BasicCassandraPersistentEntityUnitTests {
 	@Table("messages")
 	static class Message {}
 
-	static class Notification extends Message {}
+	private static class Notification extends Message {}
 
 	@Table("#{'a123'}")
-	static class Area {}
+	private static class Area {}
 
 	@Table("#{tableNameHolderThingy.tableName}")
-	static class UserLine {}
+	private static class UserLine {}
 
-	static class TableNameHolderThingy {
+	private static class TableNameHolderThingy {
 
-		String tableName;
+		private String tableName;
 
 		public String getTableName() {
 			return tableName;
@@ -196,7 +196,7 @@ public class BasicCassandraPersistentEntityUnitTests {
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target({ ElementType.TYPE })
 	@Table(forceQuote = true)
-	@interface ComposedTableAnnotation {
+	private @interface ComposedTableAnnotation {
 
 		@AliasFor(annotation = Table.class)
 		String value() default "mytable";
@@ -205,12 +205,12 @@ public class BasicCassandraPersistentEntityUnitTests {
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target({ ElementType.TYPE })
 	@PrimaryKeyClass
-	@interface ComposedPrimaryKeyClass {
+	private @interface ComposedPrimaryKeyClass {
 	}
 
 	@ComposedTableAnnotation()
-	static class TableWithComposedAnnotation {}
+	private static class TableWithComposedAnnotation {}
 
 	@ComposedPrimaryKeyClass()
-	static class PrimaryKeyClassWithComposedAnnotation {}
+	private static class PrimaryKeyClassWithComposedAnnotation {}
 }

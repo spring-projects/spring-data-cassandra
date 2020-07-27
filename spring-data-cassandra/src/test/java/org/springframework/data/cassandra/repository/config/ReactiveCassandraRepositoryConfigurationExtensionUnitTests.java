@@ -19,8 +19,8 @@ import static org.junit.Assert.*;
 
 import java.util.Collection;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.core.env.Environment;
@@ -43,32 +43,32 @@ import org.springframework.data.repository.reactive.RxJava2CrudRepository;
  */
 public class ReactiveCassandraRepositoryConfigurationExtensionUnitTests {
 
-	StandardAnnotationMetadata metadata = new StandardAnnotationMetadata(Config.class, true);
-	ResourceLoader loader = new PathMatchingResourcePatternResolver();
-	Environment environment = new StandardEnvironment();
-	BeanDefinitionRegistry registry = new DefaultListableBeanFactory();
-	RepositoryConfigurationSource configurationSource = new AnnotationRepositoryConfigurationSource(metadata,
+	private StandardAnnotationMetadata metadata = new StandardAnnotationMetadata(Config.class, true);
+	private ResourceLoader loader = new PathMatchingResourcePatternResolver();
+	private Environment environment = new StandardEnvironment();
+	private BeanDefinitionRegistry registry = new DefaultListableBeanFactory();
+	private RepositoryConfigurationSource configurationSource = new AnnotationRepositoryConfigurationSource(metadata,
 			EnableReactiveCassandraRepositories.class, loader, environment, registry);
 
-	ReactiveCassandraRepositoryConfigurationExtension extension;
+	private ReactiveCassandraRepositoryConfigurationExtension extension;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 		extension = new ReactiveCassandraRepositoryConfigurationExtension();
 	}
 
 	@Test // DATACASS-335
-	public void isStrictMatchIfDomainTypeIsAnnotatedWithTable() {
+	void isStrictMatchIfDomainTypeIsAnnotatedWithTable() {
 		assertHasRepo(SampleRepository.class, extension.getRepositoryConfigurations(configurationSource, loader, true));
 	}
 
 	@Test // DATACASS-335
-	public void isStrictMatchIfRepositoryExtendsStoreSpecificBase() {
+	void isStrictMatchIfRepositoryExtendsStoreSpecificBase() {
 		assertHasRepo(StoreRepository.class, extension.getRepositoryConfigurations(configurationSource, loader, true));
 	}
 
 	@Test // DATACASS-335
-	public void isNotStrictMatchIfDomainTypeIsNotAnnotatedWithDocument() {
+	void isNotStrictMatchIfDomainTypeIsNotAnnotatedWithDocument() {
 
 		assertDoesNotHaveRepo(UnannotatedRepository.class,
 				extension.getRepositoryConfigurations(configurationSource, loader, true));
@@ -100,12 +100,12 @@ public class ReactiveCassandraRepositoryConfigurationExtensionUnitTests {
 	}
 
 	@EnableReactiveCassandraRepositories(considerNestedRepositories = true)
-	static class Config {
+	private static class Config {
 
 	}
 
 	@Table
-	static class Sample {}
+	private static class Sample {}
 
 	interface SampleRepository extends RxJava2CrudRepository<Sample, Long> {}
 

@@ -23,11 +23,11 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
@@ -41,17 +41,17 @@ import com.datastax.oss.driver.api.core.type.DataTypes;
  * @author Mark Paluch
  */
 @SuppressWarnings("Since15")
-@RunWith(MockitoJUnitRunner.class)
-public class ConvertingParameterAccessorUnitTests {
+@ExtendWith(MockitoExtension.class)
+class ConvertingParameterAccessorUnitTests {
 
 	@Mock CassandraParameterAccessor mockParameterAccessor;
 	@Mock CassandraPersistentProperty mockProperty;
 
-	ConvertingParameterAccessor convertingParameterAccessor;
-	MappingCassandraConverter converter;
+	private ConvertingParameterAccessor convertingParameterAccessor;
+	private MappingCassandraConverter converter;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		this.converter = new MappingCassandraConverter();
 		this.converter.afterPropertiesSet();
@@ -59,7 +59,7 @@ public class ConvertingParameterAccessorUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void shouldReturnNullBindableValue() {
+	void shouldReturnNullBindableValue() {
 
 		ConvertingParameterAccessor accessor = new ConvertingParameterAccessor(converter, mockParameterAccessor);
 
@@ -68,7 +68,7 @@ public class ConvertingParameterAccessorUnitTests {
 
 	@Test // DATACASS-296
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public void shouldReturnNativeBindableValue() {
+	void shouldReturnNativeBindableValue() {
 
 		when(mockParameterAccessor.getBindableValue(0)).thenReturn("hello");
 
@@ -78,7 +78,7 @@ public class ConvertingParameterAccessorUnitTests {
 	}
 
 	@Test // DATACASS-296
-	public void shouldReturnConvertedBindableValue() {
+	void shouldReturnConvertedBindableValue() {
 
 		LocalDate localDate = LocalDate.of(2010, 7, 4);
 
@@ -89,7 +89,7 @@ public class ConvertingParameterAccessorUnitTests {
 	}
 
 	@Test // DATACASS-296, DATACASS-7
-	public void shouldReturnDataTypeProvidedByDelegate() {
+	void shouldReturnDataTypeProvidedByDelegate() {
 
 		when(mockParameterAccessor.getDataType(0)).thenReturn(DataTypes.TEXT);
 
@@ -98,7 +98,7 @@ public class ConvertingParameterAccessorUnitTests {
 
 	@Test // DATACASS-296, DATACASS-7
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public void shouldConvertCollections() {
+	void shouldConvertCollections() {
 
 		LocalDate localDate = LocalDate.of(2010, 7, 4);
 

@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.cassandra.core.cql.keyspace.AlterKeyspaceSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.DefaultOption;
 import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceOption;
@@ -38,34 +38,34 @@ public class AlterKeyspaceCqlGeneratorUnitTests {
 	/**
 	 * Asserts that the preamble is first & correctly formatted in the given CQL string.
 	 */
-	public static void assertPreamble(String tableName, String cql) {
-		assertThat(cql.startsWith("ALTER KEYSPACE " + tableName + " ")).isTrue();
+	private static void assertPreamble(String tableName, String cql) {
+		assertThat(cql).startsWith("ALTER KEYSPACE " + tableName + " ");
 	}
 
 	private static void assertReplicationMap(Map<Option, Object> replicationMap, String cql) {
-		assertThat(cql.contains(" WITH replication = { ")).isTrue();
+		assertThat(cql).contains(" WITH replication = { ");
 
 		replicationMap.entrySet().stream()
 				.map(entry -> "'" + entry.getKey().getName() + "' : '" + entry.getValue().toString() + "'")
 				.forEach(keyValuePair -> assertThat(cql.contains(keyValuePair)).isTrue());
 	}
 
-	public static void assertDurableWrites(Boolean durableWrites, String cql) {
-		assertThat(cql.contains(" AND durable_writes = " + durableWrites)).isTrue();
+	private static void assertDurableWrites(Boolean durableWrites, String cql) {
+		assertThat(cql).contains(" AND durable_writes = " + durableWrites);
 	}
 
 	/**
 	 * Convenient base class that other test classes can use so as not to repeat the generics declarations.
 	 */
-	public static abstract class AlterKeyspaceTest
+	static abstract class AlterKeyspaceTest
 			extends AbstractKeyspaceOperationCqlGeneratorTest<AlterKeyspaceSpecification, AlterKeyspaceCqlGenerator> {}
 
-	public static class CompleteTest extends AlterKeyspaceTest {
+	static class CompleteTest extends AlterKeyspaceTest {
 
-		public String name = RandomKeyspaceName.create();
-		public Boolean durableWrites = true;
+		private String name = RandomKeyspaceName.create();
+		private Boolean durableWrites = true;
 
-		public Map<Option, Object> replicationMap = new HashMap<>();
+		private Map<Option, Object> replicationMap = new HashMap<>();
 
 		@Override
 		public AlterKeyspaceSpecification specification() {
@@ -84,7 +84,7 @@ public class AlterKeyspaceCqlGeneratorUnitTests {
 		}
 
 		@Test
-		public void test() {
+		void test() {
 			prepare();
 
 			assertPreamble(name, cql);
@@ -93,12 +93,12 @@ public class AlterKeyspaceCqlGeneratorUnitTests {
 		}
 	}
 
-	public static class ReplicationMapOnlyTest extends AlterKeyspaceTest {
+	static class ReplicationMapOnlyTest extends AlterKeyspaceTest {
 
-		public String name = "mytable";
+		private String name = "mytable";
 		public Boolean durableWrites = true;
 
-		public Map<Option, Object> replicationMap = new HashMap<>();
+		private Map<Option, Object> replicationMap = new HashMap<>();
 
 		@Override
 		public AlterKeyspaceSpecification specification() {
@@ -116,7 +116,7 @@ public class AlterKeyspaceCqlGeneratorUnitTests {
 		}
 
 		@Test
-		public void test() {
+		void test() {
 			prepare();
 
 			assertPreamble(name, cql);

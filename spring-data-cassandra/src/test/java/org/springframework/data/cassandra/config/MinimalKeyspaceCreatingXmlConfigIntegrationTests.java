@@ -15,28 +15,25 @@
  */
 package org.springframework.data.cassandra.config;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.cassandra.support.KeyspaceTestUtils;
-import org.springframework.data.cassandra.test.util.AbstractEmbeddedCassandraIntegrationTest;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.data.cassandra.test.util.IntegrationTestsSupport;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 
 /**
  * @author Matthew T. Adams
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
-public class MinimalKeyspaceCreatingXmlConfigIntegrationTests extends AbstractEmbeddedCassandraIntegrationTest {
+@SpringJUnitConfig
+class MinimalKeyspaceCreatingXmlConfigIntegrationTests extends IntegrationTestsSupport {
 
 	@Autowired CqlSession session;
 
 	@Test
-	public void test() {
+	void test() {
 		KeyspaceTestUtils.assertKeyspaceExists("minimal", session);
 	}
 }

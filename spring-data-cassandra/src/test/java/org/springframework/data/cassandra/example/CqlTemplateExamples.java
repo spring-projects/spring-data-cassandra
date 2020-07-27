@@ -32,7 +32,7 @@ import com.datastax.oss.driver.api.core.cql.Row;
 //@formatter:off
 public class CqlTemplateExamples {
 
-	CqlTemplate cqlTemplate = null;
+	private CqlTemplate cqlTemplate = null;
 
 	void examples() {
 		// tag::rowCount[]
@@ -77,7 +77,7 @@ public class CqlTemplateExamples {
 	}
 
 	// tag::findAllActors[]
-	public List<Actor> findAllActors() {
+	List<Actor> findAllActors() {
 		return cqlTemplate.query("SELECT first_name, last_name FROM t_actor", ActorMapper.INSTANCE);
 	}
 
@@ -131,10 +131,10 @@ public class CqlTemplateExamples {
 
 	static class Actor {
 
-		public void setFirstName(String first_name) {
+		void setFirstName(String first_name) {
 
 		}
 
-		public void setLastName(String last_name) {}
+		void setLastName(String last_name) {}
 	}
 }

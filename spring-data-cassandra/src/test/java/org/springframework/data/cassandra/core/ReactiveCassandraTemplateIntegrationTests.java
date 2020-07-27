@@ -19,12 +19,11 @@ import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.cassandra.core.query.Criteria.*;
 
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 import reactor.test.StepVerifier;
 import reactor.test.StepVerifier.FirstStep;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.ReactiveCqlTemplate;
@@ -37,7 +36,7 @@ import org.springframework.data.cassandra.core.query.Update;
 import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.domain.UserToken;
 import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
-import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTest;
+import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 
@@ -48,12 +47,12 @@ import com.datastax.oss.driver.api.core.uuid.Uuids;
  *
  * @author Mark Paluch
  */
-public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrationTest {
+class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrationTests {
 
-	ReactiveCassandraTemplate template;
+	private ReactiveCassandraTemplate template;
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 
 		MappingCassandraConverter converter = new MappingCassandraConverter();
 		CassandraTemplate cassandraTemplate = new CassandraTemplate(this.session, converter);
@@ -68,7 +67,7 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 	}
 
 	@Test // DATACASS-335
-	public void insertShouldInsertEntity() {
+	void insertShouldInsertEntity() {
 
 		User user = new User("heisenberg", "Walter", "White");
 
@@ -81,7 +80,7 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 	}
 
 	@Test // DATACASS-250, DATACASS-573
-	public void insertShouldCreateEntityWithLwt() {
+	void insertShouldCreateEntityWithLwt() {
 
 		InsertOptions lwtOptions = InsertOptions.builder().withIfNotExists().build();
 
@@ -97,7 +96,7 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 	}
 
 	@Test // DATACASS-250
-	public void insertShouldNotUpdateEntityWithLwt() {
+	void insertShouldNotUpdateEntityWithLwt() {
 
 		InsertOptions lwtOptions = InsertOptions.builder().withIfNotExists().build();
 
@@ -115,7 +114,7 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 	}
 
 	@Test // DATACASS-335
-	public void shouldInsertEntityAndCount() {
+	void shouldInsertEntityAndCount() {
 
 		User user = new User("heisenberg", "Walter", "White");
 
@@ -125,7 +124,7 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 	}
 
 	@Test // DATACASS-335
-	public void shouldInsertEntityAndCountByQuery() {
+	void shouldInsertEntityAndCountByQuery() {
 
 		User user = new User("heisenberg", "Walter", "White");
 
@@ -141,7 +140,7 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 	}
 
 	@Test // DATACASS-335
-	public void shouldInsertAndExistsByQueryEntities() {
+	void shouldInsertAndExistsByQueryEntities() {
 
 		User user = new User("heisenberg", "Walter", "White");
 
@@ -157,7 +156,7 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 	}
 
 	@Test // DATACASS-335
-	public void updateShouldUpdateEntity() {
+	void updateShouldUpdateEntity() {
 
 		User user = new User("heisenberg", "Walter", "White");
 
@@ -171,7 +170,7 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 	}
 
 	@Test // DATACASS-292
-	public void updateShouldNotCreateEntityWithLwt() {
+	void updateShouldNotCreateEntityWithLwt() {
 
 		UpdateOptions lwtOptions = UpdateOptions.builder().withIfExists().build();
 
@@ -184,7 +183,7 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 	}
 
 	@Test // DATACASS-292
-	public void updateShouldUpdateEntityWithLwt() {
+	void updateShouldUpdateEntityWithLwt() {
 
 		UpdateOptions lwtOptions = UpdateOptions.builder().withIfExists().build();
 
@@ -200,7 +199,7 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 	}
 
 	@Test // DATACASS-343
-	public void updateShouldUpdateEntityByQuery() {
+	void updateShouldUpdateEntityByQuery() {
 
 		User user = new User("heisenberg", "Walter", "White");
 
@@ -214,7 +213,7 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 	}
 
 	@Test // DATACASS-343
-	public void deleteByQueryShouldRemoveEntity() {
+	void deleteByQueryShouldRemoveEntity() {
 
 		User user = new User("heisenberg", "Walter", "White");
 		template.insert(user).block();
@@ -226,7 +225,7 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 	}
 
 	@Test // DATACASS-343
-	public void deleteColumnsByQueryShouldRemoveColumn() {
+	void deleteColumnsByQueryShouldRemoveColumn() {
 
 		User user = new User("heisenberg", "Walter", "White");
 		template.insert(user).block();
@@ -241,7 +240,7 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 	}
 
 	@Test // DATACASS-335
-	public void deleteShouldRemoveEntity() {
+	void deleteShouldRemoveEntity() {
 
 		User user = new User("heisenberg", "Walter", "White");
 
@@ -253,7 +252,7 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 	}
 
 	@Test // DATACASS-335
-	public void deleteByIdShouldRemoveEntity() {
+	void deleteByIdShouldRemoveEntity() {
 
 		User user = new User("heisenberg", "Walter", "White");
 
@@ -265,7 +264,7 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 	}
 
 	@Test // DATACASS-606
-	public void deleteShouldRemoveEntityWithLwt() {
+	void deleteShouldRemoveEntityWithLwt() {
 
 		DeleteOptions lwtOptions = DeleteOptions.builder().withIfExists().build();
 
@@ -284,7 +283,7 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 	}
 
 	@Test // DATACASS-606
-	public void deleteByQueryShouldRemoveEntityWithLwt() {
+	void deleteByQueryShouldRemoveEntityWithLwt() {
 
 		DeleteOptions lwtOptions = DeleteOptions.builder().withIfExists().build();
 
@@ -305,7 +304,7 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 	}
 
 	@Test // DATACASS-343
-	public void shouldSelectByQueryWithSorting() {
+	void shouldSelectByQueryWithSorting() {
 
 		UserToken token1 = new UserToken();
 		token1.setUserId(Uuids.endOf(System.currentTimeMillis()));
@@ -326,7 +325,7 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 	}
 
 	@Test // DATACASS-343
-	public void shouldSelectOneByQuery() {
+	void shouldSelectOneByQuery() {
 
 		UserToken token1 = new UserToken();
 		token1.setUserId(Uuids.endOf(System.currentTimeMillis()));
@@ -341,7 +340,7 @@ public class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceC
 	}
 
 	@Test // DATACASS-529
-	public void shouldReturnEmptySliceOnEmptyResult() {
+	void shouldReturnEmptySliceOnEmptyResult() {
 
 		Query query = Query.query(where("id").is("foo")).pageRequest(CassandraPageRequest.first(10));
 

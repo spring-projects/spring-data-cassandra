@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.lang.annotation.RetentionPolicy;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link Option}.
@@ -27,32 +27,32 @@ import org.junit.Test;
  * @author Matthew T. Adams
  * @author JohnMcPeek
  */
-public class OptionUnitTests {
+class OptionUnitTests {
 
 	@Test
-	public void testOptionWithNullName() {
+	void testOptionWithNullName() {
 		assertThatIllegalArgumentException().isThrownBy(() -> new DefaultOption(null, Object.class, true, true, true));
 	}
 
 	@Test
-	public void testOptionWithEmptyName() {
+	void testOptionWithEmptyName() {
 		assertThatIllegalArgumentException().isThrownBy(() -> new DefaultOption("", Object.class, true, true, true));
 	}
 
 	@Test
-	public void testOptionWithNullType() {
+	void testOptionWithNullType() {
 		new DefaultOption("opt", Void.class, true, true, true);
 		new DefaultOption("opt", Void.class, false, true, true);
 	}
 
 	@Test
-	public void testOptionWithNullTypeIsCoerceable() {
+	void testOptionWithNullTypeIsCoerceable() {
 		Option op = new DefaultOption("opt", Void.class, true, true, true);
 		assertThat(op.isCoerceable("")).isTrue();
 	}
 
 	@Test
-	public void testOptionValueCoercion() {
+	void testOptionValueCoercion() {
 
 		String name = "my_option";
 		Class<?> type = String.class;

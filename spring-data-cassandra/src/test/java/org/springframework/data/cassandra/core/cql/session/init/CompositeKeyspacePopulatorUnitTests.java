@@ -20,7 +20,7 @@ import static org.mockito.Mockito.*;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 
@@ -29,7 +29,7 @@ import com.datastax.oss.driver.api.core.CqlSession;
  *
  * @author Mark Paluch
  */
-public class CompositeKeyspacePopulatorUnitTests {
+class CompositeKeyspacePopulatorUnitTests {
 
 	private final CqlSession mockedConnection = mock(CqlSession.class);
 
@@ -38,7 +38,7 @@ public class CompositeKeyspacePopulatorUnitTests {
 	private final KeyspacePopulator mockedKeyspacePopulator2 = mock(KeyspacePopulator.class);
 
 	@Test // DATACASS-704
-	public void addPopulators() {
+	void addPopulators() {
 
 		CompositeKeyspacePopulator populator = new CompositeKeyspacePopulator();
 		populator.addPopulators(mockedKeyspacePopulator1, mockedKeyspacePopulator2);
@@ -50,7 +50,7 @@ public class CompositeKeyspacePopulatorUnitTests {
 	}
 
 	@Test // DATACASS-704
-	public void setPopulatorsWithMultiple() {
+	void setPopulatorsWithMultiple() {
 
 		CompositeKeyspacePopulator populator = new CompositeKeyspacePopulator();
 		populator.setPopulators(mockedKeyspacePopulator1, mockedKeyspacePopulator2); // multiple
@@ -62,7 +62,7 @@ public class CompositeKeyspacePopulatorUnitTests {
 	}
 
 	@Test // DATACASS-704
-	public void setPopulatorsForOverride() {
+	void setPopulatorsForOverride() {
 
 		CompositeKeyspacePopulator populator = new CompositeKeyspacePopulator();
 		populator.setPopulators(mockedKeyspacePopulator1);
@@ -75,7 +75,7 @@ public class CompositeKeyspacePopulatorUnitTests {
 	}
 
 	@Test // DATACASS-704
-	public void constructWithVarargs() {
+	void constructWithVarargs() {
 
 		CompositeKeyspacePopulator populator = new CompositeKeyspacePopulator(mockedKeyspacePopulator1,
 				mockedKeyspacePopulator2);
@@ -87,7 +87,7 @@ public class CompositeKeyspacePopulatorUnitTests {
 	}
 
 	@Test // DATACASS-704
-	public void constructWithCollection() {
+	void constructWithCollection() {
 
 		Set<KeyspacePopulator> populators = new LinkedHashSet<>();
 		populators.add(mockedKeyspacePopulator1);

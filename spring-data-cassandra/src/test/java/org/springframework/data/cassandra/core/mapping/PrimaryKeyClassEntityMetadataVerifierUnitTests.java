@@ -18,8 +18,8 @@ package org.springframework.data.cassandra.core.mapping;
 import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Fail.fail;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.cql.Ordering;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
@@ -30,38 +30,38 @@ import org.springframework.data.mapping.MappingException;
  *
  * @author Mark Paluch
  */
-public class PrimaryKeyClassEntityMetadataVerifierUnitTests {
+class PrimaryKeyClassEntityMetadataVerifierUnitTests {
 
 	private PrimaryKeyClassEntityMetadataVerifier verifier = new PrimaryKeyClassEntityMetadataVerifier();
 	private CassandraMappingContext context = new CassandraMappingContext();
 
-	@Before
-	public void setUp() throws Exception {
+	@BeforeEach
+	void setUp() throws Exception {
 		context.setVerifier(new NoOpVerifier());
 	}
 
 	@Test // DATACASS-258
-	public void shouldAllowNonPersistentClasses() {
+	void shouldAllowNonPersistentClasses() {
 		verifier.verify(getEntity(NonPersistentClass.class));
 	}
 
 	@Test // DATACASS-258
-	public void shouldAllowInterfaceTypes() {
+	void shouldAllowInterfaceTypes() {
 		verifier.verify(getEntity(MyInterface.class));
 	}
 
 	@Test // DATACASS-258
-	public void shouldAllowTableClass() {
+	void shouldAllowTableClass() {
 		verifier.verify(getEntity(Person.class));
 	}
 
 	@Test // DATACASS-258
-	public void shouldVerifyPrimaryKeyClass() {
+	void shouldVerifyPrimaryKeyClass() {
 		verifier.verify(getEntity(AnimalPK.class));
 	}
 
 	@Test // DATACASS-258
-	public void shouldFailWithPersistentAndPrimaryKeyClassAnnotations() {
+	void shouldFailWithPersistentAndPrimaryKeyClassAnnotations() {
 
 		try {
 			verifier.verify(getEntity(TooManyAnnotations.class));
@@ -72,7 +72,7 @@ public class PrimaryKeyClassEntityMetadataVerifierUnitTests {
 	}
 
 	@Test // DATACASS-258
-	public void shouldFailWithoutPartitionKey() {
+	void shouldFailWithoutPartitionKey() {
 
 		try {
 			verifier.verify(getEntity(NoPartitionKey.class));
@@ -84,7 +84,7 @@ public class PrimaryKeyClassEntityMetadataVerifierUnitTests {
 	}
 
 	@Test // DATACASS-258
-	public void shouldFailWithoutPrimaryKey() {
+	void shouldFailWithoutPrimaryKey() {
 
 		try {
 			verifier.verify(getEntity(NoPrimaryKey.class));
@@ -96,7 +96,7 @@ public class PrimaryKeyClassEntityMetadataVerifierUnitTests {
 	}
 
 	@Test // DATACASS-258
-	public void shouldFailOnPrimaryKeyCycles() {
+	void shouldFailOnPrimaryKeyCycles() {
 
 		try {
 			verifier.verify(getEntity(TypeCycle.class));
@@ -108,7 +108,7 @@ public class PrimaryKeyClassEntityMetadataVerifierUnitTests {
 	}
 
 	@Test // DATACASS-258
-	public void shouldFailWithNestedPrimaryKeyClassReference() {
+	void shouldFailWithNestedPrimaryKeyClassReference() {
 
 		try {
 			verifier.verify(getEntity(PKClassWithNestedCompositeKey.class));
@@ -120,7 +120,7 @@ public class PrimaryKeyClassEntityMetadataVerifierUnitTests {
 	}
 
 	@Test // DATACASS-258
-	public void shouldFailWithPrimaryKeyClassAndPrimaryKeyAnnotations() {
+	void shouldFailWithPrimaryKeyClassAndPrimaryKeyAnnotations() {
 
 		try {
 			verifier.verify(getEntity(PrimaryKeyAndPrimaryKeyColumn.class));
@@ -132,7 +132,7 @@ public class PrimaryKeyClassEntityMetadataVerifierUnitTests {
 	}
 
 	@Test // DATACASS-258
-	public void shouldFailForPrimaryKeyDerivedFromOtherThanObject() {
+	void shouldFailForPrimaryKeyDerivedFromOtherThanObject() {
 
 		try {
 			verifier.verify(getEntity(SubclassPK.class));
@@ -143,7 +143,7 @@ public class PrimaryKeyClassEntityMetadataVerifierUnitTests {
 	}
 
 	@Test // DATACASS-213
-	public void shouldFailForIndexedPrimaryKey() {
+	void shouldFailForIndexedPrimaryKey() {
 
 		try {
 			verifier.verify(getEntity(InvalidIndexedPrimaryKeyType.class));
@@ -157,11 +157,11 @@ public class PrimaryKeyClassEntityMetadataVerifierUnitTests {
 		return context.getRequiredPersistentEntity(entityClass);
 	}
 
-	interface MyInterface {
+	private interface MyInterface {
 
 	}
 
-	static class NonPersistentClass {
+	private static class NonPersistentClass {
 
 		@Id String id;
 
@@ -179,7 +179,7 @@ public class PrimaryKeyClassEntityMetadataVerifierUnitTests {
 	}
 
 	@Table
-	static class Animal {
+	private static class Animal {
 
 		@PrimaryKey AnimalPK key;
 		private String name;
@@ -195,18 +195,18 @@ public class PrimaryKeyClassEntityMetadataVerifierUnitTests {
 
 	@Table
 	@PrimaryKeyClass
-	static class TooManyAnnotations {
+	private static class TooManyAnnotations {
 
 	}
 
 	@PrimaryKeyClass
-	static class NoPartitionKey {
+	private static class NoPartitionKey {
 
 		@PrimaryKeyColumn(ordinal = 0) String key;
 	}
 
 	@PrimaryKeyClass
-	static class NoPrimaryKey {
+	private static class NoPrimaryKey {
 
 	}
 
@@ -217,13 +217,13 @@ public class PrimaryKeyClassEntityMetadataVerifierUnitTests {
 	}
 
 	@PrimaryKeyClass
-	static class PKClassWithNestedCompositeKey {
+	private static class PKClassWithNestedCompositeKey {
 
 		@PrimaryKey OnePrimaryKeyColumn pkc;
 	}
 
 	@PrimaryKeyClass
-	static class PrimaryKeyAndPrimaryKeyColumn {
+	private static class PrimaryKeyAndPrimaryKeyColumn {
 
 		@PrimaryKey String primaryKey;
 		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) String primaryKeyColumn;
@@ -242,14 +242,14 @@ public class PrimaryKeyClassEntityMetadataVerifierUnitTests {
 	}
 
 	@PrimaryKeyClass
-	static class SubclassPK extends MultiPrimaryKeyColumns {
+	private static class SubclassPK extends MultiPrimaryKeyColumns {
 
 		@PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, ordinal = 0) String pk;
 	}
 
 	@PrimaryKeyClass
 	@Indexed
-	static class InvalidIndexedPrimaryKeyType {
+	private static class InvalidIndexedPrimaryKeyType {
 
 		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) String species;
 	}

@@ -18,7 +18,7 @@ package org.springframework.data.cassandra.core.cql.session.init;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
@@ -31,26 +31,26 @@ import com.datastax.oss.driver.api.core.cql.ResultSet;
  *
  * @author Mark Paluch
  */
-public class ResourceKeyspacePopulatorUnitTests {
+class ResourceKeyspacePopulatorUnitTests {
 
 	private static final Resource script1 = mock(Resource.class);
 	private static final Resource script2 = mock(Resource.class);
 	private static final Resource script3 = mock(Resource.class);
 
 	@Test // DATACASS-704
-	public void constructWithNullResource() {
+	void constructWithNullResource() {
 
 		assertThatIllegalArgumentException().isThrownBy(() -> new ResourceKeyspacePopulator((Resource) null));
 	}
 
 	@Test // DATACASS-704
-	public void constructWithNullResourceArray() {
+	void constructWithNullResourceArray() {
 
 		assertThatIllegalArgumentException().isThrownBy(() -> new ResourceKeyspacePopulator((Resource[]) null));
 	}
 
 	@Test // DATACASS-704
-	public void constructWithResource() {
+	void constructWithResource() {
 
 		ResourceKeyspacePopulator keyspacePopulator = new ResourceKeyspacePopulator(script1);
 
@@ -58,7 +58,7 @@ public class ResourceKeyspacePopulatorUnitTests {
 	}
 
 	@Test // DATACASS-704
-	public void constructWithMultipleResources() {
+	void constructWithMultipleResources() {
 
 		ResourceKeyspacePopulator keyspacePopulator = new ResourceKeyspacePopulator(script1, script2);
 
@@ -66,7 +66,7 @@ public class ResourceKeyspacePopulatorUnitTests {
 	}
 
 	@Test // DATACASS-704
-	public void constructWithMultipleResourcesAndThenAddScript() {
+	void constructWithMultipleResourcesAndThenAddScript() {
 
 		ResourceKeyspacePopulator keyspacePopulator = new ResourceKeyspacePopulator(script1, script2);
 
@@ -78,7 +78,7 @@ public class ResourceKeyspacePopulatorUnitTests {
 	}
 
 	@Test // DATACASS-704
-	public void addScriptsWithNullResource() {
+	void addScriptsWithNullResource() {
 
 		ResourceKeyspacePopulator keyspacePopulator = new ResourceKeyspacePopulator();
 
@@ -86,7 +86,7 @@ public class ResourceKeyspacePopulatorUnitTests {
 	}
 
 	@Test // DATACASS-704
-	public void addScriptsWithNullResourceArray() {
+	void addScriptsWithNullResourceArray() {
 
 		ResourceKeyspacePopulator keyspacePopulator = new ResourceKeyspacePopulator();
 
@@ -94,7 +94,7 @@ public class ResourceKeyspacePopulatorUnitTests {
 	}
 
 	@Test // DATACASS-704
-	public void setScriptsWithNullResource() {
+	void setScriptsWithNullResource() {
 
 		ResourceKeyspacePopulator keyspacePopulator = new ResourceKeyspacePopulator();
 
@@ -102,7 +102,7 @@ public class ResourceKeyspacePopulatorUnitTests {
 	}
 
 	@Test // DATACASS-704
-	public void setScriptsWithNullResourceArray() {
+	void setScriptsWithNullResourceArray() {
 
 		ResourceKeyspacePopulator keyspacePopulator = new ResourceKeyspacePopulator();
 
@@ -110,7 +110,7 @@ public class ResourceKeyspacePopulatorUnitTests {
 	}
 
 	@Test // DATACASS-704
-	public void shouldFailOnError() {
+	void shouldFailOnError() {
 
 		ResourceKeyspacePopulator keyspacePopulator = new ResourceKeyspacePopulator();
 		keyspacePopulator.setScripts(new ByteArrayResource("drop table;create table;".getBytes()));
@@ -126,7 +126,7 @@ public class ResourceKeyspacePopulatorUnitTests {
 	}
 
 	@Test // DATACASS-704
-	public void shouldContinueOnError() {
+	void shouldContinueOnError() {
 
 		ResourceKeyspacePopulator keyspacePopulator = new ResourceKeyspacePopulator();
 		keyspacePopulator.setIgnoreFailedDrops(true);
@@ -144,7 +144,7 @@ public class ResourceKeyspacePopulatorUnitTests {
 	}
 
 	@Test
-	public void setScriptsAndThenAddScript() {
+	void setScriptsAndThenAddScript() {
 
 		ResourceKeyspacePopulator keyspacePopulator = new ResourceKeyspacePopulator();
 		assertThat(keyspacePopulator.scripts).isEmpty();

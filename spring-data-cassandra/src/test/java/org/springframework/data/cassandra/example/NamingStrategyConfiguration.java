@@ -18,7 +18,7 @@ package org.springframework.data.cassandra.example;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.NamingStrategy;
 
-public class NamingStrategyConfiguration {
+class NamingStrategyConfiguration {
 
 	public void configurationMethod() {
 

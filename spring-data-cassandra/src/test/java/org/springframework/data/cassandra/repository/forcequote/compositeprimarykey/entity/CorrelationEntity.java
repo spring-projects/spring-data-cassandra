@@ -69,7 +69,7 @@ public class CorrelationEntity {
 			this.ts = ts;
 		}
 
-		public IdentityEntity(String type, String value, String correlatedType, Date ts, String correlatedValue) {
+		private IdentityEntity(String type, String value, String correlatedType, Date ts, String correlatedValue) {
 			this.type = type;
 			this.value = value;
 			this.correlatedType = correlatedType;

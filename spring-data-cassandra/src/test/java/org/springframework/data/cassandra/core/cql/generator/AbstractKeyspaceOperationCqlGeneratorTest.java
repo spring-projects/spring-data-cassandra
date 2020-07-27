@@ -18,7 +18,7 @@ package org.springframework.data.cassandra.core.cql.generator;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceActionSpecification;
 
 /**
@@ -30,15 +30,15 @@ import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceActionSpecif
  * @param <S> The type of the {@link TableNameSpecification}
  * @param <G> The type of the {@link TableNameCqlGenerator}
  */
-public abstract class AbstractKeyspaceOperationCqlGeneratorTest<S extends KeyspaceActionSpecification, G extends KeyspaceNameCqlGenerator<?>> {
+abstract class AbstractKeyspaceOperationCqlGeneratorTest<S extends KeyspaceActionSpecification, G extends KeyspaceNameCqlGenerator<?>> {
 
-	public abstract S specification();
+	protected abstract S specification();
 
-	public abstract G generator();
+	protected abstract G generator();
 
 	public String keyspace;
 	public S specification;
-	public G generator;
+	private G generator;
 	public String cql;
 
 	public void prepare() {
@@ -47,7 +47,7 @@ public abstract class AbstractKeyspaceOperationCqlGeneratorTest<S extends Keyspa
 		this.cql = generateCql();
 	}
 
-	public String generateCql() {
+	private String generateCql() {
 		return generator.toCql();
 	}
 

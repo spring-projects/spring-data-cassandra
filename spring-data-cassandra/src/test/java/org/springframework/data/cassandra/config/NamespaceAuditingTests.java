@@ -15,33 +15,26 @@
  */
 package org.springframework.data.cassandra.config;
 
-import org.junit.ClassRule;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.data.cassandra.test.util.CassandraRule;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.data.cassandra.test.util.CassandraExtension;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 /**
  * Unit tests for auditing enabled using XML config.
  *
  * @author Mark Paluch
  */
-@RunWith(SpringRunner.class)
-@ContextConfiguration
-public class NamespaceAuditingTests extends AbstractAuditingTests {
-
-	/**
-	 * Initiate a Cassandra environment in this test scope.
-	 */
-	@ClassRule public static final CassandraRule cassandraEnvironment = new CassandraRule("embedded-cassandra.yaml");
+@SpringJUnitConfig
+@ExtendWith(CassandraExtension.class)
+class NamespaceAuditingTests extends AbstractAuditingTests {
 
 	@Autowired ApplicationContext context;
 
 	@Override
-	protected ApplicationContext getApplicationContext() {
+	public ApplicationContext getApplicationContext() {
 		return context;
 	}
 }

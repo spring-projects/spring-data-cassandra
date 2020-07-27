@@ -18,26 +18,26 @@ package org.springframework.data.cassandra.core.convert;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.cql.ColumnDefinitions;
 import com.datastax.oss.driver.api.core.cql.Row;
 
 /**
- * Unit tests for {@link ColumnReader}.
+ * Unit tests for {@link RowReader}.
  *
  * @author Christopher Batey
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner.class)
-public class RowReaderUnitTests {
+@ExtendWith(MockitoExtension.class)
+class RowReaderUnitTests {
 
-	public static final String NON_EXISTENT_COLUMN = "column_name";
+	private static final String NON_EXISTENT_COLUMN = "column_name";
 
 	@Mock Row row;
 
@@ -45,59 +45,39 @@ public class RowReaderUnitTests {
 
 	private RowReader underTest;
 
-	@Before
-	public void setup() {
+	@BeforeEach
+	void setup() {
 
 		when(row.getColumnDefinitions()).thenReturn(columnDefinitions);
 		underTest = new RowReader(row);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void throwsIllegalArgumentExceptionIfColumnDoesNotExistByName() {
+	@Test
+	void throwsIllegalArgumentExceptionIfColumnDoesNotExistByName() {
 
 		when(columnDefinitions.firstIndexOf(NON_EXISTENT_COLUMN)).thenReturn(-1);
 
-		try {
-			underTest.get(NON_EXISTENT_COLUMN);
-			fail("Expected illegal argument exception");
-		} catch (IllegalArgumentException expected) {
+		assertThatIllegalArgumentException().isThrownBy(() -> underTest.get(NON_EXISTENT_COLUMN))
+				.withMessageContaining("Column [%s] does not exist in table", NON_EXISTENT_COLUMN);
 
-			assertThat(expected).hasMessage("Column [%s] does not exist in table", NON_EXISTENT_COLUMN);
-			assertThat(expected).hasNoCause();
-
-			throw expected;
-		}
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void throwsIllegalArgumentExceptionIfColumnDoesNotExistByCqlIdentifier() {
+	@Test
+	void throwsIllegalArgumentExceptionIfColumnDoesNotExistByCqlIdentifier() {
 
 		when(columnDefinitions.firstIndexOf(NON_EXISTENT_COLUMN)).thenReturn(-1);
 
-		try {
-			underTest.get(CqlIdentifier.fromCql(NON_EXISTENT_COLUMN));
-		} catch (IllegalArgumentException expected) {
-
-			assertThat(expected).hasMessage("Column [%s] does not exist in table", NON_EXISTENT_COLUMN);
-			assertThat(expected).hasNoCause();
-
-			throw expected;
-		}
+		assertThatIllegalArgumentException().isThrownBy(() -> underTest.get(CqlIdentifier.fromCql(NON_EXISTENT_COLUMN)))
+				.withMessageContaining("Column [%s] does not exist in table", NON_EXISTENT_COLUMN);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void throwsIllegalArgumentExceptionIfColumnDoesNotExistByCqlIdentifierAndType() {
+	@Test
+	void throwsIllegalArgumentExceptionIfColumnDoesNotExistByCqlIdentifierAndType() {
 
 		when(columnDefinitions.firstIndexOf(NON_EXISTENT_COLUMN)).thenReturn(-1);
 
-		try {
-			underTest.get(CqlIdentifier.fromCql(NON_EXISTENT_COLUMN), String.class);
-		} catch (IllegalArgumentException expected) {
-
-			assertThat(expected).hasMessage("Column [%s] does not exist in table", NON_EXISTENT_COLUMN);
-			assertThat(expected).hasNoCause();
-
-			throw expected;
-		}
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> underTest.get(underTest.get(CqlIdentifier.fromCql(NON_EXISTENT_COLUMN), String.class)))
+				.withMessageContaining("Column [%s] does not exist in table", NON_EXISTENT_COLUMN);
 	}
 }
