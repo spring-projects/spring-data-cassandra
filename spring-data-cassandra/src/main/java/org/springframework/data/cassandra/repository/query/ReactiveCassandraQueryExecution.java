@@ -37,6 +37,7 @@ import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.model.EntityInstantiators;
 import org.springframework.data.repository.query.ResultProcessor;
 import org.springframework.data.repository.query.ReturnedType;
+import org.springframework.data.util.ReflectionUtils;
 import org.springframework.util.ClassUtils;
 
 import com.datastax.oss.driver.api.core.cql.Row;
@@ -233,7 +234,7 @@ interface ReactiveCassandraQueryExecution {
 
 			ReturnedType returnedType = processor.getReturnedType();
 
-			if (returnedType.getReturnedType().equals(Void.class)) {
+			if (ReflectionUtils.isVoid(returnedType.getReturnedType())) {
 
 				if (source instanceof Mono) {
 					return ((Mono<?>) source).then();
