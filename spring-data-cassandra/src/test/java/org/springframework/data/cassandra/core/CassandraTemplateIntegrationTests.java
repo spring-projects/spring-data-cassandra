@@ -38,9 +38,11 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.cassandra.CassandraInvalidQueryException;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.CqlTemplate;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
+import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.mapping.BasicMapId;
 import org.springframework.data.cassandra.core.mapping.Embedded;
 import org.springframework.data.cassandra.core.mapping.PrimaryKey;
@@ -70,10 +72,12 @@ import com.datastax.oss.driver.api.core.uuid.Uuids;
  *
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Tomasz Lelek
  */
 class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrationTests {
 
 	private static final Version CASSANDRA_3 = Version.parse("3.0");
+	private static final Version CASSANDRA_4 = Version.parse("4.0");
 
 	private Version cassandraVersion;
 
@@ -430,6 +434,34 @@ class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrat
 
 		Query query = Query.query(where("id").is("heisenberg")).queryOptions(lwtOptions);
 		assertThat(template.delete(query, User.class)).isTrue();
+	}
+
+	@Test // DATACASS-767
+	void selectByQueryWithKeyspaceShouldRetrieveData() {
+		assumeTrue(cassandraVersion.isGreaterThanOrEqualTo(CASSANDRA_4));
+
+		QueryOptions queryOptions = QueryOptions.builder().keyspace(CqlIdentifier.fromCql(keyspace)).build();
+
+		User user = new User("heisenberg", "Walter", "White");
+		template.insert(user);
+
+		Query query = Query.query(where("id").is("heisenberg")).queryOptions(queryOptions);
+		assertThat(template.select(query, User.class)).isNotEmpty();
+	}
+
+	@Test // DATACASS-767
+	void selectByQueryWithNonExistingKeyspaceShouldThrowThatKeyspaceDoesNotExists() {
+		assumeTrue(cassandraVersion.isGreaterThanOrEqualTo(CASSANDRA_4));
+
+		QueryOptions queryOptions = QueryOptions.builder().keyspace(CqlIdentifier.fromCql("non_existing")).build();
+
+		User user = new User("heisenberg", "Walter", "White");
+		template.insert(user);
+
+		Query query = Query.query(where("id").is("heisenberg")).queryOptions(queryOptions);
+		assertThatThrownBy(() -> assertThat(template.select(query, User.class)).isEmpty())
+				.isInstanceOf(CassandraInvalidQueryException.class)
+				.hasMessageContaining("Keyspace 'non_existing' does not exist");
 	}
 
 	@Test // DATACASS-182

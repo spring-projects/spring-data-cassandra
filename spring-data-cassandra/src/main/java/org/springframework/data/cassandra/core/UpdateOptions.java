@@ -28,12 +28,14 @@ import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * Extension to {@link WriteOptions} for use with {@code UPDATE} operations.
  *
  * @author Mark Paluch
  * @author Lukasz Antoniak
+ * @author Tomasz Lelek
  * @since 2.0
  */
 public class UpdateOptions extends WriteOptions {
@@ -309,6 +311,16 @@ public class UpdateOptions extends WriteOptions {
 		public UpdateOptionsBuilder timestamp(Instant timestamp) {
 
 			super.timestamp(timestamp);
+			return this;
+		}
+
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#keyspace()
+		 */
+		@Override
+		public UpdateOptionsBuilder keyspace(CqlIdentifier keyspace) {
+
+			super.keyspace(keyspace);
 			return this;
 		}
 

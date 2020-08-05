@@ -18,11 +18,6 @@ package org.springframework.data.cassandra.core.cql;
 import java.util.Map;
 import java.util.Optional;
 
-import com.datastax.oss.driver.api.core.ConsistencyLevel;
-import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.cql.SimpleStatement;
-import com.datastax.oss.driver.api.core.cql.Statement;
-import com.datastax.oss.driver.api.core.retry.RetryPolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,6 +27,15 @@ import org.springframework.data.cassandra.SessionFactory;
 import org.springframework.data.cassandra.core.cql.session.DefaultSessionFactory;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+
+import com.datastax.oss.driver.api.core.ConsistencyLevel;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.BatchStatement;
+import com.datastax.oss.driver.api.core.cql.BoundStatement;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.cql.Statement;
+import com.datastax.oss.driver.api.core.retry.RetryPolicy;
 
 /**
  * {@link CassandraAccessor} provides access to a Cassandra {@link SessionFactory} and the
@@ -43,6 +47,7 @@ import org.springframework.util.Assert;
  * @author David Webb
  * @author Mark Paluch
  * @author John Blum
+ * @author Tomasz Lelek
  * @see org.springframework.beans.factory.InitializingBean
  * @see com.datastax.oss.driver.api.core.CqlSession
  */
@@ -78,6 +83,12 @@ public class CassandraAccessor implements InitializingBean {
 	private @Nullable ConsistencyLevel serialConsistencyLevel;
 
 	private @Nullable SessionFactory sessionFactory;
+
+	/**
+	 * If this variable is set to a value, it will be used for setting the {@code keyspace} property on statements used
+	 * for query processing.
+	 */
+	private @Nullable CqlIdentifier keyspace;
 
 	/**
 	 * Ensures the Cassandra {@link CqlSession} and exception translator has been propertly set.
@@ -287,6 +298,24 @@ public class CassandraAccessor implements InitializingBean {
 	}
 
 	/**
+	 * Set the keyspace for this template. If it is null, then the default {@link CqlSession} level keyspace will be used.
+	 *
+	 * @see SimpleStatement#setKeyspace(CqlIdentifier)
+	 * @see BatchStatement#setKeyspace(CqlIdentifier)
+	 */
+	public void setKeyspace(@Nullable CqlIdentifier keyspace) {
+		this.keyspace = keyspace;
+	}
+
+	/**
+	 * @return the {@link CqlIdentifier} keyspace for this template.
+	 */
+	@Nullable
+	public CqlIdentifier getKeyspace() {
+		return this.keyspace;
+	}
+
+	/**
 	 * Create a {@link SimpleStatement} given {@code cql}.
 	 *
 	 * @param cql the CQL query.
@@ -312,6 +341,7 @@ public class CassandraAccessor implements InitializingBean {
 		Statement<?> statementToUse = statement;
 		ConsistencyLevel consistencyLevel = getConsistencyLevel();
 		ConsistencyLevel serialConsistencyLevel = getSerialConsistencyLevel();
+		CqlIdentifier keyspace = getKeyspace();
 		int pageSize = getPageSize();
 
 		if (consistencyLevel != null) {
@@ -324,6 +354,18 @@ public class CassandraAccessor implements InitializingBean {
 
 		if (pageSize > -1) {
 			statementToUse = statementToUse.setPageSize(pageSize);
+		}
+
+		if (keyspace != null) {
+			if (statementToUse instanceof BoundStatement) {
+				throw new IllegalArgumentException("Keyspace cannot be set for a BoundStatement");
+			}
+			if (statementToUse instanceof BatchStatement) {
+				statementToUse = ((BatchStatement) statementToUse).setKeyspace(keyspace);
+			}
+			if (statementToUse instanceof SimpleStatement) {
+				statementToUse = ((SimpleStatement) statementToUse).setKeyspace(keyspace);
+			}
 		}
 
 		statementToUse = getExecutionProfileResolver().apply(statementToUse);

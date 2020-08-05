@@ -17,6 +17,11 @@ package org.springframework.data.cassandra.core.cql;
 
 import java.time.Duration;
 
+import org.springframework.util.Assert;
+
+import com.datastax.oss.driver.api.core.cql.BatchStatement;
+import com.datastax.oss.driver.api.core.cql.BoundStatement;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.Statement;
 import com.datastax.oss.driver.api.querybuilder.delete.Delete;
 import com.datastax.oss.driver.api.querybuilder.delete.DeleteSelection;
@@ -24,13 +29,12 @@ import com.datastax.oss.driver.api.querybuilder.insert.Insert;
 import com.datastax.oss.driver.api.querybuilder.update.Update;
 import com.datastax.oss.driver.api.querybuilder.update.UpdateStart;
 
-import org.springframework.util.Assert;
-
 /**
  * Utility class to associate {@link QueryOptions} and {@link WriteOptions} with QueryBuilder {@link Statement}s.
  *
  * @author Mark Paluch
  * @author Lukasz Antoniak
+ * @author Tomasz Lelek
  * @since 2.0
  */
 public abstract class QueryOptionsUtil {
@@ -72,6 +76,18 @@ public abstract class QueryOptionsUtil {
 			// is null since Statements are immutable and the call creates a new object.  Therefore keep the following
 			// statement wrapped in the conditional null check to avoid additional garbage and added GC pressure.
 			statementToUse = statementToUse.setTracing(Boolean.TRUE.equals(queryOptions.getTracing()));
+		}
+		if (queryOptions.getKeyspace() != null) {
+			if (statementToUse instanceof BoundStatement) {
+				throw new IllegalArgumentException("Keyspace cannot be set for a BoundStatement");
+			}
+			if (statementToUse instanceof BatchStatement) {
+				statementToUse = ((BatchStatement) statementToUse).setKeyspace(queryOptions.getKeyspace());
+			}
+			if (statementToUse instanceof SimpleStatement) {
+				statementToUse = ((SimpleStatement) statementToUse).setKeyspace(queryOptions.getKeyspace());
+			}
+
 		}
 
 		return (T) statementToUse;

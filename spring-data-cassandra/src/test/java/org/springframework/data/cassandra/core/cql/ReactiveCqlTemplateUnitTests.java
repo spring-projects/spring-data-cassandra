@@ -28,12 +28,12 @@ import java.util.function.Consumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.cassandra.CassandraConnectionFailureException;
 import org.springframework.data.cassandra.CassandraInvalidQueryException;
@@ -44,6 +44,7 @@ import org.springframework.data.cassandra.core.cql.session.DefaultReactiveSessio
 import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
 import com.datastax.oss.driver.api.core.NoNodeAvailableException;
 import com.datastax.oss.driver.api.core.cql.BoundStatement;
@@ -58,6 +59,7 @@ import com.datastax.oss.driver.api.core.servererrors.InvalidQueryException;
  * Unit tests for {@link ReactiveCqlTemplate}.
  *
  * @author Mark Paluch
+ * @author Tomasz Lelek
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -784,12 +786,18 @@ class ReactiveCqlTemplateUnitTests {
 	}
 
 	private void doTestStrings(Consumer<ReactiveCqlTemplate> cqlTemplateConsumer) {
-		doTestStrings(null, null, null, null, cqlTemplateConsumer);
+		doTestStrings(null, null, null, null, cqlTemplateConsumer, null);
 	}
 
 	private void doTestStrings(@Nullable Integer fetchSize, @Nullable ConsistencyLevel consistencyLevel,
 			@Nullable ConsistencyLevel serialConsistencyLevel, @Nullable String executionProfile,
 			Consumer<ReactiveCqlTemplate> cqlTemplateConsumer) {
+		doTestStrings(fetchSize, consistencyLevel, serialConsistencyLevel, executionProfile, cqlTemplateConsumer, null);
+	}
+
+	private void doTestStrings(@Nullable Integer fetchSize, @Nullable ConsistencyLevel consistencyLevel,
+			@Nullable ConsistencyLevel serialConsistencyLevel, @Nullable String executionProfile,
+			Consumer<ReactiveCqlTemplate> cqlTemplateConsumer, @Nullable CqlIdentifier keyspace) {
 
 		String[] results = { "Walter", "Hank", " Jesse" };
 
@@ -818,6 +826,10 @@ class ReactiveCqlTemplateUnitTests {
 			template.setExecutionProfile(executionProfile);
 		}
 
+		if (keyspace != null) {
+			template.setKeyspace(keyspace);
+		}
+
 		cqlTemplateConsumer.accept(template);
 
 		ArgumentCaptor<Statement> statementArgumentCaptor = ArgumentCaptor.forClass(Statement.class);
@@ -839,6 +851,9 @@ class ReactiveCqlTemplateUnitTests {
 
 		if (executionProfile != null) {
 			assertThat(statement.getExecutionProfileName()).isEqualTo(executionProfile);
+		}
+		if (keyspace != null) {
+			assertThat(statement.getKeyspace()).isEqualTo(keyspace);
 		}
 	}
 }

@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.time.Duration;
@@ -22,10 +23,14 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
+import com.datastax.oss.driver.api.core.cql.BatchStatement;
+import com.datastax.oss.driver.api.core.cql.BoundStatement;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 
 /**
@@ -33,11 +38,14 @@ import com.datastax.oss.driver.api.core.cql.SimpleStatement;
  *
  * @author John Blum
  * @author Mark Paluch
+ * @author Tomasz Lelek
  */
 @ExtendWith(MockitoExtension.class)
 class QueryOptionsUtilUnitTests {
 
 	@Mock SimpleStatement simpleStatement;
+	@Mock BatchStatement batchStatement;
+	@Mock BoundStatement boundStatement;
 
 	@Test // DATACASS-202, DATACASS-708
 	void addPreparedStatementOptionsShouldAddDriverQueryOptions() {
@@ -87,5 +95,40 @@ class QueryOptionsUtilUnitTests {
 		verify(simpleStatement).setTimeout(Duration.ofMinutes(1));
 		verify(simpleStatement).setPageSize(10);
 		verify(simpleStatement).setTracing(true);
+	}
+
+	@Test // DATACASS-767
+	void addKeyspaceOptionsOnSimpleStatementShouldAddDriverQueryOptions() {
+		when(simpleStatement.setKeyspace(any(CqlIdentifier.class))).thenReturn(simpleStatement);
+
+		QueryOptions queryOptions = QueryOptions.builder() //
+				.keyspace(CqlIdentifier.fromCql("ks1")).build();
+
+		QueryOptionsUtil.addQueryOptions(simpleStatement, queryOptions);
+
+		verify(simpleStatement).setKeyspace(CqlIdentifier.fromCql("ks1"));
+	}
+
+	@Test // DATACASS-767
+	void addKeyspaceOptionsOnBatchStatementShouldAddDriverQueryOptions() {
+		when(batchStatement.setKeyspace(any(CqlIdentifier.class))).thenReturn(batchStatement);
+
+		QueryOptions queryOptions = QueryOptions.builder() //
+				.keyspace(CqlIdentifier.fromCql("ks1")).build();
+
+		QueryOptionsUtil.addQueryOptions(batchStatement, queryOptions);
+
+		verify(batchStatement).setKeyspace(CqlIdentifier.fromCql("ks1"));
+	}
+
+	@Test // DATACASS-767
+	void addKeyspaceOptionsOnBoundStatementShouldThrowException() {
+		QueryOptions queryOptions = QueryOptions.builder() //
+				.keyspace(CqlIdentifier.fromCql("ks1")).build();
+
+		assertThatThrownBy(() -> QueryOptionsUtil.addQueryOptions(boundStatement, queryOptions))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessageContaining("Keyspace cannot be set for a BoundStatement");
+
 	}
 }

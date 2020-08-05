@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.core.cql;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.Assume.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,19 +26,25 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.springframework.data.cassandra.CassandraInvalidQueryException;
+import org.springframework.data.cassandra.support.CassandraVersion;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
+import org.springframework.data.util.Version;
 
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 
 /**
  * Integration tests for {@link CqlTemplate}.
  *
  * @author Mark Paluch
+ * @author Tomasz Lelek
  */
 class CqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrationTests {
-
+	private static final Version CASSANDRA_4 = Version.parse("4.0");
 	private static final AtomicBoolean initialized = new AtomicBoolean();
 	private CqlTemplate template;
+	private Version cassandraVersion;
 
 	@BeforeEach
 	void before() {
@@ -51,6 +58,7 @@ class CqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrationTes
 
 		template = new CqlTemplate();
 		template.setSession(getSession());
+		cassandraVersion = CassandraVersion.get(session);
 	}
 
 	@Test // DATACASS-292
@@ -167,5 +175,28 @@ class CqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrationTes
 		Map<String, Object> map = template.queryForMap("SELECT * FROM user WHERE id = ?;", "WHITE");
 
 		assertThat(map).containsEntry("id", "WHITE").containsEntry("username", "Walter");
+	}
+
+	@Test // DATACASS-767
+	void selectByQueryWithKeyspaceShouldRetrieveData() {
+		assumeTrue(cassandraVersion.isGreaterThanOrEqualTo(CASSANDRA_4));
+
+		template.setKeyspace(CqlIdentifier.fromCql(keyspace));
+
+		String id = template.queryForObject("SELECT id FROM user;", String.class);
+
+		assertThat(id).isEqualTo("WHITE");
+	}
+
+	@Test // DATACASS-767
+	void selectByQueryWithNonExistingKeyspaceShouldThrowThatKeyspaceDoesNotExists() {
+		assumeTrue(cassandraVersion.isGreaterThanOrEqualTo(CASSANDRA_4));
+
+		template.setKeyspace(CqlIdentifier.fromCql("non_existing"));
+
+		assertThatThrownBy(() -> template.queryForObject("SELECT id FROM user;", String.class))
+				.isInstanceOf(CassandraInvalidQueryException.class)
+				.hasMessageContaining("Keyspace 'non_existing' does not exist");
+
 	}
 }

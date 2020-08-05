@@ -20,9 +20,11 @@ import static org.assertj.core.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
 
 /**
@@ -102,4 +104,12 @@ class CassandraAccessorUnitTests {
 			assertThat(e).hasMessageContaining("SessionFactory was not properly initialized");
 		}
 	}
+
+	@Test // DATACASS-767
+	void setAndGetKeyspace() {
+		CqlIdentifier keyspace = CqlIdentifier.fromCql("ks1");
+		cassandraAccessor.setKeyspace(keyspace);
+		assertThat(cassandraAccessor.getKeyspace()).isEqualTo(keyspace);
+	}
+
 }
