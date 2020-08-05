@@ -28,12 +28,14 @@ import org.springframework.data.cassandra.support.CqlDataSet;
 import org.springframework.util.Assert;
 import org.springframework.util.SocketUtils;
 import org.springframework.util.StringUtils;
-
 import org.testcontainers.containers.CassandraContainer;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.CqlSessionBuilder;
+import com.datastax.oss.driver.api.core.config.DefaultDriverOption;
+import com.datastax.oss.driver.api.core.config.DriverConfigLoader;
+import com.datastax.oss.driver.api.core.metadata.Node;
 
 /**
  * Delegate used to provide a Cassandra context for integration tests. This rule can use/spin up either an embedded
@@ -43,6 +45,7 @@ import com.datastax.oss.driver.api.core.CqlSessionBuilder;
  *
  * @author Mark Paluch
  * @author John Blum
+ * @author Tomasz Lelek
  * @since 1.5
  * @see CassandraConnectionProperties
  */
@@ -296,8 +299,21 @@ class CassandraDelegate {
 
 		String host = resolveHost();
 
-		return CqlSession.builder().addContactPoint(InetSocketAddress.createUnresolved(host, port))
+		CqlSessionBuilder builder = CqlSession.builder().addContactPoint(InetSocketAddress.createUnresolved(host, port))
 				.withLocalDatacenter("datacenter1");
+
+		CqlSession cqlSession = builder.build();
+		if (cassandraVersionGreaterThanOrEqualTo4(cqlSession)) {
+			return builder.withConfigLoader(
+					DriverConfigLoader.programmaticBuilder().withString(DefaultDriverOption.PROTOCOL_VERSION, "V5").build());
+		} else {
+			return builder;
+		}
+	}
+
+	private boolean cassandraVersionGreaterThanOrEqualTo4(CqlSession cqlSession) {
+		return cqlSession.getMetadata().getNodes().values().stream().map(Node::getCassandraVersion)
+				.allMatch(v -> v != null && v.getMajor() >= 4);
 	}
 
 	private String resolveHost() {

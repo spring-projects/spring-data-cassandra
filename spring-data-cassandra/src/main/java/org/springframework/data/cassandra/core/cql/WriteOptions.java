@@ -19,11 +19,12 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 
-import com.datastax.oss.driver.api.core.ConsistencyLevel;
-
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
+
+import com.datastax.oss.driver.api.core.ConsistencyLevel;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * Cassandra Write Options are an extension to {@link QueryOptions} for write operations. {@link WriteOptions} allow
@@ -32,6 +33,7 @@ import org.springframework.util.ObjectUtils;
  * @author David Webb
  * @author Mark Paluch
  * @author Lukasz Antoniak
+ * @author Tomasz Lelek
  * @see QueryOptions
  */
 public class WriteOptions extends QueryOptions {
@@ -267,6 +269,16 @@ public class WriteOptions extends QueryOptions {
 		public WriteOptionsBuilder withTracing() {
 
 			super.withTracing();
+			return this;
+		}
+
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#keyspace()
+		 */
+		@Override
+		public WriteOptionsBuilder keyspace(CqlIdentifier keyspace) {
+
+			super.keyspace(keyspace);
 			return this;
 		}
 

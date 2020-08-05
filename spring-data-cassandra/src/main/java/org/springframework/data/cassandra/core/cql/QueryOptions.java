@@ -23,6 +23,8 @@ import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.config.DriverExecutionProfile;
 
 /**
@@ -31,6 +33,7 @@ import com.datastax.oss.driver.api.core.config.DriverExecutionProfile;
  *
  * @author David Webb
  * @author Mark Paluch
+ * @author Tomasz Lelek
  */
 public class QueryOptions {
 
@@ -48,9 +51,17 @@ public class QueryOptions {
 
 	private final @Nullable Boolean tracing;
 
+	private final @Nullable CqlIdentifier keyspace;
+
 	protected QueryOptions(@Nullable ConsistencyLevel consistencyLevel, ExecutionProfileResolver executionProfileResolver,
 			@Nullable Integer pageSize, @Nullable ConsistencyLevel serialConsistencyLevel, Duration timeout,
 			@Nullable Boolean tracing) {
+		this(consistencyLevel, executionProfileResolver, pageSize, serialConsistencyLevel, timeout, tracing, null);
+	}
+
+	protected QueryOptions(@Nullable ConsistencyLevel consistencyLevel, ExecutionProfileResolver executionProfileResolver,
+			@Nullable Integer pageSize, @Nullable ConsistencyLevel serialConsistencyLevel, Duration timeout,
+			@Nullable Boolean tracing, @Nullable CqlIdentifier keyspace) {
 
 		this.consistencyLevel = consistencyLevel;
 		this.executionProfileResolver = executionProfileResolver;
@@ -58,6 +69,7 @@ public class QueryOptions {
 		this.serialConsistencyLevel = serialConsistencyLevel;
 		this.timeout = timeout;
 		this.tracing = tracing;
+		this.keyspace = keyspace;
 	}
 
 	/**
@@ -154,6 +166,15 @@ public class QueryOptions {
 		return this.tracing;
 	}
 
+	/**
+	 * @return the keyspace associated with the query. If it is null, it means that the default keyspace from
+	 *         {@link CqlSession} will be used.
+	 */
+	@Nullable
+	public CqlIdentifier getKeyspace() {
+		return keyspace;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
@@ -191,7 +212,11 @@ public class QueryOptions {
 			return false;
 		}
 
-		return ObjectUtils.nullSafeEquals(tracing, options.tracing);
+		if (!ObjectUtils.nullSafeEquals(tracing, options.tracing)) {
+			return false;
+		}
+
+		return ObjectUtils.nullSafeEquals(keyspace, options.keyspace);
 	}
 
 	/*
@@ -206,6 +231,7 @@ public class QueryOptions {
 		result = 31 * result + ObjectUtils.nullSafeHashCode(serialConsistencyLevel);
 		result = 31 * result + ObjectUtils.nullSafeHashCode(timeout);
 		result = 31 * result + ObjectUtils.nullSafeHashCode(tracing);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(keyspace);
 		return result;
 	}
 
@@ -229,6 +255,8 @@ public class QueryOptions {
 
 		protected @Nullable Boolean tracing;
 
+		protected @Nullable CqlIdentifier keyspace;
+
 		QueryOptionsBuilder() {}
 
 		QueryOptionsBuilder(QueryOptions queryOptions) {
@@ -239,6 +267,7 @@ public class QueryOptions {
 			this.serialConsistencyLevel = queryOptions.serialConsistencyLevel;
 			this.timeout = queryOptions.timeout;
 			this.tracing = queryOptions.tracing;
+			this.keyspace = queryOptions.keyspace;
 		}
 
 		/**
@@ -431,13 +460,26 @@ public class QueryOptions {
 		}
 
 		/**
+		 * Sets the keyspace to use.
+		 *
+		 * @param keyspace if it is null, then the default {@link CqlSession} level keyspace will be used.
+		 * @return {@code this} {@link QueryOptionsBuilder}
+		 */
+		public QueryOptionsBuilder keyspace(CqlIdentifier keyspace) {
+
+			this.keyspace = keyspace;
+
+			return this;
+		}
+
+		/**
 		 * Builds a new {@link QueryOptions} with the configured values.
 		 *
 		 * @return a new {@link QueryOptions} with the configured values
 		 */
 		public QueryOptions build() {
 			return new QueryOptions(this.consistencyLevel, this.executionProfileResolver, this.pageSize,
-					this.serialConsistencyLevel, this.timeout, this.tracing);
+					this.serialConsistencyLevel, this.timeout, this.tracing, this.keyspace);
 		}
 	}
 }

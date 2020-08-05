@@ -15,22 +15,14 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
-import com.datastax.oss.driver.api.core.ConsistencyLevel;
-import com.datastax.oss.driver.api.core.DriverException;
-import com.datastax.oss.driver.api.core.cql.BoundStatement;
-import com.datastax.oss.driver.api.core.cql.PreparedStatement;
-import com.datastax.oss.driver.api.core.cql.Row;
-import com.datastax.oss.driver.api.core.cql.SimpleStatement;
-import com.datastax.oss.driver.api.core.cql.Statement;
-import com.datastax.oss.driver.api.core.retry.RetryPolicy;
 import org.reactivestreams.Publisher;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.data.cassandra.ReactiveResultSet;
@@ -39,6 +31,18 @@ import org.springframework.data.cassandra.ReactiveSessionFactory;
 import org.springframework.data.cassandra.core.cql.session.DefaultReactiveSessionFactory;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+
+import com.datastax.oss.driver.api.core.ConsistencyLevel;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.DriverException;
+import com.datastax.oss.driver.api.core.cql.BatchStatement;
+import com.datastax.oss.driver.api.core.cql.BoundStatement;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.cql.Statement;
+import com.datastax.oss.driver.api.core.retry.RetryPolicy;
 
 /**
  * <b>This is the central class in the CQL core package for reactive Cassandra data access.</b> It simplifies the use of
@@ -68,6 +72,7 @@ import org.springframework.util.Assert;
  * <b>NOTE: An instance of this class is thread-safe once configured.</b>
  *
  * @author Mark Paluch
+ * @author Tomasz Lelek
  * @since 2.0
  * @see PreparedStatementCreator
  * @see PreparedStatementBinder
@@ -102,6 +107,12 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 * statements used for query processing.
 	 */
 	private @Nullable ConsistencyLevel serialConsistencyLevel;
+
+	/**
+	 * If this variable is set to a value, it will be used for setting the {@code keyspace} property on statements used
+	 * for query processing.
+	 */
+	private @Nullable CqlIdentifier keyspace;
 
 	/**
 	 * Construct a new {@link ReactiveCqlTemplate Note: The {@link ReactiveSessionFactory} has to be set before using the
@@ -252,6 +263,24 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	@Nullable
 	public ConsistencyLevel getSerialConsistencyLevel() {
 		return this.serialConsistencyLevel;
+	}
+
+	/**
+	 * Set the keyspace for this template. If it is null, then the default {@link CqlSession} level keyspace will be used.
+	 *
+	 * @see SimpleStatement#setKeyspace(CqlIdentifier)
+	 * @see BatchStatement#setKeyspace(CqlIdentifier)
+	 */
+	public void setKeyspace(@Nullable CqlIdentifier keyspace) {
+		this.keyspace = keyspace;
+	}
+
+	/**
+	 * @return the {@link CqlIdentifier} keyspace for this template.
+	 */
+	@Nullable
+	public CqlIdentifier getKeyspace() {
+		return this.keyspace;
 	}
 
 	// -------------------------------------------------------------------------
@@ -820,6 +849,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 		Statement<?> statementToUse = statement;
 		ConsistencyLevel consistencyLevel = getConsistencyLevel();
 		ConsistencyLevel serialConsistencyLevel = getSerialConsistencyLevel();
+		CqlIdentifier keyspace = getKeyspace();
 		int pageSize = getPageSize();
 
 		if (consistencyLevel != null) {
@@ -832,6 +862,18 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 
 		if (pageSize > -1) {
 			statementToUse = statementToUse.setPageSize(pageSize);
+		}
+
+		if (keyspace != null) {
+			if (statementToUse instanceof BoundStatement) {
+				throw new IllegalArgumentException("Keyspace cannot be set for a BoundStatement");
+			}
+			if (statementToUse instanceof BatchStatement) {
+				statementToUse = ((BatchStatement) statementToUse).setKeyspace(keyspace);
+			}
+			if (statementToUse instanceof SimpleStatement) {
+				statementToUse = ((SimpleStatement) statementToUse).setKeyspace(keyspace);
+			}
 		}
 
 		statementToUse = getExecutionProfileResolver().apply(statementToUse);

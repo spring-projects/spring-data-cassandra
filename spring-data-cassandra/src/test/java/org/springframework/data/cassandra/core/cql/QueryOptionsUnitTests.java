@@ -21,12 +21,14 @@ import java.time.Duration;
 
 import org.junit.jupiter.api.Test;
 
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
 
 /**
  * Unit tests for {@link QueryOptions}.
  *
  * @author Mark Paluch
+ * @author Tomasz Lelek
  */
 class QueryOptionsUnitTests {
 
@@ -34,20 +36,21 @@ class QueryOptionsUnitTests {
 	void buildQueryOptions() {
 
 		QueryOptions queryOptions = QueryOptions.builder().consistencyLevel(DefaultConsistencyLevel.ANY)
-				.timeout(Duration.ofSeconds(1)).pageSize(10).tracing(true).build();
+				.timeout(Duration.ofSeconds(1)).pageSize(10).tracing(true).keyspace(CqlIdentifier.fromCql("ks1")).build();
 
 		assertThat(queryOptions.getClass()).isEqualTo(QueryOptions.class);
 		assertThat(queryOptions.getConsistencyLevel()).isEqualTo(DefaultConsistencyLevel.ANY);
 		assertThat(queryOptions.getTimeout()).isEqualTo(Duration.ofSeconds(1));
 		assertThat(queryOptions.getPageSize()).isEqualTo(10);
 		assertThat(queryOptions.getTracing()).isTrue();
+		assertThat(queryOptions.getKeyspace()).isEqualTo(CqlIdentifier.fromCql("ks1"));
 	}
 
 	@Test // DATACASS-56
 	void buildQueryOptionsMutate() {
 
 		QueryOptions queryOptions = QueryOptions.builder().consistencyLevel(DefaultConsistencyLevel.ANY)
-				.timeout(Duration.ofSeconds(1)).pageSize(10).tracing(true).build();
+				.timeout(Duration.ofSeconds(1)).pageSize(10).tracing(true).keyspace(CqlIdentifier.fromCql("ks1")).build();
 
 		QueryOptions mutated = queryOptions.mutate().timeout(Duration.ofSeconds(5)).build();
 
@@ -58,5 +61,6 @@ class QueryOptionsUnitTests {
 		assertThat(mutated.getTimeout()).isEqualTo(Duration.ofSeconds(5));
 		assertThat(mutated.getPageSize()).isEqualTo(10);
 		assertThat(mutated.getTracing()).isTrue();
+		assertThat(mutated.getKeyspace()).isEqualTo(CqlIdentifier.fromCql("ks1"));
 	}
 }
