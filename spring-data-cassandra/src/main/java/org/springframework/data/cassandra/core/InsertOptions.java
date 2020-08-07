@@ -38,16 +38,17 @@ public class InsertOptions extends WriteOptions {
 
 	private static final InsertOptions EMPTY = new InsertOptionsBuilder().build();
 
-	private boolean ifNotExists;
+	private final boolean ifNotExists;
 
-	private boolean insertNulls;
+	private final boolean insertNulls;
 
 	private InsertOptions(@Nullable ConsistencyLevel consistencyLevel, ExecutionProfileResolver executionProfileResolver,
-			@Nullable Integer pageSize, @Nullable ConsistencyLevel serialConsistencyLevel, Duration timeout, Duration ttl,
-			@Nullable Long timestamp, @Nullable Boolean tracing, boolean ifNotExists, boolean insertNulls) {
+			@Nullable CqlIdentifier keyspace, @Nullable Integer pageSize, @Nullable ConsistencyLevel serialConsistencyLevel,
+			Duration timeout, Duration ttl, @Nullable Long timestamp, @Nullable Boolean tracing, boolean ifNotExists,
+			boolean insertNulls) {
 
-		super(consistencyLevel, executionProfileResolver, pageSize, serialConsistencyLevel, timeout, ttl, timestamp,
-				tracing);
+		super(consistencyLevel, executionProfileResolver, keyspace, pageSize, serialConsistencyLevel, timeout, ttl,
+				timestamp, tracing);
 
 		this.ifNotExists = ifNotExists;
 		this.insertNulls = insertNulls;
@@ -198,6 +199,16 @@ public class InsertOptions extends WriteOptions {
 		}
 
 		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#keyspace()
+		 */
+		@Override
+		public InsertOptionsBuilder keyspace(CqlIdentifier keyspace) {
+
+			super.keyspace(keyspace);
+			return this;
+		}
+
+		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#pageSize(int)
 		 */
 		@Override
@@ -306,16 +317,6 @@ public class InsertOptions extends WriteOptions {
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#keyspace()
-		 */
-		@Override
-		public InsertOptionsBuilder keyspace(CqlIdentifier keyspace) {
-
-			super.keyspace(keyspace);
-			return this;
-		}
-
 		/**
 		 * Use light-weight transactions by applying {@code IF NOT EXISTS}.
 		 *
@@ -372,7 +373,7 @@ public class InsertOptions extends WriteOptions {
 		 * @return a new {@link InsertOptions} with the configured values
 		 */
 		public InsertOptions build() {
-			return new InsertOptions(this.consistencyLevel, this.executionProfileResolver, this.pageSize,
+			return new InsertOptions(this.consistencyLevel, this.executionProfileResolver, this.keyspace, this.pageSize,
 					this.serialConsistencyLevel, this.timeout, this.ttl, this.timestamp, this.tracing, this.ifNotExists,
 					this.insertNulls);
 		}

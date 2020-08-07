@@ -28,12 +28,12 @@ import java.util.function.Consumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.cassandra.CassandraConnectionFailureException;
 import org.springframework.data.cassandra.CassandraInvalidQueryException;
@@ -550,6 +550,24 @@ class ReactiveCqlTemplateUnitTests {
 		});
 	}
 
+	@Test // DATACASS-767
+	void executePreparedStatementShouldApplyKeyspace() {
+
+		when(preparedStatement.bind("A")).thenReturn(boundStatement);
+		when(boundStatement.getKeyspace()).thenReturn(CqlIdentifier.fromCql("ks1"));
+
+		doTestStrings(null, null, null, null, CqlIdentifier.fromCql("ks1"), cqlTemplate -> {
+			cqlTemplate.execute("SELECT * from USERS", (session, ps) -> session.execute(ps.bind("A")))
+					.as(StepVerifier::create).expectNextCount(1).verifyComplete();
+		});
+
+		ArgumentCaptor<SimpleStatement> captor = ArgumentCaptor.forClass(SimpleStatement.class);
+		verify(session).prepare(captor.capture());
+
+		SimpleStatement statement = captor.getValue();
+		assertThat(statement.getKeyspace()).isEqualTo(CqlIdentifier.fromCql("ks1"));
+	}
+
 	@Test // DATACASS-335
 	void executePreparedStatementWithCallbackShouldCallExecution() {
 
@@ -566,7 +584,7 @@ class ReactiveCqlTemplateUnitTests {
 	@Test // DATACASS-335
 	void executePreparedStatementCallbackShouldExecuteDeferred() {
 
-		when(session.prepare(anyString())).thenReturn(Mono.just(preparedStatement));
+		when(session.prepare(any(SimpleStatement.class))).thenReturn(Mono.just(preparedStatement));
 		when(preparedStatement.bind()).thenReturn(boundStatement);
 		when(session.execute(boundStatement)).thenReturn(Mono.just(reactiveResultSet));
 
@@ -577,7 +595,7 @@ class ReactiveCqlTemplateUnitTests {
 
 		flux.as(StepVerifier::create).expectNext(reactiveResultSet).verifyComplete();
 
-		verify(session).prepare(anyString());
+		verify(session).prepare(any(SimpleStatement.class));
 		verify(session).execute(boundStatement);
 	}
 
@@ -670,7 +688,7 @@ class ReactiveCqlTemplateUnitTests {
 	@Test // DATACASS-335
 	void queryForObjectPreparedStatementShouldBeEmpty() {
 
-		when(session.prepare("SELECT * FROM user WHERE username = ?")).thenReturn(Mono.just(preparedStatement));
+		when(session.prepare(any(SimpleStatement.class))).thenReturn(Mono.just(preparedStatement));
 		when(preparedStatement.bind("Walter")).thenReturn(boundStatement);
 		when(session.execute(boundStatement)).thenReturn(Mono.just(reactiveResultSet));
 		when(reactiveResultSet.rows()).thenReturn(Flux.empty());
@@ -684,7 +702,7 @@ class ReactiveCqlTemplateUnitTests {
 	@Test // DATACASS-335
 	void queryForObjectPreparedStatementShouldReturnRecord() {
 
-		when(session.prepare("SELECT * FROM user WHERE username = ?")).thenReturn(Mono.just(preparedStatement));
+		when(session.prepare(any(SimpleStatement.class))).thenReturn(Mono.just(preparedStatement));
 		when(preparedStatement.bind("Walter")).thenReturn(boundStatement);
 		when(session.execute(boundStatement)).thenReturn(Mono.just(reactiveResultSet));
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
@@ -698,7 +716,7 @@ class ReactiveCqlTemplateUnitTests {
 	@Test // DATACASS-335
 	void queryForObjectPreparedStatementShouldFailReturningManyRecords() {
 
-		when(session.prepare("SELECT * FROM user WHERE username = ?")).thenReturn(Mono.just(preparedStatement));
+		when(session.prepare(any(SimpleStatement.class))).thenReturn(Mono.just(preparedStatement));
 		when(preparedStatement.bind("Walter")).thenReturn(boundStatement);
 		when(session.execute(boundStatement)).thenReturn(Mono.just(reactiveResultSet));
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row, row));
@@ -712,7 +730,7 @@ class ReactiveCqlTemplateUnitTests {
 	@Test // DATACASS-335
 	void queryForObjectPreparedStatementWithTypeShouldReturnRecord() {
 
-		when(session.prepare("SELECT * FROM user WHERE username = ?")).thenReturn(Mono.just(preparedStatement));
+		when(session.prepare(any(SimpleStatement.class))).thenReturn(Mono.just(preparedStatement));
 		when(preparedStatement.bind("Walter")).thenReturn(boundStatement);
 		when(session.execute(boundStatement)).thenReturn(Mono.just(reactiveResultSet));
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row));
@@ -728,7 +746,7 @@ class ReactiveCqlTemplateUnitTests {
 	@Test // DATACASS-335
 	void queryForFluxPreparedStatementWithTypeShouldReturnRecord() {
 
-		when(session.prepare("SELECT * FROM user WHERE username = ?")).thenReturn(Mono.just(preparedStatement));
+		when(session.prepare(any(SimpleStatement.class))).thenReturn(Mono.just(preparedStatement));
 		when(preparedStatement.bind("Walter")).thenReturn(boundStatement);
 		when(session.execute(boundStatement)).thenReturn(Mono.just(reactiveResultSet));
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row, row));
@@ -744,7 +762,7 @@ class ReactiveCqlTemplateUnitTests {
 	@Test // DATACASS-335
 	void queryForRowsPreparedStatementReturnRows() {
 
-		when(session.prepare("SELECT * FROM user WHERE username = ?")).thenReturn(Mono.just(preparedStatement));
+		when(session.prepare(any(SimpleStatement.class))).thenReturn(Mono.just(preparedStatement));
 		when(preparedStatement.bind("Walter")).thenReturn(boundStatement);
 		when(session.execute(boundStatement)).thenReturn(Mono.just(reactiveResultSet));
 		when(reactiveResultSet.rows()).thenReturn(Flux.just(row, row));
@@ -757,7 +775,7 @@ class ReactiveCqlTemplateUnitTests {
 	@Test // DATACASS-335
 	void updatePreparedStatementShouldReturnApplied() {
 
-		when(session.prepare("UPDATE user SET username = ?")).thenReturn(Mono.just(preparedStatement));
+		when(session.prepare(any(SimpleStatement.class))).thenReturn(Mono.just(preparedStatement));
 		when(preparedStatement.bind("Walter")).thenReturn(boundStatement);
 		when(session.execute(boundStatement)).thenReturn(Mono.just(reactiveResultSet));
 		when(reactiveResultSet.wasApplied()).thenReturn(true);
@@ -770,7 +788,7 @@ class ReactiveCqlTemplateUnitTests {
 	@Test // DATACASS-335
 	void updatePreparedStatementArgsPublisherShouldReturnApplied() {
 
-		when(session.prepare("UPDATE user SET username = ?")).thenReturn(Mono.just(preparedStatement));
+		when(session.prepare(any(SimpleStatement.class))).thenReturn(Mono.just(preparedStatement));
 		when(preparedStatement.bind("Walter")).thenReturn(boundStatement);
 		when(preparedStatement.bind("Hank")).thenReturn(boundStatement);
 		when(session.execute(boundStatement)).thenReturn(Mono.just(reactiveResultSet));
@@ -786,18 +804,18 @@ class ReactiveCqlTemplateUnitTests {
 	}
 
 	private void doTestStrings(Consumer<ReactiveCqlTemplate> cqlTemplateConsumer) {
-		doTestStrings(null, null, null, null, cqlTemplateConsumer, null);
+		doTestStrings(null, null, null, null, null, cqlTemplateConsumer);
 	}
 
 	private void doTestStrings(@Nullable Integer fetchSize, @Nullable ConsistencyLevel consistencyLevel,
 			@Nullable ConsistencyLevel serialConsistencyLevel, @Nullable String executionProfile,
 			Consumer<ReactiveCqlTemplate> cqlTemplateConsumer) {
-		doTestStrings(fetchSize, consistencyLevel, serialConsistencyLevel, executionProfile, cqlTemplateConsumer, null);
+		doTestStrings(fetchSize, consistencyLevel, serialConsistencyLevel, executionProfile, null, cqlTemplateConsumer);
 	}
 
 	private void doTestStrings(@Nullable Integer fetchSize, @Nullable ConsistencyLevel consistencyLevel,
 			@Nullable ConsistencyLevel serialConsistencyLevel, @Nullable String executionProfile,
-			Consumer<ReactiveCqlTemplate> cqlTemplateConsumer, @Nullable CqlIdentifier keyspace) {
+			@Nullable CqlIdentifier keyspace, Consumer<ReactiveCqlTemplate> cqlTemplateConsumer) {
 
 		String[] results = { "Walter", "Hank", " Jesse" };
 
@@ -806,6 +824,7 @@ class ReactiveCqlTemplateUnitTests {
 
 		when(this.row.getString(0)).thenReturn(results[0], results[1], results[2]);
 		when(this.session.prepare(anyString())).thenReturn(Mono.just(this.preparedStatement));
+		when(this.session.prepare(any(SimpleStatement.class))).thenReturn(Mono.just(this.preparedStatement));
 
 		ReactiveCqlTemplate template = new ReactiveCqlTemplate();
 		template.setSessionFactory(this.sessionFactory);
@@ -852,6 +871,7 @@ class ReactiveCqlTemplateUnitTests {
 		if (executionProfile != null) {
 			assertThat(statement.getExecutionProfileName()).isEqualTo(executionProfile);
 		}
+
 		if (keyspace != null) {
 			assertThat(statement.getKeyspace()).isEqualTo(keyspace);
 		}

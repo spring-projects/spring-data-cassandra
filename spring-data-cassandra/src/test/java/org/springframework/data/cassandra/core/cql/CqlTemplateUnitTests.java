@@ -28,12 +28,12 @@ import java.util.function.Consumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.cassandra.CassandraConnectionFailureException;
@@ -459,6 +459,23 @@ class CqlTemplateUnitTests {
 		});
 	}
 
+	@Test // DATACASS-767
+	void executePreparedStatementShouldApplyKeyspace() {
+
+		when(preparedStatement.bind("A")).thenReturn(boundStatement);
+		when(boundStatement.getKeyspace()).thenReturn(CqlIdentifier.fromCql("ks1"));
+
+		doTestStrings(null, null, null, null, CqlIdentifier.fromCql("ks1"), cqlTemplate -> {
+			cqlTemplate.execute("SELECT * from USERS", (session, ps) -> session.execute(ps.bind("A")));
+		});
+
+		ArgumentCaptor<SimpleStatement> captor = ArgumentCaptor.forClass(SimpleStatement.class);
+		verify(session).prepare(captor.capture());
+
+		SimpleStatement statement = captor.getValue();
+		assertThat(statement.getKeyspace()).isEqualTo(CqlIdentifier.fromCql("ks1"));
+	}
+
 	@Test // DATACASS-292
 	void executePreparedStatementWithCallbackShouldCallExecution() {
 
@@ -596,7 +613,7 @@ class CqlTemplateUnitTests {
 	@Test // DATACASS-292
 	void queryForObjectPreparedStatementShouldBeEmpty() {
 
-		when(session.prepare("SELECT * FROM user WHERE username = ?")).thenReturn(preparedStatement);
+		when(session.prepare(any(SimpleStatement.class))).thenReturn(preparedStatement);
 		when(preparedStatement.bind("Walter")).thenReturn(boundStatement);
 		when(session.execute(boundStatement)).thenReturn(resultSet);
 		when(resultSet.iterator()).thenReturn(Collections.emptyIterator());
@@ -613,7 +630,7 @@ class CqlTemplateUnitTests {
 	@Test // DATACASS-292
 	void queryForObjectPreparedStatementShouldReturnRecord() {
 
-		when(session.prepare("SELECT * FROM user WHERE username = ?")).thenReturn(preparedStatement);
+		when(session.prepare(any(SimpleStatement.class))).thenReturn(preparedStatement);
 		when(preparedStatement.bind("Walter")).thenReturn(boundStatement);
 		when(session.execute(boundStatement)).thenReturn(resultSet);
 		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
@@ -625,7 +642,7 @@ class CqlTemplateUnitTests {
 	@Test // DATACASS-292
 	void queryForObjectPreparedStatementShouldFailReturningManyRecords() {
 
-		when(session.prepare("SELECT * FROM user WHERE username = ?")).thenReturn(preparedStatement);
+		when(session.prepare(any(SimpleStatement.class))).thenReturn(preparedStatement);
 		when(preparedStatement.bind("Walter")).thenReturn(boundStatement);
 		when(session.execute(boundStatement)).thenReturn(resultSet);
 		when(resultSet.iterator()).thenReturn(Arrays.asList(row, row).iterator());
@@ -642,7 +659,7 @@ class CqlTemplateUnitTests {
 	@Test // DATACASS-292
 	void queryForObjectPreparedStatementWithTypeShouldReturnRecord() {
 
-		when(session.prepare("SELECT * FROM user WHERE username = ?")).thenReturn(preparedStatement);
+		when(session.prepare(any(SimpleStatement.class))).thenReturn(preparedStatement);
 		when(preparedStatement.bind("Walter")).thenReturn(boundStatement);
 		when(session.execute(boundStatement)).thenReturn(resultSet);
 		when(resultSet.iterator()).thenReturn(Collections.singleton(row).iterator());
@@ -658,7 +675,7 @@ class CqlTemplateUnitTests {
 	@Test // DATACASS-292
 	void queryForListPreparedStatementWithTypeShouldReturnRecord() {
 
-		when(session.prepare("SELECT * FROM user WHERE username = ?")).thenReturn(preparedStatement);
+		when(session.prepare(any(SimpleStatement.class))).thenReturn(preparedStatement);
 		when(preparedStatement.bind("Walter")).thenReturn(boundStatement);
 		when(session.execute(boundStatement)).thenReturn(resultSet);
 		when(resultSet.iterator()).thenReturn(Arrays.asList(row, row).iterator());
@@ -674,7 +691,7 @@ class CqlTemplateUnitTests {
 	@Test // DATACASS-292
 	void updatePreparedStatementShouldReturnApplied() {
 
-		when(session.prepare("UPDATE user SET username = ?")).thenReturn(preparedStatement);
+		when(session.prepare(any(SimpleStatement.class))).thenReturn(preparedStatement);
 		when(preparedStatement.bind("Walter")).thenReturn(boundStatement);
 		when(session.execute(boundStatement)).thenReturn(resultSet);
 		when(resultSet.wasApplied()).thenReturn(true);
@@ -687,27 +704,27 @@ class CqlTemplateUnitTests {
 	@Test // DATACASS-767
 	void executeCqlWithKeyspaceShouldCallExecution() {
 
-		doTestStrings(5, DefaultConsistencyLevel.ONE, null, "foo", cqlTemplate -> {
+		doTestStrings(5, DefaultConsistencyLevel.ONE, null, "foo", CqlIdentifier.fromCql("some_keyspace"), cqlTemplate -> {
 
 			cqlTemplate.execute("SELECT * from USERS");
 
 			verify(session).execute(any(Statement.class));
-		}, CqlIdentifier.fromCql("some_keyspace"));
+		});
 	}
 
 	private void doTestStrings(Consumer<CqlTemplate> cqlTemplateConsumer) {
-		doTestStrings(null, null, null, null, cqlTemplateConsumer, null);
+		doTestStrings(null, null, null, null, null, cqlTemplateConsumer);
 	}
 
 	private void doTestStrings(@Nullable Integer fetchSize, @Nullable ConsistencyLevel consistencyLevel,
 			@Nullable ConsistencyLevel serialConsistencyLevel, @Nullable String executionProfile,
 			Consumer<CqlTemplate> cqlTemplateConsumer) {
-		doTestStrings(fetchSize, consistencyLevel, serialConsistencyLevel, executionProfile, cqlTemplateConsumer, null);
+		doTestStrings(fetchSize, consistencyLevel, serialConsistencyLevel, executionProfile, null, cqlTemplateConsumer);
 	}
 
 	private void doTestStrings(@Nullable Integer fetchSize, @Nullable ConsistencyLevel consistencyLevel,
 			@Nullable ConsistencyLevel serialConsistencyLevel, @Nullable String executionProfile,
-			Consumer<CqlTemplate> cqlTemplateConsumer, @Nullable CqlIdentifier keyspace) {
+			@Nullable CqlIdentifier keyspace, Consumer<CqlTemplate> cqlTemplateConsumer) {
 
 		String[] results = { "Walter", "Hank", " Jesse" };
 
@@ -717,6 +734,7 @@ class CqlTemplateUnitTests {
 
 		when(this.row.getString(0)).thenReturn(results[0], results[1], results[2]);
 		when(this.session.prepare(anyString())).thenReturn(preparedStatement);
+		when(this.session.prepare(any(SimpleStatement.class))).thenReturn(preparedStatement);
 
 		CqlTemplate template = new CqlTemplate();
 		template.setSession(this.session);

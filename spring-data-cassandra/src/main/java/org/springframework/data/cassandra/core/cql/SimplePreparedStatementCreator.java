@@ -15,11 +15,12 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
+import org.springframework.util.Assert;
+
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.DriverException;
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
-
-import org.springframework.util.Assert;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 
 /**
  * Trivial implementation of {@link PreparedStatementCreator}. This prepared statement creator simply prepares a
@@ -34,7 +35,7 @@ import org.springframework.util.Assert;
  */
 public class SimplePreparedStatementCreator implements PreparedStatementCreator, CqlProvider {
 
-	private final String cql;
+	private final SimpleStatement statement;
 
 	/**
 	 * Create a {@link SimplePreparedStatementCreator} given {@code cql}.
@@ -45,14 +46,20 @@ public class SimplePreparedStatementCreator implements PreparedStatementCreator,
 
 		Assert.notNull(cql, "CQL is required to create a PreparedStatement");
 
-		this.cql = cql;
+		this.statement = SimpleStatement.newInstance(cql);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cqlProvider#getCql()
+	/**
+	 * Create a {@link SimplePreparedStatementCreator} given {@code cql}.
+	 *
+	 * @param statement must not be {@literal null}.
+	 * @since 3.1
 	 */
-	public String getCql() {
-		return this.cql;
+	public SimplePreparedStatementCreator(SimpleStatement statement) {
+
+		Assert.notNull(statement, "CQL is required to create a PreparedStatement");
+
+		this.statement = statement;
 	}
 
 	/* (non-Javadoc)
@@ -60,6 +67,13 @@ public class SimplePreparedStatementCreator implements PreparedStatementCreator,
 	 */
 	@Override
 	public PreparedStatement createPreparedStatement(CqlSession session) throws DriverException {
-		return session.prepare(this.cql);
+		return session.prepare(this.statement);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.cqlProvider#getCql()
+	 */
+	public String getCql() {
+		return this.statement.getQuery();
 	}
 }

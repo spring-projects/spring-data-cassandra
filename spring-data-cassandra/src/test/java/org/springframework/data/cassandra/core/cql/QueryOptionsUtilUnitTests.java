@@ -23,7 +23,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -99,6 +98,7 @@ class QueryOptionsUtilUnitTests {
 
 	@Test // DATACASS-767
 	void addKeyspaceOptionsOnSimpleStatementShouldAddDriverQueryOptions() {
+
 		when(simpleStatement.setKeyspace(any(CqlIdentifier.class))).thenReturn(simpleStatement);
 
 		QueryOptions queryOptions = QueryOptions.builder() //
@@ -111,6 +111,7 @@ class QueryOptionsUtilUnitTests {
 
 	@Test // DATACASS-767
 	void addKeyspaceOptionsOnBatchStatementShouldAddDriverQueryOptions() {
+
 		when(batchStatement.setKeyspace(any(CqlIdentifier.class))).thenReturn(batchStatement);
 
 		QueryOptions queryOptions = QueryOptions.builder() //
@@ -123,12 +124,12 @@ class QueryOptionsUtilUnitTests {
 
 	@Test // DATACASS-767
 	void addKeyspaceOptionsOnBoundStatementShouldThrowException() {
+
 		QueryOptions queryOptions = QueryOptions.builder() //
 				.keyspace(CqlIdentifier.fromCql("ks1")).build();
 
 		assertThatThrownBy(() -> QueryOptionsUtil.addQueryOptions(boundStatement, queryOptions))
 				.isInstanceOf(IllegalArgumentException.class)
 				.hasMessageContaining("Keyspace cannot be set for a BoundStatement");
-
 	}
 }

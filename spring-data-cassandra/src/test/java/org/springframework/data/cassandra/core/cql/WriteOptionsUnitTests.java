@@ -24,6 +24,7 @@ import java.time.ZoneOffset;
 
 import org.junit.jupiter.api.Test;
 
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
 
 /**
@@ -33,17 +34,17 @@ import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
  */
 class WriteOptionsUnitTests {
 
-	@Test // DATACASS-202
+	@Test // DATACASS-202, DATACASS-767
 	void buildWriteOptions() {
 
-		WriteOptions writeOptions = WriteOptions.builder()
-				.consistencyLevel(DefaultConsistencyLevel.ANY)
-				.ttl(123)
-				.timestamp(1519000753)
-				.readTimeout(1)
-				.pageSize(10)
-				.withTracing()
-				.build();
+		WriteOptions writeOptions = WriteOptions.builder() //
+				.consistencyLevel(DefaultConsistencyLevel.ANY) //
+				.ttl(123) //
+				.timestamp(1519000753) //
+				.readTimeout(1) //
+				.pageSize(10) //
+				.withTracing() //
+				.keyspace(CqlIdentifier.fromCql("my_keyspace")).build();
 
 		assertThat(writeOptions.getTtl()).isEqualTo(Duration.ofSeconds(123));
 		assertThat(writeOptions.getTimestamp()).isEqualTo(1519000753);
@@ -51,6 +52,7 @@ class WriteOptionsUnitTests {
 		assertThat(writeOptions.getTimeout()).isEqualTo(Duration.ofMillis(1));
 		assertThat(writeOptions.getPageSize()).isEqualTo(10);
 		assertThat(writeOptions.getTracing()).isTrue();
+		assertThat(writeOptions.getKeyspace()).isEqualTo(CqlIdentifier.fromCql("my_keyspace"));
 	}
 
 	@Test // DATACASS-202
@@ -63,18 +65,17 @@ class WriteOptionsUnitTests {
 		assertThat(writeOptions.getTracing()).isNull();
 	}
 
-
 	@Test // DATACASS-56
 	void buildWriteOptionsMutate() {
 		Instant now = LocalDateTime.now().toInstant(ZoneOffset.UTC);
 
-		WriteOptions writeOptions = WriteOptions.builder()
-				.consistencyLevel(DefaultConsistencyLevel.ANY)
-				.ttl(123)
-				.timestamp(now)
-				.readTimeout(1)
-				.pageSize(10)
-				.withTracing()
+		WriteOptions writeOptions = WriteOptions.builder() //
+				.consistencyLevel(DefaultConsistencyLevel.ANY) //
+				.ttl(123) //
+				.timestamp(now) //
+				.readTimeout(1) //
+				.pageSize(10) //
+				.withTracing() //
 				.build();
 
 		WriteOptions mutated = writeOptions.mutate().timeout(Duration.ofMillis(100)).build();

@@ -32,7 +32,6 @@ import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.BatchStatement;
-import com.datastax.oss.driver.api.core.cql.BoundStatement;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.Statement;
 import com.datastax.oss.driver.api.core.retry.RetryPolicy;
@@ -65,6 +64,12 @@ public class CassandraAccessor implements InitializingBean {
 	private ExecutionProfileResolver executionProfileResolver = ExecutionProfileResolver.none();
 
 	/**
+	 * If this variable is set to a value, it will be used for setting the {@code keyspace} property on statements used
+	 * for query processing.
+	 */
+	private @Nullable CqlIdentifier keyspace;
+
+	/**
 	 * If this variable is set to a non-negative value, it will be used for setting the {@code pageSize} property on
 	 * statements used for query processing.
 	 */
@@ -83,12 +88,6 @@ public class CassandraAccessor implements InitializingBean {
 	private @Nullable ConsistencyLevel serialConsistencyLevel;
 
 	private @Nullable SessionFactory sessionFactory;
-
-	/**
-	 * If this variable is set to a value, it will be used for setting the {@code keyspace} property on statements used
-	 * for query processing.
-	 */
-	private @Nullable CqlIdentifier keyspace;
 
 	/**
 	 * Ensures the Cassandra {@link CqlSession} and exception translator has been propertly set.
@@ -201,6 +200,31 @@ public class CassandraAccessor implements InitializingBean {
 	}
 
 	/**
+	 * Set the {@link CqlIdentifier keyspace} to be applied on statement-level for this template. If not set, the default
+	 * {@link CqlSession} keyspace will be used.
+	 *
+	 * @param keyspace the keyspace to apply, must not be {@literal null}.
+	 * @see SimpleStatement#setKeyspace(CqlIdentifier)
+	 * @see BatchStatement#setKeyspace(CqlIdentifier)
+	 * @since 3.1
+	 */
+	public void setKeyspace(CqlIdentifier keyspace) {
+
+		Assert.notNull(keyspace, "Keyspace must not be null");
+
+		this.keyspace = keyspace;
+	}
+
+	/**
+	 * @return the {@link CqlIdentifier keyspace} to be applied on statement-level for this template.
+	 * @since 3.1
+	 */
+	@Nullable
+	public CqlIdentifier getKeyspace() {
+		return this.keyspace;
+	}
+
+	/**
 	 * Set the page size for this template. This is important for processing large result sets: Setting this higher than
 	 * the default value will increase processing speed at the cost of memory consumption; setting this lower can avoid
 	 * transferring row data that will never be read by the application. Default is -1, indicating to use the CQL driver's
@@ -298,24 +322,6 @@ public class CassandraAccessor implements InitializingBean {
 	}
 
 	/**
-	 * Set the keyspace for this template. If it is null, then the default {@link CqlSession} level keyspace will be used.
-	 *
-	 * @see SimpleStatement#setKeyspace(CqlIdentifier)
-	 * @see BatchStatement#setKeyspace(CqlIdentifier)
-	 */
-	public void setKeyspace(@Nullable CqlIdentifier keyspace) {
-		this.keyspace = keyspace;
-	}
-
-	/**
-	 * @return the {@link CqlIdentifier} keyspace for this template.
-	 */
-	@Nullable
-	public CqlIdentifier getKeyspace() {
-		return this.keyspace;
-	}
-
-	/**
 	 * Create a {@link SimpleStatement} given {@code cql}.
 	 *
 	 * @param cql the CQL query.
@@ -357,9 +363,6 @@ public class CassandraAccessor implements InitializingBean {
 		}
 
 		if (keyspace != null) {
-			if (statementToUse instanceof BoundStatement) {
-				throw new IllegalArgumentException("Keyspace cannot be set for a BoundStatement");
-			}
 			if (statementToUse instanceof BatchStatement) {
 				statementToUse = ((BatchStatement) statementToUse).setKeyspace(keyspace);
 			}

@@ -24,6 +24,7 @@ import java.time.ZoneOffset;
 
 import org.junit.jupiter.api.Test;
 
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
 
 /**
@@ -34,7 +35,7 @@ import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
  */
 class InsertOptionsUnitTests {
 
-	@Test // DATACASS-250, DATACASS-155, DATACASS-708
+	@Test // DATACASS-250, DATACASS-155, DATACASS-708, DATACASS-767
 	void shouldConfigureInsertOptions() {
 
 		Instant now = LocalDateTime.now().toInstant(ZoneOffset.UTC);
@@ -45,11 +46,13 @@ class InsertOptionsUnitTests {
 				.withIfNotExists() //
 				.executionProfile("foo") //
 				.serialConsistencyLevel(DefaultConsistencyLevel.LOCAL_ONE) //
+				.keyspace(CqlIdentifier.fromCql("my_keyspace"))
 				.build();
 
 		assertThat(insertOptions.getTtl()).isEqualTo(Duration.ofSeconds(10));
 		assertThat(insertOptions.getTimestamp()).isEqualTo(now.toEpochMilli() * 1000);
 		assertThat(insertOptions.isIfNotExists()).isTrue();
+		assertThat(insertOptions.getKeyspace()).isEqualTo(CqlIdentifier.fromCql("my_keyspace"));
 	}
 
 	@Test // DATACASS-56

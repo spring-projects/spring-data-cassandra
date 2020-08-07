@@ -41,13 +41,15 @@ public class WriteOptions extends QueryOptions {
 	private static final WriteOptions EMPTY = new WriteOptionsBuilder().build();
 
 	private final Duration ttl;
+
 	private final @Nullable Long timestamp;
 
 	protected WriteOptions(@Nullable ConsistencyLevel consistencyLevel, ExecutionProfileResolver executionProfileResolver,
-			@Nullable Integer pageSize, @Nullable ConsistencyLevel serialConsistencyLevel, Duration timeout, Duration ttl,
+			@Nullable CqlIdentifier keyspace, @Nullable Integer pageSize, @Nullable ConsistencyLevel serialConsistencyLevel,
+			Duration timeout, Duration ttl,
 			@Nullable Long timestamp, @Nullable Boolean tracing) {
 
-		super(consistencyLevel, executionProfileResolver, pageSize, serialConsistencyLevel, timeout, tracing);
+		super(consistencyLevel, executionProfileResolver, keyspace, pageSize, serialConsistencyLevel, timeout, tracing);
 
 		this.ttl = ttl;
 		this.timestamp = timestamp;
@@ -150,6 +152,7 @@ public class WriteOptions extends QueryOptions {
 	public static class WriteOptionsBuilder extends QueryOptionsBuilder {
 
 		protected Duration ttl = Duration.ofMillis(-1);
+
 		protected Long timestamp = null;
 
 		protected WriteOptionsBuilder() {}
@@ -198,6 +201,16 @@ public class WriteOptions extends QueryOptions {
 		public WriteOptionsBuilder fetchSize(int pageSize) {
 
 			super.fetchSize(pageSize);
+			return this;
+		}
+
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#keyspace()
+		 */
+		@Override
+		public WriteOptionsBuilder keyspace(CqlIdentifier keyspace) {
+
+			super.keyspace(keyspace);
 			return this;
 		}
 
@@ -272,16 +285,6 @@ public class WriteOptions extends QueryOptions {
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#keyspace()
-		 */
-		@Override
-		public WriteOptionsBuilder keyspace(CqlIdentifier keyspace) {
-
-			super.keyspace(keyspace);
-			return this;
-		}
-
 		/**
 		 * Sets the time to live in seconds for write operations.
 		 *
@@ -353,7 +356,7 @@ public class WriteOptions extends QueryOptions {
 		 * @return a new {@link WriteOptions} with the configured values
 		 */
 		public WriteOptions build() {
-			return new WriteOptions(this.consistencyLevel, this.executionProfileResolver, this.pageSize,
+			return new WriteOptions(this.consistencyLevel, this.executionProfileResolver, this.keyspace, this.pageSize,
 					this.serialConsistencyLevel, this.timeout, this.ttl, this.timestamp, this.tracing);
 		}
 	}

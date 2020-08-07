@@ -32,6 +32,7 @@ import com.datastax.oss.driver.api.core.DriverException;
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.Statement;
 import com.datastax.oss.driver.api.core.metadata.Node;
 
@@ -726,7 +727,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 * @return the new {@link PreparedStatementCreator} to use
 	 */
 	protected PreparedStatementCreator newPreparedStatementCreator(String cql) {
-		return new SimplePreparedStatementCreator(cql);
+		return new SimplePreparedStatementCreator(
+				(SimpleStatement) applyStatementSettings(SimpleStatement.newInstance(cql)));
 	}
 
 	/**

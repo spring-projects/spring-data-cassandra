@@ -46,6 +46,7 @@ import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.util.concurrent.ListenableFuture;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.NoNodeAvailableException;
 import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
@@ -64,7 +65,7 @@ import com.datastax.oss.driver.api.core.servererrors.InvalidQueryException;
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-public class AsyncCqlTemplateUnitTests {
+class AsyncCqlTemplateUnitTests {
 
 	@Mock CqlSession session;
 	@Mock AsyncResultSet resultSet;
@@ -133,10 +134,24 @@ public class AsyncCqlTemplateUnitTests {
 		});
 	}
 
+	@Test // DATACASS-767
+	void executePreparedStatementShouldApplyKeyspace() {
+
+		doTestStrings(null, null, CqlIdentifier.fromCql("ks1"), cqlTemplate -> {
+			cqlTemplate.execute("SELECT * from USERS", (session, ps) -> session.executeAsync(ps.bind("A")));
+		});
+
+		ArgumentCaptor<SimpleStatement> captor = ArgumentCaptor.forClass(SimpleStatement.class);
+		verify(session).prepareAsync(captor.capture());
+
+		SimpleStatement statement = captor.getValue();
+		assertThat(statement.getKeyspace()).isEqualTo(CqlIdentifier.fromCql("ks1"));
+	}
+
 	@Test // DATACASS-292
 	void executeCqlWithArgumentsShouldCallExecution() {
 
-		doTestStrings(5, ConsistencyLevel.ONE, asyncCqlTemplate -> {
+		doTestStrings(5, ConsistencyLevel.ONE, null, asyncCqlTemplate -> {
 
 			asyncCqlTemplate.execute("SELECT * from USERS");
 
@@ -172,7 +187,7 @@ public class AsyncCqlTemplateUnitTests {
 	@Test // DATACASS-292
 	void queryWithResultSetExtractorWithArgumentsShouldCallExecution() {
 
-		doTestStrings(5, ConsistencyLevel.ONE, asyncCqlTemplate -> {
+		doTestStrings(5, ConsistencyLevel.ONE, null, asyncCqlTemplate -> {
 
 			List<String> rows = getUninterruptibly(
 					asyncCqlTemplate.query("SELECT * from USERS", (row, index) -> row.getString(0)));
@@ -313,7 +328,7 @@ public class AsyncCqlTemplateUnitTests {
 	@Test // DATACASS-292
 	void executeStatementWithArgumentsShouldCallExecution() {
 
-		doTestStrings(5, ConsistencyLevel.ONE, asyncCqlTemplate -> {
+		doTestStrings(5, ConsistencyLevel.ONE, null, asyncCqlTemplate -> {
 
 			asyncCqlTemplate.execute(SimpleStatement.newInstance("SELECT * from USERS"));
 
@@ -350,7 +365,7 @@ public class AsyncCqlTemplateUnitTests {
 	@Test // DATACASS-292
 	void queryWithResultSetStatementExtractorWithArgumentsShouldCallExecution() {
 
-		doTestStrings(5, ConsistencyLevel.ONE, asyncCqlTemplate -> {
+		doTestStrings(5, ConsistencyLevel.ONE, null, asyncCqlTemplate -> {
 
 			ListenableFuture<List<String>> future = asyncCqlTemplate.query(SimpleStatement.newInstance("SELECT * from USERS"),
 					(row, index) -> row.getString(0));
@@ -657,7 +672,7 @@ public class AsyncCqlTemplateUnitTests {
 	@Test // DATACASS-292
 	void queryForObjectPreparedStatementShouldBeEmpty() throws Exception {
 
-		when(session.prepareAsync("SELECT * FROM user WHERE username = ?"))
+		when(session.prepareAsync(any(SimpleStatement.class)))
 				.thenReturn(new TestPreparedStatementFuture(preparedStatement));
 		when(preparedStatement.bind("Walter")).thenReturn(boundStatement);
 		when(session.executeAsync(boundStatement)).thenReturn(new TestResultSetFuture(resultSet));
@@ -679,7 +694,7 @@ public class AsyncCqlTemplateUnitTests {
 	@Test // DATACASS-292
 	void queryForObjectPreparedStatementShouldReturnRecord() {
 
-		when(session.prepareAsync("SELECT * FROM user WHERE username = ?"))
+		when(session.prepareAsync(any(SimpleStatement.class)))
 				.thenReturn(new TestPreparedStatementFuture(preparedStatement));
 		when(preparedStatement.bind("Walter")).thenReturn(boundStatement);
 		when(session.executeAsync(boundStatement)).thenReturn(new TestResultSetFuture(resultSet));
@@ -693,7 +708,7 @@ public class AsyncCqlTemplateUnitTests {
 	@Test // DATACASS-292
 	void queryForObjectPreparedStatementShouldFailReturningManyRecords() throws Exception {
 
-		when(session.prepareAsync("SELECT * FROM user WHERE username = ?"))
+		when(session.prepareAsync(any(SimpleStatement.class)))
 				.thenReturn(new TestPreparedStatementFuture(preparedStatement));
 		when(preparedStatement.bind("Walter")).thenReturn(boundStatement);
 		when(session.executeAsync(boundStatement)).thenReturn(new TestResultSetFuture(resultSet));
@@ -714,7 +729,7 @@ public class AsyncCqlTemplateUnitTests {
 	@Test // DATACASS-292
 	void queryForObjectPreparedStatementWithTypeShouldReturnRecord() {
 
-		when(session.prepareAsync("SELECT * FROM user WHERE username = ?"))
+		when(session.prepareAsync(any(SimpleStatement.class)))
 				.thenReturn(new TestPreparedStatementFuture(preparedStatement));
 		when(preparedStatement.bind("Walter")).thenReturn(boundStatement);
 		when(session.executeAsync(boundStatement)).thenReturn(new TestResultSetFuture(resultSet));
@@ -731,7 +746,7 @@ public class AsyncCqlTemplateUnitTests {
 	@Test // DATACASS-292
 	void queryForListPreparedStatementWithTypeShouldReturnRecord() {
 
-		when(session.prepareAsync("SELECT * FROM user WHERE username = ?"))
+		when(session.prepareAsync(any(SimpleStatement.class)))
 				.thenReturn(new TestPreparedStatementFuture(preparedStatement));
 		when(preparedStatement.bind("Walter")).thenReturn(boundStatement);
 		when(session.executeAsync(boundStatement)).thenReturn(new TestResultSetFuture(resultSet));
@@ -749,7 +764,7 @@ public class AsyncCqlTemplateUnitTests {
 	@Test // DATACASS-292
 	void updatePreparedStatementShouldReturnApplied() {
 
-		when(session.prepareAsync("UPDATE user SET username = ?"))
+		when(session.prepareAsync(any(SimpleStatement.class)))
 				.thenReturn(new TestPreparedStatementFuture(preparedStatement));
 		when(preparedStatement.bind("Walter")).thenReturn(boundStatement);
 		when(session.executeAsync(boundStatement)).thenReturn(new TestResultSetFuture(resultSet));
@@ -761,10 +776,11 @@ public class AsyncCqlTemplateUnitTests {
 	}
 
 	private void doTestStrings(Consumer<AsyncCqlTemplate> cqlTemplateConsumer) {
-		doTestStrings(null, null, cqlTemplateConsumer);
+		doTestStrings(null, null, null, cqlTemplateConsumer);
 	}
 
 	private void doTestStrings(@Nullable Integer fetchSize, @Nullable ConsistencyLevel consistencyLevel,
+			@Nullable CqlIdentifier keyspace,
 			Consumer<AsyncCqlTemplate> cqlTemplateConsumer) {
 
 		String[] results = { "Walter", "Hank", " Jesse" };
@@ -773,6 +789,8 @@ public class AsyncCqlTemplateUnitTests {
 		when(this.resultSet.currentPage()).thenReturn(Arrays.asList(row, row, row));
 		when(this.row.getString(0)).thenReturn(results[0], results[1], results[2]);
 		when(this.session.prepareAsync(anyString())).thenReturn(new TestPreparedStatementFuture(this.preparedStatement));
+		when(this.session.prepareAsync(any(SimpleStatement.class)))
+				.thenReturn(new TestPreparedStatementFuture(this.preparedStatement));
 
 		AsyncCqlTemplate template = new AsyncCqlTemplate();
 		template.setSession(this.session);
@@ -780,8 +798,13 @@ public class AsyncCqlTemplateUnitTests {
 		if (fetchSize != null) {
 			template.setFetchSize(fetchSize);
 		}
+
 		if (consistencyLevel != null) {
 			template.setConsistencyLevel(consistencyLevel);
+		}
+
+		if (keyspace != null) {
+			template.setKeyspace(keyspace);
 		}
 
 		cqlTemplateConsumer.accept(template);

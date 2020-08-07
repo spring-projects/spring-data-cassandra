@@ -35,8 +35,13 @@ class QueryOptionsUnitTests {
 	@Test // DATACASS-202
 	void buildQueryOptions() {
 
-		QueryOptions queryOptions = QueryOptions.builder().consistencyLevel(DefaultConsistencyLevel.ANY)
-				.timeout(Duration.ofSeconds(1)).pageSize(10).tracing(true).keyspace(CqlIdentifier.fromCql("ks1")).build();
+		QueryOptions queryOptions = QueryOptions.builder() //
+				.consistencyLevel(DefaultConsistencyLevel.ANY) //
+				.timeout(Duration.ofSeconds(1)) //
+				.pageSize(10) //
+				.tracing(true) //
+				.keyspace(CqlIdentifier.fromCql("ks1")) //
+				.build();
 
 		assertThat(queryOptions.getClass()).isEqualTo(QueryOptions.class);
 		assertThat(queryOptions.getConsistencyLevel()).isEqualTo(DefaultConsistencyLevel.ANY);
@@ -49,13 +54,17 @@ class QueryOptionsUnitTests {
 	@Test // DATACASS-56
 	void buildQueryOptionsMutate() {
 
-		QueryOptions queryOptions = QueryOptions.builder().consistencyLevel(DefaultConsistencyLevel.ANY)
-				.timeout(Duration.ofSeconds(1)).pageSize(10).tracing(true).keyspace(CqlIdentifier.fromCql("ks1")).build();
+		QueryOptions queryOptions = QueryOptions.builder() //
+				.consistencyLevel(DefaultConsistencyLevel.ANY) //
+				.timeout(Duration.ofSeconds(1)) //
+				.pageSize(10) //
+				.tracing(true) //
+				.keyspace(CqlIdentifier.fromCql("ks1")) //
+				.build();
 
 		QueryOptions mutated = queryOptions.mutate().timeout(Duration.ofSeconds(5)).build();
 
-		assertThat(mutated).isNotNull();
-		assertThat(mutated).isNotSameAs(queryOptions);
+		assertThat(mutated).isNotNull().isNotSameAs(queryOptions);
 		assertThat(mutated.getClass()).isEqualTo(QueryOptions.class);
 		assertThat(mutated.getConsistencyLevel()).isEqualTo(DefaultConsistencyLevel.ANY);
 		assertThat(mutated.getTimeout()).isEqualTo(Duration.ofSeconds(5));

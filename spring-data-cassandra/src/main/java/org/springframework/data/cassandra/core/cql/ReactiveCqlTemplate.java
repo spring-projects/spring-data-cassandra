@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import org.reactivestreams.Publisher;
+
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.data.cassandra.ReactiveResultSet;
@@ -85,12 +86,6 @@ import com.datastax.oss.driver.api.core.retry.RetryPolicy;
 public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements ReactiveCqlOperations {
 
 	/**
-	 * If this variable is set to a non-negative value, it will be used for setting the {@code pageSize} property on
-	 * statements used for query processing.
-	 */
-	private int pageSize = -1;
-
-	/**
 	 * If this variable is set to a value, it will be used for setting the {@code consistencyLevel} property on statements
 	 * used for query processing.
 	 */
@@ -103,16 +98,22 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	private ExecutionProfileResolver executionProfileResolver = ExecutionProfileResolver.none();
 
 	/**
-	 * If this variable is set to a value, it will be used for setting the serial {@code consistencyLevel} property on
-	 * statements used for query processing.
-	 */
-	private @Nullable ConsistencyLevel serialConsistencyLevel;
-
-	/**
 	 * If this variable is set to a value, it will be used for setting the {@code keyspace} property on statements used
 	 * for query processing.
 	 */
 	private @Nullable CqlIdentifier keyspace;
+
+	/**
+	 * If this variable is set to a non-negative value, it will be used for setting the {@code pageSize} property on
+	 * statements used for query processing.
+	 */
+	private int pageSize = -1;
+
+	/**
+	 * If this variable is set to a value, it will be used for setting the serial {@code consistencyLevel} property on
+	 * statements used for query processing.
+	 */
+	private @Nullable ConsistencyLevel serialConsistencyLevel;
 
 	/**
 	 * Construct a new {@link ReactiveCqlTemplate Note: The {@link ReactiveSessionFactory} has to be set before using the
@@ -227,6 +228,31 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/**
+	 * Set the {@link CqlIdentifier keyspace} to be applied on statement-level for this template. If not set, the default
+	 * {@link CqlSession} keyspace will be used.
+	 *
+	 * @param keyspace the keyspace to apply, must not be {@literal null}.
+	 * @see SimpleStatement#setKeyspace(CqlIdentifier)
+	 * @see BatchStatement#setKeyspace(CqlIdentifier)
+	 * @since 3.1
+	 */
+	public void setKeyspace(CqlIdentifier keyspace) {
+
+		Assert.notNull(keyspace, "Keyspace must not be null");
+
+		this.keyspace = keyspace;
+	}
+
+	/**
+	 * @return the {@link CqlIdentifier keyspace} to be applied on statement-level for this template.
+	 * @since 3.1
+	 */
+	@Nullable
+	public CqlIdentifier getKeyspace() {
+		return this.keyspace;
+	}
+
+	/**
 	 * Set the page size for this template. This is important for processing large result sets: Setting this higher than
 	 * the default value will increase processing speed at the cost of memory consumption; setting this lower can avoid
 	 * transferring row data that will never be read by the application. Default is -1, indicating to use the CQL driver's
@@ -263,24 +289,6 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	@Nullable
 	public ConsistencyLevel getSerialConsistencyLevel() {
 		return this.serialConsistencyLevel;
-	}
-
-	/**
-	 * Set the keyspace for this template. If it is null, then the default {@link CqlSession} level keyspace will be used.
-	 *
-	 * @see SimpleStatement#setKeyspace(CqlIdentifier)
-	 * @see BatchStatement#setKeyspace(CqlIdentifier)
-	 */
-	public void setKeyspace(@Nullable CqlIdentifier keyspace) {
-		this.keyspace = keyspace;
-	}
-
-	/**
-	 * @return the {@link CqlIdentifier} keyspace for this template.
-	 */
-	@Nullable
-	public CqlIdentifier getKeyspace() {
-		return this.keyspace;
 	}
 
 	// -------------------------------------------------------------------------
@@ -754,7 +762,8 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 * @since 2.0.8
 	 */
 	protected ReactivePreparedStatementCreator newReactivePreparedStatementCreator(String cql) {
-		return new SimpleReactivePreparedStatementCreator(cql);
+		return new SimpleReactivePreparedStatementCreator(
+				(SimpleStatement) applyStatementSettings(SimpleStatement.newInstance(cql)));
 	}
 
 	/**
@@ -865,9 +874,6 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 		}
 
 		if (keyspace != null) {
-			if (statementToUse instanceof BoundStatement) {
-				throw new IllegalArgumentException("Keyspace cannot be set for a BoundStatement");
-			}
 			if (statementToUse instanceof BatchStatement) {
 				statementToUse = ((BatchStatement) statementToUse).setKeyspace(keyspace);
 			}
@@ -922,23 +928,20 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 
 	static class SimpleReactivePreparedStatementCreator implements ReactivePreparedStatementCreator, CqlProvider {
 
-		private final String cql;
+		private final SimpleStatement statement;
 
-		SimpleReactivePreparedStatementCreator(String cql) {
-
-			Assert.notNull(cql, "CQL must not be null");
-
-			this.cql = cql;
+		SimpleReactivePreparedStatementCreator(SimpleStatement statement) {
+			this.statement = statement;
 		}
 
 		@Override
 		public Mono<PreparedStatement> createPreparedStatement(ReactiveSession session) throws DriverException {
-			return session.prepare(cql);
+			return session.prepare(this.statement);
 		}
 
 		@Override
 		public String getCql() {
-			return cql;
+			return this.statement.getQuery();
 		}
 	}
 }

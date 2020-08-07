@@ -28,11 +28,13 @@ import org.springframework.data.cassandra.support.CqlDataSet;
 import org.springframework.util.Assert;
 import org.springframework.util.SocketUtils;
 import org.springframework.util.StringUtils;
+
 import org.testcontainers.containers.CassandraContainer;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.CqlSessionBuilder;
+import com.datastax.oss.driver.api.core.Version;
 import com.datastax.oss.driver.api.core.config.DefaultDriverOption;
 import com.datastax.oss.driver.api.core.config.DriverConfigLoader;
 import com.datastax.oss.driver.api.core.metadata.Node;
@@ -302,8 +304,9 @@ class CassandraDelegate {
 		CqlSessionBuilder builder = CqlSession.builder().addContactPoint(InetSocketAddress.createUnresolved(host, port))
 				.withLocalDatacenter("datacenter1");
 
-		CqlSession cqlSession = builder.build();
-		if (cassandraVersionGreaterThanOrEqualTo4(cqlSession)) {
+		Version cassandraVersion = getCassandraVersion(builder);
+
+		if (cassandraVersion.getMajor() >= 4) {
 			return builder.withConfigLoader(
 					DriverConfigLoader.programmaticBuilder().withString(DefaultDriverOption.PROTOCOL_VERSION, "V5").build());
 		} else {
@@ -311,9 +314,17 @@ class CassandraDelegate {
 		}
 	}
 
-	private boolean cassandraVersionGreaterThanOrEqualTo4(CqlSession cqlSession) {
-		return cqlSession.getMetadata().getNodes().values().stream().map(Node::getCassandraVersion)
-				.allMatch(v -> v != null && v.getMajor() >= 4);
+	private Version getCassandraVersion(CqlSessionBuilder builder) {
+
+		try (CqlSession cqlSession = builder.build()) {
+
+			return cqlSession.getMetadata().getNodes() //
+					.values() //
+					.stream() //
+					.map(Node::getCassandraVersion) //
+					.findFirst() //
+					.orElseThrow(() -> new IllegalStateException("Cannot determine Cassandra version"));
+		}
 	}
 
 	private String resolveHost() {

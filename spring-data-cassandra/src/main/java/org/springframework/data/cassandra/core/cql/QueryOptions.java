@@ -43,6 +43,8 @@ public class QueryOptions {
 
 	private final ExecutionProfileResolver executionProfileResolver;
 
+	private final @Nullable CqlIdentifier keyspace;
+
 	private final @Nullable Integer pageSize;
 
 	private final @Nullable ConsistencyLevel serialConsistencyLevel;
@@ -51,25 +53,17 @@ public class QueryOptions {
 
 	private final @Nullable Boolean tracing;
 
-	private final @Nullable CqlIdentifier keyspace;
-
 	protected QueryOptions(@Nullable ConsistencyLevel consistencyLevel, ExecutionProfileResolver executionProfileResolver,
-			@Nullable Integer pageSize, @Nullable ConsistencyLevel serialConsistencyLevel, Duration timeout,
-			@Nullable Boolean tracing) {
-		this(consistencyLevel, executionProfileResolver, pageSize, serialConsistencyLevel, timeout, tracing, null);
-	}
-
-	protected QueryOptions(@Nullable ConsistencyLevel consistencyLevel, ExecutionProfileResolver executionProfileResolver,
-			@Nullable Integer pageSize, @Nullable ConsistencyLevel serialConsistencyLevel, Duration timeout,
-			@Nullable Boolean tracing, @Nullable CqlIdentifier keyspace) {
+			@Nullable CqlIdentifier keyspace, @Nullable Integer pageSize, @Nullable ConsistencyLevel serialConsistencyLevel,
+			Duration timeout, @Nullable Boolean tracing) {
 
 		this.consistencyLevel = consistencyLevel;
 		this.executionProfileResolver = executionProfileResolver;
+		this.keyspace = keyspace;
 		this.pageSize = pageSize;
 		this.serialConsistencyLevel = serialConsistencyLevel;
 		this.timeout = timeout;
 		this.tracing = tracing;
-		this.keyspace = keyspace;
 	}
 
 	/**
@@ -167,8 +161,9 @@ public class QueryOptions {
 	}
 
 	/**
-	 * @return the keyspace associated with the query. If it is null, it means that the default keyspace from
-	 *         {@link CqlSession} will be used.
+	 * @return the keyspace associated with the query. If it is {@literal null}, it means that either keyspace configured
+	 *         on the statement or from the {@link CqlSession} will be used.
+	 * @since 3.1
 	 */
 	@Nullable
 	public CqlIdentifier getKeyspace() {
@@ -247,6 +242,8 @@ public class QueryOptions {
 
 		protected ExecutionProfileResolver executionProfileResolver = ExecutionProfileResolver.none();
 
+		protected @Nullable CqlIdentifier keyspace;
+
 		protected @Nullable Integer pageSize;
 
 		protected @Nullable ConsistencyLevel serialConsistencyLevel;
@@ -255,19 +252,17 @@ public class QueryOptions {
 
 		protected @Nullable Boolean tracing;
 
-		protected @Nullable CqlIdentifier keyspace;
-
 		QueryOptionsBuilder() {}
 
 		QueryOptionsBuilder(QueryOptions queryOptions) {
 
 			this.consistencyLevel = queryOptions.consistencyLevel;
 			this.executionProfileResolver = queryOptions.executionProfileResolver;
+			this.keyspace = queryOptions.keyspace;
 			this.pageSize = queryOptions.pageSize;
 			this.serialConsistencyLevel = queryOptions.serialConsistencyLevel;
 			this.timeout = queryOptions.timeout;
 			this.tracing = queryOptions.tracing;
-			this.keyspace = queryOptions.keyspace;
 		}
 
 		/**
@@ -328,6 +323,23 @@ public class QueryOptions {
 		@Deprecated
 		public QueryOptionsBuilder fetchSize(int fetchSize) {
 			return pageSize(fetchSize);
+		}
+
+		/**
+		 * Sets the {@link CqlIdentifier keyspace} to use. If left unconfigured, then the keyspace set on the statement or
+		 * {@link CqlSession} will be used.
+		 *
+		 * @param keyspace the specific keyspace to use to run a statement, must not be {@literal null}.
+		 * @return {@code this} {@link QueryOptionsBuilder}.
+		 * @since 3.1
+		 */
+		public QueryOptionsBuilder keyspace(CqlIdentifier keyspace) {
+
+			Assert.notNull(keyspace, "Keyspace must not be null");
+
+			this.keyspace = keyspace;
+
+			return this;
 		}
 
 		/**
@@ -460,26 +472,13 @@ public class QueryOptions {
 		}
 
 		/**
-		 * Sets the keyspace to use.
-		 *
-		 * @param keyspace if it is null, then the default {@link CqlSession} level keyspace will be used.
-		 * @return {@code this} {@link QueryOptionsBuilder}
-		 */
-		public QueryOptionsBuilder keyspace(CqlIdentifier keyspace) {
-
-			this.keyspace = keyspace;
-
-			return this;
-		}
-
-		/**
 		 * Builds a new {@link QueryOptions} with the configured values.
 		 *
 		 * @return a new {@link QueryOptions} with the configured values
 		 */
 		public QueryOptions build() {
-			return new QueryOptions(this.consistencyLevel, this.executionProfileResolver, this.pageSize,
-					this.serialConsistencyLevel, this.timeout, this.tracing, this.keyspace);
+			return new QueryOptions(this.consistencyLevel, this.executionProfileResolver, this.keyspace, this.pageSize,
+					this.serialConsistencyLevel, this.timeout, this.tracing);
 		}
 	}
 }

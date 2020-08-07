@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.core;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.junit.Assume.*;
 import static org.springframework.data.cassandra.core.query.Criteria.*;
 
@@ -438,7 +439,8 @@ class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrat
 
 	@Test // DATACASS-767
 	void selectByQueryWithKeyspaceShouldRetrieveData() {
-		assumeTrue(cassandraVersion.isGreaterThanOrEqualTo(CASSANDRA_4));
+
+		assumeThat(cassandraVersion.isGreaterThanOrEqualTo(CASSANDRA_4)).isTrue();
 
 		QueryOptions queryOptions = QueryOptions.builder().keyspace(CqlIdentifier.fromCql(keyspace)).build();
 
@@ -451,7 +453,8 @@ class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrat
 
 	@Test // DATACASS-767
 	void selectByQueryWithNonExistingKeyspaceShouldThrowThatKeyspaceDoesNotExists() {
-		assumeTrue(cassandraVersion.isGreaterThanOrEqualTo(CASSANDRA_4));
+
+		assumeThat(cassandraVersion.isGreaterThanOrEqualTo(CASSANDRA_4)).isTrue();
 
 		QueryOptions queryOptions = QueryOptions.builder().keyspace(CqlIdentifier.fromCql("non_existing")).build();
 

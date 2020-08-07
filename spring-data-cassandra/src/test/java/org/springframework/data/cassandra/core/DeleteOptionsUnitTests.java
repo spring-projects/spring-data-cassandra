@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import java.time.Duration;
 import java.time.Instant;
 
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.data.cassandra.core.query.Query;
@@ -33,7 +34,7 @@ import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
  */
 class DeleteOptionsUnitTests {
 
-	@Test // DATACASS-575, DATACASS-708
+	@Test // DATACASS-575, DATACASS-708, DATACASS-767
 	void shouldConfigureDeleteOptions() {
 
 		Instant now = Instant.ofEpochSecond(1234);
@@ -44,13 +45,14 @@ class DeleteOptionsUnitTests {
 				.withIfExists() //
 				.executionProfile("foo") //
 				.serialConsistencyLevel(DefaultConsistencyLevel.LOCAL_ONE) //
+				.keyspace(CqlIdentifier.fromCql("my_keyspace"))
 				.build();
-
 
 		assertThat(deleteOptions.getTtl()).isEqualTo(Duration.ofSeconds(10));
 		assertThat(deleteOptions.getTimestamp()).isEqualTo(now.toEpochMilli() * 1000);
 		assertThat(deleteOptions.isIfExists()).isTrue();
 		assertThat(deleteOptions.getIfCondition()).isNull();
+		assertThat(deleteOptions.getKeyspace()).isEqualTo(CqlIdentifier.fromCql("my_keyspace"));
 	}
 
 	@Test // DATACASS-575

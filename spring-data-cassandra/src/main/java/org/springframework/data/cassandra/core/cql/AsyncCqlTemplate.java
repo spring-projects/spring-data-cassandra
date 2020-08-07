@@ -22,13 +22,6 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 
-import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.DriverException;
-import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
-import com.datastax.oss.driver.api.core.cql.PreparedStatement;
-import com.datastax.oss.driver.api.core.cql.ResultSet;
-import com.datastax.oss.driver.api.core.cql.Statement;
-
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
@@ -38,6 +31,14 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.SettableListenableFuture;
+
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.DriverException;
+import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.cql.Statement;
 
 /**
  * <b>This is the central class in the CQL core package for asynchronous Cassandra data access.</b> It simplifies the
@@ -745,7 +746,8 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 	 * @return the new {@link AsyncPreparedStatementCreator} to use
 	 */
 	protected AsyncPreparedStatementCreator newAsyncPreparedStatementCreator(String cql) {
-		return new SimpleAsyncPreparedStatementCreator(cql,
+		return new SimpleAsyncPreparedStatementCreator(
+				(SimpleStatement) applyStatementSettings(SimpleStatement.newInstance(cql)),
 				ex -> translateExceptionIfPossible("PrepareStatement", cql, ex));
 	}
 
@@ -806,25 +808,23 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 
 		private final PersistenceExceptionTranslator exceptionTranslator;
 
-		private final String cql;
+		private final SimpleStatement statement;
 
-		private SimpleAsyncPreparedStatementCreator(String cql, PersistenceExceptionTranslator exceptionTranslator) {
+		private SimpleAsyncPreparedStatementCreator(SimpleStatement statement,
+				PersistenceExceptionTranslator exceptionTranslator) {
 
-			Assert.hasText(cql, "CQL must not be empty");
-
-			this.cql = cql;
+			this.statement = statement;
 			this.exceptionTranslator = exceptionTranslator;
 		}
 
 		@Override
-		public String getCql() {
-			return this.cql;
+		public ListenableFuture<PreparedStatement> createPreparedStatement(CqlSession session) throws DriverException {
+			return new CassandraFutureAdapter<>(session.prepareAsync(this.statement), exceptionTranslator);
 		}
 
 		@Override
-		public ListenableFuture<PreparedStatement> createPreparedStatement(CqlSession session) throws DriverException {
-			return new CassandraFutureAdapter<>(session.prepareAsync(getCql()),
-					exceptionTranslator::translateExceptionIfPossible);
+		public String getCql() {
+			return this.statement.getQuery();
 		}
 	}
 
