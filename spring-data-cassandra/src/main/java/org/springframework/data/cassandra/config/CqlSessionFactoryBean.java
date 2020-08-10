@@ -23,6 +23,9 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.IntFunction;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
@@ -64,6 +67,7 @@ import com.datastax.oss.driver.api.core.CqlSessionBuilder;
  * @author Matthew T. Adams
  * @author John Blum
  * @author Mark Paluch
+ * @author Tomasz Lelek
  * @since 3.0
  */
 public class CqlSessionFactoryBean
@@ -107,12 +111,22 @@ public class CqlSessionFactoryBean
 
 	private @Nullable SessionBuilderConfigurer sessionBuilderConfigurer;
 
-	private String contactPoints = DEFAULT_CONTACT_POINTS;
+	private IntFunction<Collection<InetSocketAddress>> contactPoints = port -> createInetSocketAddresses(
+			DEFAULT_CONTACT_POINTS, port);
 
 	private @Nullable String keyspaceName;
 	private @Nullable String localDatacenter;
 	private @Nullable String password;
 	private @Nullable String username;
+	private Supplier<CqlSessionBuilder> setCqlSessionBuilderSupplier;
+
+	public CqlSessionFactoryBean() {
+		this(CqlSession::builder);
+	}
+
+	CqlSessionFactoryBean(Supplier<CqlSessionBuilder> setCqlSessionBuilderSupplier) {
+		this.setCqlSessionBuilderSupplier = setCqlSessionBuilderSupplier;
+	}
 
 	/**
 	 * Null-safe operation to determine whether the Cassandra {@link CqlSession} is connected or not.
@@ -130,13 +144,24 @@ public class CqlSessionFactoryBean
 
 	/**
 	 * Set a comma-delimited string of the contact points (hosts) to connect to. Default is {@code localhost}; see
-	 * {@link #DEFAULT_CONTACT_POINTS}.
+	 * {@link #DEFAULT_CONTACT_POINTS}. It can be in the form 'host:port', or a simple 'host' to use the configured port.
 	 *
 	 * @param contactPoints the contact points used by the new cluster.
 	 */
 	public void setContactPoints(String contactPoints) {
-		this.contactPoints = contactPoints;
+		this.contactPoints = port -> createInetSocketAddresses(contactPoints, port);
 	}
+
+	/**
+	 * Set a collection of the contact points (hosts) to connect to. Default is {@code localhost}; see
+	 * {@link #DEFAULT_CONTACT_POINTS}.
+	 *
+	 * @param contactPoints the contact points used by the new cluster.
+	 */
+	public void setContactPoints(Collection<InetSocketAddress> contactPoints) {
+		this.contactPoints = unusedPort -> contactPoints;
+	}
+
 
 	/**
 	 * Sets the name of the local datacenter.
@@ -439,13 +464,12 @@ public class CqlSessionFactoryBean
 	}
 
 	protected CqlSessionBuilder buildBuilder() {
+		Collection<InetSocketAddress> addresses = contactPoints.apply(this.port);
+		Assert.notEmpty(addresses, "At least one server is required");
 
-		Assert.hasText(this.contactPoints, "At least one server is required");
+		CqlSessionBuilder sessionBuilder = setCqlSessionBuilderSupplier.get();
 
-		CqlSessionBuilder sessionBuilder = CqlSession.builder();
-
-		StringUtils.commaDelimitedListToSet(this.contactPoints).forEach(host ->
-			sessionBuilder.addContactPoint(InetSocketAddress.createUnresolved(host, this.port)));
+		addresses.forEach(sessionBuilder::addContactPoint);
 
 		if (StringUtils.hasText(this.username)) {
 			sessionBuilder.withAuthCredentials(this.username, this.password);
@@ -458,6 +482,45 @@ public class CqlSessionFactoryBean
 		return this.sessionBuilderConfigurer != null
 			? this.sessionBuilderConfigurer.configure(sessionBuilder)
 			: sessionBuilder;
+	}
+
+	private Collection<InetSocketAddress> createInetSocketAddresses(String contactPoints, int port) {
+		return StringUtils.commaDelimitedListToSet(contactPoints).stream().map(candidate -> toHostAndPort(candidate, port))
+				.map(hostAndPort -> InetSocketAddress.createUnresolved(hostAndPort.host, hostAndPort.port))
+				.collect(Collectors.toList());
+	}
+
+	private static class HostAndPort {
+		private final String host;
+		private final int port;
+
+		private HostAndPort(String host, int port) {
+			this.host = host;
+			this.port = port;
+		}
+	}
+
+	private HostAndPort toHostAndPort(String candidate, int port) {
+		int i = candidate.lastIndexOf(':');
+		if (i == -1 || !isPort(() -> candidate.substring(i + 1))) {
+			return new HostAndPort(candidate, port);
+		} else {
+			String[] hostAndPort = candidate.split(":");
+			if (hostAndPort.length != 2) {
+				throw new IllegalArgumentException(
+						String.format("The provided contact point: %s has wrong format.", candidate));
+			}
+			return new HostAndPort(hostAndPort[0], Integer.parseInt(hostAndPort[1]));
+		}
+	}
+
+	private boolean isPort(Supplier<String> value) {
+		try {
+			int i = Integer.parseInt(value.get());
+			return i > 0 && i < 65535;
+		} catch (Exception ex) {
+			return false;
+		}
 	}
 
 	/**
