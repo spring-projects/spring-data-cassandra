@@ -16,24 +16,24 @@
 package org.springframework.data.cassandra.config;
 
 import org.springframework.beans.factory.FactoryBean;
-import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
+import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.context.PersistentEntities;
 
 /**
- * Simple helper to be able to wire the {@link MappingContext} from a {@link MappingCassandraConverter} bean available
- * in the application context.
+ * Simple helper to be able to wire the {@link MappingContext} from a {@link CassandraConverter} bean available in the
+ * application context.
  */
 class PersistentEntitiesFactoryBean implements FactoryBean<PersistentEntities> {
 
-	private final MappingCassandraConverter converter;
+	private final CassandraConverter converter;
 
 	/**
-	 * Creates a new {@link PersistentEntitiesFactoryBean} for the given {@link MappingCassandraConverter}.
+	 * Creates a new {@link PersistentEntitiesFactoryBean} for the given {@link CassandraConverter}.
 	 *
 	 * @param converter must not be {@literal null}.
 	 */
-	public PersistentEntitiesFactoryBean(MappingCassandraConverter converter) {
+	public PersistentEntitiesFactoryBean(CassandraConverter converter) {
 		this.converter = converter;
 	}
 
