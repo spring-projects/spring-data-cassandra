@@ -1,6 +1,16 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 3.1.0-M2 (2020-08-12)
+----------------------------------------
+* DATACASS-791 - Consider Unit a void type in Coroutine repositories.
+* DATACASS-789 - Migrate tests to JUnit 5.
+* DATACASS-788 - Adopt to reactive SpEL execution.
+* DATACASS-784 - Add support for reactive auditing.
+* DATACASS-782 - Release 3.1 M2 (2020.0.0).
+* DATACASS-767 - Allow configuring keyspace per Statement.
+
+
 Changes in version 3.0.2.RELEASE (2020-07-22)
 ---------------------------------------------
 * DATACASS-777 - ConcurrentModificationException in CassandraTemplate.getTableName.
@@ -1262,6 +1272,7 @@ Changes in version 1.0.0.M1 (2014-03-31)
     * [DATACASS-100] - QueryOptions should only have ConsistencyLevel & RetryPolicy
     * [DATACASS-104] - Remove requirement for @PrimaryKeyClass when using composite primary keys
     * [DATACASS-107] - Support declarative query methods
+
 
 
 
