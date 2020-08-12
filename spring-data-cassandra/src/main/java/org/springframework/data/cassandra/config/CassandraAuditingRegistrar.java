@@ -27,7 +27,7 @@ import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.auditing.IsNewAwareAuditingHandler;
 import org.springframework.data.auditing.config.AuditingBeanDefinitionRegistrarSupport;
 import org.springframework.data.auditing.config.AuditingConfiguration;
-import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
+import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.mapping.event.AuditingEntityCallback;
@@ -140,14 +140,14 @@ class CassandraAuditingRegistrar extends AuditingBeanDefinitionRegistrarSupport 
 	static class CassandraMappingContextLookup
 			implements FactoryBean<MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty>> {
 
-		private final MappingCassandraConverter converter;
+		private final CassandraConverter converter;
 
 		/**
-		 * Creates a new {@link CassandraMappingContextLookup} for the given {@link MappingCassandraConverter}.
+		 * Creates a new {@link CassandraMappingContextLookup} for the given {@link CassandraConverter}.
 		 *
 		 * @param converter must not be {@literal null}.
 		 */
-		public CassandraMappingContextLookup(MappingCassandraConverter converter) {
+		public CassandraMappingContextLookup(CassandraConverter converter) {
 			this.converter = converter;
 		}
 
