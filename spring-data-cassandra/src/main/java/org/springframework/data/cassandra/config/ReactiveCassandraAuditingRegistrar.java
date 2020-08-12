@@ -53,7 +53,7 @@ class ReactiveCassandraAuditingRegistrar extends AuditingBeanDefinitionRegistrar
 	 */
 	@Override
 	protected String getAuditingHandlerBeanName() {
-		return "cassandraAuditingHandler";
+		return "reactiveCassandraAuditingHandler";
 	}
 
 	/*
