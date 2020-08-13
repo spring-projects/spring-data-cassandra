@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.core.mapping;
 
 import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -26,6 +27,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * @author Alex Shvid
  * @author Matthew T. Adams
  * @author Mark Paluch
+ * @author Tomasz Lelek
  */
 public interface CassandraPersistentEntity<T> extends PersistentEntity<T, CassandraPersistentProperty> {
 
@@ -50,6 +52,12 @@ public interface CassandraPersistentEntity<T> extends PersistentEntity<T, Cassan
 	 */
 	CqlIdentifier getTableName();
 
+
+	/**
+	 * Returns the keyspace to which the entity shall be persisted.
+	 */
+	@Nullable CqlIdentifier getKeyspace();
+
 	/**
 	 * Sets the CQL table name.
 	 *
@@ -69,6 +77,13 @@ public interface CassandraPersistentEntity<T> extends PersistentEntity<T, Cassan
 	 * @param tableName must not be {@literal null}.
 	 */
 	void setTableName(CqlIdentifier tableName);
+
+	/**
+	 * Sets the keyspace name.
+	 *
+	 * @param keyspace must not be {@literal null}.
+	 */
+	void setKeyspace(CqlIdentifier keyspace);
 
 	/**
 	 * @return {@literal true} if the type is a mapped tuple type.

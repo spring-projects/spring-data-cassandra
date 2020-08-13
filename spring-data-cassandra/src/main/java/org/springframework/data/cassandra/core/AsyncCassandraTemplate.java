@@ -69,6 +69,7 @@ import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.DriverException;
 import com.datastax.oss.driver.api.core.config.DefaultDriverOption;
 import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.Statement;
@@ -94,6 +95,7 @@ import com.datastax.oss.driver.api.querybuilder.update.Update;
  *
  * @author Mark Paluch
  * @author John Blum
+ * @author Tomasz Lelek
  * @see org.springframework.data.cassandra.core.AsyncCassandraOperations
  * @since 2.0
  */
@@ -122,7 +124,7 @@ public class AsyncCassandraTemplate
 	 *
 	 * @param session {@link CqlSession} used to interact with Cassandra; must not be {@literal null}.
 	 * @see CassandraConverter
-	 * @see Session
+	 * @see CqlSession
 	 */
 	public AsyncCassandraTemplate(CqlSession session) {
 		this(session, newConverter());
@@ -136,7 +138,7 @@ public class AsyncCassandraTemplate
 	 * @param converter {@link CassandraConverter} used to convert between Java and Cassandra types; must not be
 	 *          {@literal null}.
 	 * @see CassandraConverter
-	 * @see Session
+	 * @see CqlSession
 	 */
 	public AsyncCassandraTemplate(CqlSession session, CassandraConverter converter) {
 		this(new DefaultSessionFactory(session), converter);
@@ -150,7 +152,7 @@ public class AsyncCassandraTemplate
 	 * @param converter {@link CassandraConverter} used to convert between Java and Cassandra types; must not be
 	 *          {@literal null}.
 	 * @see CassandraConverter
-	 * @see Session
+	 * @see CqlSession
 	 */
 	public AsyncCassandraTemplate(SessionFactory sessionFactory, CassandraConverter converter) {
 		this(new AsyncCqlTemplate(sessionFactory), converter);
@@ -164,7 +166,7 @@ public class AsyncCassandraTemplate
 	 * @param converter {@link CassandraConverter} used to convert between Java and Cassandra types; must not be
 	 *          {@literal null}.
 	 * @see CassandraConverter
-	 * @see Session
+	 * @see CqlSession
 	 */
 	public AsyncCassandraTemplate(AsyncCqlTemplate asyncCqlTemplate, CassandraConverter converter) {
 
@@ -267,6 +269,10 @@ public class AsyncCassandraTemplate
 
 	private CqlIdentifier getTableName(Class<?> entityClass) {
 		return getEntityOperations().getTableName(entityClass);
+	}
+
+	private CqlIdentifier getKeyspace(Class<?> entityClass) {
+		return getEntityOperations().getKeyspace(entityClass);
 	}
 
 	// -------------------------------------------------------------------------
@@ -482,7 +488,7 @@ public class AsyncCassandraTemplate
 
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return doCount(Query.empty(), entityClass, getTableName(entityClass));
+		return doCount(Query.empty(), entityClass, getKeyspace(entityClass), getTableName(entityClass));
 	}
 
 	/* (non-Javadoc)
@@ -494,13 +500,14 @@ public class AsyncCassandraTemplate
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return doCount(query, entityClass, getTableName(entityClass));
+		return doCount(query, entityClass, getKeyspace(entityClass), getTableName(entityClass));
 	}
 
-	ListenableFuture<Long> doCount(Query query, Class<?> entityClass, CqlIdentifier tableName) {
+	ListenableFuture<Long> doCount(Query query, Class<?> entityClass, @Nullable CqlIdentifier keyspace,
+			CqlIdentifier tableName) {
 
 		StatementBuilder<com.datastax.oss.driver.api.querybuilder.select.Select> countStatement = getStatementFactory()
-				.count(query, getRequiredPersistentEntity(entityClass), tableName);
+				.count(query, getRequiredPersistentEntity(entityClass), keyspace, tableName);
 
 		SimpleStatement statement = countStatement.build();
 
@@ -521,7 +528,7 @@ public class AsyncCassandraTemplate
 		CassandraPersistentEntity<?> entity = getRequiredPersistentEntity(entityClass);
 
 		StatementBuilder<com.datastax.oss.driver.api.querybuilder.select.Select> select = getStatementFactory()
-				.selectOneById(id, entity, entity.getTableName());
+				.selectOneById(id, entity, entity.getKeyspace(), entity.getTableName());
 
 		return new MappingListenableFutureAdapter<>(getAsyncCqlOperations().queryForResultSet(select.build()),
 				resultSet -> resultSet.one() != null);
@@ -537,7 +544,8 @@ public class AsyncCassandraTemplate
 		Assert.notNull(entityClass, "Entity type must not be null");
 
 		StatementBuilder<com.datastax.oss.driver.api.querybuilder.select.Select> select = getStatementFactory()
-				.select(query.limit(1), getRequiredPersistentEntity(entityClass), getTableName(entityClass));
+				.select(query.limit(1), getRequiredPersistentEntity(entityClass), getKeyspace(entityClass),
+						getTableName(entityClass));
 
 		return new MappingListenableFutureAdapter<>(getAsyncCqlOperations().queryForResultSet(select.build()),
 				resultSet -> resultSet.one() != null);
@@ -554,7 +562,7 @@ public class AsyncCassandraTemplate
 
 		CassandraPersistentEntity<?> entity = getRequiredPersistentEntity(entityClass);
 		CqlIdentifier tableName = entity.getTableName();
-		StatementBuilder<Select> select = getStatementFactory().selectOneById(id, entity, tableName);
+		StatementBuilder<Select> select = getStatementFactory().selectOneById(id, entity, entity.getKeyspace(), tableName);
 		Function<Row, T> mapper = getMapper(entityClass, entityClass, tableName);
 
 		return new MappingListenableFutureAdapter<>(

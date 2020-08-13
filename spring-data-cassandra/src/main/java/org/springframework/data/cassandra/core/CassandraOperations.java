@@ -24,6 +24,7 @@ import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.cql.CqlOperations;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
+import org.springframework.data.cassandra.core.mapping.Embedded;
 import org.springframework.data.cassandra.core.query.CassandraPageRequest;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.core.query.Update;
@@ -41,6 +42,7 @@ import com.datastax.oss.driver.api.core.cql.Statement;
  * @author David Webb
  * @author Matthew Adams
  * @author Mark Paluch
+ * @author Tomasz Lelek
  * @see CassandraTemplate
  * @see CqlOperations
  * @see Statement
@@ -79,6 +81,15 @@ public interface CassandraOperations extends FluentCassandraOperations {
 	 * @return the {@link CqlIdentifier}
 	 */
 	CqlIdentifier getTableName(Class<?> entityClass);
+
+
+	/**
+	 * The keyspace used for the specified class by this template.
+	 *
+	 * @param entityClass The entity type may be {@literal null}.
+	 * @return the {@link CqlIdentifier}
+	 */
+	@Nullable CqlIdentifier getKeyspace(Class<?> entityClass);
 
 	// -------------------------------------------------------------------------
 	// Methods dealing with static CQL

@@ -56,6 +56,7 @@ import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
  * @author John Blum
  * @author Jens Schauder
  * @author Vagif Zeynalov
+ * @author Toamsz Lelek
  */
 public class CassandraMappingContext
 		extends AbstractMappingContext<BasicCassandraPersistentEntity<?>, CassandraPersistentProperty>
@@ -72,6 +73,8 @@ public class CassandraMappingContext
 	private Mapping mapping = new Mapping();
 
 	private NamingStrategy namingStrategy = NamingStrategy.INSTANCE;
+
+	private @Nullable CqlIdentifier keyspace;
 
 	private @Deprecated @Nullable UserTypeResolver userTypeResolver;
 
@@ -275,6 +278,10 @@ public class CassandraMappingContext
 		this.namingStrategy = namingStrategy;
 	}
 
+	public void setKeyspace(@Nullable CqlIdentifier keyspace){
+		this.keyspace = keyspace;
+	}
+
 	/**
 	 * Sets the {@link TupleTypeFactory}.
 	 *
@@ -380,6 +387,7 @@ public class CassandraMappingContext
 				: new BasicCassandraPersistentEntity<>(typeInformation, getVerifier());
 
 		entity.setNamingStrategy(this.namingStrategy);
+		entity.setKeyspace(this.keyspace);
 		Optional.ofNullable(this.applicationContext).ifPresent(entity::setApplicationContext);
 
 		return entity;

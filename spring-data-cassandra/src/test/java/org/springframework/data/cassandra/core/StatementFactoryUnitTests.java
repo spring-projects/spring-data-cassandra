@@ -23,8 +23,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
@@ -33,6 +36,7 @@ import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.data.cassandra.core.cql.util.StatementBuilder;
 import org.springframework.data.cassandra.core.cql.util.StatementBuilder.ParameterHandling;
+import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.Column;
 import org.springframework.data.cassandra.core.query.Columns;
@@ -52,6 +56,7 @@ import com.datastax.oss.driver.api.querybuilder.select.Select;
  * Unit tests for {@link StatementFactory}.
  *
  * @author Mark Paluch
+ * @author Tomasz Lelek
  */
 class StatementFactoryUnitTests {
 
@@ -608,6 +613,24 @@ class StatementFactoryUnitTests {
 
 		assertThat(count.build(ParameterHandling.INLINE).getQuery())
 				.isEqualTo("SELECT count(1) FROM group WHERE foo='bar'");
+	}
+
+	@Test // DATACASS-751
+	void shouldConstructQueryWithKeyspace() {
+		CassandraMappingContext cassandraMappingContext = new CassandraMappingContext();
+		cassandraMappingContext.setKeyspace(CqlIdentifier.fromCql("ks1"));
+
+		CassandraConverter converter = new MappingCassandraConverter();
+		UpdateMapper updateMapper = new UpdateMapper(converter);
+		StatementFactory statementFactory = new StatementFactory(updateMapper, updateMapper);
+
+
+		converter.getMappingContext().setKeyspace(CqlIdentifier.fromCql("ks1"));
+
+		StatementBuilder<Select> select = statementFactory.select(Query.empty(),
+				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
+
+		assertThat(select.build(ParameterHandling.INLINE).getQuery()).isEqualTo("SELECT * FROM ks1.group");
 	}
 
 	@SuppressWarnings("unused")

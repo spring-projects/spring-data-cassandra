@@ -102,6 +102,11 @@ public class EmbeddedEntityOperations {
 		}
 
 		@Override
+		public CqlIdentifier getKeyspace() {
+			return delegate.getKeyspace();
+		}
+
+		@Override
 		@Deprecated
 		public void setTableName(org.springframework.data.cassandra.core.cql.CqlIdentifier tableName) {
 			delegate.setTableName(tableName);
@@ -110,6 +115,11 @@ public class EmbeddedEntityOperations {
 		@Override
 		public void setTableName(CqlIdentifier tableName) {
 			delegate.setTableName(tableName);
+		}
+
+		@Override
+		public void setKeyspace(CqlIdentifier keyspace) {
+			delegate.setKeyspace(keyspace);
 		}
 
 		@Override

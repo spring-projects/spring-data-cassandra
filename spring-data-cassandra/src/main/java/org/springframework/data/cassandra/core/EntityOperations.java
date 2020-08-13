@@ -36,6 +36,7 @@ import com.datastax.oss.driver.api.querybuilder.update.Update;
  *
  * @author Mark Paluch
  * @author John Blum
+ * @author Tomasz Lelek
  * @see CassandraTemplate
  * @see AsyncCassandraTemplate
  * @see ReactiveCassandraTemplate
@@ -98,6 +99,19 @@ class EntityOperations {
 	CqlIdentifier getTableName(Class<?> entityClass) {
 		return getRequiredPersistentEntity(entityClass).getTableName();
 	}
+
+	/**
+	 * Returns the kespace to which the entity shall be persisted.
+	 *
+	 * @param entityClass entity class, may be {@literal null}.
+	 * @return the keyspace to which the entity shall be persisted.
+	 * If null, then default session-level keyspace will be used.
+	 */
+	@Nullable
+	CqlIdentifier getKeyspace(Class<?> entityClass) {
+		return getRequiredPersistentEntity(entityClass).getKeyspace();
+	}
+
 
 
 	protected MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> getMappingContext() {

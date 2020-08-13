@@ -173,6 +173,20 @@ class BasicCassandraPersistentEntityUnitTests {
 		verifyZeroInteractions(handlerMock);
 	}
 
+
+	@Test //DATACASS-751
+	void shouldSetKeyspace(){
+		BasicCassandraPersistentEntity<Notification> entity = new BasicCassandraPersistentEntity<>(
+				ClassTypeInformation.from(Notification.class));
+
+		assertThat(entity.getKeyspace()).isNull();
+
+		entity.setKeyspace(CqlIdentifier.fromCql("ks1"));
+
+		assertThat(entity.getKeyspace()).isEqualTo(CqlIdentifier.fromCql("ks1"));
+	}
+
+
 	@Table("messages")
 	static class Message {}
 

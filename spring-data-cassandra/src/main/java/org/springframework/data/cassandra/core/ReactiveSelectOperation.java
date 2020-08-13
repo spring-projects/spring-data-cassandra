@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.core;
 
+import org.springframework.data.cassandra.core.mapping.Embedded;
+import org.springframework.lang.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -48,6 +50,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  *
  * @author Mark Paluch
  * @author John Blum
+ * @author Tomasz Lelek
  * @see org.springframework.data.cassandra.core.query.Query
  * @since 2.1
  */
@@ -99,6 +102,27 @@ public interface ReactiveSelectOperation {
 		 * @see SelectWithProjection
 		 */
 		SelectWithProjection<T> inTable(CqlIdentifier table);
+
+		/**
+		 * Explicitly set the {@link CqlIdentifier keyspace} and the {@link CqlIdentifier name} of the table on which to
+		 * perform the query.
+		 * <p>
+		 * Skip this step to use the default table derived from the {@link Class domain type}. Skip this step to use the
+		 * default session-level keyspace.
+		 *
+		 * @param table {@link CqlIdentifier name} of the table; must not be {@literal null}.
+		 * @param keyspace {@link CqlIdentifier keyspace} of the table; if set to {@literal null}, the default session-level
+		 *          keyspace will be used.
+		 * @return new instance of {@link SelectWithProjection}.
+		 * @throws IllegalArgumentException if {@link CqlIdentifier table} is {@literal null}.
+		 * @see com.datastax.oss.driver.api.core.CqlIdentifier
+		 * @see SelectWithProjection
+		 */
+		default SelectWithProjection<T> inTable(@Nullable CqlIdentifier keyspace, CqlIdentifier table){
+			// todo can we leave this without default method?
+			return inTable(table);
+		}
+
 
 	}
 

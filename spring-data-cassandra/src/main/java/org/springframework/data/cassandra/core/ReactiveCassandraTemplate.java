@@ -24,7 +24,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import org.reactivestreams.Publisher;
-
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -100,6 +99,7 @@ import com.datastax.oss.driver.api.querybuilder.update.Update;
  * @author John Blum
  * @author Lukasz Antoniak
  * @author Hleb Albau
+ * @author Tomasz Lelek
  * @since 2.0
  */
 public class ReactiveCassandraTemplate
@@ -280,6 +280,11 @@ public class ReactiveCassandraTemplate
 		return getRequiredPersistentEntity(entityClass).getTableName();
 	}
 
+	@Nullable
+	CqlIdentifier getKeyspace(Class<?> entityClass) {
+		return getRequiredPersistentEntity(entityClass).getKeyspace();
+	}
+
 	// -------------------------------------------------------------------------
 	// Methods dealing with static CQL
 	// -------------------------------------------------------------------------
@@ -366,10 +371,11 @@ public class ReactiveCassandraTemplate
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return doSelect(query, entityClass, getTableName(entityClass), entityClass);
+		return doSelect(query, entityClass, getKeyspace(entityClass), getTableName(entityClass), entityClass);
 	}
 
-	<T> Flux<T> doSelect(Query query, Class<?> entityClass, CqlIdentifier tableName, Class<T> returnType) {
+	<T> Flux<T> doSelect(Query query, Class<?> entityClass, @Nullable CqlIdentifier keyspace, CqlIdentifier tableName,
+			Class<T> returnType) {
 
 		CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entityClass);
 
@@ -378,7 +384,7 @@ public class ReactiveCassandraTemplate
 
 		Query queryToUse = query.columns(columns);
 
-		StatementBuilder<Select> select = getStatementFactory().select(queryToUse, persistentEntity, tableName);
+		StatementBuilder<Select> select = getStatementFactory().select(queryToUse, persistentEntity, keyspace, tableName);
 
 		Function<Row, T> mapper = getMapper(entityClass, returnType, tableName);
 
@@ -471,7 +477,7 @@ public class ReactiveCassandraTemplate
 
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return doCount(Query.empty(), entityClass, getTableName(entityClass));
+		return doCount(Query.empty(), entityClass, getKeyspace(entityClass), getTableName(entityClass));
 	}
 
 	/* (non-Javadoc)
@@ -483,13 +489,13 @@ public class ReactiveCassandraTemplate
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return doCount(query, entityClass, getTableName(entityClass));
+		return doCount(query, entityClass, getKeyspace(entityClass), getTableName(entityClass));
 	}
 
-	Mono<Long> doCount(Query query, Class<?> entityClass, CqlIdentifier tableName) {
+	Mono<Long> doCount(Query query, Class<?> entityClass, @Nullable CqlIdentifier keyspace, CqlIdentifier tableName) {
 
 		StatementBuilder<Select> count = getStatementFactory().count(query, getRequiredPersistentEntity(entityClass),
-				tableName);
+				keyspace, tableName);
 
 		return getReactiveCqlOperations().queryForObject(count.build(), Long.class).switchIfEmpty(Mono.just(0L));
 	}
@@ -504,7 +510,8 @@ public class ReactiveCassandraTemplate
 		Assert.notNull(entityClass, "Entity type must not be null");
 
 		CassandraPersistentEntity<?> entity = getRequiredPersistentEntity(entityClass);
-		StatementBuilder<Select> builder = getStatementFactory().selectOneById(id, entity, entity.getTableName());
+		StatementBuilder<Select> builder = getStatementFactory().selectOneById(id, entity, entity.getKeyspace(),
+				entity.getTableName());
 
 		return getReactiveCqlOperations().queryForRows(builder.build()).hasElements();
 	}
@@ -518,13 +525,13 @@ public class ReactiveCassandraTemplate
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return doExists(query, entityClass, getTableName(entityClass));
+		return doExists(query, entityClass, getKeyspace(entityClass), getTableName(entityClass));
 	}
 
-	Mono<Boolean> doExists(Query query, Class<?> entityClass, CqlIdentifier tableName) {
+	Mono<Boolean> doExists(Query query, Class<?> entityClass, @Nullable CqlIdentifier keyspace, CqlIdentifier tableName) {
 
 		StatementBuilder<Select> builder = getStatementFactory().select(query.limit(1),
-				getRequiredPersistentEntity(entityClass), tableName);
+				getRequiredPersistentEntity(entityClass), keyspace, tableName);
 
 		return getReactiveCqlOperations().queryForRows(builder.build()).hasElements();
 	}
@@ -539,7 +546,7 @@ public class ReactiveCassandraTemplate
 		Assert.notNull(entityClass, "Entity type must not be null");
 
 		StatementBuilder<Select> builder = getStatementFactory().selectOneById(id, getRequiredPersistentEntity(entityClass),
-				getTableName(entityClass));
+				getKeyspace(entityClass), getTableName(entityClass));
 
 		return selectOne(builder.build(), entityClass);
 	}

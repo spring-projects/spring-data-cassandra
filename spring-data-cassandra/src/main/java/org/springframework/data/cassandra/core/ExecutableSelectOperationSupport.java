@@ -30,6 +30,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * Implementation of {@link ExecutableSelectOperation}.
  *
  * @author Mark Paluch
+ * @author Tomasz Lelek
  * @see org.springframework.data.cassandra.core.ExecutableSelectOperation
  * @see org.springframework.data.cassandra.core.query.Query
  * @since 2.1
@@ -50,7 +51,7 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 
 		Assert.notNull(domainType, "DomainType must not be null");
 
-		return new ExecutableSelectSupport<>(this.template, domainType, domainType, Query.empty(), null);
+		return new ExecutableSelectSupport<>(this.template, domainType, domainType, Query.empty(), null, null);
 	}
 
 	static class ExecutableSelectSupport<T> implements ExecutableSelect<T> {
@@ -63,14 +64,16 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 
 		private final Query query;
 
+		private final @Nullable CqlIdentifier keyspace;
 		private final @Nullable CqlIdentifier tableName;
 
 		public ExecutableSelectSupport(CassandraTemplate template, Class<?> domainType, Class<T> returnType, Query query,
-				CqlIdentifier tableName) {
+				@Nullable CqlIdentifier keyspace, @Nullable CqlIdentifier tableName) {
 			this.template = template;
 			this.domainType = domainType;
 			this.returnType = returnType;
 			this.query = query;
+			this.keyspace = keyspace;
 			this.tableName = tableName;
 		}
 
@@ -82,7 +85,20 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 
 			Assert.notNull(tableName, "Table name must not be null");
 
-			return new ExecutableSelectSupport<>(this.template, this.domainType, this.returnType, this.query, tableName);
+			return new ExecutableSelectSupport<>(this.template, this.domainType, this.returnType, this.query, null,
+					tableName);
+		}
+
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.ExecutableSelectOperation.SelectWithTable#inTable(CqlIdentifier, CqlIdentifier)
+		 */
+		@Override
+		public SelectWithProjection<T> inTable(@Nullable CqlIdentifier keyspace, CqlIdentifier tableName) {
+
+			Assert.notNull(tableName, "Table name must not be null");
+
+			return new ExecutableSelectSupport<>(this.template, this.domainType, this.returnType, this.query, keyspace,
+					tableName);
 		}
 
 		/* (non-Javadoc)
@@ -93,7 +109,8 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 
 			Assert.notNull(returnType, "ReturnType must not be null");
 
-			return new ExecutableSelectSupport<>(this.template, this.domainType, returnType, this.query, this.tableName);
+			return new ExecutableSelectSupport<>(this.template, this.domainType, returnType, this.query, this.keyspace,
+					this.tableName);
 		}
 
 		/* (non-Javadoc)
@@ -104,7 +121,8 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 
 			Assert.notNull(query, "Query must not be null");
 
-			return new ExecutableSelectSupport<>(this.template, this.domainType, this.returnType, query, this.tableName);
+			return new ExecutableSelectSupport<>(this.template, this.domainType, this.returnType, query, this.keyspace,
+					this.tableName);
 		}
 
 		/* (non-Javadoc)
@@ -112,7 +130,7 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 		 */
 		@Override
 		public long count() {
-			return this.template.doCount(this.query, this.domainType, getTableName());
+			return this.template.doCount(this.query, this.domainType, getKeyspace(), getTableName());
 		}
 
 		/* (non-Javadoc)
@@ -120,7 +138,7 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 		 */
 		@Override
 		public boolean exists() {
-			return this.template.doExists(this.query, this.domainType, getTableName());
+			return this.template.doExists(this.query, this.domainType, getKeyspace(), getTableName());
 		}
 
 		/* (non-Javadoc)
@@ -129,7 +147,8 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 		@Override
 		public T firstValue() {
 
-			List<T> result = this.template.doSelect(this.query.limit(1), this.domainType, getTableName(), this.returnType);
+			List<T> result = this.template.doSelect(this.query.limit(1), this.domainType, getKeyspace(), getTableName(),
+					this.returnType);
 
 			return ObjectUtils.isEmpty(result) ? null : result.iterator().next();
 		}
@@ -140,7 +159,8 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 		@Override
 		public T oneValue() {
 
-			List<T> result = this.template.doSelect(this.query.limit(2), this.domainType, getTableName(), this.returnType);
+			List<T> result = this.template.doSelect(this.query.limit(2), this.domainType, getKeyspace(), getTableName(),
+					this.returnType);
 
 			if (ObjectUtils.isEmpty(result)) {
 				return null;
@@ -159,7 +179,7 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 		 */
 		@Override
 		public List<T> all() {
-			return this.template.doSelect(this.query, this.domainType, getTableName(), this.returnType);
+			return this.template.doSelect(this.query, this.domainType, getKeyspace(), getTableName(), this.returnType);
 		}
 
 		/* (non-Javadoc)
@@ -167,11 +187,15 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 		 */
 		@Override
 		public Stream<T> stream() {
-			return this.template.doStream(this.query, this.domainType, getTableName(), this.returnType);
+			return this.template.doStream(this.query, this.domainType, getKeyspace(), getTableName(), this.returnType);
 		}
 
 		private CqlIdentifier getTableName() {
 			return this.tableName != null ? this.tableName : this.template.getTableName(this.domainType);
+		}
+
+		private @Nullable CqlIdentifier getKeyspace() {
+			return this.keyspace != null ? this.keyspace : this.template.getKeyspace(this.domainType);
 		}
 	}
 }

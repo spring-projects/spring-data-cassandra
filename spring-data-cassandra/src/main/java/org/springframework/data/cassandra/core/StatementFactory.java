@@ -91,6 +91,7 @@ import com.datastax.oss.driver.api.querybuilder.update.UpdateWithAssignments;
  *
  * @author Mark Paluch
  * @author John Blum
+ * @author Tomasz Lelek
  * @see com.datastax.oss.driver.api.core.cql.Statement
  * @see org.springframework.data.cassandra.core.query.Query
  * @see org.springframework.data.cassandra.core.query.Update
@@ -180,7 +181,7 @@ public class StatementFactory {
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(persistentEntity, "CassandraPersistentEntity must not be null");
 
-		return count(query, persistentEntity, persistentEntity.getTableName());
+		return count(query, persistentEntity, persistentEntity.getKeyspace(), persistentEntity.getTableName());
 	}
 
 	/**
@@ -192,13 +193,14 @@ public class StatementFactory {
 	 * @return the select builder.
 	 * @since 2.1
 	 */
-	public StatementBuilder<Select> count(Query query, CassandraPersistentEntity<?> entity, CqlIdentifier tableName) {
+	public StatementBuilder<Select> count(Query query, CassandraPersistentEntity<?> entity,
+			@Nullable CqlIdentifier keyspace, CqlIdentifier tableName) {
 
 		Filter filter = getQueryMapper().getMappedObject(query, entity);
 
 		List<Selector> selectors = Collections.singletonList(FunctionCall.from("COUNT", 1L));
 
-		return createSelect(query, entity, filter, selectors, tableName);
+		return createSelect(query, entity, filter, selectors, keyspace, tableName);
 	}
 
 	/**
@@ -207,17 +209,18 @@ public class StatementFactory {
 	 *
 	 * @param id must not be {@literal null}.
 	 * @param persistentEntity must not be {@literal null}.
+	 * @param keyspace
 	 * @param tableName must not be {@literal null}.
 	 * @return the select builder.
 	 */
 	StatementBuilder<Select> selectOneById(Object id, CassandraPersistentEntity<?> persistentEntity,
-			CqlIdentifier tableName) {
+			@Nullable CqlIdentifier keyspace, CqlIdentifier tableName) {
 
 		Where where = new Where();
 
 		cassandraConverter.write(id, where, persistentEntity);
 
-		return StatementBuilder.of(QueryBuilder.selectFrom(tableName).all().limit(1))
+		return StatementBuilder.of(QueryBuilder.selectFrom(keyspace, tableName).all().limit(1))
 				.bind((statement, factory) -> statement.where(toRelations(where, factory)));
 	}
 
@@ -233,7 +236,7 @@ public class StatementFactory {
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(persistentEntity, "CassandraPersistentEntity must not be null");
 
-		return select(query, persistentEntity, persistentEntity.getTableName());
+		return select(query, persistentEntity, persistentEntity.getKeyspace(), persistentEntity.getTableName());
 	}
 
 	/**
@@ -246,7 +249,7 @@ public class StatementFactory {
 	 * @since 2.1
 	 */
 	public StatementBuilder<Select> select(Query query, CassandraPersistentEntity<?> persistentEntity,
-			CqlIdentifier tableName) {
+			@Nullable CqlIdentifier keyspace, CqlIdentifier tableName) {
 
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(persistentEntity, "CassandraPersistentEntity must not be null");
@@ -256,7 +259,7 @@ public class StatementFactory {
 
 		List<Selector> selectors = getQueryMapper().getMappedSelectors(query.getColumns(), persistentEntity);
 
-		return createSelect(query, persistentEntity, filter, selectors, tableName);
+		return createSelect(query, persistentEntity, filter, selectors, keyspace, tableName);
 	}
 
 	/**
@@ -592,12 +595,12 @@ public class StatementFactory {
 	}
 
 	private StatementBuilder<Select> createSelect(Query query, CassandraPersistentEntity<?> entity, Filter filter,
-			List<Selector> selectors, CqlIdentifier tableName) {
+			List<Selector> selectors, @Nullable CqlIdentifier keyspace, CqlIdentifier tableName) {
 
 		Sort sort = Optional.of(query.getSort()).map(querySort -> getQueryMapper().getMappedSort(querySort, entity))
 				.orElse(Sort.unsorted());
 
-		StatementBuilder<Select> select = createSelectAndOrder(selectors, tableName, filter, sort);
+		StatementBuilder<Select> select = createSelectAndOrder(selectors, keyspace, tableName, filter, sort);
 
 		if (query.getLimit() > 0) {
 			select.apply(it -> it.limit(Math.toIntExact(query.getLimit())));
@@ -615,13 +618,14 @@ public class StatementFactory {
 		return select;
 	}
 
-	private static StatementBuilder<Select> createSelectAndOrder(List<Selector> selectors, CqlIdentifier from,
+	private static StatementBuilder<Select> createSelectAndOrder(List<Selector> selectors,
+			@Nullable CqlIdentifier keyspace, CqlIdentifier from,
 			Filter filter, Sort sort) {
 
 		Select select;
 
 		if (selectors.isEmpty()) {
-			select = QueryBuilder.selectFrom(from).all();
+			select = QueryBuilder.selectFrom(keyspace, from).all();
 		} else {
 
 			List<com.datastax.oss.driver.api.querybuilder.select.Selector> mappedSelectors = selectors.stream()
@@ -629,7 +633,7 @@ public class StatementFactory {
 							.orElseGet(() -> getSelection(selector)))
 					.collect(Collectors.toList());
 
-			select = QueryBuilder.selectFrom(from).selectors(mappedSelectors);
+			select = QueryBuilder.selectFrom(keyspace, from).selectors(mappedSelectors);
 		}
 
 		StatementBuilder<Select> builder = StatementBuilder.of(select);

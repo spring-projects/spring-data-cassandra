@@ -29,6 +29,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * Implementation of {@link ReactiveSelectOperation}.
  *
  * @author Mark Paluch
+ * @author Tomasz Lelek
  * @see org.springframework.data.cassandra.core.ReactiveSelectOperation
  * @see org.springframework.data.cassandra.core.query.Query
  * @since 2.1
@@ -49,7 +50,7 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 
 		Assert.notNull(domainType, "DomainType must not be null");
 
-		return new ReactiveSelectSupport<>(this.template, domainType, domainType, Query.empty(), null);
+		return new ReactiveSelectSupport<>(this.template, domainType, domainType, Query.empty(), null, null);
 	}
 
 	static class ReactiveSelectSupport<T> implements ReactiveSelect<T> {
@@ -62,15 +63,17 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 
 		private final Query query;
 
+		private final @Nullable CqlIdentifier keyspace;
 		private final @Nullable CqlIdentifier tableName;
 
 		public ReactiveSelectSupport(ReactiveCassandraTemplate template, Class<?> domainType, Class<T> returnType,
-				Query query, CqlIdentifier tableName) {
+				Query query, @Nullable CqlIdentifier keyspace, @Nullable CqlIdentifier tableName) {
 			this.template = template;
 			this.domainType = domainType;
 			this.returnType = returnType;
 			this.query = query;
 			this.tableName = tableName;
+			this.keyspace = keyspace;
 		}
 
 		/* (non-Javadoc)
@@ -81,7 +84,16 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 
 			Assert.notNull(tableName, "Table name must not be null");
 
-			return new ReactiveSelectSupport<>(this.template, this.domainType, this.returnType, this.query, tableName);
+			return new ReactiveSelectSupport<>(this.template, this.domainType, this.returnType, this.query, null, tableName);
+		}
+
+		@Override
+		public SelectWithProjection<T> inTable(@Nullable CqlIdentifier tableName, CqlIdentifier keyspace) {
+
+			Assert.notNull(tableName, "Table name must not be null");
+
+			return new ReactiveSelectSupport<>(this.template, this.domainType, this.returnType, this.query, keyspace,
+					tableName);
 		}
 
 		/* (non-Javadoc)
@@ -92,7 +104,8 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 
 			Assert.notNull(returnType, "ReturnType must not be null");
 
-			return new ReactiveSelectSupport<>(this.template, this.domainType, returnType, this.query, this.tableName);
+			return new ReactiveSelectSupport<>(this.template, this.domainType, returnType, this.query, this.keyspace,
+					this.tableName);
 		}
 
 		/* (non-Javadoc)
@@ -103,7 +116,8 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 
 			Assert.notNull(query, "Query must not be null");
 
-			return new ReactiveSelectSupport<>(this.template, this.domainType, this.returnType, query, this.tableName);
+			return new ReactiveSelectSupport<>(this.template, this.domainType, this.returnType, query, this.keyspace,
+					this.tableName);
 		}
 
 		/* (non-Javadoc)
@@ -111,7 +125,7 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 		 */
 		@Override
 		public Mono<Long> count() {
-			return this.template.doCount(this.query, this.domainType, getTableName());
+			return this.template.doCount(this.query, this.domainType, getKeyspace(), getTableName());
 		}
 
 		/* (non-Javadoc)
@@ -119,7 +133,7 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 		 */
 		@Override
 		public Mono<Boolean> exists() {
-			return this.template.doExists(this.query, this.domainType, getTableName());
+			return this.template.doExists(this.query, this.domainType, getKeyspace(), getTableName());
 		}
 
 		/* (non-Javadoc)
@@ -127,7 +141,8 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 		 */
 		@Override
 		public Mono<T> first() {
-			return this.template.doSelect(this.query.limit(1), this.domainType, getTableName(), this.returnType).next();
+			return this.template
+					.doSelect(this.query.limit(1), this.domainType, getKeyspace(), getTableName(), this.returnType).next();
 		}
 
 		/* (non-Javadoc)
@@ -136,7 +151,8 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 		@Override
 		public Mono<T> one() {
 
-			Flux<T> result = this.template.doSelect(this.query.limit(2), this.domainType, getTableName(), this.returnType);
+			Flux<T> result = this.template.doSelect(this.query.limit(2), this.domainType, getKeyspace(), getTableName(),
+					this.returnType);
 
 			return result.collectList() //
 					.flatMap(it -> {
@@ -159,7 +175,11 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 		 */
 		@Override
 		public Flux<T> all() {
-			return this.template.doSelect(this.query, this.domainType, getTableName(), this.returnType);
+			return this.template.doSelect(this.query, this.domainType, getKeyspace(), getTableName(), this.returnType);
+		}
+
+		private @Nullable CqlIdentifier getKeyspace() {
+			return this.keyspace != null ? this.keyspace : this.template.getKeyspace(this.domainType);
 		}
 
 		private CqlIdentifier getTableName() {
