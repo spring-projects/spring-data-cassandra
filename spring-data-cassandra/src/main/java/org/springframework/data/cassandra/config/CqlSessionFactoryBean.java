@@ -179,8 +179,8 @@ public class CqlSessionFactoryBean
 	 * {@link CassandraMappingContext} inside {@code converter}.
 	 *
 	 * @param converter must not be {@literal null}.
-	 * @deprecated Use {@link CassandraSessionFactoryBean} with
-	 * {@link CassandraSessionFactoryBean#setConverter(CassandraConverter)} instead.
+	 * @deprecated Use {@link SessionFactoryFactoryBean} with
+	 *             {@link SessionFactoryFactoryBean#setConverter(CassandraConverter)} instead.
 	 */
 	@Deprecated
 	public void setConverter(CassandraConverter converter) {
