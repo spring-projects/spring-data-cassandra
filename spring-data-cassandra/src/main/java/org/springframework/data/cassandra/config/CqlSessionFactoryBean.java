@@ -24,7 +24,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.IntFunction;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -73,16 +72,15 @@ import com.datastax.oss.driver.api.core.CqlSessionBuilder;
 public class CqlSessionFactoryBean
 		implements FactoryBean<CqlSession>, InitializingBean, DisposableBean, PersistenceExceptionTranslator {
 
+	public static final String CASSANDRA_SYSTEM_SESSION = "system";
+	public static final String DEFAULT_CONTACT_POINTS = "localhost";
+	public static final int DEFAULT_PORT = 9042;
+
 	private static final boolean DEFAULT_CREATE_IF_NOT_EXISTS = false;
 	private static final boolean DEFAULT_DROP_TABLES = false;
 	private static final boolean DEFAULT_DROP_UNUSED_TABLES = false;
 
-	public static final int DEFAULT_PORT = 9042;
-
 	private static final CassandraExceptionTranslator EXCEPTION_TRANSLATOR = new CassandraExceptionTranslator();
-
-	public static final String CASSANDRA_SYSTEM_SESSION = "system";
-	public static final String DEFAULT_CONTACT_POINTS = "localhost";
 
 	private int port = DEFAULT_PORT;
 
@@ -118,15 +116,6 @@ public class CqlSessionFactoryBean
 	private @Nullable String localDatacenter;
 	private @Nullable String password;
 	private @Nullable String username;
-	private Supplier<CqlSessionBuilder> setCqlSessionBuilderSupplier;
-
-	public CqlSessionFactoryBean() {
-		this(CqlSession::builder);
-	}
-
-	CqlSessionFactoryBean(Supplier<CqlSessionBuilder> setCqlSessionBuilderSupplier) {
-		this.setCqlSessionBuilderSupplier = setCqlSessionBuilderSupplier;
-	}
 
 	/**
 	 * Null-safe operation to determine whether the Cassandra {@link CqlSession} is connected or not.
@@ -144,11 +133,15 @@ public class CqlSessionFactoryBean
 
 	/**
 	 * Set a comma-delimited string of the contact points (hosts) to connect to. Default is {@code localhost}; see
-	 * {@link #DEFAULT_CONTACT_POINTS}. It can be in the form 'host:port', or a simple 'host' to use the configured port.
+	 * {@link #DEFAULT_CONTACT_POINTS}. Contact points may use the form {@code host:port}, or a simple {@code host} to use
+	 * the configured {@link #setPort(int) port}.
 	 *
-	 * @param contactPoints the contact points used by the new cluster.
+	 * @param contactPoints the contact points used by the new cluster, must not be {@literal null}.
 	 */
 	public void setContactPoints(String contactPoints) {
+
+		Assert.hasText(contactPoints, "Contact points must not be empty");
+
 		this.contactPoints = port -> createInetSocketAddresses(contactPoints, port);
 	}
 
@@ -156,12 +149,17 @@ public class CqlSessionFactoryBean
 	 * Set a collection of the contact points (hosts) to connect to. Default is {@code localhost}; see
 	 * {@link #DEFAULT_CONTACT_POINTS}.
 	 *
-	 * @param contactPoints the contact points used by the new cluster.
+	 * @param contactPoints the contact points used by the new cluster, must not be {@literal null}. Use
+	 *          {@link InetSocketAddress#createUnresolved(String, int) unresolved addresses} to delegate hostname
+	 *          resolution to the driver.
+	 * @since 3.1
 	 */
 	public void setContactPoints(Collection<InetSocketAddress> contactPoints) {
+
+		Assert.notNull(contactPoints, "Contact points must not be null");
+
 		this.contactPoints = unusedPort -> contactPoints;
 	}
-
 
 	/**
 	 * Sets the name of the local datacenter.
@@ -204,8 +202,8 @@ public class CqlSessionFactoryBean
 	 * {@link CassandraMappingContext} inside {@code converter}.
 	 *
 	 * @param converter must not be {@literal null}.
-	 * @deprecated Use {@link CassandraSessionFactoryBean} with
-	 * {@link CassandraSessionFactoryBean#setConverter(CassandraConverter)} instead.
+	 * @deprecated Use {@link SessionFactoryFactoryBean} with
+	 *             {@link SessionFactoryFactoryBean#setConverter(CassandraConverter)} instead.
 	 */
 	@Deprecated
 	public void setConverter(CassandraConverter converter) {
@@ -464,10 +462,11 @@ public class CqlSessionFactoryBean
 	}
 
 	protected CqlSessionBuilder buildBuilder() {
+
 		Collection<InetSocketAddress> addresses = contactPoints.apply(this.port);
 		Assert.notEmpty(addresses, "At least one server is required");
 
-		CqlSessionBuilder sessionBuilder = setCqlSessionBuilderSupplier.get();
+		CqlSessionBuilder sessionBuilder = createBuilder();
 
 		addresses.forEach(sessionBuilder::addContactPoint);
 
@@ -479,48 +478,12 @@ public class CqlSessionFactoryBean
 			sessionBuilder.withLocalDatacenter(this.localDatacenter);
 		}
 
-		return this.sessionBuilderConfigurer != null
-			? this.sessionBuilderConfigurer.configure(sessionBuilder)
-			: sessionBuilder;
+		return this.sessionBuilderConfigurer != null ? this.sessionBuilderConfigurer.configure(sessionBuilder)
+				: sessionBuilder;
 	}
 
-	private Collection<InetSocketAddress> createInetSocketAddresses(String contactPoints, int port) {
-		return StringUtils.commaDelimitedListToSet(contactPoints).stream().map(candidate -> toHostAndPort(candidate, port))
-				.map(hostAndPort -> InetSocketAddress.createUnresolved(hostAndPort.host, hostAndPort.port))
-				.collect(Collectors.toList());
-	}
-
-	private static class HostAndPort {
-		private final String host;
-		private final int port;
-
-		private HostAndPort(String host, int port) {
-			this.host = host;
-			this.port = port;
-		}
-	}
-
-	private HostAndPort toHostAndPort(String candidate, int port) {
-		int i = candidate.lastIndexOf(':');
-		if (i == -1 || !isPort(() -> candidate.substring(i + 1))) {
-			return new HostAndPort(candidate, port);
-		} else {
-			String[] hostAndPort = candidate.split(":");
-			if (hostAndPort.length != 2) {
-				throw new IllegalArgumentException(
-						String.format("The provided contact point: %s has wrong format.", candidate));
-			}
-			return new HostAndPort(hostAndPort[0], Integer.parseInt(hostAndPort[1]));
-		}
-	}
-
-	private boolean isPort(Supplier<String> value) {
-		try {
-			int i = Integer.parseInt(value.get());
-			return i > 0 && i < 65535;
-		} catch (Exception ex) {
-			return false;
-		}
+	CqlSessionBuilder createBuilder() {
+		return CqlSession.builder();
 	}
 
 	/**
@@ -536,8 +499,8 @@ public class CqlSessionFactoryBean
 	}
 
 	/**
-	 * Build a {@link CqlSession Session} to the user-defined {@literal Keyspace} or the default {@literal Keyspace}
-	 * if the user did not specify a {@literal Keyspace} by {@link String name}.
+	 * Build a {@link CqlSession Session} to the user-defined {@literal Keyspace} or the default {@literal Keyspace} if
+	 * the user did not specify a {@literal Keyspace} by {@link String name}.
 	 *
 	 * @param sessionBuilder {@link CqlSessionBuilder} used to a build a Cassandra {@link CqlSession}.
 	 * @return the built {@link CqlSession} to the user-defined {@literal Keyspace}.
@@ -557,8 +520,8 @@ public class CqlSessionFactoryBean
 
 		generateSpecificationsFromFactoryBeanDeclarations();
 
-		List<KeyspaceActionSpecification> keyspaceStartupSpecifications =
-			new ArrayList<>(this.keyspaceCreations.size() + this.keyspaceAlterations.size());
+		List<KeyspaceActionSpecification> keyspaceStartupSpecifications = new ArrayList<>(
+				this.keyspaceCreations.size() + this.keyspaceAlterations.size());
 
 		keyspaceStartupSpecifications.addAll(this.keyspaceCreations);
 		keyspaceStartupSpecifications.addAll(this.keyspaceAlterations);
@@ -567,8 +530,8 @@ public class CqlSessionFactoryBean
 	}
 
 	/**
-	 * Evaluates the contents of all the {@link KeyspaceActionSpecificationFactoryBean}s
-	 * and generates the proper {@link KeyspaceActionSpecification}s from them.
+	 * Evaluates the contents of all the {@link KeyspaceActionSpecificationFactoryBean}s and generates the proper
+	 * {@link KeyspaceActionSpecification}s from them.
 	 */
 	private void generateSpecificationsFromFactoryBeanDeclarations() {
 
@@ -582,11 +545,9 @@ public class CqlSessionFactoryBean
 
 			if (specification instanceof AlterKeyspaceSpecification) {
 				this.keyspaceAlterations.add((AlterKeyspaceSpecification) specification);
-			}
-			else if (specification instanceof CreateKeyspaceSpecification) {
+			} else if (specification instanceof CreateKeyspaceSpecification) {
 				this.keyspaceCreations.add((CreateKeyspaceSpecification) specification);
-			}
-			else if (specification instanceof DropKeyspaceSpecification) {
+			} else if (specification instanceof DropKeyspaceSpecification) {
 				this.keyspaceDrops.add((DropKeyspaceSpecification) specification);
 			}
 		});
@@ -625,10 +586,10 @@ public class CqlSessionFactoryBean
 	 * Perform schema actions.
 	 *
 	 * @param drop {@literal true} to drop types/tables.
-	 * @param dropUnused {@literal true} to drop unused types/tables (i.e. types/tables not known to be used by
-	 * the {@link CassandraMappingContext}).
-	 * @param ifNotExists {@literal true} to perform fail-safe creations by adding {@code IF NOT EXISTS}
-	 * to each creation statement.
+	 * @param dropUnused {@literal true} to drop unused types/tables (i.e. types/tables not known to be used by the
+	 *          {@link CassandraMappingContext}).
+	 * @param ifNotExists {@literal true} to perform fail-safe creations by adding {@code IF NOT EXISTS} to each creation
+	 *          statement.
 	 */
 	protected void createTables(boolean drop, boolean dropUnused, boolean ifNotExists) {
 
@@ -640,13 +601,13 @@ public class CqlSessionFactoryBean
 	private void performSchemaActions(boolean drop, boolean dropUnused, boolean ifNotExists,
 			CassandraAdminOperations adminOperations) {
 
-		CassandraPersistentEntitySchemaCreator schemaCreator =
-				new CassandraPersistentEntitySchemaCreator(getMappingContext(), adminOperations);
+		CassandraPersistentEntitySchemaCreator schemaCreator = new CassandraPersistentEntitySchemaCreator(
+				getMappingContext(), adminOperations);
 
 		if (drop) {
 
-			CassandraPersistentEntitySchemaDropper schemaDropper =
-					new CassandraPersistentEntitySchemaDropper(getMappingContext(), adminOperations);
+			CassandraPersistentEntitySchemaDropper schemaDropper = new CassandraPersistentEntitySchemaDropper(
+					getMappingContext(), adminOperations);
 
 			schemaDropper.dropTables(dropUnused);
 			schemaDropper.dropUserTypes(dropUnused);
@@ -655,6 +616,34 @@ public class CqlSessionFactoryBean
 		schemaCreator.createUserTypes(ifNotExists);
 		schemaCreator.createTables(ifNotExists);
 		schemaCreator.createIndexes(ifNotExists);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.FactoryBean#getObject()
+	 */
+	@Override
+	public CqlSession getObject() {
+		return this.session;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
+	 */
+	@Override
+	public Class<? extends CqlSession> getObjectType() {
+		return CqlSession.class;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.dao.support.PersistenceExceptionTranslator#translateExceptionIfPossible(java.lang.RuntimeException)
+	 */
+	@Nullable
+	@Override
+	public DataAccessException translateExceptionIfPossible(RuntimeException e) {
+		return EXCEPTION_TRANSLATOR.translateExceptionIfPossible(e);
 	}
 
 	/*
@@ -686,37 +675,8 @@ public class CqlSessionFactoryBean
 		this.systemSession.close();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.FactoryBean#getObject()
-	 */
-	@Override
-	public CqlSession getObject() {
-		return this.session;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
-	 */
-	@Override
-	public Class<? extends CqlSession> getObjectType() {
-		return CqlSession.class;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.FactoryBean#isSingleton()
-	 */
-	@Override
-	public boolean isSingleton() {
-		return true;
-	}
-
 	/**
-	 * Executes the given, raw Cassandra CQL scripts.
-	 *
-	 * The {@link CqlSession} must be connected when this method is called.
+	 * Executes the given, raw Cassandra CQL scripts. The {@link CqlSession} must be connected when this method is called.
 	 *
 	 * @see com.datastax.oss.driver.api.core.CqlSession#execute(String)
 	 */
@@ -733,7 +693,8 @@ public class CqlSessionFactoryBean
 
 		if (!CollectionUtils.isEmpty(keyspaceActionSpecifications) || !CollectionUtils.isEmpty(keyspaceCqlScripts)) {
 
-			Stream<String> keyspaceActionSpecificationsStream = keyspaceActionSpecifications.stream().map(this::toCql);
+			Stream<String> keyspaceActionSpecificationsStream = keyspaceActionSpecifications.stream()
+					.map(CqlSessionFactoryBean::toCql);
 			Stream<String> keyspaceCqlScriptsStream = keyspaceCqlScripts.stream();
 			Stream<String> cql = Stream.concat(keyspaceActionSpecificationsStream, keyspaceCqlScriptsStream);
 
@@ -748,25 +709,110 @@ public class CqlSessionFactoryBean
 	 * @return a {@link String} containing the CQL for the given {@link KeyspaceActionSpecification}.
 	 * @see org.springframework.data.cassandra.core.cql.keyspace.KeyspaceActionSpecification
 	 */
-	private String toCql(KeyspaceActionSpecification specification) {
+	private static String toCql(KeyspaceActionSpecification specification) {
 
 		if (specification instanceof AlterKeyspaceSpecification) {
 			return new AlterKeyspaceCqlGenerator((AlterKeyspaceSpecification) specification).toCql();
-		}
-		else if (specification instanceof CreateKeyspaceSpecification) {
+		} else if (specification instanceof CreateKeyspaceSpecification) {
 			return new CreateKeyspaceCqlGenerator((CreateKeyspaceSpecification) specification).toCql();
-		}
-		else if (specification instanceof DropKeyspaceSpecification) {
+		} else if (specification instanceof DropKeyspaceSpecification) {
 			return new DropKeyspaceCqlGenerator((DropKeyspaceSpecification) specification).toCql();
 		}
 
-		throw new IllegalArgumentException(String.format("Unsupported specification type: %s",
-			ClassUtils.getQualifiedName(specification.getClass())));
+		throw new IllegalArgumentException(
+				String.format("Unsupported specification type: %s", ClassUtils.getQualifiedName(specification.getClass())));
 	}
 
-	@Nullable
-	@Override
-	public DataAccessException translateExceptionIfPossible(RuntimeException e) {
-		return EXCEPTION_TRANSLATOR.translateExceptionIfPossible(e);
+	private static Collection<InetSocketAddress> createInetSocketAddresses(String contactPoints, int defaultPort) {
+
+		return StringUtils.commaDelimitedListToSet(contactPoints) //
+				.stream() //
+				.map(contactPoint -> HostAndPort.createWithDefaultPort(contactPoint, defaultPort)) //
+				.map(hostAndPort -> InetSocketAddress.createUnresolved(hostAndPort.getHost(), hostAndPort.getPort())) //
+				.collect(Collectors.toList());
+	}
+
+	/**
+	 * Value object to encapsulate host and port.
+	 */
+	private static class HostAndPort {
+
+		private final String host;
+
+		private final int port;
+
+		private HostAndPort(String host, int port) {
+			this.host = host;
+			this.port = port;
+		}
+
+		/**
+		 * Create a {@link HostAndPort} from a contact point. Contact points may contain a port or can be specified
+		 * port-less. Contact points may be:
+		 * <ul>
+		 * <li>Plain IPv4 addresses ({@code 1.2.3.4})</li>
+		 * <li>Hostnames ({@code foo.bar.baz})</li>
+		 * <li>IPv6 without brackets {@code 1:2::3}</li>
+		 * <li>IPv6 with brackets {@code [1:2::3]}</li>
+		 * <li>IPv4 addresses with port ({@code 1.2.3.4:1234})</li>
+		 * <li>Hostnames with port ({@code foo.bar.baz:1234})</li>
+		 * <li>IPv6 with brackets and port {@code [1:2::3]:1234}</li>
+		 * </ul>
+		 *
+		 * @param contactPoint must not be {@literal null}.
+		 * @param defaultPort
+		 * @return the host and port representation.
+		 */
+		static HostAndPort createWithDefaultPort(String contactPoint, int defaultPort) {
+
+			int i = contactPoint.lastIndexOf(':');
+
+			if (i == -1 || !isValidPort(contactPoint.substring(i + 1))) {
+				return new HostAndPort(contactPoint, defaultPort);
+			}
+
+			String[] hostAndPort = contactPoint.split(":");
+			String host;
+			int port = defaultPort;
+
+			if (hostAndPort.length != 2) {
+
+				int bracketEnd = contactPoint.indexOf(']');
+				if (contactPoint.startsWith("[") && bracketEnd != -1) {
+
+					// IPv6 as resource identifier enclosed with brackets [ ]
+					host = contactPoint.substring(0, bracketEnd + 1);
+					String remainder = contactPoint.substring(bracketEnd + 1);
+
+					if (remainder.startsWith(":")) {
+						port = Integer.parseInt(remainder.substring(1));
+					}
+				} else {
+					// everything else
+					host = contactPoint;
+				}
+			} else {
+				host = hostAndPort[0];
+				port = Integer.parseInt(hostAndPort[1]);
+			}
+			return new HostAndPort(host, port);
+		}
+
+		private static boolean isValidPort(String value) {
+			try {
+				int i = Integer.parseInt(value);
+				return i > 0 && i < 65535;
+			} catch (NumberFormatException ex) {
+				return false;
+			}
+		}
+
+		public String getHost() {
+			return host;
+		}
+
+		public int getPort() {
+			return port;
+		}
 	}
 }

@@ -185,16 +185,14 @@ This section describes how to configure Spring Data Cassandra with XML.
 [[cassandra-connectors.xmlconfig.ext_properties]]
 ==== Externalizing Connection Properties
 
-To externalize connection properties, you should first create a properties file that contains the information needed to connect to Cassandra. `contactpoints` and `keyspace` are the equired fields.
-We added `port` for clarity.
+To externalize connection properties, you should first create a properties file that contains the information needed to connect to Cassandra. `contactpoints` and `keyspace` are the required fields.
 
 The following example shows our properties file, called `cassandra.properties`:
 
 ====
 [source]
 ----
-cassandra.contactpoints=10.1.55.80,10.1.55.81
-cassandra.port=9042
+cassandra.contactpoints=10.1.55.80:9042,10.1.55.81:9042
 cassandra.keyspace=showcase
 ----
 ====
@@ -256,8 +254,7 @@ in placeholders in the bean definitions -->
 <context:property-placeholder location="classpath:cassandra.properties" />
 
 <!-- REQUIRED: The Cassandra Session -->
-<cassandra:session contact-points="${cassandra.contactpoints}"
-port="${cassandra.port}" keyspace-name="${cassandra.keyspace}" />
+<cassandra:session contact-points="${cassandra.contactpoints}" keyspace-name="${cassandra.keyspace}" />
 
 <!-- REQUIRED: The default Cassandra mapping context used by `CassandraConverter` -->
 <cassandra:mapping>
