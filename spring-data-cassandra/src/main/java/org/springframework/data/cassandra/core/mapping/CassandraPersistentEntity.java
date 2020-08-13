@@ -78,12 +78,6 @@ public interface CassandraPersistentEntity<T> extends PersistentEntity<T, Cassan
 	 */
 	void setTableName(CqlIdentifier tableName);
 
-	/**
-	 * Sets the keyspace name.
-	 *
-	 * @param keyspace must not be {@literal null}.
-	 */
-	void setKeyspace(CqlIdentifier keyspace);
 
 	/**
 	 * @return {@literal true} if the type is a mapped tuple type.

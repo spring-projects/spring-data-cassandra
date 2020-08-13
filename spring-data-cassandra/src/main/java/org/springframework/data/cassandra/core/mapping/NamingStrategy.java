@@ -15,8 +15,10 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
+import java.util.Optional;
 import java.util.function.UnaryOperator;
 
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 import org.springframework.util.Assert;
 
 /**
@@ -51,6 +53,11 @@ public interface NamingStrategy {
 		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
 
 		return entity.getType().getSimpleName();
+	}
+
+	default Optional<CqlIdentifier> getKeyspace(CassandraPersistentEntity<?> entity) {
+		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
+		return Optional.empty();
 	}
 
 	/**

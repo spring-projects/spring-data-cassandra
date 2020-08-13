@@ -21,13 +21,11 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
-import org.junit.Before;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.datastax.oss.driver.api.core.CqlIdentifier;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
@@ -39,6 +37,7 @@ import org.springframework.data.cassandra.core.cql.util.StatementBuilder.Paramet
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.Column;
+import org.springframework.data.cassandra.core.mapping.NamingStrategy;
 import org.springframework.data.cassandra.core.query.Columns;
 import org.springframework.data.cassandra.core.query.Criteria;
 import org.springframework.data.cassandra.core.query.Query;
@@ -46,6 +45,7 @@ import org.springframework.data.cassandra.core.query.Update;
 import org.springframework.data.cassandra.domain.Group;
 import org.springframework.data.domain.Sort;
 
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.querybuilder.delete.Delete;
@@ -618,14 +618,17 @@ class StatementFactoryUnitTests {
 	@Test // DATACASS-751
 	void shouldConstructQueryWithKeyspace() {
 		CassandraMappingContext cassandraMappingContext = new CassandraMappingContext();
-		cassandraMappingContext.setKeyspace(CqlIdentifier.fromCql("ks1"));
+		cassandraMappingContext.setNamingStrategy(new NamingStrategy() {
+			@Override
+			public Optional<CqlIdentifier> getKeyspace(CassandraPersistentEntity<?> entity) {
+				return Optional.of(CqlIdentifier.fromCql("ks1"));
+			}
+		});
 
 		CassandraConverter converter = new MappingCassandraConverter();
 		UpdateMapper updateMapper = new UpdateMapper(converter);
 		StatementFactory statementFactory = new StatementFactory(updateMapper, updateMapper);
 
-
-		converter.getMappingContext().setKeyspace(CqlIdentifier.fromCql("ks1"));
 
 		StatementBuilder<Select> select = statementFactory.select(Query.empty(),
 				converter.getMappingContext().getRequiredPersistentEntity(Group.class));

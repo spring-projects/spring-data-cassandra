@@ -278,10 +278,6 @@ public class CassandraMappingContext
 		this.namingStrategy = namingStrategy;
 	}
 
-	public void setKeyspace(@Nullable CqlIdentifier keyspace){
-		this.keyspace = keyspace;
-	}
-
 	/**
 	 * Sets the {@link TupleTypeFactory}.
 	 *
@@ -387,7 +383,6 @@ public class CassandraMappingContext
 				: new BasicCassandraPersistentEntity<>(typeInformation, getVerifier());
 
 		entity.setNamingStrategy(this.namingStrategy);
-		entity.setKeyspace(this.keyspace);
 		Optional.ofNullable(this.applicationContext).ifPresent(entity::setApplicationContext);
 
 		return entity;

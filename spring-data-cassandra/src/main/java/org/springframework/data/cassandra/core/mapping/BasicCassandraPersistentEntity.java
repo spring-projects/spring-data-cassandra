@@ -58,7 +58,6 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	private NamingStrategy namingStrategy = NamingStrategy.INSTANCE;
 
 	private @Nullable StandardEvaluationContext spelContext;
-	private @Nullable CqlIdentifier keyspace;
 
 	/**
 	 * Create a new {@link BasicCassandraPersistentEntity} given {@link TypeInformation}.
@@ -202,11 +201,6 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 		this.tableName = tableName;
 	}
 
-	@Override
-	public void setKeyspace(@Nullable CqlIdentifier keyspace) {
-		this.keyspace = keyspace;
-	}
-
 	/**
 	 * Set the {@link NamingStrategy} to use.
 	 *
@@ -235,7 +229,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	@Nullable
 	@Override
 	public CqlIdentifier getKeyspace() {
-		return keyspace;
+		return namingStrategy.getKeyspace(this).orElse(null);
 	}
 
 	/**
