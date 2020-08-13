@@ -73,9 +73,7 @@ public class CassandraMappingContext
 	private Mapping mapping = new Mapping();
 
 	private NamingStrategy namingStrategy = NamingStrategy.INSTANCE;
-
-	private @Nullable CqlIdentifier keyspace;
-
+	
 	private @Deprecated @Nullable UserTypeResolver userTypeResolver;
 
 	private @Deprecated CodecRegistry codecRegistry = CodecRegistry.DEFAULT;

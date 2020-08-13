@@ -118,11 +118,7 @@ public interface ReactiveSelectOperation {
 		 * @see com.datastax.oss.driver.api.core.CqlIdentifier
 		 * @see SelectWithProjection
 		 */
-		default SelectWithProjection<T> inTable(@Nullable CqlIdentifier keyspace, CqlIdentifier table){
-			// todo can we leave this without default method?
-			return inTable(table);
-		}
-
+		SelectWithProjection<T> inTable(@Nullable CqlIdentifier keyspace, CqlIdentifier table);
 
 	}
 
