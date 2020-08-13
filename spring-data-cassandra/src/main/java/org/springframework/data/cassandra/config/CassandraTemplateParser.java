@@ -72,5 +72,7 @@ class CassandraTemplateParser extends AbstractSingleBeanDefinitionParser {
 		if (element.hasAttribute("cassandra-converter-ref")) {
 			addRequiredPropertyReference(builder, "converter", element, "cassandra-converter-ref");
 		}
+
+		builder.getRawBeanDefinition().setSource(element);
 	}
 }

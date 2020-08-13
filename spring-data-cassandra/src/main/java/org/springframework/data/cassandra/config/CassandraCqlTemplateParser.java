@@ -64,5 +64,7 @@ class CassandraCqlTemplateParser extends AbstractSingleBeanDefinitionParser {
 		} else {
 			addOptionalPropertyReference(builder, "session", element, "session-ref", DefaultCqlBeanNames.SESSION);
 		}
+
+		builder.getRawBeanDefinition().setSource(element);
 	}
 }

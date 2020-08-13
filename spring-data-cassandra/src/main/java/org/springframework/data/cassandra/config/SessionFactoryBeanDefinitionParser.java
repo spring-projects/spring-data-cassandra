@@ -64,5 +64,6 @@ class SessionFactoryBeanDefinitionParser extends AbstractSingleBeanDefinitionPar
 		addOptionalPropertyValue(builder, "schemaAction", element, "schema-action", SchemaAction.NONE.name());
 
 		InitializeKeyspaceBeanDefinitionParser.parseKeyspacePopulator(element, builder);
+		builder.getRawBeanDefinition().setSource(element);
 	}
 }

@@ -71,6 +71,7 @@ class CassandraMappingContextParser extends AbstractSingleBeanDefinitionParser {
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 		parseMapping(element, builder);
+		builder.getRawBeanDefinition().setSource(element);
 	}
 
 	private void parseMapping(Element element, BeanDefinitionBuilder builder) {

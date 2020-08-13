@@ -59,7 +59,7 @@ class InitializeKeyspaceBeanDefinitionParser extends AbstractBeanDefinitionParse
 
 		parseKeyspacePopulator(element, builder);
 
-		builder.getRawBeanDefinition().setSource(parserContext.extractSource(element));
+		builder.getRawBeanDefinition().setSource(element);
 
 		return builder.getBeanDefinition();
 	}
