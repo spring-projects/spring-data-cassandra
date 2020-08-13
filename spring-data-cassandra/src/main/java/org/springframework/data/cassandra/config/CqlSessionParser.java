@@ -45,7 +45,7 @@ class CqlSessionParser extends AbstractSingleBeanDefinitionParser {
 	 */
 	@Override
 	protected Class<?> getBeanClass(Element element) {
-		return CqlSessionFactoryBean.class;
+		return ExtendedCqlSessionFactoryBean.class;
 	}
 
 	/* (non-Javadoc)
@@ -67,8 +67,8 @@ class CqlSessionParser extends AbstractSingleBeanDefinitionParser {
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 
 		addOptionalPropertyValue(builder, "keyspaceName", element, "keyspace-name");
+		addOptionalPropertyValue(builder, "contactPointsAsString", element, "contact-points");
 		addOptionalPropertyValue(builder, "localDatacenter", element, "local-datacenter");
-		addOptionalPropertyValue(builder, "contactPoints", element, "contact-points");
 		addOptionalPropertyValue(builder, "password", element, "password");
 		addOptionalPropertyValue(builder, "port", element, "port");
 		addOptionalPropertyValue(builder, "username", element, "username");
@@ -80,6 +80,8 @@ class CqlSessionParser extends AbstractSingleBeanDefinitionParser {
 		addOptionalPropertyValue(builder, "schemaAction", element, "schema-action", SchemaAction.NONE.name());
 
 		parseChildElements(element, parserContext, builder);
+
+		builder.getRawBeanDefinition().setSource(element);
 	}
 
 	/**
@@ -157,4 +159,19 @@ class CqlSessionParser extends AbstractSingleBeanDefinitionParser {
 		return element.getTextContent();
 	}
 
+	/**
+	 * Wrapper to enable setting contact points as string to avoid over loaded setContactPoints reflection confusion that
+	 * depends on the reflection method load order.
+	 */
+	static class ExtendedCqlSessionFactoryBean extends CqlSessionFactoryBean {
+
+		/**
+		 * Bridge method for {@link #setContactPoints(String)}.
+		 *
+		 * @param contactPoints
+		 */
+		public void setContactPointsAsString(String contactPoints) {
+			setContactPoints(contactPoints);
+		}
+	}
 }
