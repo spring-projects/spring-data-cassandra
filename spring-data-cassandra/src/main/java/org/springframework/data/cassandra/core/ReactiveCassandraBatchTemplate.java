@@ -15,6 +15,9 @@
  */
 package org.springframework.data.cassandra.core;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -22,8 +25,6 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.UpdateMapper;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
@@ -38,12 +39,14 @@ import com.datastax.oss.driver.api.core.cql.BatchStatementBuilder;
 import com.datastax.oss.driver.api.core.cql.BatchType;
 import com.datastax.oss.driver.api.core.cql.BatchableStatement;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.cql.Statement;
 
 /**
  * Default implementation for {@link ReactiveCassandraBatchOperations}.
  *
  * @author Oleh Dokuka
  * @author Mark Paluch
+ * @author Tomasz Lelek
  * @since 2.1
  */
 class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations {
@@ -231,7 +234,7 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 					.getRequiredPersistentEntity(entity.getClass());
 
 			SimpleStatement insertQuery = getStatementFactory()
-					.insert(entity, options, persistentEntity, persistentEntity.getTableName()).build();
+					.insert(entity, options, persistentEntity, TableCoordinates.of(persistentEntity)).build();
 
 			insertQueries.add(insertQuery);
 		}
@@ -309,7 +312,7 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 			CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
 
 			SimpleStatement update = getStatementFactory()
-					.update(entity, options, persistentEntity, persistentEntity.getTableName()).build();
+					.update(entity, options, persistentEntity, TableCoordinates.of(persistentEntity)).build();
 
 			updateQueries.add(update);
 		}
@@ -387,7 +390,7 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 			CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
 
 			SimpleStatement delete = getStatementFactory()
-					.delete(entity, options, getConverter(), persistentEntity.getTableName()).build();
+					.delete(entity, options, getConverter(), TableCoordinates.of(persistentEntity)).build();
 
 			deleteQueries.add(delete);
 		}

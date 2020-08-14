@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.core;
 
+import java.util.Optional;
+
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.cassandra.core.cql.util.StatementBuilder;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
@@ -101,14 +103,13 @@ class EntityOperations {
 	}
 
 	/**
-	 * Returns the kespace to which the entity shall be persisted.
+	 * Returns the keyspace to which the entity shall be persisted.
 	 *
 	 * @param entityClass entity class, may be {@literal null}.
 	 * @return the keyspace to which the entity shall be persisted.
 	 * If null, then default session-level keyspace will be used.
 	 */
-	@Nullable
-	CqlIdentifier getKeyspaceName(Class<?> entityClass) {
+	Optional<CqlIdentifier> getKeyspaceName(Class<?> entityClass) {
 		return getRequiredPersistentEntity(entityClass).getKeyspaceName();
 	}
 

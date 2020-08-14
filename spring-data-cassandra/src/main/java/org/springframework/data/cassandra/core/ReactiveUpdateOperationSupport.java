@@ -17,6 +17,8 @@ package org.springframework.data.cassandra.core;
 
 import reactor.core.publisher.Mono;
 
+import java.util.Optional;
+
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.core.query.Update;
 import org.springframework.lang.Nullable;
@@ -28,6 +30,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * Implementation of {@link ReactiveUpdateOperation}.
  *
  * @author Mark Paluch
+ * @author Tomasz Lelek
  * @see org.springframework.data.cassandra.core.ReactiveUpdateOperation
  * @see org.springframework.data.cassandra.core.query.Query
  * @see org.springframework.data.cassandra.core.query.Update
@@ -49,7 +52,7 @@ class ReactiveUpdateOperationSupport implements ReactiveUpdateOperation {
 
 		Assert.notNull(domainType, "DomainType must not be null");
 
-		return new ReactiveUpdateSupport(this.template, domainType, Query.empty(), null);
+		return new ReactiveUpdateSupport(this.template, domainType, Query.empty(), null, null);
 	}
 
 	static class ReactiveUpdateSupport implements ReactiveUpdate, TerminatingUpdate {
@@ -60,25 +63,37 @@ class ReactiveUpdateOperationSupport implements ReactiveUpdateOperation {
 
 		private final Query query;
 
+		private final @Nullable CqlIdentifier keyspaceName;
 		private final @Nullable CqlIdentifier tableName;
 
 		public ReactiveUpdateSupport(ReactiveCassandraTemplate template, Class<?> domainType, Query query,
-				CqlIdentifier tableName) {
+				@Nullable CqlIdentifier keyspaceName, @Nullable CqlIdentifier tableName) {
 			this.template = template;
 			this.domainType = domainType;
 			this.query = query;
+			this.keyspaceName = keyspaceName;
 			this.tableName = tableName;
 		}
 
 		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ReactiveUpdateOperation.UpdateWithTable#inTable(org.springframework.data.cassandra.core.cql.CqlIdentifier)
+		 * @see org.springframework.data.cassandra.core.ReactiveUpdateOperation.UpdateWithTable#inTable(CqlIdentifier)
 		 */
 		@Override
 		public UpdateWithQuery inTable(CqlIdentifier tableName) {
 
 			Assert.notNull(tableName, "Table name must not be null");
 
-			return new ReactiveUpdateSupport(this.template, this.domainType, this.query, tableName);
+			return new ReactiveUpdateSupport(this.template, this.domainType, this.query, null, tableName);
+		}
+
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.ReactiveUpdateOperation.UpdateWithTable#inTable(com.datastax.oss.driver.api.core.CqlIdentifier, com.datastax.oss.driver.api.core.CqlIdentifier)
+		 */
+		@Override
+		public UpdateWithQuery inTable(@Nullable CqlIdentifier keyspaceName, CqlIdentifier tableName) {
+			Assert.notNull(tableName, "Table name must not be null");
+
+			return new ReactiveUpdateSupport(this.template, this.domainType, this.query, keyspaceName, tableName);
 		}
 
 		/* (non-Javadoc)
@@ -89,7 +104,7 @@ class ReactiveUpdateOperationSupport implements ReactiveUpdateOperation {
 
 			Assert.notNull(query, "Query must not be null");
 
-			return new ReactiveUpdateSupport(this.template, this.domainType, query, this.tableName);
+			return new ReactiveUpdateSupport(this.template, this.domainType, query, this.keyspaceName, this.tableName);
 		}
 
 		/* (non-Javadoc)
@@ -100,11 +115,20 @@ class ReactiveUpdateOperationSupport implements ReactiveUpdateOperation {
 
 			Assert.notNull(update, "Update must not be null");
 
-			return this.template.doUpdate(this.query, update, this.domainType, getTableName());
+			return this.template.doUpdate(this.query, update, this.domainType, getTableCoordinates());
 		}
 
 		private CqlIdentifier getTableName() {
 			return this.tableName != null ? this.tableName : this.template.getTableName(this.domainType);
+		}
+
+		private Optional<CqlIdentifier> getKeyspaceName() {
+			return this.keyspaceName != null ? Optional.of(this.keyspaceName)
+					: this.template.getKeyspaceName(this.domainType);
+		}
+
+		private TableCoordinates getTableCoordinates() {
+			return TableCoordinates.of(getKeyspaceName(), getTableName());
 		}
 	}
 }

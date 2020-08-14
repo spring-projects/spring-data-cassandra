@@ -16,6 +16,8 @@
 package org.springframework.data.cassandra.core;
 
 
+import java.util.Optional;
+
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -25,6 +27,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * Implementation of {@link ExecutableInsertOperation}.
  *
  * @author Mark Paluch
+ * @author Tomasz Lelek
  * @see org.springframework.data.cassandra.core.ExecutableInsertOperation
  * @since 2.1
  */
@@ -44,7 +47,7 @@ class ExecutableInsertOperationSupport implements ExecutableInsertOperation {
 
 		Assert.notNull(domainType, "DomainType must not be null");
 
-		return new ExecutableInsertSupport<>(this.template, domainType, InsertOptions.empty(), null);
+		return new ExecutableInsertSupport<>(this.template, domainType, InsertOptions.empty(), null, null);
 	}
 
 	static class ExecutableInsertSupport<T> implements ExecutableInsert<T> {
@@ -55,25 +58,37 @@ class ExecutableInsertOperationSupport implements ExecutableInsertOperation {
 
 		private final InsertOptions insertOptions;
 
-		@Nullable private final CqlIdentifier tableName;
+		private final @Nullable CqlIdentifier keyspaceName;
+		private final @Nullable CqlIdentifier tableName;
 
 		public ExecutableInsertSupport(CassandraTemplate template, Class<T> domainType, InsertOptions insertOptions,
-				CqlIdentifier tableName) {
+				@Nullable CqlIdentifier keyspaceName, @Nullable CqlIdentifier tableName) {
 			this.template = template;
 			this.domainType = domainType;
 			this.insertOptions = insertOptions;
+			this.keyspaceName = keyspaceName;
 			this.tableName = tableName;
 		}
 
 		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ExecutableInsertOperation.InsertWithTable#inTable(org.springframework.data.cassandra.core.cql.CqlIdentifier)
+		 * @see org.springframework.data.cassandra.core.ExecutableInsertOperation.InsertWithTable#inTable(com.datastax.oss.driver.api.core.CqlIdentifier)
 		 */
 		@Override
 		public InsertWithOptions<T> inTable(CqlIdentifier tableName) {
 
 			Assert.notNull(tableName, "Table name must not be null");
 
-			return new ExecutableInsertSupport<>(this.template, this.domainType, this.insertOptions, tableName);
+			return new ExecutableInsertSupport<>(this.template, this.domainType, this.insertOptions, null, tableName);
+		}
+
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.ExecutableInsertOperation.InsertWithTable#inTable(com.datastax.oss.driver.api.core.CqlIdentifier, com.datastax.oss.driver.api.core.CqlIdentifier)
+		 */
+		@Override
+		public InsertWithOptions<T> inTable(CqlIdentifier keyspaceName, CqlIdentifier tableName) {
+			Assert.notNull(tableName, "Table name must not be null");
+
+			return new ExecutableInsertSupport<>(this.template, this.domainType, this.insertOptions, keyspaceName, tableName);
 		}
 
 		/* (non-Javadoc)
@@ -84,7 +99,8 @@ class ExecutableInsertOperationSupport implements ExecutableInsertOperation {
 
 			Assert.notNull(insertOptions, "InsertOptions must not be null");
 
-			return new ExecutableInsertSupport<>(this.template, this.domainType, insertOptions, this.tableName);
+			return new ExecutableInsertSupport<>(this.template, this.domainType, insertOptions, this.keyspaceName,
+					this.tableName);
 		}
 
 		/* (non-Javadoc)
@@ -95,11 +111,20 @@ class ExecutableInsertOperationSupport implements ExecutableInsertOperation {
 
 			Assert.notNull(object, "Object must not be null");
 
-			return this.template.doInsert(object, this.insertOptions, getTableName());
+			return this.template.doInsert(object, this.insertOptions, getTableCoordinates());
 		}
 
 		private CqlIdentifier getTableName() {
 			return this.tableName != null ? this.tableName : this.template.getTableName(this.domainType);
+		}
+
+		private Optional<CqlIdentifier> getKeyspaceName() {
+			return this.keyspaceName != null ? Optional.of(this.keyspaceName)
+					: this.template.getKeyspaceName(this.domainType);
+		}
+
+		private TableCoordinates getTableCoordinates() {
+			return TableCoordinates.of(getKeyspaceName(), getTableName());
 		}
 	}
 }

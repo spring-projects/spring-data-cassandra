@@ -22,6 +22,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 
@@ -41,6 +42,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * Support methods to obtain {@link PersistentProperty} and {@link PersistentEntity} for embedded properties.
  *
  * @author Christoph Strobl
+ * @author Tomasz Lelek
  * @since 3.0
  * @see Embedded
  */
@@ -102,12 +104,12 @@ public class EmbeddedEntityOperations {
 		}
 
 		@Override
-		public CqlIdentifier getKeyspaceName() {
+		public Optional<CqlIdentifier> getKeyspaceName() {
 			return delegate.getKeyspaceName();
 		}
 
 		@Override
-		public void setKeyspaceName(@Nullable CqlIdentifier keyspaceName) {
+		public void setKeyspaceName(Optional<CqlIdentifier> keyspaceName) {
 			delegate.setKeyspaceName(keyspaceName);
 		}
 

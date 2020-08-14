@@ -39,6 +39,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  *
  * @author Mark Paluch
  * @author John Blum
+ * @author Tomasz Lelek
  * @since 2.1
  */
 public interface ReactiveInsertOperation {
@@ -89,6 +90,24 @@ public interface ReactiveInsertOperation {
 		 * @see InsertWithOptions
 		 */
 		InsertWithOptions<T> inTable(CqlIdentifier table);
+
+
+		/**
+		 * Explicitly set the {@link CqlIdentifier keyspace} and the {@link CqlIdentifier name} of the table on which to
+		 * perform the insert.
+		 * <p>
+		 * Skip this step to use the default table derived from the {@link Class domain type}. Skip this step to use the
+		 * default session-level keyspace.
+		 *
+		 * @param table {@link CqlIdentifier name} of the table; must not be {@literal null}.
+		 * @param keyspace {@link CqlIdentifier keyspace} of the table; if set to {@literal null}, the default session-level
+		 *          keyspace will be used.
+		 * @return new instance of {@link InsertWithOptions}.
+		 * @throws IllegalArgumentException if {@link CqlIdentifier table} is {@literal null}.
+		 * @see com.datastax.oss.driver.api.core.CqlIdentifier
+		 * @see InsertWithOptions
+		 */
+		InsertWithOptions<T> inTable(CqlIdentifier keyspace, CqlIdentifier table);
 
 	}
 

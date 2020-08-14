@@ -43,6 +43,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  *
  * @author Mark Paluch
  * @author John Blum
+ * @author Tomasz Lelek
  * @see org.springframework.data.cassandra.core.ExecutableUpdateOperation
  * @see org.springframework.data.cassandra.core.query.Query
  * @see org.springframework.data.cassandra.core.query.Update
@@ -94,6 +95,23 @@ public interface ExecutableUpdateOperation {
 		 * @see UpdateWithQuery
 		 */
 		UpdateWithQuery inTable(CqlIdentifier table);
+
+		/**
+		 * Explicitly set the {@link CqlIdentifier keyspace} and the {@link CqlIdentifier name} of the table on which to
+		 * execute the update.
+		 * <p>
+		 * Skip this step to use the default table derived from the {@link Class domain type}. Skip this step to use the
+		 * default session-level keyspace.
+		 *
+		 * @param table {@link CqlIdentifier name} of the table; must not be {@literal null}.
+		 * @param keyspace {@link CqlIdentifier keyspace} of the table; if set to {@literal null}, the default session-level
+		 *          keyspace will be used.
+		 * @return new instance of {@link UpdateWithQuery}.
+		 * @throws IllegalArgumentException if {@link CqlIdentifier table} is {@literal null}.
+		 * @see com.datastax.oss.driver.api.core.CqlIdentifier
+		 * @see UpdateWithQuery
+		 */
+		UpdateWithQuery inTable(CqlIdentifier keyspace, CqlIdentifier table);
 
 	}
 

@@ -39,6 +39,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * </pre>
  *
  * @author Mark Paluch
+ * @author Tomasz Lelek
  * @since 2.1
  */
 public interface ExecutableDeleteOperation {
@@ -88,6 +89,23 @@ public interface ExecutableDeleteOperation {
 		 * @see DeleteWithQuery
 		 */
 		DeleteWithQuery inTable(CqlIdentifier table);
+
+		/**
+		 * Explicitly set the {@link CqlIdentifier keyspace} and the {@link CqlIdentifier name} of the table on which to
+		 * execute the delete.
+		 * <p>
+		 * Skip this step to use the default table derived from the {@link Class domain type}. Skip this step to use the
+		 * default session-level keyspace.
+		 *
+		 * @param table {@link CqlIdentifier name} of the table; must not be {@literal null}.
+		 * @param keyspace {@link CqlIdentifier keyspace} of the table; if set to {@literal null}, the default session-level
+		 *          keyspace will be used.
+		 * @return new instance of {@link DeleteWithQuery}.
+		 * @throws IllegalArgumentException if {@link CqlIdentifier table} is {@literal null}.
+		 * @see com.datastax.oss.driver.api.core.CqlIdentifier
+		 * @see DeleteWithQuery
+		 */
+		DeleteWithQuery inTable(CqlIdentifier keyspace, CqlIdentifier table);
 
 	}
 

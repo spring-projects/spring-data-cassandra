@@ -18,6 +18,8 @@ package org.springframework.data.cassandra.core;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Optional;
+
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.lang.Nullable;
@@ -63,21 +65,21 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 
 		private final Query query;
 
-		private final @Nullable CqlIdentifier keyspace;
+		private final @Nullable CqlIdentifier keyspaceName;
 		private final @Nullable CqlIdentifier tableName;
 
 		public ReactiveSelectSupport(ReactiveCassandraTemplate template, Class<?> domainType, Class<T> returnType,
-				Query query, @Nullable CqlIdentifier keyspace, @Nullable CqlIdentifier tableName) {
+				Query query, @Nullable CqlIdentifier keyspaceName, @Nullable CqlIdentifier tableName) {
 			this.template = template;
 			this.domainType = domainType;
 			this.returnType = returnType;
 			this.query = query;
 			this.tableName = tableName;
-			this.keyspace = keyspace;
+			this.keyspaceName = keyspaceName;
 		}
 
 		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ReactiveSelectOperation.SelectWithTable#inTable(org.springframework.data.cassandra.core.cql.CqlIdentifier)
+		 * @see org.springframework.data.cassandra.core.ReactiveSelectOperation.SelectWithTable#inTable(com.datastax.oss.driver.api.core.CqlIdentifier)
 		 */
 		@Override
 		public SelectWithProjection<T> inTable(CqlIdentifier tableName) {
@@ -87,12 +89,15 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 			return new ReactiveSelectSupport<>(this.template, this.domainType, this.returnType, this.query, null, tableName);
 		}
 
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.ReactiveSelectOperation.SelectWithTable#inTable(com.datastax.oss.driver.api.core.CqlIdentifier, com.datastax.oss.driver.api.core.CqlIdentifier)
+		 */
 		@Override
-		public SelectWithProjection<T> inTable(@Nullable CqlIdentifier tableName, CqlIdentifier keyspace) {
+		public SelectWithProjection<T> inTable(@Nullable CqlIdentifier keyspaceName, CqlIdentifier tableName) {
 
 			Assert.notNull(tableName, "Table name must not be null");
 
-			return new ReactiveSelectSupport<>(this.template, this.domainType, this.returnType, this.query, keyspace,
+			return new ReactiveSelectSupport<>(this.template, this.domainType, this.returnType, this.query, keyspaceName,
 					tableName);
 		}
 
@@ -104,7 +109,7 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 
 			Assert.notNull(returnType, "ReturnType must not be null");
 
-			return new ReactiveSelectSupport<>(this.template, this.domainType, returnType, this.query, this.keyspace,
+			return new ReactiveSelectSupport<>(this.template, this.domainType, returnType, this.query, this.keyspaceName,
 					this.tableName);
 		}
 
@@ -116,7 +121,7 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 
 			Assert.notNull(query, "Query must not be null");
 
-			return new ReactiveSelectSupport<>(this.template, this.domainType, this.returnType, query, this.keyspace,
+			return new ReactiveSelectSupport<>(this.template, this.domainType, this.returnType, query, this.keyspaceName,
 					this.tableName);
 		}
 
@@ -125,7 +130,7 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 		 */
 		@Override
 		public Mono<Long> count() {
-			return this.template.doCount(this.query, this.domainType, getKeyspaceName(), getTableName());
+			return this.template.doCount(this.query, this.domainType, getTableCoordinates());
 		}
 
 		/* (non-Javadoc)
@@ -133,7 +138,7 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 		 */
 		@Override
 		public Mono<Boolean> exists() {
-			return this.template.doExists(this.query, this.domainType, getKeyspaceName(), getTableName());
+			return this.template.doExists(this.query, this.domainType, getTableCoordinates());
 		}
 
 		/* (non-Javadoc)
@@ -142,7 +147,7 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 		@Override
 		public Mono<T> first() {
 			return this.template
-					.doSelect(this.query.limit(1), this.domainType, getKeyspaceName(), getTableName(), this.returnType).next();
+					.doSelect(this.query.limit(1), this.domainType, getTableCoordinates(), this.returnType).next();
 		}
 
 		/* (non-Javadoc)
@@ -151,7 +156,7 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 		@Override
 		public Mono<T> one() {
 
-			Flux<T> result = this.template.doSelect(this.query.limit(2), this.domainType, getKeyspaceName(), getTableName(),
+			Flux<T> result = this.template.doSelect(this.query.limit(2), this.domainType, getTableCoordinates(),
 					this.returnType);
 
 			return result.collectList() //
@@ -175,15 +180,20 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 		 */
 		@Override
 		public Flux<T> all() {
-			return this.template.doSelect(this.query, this.domainType, getKeyspaceName(), getTableName(), this.returnType);
+			return this.template.doSelect(this.query, this.domainType, getTableCoordinates(), this.returnType);
 		}
 
-		private @Nullable CqlIdentifier getKeyspaceName() {
-			return this.keyspace != null ? this.keyspace : this.template.getKeyspaceName(this.domainType);
+		private Optional<CqlIdentifier> getKeyspaceName() {
+			return this.keyspaceName != null ? Optional.of(this.keyspaceName)
+					: this.template.getKeyspaceName(this.domainType);
 		}
 
 		private CqlIdentifier getTableName() {
 			return this.tableName != null ? this.tableName : this.template.getTableName(this.domainType);
+		}
+
+		private TableCoordinates getTableCoordinates() {
+			return TableCoordinates.of(getKeyspaceName(), getTableName());
 		}
 	}
 }

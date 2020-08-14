@@ -31,6 +31,7 @@ import com.datastax.oss.driver.api.core.cql.BatchStatement;
 import com.datastax.oss.driver.api.core.cql.BatchStatementBuilder;
 import com.datastax.oss.driver.api.core.cql.BatchType;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.cql.Statement;
 
 /**
  * Default implementation for {@link CassandraBatchOperations}.
@@ -38,6 +39,7 @@ import com.datastax.oss.driver.api.core.cql.SimpleStatement;
  * @author Mark Paluch
  * @author John Blum
  * @author Anup Sabbi
+ * @author Tomasz Lelek
  * @since 1.5
  */
 class CassandraBatchTemplate implements CassandraBatchOperations {
@@ -168,7 +170,7 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 					.getRequiredPersistentEntity(entity.getClass());
 
 			SimpleStatement insertQuery = getStatementFactory()
-					.insert(entity, options, persistentEntity, persistentEntity.getTableName()).build();
+					.insert(entity, options, persistentEntity, TableCoordinates.of(persistentEntity)).build();
 
 			this.batch.addStatement(insertQuery);
 		}
@@ -213,7 +215,7 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 			CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
 
 			SimpleStatement update = getStatementFactory()
-					.update(entity, options, persistentEntity, persistentEntity.getTableName()).build();
+					.update(entity, options, persistentEntity, TableCoordinates.of(persistentEntity)).build();
 
 			this.batch.addStatement(update);
 		}
@@ -258,7 +260,7 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 			CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
 
 			SimpleStatement delete = getStatementFactory()
-					.delete(entity, options, this.getConverter(), persistentEntity.getTableName()).build();
+					.delete(entity, options, this.getConverter(), TableCoordinates.of(persistentEntity)).build();
 
 			this.batch.addStatement(delete);
 		}

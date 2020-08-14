@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.core;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
@@ -64,16 +65,16 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 
 		private final Query query;
 
-		private final @Nullable CqlIdentifier keyspace;
+		private final @Nullable CqlIdentifier keyspaceName;
 		private final @Nullable CqlIdentifier tableName;
 
 		public ExecutableSelectSupport(CassandraTemplate template, Class<?> domainType, Class<T> returnType, Query query,
-				@Nullable CqlIdentifier keyspace, @Nullable CqlIdentifier tableName) {
+				@Nullable CqlIdentifier keyspaceName, @Nullable CqlIdentifier tableName) {
 			this.template = template;
 			this.domainType = domainType;
 			this.returnType = returnType;
 			this.query = query;
-			this.keyspace = keyspace;
+			this.keyspaceName = keyspaceName;
 			this.tableName = tableName;
 		}
 
@@ -93,11 +94,11 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 		 * @see org.springframework.data.cassandra.core.ExecutableSelectOperation.SelectWithTable#inTable(CqlIdentifier, CqlIdentifier)
 		 */
 		@Override
-		public SelectWithProjection<T> inTable(@Nullable CqlIdentifier keyspace, CqlIdentifier tableName) {
+		public SelectWithProjection<T> inTable(@Nullable CqlIdentifier keyspaceName, CqlIdentifier tableName) {
 
 			Assert.notNull(tableName, "Table name must not be null");
 
-			return new ExecutableSelectSupport<>(this.template, this.domainType, this.returnType, this.query, keyspace,
+			return new ExecutableSelectSupport<>(this.template, this.domainType, this.returnType, this.query, keyspaceName,
 					tableName);
 		}
 
@@ -109,7 +110,7 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 
 			Assert.notNull(returnType, "ReturnType must not be null");
 
-			return new ExecutableSelectSupport<>(this.template, this.domainType, returnType, this.query, this.keyspace,
+			return new ExecutableSelectSupport<>(this.template, this.domainType, returnType, this.query, this.keyspaceName,
 					this.tableName);
 		}
 
@@ -121,7 +122,7 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 
 			Assert.notNull(query, "Query must not be null");
 
-			return new ExecutableSelectSupport<>(this.template, this.domainType, this.returnType, query, this.keyspace,
+			return new ExecutableSelectSupport<>(this.template, this.domainType, this.returnType, query, this.keyspaceName,
 					this.tableName);
 		}
 
@@ -130,7 +131,7 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 		 */
 		@Override
 		public long count() {
-			return this.template.doCount(this.query, this.domainType, getKeyspaceName(), getTableName());
+			return this.template.doCount(this.query, this.domainType, getTableCoordinates());
 		}
 
 		/* (non-Javadoc)
@@ -138,7 +139,7 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 		 */
 		@Override
 		public boolean exists() {
-			return this.template.doExists(this.query, this.domainType, getKeyspaceName(), getTableName());
+			return this.template.doExists(this.query, this.domainType, getTableCoordinates());
 		}
 
 		/* (non-Javadoc)
@@ -147,7 +148,7 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 		@Override
 		public T firstValue() {
 
-			List<T> result = this.template.doSelect(this.query.limit(1), this.domainType, getKeyspaceName(), getTableName(),
+			List<T> result = this.template.doSelect(this.query.limit(1), this.domainType, getTableCoordinates(),
 					this.returnType);
 
 			return ObjectUtils.isEmpty(result) ? null : result.iterator().next();
@@ -159,7 +160,7 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 		@Override
 		public T oneValue() {
 
-			List<T> result = this.template.doSelect(this.query.limit(2), this.domainType, getKeyspaceName(), getTableName(),
+			List<T> result = this.template.doSelect(this.query.limit(2), this.domainType, getTableCoordinates(),
 					this.returnType);
 
 			if (ObjectUtils.isEmpty(result)) {
@@ -179,7 +180,7 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 		 */
 		@Override
 		public List<T> all() {
-			return this.template.doSelect(this.query, this.domainType, getKeyspaceName(), getTableName(), this.returnType);
+			return this.template.doSelect(this.query, this.domainType, getTableCoordinates(), this.returnType);
 		}
 
 		/* (non-Javadoc)
@@ -187,15 +188,21 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 		 */
 		@Override
 		public Stream<T> stream() {
-			return this.template.doStream(this.query, this.domainType, getKeyspaceName(), getTableName(), this.returnType);
+			return this.template.doStream(this.query, this.domainType, getTableCoordinates(), this.returnType);
 		}
 
 		private CqlIdentifier getTableName() {
 			return this.tableName != null ? this.tableName : this.template.getTableName(this.domainType);
 		}
 
-		private @Nullable CqlIdentifier getKeyspaceName() {
-			return this.keyspace != null ? this.keyspace : this.template.getKeyspaceName(this.domainType);
+		private Optional<CqlIdentifier> getKeyspaceName() {
+			return this.keyspaceName != null ? Optional.of(this.keyspaceName) : this.template.getKeyspaceName(this.domainType);
 		}
+
+
+		private TableCoordinates getTableCoordinates(){
+			return TableCoordinates.of(getKeyspaceName(), getTableName());
+		}
+
 	}
 }
