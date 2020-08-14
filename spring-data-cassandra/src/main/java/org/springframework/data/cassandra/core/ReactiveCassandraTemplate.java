@@ -759,14 +759,14 @@ public class ReactiveCassandraTemplate
 
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		CqlIdentifier tableName = getTableName(entityClass);
-		Truncate truncate = QueryBuilder.truncate(tableName);
+		TableCoordinates tableCoordinates = getTableCoordinates(entityClass);
+		Truncate truncate = QueryBuilder.truncate(tableCoordinates.getKeyspaceName().orElse(null), tableCoordinates.getTableName());
 		SimpleStatement statement = truncate.build();
 
 		Mono<Boolean> result = getReactiveCqlOperations().execute(statement)
-				.doOnSubscribe(it -> maybeEmitEvent(new BeforeDeleteEvent<>(statement, entityClass, tableName)));
+				.doOnSubscribe(it -> maybeEmitEvent(new BeforeDeleteEvent<>(statement, entityClass, tableCoordinates.getTableName())));
 
-		return result.doOnNext(it -> maybeEmitEvent(new AfterDeleteEvent<>(statement, entityClass, tableName))).then();
+		return result.doOnNext(it -> maybeEmitEvent(new AfterDeleteEvent<>(statement, entityClass, tableCoordinates.getTableName()))).then();
 	}
 
 	// -------------------------------------------------------------------------

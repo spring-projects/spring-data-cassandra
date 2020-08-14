@@ -771,7 +771,8 @@ public class AsyncCassandraTemplate
 		Assert.notNull(entityClass, "Entity type must not be null");
 
 		TableCoordinates tableCoordinates = constructTableCoordinates(entityClass);
-		Truncate truncate = QueryBuilder.truncate(tableCoordinates.getTableName());
+		Truncate truncate = QueryBuilder.truncate(tableCoordinates.getKeyspaceName().orElse(null),
+				tableCoordinates.getTableName());
 		SimpleStatement statement = truncate.build();
 
 		maybeEmitEvent(new BeforeDeleteEvent<>(statement, entityClass, tableCoordinates.getTableName()));
