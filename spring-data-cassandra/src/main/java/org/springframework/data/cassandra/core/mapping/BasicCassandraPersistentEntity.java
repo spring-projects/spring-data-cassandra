@@ -60,7 +60,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 
 	private @Nullable StandardEvaluationContext spelContext;
 
-	@SuppressWarnings("OptionalUsedAsFieldOrParameterType") private Optional<CqlIdentifier> keyspaceName;
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType") private Optional<CqlIdentifier> keyspaceName = Optional.empty();
 
 	/**
 	 * Create a new {@link BasicCassandraPersistentEntity} given {@link TypeInformation}.
