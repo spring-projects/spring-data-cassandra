@@ -625,7 +625,7 @@ class StatementFactoryUnitTests {
 			}
 		});
 
-		CassandraConverter converter = new MappingCassandraConverter();
+		CassandraConverter converter = new MappingCassandraConverter(cassandraMappingContext);
 		UpdateMapper updateMapper = new UpdateMapper(converter);
 		StatementFactory statementFactory = new StatementFactory(updateMapper, updateMapper);
 

@@ -59,6 +59,8 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 
 	private @Nullable StandardEvaluationContext spelContext;
 
+	private @Nullable CqlIdentifier keyspaceName;
+
 	/**
 	 * Create a new {@link BasicCassandraPersistentEntity} given {@link TypeInformation}.
 	 *
@@ -212,6 +214,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 		Assert.notNull(namingStrategy, "NamingStrategy must not be null");
 
 		this.namingStrategy = namingStrategy;
+		setKeyspaceName(namingStrategy.getKeyspaceName(this).orElse(null));
 	}
 
 	NamingStrategy getNamingStrategy() {
@@ -229,7 +232,12 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	@Nullable
 	@Override
 	public CqlIdentifier getKeyspaceName() {
-		return namingStrategy.getKeyspaceName(this).orElse(null);
+		return keyspaceName;
+	}
+
+	@Override
+	public void setKeyspaceName(@Nullable CqlIdentifier keyspaceName) {
+		this.keyspaceName = keyspaceName;
 	}
 
 	/**

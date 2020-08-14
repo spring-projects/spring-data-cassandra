@@ -62,6 +62,13 @@ public interface CassandraPersistentEntity<T> extends PersistentEntity<T, Cassan
 	/**
 	 * Sets the CQL table name.
 	 *
+	 * @param keyspaceName if set to {@literal null}, then session level keyspace will be used.
+	 */
+	void setKeyspaceName(@Nullable CqlIdentifier keyspaceName);
+
+	/**
+	 * Sets the CQL table name.
+	 *
 	 * @param tableName must not be {@literal null}.
 	 * @deprecated since 3.0, use {@link #setTableName(CqlIdentifier)} instead.
 	 */

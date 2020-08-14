@@ -175,7 +175,7 @@ class BasicCassandraPersistentEntityUnitTests {
 	}
 
 
-	@Test //DATACASS-751
+	@Test // DATACASS-751
 	void shouldSetKeyspace(){
 		BasicCassandraPersistentEntity<Notification> entity = new BasicCassandraPersistentEntity<>(
 				ClassTypeInformation.from(Notification.class));
