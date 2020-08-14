@@ -55,7 +55,7 @@ public interface NamingStrategy {
 		return entity.getType().getSimpleName();
 	}
 
-	default Optional<CqlIdentifier> getKeyspace(CassandraPersistentEntity<?> entity) {
+	default Optional<CqlIdentifier> getKeyspaceName(CassandraPersistentEntity<?> entity) {
 		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
 		return Optional.empty();
 	}

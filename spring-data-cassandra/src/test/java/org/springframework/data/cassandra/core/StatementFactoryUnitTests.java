@@ -620,7 +620,7 @@ class StatementFactoryUnitTests {
 		CassandraMappingContext cassandraMappingContext = new CassandraMappingContext();
 		cassandraMappingContext.setNamingStrategy(new NamingStrategy() {
 			@Override
-			public Optional<CqlIdentifier> getKeyspace(CassandraPersistentEntity<?> entity) {
+			public Optional<CqlIdentifier> getKeyspaceName(CassandraPersistentEntity<?> entity) {
 				return Optional.of(CqlIdentifier.fromCql("ks1"));
 			}
 		});

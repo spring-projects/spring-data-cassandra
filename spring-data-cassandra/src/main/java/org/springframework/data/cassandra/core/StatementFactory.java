@@ -181,7 +181,7 @@ public class StatementFactory {
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(persistentEntity, "CassandraPersistentEntity must not be null");
 
-		return count(query, persistentEntity, persistentEntity.getKeyspace(), persistentEntity.getTableName());
+		return count(query, persistentEntity, persistentEntity.getKeyspaceName(), persistentEntity.getTableName());
 	}
 
 	/**
@@ -236,7 +236,7 @@ public class StatementFactory {
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(persistentEntity, "CassandraPersistentEntity must not be null");
 
-		return select(query, persistentEntity, persistentEntity.getKeyspace(), persistentEntity.getTableName());
+		return select(query, persistentEntity, persistentEntity.getKeyspaceName(), persistentEntity.getTableName());
 	}
 
 	/**

@@ -102,8 +102,8 @@ public class EmbeddedEntityOperations {
 		}
 
 		@Override
-		public CqlIdentifier getKeyspace() {
-			return delegate.getKeyspace();
+		public CqlIdentifier getKeyspaceName() {
+			return delegate.getKeyspaceName();
 		}
 
 		@Override

@@ -228,8 +228,8 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 
 	@Nullable
 	@Override
-	public CqlIdentifier getKeyspace() {
-		return namingStrategy.getKeyspace(this).orElse(null);
+	public CqlIdentifier getKeyspaceName() {
+		return namingStrategy.getKeyspaceName(this).orElse(null);
 	}
 
 	/**

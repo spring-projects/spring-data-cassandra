@@ -56,7 +56,8 @@ public interface CassandraPersistentEntity<T> extends PersistentEntity<T, Cassan
 	/**
 	 * Returns the keyspace to which the entity shall be persisted.
 	 */
-	@Nullable CqlIdentifier getKeyspace();
+	@Nullable
+	CqlIdentifier getKeyspaceName();
 
 	/**
 	 * Sets the CQL table name.

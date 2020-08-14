@@ -130,7 +130,7 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 		 */
 		@Override
 		public long count() {
-			return this.template.doCount(this.query, this.domainType, getKeyspace(), getTableName());
+			return this.template.doCount(this.query, this.domainType, getKeyspaceName(), getTableName());
 		}
 
 		/* (non-Javadoc)
@@ -138,7 +138,7 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 		 */
 		@Override
 		public boolean exists() {
-			return this.template.doExists(this.query, this.domainType, getKeyspace(), getTableName());
+			return this.template.doExists(this.query, this.domainType, getKeyspaceName(), getTableName());
 		}
 
 		/* (non-Javadoc)
@@ -147,7 +147,7 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 		@Override
 		public T firstValue() {
 
-			List<T> result = this.template.doSelect(this.query.limit(1), this.domainType, getKeyspace(), getTableName(),
+			List<T> result = this.template.doSelect(this.query.limit(1), this.domainType, getKeyspaceName(), getTableName(),
 					this.returnType);
 
 			return ObjectUtils.isEmpty(result) ? null : result.iterator().next();
@@ -159,7 +159,7 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 		@Override
 		public T oneValue() {
 
-			List<T> result = this.template.doSelect(this.query.limit(2), this.domainType, getKeyspace(), getTableName(),
+			List<T> result = this.template.doSelect(this.query.limit(2), this.domainType, getKeyspaceName(), getTableName(),
 					this.returnType);
 
 			if (ObjectUtils.isEmpty(result)) {
@@ -179,7 +179,7 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 		 */
 		@Override
 		public List<T> all() {
-			return this.template.doSelect(this.query, this.domainType, getKeyspace(), getTableName(), this.returnType);
+			return this.template.doSelect(this.query, this.domainType, getKeyspaceName(), getTableName(), this.returnType);
 		}
 
 		/* (non-Javadoc)
@@ -187,15 +187,15 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 		 */
 		@Override
 		public Stream<T> stream() {
-			return this.template.doStream(this.query, this.domainType, getKeyspace(), getTableName(), this.returnType);
+			return this.template.doStream(this.query, this.domainType, getKeyspaceName(), getTableName(), this.returnType);
 		}
 
 		private CqlIdentifier getTableName() {
 			return this.tableName != null ? this.tableName : this.template.getTableName(this.domainType);
 		}
 
-		private @Nullable CqlIdentifier getKeyspace() {
-			return this.keyspace != null ? this.keyspace : this.template.getKeyspace(this.domainType);
+		private @Nullable CqlIdentifier getKeyspaceName() {
+			return this.keyspace != null ? this.keyspace : this.template.getKeyspaceName(this.domainType);
 		}
 	}
 }

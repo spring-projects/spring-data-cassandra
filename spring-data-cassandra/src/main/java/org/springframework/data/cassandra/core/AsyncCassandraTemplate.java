@@ -271,8 +271,8 @@ public class AsyncCassandraTemplate
 		return getEntityOperations().getTableName(entityClass);
 	}
 
-	private CqlIdentifier getKeyspace(Class<?> entityClass) {
-		return getEntityOperations().getKeyspace(entityClass);
+	private @Nullable CqlIdentifier getKeyspaceName(Class<?> entityClass) {
+		return getEntityOperations().getKeyspaceName(entityClass);
 	}
 
 	// -------------------------------------------------------------------------
@@ -488,7 +488,7 @@ public class AsyncCassandraTemplate
 
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return doCount(Query.empty(), entityClass, getKeyspace(entityClass), getTableName(entityClass));
+		return doCount(Query.empty(), entityClass, getKeyspaceName(entityClass), getTableName(entityClass));
 	}
 
 	/* (non-Javadoc)
@@ -500,7 +500,7 @@ public class AsyncCassandraTemplate
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return doCount(query, entityClass, getKeyspace(entityClass), getTableName(entityClass));
+		return doCount(query, entityClass, getKeyspaceName(entityClass), getTableName(entityClass));
 	}
 
 	ListenableFuture<Long> doCount(Query query, Class<?> entityClass, @Nullable CqlIdentifier keyspace,
@@ -528,7 +528,7 @@ public class AsyncCassandraTemplate
 		CassandraPersistentEntity<?> entity = getRequiredPersistentEntity(entityClass);
 
 		StatementBuilder<com.datastax.oss.driver.api.querybuilder.select.Select> select = getStatementFactory()
-				.selectOneById(id, entity, entity.getKeyspace(), entity.getTableName());
+				.selectOneById(id, entity, entity.getKeyspaceName(), entity.getTableName());
 
 		return new MappingListenableFutureAdapter<>(getAsyncCqlOperations().queryForResultSet(select.build()),
 				resultSet -> resultSet.one() != null);
@@ -544,7 +544,7 @@ public class AsyncCassandraTemplate
 		Assert.notNull(entityClass, "Entity type must not be null");
 
 		StatementBuilder<com.datastax.oss.driver.api.querybuilder.select.Select> select = getStatementFactory()
-				.select(query.limit(1), getRequiredPersistentEntity(entityClass), getKeyspace(entityClass),
+				.select(query.limit(1), getRequiredPersistentEntity(entityClass), getKeyspaceName(entityClass),
 						getTableName(entityClass));
 
 		return new MappingListenableFutureAdapter<>(getAsyncCqlOperations().queryForResultSet(select.build()),
@@ -562,7 +562,8 @@ public class AsyncCassandraTemplate
 
 		CassandraPersistentEntity<?> entity = getRequiredPersistentEntity(entityClass);
 		CqlIdentifier tableName = entity.getTableName();
-		StatementBuilder<Select> select = getStatementFactory().selectOneById(id, entity, entity.getKeyspace(), tableName);
+		StatementBuilder<Select> select = getStatementFactory().selectOneById(id, entity, entity.getKeyspaceName(),
+				tableName);
 		Function<Row, T> mapper = getMapper(entityClass, entityClass, tableName);
 
 		return new MappingListenableFutureAdapter<>(

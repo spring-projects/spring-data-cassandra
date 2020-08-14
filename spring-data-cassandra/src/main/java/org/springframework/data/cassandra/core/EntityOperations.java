@@ -108,8 +108,8 @@ class EntityOperations {
 	 * If null, then default session-level keyspace will be used.
 	 */
 	@Nullable
-	CqlIdentifier getKeyspace(Class<?> entityClass) {
-		return getRequiredPersistentEntity(entityClass).getKeyspace();
+	CqlIdentifier getKeyspaceName(Class<?> entityClass) {
+		return getRequiredPersistentEntity(entityClass).getKeyspaceName();
 	}
 
 

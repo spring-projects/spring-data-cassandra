@@ -89,7 +89,8 @@ public interface CassandraOperations extends FluentCassandraOperations {
 	 * @param entityClass The entity type may be {@literal null}.
 	 * @return the {@link CqlIdentifier}
 	 */
-	@Nullable CqlIdentifier getKeyspace(Class<?> entityClass);
+	@Nullable
+	CqlIdentifier getKeyspaceName(Class<?> entityClass);
 
 	// -------------------------------------------------------------------------
 	// Methods dealing with static CQL

@@ -180,16 +180,16 @@ class BasicCassandraPersistentEntityUnitTests {
 		BasicCassandraPersistentEntity<Notification> entity = new BasicCassandraPersistentEntity<>(
 				ClassTypeInformation.from(Notification.class));
 
-		assertThat(entity.getKeyspace()).isNull();
+		assertThat(entity.getKeyspaceName()).isNull();
 
 		entity.setNamingStrategy(new NamingStrategy() {
 			@Override
-			public Optional<CqlIdentifier> getKeyspace(CassandraPersistentEntity<?> entity) {
+			public Optional<CqlIdentifier> getKeyspaceName(CassandraPersistentEntity<?> entity) {
 				return Optional.of(CqlIdentifier.fromCql("ks1"));
 			}
 		});
 
-		assertThat(entity.getKeyspace()).isEqualTo(CqlIdentifier.fromCql("ks1"));
+		assertThat(entity.getKeyspaceName()).isEqualTo(CqlIdentifier.fromCql("ks1"));
 	}
 
 

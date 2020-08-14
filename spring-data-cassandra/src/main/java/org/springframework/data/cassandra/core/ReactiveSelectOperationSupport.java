@@ -125,7 +125,7 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 		 */
 		@Override
 		public Mono<Long> count() {
-			return this.template.doCount(this.query, this.domainType, getKeyspace(), getTableName());
+			return this.template.doCount(this.query, this.domainType, getKeyspaceName(), getTableName());
 		}
 
 		/* (non-Javadoc)
@@ -133,7 +133,7 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 		 */
 		@Override
 		public Mono<Boolean> exists() {
-			return this.template.doExists(this.query, this.domainType, getKeyspace(), getTableName());
+			return this.template.doExists(this.query, this.domainType, getKeyspaceName(), getTableName());
 		}
 
 		/* (non-Javadoc)
@@ -142,7 +142,7 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 		@Override
 		public Mono<T> first() {
 			return this.template
-					.doSelect(this.query.limit(1), this.domainType, getKeyspace(), getTableName(), this.returnType).next();
+					.doSelect(this.query.limit(1), this.domainType, getKeyspaceName(), getTableName(), this.returnType).next();
 		}
 
 		/* (non-Javadoc)
@@ -151,7 +151,7 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 		@Override
 		public Mono<T> one() {
 
-			Flux<T> result = this.template.doSelect(this.query.limit(2), this.domainType, getKeyspace(), getTableName(),
+			Flux<T> result = this.template.doSelect(this.query.limit(2), this.domainType, getKeyspaceName(), getTableName(),
 					this.returnType);
 
 			return result.collectList() //
@@ -175,11 +175,11 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 		 */
 		@Override
 		public Flux<T> all() {
-			return this.template.doSelect(this.query, this.domainType, getKeyspace(), getTableName(), this.returnType);
+			return this.template.doSelect(this.query, this.domainType, getKeyspaceName(), getTableName(), this.returnType);
 		}
 
-		private @Nullable CqlIdentifier getKeyspace() {
-			return this.keyspace != null ? this.keyspace : this.template.getKeyspace(this.domainType);
+		private @Nullable CqlIdentifier getKeyspaceName() {
+			return this.keyspace != null ? this.keyspace : this.template.getKeyspaceName(this.domainType);
 		}
 
 		private CqlIdentifier getTableName() {

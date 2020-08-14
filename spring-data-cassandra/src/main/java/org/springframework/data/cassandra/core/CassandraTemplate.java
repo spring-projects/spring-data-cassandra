@@ -283,11 +283,11 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#getKeyspace(java.lang.Class)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#getKeyspaceName(java.lang.Class)
 	 */
 	@Override
-	public CqlIdentifier getKeyspace(Class<?> entityClass) {
-		return getEntityOperations().getKeyspace(entityClass);
+	public CqlIdentifier getKeyspaceName(Class<?> entityClass) {
+		return getEntityOperations().getKeyspaceName(entityClass);
 	}
 
 	// -------------------------------------------------------------------------
@@ -402,7 +402,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return doSelect(query, entityClass, getKeyspace(entityClass), getTableName(entityClass), entityClass);
+		return doSelect(query, entityClass, getKeyspaceName(entityClass), getTableName(entityClass), entityClass);
 	}
 
 	<T> List<T> doSelect(Query query, Class<?> entityClass, @Nullable CqlIdentifier keyspace, CqlIdentifier tableName,
@@ -455,7 +455,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return doStream(query, entityClass, getKeyspace(entityClass), getTableName(entityClass), entityClass);
+		return doStream(query, entityClass, getKeyspaceName(entityClass), getTableName(entityClass), entityClass);
 	}
 
 	<T> Stream<T> doStream(Query query, Class<?> entityClass, @Nullable CqlIdentifier keyspace, CqlIdentifier tableName,
@@ -551,7 +551,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return doCount(query, entityClass, getKeyspace(entityClass), getTableName(entityClass));
+		return doCount(query, entityClass, getKeyspaceName(entityClass), getTableName(entityClass));
 	}
 
 	long doCount(Query query, Class<?> entityClass, @Nullable CqlIdentifier keyspace, CqlIdentifier tableName) {
@@ -575,7 +575,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		Assert.notNull(entityClass, "Entity type must not be null");
 
 		CassandraPersistentEntity<?> entity = getRequiredPersistentEntity(entityClass);
-		StatementBuilder<Select> select = getStatementFactory().selectOneById(id, entity, entity.getKeyspace(),
+		StatementBuilder<Select> select = getStatementFactory().selectOneById(id, entity, entity.getKeyspaceName(),
 				entity.getTableName());
 
 		return getCqlOperations().queryForResultSet(select.build()).one() != null;
@@ -590,7 +590,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return doExists(query, entityClass, getKeyspace(entityClass), getTableName(entityClass));
+		return doExists(query, entityClass, getKeyspaceName(entityClass), getTableName(entityClass));
 	}
 
 	boolean doExists(Query query, Class<?> entityClass, @Nullable CqlIdentifier keyspace, CqlIdentifier tableName) {
@@ -612,7 +612,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 
 		CassandraPersistentEntity<?> entity = getRequiredPersistentEntity(entityClass);
 		CqlIdentifier tableName = entity.getTableName();
-		StatementBuilder<Select> select = getStatementFactory().selectOneById(id, entity, entity.getKeyspace(), tableName);
+		StatementBuilder<Select> select = getStatementFactory().selectOneById(id, entity, entity.getKeyspaceName(), tableName);
 		Function<Row, T> mapper = getMapper(entityClass, entityClass, tableName);
 		List<T> result = getCqlOperations().query(select.build(), (row, rowNum) -> mapper.apply(row));
 
