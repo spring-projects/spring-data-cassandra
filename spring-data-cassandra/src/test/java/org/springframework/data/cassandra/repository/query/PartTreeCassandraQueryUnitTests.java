@@ -96,6 +96,8 @@ class PartTreeCassandraQueryUnitTests {
 		when(userTypeMock.getAttachmentPoint()).thenReturn(attachmentPoint);
 		when(userTypeMock.getFieldNames())
 				.thenReturn(Arrays.asList("city", "country").stream().map(CqlIdentifier::fromCql).collect(Collectors.toList()));
+		when(userTypeMock.allIndicesOf("city")).thenReturn(Collections.singletonList(0));
+		when(userTypeMock.allIndicesOf("country")).thenReturn(Collections.singletonList(1));
 		when(userTypeMock.getFieldTypes()).thenReturn(Arrays.asList(DataTypes.TEXT, DataTypes.TEXT));
 
 		udtValue = new DefaultUdtValue(userTypeMock);
