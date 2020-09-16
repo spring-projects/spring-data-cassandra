@@ -1,6 +1,12 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 2.2.10.RELEASE (2020-09-16)
+----------------------------------------------
+* DATACASS-795 - Reduce bean dependencies for PersistentEntitiesFactoryBean to CassandraConverter.
+* DATACASS-786 - Release 2.2.10 (Moore SR10).
+
+
 Changes in version 2.1.20.RELEASE (2020-09-16)
 ----------------------------------------------
 * DATACASS-785 - Release 2.1.20 (Lovelace SR20).
@@ -1275,6 +1281,7 @@ Changes in version 1.0.0.M1 (2014-03-31)
     * [DATACASS-100] - QueryOptions should only have ConsistencyLevel & RetryPolicy
     * [DATACASS-104] - Remove requirement for @PrimaryKeyClass when using composite primary keys
     * [DATACASS-107] - Support declarative query methods
+
 
 
 
