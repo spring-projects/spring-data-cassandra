@@ -51,7 +51,7 @@ pipeline {
 		stage("Test") {
 			when {
 				anyOf {
-					branch 'issue/DATACASS-699'
+					branch 'master'
 					not { triggeredBy 'UpstreamCause' }
 				}
 			}
@@ -74,7 +74,7 @@ pipeline {
 		}
 		stage("Test other configurations") {
 			when {
-				anyOf {
+				allOf {
 					branch 'master'
 					not { triggeredBy 'UpstreamCause' }
 				}
