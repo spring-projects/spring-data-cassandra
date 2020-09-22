@@ -50,8 +50,8 @@ public class ReactiveCassandraQueryMethod extends CassandraQueryMethod {
 
 		super(method, metadata, projectionFactory, mappingContext);
 
-		this.isCollectionQuery = Lazy.of(() -> !(isPageQuery() || isSliceQuery())
-				&& ReactiveWrappers.isMultiValueType(metadata.getReturnType(method).getType()));
+		this.isCollectionQuery = Lazy.of(() -> (!(isPageQuery() || isSliceQuery())
+				&& ReactiveWrappers.isMultiValueType(metadata.getReturnType(method).getType())) || super.isCollectionQuery());
 	}
 
 	/*

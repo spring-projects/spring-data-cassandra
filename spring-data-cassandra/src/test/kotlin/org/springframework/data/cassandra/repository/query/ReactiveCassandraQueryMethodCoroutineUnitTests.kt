@@ -40,6 +40,8 @@ class ReactiveCassandraQueryMethodCoroutineUnitTests {
 		suspend fun findSuspendAllByName(): Flow<Person>
 
 		fun findAllByName(): Flow<Person>
+
+		suspend fun findSuspendByName(): List<Person>
 	}
 
 	@Test // DATACASS-771
@@ -55,6 +57,15 @@ class ReactiveCassandraQueryMethodCoroutineUnitTests {
 	internal fun `should consider suspended methods returning Flow as collection queries`() {
 
 		val method = PersonRepository::class.java.getMethod("findSuspendAllByName", Continuation::class.java)
+		val queryMethod = ReactiveCassandraQueryMethod(method, DefaultRepositoryMetadata(PersonRepository::class.java), projectionFactory, CassandraMappingContext())
+
+		assertThat(queryMethod.isCollectionQuery).isTrue()
+	}
+
+	@Test // DATACASS-806
+	internal fun `should consider suspended methods returning List as collection queries`() {
+
+		val method = PersonRepository::class.java.getMethod("findSuspendByName", Continuation::class.java)
 		val queryMethod = ReactiveCassandraQueryMethod(method, DefaultRepositoryMetadata(PersonRepository::class.java), projectionFactory, CassandraMappingContext())
 
 		assertThat(queryMethod.isCollectionQuery).isTrue()
