@@ -137,7 +137,7 @@ class ReactiveCassandraRepositoryIntegrationTests extends AbstractSpringDataEmbe
 	}
 
 	@Test // DATACASS-529
-	void shouldFindEmpptySliceByLastName() {
+	void shouldFindEmptySliceByLastName() {
 		repository.findByLastname("foo", CassandraPageRequest.first(1)).as(StepVerifier::create)
 				.expectNextMatches(Streamable::isEmpty).verifyComplete();
 	}
