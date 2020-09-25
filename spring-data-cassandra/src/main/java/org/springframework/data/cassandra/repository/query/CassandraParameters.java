@@ -30,6 +30,7 @@ import org.springframework.data.cassandra.repository.query.CassandraParameters.C
 import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.Parameters;
 import org.springframework.data.repository.util.QueryExecutionConverters;
+import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.data.repository.util.ReactiveWrappers;
 import org.springframework.lang.Nullable;
 
@@ -164,7 +165,8 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 		 * @see QueryExecutionConverters
 		 */
 		private static boolean isWrapped(MethodParameter parameter) {
-			return QueryExecutionConverters.supports(parameter.getParameterType());
+			return QueryExecutionConverters.supports(parameter.getParameterType())
+					|| ReactiveWrapperConverters.supports(parameter.getParameterType());
 		}
 
 		/**
