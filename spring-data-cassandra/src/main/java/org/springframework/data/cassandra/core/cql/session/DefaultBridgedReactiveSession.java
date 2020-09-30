@@ -35,6 +35,9 @@ import org.springframework.util.Assert;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.context.DriverContext;
 import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
+import com.datastax.oss.driver.api.core.cql.BatchStatement;
+import com.datastax.oss.driver.api.core.cql.BatchableStatement;
+import com.datastax.oss.driver.api.core.cql.BoundStatement;
 import com.datastax.oss.driver.api.core.cql.ColumnDefinitions;
 import com.datastax.oss.driver.api.core.cql.ExecutionInfo;
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
@@ -144,7 +147,7 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 		return Mono.fromCompletionStage(() -> {
 
 			if (logger.isDebugEnabled()) {
-				logger.debug("Executing Statement [{}]", statement);
+				logger.debug("Executing statement [{}]", getCql(statement));
 			}
 
 			return this.session.executeAsync(statement);
@@ -173,11 +176,41 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 		return Mono.fromCompletionStage(() -> {
 
 			if (logger.isDebugEnabled()) {
-				logger.debug("Preparing Statement [{}]", statement);
+				logger.debug("Preparing statement [{}]", getCql(statement));
 			}
 
 			return this.session.prepareAsync(statement);
 		});
+	}
+
+	private static String getCql(Object statement) {
+
+		if (statement instanceof SimpleStatement) {
+			return ((SimpleStatement) statement).getQuery();
+		}
+
+		if (statement instanceof PreparedStatement) {
+			return ((PreparedStatement) statement).getQuery();
+		}
+
+		if (statement instanceof BoundStatement) {
+			return getCql(((BoundStatement) statement).getPreparedStatement());
+		}
+
+		if (statement instanceof BatchStatement) {
+
+			StringBuilder builder = new StringBuilder();
+
+			for (BatchableStatement<?> batchableStatement : ((BatchStatement) statement)) {
+
+				String query = getCql(batchableStatement);
+				builder.append(query).append(query.endsWith(";") ? "" : ";");
+			}
+
+			return builder.toString();
+		}
+
+		return String.format("Unknown: %s", statement);
 	}
 
 	/* (non-Javadoc)
@@ -293,4 +326,5 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 			return Collections.singletonList(getExecutionInfo());
 		}
 	}
+
 }

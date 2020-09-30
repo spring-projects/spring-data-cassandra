@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.springframework.data.cassandra.core.StatementFactory;
+import org.springframework.data.cassandra.core.cql.QueryExtractorDelegate;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.cql.QueryOptionsUtil;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
@@ -110,7 +111,7 @@ class QueryStatementCreator {
 			SimpleStatement statement = statementFactory.count(query, getPersistentEntity()).build();
 
 			if (LOG.isDebugEnabled()) {
-				LOG.debug(String.format("Created query [%s].", statement));
+				LOG.debug(String.format("Created query [%s].", QueryExtractorDelegate.getCql(statement)));
 			}
 
 			return statement;
@@ -137,7 +138,7 @@ class QueryStatementCreator {
 			SimpleStatement statement = statementFactory.delete(query, getPersistentEntity()).build();
 
 			if (LOG.isDebugEnabled()) {
-				LOG.debug(String.format("Created query [%s].", statement));
+				LOG.debug(String.format("Created query [%s].", QueryExtractorDelegate.getCql(statement)));
 			}
 
 			return statement;
@@ -164,7 +165,7 @@ class QueryStatementCreator {
 			SimpleStatement statement = statementFactory.select(query.limit(1), getPersistentEntity()).build();
 
 			if (LOG.isDebugEnabled()) {
-				LOG.debug(String.format("Created query [%s].", statement));
+				LOG.debug(String.format("Created query [%s].", QueryExtractorDelegate.getCql(statement)));
 			}
 
 			return statement;
@@ -248,7 +249,7 @@ class QueryStatementCreator {
 			}
 
 			if (LOG.isDebugEnabled()) {
-				LOG.debug(String.format("Created query [%s].", queryToUse));
+				LOG.debug(String.format("Created query [%s].", QueryExtractorDelegate.getCql(queryToUse)));
 			}
 
 			return queryToUse;
