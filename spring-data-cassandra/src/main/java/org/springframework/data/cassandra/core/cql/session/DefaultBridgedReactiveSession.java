@@ -15,30 +15,35 @@
  */
 package org.springframework.data.cassandra.core.cql.session;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.publisher.MonoProcessor;
+import reactor.core.scheduler.Scheduler;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletionStage;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import org.springframework.data.cassandra.ReactiveResultSet;
+import org.springframework.data.cassandra.ReactiveSession;
+import org.springframework.util.Assert;
+
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.context.DriverContext;
 import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
+import com.datastax.oss.driver.api.core.cql.BatchStatement;
+import com.datastax.oss.driver.api.core.cql.BatchableStatement;
+import com.datastax.oss.driver.api.core.cql.BoundStatement;
 import com.datastax.oss.driver.api.core.cql.ColumnDefinitions;
 import com.datastax.oss.driver.api.core.cql.ExecutionInfo;
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.Statement;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-import reactor.core.publisher.MonoProcessor;
-import reactor.core.scheduler.Scheduler;
-
-import org.springframework.data.cassandra.ReactiveResultSet;
-import org.springframework.data.cassandra.ReactiveSession;
-import org.springframework.util.Assert;
 
 /**
  * Default implementation of a {@link ReactiveSession}. This implementation bridges asynchronous {@link CqlSession}
@@ -142,7 +147,7 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 		return Mono.fromCompletionStage(() -> {
 
 			if (logger.isDebugEnabled()) {
-				logger.debug("Executing Statement [{}]", statement);
+				logger.debug("Executing statement [{}]", getCql(statement));
 			}
 
 			return this.session.executeAsync(statement);
@@ -171,11 +176,41 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 		return Mono.fromCompletionStage(() -> {
 
 			if (logger.isDebugEnabled()) {
-				logger.debug("Preparing Statement [{}]", statement);
+				logger.debug("Preparing statement [{}]", getCql(statement));
 			}
 
 			return this.session.prepareAsync(statement);
 		});
+	}
+
+	private static String getCql(Object statement) {
+
+		if (statement instanceof SimpleStatement) {
+			return ((SimpleStatement) statement).getQuery();
+		}
+
+		if (statement instanceof PreparedStatement) {
+			return ((PreparedStatement) statement).getQuery();
+		}
+
+		if (statement instanceof BoundStatement) {
+			return getCql(((BoundStatement) statement).getPreparedStatement());
+		}
+
+		if (statement instanceof BatchStatement) {
+
+			StringBuilder builder = new StringBuilder();
+
+			for (BatchableStatement<?> batchableStatement : ((BatchStatement) statement)) {
+
+				String query = getCql(batchableStatement);
+				builder.append(query).append(query.endsWith(";") ? "" : ";");
+			}
+
+			return builder.toString();
+		}
+
+		return String.format("Unknown: %s", statement);
 	}
 
 	/* (non-Javadoc)
@@ -291,4 +326,5 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 			return Collections.singletonList(getExecutionInfo());
 		}
 	}
+
 }

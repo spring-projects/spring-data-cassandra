@@ -16,7 +16,6 @@
 package org.springframework.data.cassandra.core.cql;
 
 import java.util.Map;
-import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -464,11 +463,6 @@ public class CassandraAccessor implements InitializingBean {
 	 */
 	@Nullable
 	protected static String toCql(@Nullable Object cqlProvider) {
-
-		return Optional.ofNullable(cqlProvider) //
-				.filter(o -> o instanceof CqlProvider) //
-				.map(o -> (CqlProvider) o) //
-				.map(CqlProvider::getCql) //
-				.orElse(null);
+		return QueryExtractorDelegate.getCql(cqlProvider);
 	}
 }

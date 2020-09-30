@@ -162,7 +162,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 		try {
 			if (logger.isDebugEnabled()) {
-				logger.debug("Executing CQL Statement [{}]", cql);
+				logger.debug("Executing CQL statement [{}]", cql);
 			}
 
 			Statement<?> statement = applyStatementSettings(newStatement(cql));
@@ -288,7 +288,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 		try {
 			if (logger.isDebugEnabled()) {
-				logger.debug("Executing CQL Statement [{}]", statement);
+				logger.debug("Executing statement [{}]", QueryExtractorDelegate.getCql(statement));
 			}
 
 			return resultSetExtractor.extractData(getCurrentSession().execute(applyStatementSettings(statement)));
@@ -507,7 +507,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 			PreparedStatement preparedStatement = preparedStatementCreator.createPreparedStatement(session);
 
 			if (logger.isDebugEnabled()) {
-				logger.debug("Executing prepared statement [{}]", preparedStatement);
+				logger.debug("Executing prepared statement [{}]", QueryExtractorDelegate.getCql(preparedStatement));
 			}
 
 			Statement<?> boundStatement = applyStatementSettings(

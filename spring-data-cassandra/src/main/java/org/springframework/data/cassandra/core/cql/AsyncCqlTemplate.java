@@ -163,7 +163,7 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 
 		try {
 			if (logger.isDebugEnabled()) {
-				logger.debug("Executing CQL Statement [{}]", cql);
+				logger.debug("Executing CQL statement [{}]", cql);
 			}
 
 			CompletionStage<T> results = getCurrentSession().executeAsync(applyStatementSettings(newStatement(cql)))
@@ -285,7 +285,7 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 
 		try {
 			if (logger.isDebugEnabled()) {
-				logger.debug("Executing CQL Statement [{}]", statement);
+				logger.debug("Executing statement [{}]", QueryExtractorDelegate.getCql(statement));
 			}
 
 			CompletionStage<T> results = getCurrentSession() //
@@ -525,7 +525,7 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 			ListenableFuture<Statement<?>> statementFuture = new MappingListenableFutureAdapter<>(
 					preparedStatementCreator.createPreparedStatement(session), preparedStatement -> {
 						if (logger.isDebugEnabled()) {
-							logger.debug("Executing prepared statement [{}]", preparedStatement);
+							logger.debug("Executing prepared statement [{}]", QueryExtractorDelegate.getCql(preparedStatement));
 						}
 
 						return applyStatementSettings(psb != null ? psb.bindValues(preparedStatement) : preparedStatement.bind());

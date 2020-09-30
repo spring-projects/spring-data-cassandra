@@ -440,7 +440,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 		return createFlux(statement, (session, stmt) -> {
 
 			if (logger.isDebugEnabled()) {
-				logger.debug("Executing CQL Statement [{}]", statement);
+				logger.debug("Executing statement [{}]", QueryExtractorDelegate.getCql(statement));
 			}
 
 			return session.execute(applyStatementSettings(statement)).flatMapMany(rse::extractData);
@@ -507,8 +507,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 		return createMono(statement, (session, executedStatement) -> {
 
 			if (logger.isDebugEnabled()) {
-				logger.debug("Executing CQL [{}]", executedStatement);
-
+				logger.debug("Executing statement [{}]", QueryExtractorDelegate.getCql(statement));
 			}
 
 			return session.execute(applyStatementSettings(executedStatement));
@@ -568,14 +567,15 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 		Assert.notNull(psc, "ReactivePreparedStatementCreator must not be null");
 		Assert.notNull(rse, "ReactiveResultSetExtractor object must not be null");
 
-		return execute(psc, (session, ps) -> Mono.just(ps).flatMapMany(pps -> {
+		return execute(psc, (session, preparedStatement) -> Mono.just(preparedStatement).flatMapMany(pps -> {
 
 			if (logger.isDebugEnabled()) {
-				logger.debug("Executing Prepared CQL Statement [{}]", ps.getQuery());
+				logger.debug("Executing prepared statement [{}]", QueryExtractorDelegate.getCql(preparedStatement));
 			}
 
-			BoundStatement boundStatement = (preparedStatementBinder != null ? preparedStatementBinder.bindValues(ps)
-					: ps.bind());
+			BoundStatement boundStatement = (preparedStatementBinder != null
+					? preparedStatementBinder.bindValues(preparedStatement)
+					: preparedStatement.bind());
 
 			return session.execute(applyStatementSettings(boundStatement));
 		}).flatMap(rse::extractData)).onErrorMap(translateException("Query", getCql(psc)));
@@ -738,7 +738,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 		return execute(newReactivePreparedStatementCreator(cql), (session, ps) -> Flux.from(args).flatMap(objects -> {
 
 			if (logger.isDebugEnabled()) {
-				logger.debug("Executing Prepared CQL Statement [{}]", cql);
+				logger.debug("Executing prepared CQL statement [{}]", cql);
 			}
 
 			BoundStatement boundStatement = newArgPreparedStatementBinder(objects).bindValues(ps);
@@ -918,12 +918,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 */
 	@Nullable
 	private static String getCql(@Nullable Object cqlProvider) {
-
-		return Optional.ofNullable(cqlProvider) //
-				.filter(o -> o instanceof CqlProvider) //
-				.map(o -> (CqlProvider) o) //
-				.map(CqlProvider::getCql) //
-				.orElse(null);
+		return QueryExtractorDelegate.getCql(cqlProvider);
 	}
 
 	static class SimpleReactivePreparedStatementCreator implements ReactivePreparedStatementCreator, CqlProvider {
