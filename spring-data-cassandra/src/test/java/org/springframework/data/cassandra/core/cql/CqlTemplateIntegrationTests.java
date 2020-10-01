@@ -33,6 +33,7 @@ import org.springframework.data.util.Version;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.data.UdtValue;
 
 /**
  * Integration tests for {@link CqlTemplate}.
@@ -41,6 +42,7 @@ import com.datastax.oss.driver.api.core.cql.SimpleStatement;
  * @author Tomasz Lelek
  */
 class CqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrationTests {
+
 	private static final Version CASSANDRA_4 = Version.parse("4.0");
 	private static final AtomicBoolean initialized = new AtomicBoolean();
 	private CqlTemplate template;
@@ -50,11 +52,17 @@ class CqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrationTes
 	void before() {
 
 		if (initialized.compareAndSet(false, true)) {
+			session.execute("CREATE TYPE IF NOT EXISTS cql_template_user (testname text, happy boolean);");
+			session
+					.execute("CREATE TABLE IF NOT EXISTS cql_template_tests (id text PRIMARY KEY, thetest cql_template_user);");
 			session.execute("CREATE TABLE IF NOT EXISTS user (id text PRIMARY KEY, username text);");
 		}
 
 		session.execute("TRUNCATE user;");
+		session.execute("TRUNCATE cql_template_tests;");
 		session.execute("INSERT INTO user (id, username) VALUES ('WHITE', 'Walter');");
+		session.execute(
+				"INSERT INTO cql_template_tests (id, thetest) VALUES ('shouldApplyBeanPropertyRowMapper', {testname: 'shouldApplyBeanPropertyRowMapper', happy: true});");
 
 		template = new CqlTemplate();
 		template.setSession(getSession());
@@ -197,6 +205,38 @@ class CqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrationTes
 		assertThatThrownBy(() -> template.queryForObject("SELECT id FROM user;", String.class))
 				.isInstanceOf(CassandraInvalidQueryException.class)
 				.hasMessageContaining("Keyspace 'non_existing' does not exist");
+	}
 
+	@Test // DATACASS-810
+	void shouldApplyBeanPropertyRowMapper() {
+
+		CqlTemplateTest result = template.queryForObject("SELECT * FROM cql_template_tests",
+				new BeanPropertyRowMapper<>(CqlTemplateTest.class));
+
+		assertThat(result.getId()).isEqualTo("shouldApplyBeanPropertyRowMapper");
+		assertThat(result.getThetest().getFormattedContents()).contains("testname:'shouldApplyBeanPropertyRowMapper'")
+				.contains("happy:true");
+	}
+
+	static class CqlTemplateTest {
+
+		String id;
+		UdtValue thetest;
+
+		public String getId() {
+			return id;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
+
+		public UdtValue getThetest() {
+			return thetest;
+		}
+
+		public void setThetest(UdtValue thetest) {
+			this.thetest = thetest;
+		}
 	}
 }

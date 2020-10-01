@@ -18,7 +18,7 @@ package org.springframework.data.cassandra.core.cql.session.init;
 import org.springframework.core.io.support.EncodedResource;
 
 /**
- * Thrown by {@link ScriptUtils} if a statement in an SQL script failed when executing it against the target database.
+ * Thrown by {@link ScriptUtils} if a statement in an CQL script failed when executing it against the target database.
  *
  * @author Mark Paluch
  * @since 3.0

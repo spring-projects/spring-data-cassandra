@@ -29,7 +29,7 @@ import com.datastax.oss.driver.api.core.CqlSession;
 public interface KeyspacePopulator {
 
 	/**
-	 * Populate, initialize, or clean up the database using the provided JDBC connection.
+	 * Populate, initialize, or clean up the database using the provided CqlSession connection.
 	 * <p>
 	 * Concrete implementations <em>may</em> throw a {@link RuntimeException} if an error is encountered but are
 	 * <em>strongly encouraged</em> to throw a specific {@link ScriptException} instead. For example, Spring's
