@@ -9,6 +9,7 @@ This chapter summarizes changes and new features for each release.
 * <<cassandra.auditing,Reactive auditing>> enabled through `@EnableReactiveCassandraAuditing`. `@EnableCassandraAuditing` no longer registers `ReactiveAuditingEntityCallback`.
 * Reactive SpEL support in `@Query` query methods.
 * Configuration of the keyspace per `Statement` through `CqlTemplate` and `QueryOptions`.
+* Revised `CqlOperations` with new `queryForStream(…)` methods returning a `Stream` with transparent pagination.
 
 [[new-features.3-0-0]]
 == What's new in Spring Data for Apache Cassandra 3.0

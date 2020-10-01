@@ -752,8 +752,7 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 	}
 
 	/**
-	 * Constructs a new instance of the {@link ResultSetExtractor} initialized with and adapting the given
-	 * {@link RowCallbackHandler}.
+	 * Constructs a new instance of the {@link ResultSetExtractor} adapting the given {@link RowCallbackHandler}.
 	 *
 	 * @param rowCallbackHandler {@link RowCallbackHandler} to adapt as a {@link ResultSetExtractor}.
 	 * @return a {@link ResultSetExtractor} implementation adapting an instance of the {@link RowCallbackHandler}.
@@ -767,8 +766,7 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 	}
 
 	/**
-	 * Constructs a new instance of the {@link ResultSetExtractor} initialized with and adapting the given
-	 * {@link RowMapper}.
+	 * Constructs a new instance of the {@link ResultSetExtractor} adapting the given {@link RowMapper}.
 	 *
 	 * @param rowMapper {@link RowMapper} to adapt as a {@link ResultSetExtractor}.
 	 * @return a {@link ResultSetExtractor} implementation adapting an instance of the {@link RowMapper}.

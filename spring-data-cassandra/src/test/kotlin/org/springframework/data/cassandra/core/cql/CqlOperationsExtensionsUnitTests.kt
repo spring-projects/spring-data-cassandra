@@ -136,4 +136,11 @@ class CqlOperationsExtensionsUnitTests {
 		operations.query("", 3) { row, _ -> row.columnDefinitions }
 		verify { operations.query(eq(""), any<RowMapper<Person>>(), eq(3)) }
 	}
+
+	@Test // DATACASS-809
+	fun `queryForStream(String, RowMapper, array) extension should call its Java counterpart`() {
+
+		operations.queryForStream("", 3) { row, _ -> row.columnDefinitions }
+		verify { operations.queryForStream(eq(""), any<RowMapper<Person>>(), eq(3)) }
+	}
 }

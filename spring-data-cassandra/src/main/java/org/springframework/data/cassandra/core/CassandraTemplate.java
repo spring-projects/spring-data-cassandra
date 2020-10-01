@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -374,10 +373,8 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		Assert.notNull(statement, "Statement must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		ResultSet resultSet = getCqlOperations().queryForResultSet(statement);
-
-		return StreamSupport.stream(resultSet.spliterator(), false)
-				.map(getMapper(entityClass, entityClass, EntityQueryUtils.getTableName(statement)));
+		Function<Row, T> mapper = getMapper(entityClass, entityClass, EntityQueryUtils.getTableName(statement));
+		return getCqlOperations().queryForStream(statement, (row, rowNum) -> mapper.apply(row));
 	}
 
 	// -------------------------------------------------------------------------
@@ -453,10 +450,8 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		StatementBuilder<Select> select = getStatementFactory().select(query, getRequiredPersistentEntity(entityClass),
 				tableName);
 
-		ResultSet resultSet = getCqlOperations().queryForResultSet(select.build());
-
 		Function<Row, T> mapper = getMapper(entityClass, returnType, tableName);
-		return StreamSupport.stream(resultSet.map(mapper).spliterator(), false);
+		return getCqlOperations().queryForStream(select.build(), (row, rowNum) -> mapper.apply(row));
 	}
 
 	/* (non-Javadoc)

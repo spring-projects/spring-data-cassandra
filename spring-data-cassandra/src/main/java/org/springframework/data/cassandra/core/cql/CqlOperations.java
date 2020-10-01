@@ -18,15 +18,16 @@ package org.springframework.data.cassandra.core.cql;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
+
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
+import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.Statement;
-
-import org.springframework.dao.DataAccessException;
-import org.springframework.dao.IncorrectResultSizeDataAccessException;
-import org.springframework.lang.Nullable;
 
 /**
  * Interface specifying a basic set of CQL operations. Implemented by {@link CqlTemplate}. Not often used directly, but
@@ -194,6 +195,20 @@ public interface CqlOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	<T> List<T> query(String cql, RowMapper<T> rowMapper, Object... args) throws DataAccessException;
+
+	/**
+	 * Query given CQL to create a prepared statement from CQL and a list of arguments to bind to the query, mapping each
+	 * row to a Java object via a {@link RowMapper} and turning it into an iterable {@link Stream}.
+	 *
+	 * @param cql static CQL to execute, must not be empty or {@literal null}.
+	 * @param rowMapper object that will map one object per row
+	 * @param args arguments to bind to the query (leaving it to the {@link PreparedStatement} to guess the corresponding
+	 *          CQL type)
+	 * @return the result {@link Stream}, containing mapped objects
+	 * @throws DataAccessException if there is any problem executing the query.
+	 * @since 3.1
+	 */
+	<T> Stream<T> queryForStream(String cql, RowMapper<T> rowMapper, Object... args) throws DataAccessException;
 
 	/**
 	 * Query using a prepared statement, reading the {@link ResultSet} with a {@link ResultSetExtractor}.
@@ -538,6 +553,22 @@ public interface CqlOperations {
 	<T> List<T> query(Statement<?> statement, RowMapper<T> rowMapper) throws DataAccessException;
 
 	/**
+	 * Execute a query given static CQL, mapping each row to a Java object via a {@link RowMapper} and turning it into an
+	 * iterable {@link Stream}.
+	 * <p>
+	 * Uses a CQL Statement, not a {@link PreparedStatement}. If you want to execute a static query with a
+	 * {@link PreparedStatement}, use the overloaded {@code query} method with {@literal null} as argument array.
+	 *
+	 * @param statement static CQL {@link Statement}, must not be {@literal null}.
+	 * @param rowMapper object that will map one object per row, must not be {@literal null}.
+	 * @return the result {@link Stream}, containing mapped objects.
+	 * @throws DataAccessException if there is any problem executing the query.
+	 * @since 3.1
+	 * @see #queryForStream(String, RowMapper, Object...)
+	 */
+	<T> Stream<T> queryForStream(Statement<?> statement, RowMapper<T> rowMapper) throws DataAccessException;
+
+	/**
 	 * Execute a query for a result {@link List}, given static CQL.
 	 * <p>
 	 * Uses a CQL Statement, not a {@link PreparedStatement}. If you want to execute a static query with a
@@ -730,6 +761,20 @@ public interface CqlOperations {
 			throws DataAccessException;
 
 	/**
+	 * Query using a prepared statement, mapping each row to a Java object via a {@link RowMapper} and turning it into an
+	 * iterable {@link Stream}.
+	 *
+	 * @param preparedStatementCreator object that can create a {@link PreparedStatement} given a
+	 *          {@link com.datastax.oss.driver.api.core.CqlSession}, must not be {@literal null}.
+	 * @param rowMapper object that will map one object per row, must not be {@literal null}.
+	 * @return the result {@link Stream}, containing mapped objects.
+	 * @throws DataAccessException if there is any problem executing the query.
+	 * @since 3.1
+	 */
+	<T> Stream<T> queryForStream(PreparedStatementCreator preparedStatementCreator, RowMapper<T> rowMapper)
+			throws DataAccessException;
+
+	/**
 	 * Query using a prepared statement and a {@link PreparedStatementBinder} implementation that knows how to bind values
 	 * to the query, reading the {@link ResultSet} with a {@link ResultSetExtractor}.
 	 *
@@ -775,6 +820,24 @@ public interface CqlOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	<T> List<T> query(PreparedStatementCreator preparedStatementCreator, @Nullable PreparedStatementBinder psb,
+			RowMapper<T> rowMapper) throws DataAccessException;
+
+	/**
+	 * Query using a prepared statement and a {@link PreparedStatementBinder} implementation that knows how to bind values
+	 * to the query, mapping each row to a Java object via a {@link RowMapper} and turning it into an iterable
+	 * {@link Stream}.
+	 *
+	 * @param preparedStatementCreator object that can create a {@link PreparedStatement} given a
+	 *          {@link com.datastax.oss.driver.api.core.CqlSession}, must not be {@literal null}.
+	 * @param psb object that knows how to set values on the prepared statement. If this is {@literal null}, the CQL will
+	 *          be assumed to contain no bind parameters. Even if there are no bind parameters, this object may be used to
+	 *          set fetch size and other performance options.
+	 * @param rowMapper object that will map one object per row, must not be {@literal null}.
+	 * @return the result {@link Stream}, containing mapped objects.
+	 * @throws DataAccessException if there is any problem executing the query.
+	 * @since 3.1
+	 */
+	<T> Stream<T> queryForStream(PreparedStatementCreator preparedStatementCreator, @Nullable PreparedStatementBinder psb,
 			RowMapper<T> rowMapper) throws DataAccessException;
 
 	// -------------------------------------------------------------------------

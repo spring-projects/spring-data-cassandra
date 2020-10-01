@@ -18,7 +18,11 @@ package org.springframework.data.cassandra.core.cql;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Spliterator;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.springframework.dao.DataAccessException;
@@ -318,6 +322,16 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.cqlOperations#queryForStream(com.datastax.oss.driver.api.core.cql.Statement, org.springframework.data.cassandra.core.cql.RowMapper)
+	 */
+	@Override
+	public <T> Stream<T> queryForStream(Statement<?> statement, RowMapper<T> rowMapper) throws DataAccessException {
+		// noinspection ConstantConditions
+		return query(statement, newStreamExtractor(rowMapper));
+	}
+
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.cqlOperations#queryForList(com.datastax.oss.driver.api.core.cql.Statement)
 	 */
 	@Override
@@ -342,7 +356,6 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 */
 	@Override
 	public Map<String, Object> queryForMap(Statement<?> statement) throws DataAccessException {
-		// noinspection ConstantConditions
 		return queryForObject(statement, newColumnMapRowMapper());
 	}
 
@@ -487,6 +500,17 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.cqlOperations#query(org.springframework.data.cassandra.core.cql.PreparedStatementCreator, org.springframework.data.cassandra.core.cql.RowMapper)
+	 */
+	@Override
+	public <T> Stream<T> queryForStream(PreparedStatementCreator preparedStatementCreator, RowMapper<T> rowMapper)
+			throws DataAccessException {
+		// noinspection ConstantConditions
+		return query(preparedStatementCreator, null, newStreamExtractor(rowMapper));
+	}
+
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.cqlOperations#query(org.springframework.data.cassandra.core.cql.PreparedStatementCreator, org.springframework.data.cassandra.core.cql.PreparedStatementBinder, org.springframework.data.cassandra.core.cql.ResultSetExtractor)
 	 */
 	@Nullable
@@ -546,6 +570,17 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	/*
 	 * (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.cqlOperations#queryForStream(org.springframework.data.cassandra.core.cql.PreparedStatementCreator, org.springframework.data.cassandra.core.cql.PreparedStatementBinder, org.springframework.data.cassandra.core.cql.RowMapper)
+	 */
+	@Override
+	public <T> Stream<T> queryForStream(PreparedStatementCreator preparedStatementCreator,
+			@Nullable PreparedStatementBinder psb, RowMapper<T> rowMapper) throws DataAccessException {
+		// noinspection ConstantConditions
+		return query(preparedStatementCreator, psb, newStreamExtractor(rowMapper));
+	}
+
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.cqlOperations#query(java.lang.String, org.springframework.data.cassandra.core.cql.ResultSetExtractor, java.lang.Object[])
 	 */
 	@Override
@@ -572,6 +607,16 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	public <T> List<T> query(String cql, RowMapper<T> rowMapper, Object... args) throws DataAccessException {
 		// noinspection ConstantConditions
 		return query(newPreparedStatementCreator(cql), newPreparedStatementBinder(args), newResultSetExtractor(rowMapper));
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.cqlOperations#queryForStream(java.lang.String, org.springframework.data.cassandra.core.cql.RowMapper, java.lang.Object[])
+	 */
+	@Override
+	public <T> Stream<T> queryForStream(String cql, RowMapper<T> rowMapper, Object... args) throws DataAccessException {
+		// noinspection ConstantConditions
+		return query(newPreparedStatementCreator(cql), newPreparedStatementBinder(args), newStreamExtractor(rowMapper));
 	}
 
 	/*
@@ -732,8 +777,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	/**
-	 * Constructs a new instance of the {@link ResultSetExtractor} initialized with and adapting the given
-	 * {@link RowCallbackHandler}.
+	 * Constructs a new instance of the {@link ResultSetExtractor} adapting the given {@link RowCallbackHandler}.
 	 *
 	 * @param rowCallbackHandler {@link RowCallbackHandler} to adapt as a {@link ResultSetExtractor}.
 	 * @return a {@link ResultSetExtractor} implementation adapting an instance of the {@link RowCallbackHandler}.
@@ -746,8 +790,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	/**
-	 * Constructs a new instance of the {@link ResultSetExtractor} initialized with and adapting the given
-	 * {@link RowMapper}.
+	 * Constructs a new instance of the {@link ResultSetExtractor} adapting the given {@link RowMapper}.
 	 *
 	 * @param rowMapper {@link RowMapper} to adapt as a {@link ResultSetExtractor}.
 	 * @return a {@link ResultSetExtractor} implementation adapting an instance of the {@link RowMapper}.
@@ -760,8 +803,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	/**
-	 * Constructs a new instance of the {@link ResultSetExtractor} initialized with and adapting the given
-	 * {@link RowMapper}.
+	 * Constructs a new instance of the {@link ResultSetExtractor} adapting the given {@link RowMapper}.
 	 *
 	 * @param rowMapper {@link RowMapper} to adapt as a {@link ResultSetExtractor}.
 	 * @param rowsExpected number of expected rows in the {@link ResultSet}.
@@ -772,6 +814,19 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 */
 	protected <T> RowMapperResultSetExtractor<T> newResultSetExtractor(RowMapper<T> rowMapper, int rowsExpected) {
 		return new RowMapperResultSetExtractor<>(rowMapper, rowsExpected);
+	}
+
+	/**
+	 * Constructs a new instance of the {@link ResultSetExtractor} adapting the given {@link RowMapper}.
+	 *
+	 * @param rowMapper {@link RowMapper} to adapt as a {@link ResultSetExtractor}.
+	 * @return a {@link ResultSetExtractor} implementation adapting an instance of the {@link RowMapper}.
+	 * @see ResultSetExtractor
+	 * @see RowCallbackHandler
+	 * @since 3.1
+	 */
+	protected <T> ResultSetExtractor<Stream<T>> newStreamExtractor(RowMapper<T> rowMapper) {
+		return resultSet -> new ResultSetSpliterator<>(resultSet, rowMapper).stream();
 	}
 
 	private CqlSession getCurrentSession() {
@@ -801,9 +856,78 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		@Nullable
 		public Object extractData(ResultSet resultSet) {
 
-			StreamSupport.stream(resultSet.spliterator(), false).forEach(rowCallbackHandler::processRow);
-
+			resultSet.forEach(rowCallbackHandler::processRow);
 			return null;
+		}
+	}
+
+	/**
+	 * Spliterator for queryForStream adaptation of a {@link ResultSet} to a {@link Stream}.
+	 *
+	 * @since 3.1
+	 */
+	private static class ResultSetSpliterator<T> implements Spliterator<T> {
+
+		private final Spliterator<Row> delegate;
+
+		private final RowMapper<T> rowMapper;
+
+		private final AtomicInteger counter;
+
+		public ResultSetSpliterator(ResultSet rs, RowMapper<T> rowMapper) {
+			this.delegate = rs.spliterator();
+			this.rowMapper = rowMapper;
+			this.counter = new AtomicInteger();
+		}
+
+		private ResultSetSpliterator(Spliterator<Row> delegate, RowMapper<T> rowMapper, AtomicInteger counter) {
+			this.delegate = delegate;
+			this.rowMapper = rowMapper;
+			this.counter = counter;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.util.Spliterator#tryAdvance(java.util.function.Consumer)
+		 */
+		@Override
+		public boolean tryAdvance(Consumer<? super T> action) {
+			return this.delegate.tryAdvance(row -> action.accept(this.rowMapper.mapRow(row, this.counter.incrementAndGet())));
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.util.Spliterator#trySplit()
+		 */
+		@Override
+		@Nullable
+		public Spliterator<T> trySplit() {
+			return new ResultSetSpliterator<>(delegate.trySplit(), this.rowMapper, this.counter);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.util.Spliterator#estimateSize()
+		 */
+		@Override
+		public long estimateSize() {
+			return Long.MAX_VALUE;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see java.util.Spliterator#characteristics()
+		 */
+		@Override
+		public int characteristics() {
+			return Spliterator.ORDERED;
+		}
+
+		/**
+		 * @return
+		 */
+		public Stream<T> stream() {
+			return StreamSupport.stream(this, false);
 		}
 	}
 

@@ -24,6 +24,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -337,6 +339,19 @@ class CqlTemplateUnitTests {
 		});
 	}
 
+	@Test // DATACASS-809
+	public void queryForStreamWithResultSetStatementExtractorWithArgumentsShouldCallExecution() {
+
+		doTestStrings(5, ConsistencyLevel.ONE, null, "foo", cqlTemplate -> {
+
+			Stream<String> result = cqlTemplate.queryForStream(SimpleStatement.newInstance("SELECT * from USERS"),
+					(row, index) -> row.getString(0));
+
+			assertThat(result.collect(Collectors.toList())).hasSize(3).contains("Walter", "Hank", " Jesse");
+			verify(session).execute(any(Statement.class));
+		});
+	}
+
 	@Test // DATACASS-292
 	void queryStatementShouldTranslateExceptions() {
 
@@ -610,6 +625,21 @@ class CqlTemplateUnitTests {
 		verify(preparedStatement).bind("a", "b");
 	}
 
+	@Test // DATACASS-809
+	public void queryForStreanPreparedStatementCreatorAndBinderAndMapperShouldReturnResult() {
+
+		when(session.execute(boundStatement)).thenReturn(resultSet);
+		when(resultSet.spliterator()).thenReturn(Collections.singleton(row).spliterator());
+
+		Stream<Row> rows = template.queryForStream(session -> preparedStatement, ps -> {
+			ps.bind("a", "b");
+			return boundStatement;
+		}, (row, rowNum) -> row);
+
+		assertThat(rows).hasSize(1).contains(row);
+		verify(preparedStatement).bind("a", "b");
+	}
+
 	@Test // DATACASS-292
 	void queryForObjectPreparedStatementShouldBeEmpty() {
 
@@ -728,9 +758,10 @@ class CqlTemplateUnitTests {
 
 		String[] results = { "Walter", "Hank", " Jesse" };
 
+		List<Row> rows = Arrays.asList(row, row, row);
 		when(this.session.execute((Statement) any())).thenReturn(resultSet);
-		when(this.resultSet.iterator()).thenReturn(Arrays.asList(row, row, row).iterator());
-		when(this.resultSet.spliterator()).thenCallRealMethod();
+		when(this.resultSet.iterator()).thenReturn(rows.iterator());
+		when(this.resultSet.spliterator()).thenReturn(rows.spliterator());
 
 		when(this.row.getString(0)).thenReturn(results[0], results[1], results[2]);
 		when(this.session.prepare(anyString())).thenReturn(preparedStatement);
