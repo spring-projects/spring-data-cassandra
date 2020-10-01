@@ -182,7 +182,7 @@ class ReactiveCqlTemplateUnitTests {
 
 			Flux<String> flux = reactiveCqlTemplate.query("SELECT * from USERS", (row, index) -> row.getString(0));
 
-			flux.as(StepVerifier::create).expectNext("Walter", "Hank", " Jesse").verifyComplete();
+			flux.as(StepVerifier::create).expectNext("Walter", "Hank", "Jesse").verifyComplete();
 
 			verify(session).execute(any(Statement.class));
 		});
@@ -195,7 +195,7 @@ class ReactiveCqlTemplateUnitTests {
 
 			Flux<String> flux = reactiveCqlTemplate.query("SELECT * from USERS", (row, index) -> row.getString(0));
 
-			flux.as(StepVerifier::create).expectNext("Walter", "Hank", " Jesse").verifyComplete();
+			flux.as(StepVerifier::create).expectNext("Walter", "Hank", "Jesse").verifyComplete();
 
 			verify(session).execute(any(Statement.class));
 		});
@@ -387,7 +387,7 @@ class ReactiveCqlTemplateUnitTests {
 			Flux<String> flux = reactiveCqlTemplate.query(SimpleStatement.newInstance("SELECT * from USERS"),
 					(row, index) -> row.getString(0));
 
-			flux.as(StepVerifier::create).expectNext("Walter", "Hank", " Jesse").verifyComplete();
+			flux.as(StepVerifier::create).expectNext("Walter", "Hank", "Jesse").verifyComplete();
 
 			verify(session).execute(any(Statement.class));
 		});
@@ -403,7 +403,7 @@ class ReactiveCqlTemplateUnitTests {
 
 			flux.collectList().as(StepVerifier::create).consumeNextWith(rows -> {
 
-				assertThat(rows).hasSize(3).contains("Walter", "Hank", " Jesse");
+				assertThat(rows).hasSize(3).contains("Walter", "Hank", "Jesse");
 			}).verifyComplete();
 
 			verify(session).execute(any(Statement.class));
@@ -817,7 +817,7 @@ class ReactiveCqlTemplateUnitTests {
 			@Nullable ConsistencyLevel serialConsistencyLevel, @Nullable String executionProfile,
 			@Nullable CqlIdentifier keyspace, Consumer<ReactiveCqlTemplate> cqlTemplateConsumer) {
 
-		String[] results = { "Walter", "Hank", " Jesse" };
+		String[] results = { "Walter", "Hank", "Jesse" };
 
 		when(this.session.execute((Statement) any())).thenReturn(Mono.just(reactiveResultSet));
 		when(this.reactiveResultSet.rows()).thenReturn(Flux.just(row, row, row));

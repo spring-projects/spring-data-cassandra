@@ -179,7 +179,7 @@ class AsyncCqlTemplateUnitTests {
 			List<String> rows = getUninterruptibly(
 					asyncCqlTemplate.query("SELECT * from USERS", (row, index) -> row.getString(0)));
 
-			assertThat(rows).hasSize(3).contains("Walter", "Hank", " Jesse");
+			assertThat(rows).hasSize(3).contains("Walter", "Hank", "Jesse");
 			verify(session).executeAsync(any(Statement.class));
 		});
 	}
@@ -192,7 +192,7 @@ class AsyncCqlTemplateUnitTests {
 			List<String> rows = getUninterruptibly(
 					asyncCqlTemplate.query("SELECT * from USERS", (row, index) -> row.getString(0)));
 
-			assertThat(rows).hasSize(3).contains("Walter", "Hank", " Jesse");
+			assertThat(rows).hasSize(3).contains("Walter", "Hank", "Jesse");
 			verify(session).executeAsync(any(Statement.class));
 		});
 	}
@@ -357,7 +357,7 @@ class AsyncCqlTemplateUnitTests {
 			ListenableFuture<List<String>> future = asyncCqlTemplate.query(SimpleStatement.newInstance("SELECT * from USERS"),
 					(row, index) -> row.getString(0));
 
-			assertThat(getUninterruptibly(future)).hasSize(3).contains("Walter", "Hank", " Jesse");
+			assertThat(getUninterruptibly(future)).hasSize(3).contains("Walter", "Hank", "Jesse");
 			verify(session).executeAsync(any(Statement.class));
 		});
 	}
@@ -370,7 +370,7 @@ class AsyncCqlTemplateUnitTests {
 			ListenableFuture<List<String>> future = asyncCqlTemplate.query(SimpleStatement.newInstance("SELECT * from USERS"),
 					(row, index) -> row.getString(0));
 
-			assertThat(getUninterruptibly(future)).hasSize(3).contains("Walter", "Hank", " Jesse");
+			assertThat(getUninterruptibly(future)).hasSize(3).contains("Walter", "Hank", "Jesse");
 			verify(session).executeAsync(any(Statement.class));
 		});
 	}
@@ -783,7 +783,7 @@ class AsyncCqlTemplateUnitTests {
 			@Nullable CqlIdentifier keyspace,
 			Consumer<AsyncCqlTemplate> cqlTemplateConsumer) {
 
-		String[] results = { "Walter", "Hank", " Jesse" };
+		String[] results = { "Walter", "Hank", "Jesse" };
 
 		when(this.session.executeAsync((Statement) any())).thenReturn(new TestResultSetFuture(resultSet));
 		when(this.resultSet.currentPage()).thenReturn(Arrays.asList(row, row, row));

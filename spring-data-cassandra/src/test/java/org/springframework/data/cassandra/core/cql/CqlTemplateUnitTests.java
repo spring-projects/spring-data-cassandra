@@ -158,7 +158,7 @@ class CqlTemplateUnitTests {
 
 			List<String> rows = cqlTemplate.query("SELECT * from USERS", (row, index) -> row.getString(0));
 
-			assertThat(rows).hasSize(3).contains("Walter", "Hank", " Jesse");
+			assertThat(rows).hasSize(3).contains("Walter", "Hank", "Jesse");
 			verify(session).execute(any(Statement.class));
 		});
 	}
@@ -170,7 +170,7 @@ class CqlTemplateUnitTests {
 
 			List<String> rows = cqlTemplate.query("SELECT * from USERS", (row, index) -> row.getString(0));
 
-			assertThat(rows).hasSize(3).contains("Walter", "Hank", " Jesse");
+			assertThat(rows).hasSize(3).contains("Walter", "Hank", "Jesse");
 			verify(session).execute(any(Statement.class));
 		});
 	}
@@ -321,7 +321,7 @@ class CqlTemplateUnitTests {
 			List<String> result = cqlTemplate.query(SimpleStatement.newInstance("SELECT * from USERS"),
 					(row, index) -> row.getString(0));
 
-			assertThat(result).hasSize(3).contains("Walter", "Hank", " Jesse");
+			assertThat(result).hasSize(3).contains("Walter", "Hank", "Jesse");
 			verify(session).execute(any(Statement.class));
 		});
 	}
@@ -334,7 +334,7 @@ class CqlTemplateUnitTests {
 			List<String> result = cqlTemplate.query(SimpleStatement.newInstance("SELECT * from USERS"),
 					(row, index) -> row.getString(0));
 
-			assertThat(result).hasSize(3).contains("Walter", "Hank", " Jesse");
+			assertThat(result).hasSize(3).contains("Walter", "Hank", "Jesse");
 			verify(session).execute(any(Statement.class));
 		});
 	}
@@ -347,7 +347,7 @@ class CqlTemplateUnitTests {
 			Stream<String> result = cqlTemplate.queryForStream(SimpleStatement.newInstance("SELECT * from USERS"),
 					(row, index) -> row.getString(0));
 
-			assertThat(result.collect(Collectors.toList())).hasSize(3).contains("Walter", "Hank", " Jesse");
+			assertThat(result.collect(Collectors.toList())).hasSize(3).contains("Walter", "Hank", "Jesse");
 			verify(session).execute(any(Statement.class));
 		});
 	}
@@ -756,7 +756,7 @@ class CqlTemplateUnitTests {
 			@Nullable ConsistencyLevel serialConsistencyLevel, @Nullable String executionProfile,
 			@Nullable CqlIdentifier keyspace, Consumer<CqlTemplate> cqlTemplateConsumer) {
 
-		String[] results = { "Walter", "Hank", " Jesse" };
+		String[] results = { "Walter", "Hank", "Jesse" };
 
 		List<Row> rows = Arrays.asList(row, row, row);
 		when(this.session.execute((Statement) any())).thenReturn(resultSet);
