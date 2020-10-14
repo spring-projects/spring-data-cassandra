@@ -1,6 +1,16 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 3.1.0-RC2 (2020-10-14)
+-----------------------------------------
+* DATACASS-810 - Add DataClassRowMapper.
+* DATACASS-809 - Add queryForStream methods to CqlOperations.
+* DATACASS-808 - Logging of CQL statements is broken.
+* DATACASS-807 - Adapt to changes in Spring Data Commons.
+* DATACASS-806 - Add support for suspend repository query methods returning List<T>.
+* DATACASS-803 - Release 3.1 RC2 (2020.0.0).
+
+
 Changes in version 3.1.0-RC1 (2020-09-16)
 -----------------------------------------
 * DATACASS-800 - Upgrade to Cassandra driver 4.9.0.
@@ -1295,6 +1305,7 @@ Changes in version 1.0.0.M1 (2014-03-31)
     * [DATACASS-100] - QueryOptions should only have ConsistencyLevel & RetryPolicy
     * [DATACASS-104] - Remove requirement for @PrimaryKeyClass when using composite primary keys
     * [DATACASS-107] - Support declarative query methods
+
 
 
 
