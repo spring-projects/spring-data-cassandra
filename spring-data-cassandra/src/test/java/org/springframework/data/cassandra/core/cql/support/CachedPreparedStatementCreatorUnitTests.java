@@ -37,6 +37,7 @@ import com.datastax.oss.driver.api.querybuilder.update.Assignment;
  * Unit tests for {@link CachedPreparedStatementCreator}.
  *
  * @author Mark Paluch
+ * @author Aldo Bongio
  */
 @RunWith(MockitoJUnitRunner.class)
 public class CachedPreparedStatementCreatorUnitTests {
@@ -179,4 +180,17 @@ public class CachedPreparedStatementCreatorUnitTests {
 		verify(session).prepare(firstStatement);
 		verify(session).prepare(secondStatement);
 	}
+
+    @Test // DATACASS-814
+    void shouldUseCqlTextInCacheKey() {
+
+        String cql = "SELECT foo FROM users;";
+
+        MapPreparedStatementCache cache = MapPreparedStatementCache.create();
+        CachedPreparedStatementCreator creator = CachedPreparedStatementCreator.of(cache, cql);
+        creator.createPreparedStatement(session);
+
+        MapPreparedStatementCache.CacheKey cacheKey = cache.getCache().keySet().iterator().next();
+        assertThat(cacheKey.cql).isSameAs(cql);
+    }
 }

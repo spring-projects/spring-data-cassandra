@@ -35,6 +35,7 @@ import com.datastax.oss.driver.api.core.cql.SimpleStatement;
  * {@code cql} text. Statement options (idempotency, timeouts) apply from the statement that was initially prepared.
  *
  * @author Mark Paluch
+ * @author Aldo Bongio
  * @since 2.0
  */
 public class MapPreparedStatementCache implements PreparedStatementCache {
@@ -85,7 +86,7 @@ public class MapPreparedStatementCache implements PreparedStatementCache {
 	public PreparedStatement getPreparedStatement(CqlSession session, SimpleStatement statement,
 			Supplier<PreparedStatement> preparer) {
 
-		CacheKey cacheKey = new CacheKey(session, statement.toString());
+		CacheKey cacheKey = new CacheKey(session, statement.getQuery());
 
 		return getCache().computeIfAbsent(cacheKey, key -> preparer.get());
 	}
