@@ -181,16 +181,16 @@ public class CachedPreparedStatementCreatorUnitTests {
 		verify(session).prepare(secondStatement);
 	}
 
-    @Test // DATACASS-814
-    void shouldUseCqlTextInCacheKey() {
+	@Test // DATACASS-814
+	public void shouldUseCqlTextInCacheKey() {
 
-        String cql = "SELECT foo FROM users;";
+		String cql = "SELECT foo FROM users;";
 
-        MapPreparedStatementCache cache = MapPreparedStatementCache.create();
-        CachedPreparedStatementCreator creator = CachedPreparedStatementCreator.of(cache, cql);
-        creator.createPreparedStatement(session);
+		MapPreparedStatementCache cache = MapPreparedStatementCache.create();
+		CachedPreparedStatementCreator creator = CachedPreparedStatementCreator.of(cache, cql);
+		creator.createPreparedStatement(session);
 
-        MapPreparedStatementCache.CacheKey cacheKey = cache.getCache().keySet().iterator().next();
-        assertThat(cacheKey.cql).isSameAs(cql);
-    }
+		MapPreparedStatementCache.CacheKey cacheKey = cache.getCache().keySet().iterator().next();
+		assertThat(cacheKey.cql).isEqualTo(cql);
+	}
 }

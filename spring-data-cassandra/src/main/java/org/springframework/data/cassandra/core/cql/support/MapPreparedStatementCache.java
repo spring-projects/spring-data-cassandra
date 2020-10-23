@@ -80,7 +80,7 @@ public class MapPreparedStatementCache implements PreparedStatementCache {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.support.PrepatedStatementCache#getPreparedStatement(com.datastax.oss.driver.api.core.CqlSession, com.datastax.oss.driver.api.core.cql.SimpleStatement, java.util.function.Supplier)
+	 * @see org.springframework.data.cassandra.core.cql.support.PreparedStatementCache#getPreparedStatement(com.datastax.oss.driver.api.core.CqlSession, com.datastax.oss.driver.api.core.cql.SimpleStatement, java.util.function.Supplier)
 	 */
 	@Override
 	public PreparedStatement getPreparedStatement(CqlSession session, SimpleStatement statement,
