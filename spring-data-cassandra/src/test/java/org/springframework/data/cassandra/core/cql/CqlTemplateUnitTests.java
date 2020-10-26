@@ -56,7 +56,7 @@ import com.datastax.oss.driver.api.core.servererrors.InvalidQueryException;
  *
  * @author Mark Paluch
  */
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(MockitoJUnitRunner.Silent.class)
 public class CqlTemplateUnitTests {
 
 	@Mock CqlSession session;
