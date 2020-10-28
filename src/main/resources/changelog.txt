@@ -1,6 +1,11 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 2.2.11.RELEASE (2020-10-28)
+----------------------------------------------
+* DATACASS-801 - Release 2.2.11 (Moore SR11).
+
+
 Changes in version 2.1.21.RELEASE (2020-10-28)
 ----------------------------------------------
 * DATACASS-815 - Release 2.1.21 (Lovelace SR21).
@@ -1310,6 +1315,7 @@ Changes in version 1.0.0.M1 (2014-03-31)
     * [DATACASS-100] - QueryOptions should only have ConsistencyLevel & RetryPolicy
     * [DATACASS-104] - Remove requirement for @PrimaryKeyClass when using composite primary keys
     * [DATACASS-107] - Support declarative query methods
+
 
 
 
