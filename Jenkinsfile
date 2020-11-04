@@ -61,6 +61,7 @@ pipeline {
 						docker {
 							image 'springci/spring-data-openjdk8-cassandra-3.11:latest'
 							label 'data'
+							args '-v $HOME:/tmp/jenkins-home'
 						}
 					}
 					options { timeout(time: 30, unit: 'MINUTES') }
@@ -85,6 +86,7 @@ pipeline {
 						docker {
 							image 'springci/spring-data-openjdk11-8-cassandra-3.11:latest'
 							label 'data'
+							args '-v $HOME:/tmp/jenkins-home'
 						}
 					}
 					options { timeout(time: 30, unit: 'MINUTES') }
@@ -107,6 +109,7 @@ pipeline {
 				docker {
 					image 'adoptopenjdk/openjdk8:latest'
 					label 'data'
+					args '-v $HOME:/tmp/jenkins-home'
 				}
 			}
 			options { timeout(time: 20, unit: 'MINUTES') }
@@ -135,6 +138,7 @@ pipeline {
 				docker {
 					image 'adoptopenjdk/openjdk8:latest'
 					label 'data'
+					args '-v $HOME:/tmp/jenkins-home'
 				}
 			}
 			options { timeout(time: 20, unit: 'MINUTES') }
