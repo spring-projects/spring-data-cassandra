@@ -1,6 +1,12 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 3.1.1 (2020-11-11)
+-------------------------------------
+* DATACASS-821 - Enable Maven caching for Jenkins jobs.
+* DATACASS-819 - Release 3.1.1 (2020.0.1).
+
+
 Changes in version 3.1.0 (2020-10-28)
 -------------------------------------
 * DATACASS-816 - Documentation wording changes.
@@ -1330,6 +1336,7 @@ Changes in version 1.0.0.M1 (2014-03-31)
     * [DATACASS-100] - QueryOptions should only have ConsistencyLevel & RetryPolicy
     * [DATACASS-104] - Remove requirement for @PrimaryKeyClass when using composite primary keys
     * [DATACASS-107] - Support declarative query methods
+
 
 
 
