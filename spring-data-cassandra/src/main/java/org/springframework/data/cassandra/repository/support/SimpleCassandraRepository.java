@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.core.InsertOptions;
@@ -44,6 +45,7 @@ import com.datastax.oss.driver.api.querybuilder.insert.Insert;
  * @author Matthew T. Adams
  * @author Mark Paluch
  * @author John Blum
+ * @author Jens Schauder
  * @see org.springframework.data.cassandra.repository.CassandraRepository
  */
 public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, ID> {
@@ -188,19 +190,11 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 
 		Assert.notNull(ids, "The given Iterable of id's must not be null");
 
-		FindByIdQuery mapIdQuery = FindByIdQuery.forIds(ids);
-		List<Object> idCollection = mapIdQuery.getIdCollection();
-		String idField = mapIdQuery.getIdProperty();
-
-		if (idCollection.isEmpty()) {
+		if (!ids.iterator().hasNext()) {
 			return Collections.emptyList();
 		}
 
-		if (idField == null) {
-			idField = this.entityInformation.getIdAttribute();
-		}
-
-		return this.operations.select(Query.query(where(idField).in(idCollection)), this.entityInformation.getJavaType());
+		return this.operations.select(createIdsInQuery(ids), this.entityInformation.getJavaType());
 	}
 
 	/* (non-Javadoc)
@@ -247,6 +241,18 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 		entities.forEach(this.operations::delete);
 	}
 
+	@Override
+	public void deleteAllById(Iterable<? extends ID> ids) {
+
+		Assert.notNull(ids, "The given Iterable of ids must not be null");
+
+		if (!ids.iterator().hasNext()) {
+			return;
+		}
+
+		this.operations.delete(createIdsInQuery(ids), this.entityInformation.getJavaType());
+	}
+
 	/* (non-Javadoc)
 	 * @see org.springframework.data.repository.CrudRepository#deleteAll()
 	 */
@@ -254,4 +260,17 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 	public void deleteAll() {
 		this.operations.truncate(this.entityInformation.getJavaType());
 	}
+
+	private Query createIdsInQuery(Iterable<? extends ID> ids) {
+		FindByIdQuery mapIdQuery = FindByIdQuery.forIds(ids);
+		List<Object> idCollection = mapIdQuery.getIdCollection();
+		String idField = mapIdQuery.getIdProperty();
+
+		if (idField == null) {
+			idField = this.entityInformation.getIdAttribute();
+		}
+
+		return Query.query(where(idField).in(idCollection));
+	}
+
 }

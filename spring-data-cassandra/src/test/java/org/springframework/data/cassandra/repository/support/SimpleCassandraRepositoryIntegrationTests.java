@@ -62,6 +62,7 @@ import com.datastax.oss.driver.api.core.CqlSession;
  * Integration tests for {@link SimpleCassandraRepository}.
  *
  * @author Mark Paluch
+ * @author Jens Schauder
  */
 @SpringJUnitConfig
 public class SimpleCassandraRepositoryIntegrationTests extends IntegrationTestsSupport
@@ -349,6 +350,16 @@ public class SimpleCassandraRepositoryIntegrationTests extends IntegrationTestsS
 	void deleteByIdShouldRemoveEntity() {
 
 		repository.deleteById(dave.getId());
+
+		Optional<User> loaded = repository.findById(dave.getId());
+
+		assertThat(loaded).isEmpty();
+	}
+
+	@Test // DATACASS-825
+	void deleteAllByIdShouldRemoveEntity() {
+
+		repository.deleteAllById(Arrays.asList(dave.getId()));
 
 		Optional<User> loaded = repository.findById(dave.getId());
 

@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.repository.support;
 
 import static org.springframework.data.cassandra.core.query.Criteria.*;
 
+import org.jetbrains.annotations.NotNull;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -40,6 +41,7 @@ import org.springframework.util.Assert;
  *
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Jens Schauder
  * @since 2.0
  */
 public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassandraRepository<T, ID> {
@@ -224,19 +226,11 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 			return findAllById(Flux.fromIterable(ids));
 		}
 
-		FindByIdQuery query = FindByIdQuery.forIds(ids);
-		List<Object> idCollection = query.getIdCollection();
-		String idField = query.getIdProperty();
-
-		if (idCollection.isEmpty()) {
+		if (!ids.iterator().hasNext()) {
 			return Flux.empty();
 		}
 
-		if (idField == null) {
-			idField = this.entityInformation.getIdAttribute();
-		}
-
-		return this.operations.select(Query.query(where(idField).in(idCollection)), this.entityInformation.getJavaType());
+		return this.operations.select(createIdsInCollectionQuery(ids), this.entityInformation.getJavaType());
 	}
 
 	/*
@@ -304,6 +298,22 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 		return Flux.fromIterable(entities).flatMap(this.operations::delete).then();
 	}
 
+	@Override
+	public Mono<Void> deleteAllById(Iterable<? extends ID> ids) {
+
+		Assert.notNull(ids, "The given Iterable of entities must not be null");
+
+		if (FindByIdQuery.hasCompositeKeys(ids)) {
+			return deleteById(Flux.fromIterable(ids));
+		}
+
+		if (!ids.iterator().hasNext()) {
+			return Mono.empty();
+		}
+
+		return this.operations.delete(createIdsInCollectionQuery(ids), this.entityInformation.getJavaType()).then();
+	}
+
 	/* (non-Javadoc)
 	 * @see org.springframework.data.repository.reactive.ReactiveCrudRepository#deleteAll(org.reactivestreams.Publisher)
 	 */
@@ -313,5 +323,18 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 		Assert.notNull(entityStream, "The given Publisher of entities must not be null");
 
 		return Flux.from(entityStream).flatMap(this.operations::delete).then();
+	}
+
+	private Query createIdsInCollectionQuery(Iterable<? extends ID> ids) {
+
+		FindByIdQuery query = FindByIdQuery.forIds(ids);
+		List<Object> idCollection = query.getIdCollection();
+		String idField = query.getIdProperty();
+
+		if (idField == null) {
+			idField = this.entityInformation.getIdAttribute();
+		}
+
+		return Query.query(where(idField).in(idCollection));
 	}
 }
