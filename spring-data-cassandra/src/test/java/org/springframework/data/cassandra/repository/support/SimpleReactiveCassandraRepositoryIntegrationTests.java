@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
+import static org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assume.*;
 
@@ -59,6 +60,7 @@ import com.datastax.oss.driver.api.core.CqlSession;
  *
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Jens Schauder
  */
 @SpringJUnitConfig
 public class SimpleReactiveCassandraRepositoryIntegrationTests extends IntegrationTestsSupport
@@ -389,6 +391,17 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends Integrati
 		repository.deleteById(Mono.just(dave.getId())).as(StepVerifier::create).verifyComplete();
 
 		repository.existsById(dave.getId()).as(StepVerifier::create).expectNext(false).verifyComplete();
+	}
+
+	@Test // DATACASS-825
+	void deleteAllByIdRemovesEntities() {
+
+		insertTestData();
+
+		repository.deleteAllById(Arrays.asList(dave.getId(), carter.getId())).as(StepVerifier::create).verifyComplete();
+
+		repository.existsById(dave.getId()).as(StepVerifier::create).expectNext(false).verifyComplete();
+		repository.existsById(carter.getId()).as(StepVerifier::create).expectNext(false).verifyComplete();
 	}
 
 	@Test // DATACASS-462

@@ -40,6 +40,7 @@ import org.springframework.util.Assert;
  *
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Jens Schauder
  * @since 2.0
  */
 public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassandraRepository<T, ID> {
@@ -302,6 +303,14 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 		Assert.notNull(entities, "The given Iterable of entities must not be null");
 
 		return Flux.fromIterable(entities).flatMap(this.operations::delete).then();
+	}
+
+	@Override
+	public Mono<Void> deleteAllById(Iterable<? extends ID> ids) {
+
+		Assert.notNull(ids, "The given Iterable of entities must not be null");
+
+		return Flux.fromIterable(ids).flatMap(this::deleteById).then();
 	}
 
 	/* (non-Javadoc)

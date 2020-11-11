@@ -44,6 +44,7 @@ import com.datastax.oss.driver.api.querybuilder.insert.Insert;
  * @author Matthew T. Adams
  * @author Mark Paluch
  * @author John Blum
+ * @author Jens Schauder
  * @see org.springframework.data.cassandra.repository.CassandraRepository
  */
 public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, ID> {
@@ -245,6 +246,14 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 		Assert.notNull(entities, "The given Iterable of entities must not be null");
 
 		entities.forEach(this.operations::delete);
+	}
+
+	@Override
+	public void deleteAllById(Iterable<? extends ID> ids) {
+
+		Assert.notNull(ids, "The given Iterable of ids must not be null");
+
+		ids.forEach(id -> operations.deleteById(id, entityInformation.getJavaType()));
 	}
 
 	/* (non-Javadoc)
