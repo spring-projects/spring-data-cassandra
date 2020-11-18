@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.core.convert;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
+import static org.springframework.data.domain.Sort.Order.*;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -328,13 +329,15 @@ public class QueryMapperUnitTests {
 		assertThat(mappedObject).contains(new Order(Direction.ASC, "first_name"));
 	}
 
-	@Test // DATACASS-343
-	void shouldFailMappingSortByCompositePrimaryKeyClass() {
+	@Test // DATACASS-828
+	void allowSortByCompositeKey() {
 
 		Sort sort = Sort.by("key");
+		Query.empty().columns(Columns.from("key"));
 
-		assertThatIllegalArgumentException().isThrownBy(
-				() -> queryMapper.getMappedSort(sort, mappingContext.getRequiredPersistentEntity(TypeWithKeyClass.class)));
+		Sort mappedSort = queryMapper.getMappedSort(sort,
+				mappingContext.getRequiredPersistentEntity(TypeWithKeyClass.class));
+		assertThat(mappedSort).isEqualTo(Sort.by(asc("first_name"), asc("lastname")));
 	}
 
 	@Test // DATACASS-343
