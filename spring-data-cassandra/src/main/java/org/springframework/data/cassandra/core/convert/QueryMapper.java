@@ -22,8 +22,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
+import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
@@ -167,8 +167,14 @@ public class QueryMapper {
 
 			Field field = createPropertyField(entity, column);
 
-			columns.getSelector(column).ifPresent(selector -> getCqlIdentifier(column, field)
-					.ifPresent(cqlIdentifier -> selectors.add(getMappedSelector(selector, cqlIdentifier))));
+			columns.getSelector(column).ifPresent(selector -> {
+
+				List<CqlIdentifier> mappedColumnNames = getCqlIdentifier(column, field);
+
+				for (CqlIdentifier mappedColumnName : mappedColumnNames) {
+					selectors.add(getMappedSelector(selector, mappedColumnName));
+				}
+			});
 		}
 
 		if (columns.isEmpty()) {
@@ -207,17 +213,15 @@ public class QueryMapper {
 
 			FunctionCall functionCall = (FunctionCall) selector;
 
-			List<Object> mappedParameters = functionCall.getParameters().stream().map(obj -> {
+			FunctionCall mappedFunctionCall = FunctionCall.from(functionCall.getExpression(),
+					functionCall.getParameters().stream().map(obj -> {
 
-				if (obj instanceof Selector) {
-					return getMappedSelector((Selector) obj, cqlIdentifier);
-				}
+						if (obj instanceof Selector) {
+							return getMappedSelector((Selector) obj, cqlIdentifier);
+						}
 
-				return obj;
-			}) //
-					.collect(Collectors.toList());
-
-			FunctionCall mappedFunctionCall = FunctionCall.from(functionCall.getExpression(), mappedParameters.toArray());
+						return obj;
+					}).toArray());
 
 			return functionCall.getAlias() //
 					.map(mappedFunctionCall::as) //
@@ -252,11 +256,10 @@ public class QueryMapper {
 		for (ColumnName column : columns) {
 
 			Field field = createPropertyField(entity, column);
-
 			field.getProperty().ifPresent(seen::add);
 
 			columns.getSelector(column).filter(selector -> selector instanceof ColumnSelector)
-					.ifPresent(columnSelector -> getCqlIdentifier(column, field).ifPresent(columnNames::add));
+					.ifPresent(columnSelector -> columnNames.addAll(getCqlIdentifier(column, field)));
 		}
 
 		if (columns.isEmpty()) {
@@ -293,40 +296,49 @@ public class QueryMapper {
 
 			Field field = createPropertyField(entity, columnName);
 
-			Order mappedOrder = getCqlIdentifier(columnName, field)
-					.map(cqlIdentifier -> new Order(order.getDirection(), cqlIdentifier.toString())).orElse(order);
+			List<CqlIdentifier> mappedColumnNames = getCqlIdentifier(columnName, field);
 
-			mappedOrders.add(mappedOrder);
+			if (mappedColumnNames.isEmpty()) {
+				mappedOrders.add(order);
+			} else {
+				for (CqlIdentifier mappedColumnName : mappedColumnNames) {
+					mappedOrders.add(new Order(order.getDirection(), mappedColumnName.toString()));
+				}
+			}
 		}
 
 		return Sort.by(mappedOrders);
 	}
 
-	private Optional<CqlIdentifier> getCqlIdentifier(ColumnName column, Field field) {
+	private List<CqlIdentifier> getCqlIdentifier(ColumnName column, Field field) {
 
+		List<CqlIdentifier> identifiers = new ArrayList<>(1);
 		try {
 			if (field.getProperty().isPresent()) {
 
-				return field.getProperty().map(cassandraPersistentProperty -> {
+				CassandraPersistentProperty property = field.getProperty().get();
 
-					if (cassandraPersistentProperty.isCompositePrimaryKey()) {
-						throw new IllegalArgumentException(
-								"Cannot use composite primary key directly. Reference a property of the composite primary key");
-					}
+				if (property.isCompositePrimaryKey()) {
 
-					return cassandraPersistentProperty.getRequiredColumnName();
-				});
+					BasicCassandraPersistentEntity<?> primaryKeyEntity = mappingContext.getRequiredPersistentEntity(property);
+
+					primaryKeyEntity.forEach(it -> {
+						identifiers.add(it.getRequiredColumnName());
+					});
+				} else {
+					identifiers.add(property.getRequiredColumnName());
+				}
+			} else if (column.getColumnName().isPresent()) {
+				identifiers.add(CqlIdentifier.fromCql(column.getColumnName().get()));
+			} else {
+				column.getCqlIdentifier().ifPresent(identifiers::add);
 			}
-
-			if (column.getColumnName().isPresent()) {
-				return column.getColumnName().map(CqlIdentifier::fromCql);
-			}
-
-			return column.getCqlIdentifier();
 
 		} catch (IllegalStateException cause) {
 			throw new IllegalArgumentException(cause.getMessage(), cause);
 		}
+
+		return identifiers;
 	}
 
 	Field createPropertyField(@Nullable CassandraPersistentEntity<?> entity, ColumnName key) {

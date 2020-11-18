@@ -197,6 +197,21 @@ class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrat
 		assertThat(loadedEntity.getComment()).isNotNull();
 	}
 
+	@Test // DATACASS-828
+	void shouldSelectClosedProjectionWithCompositeKey() {
+
+		CompositeKey key = new CompositeKey("Walter", "White");
+		TypeWithCompositeKey user = new TypeWithCompositeKey(key, "comment");
+
+		template.insert(user);
+
+		WithCompositeKeyProjection loaded = template.query(TypeWithCompositeKey.class).as(WithCompositeKeyProjection.class)
+				.firstValue();
+		assertThat(loaded).isNotNull();
+
+		assertThat(loaded.getKey()).isEqualTo(key);
+	}
+
 	@Test // DATACASS-343
 	void shouldSelectOneByQuery() {
 
@@ -731,6 +746,11 @@ class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrat
 	static class TypeWithCompositeKey {
 		@PrimaryKey CompositeKey key;
 		String comment;
+	}
+
+	interface WithCompositeKeyProjection {
+
+		CompositeKey getKey();
 	}
 
 	@Data
