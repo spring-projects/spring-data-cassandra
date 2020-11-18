@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.config;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -26,6 +28,7 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.Resource;
 import org.springframework.data.cassandra.SessionFactory;
 import org.springframework.data.cassandra.core.cql.CqlTemplate;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateKeyspaceSpecification;
@@ -225,6 +228,33 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 	}
 
 	/**
+	 * Returns the {@link DriverConfigLoaderBuilderConfigurer}. The configuration gets applied after applying
+	 * {@link System#getProperties() System Properties} config overrides and before
+	 * {@link #getDriverConfigurationResource() the driver config file}.
+	 *
+	 * @return the {@link DriverConfigLoaderBuilderConfigurer}; may be {@literal null}.
+	 * @since 3.1.2
+	 */
+	@Nullable
+	protected DriverConfigLoaderBuilderConfigurer getDriverConfigLoaderBuilderConfigurer() {
+		return null;
+	}
+
+	/**
+	 * Returns the {@link Resource} pointing to a driver configuration file. The configuration file is applied after
+	 * applying {@link System#getProperties() System Properties} and the configuration built by this configuration class.
+	 *
+	 * @return the {@link Resource}; may be {@literal null} if none provided.
+	 * @since 3.1.2
+	 * @see <a href="https://docs.datastax.com/en/developer/java-driver/4.9/manual/core/configuration/">Driver
+	 *      Configuration</a>
+	 */
+	@Nullable
+	protected Resource getDriverConfigurationResource() {
+		return null;
+	}
+
+	/**
 	 * Returns the list of CQL scripts to be run on startup after {@link #getKeyspaceCreations() Keyspace creations}
 	 * and after initialization of the {@literal System} Keyspace.
 	 *
@@ -280,7 +310,9 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 
 	private SessionBuilderConfigurer getSessionBuilderConfigurerWrapper() {
 
-		SessionBuilderConfigurer configurer = getSessionBuilderConfigurer();
+		SessionBuilderConfigurer sessionConfigurer = getSessionBuilderConfigurer();
+		DriverConfigLoaderBuilderConfigurer driverConfigLoaderConfigurer = getDriverConfigLoaderBuilderConfigurer();
+		Resource driverConfigFile = getDriverConfigurationResource();
 
 		return sessionBuilder -> {
 
@@ -302,16 +334,30 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 
 				ConfigFactory.invalidateCaches();
 
-				return ConfigFactory.defaultOverrides() //
-						.withFallback(options.build()) //
-						.withFallback(ConfigFactory.defaultReference());
+				Config config = ConfigFactory.defaultOverrides() //
+						.withFallback(options.build());
+
+				if (driverConfigFile != null) {
+					try {
+						config = config
+								.withFallback(ConfigFactory.parseReader(new InputStreamReader(driverConfigFile.getInputStream())));
+					} catch (IOException e) {
+						throw new IllegalStateException(String.format("Cannot parse driver config file %s", driverConfigFile), e);
+					}
+				}
+
+				return config.withFallback(ConfigFactory.defaultReference());
 
 			}, DefaultDriverConfigLoader.DEFAULT_ROOT_PATH);
 
+			if (driverConfigLoaderConfigurer != null) {
+				driverConfigLoaderConfigurer.configure(builder);
+			}
+
 			sessionBuilder.withConfigLoader(builder.build());
 
-			if (configurer != null) {
-				return configurer.configure(sessionBuilder);
+			if (sessionConfigurer != null) {
+				return sessionConfigurer.configure(sessionBuilder);
 			}
 
 			return sessionBuilder;
