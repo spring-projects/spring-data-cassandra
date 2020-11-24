@@ -15,7 +15,6 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
-import static java.util.Arrays.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assume.*;
 
@@ -127,7 +126,7 @@ public class SimpleCassandraRepositoryIntegrationTests extends IntegrationTestsS
 		carter = new User("49", "Carter", "Beauford");
 		boyd = new User("45", "Boyd", "Tinsley");
 
-		repository.saveAll(asList(oliver, dave, carter, boyd));
+		repository.saveAll(Arrays.asList(oliver, dave, carter, boyd));
 
 		eventListener.clear();
 	}
@@ -183,7 +182,7 @@ public class SimpleCassandraRepositoryIntegrationTests extends IntegrationTestsS
 	@Test // DATACASS-396, DATACASS-416
 	void findAllByIterableOfIdShouldReturnResults() {
 
-		List<User> Users = repository.findAllById(asList(dave.getId(), boyd.getId()));
+		List<User> Users = repository.findAllById(Arrays.asList(dave.getId(), boyd.getId()));
 
 		assertThat(Users).hasSize(2);
 	}
@@ -255,7 +254,7 @@ public class SimpleCassandraRepositoryIntegrationTests extends IntegrationTestsS
 
 		repository.deleteAll();
 
-		repository.insert(asList(dave, oliver, boyd));
+		repository.insert(Arrays.asList(dave, oliver, boyd));
 
 		assertThat(repository.count()).isEqualTo(3);
 	}
@@ -311,7 +310,7 @@ public class SimpleCassandraRepositoryIntegrationTests extends IntegrationTestsS
 
 		repository.deleteAll();
 
-		List<User> saved = repository.saveAll(asList(dave, oliver, boyd));
+		List<User> saved = repository.saveAll(Arrays.asList(dave, oliver, boyd));
 
 		assertThat(saved).hasSize(3).contains(dave, oliver, boyd);
 
@@ -326,7 +325,7 @@ public class SimpleCassandraRepositoryIntegrationTests extends IntegrationTestsS
 		dave.setFirstname("Hello, Dave");
 		dave.setLastname("Bowman");
 
-		List<User> saved = repository.saveAll(asList(User, dave));
+		List<User> saved = repository.saveAll(Arrays.asList(User, dave));
 
 		assertThat(saved).hasSize(2);
 
@@ -360,7 +359,7 @@ public class SimpleCassandraRepositoryIntegrationTests extends IntegrationTestsS
 	@Test // DATACASS-825
 	void deleteAllByIdShouldRemoveEntity() {
 
-		repository.deleteAllById(asList(dave.getId()));
+		repository.deleteAllById(Arrays.asList(dave.getId()));
 
 		Optional<User> loaded = repository.findById(dave.getId());
 
@@ -380,7 +379,7 @@ public class SimpleCassandraRepositoryIntegrationTests extends IntegrationTestsS
 	@Test // DATACASS-396
 	void deleteIterableOfEntitiesShouldRemoveEntities() {
 
-		repository.deleteAll(asList(dave, boyd));
+		repository.deleteAll(Arrays.asList(dave, boyd));
 
 		Optional<User> loaded = repository.findById(boyd.getId());
 

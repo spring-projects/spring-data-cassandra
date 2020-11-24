@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.repository.support;
 
 import static org.springframework.data.cassandra.core.query.Criteria.*;
 
+import org.jetbrains.annotations.NotNull;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -225,19 +226,11 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 			return findAllById(Flux.fromIterable(ids));
 		}
 
-		FindByIdQuery query = FindByIdQuery.forIds(ids);
-		List<Object> idCollection = query.getIdCollection();
-		String idField = query.getIdProperty();
-
-		if (idCollection.isEmpty()) {
+		if (!ids.iterator().hasNext()) {
 			return Flux.empty();
 		}
 
-		if (idField == null) {
-			idField = this.entityInformation.getIdAttribute();
-		}
-
-		return this.operations.select(Query.query(where(idField).in(idCollection)), this.entityInformation.getJavaType());
+		return this.operations.select(createIdsInCollectionQuery(ids), this.entityInformation.getJavaType());
 	}
 
 	/*
@@ -310,7 +303,15 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 
 		Assert.notNull(ids, "The given Iterable of entities must not be null");
 
-		return Flux.fromIterable(ids).flatMap(this::deleteById).then();
+		if (FindByIdQuery.hasCompositeKeys(ids)) {
+			return deleteById(Flux.fromIterable(ids));
+		}
+
+		if (!ids.iterator().hasNext()) {
+			return Mono.empty();
+		}
+
+		return this.operations.delete(createIdsInCollectionQuery(ids), this.entityInformation.getJavaType()).then();
 	}
 
 	/* (non-Javadoc)
@@ -322,5 +323,18 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 		Assert.notNull(entityStream, "The given Publisher of entities must not be null");
 
 		return Flux.from(entityStream).flatMap(this.operations::delete).then();
+	}
+
+	private Query createIdsInCollectionQuery(Iterable<? extends ID> ids) {
+
+		FindByIdQuery query = FindByIdQuery.forIds(ids);
+		List<Object> idCollection = query.getIdCollection();
+		String idField = query.getIdProperty();
+
+		if (idField == null) {
+			idField = this.entityInformation.getIdAttribute();
+		}
+
+		return Query.query(where(idField).in(idCollection));
 	}
 }
