@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import org.jetbrains.annotations.NotNull;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.core.InsertOptions;
@@ -35,8 +34,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.mapping.context.AbstractMappingContext;
 import org.springframework.util.Assert;
-
-import com.datastax.oss.driver.api.querybuilder.insert.Insert;
 
 /**
  * Repository base implementation for Cassandra.
@@ -74,6 +71,10 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 		this.operations = operations;
 		this.mappingContext = operations.getConverter().getMappingContext();
 	}
+
+	// -------------------------------------------------------------------------
+	// Methods from CrudRepository
+	// -------------------------------------------------------------------------
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.repository.CrudRepository#save(S)
@@ -113,6 +114,134 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 	}
 
 	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#findById(java.lang.Object)
+	 */
+	@Override
+	public Optional<T> findById(ID id) {
+
+		Assert.notNull(id, "The given id must not be null");
+
+		return Optional.ofNullable(doFindOne(id));
+	}
+
+	private T doFindOne(ID id) {
+		return this.operations.selectOneById(id, this.entityInformation.getJavaType());
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#existsById(java.lang.Object)
+	 */
+	@Override
+	public boolean existsById(ID id) {
+
+		Assert.notNull(id, "The given id must not be null");
+
+		return this.operations.exists(id, this.entityInformation.getJavaType());
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#findAll()
+	 */
+	@Override
+	public List<T> findAll() {
+		return this.operations.select(Query.empty(), this.entityInformation.getJavaType());
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#findAll(java.lang.Iterable)
+	 */
+	@Override
+	public List<T> findAllById(Iterable<ID> ids) {
+
+		Assert.notNull(ids, "The given Iterable of id's must not be null");
+
+		if (!ids.iterator().hasNext()) {
+			return Collections.emptyList();
+		}
+
+		return this.operations.select(createIdsInQuery(ids), this.entityInformation.getJavaType());
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#count()
+	 */
+	@Override
+	public long count() {
+		return this.operations.count(this.entityInformation.getJavaType());
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#deleteById(java.lang.Object)
+	 */
+	@Override
+	public void deleteById(ID id) {
+
+		Assert.notNull(id, "The given id must not be null");
+
+		this.operations.deleteById(id, this.entityInformation.getJavaType());
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#delete(java.lang.Object)
+	 */
+	@Override
+	public void delete(T entity) {
+
+		Assert.notNull(entity, "The given entity must not be null");
+
+		deleteById(this.entityInformation.getRequiredId(entity));
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#deleteAllById(java.lang.Iterable)
+	 */
+	@Override
+	public void deleteAllById(Iterable<? extends ID> ids) {
+
+		Assert.notNull(ids, "The given Iterable of ids must not be null");
+
+		if (!ids.iterator().hasNext()) {
+			return;
+		}
+
+		this.operations.delete(createIdsInQuery(ids), this.entityInformation.getJavaType());
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#deleteAll(java.lang.Iterable)
+	 */
+	@Override
+	public void deleteAll(Iterable<? extends T> entities) {
+
+		Assert.notNull(entities, "The given Iterable of entities must not be null");
+
+		entities.forEach(this.operations::delete);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.repository.CrudRepository#deleteAll()
+	 */
+	@Override
+	public void deleteAll() {
+		this.operations.truncate(this.entityInformation.getJavaType());
+	}
+
+	// -------------------------------------------------------------------------
+	// Methods from CassandraRepository
+	// -------------------------------------------------------------------------
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.repository.CassandraRepository#findAll(org.springframework.data.domain.Pageable)
+	 */
+	@Override
+	public Slice<T> findAll(Pageable pageable) {
+
+		Assert.notNull(pageable, "Pageable must not be null");
+
+		return this.operations.slice(Query.empty().pageRequest(pageable), this.entityInformation.getJavaType());
+	}
+
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.repository.TypedIdCassandraRepository#insert(java.lang.Object)
 	 */
 	@Override
@@ -140,128 +269,8 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 		return result;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#findById(java.lang.Object)
-	 */
-	@Override
-	public Optional<T> findById(ID id) {
-
-		Assert.notNull(id, "The given id must not be null");
-
-		return Optional.ofNullable(doFindOne(id));
-	}
-
-	private T doFindOne(ID id) {
-		return this.operations.selectOneById(id, this.entityInformation.getJavaType());
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#existsById(java.lang.Object)
-	 */
-	@Override
-	public boolean existsById(ID id) {
-
-		Assert.notNull(id, "The given id must not be null");
-
-		return this.operations.exists(id, this.entityInformation.getJavaType());
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#count()
-	 */
-	@Override
-	public long count() {
-		return this.operations.count(this.entityInformation.getJavaType());
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#findAll()
-	 */
-	@Override
-	public List<T> findAll() {
-		return this.operations.select(Query.empty(), this.entityInformation.getJavaType());
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#findAll(java.lang.Iterable)
-	 */
-	@Override
-	public List<T> findAllById(Iterable<ID> ids) {
-
-		Assert.notNull(ids, "The given Iterable of id's must not be null");
-
-		if (!ids.iterator().hasNext()) {
-			return Collections.emptyList();
-		}
-
-		return this.operations.select(createIdsInQuery(ids), this.entityInformation.getJavaType());
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.CassandraRepository#findAll(org.springframework.data.domain.Pageable)
-	 */
-	@Override
-	public Slice<T> findAll(Pageable pageable) {
-
-		Assert.notNull(pageable, "Pageable must not be null");
-
-		return this.operations.slice(Query.empty().pageRequest(pageable), this.entityInformation.getJavaType());
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#deleteById(java.lang.Object)
-	 */
-	@Override
-	public void deleteById(ID id) {
-
-		Assert.notNull(id, "The given id must not be null");
-
-		this.operations.deleteById(id, this.entityInformation.getJavaType());
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#delete(java.lang.Object)
-	 */
-	@Override
-	public void delete(T entity) {
-
-		Assert.notNull(entity, "The given entity must not be null");
-
-		deleteById(this.entityInformation.getRequiredId(entity));
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#deleteAll(java.lang.Iterable)
-	 */
-	@Override
-	public void deleteAll(Iterable<? extends T> entities) {
-
-		Assert.notNull(entities, "The given Iterable of entities must not be null");
-
-		entities.forEach(this.operations::delete);
-	}
-
-	@Override
-	public void deleteAllById(Iterable<? extends ID> ids) {
-
-		Assert.notNull(ids, "The given Iterable of ids must not be null");
-
-		if (!ids.iterator().hasNext()) {
-			return;
-		}
-
-		this.operations.delete(createIdsInQuery(ids), this.entityInformation.getJavaType());
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#deleteAll()
-	 */
-	@Override
-	public void deleteAll() {
-		this.operations.truncate(this.entityInformation.getJavaType());
-	}
-
 	private Query createIdsInQuery(Iterable<? extends ID> ids) {
+
 		FindByIdQuery mapIdQuery = FindByIdQuery.forIds(ids);
 		List<Object> idCollection = mapIdQuery.getIdCollection();
 		String idField = mapIdQuery.getIdProperty();

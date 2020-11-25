@@ -96,7 +96,6 @@ class FindByIdQuery {
 			if (id instanceof MapId) {
 
 				MapId mapId = (MapId) id;
-				Iterator<String> iterator = mapId.keySet().iterator();
 
 				if (mapId.size() > 1) {
 					return true;

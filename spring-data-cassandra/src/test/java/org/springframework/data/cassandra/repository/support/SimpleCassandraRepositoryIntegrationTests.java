@@ -20,6 +20,7 @@ import static org.junit.Assume.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -359,7 +360,7 @@ public class SimpleCassandraRepositoryIntegrationTests extends IntegrationTestsS
 	@Test // DATACASS-825
 	void deleteAllByIdShouldRemoveEntity() {
 
-		repository.deleteAllById(Arrays.asList(dave.getId()));
+		repository.deleteAllById(Collections.singletonList(dave.getId()));
 
 		Optional<User> loaded = repository.findById(dave.getId());
 
