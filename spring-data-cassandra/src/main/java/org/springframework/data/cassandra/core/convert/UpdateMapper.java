@@ -149,7 +149,9 @@ public class UpdateMapper extends QueryMapper {
 			return new SetAtKeyOp(field.getMappedKey(), mappedKey, mappedValue);
 		}
 
-		ColumnType descriptor = getColumnType(field, rawValue, null);
+		ColumnType descriptor = getColumnType(field, rawValue,
+				updateOp instanceof SetAtIndexOp ? ColumnTypeTransformer.COLLECTION_COMPONENT_TYPE
+						: ColumnTypeTransformer.AS_IS);
 
 		if (updateOp instanceof SetAtIndexOp) {
 
@@ -189,7 +191,7 @@ public class UpdateMapper extends QueryMapper {
 	private AssignmentOp getMappedUpdateOperation(Field field, RemoveOp updateOp) {
 
 		Object value = updateOp.getValue();
-		ColumnType descriptor = getColumnType(field, value, null);
+		ColumnType descriptor = getColumnType(field, value, ColumnTypeTransformer.AS_IS);
 		Object mappedValue = getConverter().convertToColumnType(value, descriptor);
 
 		return new RemoveOp(field.getMappedKey(), mappedValue);
@@ -199,7 +201,7 @@ public class UpdateMapper extends QueryMapper {
 	private AssignmentOp getMappedUpdateOperation(Field field, AddToOp updateOp) {
 
 		Iterable<Object> value = updateOp.getValue();
-		ColumnType descriptor = getColumnType(field, value, null);
+		ColumnType descriptor = getColumnType(field, value, ColumnTypeTransformer.AS_IS);
 		Collection<Object> mappedValue = (Collection) getConverter().convertToColumnType(value, descriptor);
 
 		if (field.getProperty().isPresent()) {
