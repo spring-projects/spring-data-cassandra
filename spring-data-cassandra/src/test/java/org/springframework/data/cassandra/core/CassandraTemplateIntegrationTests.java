@@ -47,6 +47,7 @@ import org.springframework.data.cassandra.core.mapping.PrimaryKey;
 import org.springframework.data.cassandra.core.mapping.PrimaryKeyClass;
 import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
 import org.springframework.data.cassandra.core.mapping.SimpleUserTypeResolver;
+import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.core.mapping.UserDefinedType;
 import org.springframework.data.cassandra.core.query.CassandraPageRequest;
 import org.springframework.data.cassandra.core.query.Columns;
@@ -100,6 +101,7 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 		SchemaTestUtils.potentiallyCreateTableFor(WithPrefixedNullableEmbeddedType.class, template);
 		SchemaTestUtils.createTableAndTypes(OuterWithNullableEmbeddedType.class, template);
 		SchemaTestUtils.createTableAndTypes(OuterWithPrefixedNullableEmbeddedType.class, template);
+		SchemaTestUtils.createTableAndTypes(WithMappedUdtList.class, template);
 		SchemaTestUtils.truncate(User.class, template);
 		SchemaTestUtils.truncate(UserToken.class, template);
 		SchemaTestUtils.truncate(BookReference.class, template);
@@ -109,6 +111,7 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 		SchemaTestUtils.truncate(WithPrefixedNullableEmbeddedType.class, template);
 		SchemaTestUtils.truncate(OuterWithNullableEmbeddedType.class, template);
 		SchemaTestUtils.truncate(OuterWithPrefixedNullableEmbeddedType.class, template);
+		SchemaTestUtils.truncate(WithMappedUdtList.class, template);
 	}
 
 	@Test // DATACASS-343
@@ -682,6 +685,39 @@ public class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingI
 		OuterWithNullableEmbeddedType target = template.selectOne(Query.query(where("id").is("id-1")),
 				OuterWithNullableEmbeddedType.class);
 		assertThat(target).isEqualTo(entity);
+	}
+
+	@Test // DATACASS-829
+	public void shouldPartiallyUpdateListOfMappedUdt() {
+
+		WithMappedUdtList entity = new WithMappedUdtList();
+		entity.id = "id-1";
+		entity.mappedUdts = Arrays.asList(new MappedUdt("one"), new MappedUdt("two"), new MappedUdt("three"));
+
+		template.insert(entity);
+
+		Update update = Update.empty().set("mappedUdts").atIndex(1).to(new MappedUdt("replacement"));
+
+		template.update(Query.query(where("id").is("id-1")), update, WithMappedUdtList.class);
+
+		WithMappedUdtList updated = template.selectOne(Query.query(where("id").is("id-1")), WithMappedUdtList.class);
+		assertThat(updated.getMappedUdts()).extracting(MappedUdt::getName).containsExactly("one", "replacement", "three");
+	}
+
+	@Data
+	@UserDefinedType
+	static class MappedUdt {
+
+		final String name;
+	}
+
+	@Data
+	@Table
+	static class WithMappedUdtList {
+
+		@Id String id;
+
+		List<MappedUdt> mappedUdts;
 	}
 
 	@Data

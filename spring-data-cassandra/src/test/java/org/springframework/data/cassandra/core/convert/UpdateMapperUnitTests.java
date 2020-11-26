@@ -132,6 +132,16 @@ public class UpdateMapperUnitTests {
 		assertThat(update).hasToString("list[10] = 'Euro'");
 	}
 
+	@Test // DATACASS-829
+	public void shouldCreateSetAtUdtIndexUpdate() {
+
+		Update update = updateMapper.getMappedObject(
+				Update.empty().set("manufacturerList").atIndex(10).to(new Manufacturer("foo")), persistentEntity);
+
+		assertThat(update.getUpdateOperations()).hasSize(1);
+		assertThat(update).hasToString("manufacturerlist[10] = {name:'foo'}");
+	}
+
 	@Test // DATACASS-343
 	public void shouldCreateSetAtKeyUpdate() {
 
@@ -375,6 +385,8 @@ public class UpdateMapperUnitTests {
 
 		Map<String, Currency> map;
 		Map<Manufacturer, Currency> manufacturers;
+
+		List<Manufacturer> manufacturerList;
 
 		MappedTuple tuple;
 
