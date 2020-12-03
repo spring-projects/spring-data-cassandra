@@ -149,7 +149,7 @@ public abstract class AbstractCassandraQuery extends CassandraRepositoryQuerySup
 		} else if (isExistsQuery()) {
 			return new ExistsExecution(getOperations());
 		} else if (isModifyingQuery()) {
-			return ((statement, type) -> getOperations().getCqlOperations().queryForResultSet(statement).wasApplied());
+			return ((statement, type) -> getOperations().execute(statement).wasApplied());
 		} else {
 			return new SingleEntityExecution(getOperations(), isLimiting());
 		}

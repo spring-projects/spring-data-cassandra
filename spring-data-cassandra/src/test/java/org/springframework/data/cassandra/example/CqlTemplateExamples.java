@@ -74,6 +74,13 @@ public class CqlTemplateExamples {
 					}
 				});
 		// end::listOfRowMapper[]
+
+		// tag::preparedStatement[]
+		List<String> lastNames = cqlTemplate.query(
+				session -> session.prepare("SELECT last_name FROM t_actor WHERE id = ?"),
+				ps -> ps.bind(1212L),
+				(row, rowNum) -> row.getString(0));
+		// end::preparedStatement[]
 	}
 
 	// tag::findAllActors[]

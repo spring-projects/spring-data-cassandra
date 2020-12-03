@@ -3,6 +3,7 @@
 
 This chapter covers the details of the Spring Data Repository support for Apache Cassandra.
 Cassandra's repository support builds on the core repository support explained in "`<<repositories>>`".
+Cassandra repositories use `CassandraTemplate` and its wired `CqlTemplate` as infrastructure beans.
 You should understand the basic concepts explained there before proceeding.
 
 [[cassandra-repo-usage]]

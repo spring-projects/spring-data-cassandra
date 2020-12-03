@@ -31,6 +31,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Statement;
 
 /**
@@ -58,19 +59,19 @@ public interface CassandraOperations extends FluentCassandraOperations {
 	CassandraBatchOperations batchOps();
 
 	/**
-	 * Returns the underlying {@link CassandraConverter}.
-	 *
-	 * @return the underlying {@link CassandraConverter}.
-	 */
-	CassandraConverter getConverter();
-
-	/**
 	 * Expose the underlying {@link CqlOperations} to allow CQL operations.
 	 *
 	 * @return the underlying {@link CqlOperations}.
 	 * @see CqlOperations
 	 */
 	CqlOperations getCqlOperations();
+
+	/**
+	 * Returns the underlying {@link CassandraConverter}.
+	 *
+	 * @return the underlying {@link CassandraConverter}.
+	 */
+	CassandraConverter getConverter();
 
 	/**
 	 * The table name used for the specified class by this template.
@@ -122,6 +123,17 @@ public interface CassandraOperations extends FluentCassandraOperations {
 	// -------------------------------------------------------------------------
 	// Methods dealing with com.datastax.oss.driver.api.core.cql.Statement
 	// -------------------------------------------------------------------------
+
+	/**
+	 * Execute the a Cassandra {@link Statement}. Any errors that result from executing this command will be converted
+	 * into Spring's DAO exception hierarchy.
+	 *
+	 * @param statement a Cassandra {@link Statement}, must not be {@literal null}.
+	 * @return the {@link ResultSet}.
+	 * @throws DataAccessException if there is any problem executing the query.
+	 * @since 3.2
+	 */
+	ResultSet execute(Statement<?> statement) throws DataAccessException;
 
 	/**
 	 * Execute a {@code SELECT} query and convert the resulting items to a {@link List} of entities.

@@ -59,11 +59,21 @@ class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceCreating
 		DefaultBridgedReactiveSession session = new DefaultBridgedReactiveSession(this.session);
 
 		template = new ReactiveCassandraTemplate(new ReactiveCqlTemplate(session), converter);
+		prepareTemplate(template);
 
 		SchemaTestUtils.potentiallyCreateTableFor(User.class, cassandraTemplate);
 		SchemaTestUtils.potentiallyCreateTableFor(UserToken.class, cassandraTemplate);
 		SchemaTestUtils.truncate(User.class, cassandraTemplate);
 		SchemaTestUtils.truncate(UserToken.class, cassandraTemplate);
+	}
+
+	/**
+	 * Post-process the {@link ReactiveCassandraTemplate} before running the tests.
+	 *
+	 * @param template
+	 */
+	void prepareTemplate(ReactiveCassandraTemplate template) {
+		template.setUsePreparedStatements(false);
 	}
 
 	@Test // DATACASS-335

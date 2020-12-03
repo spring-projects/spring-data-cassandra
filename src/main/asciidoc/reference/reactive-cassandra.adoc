@@ -150,7 +150,7 @@ The `ReactiveCqlTemplate` class runs CQL queries and update statements and perfo
 It also catches CQL exceptions and translates them into the generic, more informative, exception hierarchy defined in the `org.springframework.dao` package.
 
 When you use the `ReactiveCqlTemplate` in your code, you need only implement callback interfaces, which have a clearly defined contract.
-Given a `Connection`, the `ReactivePreparedStatementCreator` callback interface creates a prepared statement with the provided CQL and any necessary parameter arguments.
+Given a `Connection`, the `ReactivePreparedStatementCreator` callback interface creates a <<cassandra.template.prepared-statements.cql,prepared statement>> with the provided CQL and any necessary parameter arguments.
 The `RowCallbackHandler`
 interface extracts values from each row of a `ReactiveResultSet`.
 

@@ -3,6 +3,11 @@
 
 This chapter summarizes changes and new features for each release.
 
+[[new-features.3-2-0]]
+== What's new in Spring Data for Apache Cassandra 3.2
+
+* <<cassandra.template.prepared-statements,Support for prepared statements>> using `CassandraTemplate` and repositories (enabled by default).
+
 [[new-features.3-1-0]]
 == What's new in Spring Data for Apache Cassandra 3.1
 

@@ -87,6 +87,7 @@ public class AsyncCassandraTemplateUnitTests {
 	void setUp() {
 
 		template = new AsyncCassandraTemplate(session);
+		template.setUsePreparedStatements(false);
 
 		when(session.executeAsync(any(Statement.class))).thenReturn(new TestResultSetFuture(resultSet));
 		when(row.getColumnDefinitions()).thenReturn(columnDefinitions);

@@ -4,6 +4,8 @@
 This chapter outlines the specialties handled by the reactive repository support for Apache Cassandra.
 It builds on the core repository infrastructure explained in <<cassandra.repositories>>, so you should have a good understanding of the basic concepts explained there.
 
+Cassandra repositories use `ReactiveCassandraTemplate` and its wired `ReactiveCqlTemplate` as infrastructure beans.
+
 Reactive usage is broken up into two phases: Composition and Execution.
 
 Calling repository methods lets you compose a reactive sequence by obtaining `Publisher` instances and applying operators.

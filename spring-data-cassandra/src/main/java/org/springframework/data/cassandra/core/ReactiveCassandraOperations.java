@@ -19,6 +19,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.cassandra.ReactiveResultSet;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.cql.ReactiveCqlOperations;
@@ -59,19 +60,19 @@ public interface ReactiveCassandraOperations extends ReactiveFluentCassandraOper
 	ReactiveCassandraBatchOperations batchOps();
 
 	/**
-	 * Returns the underlying {@link CassandraConverter}.
-	 *
-	 * @return the underlying {@link CassandraConverter}.
-	 */
-	CassandraConverter getConverter();
-
-	/**
 	 * Expose the underlying {@link ReactiveCqlOperations} to allow CQL operations.
 	 *
 	 * @return the underlying {@link ReactiveCqlOperations}.
 	 * @see ReactiveCqlOperations
 	 */
 	ReactiveCqlOperations getReactiveCqlOperations();
+
+	/**
+	 * Returns the underlying {@link CassandraConverter}.
+	 *
+	 * @return the underlying {@link CassandraConverter}.
+	 */
+	CassandraConverter getConverter();
 
 	// -------------------------------------------------------------------------
 	// Methods dealing with static CQL
@@ -136,6 +137,17 @@ public interface ReactiveCassandraOperations extends ReactiveFluentCassandraOper
 	// -------------------------------------------------------------------------
 	// Methods dealing with org.springframework.data.cassandra.core.query.Query
 	// -------------------------------------------------------------------------
+
+	/**
+	 * Execute the a Cassandra {@link Statement}. Any errors that result from executing this command will be converted
+	 * into Spring's DAO exception hierarchy.
+	 *
+	 * @param statement a Cassandra {@link Statement}, must not be {@literal null}.
+	 * @return the {@link ReactiveResultSet}.
+	 * @throws DataAccessException if there is any problem issuing the execution.
+	 * @since 3.2
+	 */
+	Mono<ReactiveResultSet> execute(Statement<?> statement) throws DataAccessException;
 
 	/**
 	 * Execute a {@code SELECT} query and convert the resulting items to a stream of entities.

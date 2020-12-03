@@ -15,7 +15,6 @@
  */
 package org.springframework.data.cassandra.repository
 
-import com.datastax.oss.driver.api.core.cql.Statement
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
@@ -55,7 +54,7 @@ class CoroutineRepositoryUnitTests {
 	fun `should discard result of suspended query method without result`() {
 
 		every { resultSet.wasApplied() } returns true
-		every { cqlOperations.queryForResultSet(any<Statement<*>>()) } returns Mono.just(resultSet)
+		every { operations.execute(any()) } returns Mono.just(resultSet)
 
 		val repository = repositoryFactory.getRepository(PersonRepository::class.java)
 

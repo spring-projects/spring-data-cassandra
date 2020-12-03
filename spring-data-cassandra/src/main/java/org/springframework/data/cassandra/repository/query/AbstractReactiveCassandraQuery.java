@@ -146,8 +146,9 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 		} else if (isExistsQuery()) {
 			return new ExistsExecution(getReactiveCassandraOperations());
 		} else if (isModifyingQuery()) {
-			return (statement, type) -> getReactiveCassandraOperations().getReactiveCqlOperations()
-					.queryForResultSet(statement).map(ReactiveResultSet::wasApplied);
+
+			return (statement, type) -> getReactiveCassandraOperations().execute(statement)
+					.map(ReactiveResultSet::wasApplied);
 		} else {
 			return new SingleEntityExecution(getReactiveCassandraOperations(), isLimiting());
 		}

@@ -57,11 +57,21 @@ class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 		MappingCassandraConverter converter = new MappingCassandraConverter();
 		CassandraTemplate cassandraTemplate = new CassandraTemplate(session, converter);
 		template = new AsyncCassandraTemplate(new AsyncCqlTemplate(session), converter);
+		prepareTemplate(template);
 
 		SchemaTestUtils.potentiallyCreateTableFor(User.class, cassandraTemplate);
 		SchemaTestUtils.potentiallyCreateTableFor(UserToken.class, cassandraTemplate);
 		SchemaTestUtils.truncate(User.class, cassandraTemplate);
 		SchemaTestUtils.truncate(UserToken.class, cassandraTemplate);
+	}
+
+	/**
+	 * Post-process the {@link AsyncCassandraTemplate} before running the tests.
+	 *
+	 * @param template
+	 */
+	void prepareTemplate(AsyncCassandraTemplate template) {
+		template.setUsePreparedStatements(false);
 	}
 
 	@Test // DATACASS-343

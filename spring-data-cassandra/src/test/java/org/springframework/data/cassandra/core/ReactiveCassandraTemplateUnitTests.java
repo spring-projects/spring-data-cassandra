@@ -84,6 +84,7 @@ class ReactiveCassandraTemplateUnitTests {
 	void setUp() {
 
 		template = new ReactiveCassandraTemplate(session);
+		template.setUsePreparedStatements(false);
 
 		when(session.execute(any(Statement.class))).thenReturn(Mono.just(reactiveResultSet));
 		when(row.getColumnDefinitions()).thenReturn(columnDefinitions);

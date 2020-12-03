@@ -97,6 +97,8 @@ class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrat
 
 		template = new CassandraTemplate(new CqlTemplate(session), converter);
 
+		prepareTemplate(template);
+
 		SchemaTestUtils.potentiallyCreateTableFor(User.class, template);
 		SchemaTestUtils.potentiallyCreateTableFor(UserToken.class, template);
 		SchemaTestUtils.potentiallyCreateTableFor(BookReference.class, template);
@@ -118,6 +120,15 @@ class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrat
 		SchemaTestUtils.truncate(OuterWithNullableEmbeddedType.class, template);
 		SchemaTestUtils.truncate(OuterWithPrefixedNullableEmbeddedType.class, template);
 		SchemaTestUtils.truncate(WithMappedUdtList.class, template);
+	}
+
+	/**
+	 * Post-process the {@link CassandraTemplate} before running the tests.
+	 *
+	 * @param template
+	 */
+	void prepareTemplate(CassandraTemplate template) {
+
 	}
 
 	@Test // DATACASS-343

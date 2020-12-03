@@ -36,6 +36,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.CassandraInvalidQueryException;
 import org.springframework.data.cassandra.config.SchemaAction;
+import org.springframework.data.cassandra.core.CassandraAdminTemplate;
 import org.springframework.data.cassandra.core.convert.CassandraCustomConversions;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
@@ -74,6 +75,13 @@ class RepositoryQueryMethodParameterTypesIntegrationTests
 		@Override
 		public SchemaAction getSchemaAction() {
 			return SchemaAction.RECREATE_DROP_UNUSED;
+		}
+
+		@Override
+		public CassandraAdminTemplate cassandraTemplate() {
+			CassandraAdminTemplate template = super.cassandraTemplate();
+			template.setUsePreparedStatements(false);
+			return template;
 		}
 	}
 

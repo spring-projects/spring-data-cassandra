@@ -142,17 +142,17 @@ interface ReactiveCassandraQueryExecution {
 		@Override
 		public Publisher<? extends Object> execute(Statement<?> statement, Class<?> type) {
 
-			return operations.select(statement, type).buffer(2).map(objects -> {
+			return operations.select(statement, type).buffer(2).handle((objects, sink) -> {
 
 				if (objects.isEmpty()) {
-					return null;
+					return;
 				}
 
 				if (objects.size() == 1 || limiting) {
-					return objects.get(0);
+					sink.next(objects.get(0));
 				}
 
-				throw new IncorrectResultSizeDataAccessException(1, objects.size());
+				sink.error(new IncorrectResultSizeDataAccessException(1, objects.size()));
 			});
 		}
 	}
@@ -178,7 +178,7 @@ interface ReactiveCassandraQueryExecution {
 		@Override
 		public Publisher<? extends Object> execute(Statement<?> statement, Class<?> type) {
 
-			Mono<List<Row>> rows = this.operations.getReactiveCqlOperations().queryForRows(statement).buffer(2).next();
+			Mono<List<Row>> rows = this.operations.select(statement, Row.class).buffer(2).next();
 
 			return rows.map(it -> {
 

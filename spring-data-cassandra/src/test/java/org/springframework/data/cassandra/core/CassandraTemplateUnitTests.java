@@ -82,6 +82,7 @@ class CassandraTemplateUnitTests {
 	void setUp() {
 
 		template = new CassandraTemplate(session);
+		template.setUsePreparedStatements(false);
 
 		when(session.execute(any(Statement.class))).thenReturn(resultSet);
 		when(row.getColumnDefinitions()).thenReturn(columnDefinitions);
