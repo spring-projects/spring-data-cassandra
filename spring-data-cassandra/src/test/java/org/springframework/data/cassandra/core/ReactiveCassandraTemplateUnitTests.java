@@ -24,6 +24,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -53,6 +55,7 @@ import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.Statement;
 import com.datastax.oss.driver.api.core.type.DataTypes;
+import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
 
 /**
  * Unit tests for {@link ReactiveCassandraTemplate}.
@@ -126,7 +129,7 @@ class ReactiveCassandraTemplateUnitTests {
 				.verifyComplete();
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery()).isEqualTo("SELECT * FROM users");
+		assertThat(render(statementCaptor.getValue())).isEqualTo("SELECT * FROM users");
 	}
 
 	@Test // DATACASS-335
@@ -161,7 +164,7 @@ class ReactiveCassandraTemplateUnitTests {
 				.verifyComplete();
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery()).isEqualTo("SELECT * FROM users WHERE id='myid' LIMIT 1");
+		assertThat(render(statementCaptor.getValue())).isEqualTo("SELECT * FROM users WHERE id='myid' LIMIT 1");
 	}
 
 	@Test // DATACASS-313
@@ -184,7 +187,7 @@ class ReactiveCassandraTemplateUnitTests {
 				}).verifyComplete();
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery()).isEqualTo("SELECT firstname FROM users LIMIT 1");
+		assertThat(render(statementCaptor.getValue())).isEqualTo("SELECT firstname FROM users LIMIT 1");
 	}
 
 	@Test // DATACASS-696
@@ -204,7 +207,7 @@ class ReactiveCassandraTemplateUnitTests {
 		template.exists("myid", User.class).as(StepVerifier::create).expectNext(true).verifyComplete();
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery()).isEqualTo("SELECT * FROM users WHERE id='myid' LIMIT 1");
+		assertThat(render(statementCaptor.getValue())).isEqualTo("SELECT * FROM users WHERE id='myid' LIMIT 1");
 	}
 
 	@Test // DATACASS-335
@@ -215,7 +218,7 @@ class ReactiveCassandraTemplateUnitTests {
 		template.exists("myid", User.class).as(StepVerifier::create).expectNext(false).verifyComplete();
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery()).isEqualTo("SELECT * FROM users WHERE id='myid' LIMIT 1");
+		assertThat(render(statementCaptor.getValue())).isEqualTo("SELECT * FROM users WHERE id='myid' LIMIT 1");
 	}
 
 	@Test // DATACASS-512
@@ -226,7 +229,7 @@ class ReactiveCassandraTemplateUnitTests {
 		template.exists(Query.empty(), User.class).as(StepVerifier::create).expectNext(true).verifyComplete();
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery()).isEqualTo("SELECT * FROM users LIMIT 1");
+		assertThat(render(statementCaptor.getValue())).isEqualTo("SELECT * FROM users LIMIT 1");
 	}
 
 	@Test // DATACASS-512
@@ -237,7 +240,7 @@ class ReactiveCassandraTemplateUnitTests {
 		template.exists(Query.empty(), User.class).as(StepVerifier::create).expectNext(false).verifyComplete();
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery()).isEqualTo("SELECT * FROM users LIMIT 1");
+		assertThat(render(statementCaptor.getValue())).isEqualTo("SELECT * FROM users LIMIT 1");
 	}
 
 	@Test // DATACASS-335
@@ -250,7 +253,7 @@ class ReactiveCassandraTemplateUnitTests {
 		template.count(User.class).as(StepVerifier::create).expectNext(42L).verifyComplete();
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery()).isEqualTo("SELECT count(1) FROM users");
+		assertThat(render(statementCaptor.getValue())).isEqualTo("SELECT count(1) FROM users");
 	}
 
 	@Test // DATACASS-512
@@ -263,7 +266,7 @@ class ReactiveCassandraTemplateUnitTests {
 		template.count(Query.empty(), User.class).as(StepVerifier::create).expectNext(42L).verifyComplete();
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery()).isEqualTo("SELECT count(1) FROM users");
+		assertThat(render(statementCaptor.getValue())).isEqualTo("SELECT count(1) FROM users");
 	}
 
 	@Test // DATACASS-335, DATACASS-618
@@ -276,7 +279,7 @@ class ReactiveCassandraTemplateUnitTests {
 		template.insert(user).as(StepVerifier::create).expectNext(user).verifyComplete();
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery())
+		assertThat(render(statementCaptor.getValue()))
 				.isEqualTo("INSERT INTO users (firstname,id,lastname) VALUES ('Walter','heisenberg','White')");
 		assertThat(beforeConvert).isSameAs(user);
 		assertThat(beforeSave).isSameAs(user);
@@ -292,7 +295,7 @@ class ReactiveCassandraTemplateUnitTests {
 		StepVerifier.create(template.insert(user)).expectNext(user).verifyComplete();
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery()).isEqualTo(
+		assertThat(render(statementCaptor.getValue())).isEqualTo(
 				"INSERT INTO vusers (firstname,id,lastname,version) VALUES ('Walter','heisenberg','White',0) IF NOT EXISTS");
 		assertThat(beforeConvert).isSameAs(user);
 		assertThat(beforeSave).isSameAs(user);
@@ -322,7 +325,7 @@ class ReactiveCassandraTemplateUnitTests {
 		template.update(user).as(StepVerifier::create).expectNext(user).verifyComplete();
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery())
+		assertThat(render(statementCaptor.getValue()))
 				.isEqualTo("UPDATE users SET firstname='Walter', lastname='White' WHERE id='heisenberg'");
 		assertThat(beforeConvert).isSameAs(user);
 		assertThat(beforeSave).isSameAs(user);
@@ -340,7 +343,7 @@ class ReactiveCassandraTemplateUnitTests {
 		StepVerifier.create(template.update(user)).expectNext(user).verifyComplete();
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery()).isEqualTo(
+		assertThat(render(statementCaptor.getValue())).isEqualTo(
 				"UPDATE vusers SET firstname='Walter', lastname='White', version=1 WHERE id='heisenberg' IF version=0");
 		assertThat(beforeConvert).isSameAs(user);
 		assertThat(beforeSave).isSameAs(user);
@@ -360,7 +363,7 @@ class ReactiveCassandraTemplateUnitTests {
 				.verifyComplete();
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery())
+		assertThat(render(statementCaptor.getValue()))
 				.isEqualTo("UPDATE users SET firstname='Walter', lastname='White' WHERE id='heisenberg' IF EXISTS");
 	}
 
@@ -378,7 +381,7 @@ class ReactiveCassandraTemplateUnitTests {
 				.verifyComplete();
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery())
+		assertThat(render(statementCaptor.getValue()))
 				.isEqualTo("UPDATE users SET firstname='Walter', lastname='White' WHERE id='heisenberg' IF firstname='Walter'");
 	}
 
@@ -396,7 +399,7 @@ class ReactiveCassandraTemplateUnitTests {
 				.verifyComplete();
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery())
+		assertThat(render(statementCaptor.getValue()))
 				.isEqualTo("UPDATE users SET firstname='Walter' WHERE id='heisenberg'");
 	}
 
@@ -418,7 +421,7 @@ class ReactiveCassandraTemplateUnitTests {
 				.verifyComplete();
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery()).isEqualTo(
+		assertThat(render(statementCaptor.getValue())).isEqualTo(
 				"UPDATE users SET firstname='Walter' WHERE id='heisenberg' IF firstname='Walter' AND lastname='White'");
 	}
 
@@ -433,7 +436,7 @@ class ReactiveCassandraTemplateUnitTests {
 		template.delete(user).as(StepVerifier::create).expectNext(user).verifyComplete();
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery()).isEqualTo("DELETE FROM users WHERE id='heisenberg'");
+		assertThat(render(statementCaptor.getValue())).isEqualTo("DELETE FROM users WHERE id='heisenberg'");
 	}
 
 	@Test // DATACASS-575
@@ -450,7 +453,7 @@ class ReactiveCassandraTemplateUnitTests {
 				.verifyComplete();
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery())
+		assertThat(render(statementCaptor.getValue()))
 				.isEqualTo("DELETE FROM users WHERE id='heisenberg' IF firstname='Walter'");
 	}
 
@@ -468,7 +471,7 @@ class ReactiveCassandraTemplateUnitTests {
 				.verifyComplete();
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery())
+		assertThat(render(statementCaptor.getValue()))
 				.isEqualTo("DELETE FROM users WHERE id='heisenberg' IF firstname='Walter'");
 	}
 
@@ -478,7 +481,22 @@ class ReactiveCassandraTemplateUnitTests {
 		template.truncate(User.class).as(StepVerifier::create).verifyComplete();
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery()).isEqualTo("TRUNCATE users");
+		assertThat(render(statementCaptor.getValue())).isEqualTo("TRUNCATE users");
+	}
+
+	private static String render(SimpleStatement statement) {
+
+		String query = statement.getQuery();
+		List<Object> positionalValues = statement.getPositionalValues();
+		for (Object positionalValue : positionalValues) {
+
+			query = query.replaceFirst("\\?",
+					positionalValue != null
+							? CodecRegistry.DEFAULT.codecFor((Class) positionalValue.getClass()).format(positionalValue)
+							: "NULL");
+		}
+
+		return query;
 	}
 
 	private interface UserProjection {

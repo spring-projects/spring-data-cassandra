@@ -25,6 +25,10 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
+
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.SimpleStatementBuilder;
 import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
@@ -33,14 +37,10 @@ import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
 import com.datastax.oss.driver.api.querybuilder.term.Term;
 import com.datastax.oss.driver.internal.querybuilder.CqlHelper;
 
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
-import org.springframework.util.Assert;
-
 /**
  * Functional builder for Cassandra {@link BuildableQuery statements}. Statements are built by applying
  * {@link UnaryOperator builder functions} that get applied when {@link #build() building} the actual
- * {@link SimpleStatement statement}. The {@code StatmentBuilder} provides a mutable container for statement creation
+ * {@link SimpleStatement statement}. The {@code StatementBuilder} provides a mutable container for statement creation
  * allowing a functional declaration of actions that are necessary to build a statement. This class helps building CQL
  * statements as a {@link BuildableQuery} classes are typically immutable and require return value tracking across
  * methods that want to apply modifications to a statement.
@@ -69,11 +69,11 @@ import org.springframework.util.Assert;
  */
 public class StatementBuilder<S extends BuildableQuery> {
 
-	private S statement;
+	private final S statement;
 
-	private List<BuilderRunnable<S>> queryActions = new ArrayList<>();
-	private List<Consumer<SimpleStatementBuilder>> onBuild = new ArrayList<>();
-	private List<UnaryOperator<SimpleStatement>> onBuilt = new ArrayList<>();
+	private final List<BuilderRunnable<S>> queryActions = new ArrayList<>();
+	private final List<Consumer<SimpleStatementBuilder>> onBuild = new ArrayList<>();
+	private final List<UnaryOperator<SimpleStatement>> onBuilt = new ArrayList<>();
 
 	/**
 	 * Factory method used to create a new {@link StatementBuilder} with the given {@link BuildableQuery query stub}.
@@ -170,12 +170,12 @@ public class StatementBuilder<S extends BuildableQuery> {
 
 	/**
 	 * Build a {@link SimpleStatement statement} by applying builder and bind functions using the default
-	 * {@link CodecRegistry} and {@link ParameterHandling#INLINE} parameter rendering.
+	 * {@link CodecRegistry} and {@link ParameterHandling#BY_INDEX} parameter rendering.
 	 *
 	 * @return the built {@link SimpleStatement}.
 	 */
 	public SimpleStatement build() {
-		return build(ParameterHandling.INLINE, CodecRegistry.DEFAULT);
+		return build(ParameterHandling.BY_INDEX, CodecRegistry.DEFAULT);
 	}
 
 	/**
@@ -228,7 +228,11 @@ public class StatementBuilder<S extends BuildableQuery> {
 				statement = runnable.run(statement, termFactory);
 			}
 
-			return build(statement.builder().addPositionalValues(values));
+			SimpleStatementBuilder builder = statement.builder();
+
+			values.forEach(builder::addPositionalValue);
+
+			return build(builder);
 		}
 
 		if (parameterHandling == ParameterHandling.BY_NAME) {

@@ -24,6 +24,7 @@ import rx.Single;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,6 +48,7 @@ import org.springframework.util.ClassUtils;
 
 import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
 
 /**
  * Unit tests for {@link ReactivePartTreeCassandraQuery}.
@@ -117,7 +119,7 @@ class ReactivePartTreeCassandraQueryUnitTests {
 		SimpleStatement statement = deriveQueryFromMethod(Repo.class, "findByFirstname",
 				new Class[] { QueryOptions.class, String.class }, queryOptions, "Walter");
 
-		assertThat(statement.getQuery()).isEqualTo("SELECT * FROM person WHERE firstname='Walter'");
+		assertThat(statement.getQuery()).isEqualTo("SELECT * FROM person WHERE firstname=?");
 		assertThat(statement.getPageSize()).isEqualTo(777);
 	}
 
@@ -145,7 +147,7 @@ class ReactivePartTreeCassandraQueryUnitTests {
 		SimpleStatement statement = deriveQueryFromMethod(PartTreeCassandraQueryUnitTests.Repo.class, "deleteAllByLastname",
 				new Class[] { String.class }, "Walter");
 
-		assertThat(statement.getQuery()).isEqualTo("DELETE FROM person WHERE lastname='Walter'");
+		assertThat(statement.getQuery()).isEqualTo("DELETE FROM person WHERE lastname=?");
 	}
 
 	@Test // DATACASS-512
@@ -165,7 +167,20 @@ class ReactivePartTreeCassandraQueryUnitTests {
 			types[i] = ClassUtils.getUserClass(args[i].getClass());
 		}
 
-		return deriveQueryFromMethod(Repo.class, method, types, args).getQuery();
+		SimpleStatement statement = deriveQueryFromMethod(Repo.class, method, types, args);
+		String query = statement.getQuery();
+
+		List<Object> positionalValues = statement.getPositionalValues();
+
+		for (Object positionalValue : positionalValues) {
+
+			query = query.replaceFirst("\\?",
+					positionalValue != null
+							? CodecRegistry.DEFAULT.codecFor((Class) positionalValue.getClass()).format(positionalValue)
+							: "NULL");
+		}
+
+		return query;
 	}
 
 	private SimpleStatement deriveQueryFromMethod(Class<?> repositoryInterface, String method, Class<?>[] types,

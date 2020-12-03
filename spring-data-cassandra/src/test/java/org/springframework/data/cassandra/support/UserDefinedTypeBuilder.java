@@ -61,7 +61,7 @@ public class UserDefinedTypeBuilder {
 
 		DefaultUserDefinedType type = new DefaultUserDefinedType(CqlIdentifier.fromCql("system"), this.typeName, false,
 				new ArrayList<>(fields.keySet()), new ArrayList<>(fields.values()));
-		return new UserDefinedTypeWrapper(type);
+		return type;
 	}
 
 	private static class UserDefinedTypeWrapper implements UserDefinedType {
@@ -139,9 +139,28 @@ public class UserDefinedTypeBuilder {
 		}
 
 		@Override
+		public int hashCode() {
+			return delegate.hashCode();
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			return super.equals(obj) || delegate.equals(obj);
+		}
+
+		@Override
 		@NonNull
 		public AttachmentPoint getAttachmentPoint() {
 			return delegate.getAttachmentPoint();
+		}
+
+		@Override
+		public String toString() {
+			final StringBuffer sb = new StringBuffer();
+			sb.append(getClass().getSimpleName());
+			sb.append(" [delegate=").append(delegate);
+			sb.append(']');
+			return sb.toString();
 		}
 	}
 }

@@ -21,6 +21,7 @@ import static org.springframework.data.cassandra.test.util.RowMockUtil.*;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -37,10 +38,16 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
+import org.springframework.data.cassandra.core.StatementFactory;
+import org.springframework.data.cassandra.core.cql.WriteOptions;
+import org.springframework.data.cassandra.core.cql.util.StatementBuilder;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.Embedded;
+import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.core.mapping.UserDefinedType;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.support.UserDefinedTypeBuilder;
@@ -48,6 +55,7 @@ import org.springframework.data.cassandra.test.util.RowMockUtil;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.data.UdtValue;
 import com.datastax.oss.driver.api.core.type.DataTypes;
 
@@ -66,19 +74,29 @@ class MappingCassandraConverterUDTUnitTests {
 	private com.datastax.oss.driver.api.core.type.UserDefinedType manufacturer = UserDefinedTypeBuilder
 			.forName("manufacturer")
 			.withField("name", DataTypes.TEXT).withField("displayname", DataTypes.TEXT).build();
+
+	private com.datastax.oss.driver.api.core.type.UserDefinedType engine = UserDefinedTypeBuilder.forName("engine")
+			.withField("manufacturer", manufacturer).build();
+
 	private com.datastax.oss.driver.api.core.type.UserDefinedType currency = UserDefinedTypeBuilder.forName("mycurrency")
 			.withField("currency", DataTypes.TEXT).build();
+
 	private com.datastax.oss.driver.api.core.type.UserDefinedType withnullableembeddedtype = UserDefinedTypeBuilder
 			.forName("withnullableembeddedtype").withField("value", DataTypes.TEXT).withField("firstname", DataTypes.TEXT)
 			.withField("age", DataTypes.INT).build();
+
 	private com.datastax.oss.driver.api.core.type.UserDefinedType withprefixednullableembeddedtype = UserDefinedTypeBuilder
 			.forName("withnullableembeddedtype").withField("value", DataTypes.TEXT)
 			.withField("prefixfirstname", DataTypes.TEXT).withField("prefixage", DataTypes.INT).build();
 
+	private com.datastax.oss.driver.api.core.type.UserDefinedType address = UserDefinedTypeBuilder.forName("address")
+			.withField("zip", DataTypes.TEXT).withField("city", DataTypes.TEXT)
+			.withField("streetLines", DataTypes.listOf(DataTypes.TEXT)).build();
+
 	private Row rowMock;
 
 	private CassandraMappingContext mappingContext;
-	private MappingCassandraConverter mappingCassandraConverter;
+	private MappingCassandraConverter converter;
 
 	@BeforeEach
 	void setUp() {
@@ -86,9 +104,16 @@ class MappingCassandraConverterUDTUnitTests {
 		mappingContext = new CassandraMappingContext();
 		mappingContext.setUserTypeResolver(userTypeResolver);
 
-		mappingCassandraConverter = new MappingCassandraConverter(mappingContext);
-		mappingCassandraConverter.afterPropertiesSet();
+		CassandraCustomConversions cassandraCustomConversions = new CassandraCustomConversions(
+				Arrays.asList(new UDTToCurrencyConverter(), new CurrencyToUDTConverter(userTypeResolver)));
+		mappingContext.setSimpleTypeHolder(cassandraCustomConversions.getSimpleTypeHolder());
 
+		converter = new MappingCassandraConverter(mappingContext);
+		converter.setCustomConversions(cassandraCustomConversions);
+		converter.afterPropertiesSet();
+
+		when(userTypeResolver.resolveType(CqlIdentifier.fromCql("address"))).thenReturn(address);
+		when(userTypeResolver.resolveType(CqlIdentifier.fromCql("engine"))).thenReturn(engine);
 		when(userTypeResolver.resolveType(CqlIdentifier.fromCql("manufacturer"))).thenReturn(manufacturer);
 		when(userTypeResolver.resolveType(CqlIdentifier.fromCql("currency"))).thenReturn(currency);
 		when(userTypeResolver.resolveType(CqlIdentifier.fromCql("withnullableembeddedtype")))
@@ -97,6 +122,155 @@ class MappingCassandraConverterUDTUnitTests {
 				.thenReturn(withprefixednullableembeddedtype);
 	}
 
+	@Test // DATACASS-172
+	void shouldWriteMappedUdt() {
+
+		AddressUserType addressUserType = new AddressUserType();
+		addressUserType.setZip("69469");
+		addressUserType.setCity("Weinheim");
+		addressUserType.setStreetLines(Arrays.asList("Heckenpfad", "14"));
+
+		AddressBook addressBook = new AddressBook();
+		addressBook.setId("1");
+		addressBook.setCurrentaddress(addressUserType);
+
+		SimpleStatement statement = new StatementFactory(converter).insert(addressBook, WriteOptions.empty())
+				.build(StatementBuilder.ParameterHandling.INLINE);
+
+		assertThat(statement.getQuery()).isEqualTo("INSERT INTO addressbook (currentaddress,id) "
+				+ "VALUES ({zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']},'1')");
+	}
+
+	@Test // DATACASS-172
+	void shouldWriteMappedUdtCollection() {
+
+		AddressUserType addressUserType = new AddressUserType();
+		addressUserType.setZip("69469");
+		addressUserType.setCity("Weinheim");
+		addressUserType.setStreetLines(Arrays.asList("Heckenpfad", "14"));
+
+		AddressBook addressBook = new AddressBook();
+		addressBook.setId("1");
+		addressBook.setPreviousaddresses(Collections.singletonList(addressUserType));
+
+		SimpleStatement statement = new StatementFactory(converter).insert(addressBook, WriteOptions.empty())
+				.build(StatementBuilder.ParameterHandling.INLINE);
+
+		assertThat(statement.getQuery()).isEqualTo("INSERT INTO addressbook (id,previousaddresses) "
+				+ "VALUES ('1',[{zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']}])");
+	}
+
+	@Test // DATACASS-172
+	void shouldWriteUdt() {
+
+		CassandraPersistentEntity<?> persistentEntity = converter.getMappingContext()
+				.getRequiredPersistentEntity(AddressUserType.class);
+		com.datastax.oss.driver.api.core.type.UserDefinedType udtType = (com.datastax.oss.driver.api.core.type.UserDefinedType) converter
+				.getColumnTypeResolver().resolve(persistentEntity.getTypeInformation()).getDataType();
+		UdtValue udtValue = udtType.newValue();
+		udtValue.setString("zip", "69469");
+		udtValue.setString("city", "Weinheim");
+		udtValue.setList("streetlines", Arrays.asList("Heckenpfad", "14"), String.class);
+
+		AddressBook addressBook = new AddressBook();
+		addressBook.setId("1");
+		addressBook.setAlternate(udtValue);
+
+		SimpleStatement statement = new StatementFactory(converter).insert(addressBook, WriteOptions.empty())
+				.build(StatementBuilder.ParameterHandling.INLINE);
+
+		assertThat(statement.getQuery()).isEqualTo("INSERT INTO addressbook (alternate,id) "
+				+ "VALUES ({zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']},'1')");
+	}
+
+	@Test // DATACASS-172
+	void shouldWriteUdtPk() {
+
+		AddressUserType addressUserType = new AddressUserType();
+		addressUserType.setZip("69469");
+		addressUserType.setCity("Weinheim");
+		addressUserType.setStreetLines(Arrays.asList("Heckenpfad", "14"));
+
+		WithMappedUdtId withUdtId = new WithMappedUdtId();
+		withUdtId.setId(addressUserType);
+
+		SimpleStatement statement = new StatementFactory(converter).insert(withUdtId, WriteOptions.empty())
+				.build(StatementBuilder.ParameterHandling.INLINE);
+
+		assertThat(statement.getQuery()).isEqualTo(
+				"INSERT INTO withmappedudtid (id) " + "VALUES ({zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']})");
+	}
+
+	@Test // DATACASS-172
+	void shouldWriteMappedUdtPk() {
+
+		CassandraPersistentEntity<?> persistentEntity = converter.getMappingContext()
+				.getRequiredPersistentEntity(AddressUserType.class);
+
+		com.datastax.oss.driver.api.core.type.UserDefinedType udtType = (com.datastax.oss.driver.api.core.type.UserDefinedType) converter
+				.getColumnTypeResolver().resolve(persistentEntity.getTypeInformation()).getDataType();
+
+		UdtValue udtValue = udtType.newValue();
+		udtValue.setString("zip", "69469");
+		udtValue.setString("city", "Weinheim");
+		udtValue.setList("streetlines", Arrays.asList("Heckenpfad", "14"), String.class);
+
+		WithUdtId withUdtId = new WithUdtId();
+		withUdtId.setId(udtValue);
+
+		SimpleStatement statement = new StatementFactory(converter).insert(withUdtId, WriteOptions.empty())
+				.build(StatementBuilder.ParameterHandling.INLINE);
+
+		assertThat(statement.getQuery()).isEqualTo(
+				"INSERT INTO withudtid (id) " + "VALUES ({zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']})");
+	}
+
+	@Test // DATACASS-172, DATACASS-400
+	void shouldWriteUdtWithCustomConversion() {
+
+		Bank bank = new Bank(null, new Currency("EUR"), null);
+
+		SimpleStatement statement = new StatementFactory(converter).insert(bank, WriteOptions.empty())
+				.build(StatementBuilder.ParameterHandling.INLINE);
+
+		assertThat(statement.getQuery()).isEqualTo("INSERT INTO bank (currency) VALUES ({currency:'EUR'})");
+	}
+
+	@Test // DATACASS-172
+	void shouldWriteUdtWhereWherePrimaryKeyWithCustomConversion() {
+
+		Money money = new Money();
+		money.setCurrency(new Currency("EUR"));
+
+		Where where = new Where();
+		converter.write(money, where);
+
+		assertThat((UdtValue) where.get(CqlIdentifier.fromCql("currency"))) //
+				.extracting(UdtValue::getFormattedContents) //
+				.isEqualTo("{currency:'EUR'}");
+	}
+
+	@Test // DATACASS-172, DATACASS-400
+	void shouldWriteUdtUpdateAssignmentsWithCustomConversion() {
+
+		MoneyTransfer money = new MoneyTransfer("1", new Currency("EUR"));
+
+		SimpleStatement statement = new StatementFactory(converter).update(money, WriteOptions.empty())
+				.build(StatementBuilder.ParameterHandling.INLINE);
+
+		assertThat(statement.getQuery()).isEqualTo("UPDATE moneytransfer SET currency={currency:'EUR'} WHERE id='1'");
+	}
+
+	@Test // DATACASS-172, DATACASS-400
+	void shouldWriteUdtListWithCustomConversion() {
+
+		Bank bank = new Bank(null, null, Collections.singletonList(new Currency("EUR")));
+
+		SimpleStatement statement = new StatementFactory(converter).insert(bank, WriteOptions.empty())
+				.build(StatementBuilder.ParameterHandling.INLINE);
+
+		assertThat(statement.getQuery()).isEqualTo("INSERT INTO bank (othercurrencies) VALUES ([{currency:'EUR'}])");
+	}
 	@Test // DATACASS-487, DATACASS-623
 	void shouldReadMappedUdtInMap() {
 
@@ -111,7 +285,7 @@ class MappingCassandraConverterUDTUnitTests {
 		rowMock = RowMockUtil
 				.newRowMock(column("acceptedCurrencies", map, DataTypes.mapOf(manufacturer, DataTypes.listOf(currency))));
 
-		Supplier supplier = mappingCassandraConverter.read(Supplier.class, rowMock);
+		Supplier supplier = converter.read(Supplier.class, rowMock);
 
 		assertThat(supplier.getAcceptedCurrencies()).isNotEmpty();
 
@@ -130,7 +304,7 @@ class MappingCassandraConverterUDTUnitTests {
 
 		Map<CqlIdentifier, Object> insert = new LinkedHashMap<>();
 
-		mappingCassandraConverter.write(supplier, insert);
+		converter.write(supplier, insert);
 
 		Map<UdtValue, List<UdtValue>> acceptedcurrencies = (Map) insert.get(CqlIdentifier.fromCql("acceptedcurrencies"));
 
@@ -157,7 +331,7 @@ class MappingCassandraConverterUDTUnitTests {
 
 		Map<CqlIdentifier, Object> sink = new LinkedHashMap<>();
 
-		mappingCassandraConverter.write(entity, sink);
+		converter.write(entity, sink);
 
 		assertThat(sink).containsEntry(CqlIdentifier.fromInternal("id"), "id-1");
 		assertThat((UdtValue) sink.get(CqlIdentifier.fromInternal("udtvalue"))).extracting(UdtValue::getFormattedContents)
@@ -175,7 +349,7 @@ class MappingCassandraConverterUDTUnitTests {
 
 		Map<CqlIdentifier, Object> sink = new LinkedHashMap<>();
 
-		mappingCassandraConverter.write(entity, sink);
+		converter.write(entity, sink);
 
 		assertThat(sink).containsEntry(CqlIdentifier.fromInternal("id"), "id-1");
 		assertThat((UdtValue) sink.get(CqlIdentifier.fromInternal("udtvalue"))).extracting(UdtValue::getFormattedContents)
@@ -195,7 +369,7 @@ class MappingCassandraConverterUDTUnitTests {
 
 		Map<CqlIdentifier, Object> sink = new LinkedHashMap<>();
 
-		mappingCassandraConverter.write(entity, sink);
+		converter.write(entity, sink);
 
 		assertThat(sink).containsEntry(CqlIdentifier.fromInternal("id"), "id-1");
 		assertThat((UdtValue) sink.get(CqlIdentifier.fromInternal("udtvalue"))).extracting(UdtValue::getFormattedContents)
@@ -211,7 +385,7 @@ class MappingCassandraConverterUDTUnitTests {
 		rowMock = RowMockUtil.newRowMock(column("id", "id-1", DataTypes.TEXT),
 				column("udtvalue", udtValue, withnullableembeddedtype));
 
-		OuterWithNullableEmbeddedType target = mappingCassandraConverter.read(OuterWithNullableEmbeddedType.class, rowMock);
+		OuterWithNullableEmbeddedType target = converter.read(OuterWithNullableEmbeddedType.class, rowMock);
 		assertThat(target.getId()).isEqualTo("id-1");
 		assertThat(target.udtValue).isNotNull();
 		assertThat(target.udtValue.value).isEqualTo("value-string");
@@ -228,7 +402,7 @@ class MappingCassandraConverterUDTUnitTests {
 		rowMock = RowMockUtil.newRowMock(column("id", "id-1", DataTypes.TEXT),
 				column("udtvalue", udtValue, withprefixednullableembeddedtype));
 
-		OuterWithPrefixedNullableEmbeddedType target = mappingCassandraConverter
+		OuterWithPrefixedNullableEmbeddedType target = converter
 				.read(OuterWithPrefixedNullableEmbeddedType.class, rowMock);
 		assertThat(target.getId()).isEqualTo("id-1");
 		assertThat(target.udtValue).isNotNull();
@@ -237,16 +411,44 @@ class MappingCassandraConverterUDTUnitTests {
 		assertThat(target.udtValue.nested.age).isEqualTo(30);
 	}
 
+	@Test // DATACASS-172, DATACASS-400
+	void shouldWriteNestedUdt() {
+
+		Engine engine = new Engine(new Manufacturer("a good one", "display name"));
+
+		Car car = new Car("1", engine);
+
+		SimpleStatement statement = new StatementFactory(converter).insert(car, WriteOptions.empty())
+				.build(StatementBuilder.ParameterHandling.INLINE);
+
+		assertThat(statement.getQuery())
+				.isEqualTo("INSERT INTO car (engine,id) VALUES ({manufacturer:{name:'a good one',displayname:NULL}},'1')");
+	}
+
+	@Table
+	@Getter
+	@AllArgsConstructor
+	private static class Car {
+
+		@Id String id;
+		Engine engine;
+	}
+
+	@UserDefinedType
+	@Getter
+	@AllArgsConstructor
+	private static class Engine {
+		Manufacturer manufacturer;
+	}
+
 	@UserDefinedType
 	@Data
 	@AllArgsConstructor
 	private static class Manufacturer {
-
 		String name;
 		@ReadOnlyProperty String displayName;
 	}
 
-	@UserDefinedType
 	@Data
 	@AllArgsConstructor
 	private static class Currency {
@@ -317,4 +519,88 @@ class MappingCassandraConverterUDTUnitTests {
 		}
 	}
 
+	@Data
+	@Table
+	public static class AddressBook {
+
+		@Id private String id;
+
+		private AddressUserType currentaddress;
+		private List<AddressUserType> previousaddresses;
+		private UdtValue alternate;
+	}
+
+	@Data
+	@Table
+	public static class WithUdtId {
+		@Id private UdtValue id;
+	}
+
+	@Data
+	@Table
+	public static class WithMappedUdtId {
+		@Id private AddressUserType id;
+	}
+
+	@UserDefinedType("address")
+	@Data
+	public static class AddressUserType {
+
+		String zip;
+		String city;
+
+		List<String> streetLines;
+	}
+
+	@Table
+	@Getter
+	@AllArgsConstructor
+	private static class Bank {
+
+		@Id String id;
+		Currency currency;
+		List<Currency> otherCurrencies;
+	}
+
+	@Data
+	@Table
+	public static class Money {
+		@Id private Currency currency;
+	}
+
+	@Table
+	@AllArgsConstructor
+	@Getter
+	public static class MoneyTransfer {
+
+		@Id String id;
+
+		private Currency currency;
+	}
+
+	private static class UDTToCurrencyConverter implements Converter<UdtValue, Currency> {
+
+		@Override
+		public Currency convert(UdtValue source) {
+			return new Currency(source.getString("currency"));
+		}
+	}
+
+	private static class CurrencyToUDTConverter implements Converter<Currency, UdtValue> {
+
+		private final UserTypeResolver userTypeResolver;
+
+		CurrencyToUDTConverter(UserTypeResolver userTypeResolver) {
+			this.userTypeResolver = userTypeResolver;
+		}
+
+		@Override
+		public UdtValue convert(Currency source) {
+			com.datastax.oss.driver.api.core.type.UserDefinedType userType = userTypeResolver
+					.resolveType(CqlIdentifier.fromCql("currency"));
+			UdtValue udtValue = userType.newValue();
+			udtValue.setString("currency", source.getCurrency());
+			return udtValue;
+		}
+	}
 }

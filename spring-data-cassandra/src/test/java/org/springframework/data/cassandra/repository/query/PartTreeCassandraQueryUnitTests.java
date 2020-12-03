@@ -22,6 +22,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -164,9 +165,10 @@ class PartTreeCassandraQueryUnitTests {
 	@Test // DATACASS-172
 	void shouldDeriveSimpleQueryWithMappedUDT() {
 
-		String query = deriveQueryFromMethod("findByMainAddress", new AddressType());
+		SimpleStatement query = deriveQueryFromMethod(Repo.class, "findByMainAddress", new Class[] { AddressType.class },
+				new AddressType());
 
-		assertThat(query).isEqualTo("SELECT * FROM person WHERE mainaddress={city:NULL,country:NULL}");
+		assertThat(query.getQuery()).isEqualTo("SELECT * FROM person WHERE mainaddress=?");
 	}
 
 	@Test // DATACASS-172
@@ -175,7 +177,7 @@ class PartTreeCassandraQueryUnitTests {
 		String query = deriveQueryFromMethod(Repo.class, "findByMainAddress", new Class[] { UdtValue.class }, udtValue)
 				.getQuery();
 
-		assertThat(query).isEqualTo("SELECT * FROM person WHERE mainaddress={city:NULL,country:NULL}");
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE mainaddress=?");
 	}
 
 	@Test // DATACASS-357
@@ -193,7 +195,7 @@ class PartTreeCassandraQueryUnitTests {
 		SimpleStatement query = deriveQueryFromMethod(GroupRepository.class, "findByIdHashPrefix",
 				new Class[] { String.class }, "foo");
 
-		assertThat(query.getQuery()).isEqualTo("SELECT * FROM group WHERE hash_prefix='foo'");
+		assertThat(query.getQuery()).isEqualTo("SELECT * FROM group WHERE hash_prefix=?");
 	}
 
 	@Test // DATACASS-376
@@ -201,7 +203,7 @@ class PartTreeCassandraQueryUnitTests {
 
 		SimpleStatement query = deriveQueryFromMethod(Repo.class, "findByFirstname", new Class[] { String.class }, "foo");
 
-		assertThat(query.getQuery()).isEqualTo("SELECT * FROM person WHERE firstname='foo' ALLOW FILTERING");
+		assertThat(query.getQuery()).isEqualTo("SELECT * FROM person WHERE firstname=? ALLOW FILTERING");
 	}
 
 	@Test // DATACASS-146
@@ -211,7 +213,7 @@ class PartTreeCassandraQueryUnitTests {
 		SimpleStatement statement = deriveQueryFromMethod(Repo.class, "findByFirstname",
 				new Class[] { QueryOptions.class, String.class }, queryOptions, "Walter");
 
-		assertThat(statement.getQuery()).isEqualTo("SELECT * FROM person WHERE firstname='Walter'");
+		assertThat(statement.getQuery()).isEqualTo("SELECT * FROM person WHERE firstname=?");
 		assertThat(statement.getPageSize()).isEqualTo(777);
 	}
 
@@ -238,7 +240,7 @@ class PartTreeCassandraQueryUnitTests {
 		SimpleStatement statement = deriveQueryFromMethod(Repo.class, "deleteAllByLastname", new Class[] { String.class },
 				"Walter");
 
-		assertThat(statement.getQuery()).isEqualTo("DELETE FROM person WHERE lastname='Walter'");
+		assertThat(statement.getQuery()).isEqualTo("DELETE FROM person WHERE lastname=?");
 	}
 
 	@Test // DATACASS-512
@@ -257,7 +259,19 @@ class PartTreeCassandraQueryUnitTests {
 			types[i] = ClassUtils.getUserClass(args[i].getClass());
 		}
 
-		return deriveQueryFromMethod(Repo.class, method, types, args).getQuery();
+		SimpleStatement statement = deriveQueryFromMethod(Repo.class, method, types, args);
+
+		String query = statement.getQuery();
+		List<Object> positionalValues = statement.getPositionalValues();
+		for (Object positionalValue : positionalValues) {
+
+			query = query.replaceFirst("\\?",
+					positionalValue != null
+							? CodecRegistry.DEFAULT.codecFor((Class) positionalValue.getClass()).format(positionalValue)
+							: "null");
+		}
+
+		return query;
 	}
 
 	private SimpleStatement deriveQueryFromMethod(Class<?> repositoryInterface, String method, Class<?>[] types,

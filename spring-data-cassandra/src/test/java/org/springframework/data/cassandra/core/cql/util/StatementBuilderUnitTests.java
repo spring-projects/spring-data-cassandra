@@ -55,7 +55,8 @@ class StatementBuilderUnitTests {
 	void shouldApplyBindFunction() {
 
 		SimpleStatement statement = StatementBuilder.of(QueryBuilder.selectFrom("person").all())
-				.bind((select, factory) -> select.where(Relation.column("foo").isEqualTo(factory.create("bar")))).build();
+				.bind((select, factory) -> select.where(Relation.column("foo").isEqualTo(factory.create("bar"))))
+				.build(StatementBuilder.ParameterHandling.INLINE);
 
 		assertThat(statement.getQuery()).isEqualTo("SELECT * FROM person WHERE foo='bar'");
 	}
@@ -122,7 +123,7 @@ class StatementBuilderUnitTests {
 				.bind((select, factory) -> select.where(Relation.column("foo").isEqualTo(factory.create("bar"))))
 				.apply(select -> select.orderBy("one", ClusteringOrder.ASC))
 				.bind((select, factory) -> select.where(Relation.column("bar").isEqualTo(factory.create("baz"))))
-				.apply(select -> select.orderBy("two", ClusteringOrder.ASC)).build();
+				.apply(select -> select.orderBy("two", ClusteringOrder.ASC)).build(StatementBuilder.ParameterHandling.INLINE);
 
 		assertThat(statement.getQuery())
 				.isEqualTo("SELECT * FROM person WHERE foo='bar' AND bar='baz' ORDER BY one ASC,two ASC");

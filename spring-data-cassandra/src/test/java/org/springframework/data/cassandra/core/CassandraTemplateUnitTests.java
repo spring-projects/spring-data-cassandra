@@ -53,6 +53,7 @@ import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.Statement;
 import com.datastax.oss.driver.api.core.type.DataTypes;
+import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
 
 /**
  * Unit tests for {@link CassandraTemplate}.
@@ -125,7 +126,7 @@ class CassandraTemplateUnitTests {
 
 		assertThat(list).hasSize(1).contains(new User("myid", "Walter", "White"));
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery()).isEqualTo("SELECT * FROM users");
+		assertThat(render(statementCaptor.getValue())).isEqualTo("SELECT * FROM users");
 	}
 
 	@Test // DATACASS-292
@@ -162,7 +163,7 @@ class CassandraTemplateUnitTests {
 
 		assertThat(user).isEqualTo(new User("myid", "Walter", "White"));
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery()).isEqualTo("SELECT * FROM users WHERE id='myid'");
+		assertThat(render(statementCaptor.getValue())).isEqualTo("SELECT * FROM users WHERE id='myid'");
 	}
 
 	@Test // DATACASS-696
@@ -195,7 +196,7 @@ class CassandraTemplateUnitTests {
 
 		assertThat(user).isEqualTo(new User("myid", "Walter", "White"));
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery()).isEqualTo("SELECT * FROM users WHERE id='myid' LIMIT 1");
+		assertThat(render(statementCaptor.getValue())).isEqualTo("SELECT * FROM users WHERE id='myid' LIMIT 1");
 	}
 
 	@Test // DATACASS-313
@@ -214,7 +215,7 @@ class CassandraTemplateUnitTests {
 
 		assertThat(user.getFirstname()).isEqualTo("Walter");
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery()).isEqualTo("SELECT firstname FROM users LIMIT 2");
+		assertThat(render(statementCaptor.getValue())).isEqualTo("SELECT firstname FROM users LIMIT 2");
 	}
 
 	@Test // DATACASS-292
@@ -226,7 +227,7 @@ class CassandraTemplateUnitTests {
 
 		assertThat(exists).isTrue();
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery()).isEqualTo("SELECT * FROM users WHERE id='myid' LIMIT 1");
+		assertThat(render(statementCaptor.getValue())).isEqualTo("SELECT * FROM users WHERE id='myid' LIMIT 1");
 	}
 
 	@Test // DATACASS-292
@@ -236,7 +237,7 @@ class CassandraTemplateUnitTests {
 
 		assertThat(exists).isFalse();
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery()).isEqualTo("SELECT * FROM users WHERE id='myid' LIMIT 1");
+		assertThat(render(statementCaptor.getValue())).isEqualTo("SELECT * FROM users WHERE id='myid' LIMIT 1");
 	}
 
 	@Test // DATACASS-512
@@ -248,7 +249,7 @@ class CassandraTemplateUnitTests {
 
 		assertThat(exists).isTrue();
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery()).isEqualTo("SELECT * FROM users LIMIT 1");
+		assertThat(render(statementCaptor.getValue())).isEqualTo("SELECT * FROM users LIMIT 1");
 	}
 
 	@Test // DATACASS-292
@@ -262,7 +263,7 @@ class CassandraTemplateUnitTests {
 
 		assertThat(count).isEqualTo(42L);
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery()).isEqualTo("SELECT count(1) FROM users");
+		assertThat(render(statementCaptor.getValue())).isEqualTo("SELECT count(1) FROM users");
 	}
 
 	@Test // DATACASS-512
@@ -276,7 +277,7 @@ class CassandraTemplateUnitTests {
 
 		assertThat(count).isEqualTo(42L);
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery()).isEqualTo("SELECT count(1) FROM users");
+		assertThat(render(statementCaptor.getValue())).isEqualTo("SELECT count(1) FROM users");
 	}
 
 	@Test // DATACASS-292, DATACASS-618
@@ -289,7 +290,7 @@ class CassandraTemplateUnitTests {
 		template.insert(user);
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery())
+		assertThat(render(statementCaptor.getValue()))
 				.isEqualTo("INSERT INTO users (firstname,id,lastname) VALUES ('Walter','heisenberg','White')");
 		assertThat(beforeConvert).isSameAs(user);
 		assertThat(beforeSave).isSameAs(user);
@@ -305,7 +306,7 @@ class CassandraTemplateUnitTests {
 		template.insert(user);
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery()).isEqualTo(
+		assertThat(render(statementCaptor.getValue())).isEqualTo(
 				"INSERT INTO vusers (firstname,id,lastname,version) VALUES ('Walter','heisenberg','White',0) IF NOT EXISTS");
 		assertThat(beforeConvert).isSameAs(user);
 		assertThat(beforeSave).isSameAs(user);
@@ -323,7 +324,7 @@ class CassandraTemplateUnitTests {
 		template.insert(user, insertOptions);
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery())
+		assertThat(render(statementCaptor.getValue()))
 				.isEqualTo("INSERT INTO users (firstname,id,lastname) VALUES ('Walter','heisenberg','White') IF NOT EXISTS");
 	}
 
@@ -339,7 +340,7 @@ class CassandraTemplateUnitTests {
 		template.insert(user, insertOptions);
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery())
+		assertThat(render(statementCaptor.getValue()))
 				.isEqualTo("INSERT INTO users (firstname,id,lastname) VALUES (NULL,'heisenberg',NULL)");
 	}
 
@@ -380,7 +381,7 @@ class CassandraTemplateUnitTests {
 		template.update(user);
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery())
+		assertThat(render(statementCaptor.getValue()))
 				.isEqualTo("UPDATE users SET firstname='Walter', lastname='White' WHERE id='heisenberg'");
 		assertThat(beforeConvert).isSameAs(user);
 		assertThat(beforeSave).isSameAs(user);
@@ -397,7 +398,7 @@ class CassandraTemplateUnitTests {
 		template.update(user);
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery()).isEqualTo(
+		assertThat(render(statementCaptor.getValue())).isEqualTo(
 				"UPDATE vusers SET firstname='Walter', lastname='White', version=1 WHERE id='heisenberg' IF version=0");
 		assertThat(beforeConvert).isSameAs(user);
 		assertThat(beforeSave).isSameAs(user);
@@ -416,7 +417,7 @@ class CassandraTemplateUnitTests {
 
 		assertThat(writeResult.wasApplied()).isTrue();
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery())
+		assertThat(render(statementCaptor.getValue()))
 				.isEqualTo("UPDATE users SET firstname='Walter', lastname='White' WHERE id='heisenberg' IF EXISTS");
 	}
 
@@ -429,7 +430,7 @@ class CassandraTemplateUnitTests {
 		template.update(user, options);
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery())
+		assertThat(render(statementCaptor.getValue()))
 				.isEqualTo("UPDATE users SET firstname='Walter', lastname='White' WHERE id='heisenberg' IF firstname='Walter'");
 	}
 
@@ -442,7 +443,7 @@ class CassandraTemplateUnitTests {
 		template.update(query, update, User.class);
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery())
+		assertThat(render(statementCaptor.getValue()))
 				.isEqualTo("UPDATE users SET firstname='Walter' WHERE id='heisenberg'");
 	}
 
@@ -459,7 +460,7 @@ class CassandraTemplateUnitTests {
 		template.update(query, update, User.class);
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery()).isEqualTo(
+		assertThat(render(statementCaptor.getValue())).isEqualTo(
 				"UPDATE users SET firstname='Walter' WHERE id='heisenberg' IF firstname='Walter' AND lastname='White'");
 	}
 
@@ -489,7 +490,7 @@ class CassandraTemplateUnitTests {
 
 		assertThat(deleted).isTrue();
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery()).isEqualTo("DELETE FROM users WHERE id='heisenberg'");
+		assertThat(render(statementCaptor.getValue())).isEqualTo("DELETE FROM users WHERE id='heisenberg'");
 	}
 
 	@Test // DATACASS-292
@@ -500,7 +501,7 @@ class CassandraTemplateUnitTests {
 		template.delete(user);
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery()).isEqualTo("DELETE FROM users WHERE id='heisenberg'");
+		assertThat(render(statementCaptor.getValue())).isEqualTo("DELETE FROM users WHERE id='heisenberg'");
 	}
 
 	@Test // DATACASS-575
@@ -512,7 +513,7 @@ class CassandraTemplateUnitTests {
 		template.delete(user, options);
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery())
+		assertThat(render(statementCaptor.getValue()))
 				.isEqualTo("DELETE FROM users WHERE id='heisenberg' IF firstname='Walter'");
 	}
 
@@ -525,7 +526,7 @@ class CassandraTemplateUnitTests {
 		template.delete(query, User.class);
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery())
+		assertThat(render(statementCaptor.getValue()))
 				.isEqualTo("DELETE FROM users WHERE id='heisenberg' IF firstname='Walter'");
 	}
 
@@ -550,7 +551,22 @@ class CassandraTemplateUnitTests {
 		template.truncate(User.class);
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(statementCaptor.getValue().getQuery()).isEqualTo("TRUNCATE users");
+		assertThat(render(statementCaptor.getValue())).isEqualTo("TRUNCATE users");
+	}
+
+	private static String render(SimpleStatement statement) {
+
+		String query = statement.getQuery();
+		List<Object> positionalValues = statement.getPositionalValues();
+		for (Object positionalValue : positionalValues) {
+
+			query = query.replaceFirst("\\?",
+					positionalValue != null
+							? CodecRegistry.DEFAULT.codecFor((Class) positionalValue.getClass()).format(positionalValue)
+							: "NULL");
+		}
+
+		return query;
 	}
 
 	private interface UserProjection {

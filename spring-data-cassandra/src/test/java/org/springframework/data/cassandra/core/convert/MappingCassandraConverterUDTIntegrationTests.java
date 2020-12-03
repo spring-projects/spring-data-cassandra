@@ -22,7 +22,6 @@ import lombok.Data;
 import lombok.Getter;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Currency;
 import java.util.List;
 import java.util.Map;
@@ -36,9 +35,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.config.SchemaAction;
-import org.springframework.data.cassandra.core.StatementFactory;
-import org.springframework.data.cassandra.core.cql.WriteOptions;
-import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.SimpleUserTypeResolver;
 import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.core.mapping.UserDefinedType;
@@ -51,7 +47,6 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
-import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.data.UdtValue;
 
 /**
@@ -143,24 +138,6 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 	}
 
 	@Test // DATACASS-172
-	void shouldWriteMappedUdt() {
-
-		AddressUserType addressUserType = new AddressUserType();
-		addressUserType.setZip("69469");
-		addressUserType.setCity("Weinheim");
-		addressUserType.setStreetLines(Arrays.asList("Heckenpfad", "14"));
-
-		AddressBook addressBook = new AddressBook();
-		addressBook.setId("1");
-		addressBook.setCurrentaddress(addressUserType);
-
-		SimpleStatement statement = new StatementFactory(converter).insert(addressBook, WriteOptions.empty()).build();
-
-		assertThat(statement.getQuery()).isEqualTo("INSERT INTO addressbook (currentaddress,id) "
-				+ "VALUES ({zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']},'1')");
-	}
-
-	@Test // DATACASS-172
 	void shouldReadMappedUdtCollection() {
 
 		session.execute("INSERT INTO addressbook (id,  previousaddresses) " + "VALUES ('1', "
@@ -179,24 +156,6 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 	}
 
 	@Test // DATACASS-172
-	void shouldWriteMappedUdtCollection() {
-
-		AddressUserType addressUserType = new AddressUserType();
-		addressUserType.setZip("69469");
-		addressUserType.setCity("Weinheim");
-		addressUserType.setStreetLines(Arrays.asList("Heckenpfad", "14"));
-
-		AddressBook addressBook = new AddressBook();
-		addressBook.setId("1");
-		addressBook.setPreviousaddresses(Collections.singletonList(addressUserType));
-
-		SimpleStatement statement = new StatementFactory(converter).insert(addressBook, WriteOptions.empty()).build();
-
-		assertThat(statement.getQuery()).isEqualTo("INSERT INTO addressbook (id,previousaddresses) "
-				+ "VALUES ('1',[{zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']}])");
-	}
-
-	@Test // DATACASS-172
 	void shouldReadUdt() {
 
 		session.execute("INSERT INTO addressbook (id, alternate) " + "VALUES ('1', "
@@ -208,68 +167,6 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 		assertThat(addressBook.getAlternate()).isNotNull();
 		assertThat(addressBook.getAlternate().getString("city")).isEqualTo("Weinheim");
 		assertThat(addressBook.getAlternate().getString("zip")).isEqualTo("69469");
-	}
-
-	@Test // DATACASS-172
-	void shouldWriteUdt() {
-
-		CassandraPersistentEntity<?> persistentEntity = converter.getMappingContext()
-				.getRequiredPersistentEntity(AddressUserType.class);
-		com.datastax.oss.driver.api.core.type.UserDefinedType udtType = (com.datastax.oss.driver.api.core.type.UserDefinedType) converter
-				.getColumnTypeResolver().resolve(persistentEntity.getTypeInformation()).getDataType();
-		UdtValue udtValue = udtType.newValue();
-		udtValue.setString("zip", "69469");
-		udtValue.setString("city", "Weinheim");
-		udtValue.setList("streetlines", Arrays.asList("Heckenpfad", "14"), String.class);
-
-		AddressBook addressBook = new AddressBook();
-		addressBook.setId("1");
-		addressBook.setAlternate(udtValue);
-
-		SimpleStatement statement = new StatementFactory(converter).insert(addressBook, WriteOptions.empty()).build();
-
-		assertThat(statement.getQuery()).isEqualTo("INSERT INTO addressbook (alternate,id) "
-				+ "VALUES ({zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']},'1')");
-	}
-
-	@Test // DATACASS-172
-	void shouldWriteUdtPk() {
-
-		AddressUserType addressUserType = new AddressUserType();
-		addressUserType.setZip("69469");
-		addressUserType.setCity("Weinheim");
-		addressUserType.setStreetLines(Arrays.asList("Heckenpfad", "14"));
-
-		WithMappedUdtId withUdtId = new WithMappedUdtId();
-		withUdtId.setId(addressUserType);
-
-		SimpleStatement statement = new StatementFactory(converter).insert(withUdtId, WriteOptions.empty()).build();
-
-		assertThat(statement.getQuery()).isEqualTo(
-				"INSERT INTO withmappedudtid (id) " + "VALUES ({zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']})");
-	}
-
-	@Test // DATACASS-172
-	void shouldWriteMappedUdtPk() {
-
-		CassandraPersistentEntity<?> persistentEntity = converter.getMappingContext()
-				.getRequiredPersistentEntity(AddressUserType.class);
-
-		com.datastax.oss.driver.api.core.type.UserDefinedType udtType = (com.datastax.oss.driver.api.core.type.UserDefinedType) converter
-				.getColumnTypeResolver().resolve(persistentEntity.getTypeInformation()).getDataType();
-
-		UdtValue udtValue = udtType.newValue();
-		udtValue.setString("zip", "69469");
-		udtValue.setString("city", "Weinheim");
-		udtValue.setList("streetlines", Arrays.asList("Heckenpfad", "14"), String.class);
-
-		WithUdtId withUdtId = new WithUdtId();
-		withUdtId.setId(udtValue);
-
-		SimpleStatement statement = new StatementFactory(converter).insert(withUdtId, WriteOptions.empty()).build();
-
-		assertThat(statement.getQuery()).isEqualTo(
-				"INSERT INTO withudtid (id) " + "VALUES ({zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']})");
 	}
 
 	@Test // DATACASS-172
@@ -295,50 +192,6 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 		assertThat(addressBook.getOtherCurrencies()).hasSize(1).contains(Currency.getInstance("EUR"));
 	}
 
-	@Test // DATACASS-172, DATACASS-400
-	void shouldWriteUdtWithCustomConversion() {
-
-		Bank bank = new Bank(null, Currency.getInstance("EUR"), null);
-
-		SimpleStatement statement = new StatementFactory(converter).insert(bank, WriteOptions.empty()).build();
-
-		assertThat(statement.getQuery()).isEqualTo("INSERT INTO bank (currency) VALUES ({currency:'EUR'})");
-	}
-
-	@Test // DATACASS-172
-	void shouldWriteUdtWhereWherePrimaryKeyWithCustomConversion() {
-
-		Money money = new Money();
-		money.setCurrency(Currency.getInstance("EUR"));
-
-		Where where = new Where();
-		converter.write(money, where);
-
-		assertThat((UdtValue) where.get(CqlIdentifier.fromCql("currency"))) //
-				.extracting(UdtValue::getFormattedContents) //
-				.isEqualTo("{currency:'EUR'}");
-	}
-
-	@Test // DATACASS-172, DATACASS-400
-	void shouldWriteUdtUpdateAssignmentsWithCustomConversion() {
-
-		MoneyTransfer money = new MoneyTransfer("1", Currency.getInstance("EUR"));
-
-		SimpleStatement statement = new StatementFactory(converter).update(money, WriteOptions.empty()).build();
-
-		assertThat(statement.getQuery()).isEqualTo("UPDATE moneytransfer SET currency={currency:'EUR'} WHERE id='1'");
-	}
-
-	@Test // DATACASS-172, DATACASS-400
-	void shouldWriteUdtListWithCustomConversion() {
-
-		Bank bank = new Bank(null, null, Collections.singletonList(Currency.getInstance("EUR")));
-
-		SimpleStatement statement = new StatementFactory(converter).insert(bank, WriteOptions.empty()).build();
-
-		assertThat(statement.getQuery()).isEqualTo("INSERT INTO bank (othercurrencies) VALUES ([{currency:'EUR'}])");
-	}
-
 	@Test // DATACASS-172
 	void shouldReadNestedUdt() {
 
@@ -350,19 +203,6 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 		assertThat(car.getEngine()).isNotNull();
 		assertThat(car.getEngine().getManufacturer()).isNotNull();
 		assertThat(car.getEngine().getManufacturer().getName()).isEqualTo("a good one");
-	}
-
-	@Test // DATACASS-172, DATACASS-400
-	void shouldWriteNestedUdt() {
-
-		Engine engine = new Engine(new Manufacturer("a good one"));
-
-		Car car = new Car("1", engine);
-
-		SimpleStatement statement = new StatementFactory(converter).insert(car, WriteOptions.empty()).build();
-
-		assertThat(statement.getQuery())
-				.isEqualTo("INSERT INTO car (engine,id) VALUES ({manufacturer:{name:'a good one'}},'1')");
 	}
 
 	@Test // DATACASS-487
