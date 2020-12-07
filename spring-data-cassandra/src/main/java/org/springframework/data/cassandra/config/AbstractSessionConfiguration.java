@@ -93,7 +93,7 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 	/**
 	 * Gets a required bean of the provided {@link Class type} from the {@link BeanFactory}.
 	 *
-	 * @param <T> {@link Class parameterized clas type} of the bean.
+	 * @param <T> {@link Class parameterized class type} of the bean.
 	 * @param beanType {@link Class type} of the bean.
 	 * @return a required bean of the given {@link Class type} from the {@link BeanFactory}.
 	 * @see org.springframework.beans.factory.BeanFactory#getBean(Class)
@@ -125,13 +125,14 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 
 	/**
 	 * Returns the local data center name used for
-	 * {@link com.datastax.oss.driver.api.core.loadbalancing.LoadBalancingPolicy}.
+	 * {@link com.datastax.oss.driver.api.core.loadbalancing.LoadBalancingPolicy}, defaulting to {@code datacenter1}.
+	 * Typically required when connecting a Cassandra cluster. Not required when using an Astra connection bundle.
 	 *
-	 * @return the local data center name.
+	 * @return the local data center name. Can be {@literal null} when using an Astra connection bundle.
 	 */
 	@Nullable
 	protected String getLocalDataCenter() {
-		return null;
+		return "datacenter1";
 	}
 
 	/**

@@ -25,8 +25,8 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.core.cql.CqlTemplate;
-import org.springframework.data.cassandra.test.util.IntegrationTestsSupport;
 import org.springframework.data.cassandra.test.util.CassandraExtension;
+import org.springframework.data.cassandra.test.util.IntegrationTestsSupport;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 
@@ -45,11 +45,6 @@ class CqlTemplateConfigIntegrationTests extends IntegrationTestsSupport {
 		@Override
 		protected String getKeyspaceName() {
 			return "system";
-		}
-
-		@Override
-		protected String getLocalDataCenter() {
-			return "datacenter1";
 		}
 
 		@Override
