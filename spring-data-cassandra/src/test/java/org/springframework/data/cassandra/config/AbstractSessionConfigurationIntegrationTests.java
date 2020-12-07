@@ -68,12 +68,6 @@ class AbstractSessionConfigurationIntegrationTests {
 			return "system";
 		}
 
-		@Nullable
-		@Override
-		protected String getLocalDataCenter() {
-			return "datacenter1";
-		}
-
 		@Override
 		protected int getPort() {
 			return new CassandraConnectionProperties().getCassandraPort();
