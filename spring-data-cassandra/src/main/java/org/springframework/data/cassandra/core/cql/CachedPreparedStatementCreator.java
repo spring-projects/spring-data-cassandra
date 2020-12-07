@@ -18,14 +18,15 @@ package org.springframework.data.cassandra.core.cql;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.datastax.oss.driver.api.core.CqlIdentifier;
-import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.DriverException;
-import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.springframework.util.Assert;
+
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.DriverException;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 
 /**
  * This {@link PreparedStatementCreator} maintains a static cache of all prepared statements for the duration of the JVM
@@ -38,8 +39,7 @@ import org.springframework.util.Assert;
  * @author David Webb
  * @author Mark Paluch
  * @deprecated since 2.0. This class uses an unsafe, static held cache and is not able to prepare
- *             {@link com.datastax.driver.core.querybuilder.BuiltStatement}. Use
- *             {@link org.springframework.data.cassandra.core.cql.support.CachedPreparedStatementCreator}.
+ *             {@link com.datastax.driver.core.querybuilder.BuiltStatement}.
  */
 @Deprecated
 public class CachedPreparedStatementCreator implements PreparedStatementCreator {

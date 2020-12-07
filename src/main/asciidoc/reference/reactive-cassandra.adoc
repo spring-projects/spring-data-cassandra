@@ -18,7 +18,7 @@ Spring Data for Apache Cassandra uses consistent naming conventions on objects i
 [[cassandra.reactive.getting-started]]
 == Getting Started
 
-Spring Data for Apache Cassandra requires Apache Cassandra 2.1 or later and Datastax Java Driver 3.0 or later.
+Spring Data for Apache Cassandra requires Apache Cassandra 2.1 or later and Datastax Java Driver 4.0 or later.
 An easy way to quickly set up and bootstrap a working environment is to create a Spring-based project in https://spring.io/tools/sts[STS] or use https://start.spring.io/[Spring Initializer].
 
 First, you need to set up a running Apache Cassandra server.

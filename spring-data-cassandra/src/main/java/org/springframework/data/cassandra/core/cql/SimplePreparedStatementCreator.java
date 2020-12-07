@@ -24,14 +24,11 @@ import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 
 /**
  * Trivial implementation of {@link PreparedStatementCreator}. This prepared statement creator simply prepares a
- * statement from the CQL string.
- * <p>
- * This implementation is useful for testing. It should not be used in production systems with high volume reads and
- * writes. Use {@link CachedPreparedStatementCreator} When preparing statements with Cassandra, each Statement should be
- * prepared once and only once due to the overhead of preparing the statement.
+ * statement from the CQL string. Exposes the given CQL statement through {@link CqlProvider#getCql()},
  *
  * @author David Webb
  * @author Mark Paluch
+ * @see CqlProvider
  */
 public class SimplePreparedStatementCreator implements PreparedStatementCreator, CqlProvider {
 

@@ -36,7 +36,9 @@ import com.datastax.oss.driver.api.core.cql.SimpleStatement;
  * @author Mark Paluch
  * @author Aldo Bongio
  * @since 2.0
+ * @deprecated since 3.2, the Cassandra driver has a built-in prepared statement cache with makes external caching of prepared statements superfluous.
  */
+@Deprecated
 public class MapPreparedStatementCache implements PreparedStatementCache {
 
 	private final Map<CacheKey, PreparedStatement> cache;
