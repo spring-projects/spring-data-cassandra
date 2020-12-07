@@ -46,6 +46,22 @@ pipeline {
 						}
 					}
 				}
+				stage('Publish JDK 15 + Cassandra 3.11') {
+					when {
+						changeset "ci/openjdk15-8-cassandra-3.11/**"
+					}
+					agent { label 'data' }
+					options { timeout(time: 30, unit: 'MINUTES') }
+
+					steps {
+						script {
+							def image = docker.build("springci/spring-data-openjdk15-8-cassandra-3.11", "ci/openjdk15-8-cassandra-3.11/")
+							docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
+								image.push()
+							}
+						}
+					}
+				}
 			}
 		}
 		stage("Test") {
@@ -85,6 +101,21 @@ pipeline {
 					agent {
 						docker {
 							image 'springci/spring-data-openjdk11-8-cassandra-3.11:latest'
+							label 'data'
+							args '-v $HOME:/tmp/jenkins-home'
+						}
+					}
+					options { timeout(time: 30, unit: 'MINUTES') }
+					steps {
+						sh 'mkdir -p /tmp/jenkins-home'
+						sh 'JAVA_HOME=/opt/java/openjdk8 /opt/cassandra/bin/cassandra -R &'
+						sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -Pci,external-cassandra,java11 clean dependency:list verify -Dsort -U -B'
+					}
+				}
+				stage("test: baseline (jdk15)") {
+					agent {
+						docker {
+							image 'springci/spring-data-openjdk15-8-cassandra-3.11:latest'
 							label 'data'
 							args '-v $HOME:/tmp/jenkins-home'
 						}
