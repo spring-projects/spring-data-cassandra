@@ -1,6 +1,21 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 3.2.0-M1 (2020-12-09)
+----------------------------------------
+* DATACASS-834 - Default to datacenter1 in AbstractSessionConfiguration.getLocalDataCenter.
+* DATACASS-833 - Deprecate cached PreparedStatementCreator support classes.
+* DATACASS-832 - Use index-based parameter binding.
+* DATACASS-829 - Regression in mapper prevent list partial update handling.
+* DATACASS-828 - Resolve selection projection and ordering of composite key properties into multiple columns.
+* DATACASS-825 - Implement CrudRepository.delete(Iterable<ID> ids).
+* DATACASS-821 - Enable Maven caching for Jenkins jobs.
+* DATACASS-820 - Release 3.2 M1 (2021.0.0).
+* DATACASS-804 - Update CI jobs for Java 15.
+* DATACASS-798 - Introduce CassandraDriverOptionsConfigurer and allow specifying a configuration file.
+* DATACASS-510 - Use Prepared Statements for CassandraTemplate and repository queries.
+
+
 Changes in version 3.0.6.RELEASE (2020-12-09)
 ---------------------------------------------
 * DATACASS-834 - Default to datacenter1 in AbstractSessionConfiguration.getLocalDataCenter.
@@ -1357,6 +1372,7 @@ Changes in version 1.0.0.M1 (2014-03-31)
     * [DATACASS-100] - QueryOptions should only have ConsistencyLevel & RetryPolicy
     * [DATACASS-104] - Remove requirement for @PrimaryKeyClass when using composite primary keys
     * [DATACASS-107] - Support declarative query methods
+
 
 
 
