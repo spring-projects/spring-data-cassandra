@@ -64,26 +64,25 @@ pipeline {
 				}
 			}
 		}
-		stage("Test") {
+
+		stage("test: baseline (jdk8)") {
 			when {
 				anyOf {
 					branch 'master'
 					not { triggeredBy 'UpstreamCause' }
 				}
 			}
-			stage("test: baseline (jdk8)") {
-				agent {
-					label 'data'
-				}
-				options { timeout(time: 30, unit: 'MINUTES') }
-				steps {
-					script {
-						docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
-							docker.image('springci/spring-data-openjdk8-cassandra-3.11:latest').inside('-v $HOME:/tmp/jenkins-home') {
-								sh 'mkdir -p /tmp/jenkins-home'
-								sh 'JAVA_HOME=/opt/java/openjdk /opt/cassandra/bin/cassandra -R &'
-								sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -Pci,external-cassandra clean dependency:list verify -Dsort -U -B'
-							}
+			agent {
+				label 'data'
+			}
+			options { timeout(time: 30, unit: 'MINUTES') }
+			steps {
+				script {
+					docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
+						docker.image('springci/spring-data-openjdk8-cassandra-3.11:latest').inside('-v $HOME:/tmp/jenkins-home') {
+							sh 'mkdir -p /tmp/jenkins-home'
+							sh 'JAVA_HOME=/opt/java/openjdk /opt/cassandra/bin/cassandra -R &'
+							sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -Pci,external-cassandra clean dependency:list verify -Dsort -U -B'
 						}
 					}
 				}
