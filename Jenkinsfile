@@ -98,23 +98,6 @@ pipeline {
 						}
 					}
 				}
-				stage("test: baseline (jdk15)") {
-					agent {
-						label 'data'
-					}
-					options { timeout(time: 30, unit: 'MINUTES') }
-					steps {
-						script {
-							docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
-								docker.image('springci/spring-data-openjdk15-8-cassandra-3.11:latest').inside('-v $HOME:/tmp/jenkins-home') {
-									sh 'mkdir -p /tmp/jenkins-home'
-									sh 'JAVA_HOME=/opt/java/openjdk8 /opt/cassandra/bin/cassandra -R &'
-									sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -Pci,external-cassandra,java11 clean dependency:list verify -Dsort -U -B'
-								}
-							}
-						}
-					}
-				}
 			}
 		}
 		stage('Release to artifactory') {
