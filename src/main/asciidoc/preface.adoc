@@ -87,7 +87,7 @@ For information on the Spring Data for Apache Cassandra source code repository, 
 You can help make Spring Data best serve the needs of the Spring community by interacting with developers through the community on https://stackoverflow.com/questions/tagged/spring-data[Stack Overflow].
 To follow developer activity, look for the mailing list information on the Spring Data for Apache Cassandra home page.
 If you encounter a bug or want to suggest an improvement, please create a ticket on the Spring Data issue
-https://jira.spring.io/browse/DATACASS[tracker].
+https://github.com/spring-projects/spring-data-cassandra/issues[tracker].
 To stay up-to-date with the latest news and announcements in the Spring ecosystem, subscribe to the Spring Community https://spring.io[Portal].
 Finally, you can follow the Spring  https://spring.io/blog[blog] or the project team on Twitter (https://twitter.com/SpringData[SpringData]).
 
@@ -95,7 +95,7 @@ Finally, you can follow the Spring  https://spring.io/blog[blog] or the project 
 === Project Metadata
 
 * Version Control: https://github.com/spring-projects/spring-data-cassandra
-* Bugtracker: https://jira.spring.io/browse/DATACASS
+* Bugtracker: https://github.com/spring-projects/spring-data-cassandra/issues
 * Release repository: https://repo.spring.io/libs-release
 * Milestone repository: https://repo.spring.io/libs-milestone
 * Snapshot repository: https://repo.spring.io/libs-snapshot
