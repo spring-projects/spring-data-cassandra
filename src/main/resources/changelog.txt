@@ -1,6 +1,14 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 3.2.0-M2 (2021-01-13)
+----------------------------------------
+* DATACASS-835 - Update CI jobs with Docker Login.
+* #1079 - Defer non-constant assert messages to improve performance.
+* #1078 - Update copyright year to 2021.
+* #182 - Update repository after GitHub issues migration.
+
+
 Changes in version 3.1.3 (2021-01-13)
 -------------------------------------
 * DATACASS-835 - Update CI jobs with Docker Login.
@@ -1381,6 +1389,7 @@ Changes in version 1.0.0.M1 (2014-03-31)
     * [DATACASS-100] - QueryOptions should only have ConsistencyLevel & RetryPolicy
     * [DATACASS-104] - Remove requirement for @PrimaryKeyClass when using composite primary keys
     * [DATACASS-107] - Support declarative query methods
+
 
 
 
