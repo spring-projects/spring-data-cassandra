@@ -35,6 +35,7 @@ import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
  * Helpful class to read a column's value from a row, with possible type conversion.
  *
  * @author Mark Paluch
+ * @author Frank Spitulski
  * @since 3.0
  */
 class RowReader {
@@ -165,7 +166,7 @@ class RowReader {
 
 		int index = columns.firstIndexOf(columnName);
 
-		Assert.isTrue(index > -1, String.format("Column [%s] does not exist in table", columnName));
+		Assert.isTrue(index > -1, () -> String.format("Column [%s] does not exist in table", columnName));
 
 		return index;
 	}
