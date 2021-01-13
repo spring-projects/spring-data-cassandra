@@ -27,6 +27,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * Cassandra Tuple specific {@link CassandraPersistentProperty} implementation.
  *
  * @author Mark Paluch
+ * @author Frank Spitulski
  * @since 2.1
  * @see Element
  */
@@ -68,7 +69,8 @@ public class BasicCassandraPersistentTupleProperty extends BasicCassandraPersist
 		}
 
 		Assert.isTrue(ordinal >= 0,
-				String.format("Element ordinal must be greater or equal to zero for property [%s] in entity [%s]", getName(),
+				() -> String.format("Element ordinal must be greater or equal to zero for property [%s] in entity [%s]",
+						getName(),
 						getOwner().getName()));
 
 		return ordinal;
