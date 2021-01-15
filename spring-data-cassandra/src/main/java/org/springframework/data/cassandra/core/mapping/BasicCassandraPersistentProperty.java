@@ -54,6 +54,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * @author Antoine Toulme
  * @author Mark Paluch
  * @author John Blum
+ * @author Frank Spitulski
  */
 public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentProperty<CassandraPersistentProperty>
 		implements CassandraPersistentProperty, ApplicationContextAware {
@@ -67,6 +68,13 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 	private @Nullable StandardEvaluationContext spelContext;
 
+	private final @Nullable Ordering primaryKeyOrdering;
+	private final boolean isCompositePrimaryKey;
+	private final boolean isClusterKeyColumn;
+	private final boolean isPartitionKeyColumn;
+	private final boolean isPrimaryKeyColumn;
+	private final boolean isEmbedded;
+
 	/**
 	 * Create a new {@link BasicCassandraPersistentProperty}.
 	 *
@@ -78,6 +86,13 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 			SimpleTypeHolder simpleTypeHolder) {
 
 		super(property, owner, simpleTypeHolder);
+		PrimaryKeyColumn annotation = findAnnotation(PrimaryKeyColumn.class);
+		primaryKeyOrdering = annotation != null ? annotation.ordering() : null;
+		isCompositePrimaryKey = AnnotatedElementUtils.findMergedAnnotation(getType(), PrimaryKeyClass.class) != null;
+		isClusterKeyColumn = annotation != null && PrimaryKeyType.CLUSTERED.equals(annotation.type());
+		isPartitionKeyColumn = annotation != null && PrimaryKeyType.PARTITIONED.equals(annotation.type());
+		isPrimaryKeyColumn = annotation != null;
+		isEmbedded = findAnnotation(Embedded.class) != null && isEntity();
 	}
 
 	/* (non-Javadoc)
@@ -132,10 +147,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	@Nullable
 	@Override
 	public Ordering getPrimaryKeyOrdering() {
-
-		PrimaryKeyColumn annotation = findAnnotation(PrimaryKeyColumn.class);
-
-		return annotation != null ? annotation.ordering() : null;
+		return primaryKeyOrdering;
 	}
 
 	/* (non-Javadoc)
@@ -143,7 +155,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	 */
 	@Override
 	public boolean isCompositePrimaryKey() {
-		return AnnotatedElementUtils.findMergedAnnotation(getType(), PrimaryKeyClass.class) != null;
+		return isCompositePrimaryKey;
 	}
 
 	/* (non-Javadoc)
@@ -151,10 +163,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	 */
 	@Override
 	public boolean isClusterKeyColumn() {
-
-		PrimaryKeyColumn annotation = findAnnotation(PrimaryKeyColumn.class);
-
-		return annotation != null && PrimaryKeyType.CLUSTERED.equals(annotation.type());
+		return isClusterKeyColumn;
 	}
 
 	/* (non-Javadoc)
@@ -162,10 +171,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	 */
 	@Override
 	public boolean isPartitionKeyColumn() {
-
-		PrimaryKeyColumn annotation = findAnnotation(PrimaryKeyColumn.class);
-
-		return annotation != null && PrimaryKeyType.PARTITIONED.equals(annotation.type());
+		return isPartitionKeyColumn;
 	}
 
 	/* (non-Javadoc)
@@ -173,7 +179,15 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	 */
 	@Override
 	public boolean isPrimaryKeyColumn() {
-		return isAnnotationPresent(PrimaryKeyColumn.class);
+		return isPrimaryKeyColumn;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty#isEmbedded()
+	 */
+	@Override
+	public boolean isEmbedded() {
+		return isEmbedded;
 	}
 
 	@Nullable
