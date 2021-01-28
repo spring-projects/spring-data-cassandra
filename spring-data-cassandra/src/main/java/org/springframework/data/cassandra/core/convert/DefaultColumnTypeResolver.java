@@ -444,16 +444,14 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 	}
 
 	private DataType getUserType(CassandraPersistentEntity<?> persistentEntity, boolean frozen) {
-
 		CqlIdentifier identifier = persistentEntity.getTableName();
-		com.datastax.oss.driver.api.core.type.UserDefinedType userType = userTypeResolver.resolveType(identifier)
-				.copy(frozen);
+		com.datastax.oss.driver.api.core.type.UserDefinedType userType = userTypeResolver.resolveType(identifier);
 
 		if (userType == null) {
 			throw new MappingException(String.format("User type [%s] not found", identifier));
 		}
 
-		return userType;
+		return userType.copy(frozen);
 	}
 
 	private Class<?> resolveToJavaType(DataType dataType) {
