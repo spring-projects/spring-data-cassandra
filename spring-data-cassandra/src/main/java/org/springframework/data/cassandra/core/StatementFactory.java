@@ -641,10 +641,14 @@ public class StatementFactory {
 
 			builder.apply((statement) -> {
 
-				Map<String, ClusteringOrder> ordering = sort.stream().collect(Collectors.toMap(Sort.Order::getProperty,
-						order -> order.isAscending() ? ClusteringOrder.ASC : ClusteringOrder.DESC));
+				Select statementToUse = statement;
 
-				return statement.orderBy(ordering);
+				for (Sort.Order order : sort) {
+					statementToUse = statementToUse.orderBy(order.getProperty(),
+							order.isAscending() ? ClusteringOrder.ASC : ClusteringOrder.DESC);
+				}
+
+				return statementToUse;
 			});
 		}
 
