@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.domain;
 import lombok.Data;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.data.cassandra.core.mapping.PrimaryKey;
@@ -27,6 +28,7 @@ import org.springframework.data.cassandra.core.mapping.Table;
  * Test POJO
  *
  * @author David Webb
+ * @author Mark Paluch
  */
 @Table("bookReference")
 @Data
@@ -37,4 +39,5 @@ public class BookReference {
 	private String title;
 	private Set<String> references;
 	private List<Integer> bookmarks;
+	private Map<String, String> credits;
 }

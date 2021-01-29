@@ -179,6 +179,15 @@ class UpdateMapperUnitTests {
 		assertThat(update).hasToString("map = map + {'foo':'Euro'}");
 	}
 
+	@Test // #1007
+	void shouldRemoveFromMap() {
+
+		Update update = updateMapper.getMappedObject(Update.empty().removeFrom("map").value("foo"), persistentEntity);
+
+		assertThat(update.getUpdateOperations()).hasSize(1);
+		assertThat(update).hasToString("map = map - {'foo'}");
+	}
+
 	@Test // DATACASS-487
 	void shouldAddUdtToMap() {
 

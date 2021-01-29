@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
@@ -800,27 +801,23 @@ public class StatementFactory {
 	}
 
 	@SuppressWarnings("unchecked")
-	private static Assignment getAssignment(RemoveOp updateOp, TermFactory termFactory) {
+	private static Assignment getAssignment(RemoveOp removeOp, TermFactory termFactory) {
 
-		if (updateOp.getValue() instanceof Set) {
+		if (removeOp.getValue() instanceof Set) {
 
-			Collection<Object> collection = (Collection<Object>) updateOp.getValue();
+			Collection<Object> collection = (Collection<Object>) removeOp.getValue();
 
-			Assert.isTrue(collection.size() == 1, "RemoveOp must contain a single set element");
-
-			return Assignment.removeSetElement(updateOp.toCqlIdentifier(), termFactory.create(collection.iterator().next()));
+			return new RemoveCollectionElementsAssignment(removeOp.toCqlIdentifier(), termFactory.create(collection));
 		}
 
-		if (updateOp.getValue() instanceof List) {
+		if (removeOp.getValue() instanceof List) {
 
-			Collection<Object> collection = (Collection<Object>) updateOp.getValue();
+			Collection<Object> collection = (Collection<Object>) removeOp.getValue();
 
-			Assert.isTrue(collection.size() == 1, "RemoveOp must contain a single list element");
-
-			return Assignment.removeListElement(updateOp.toCqlIdentifier(), termFactory.create(collection.iterator().next()));
+			return new RemoveCollectionElementsAssignment(removeOp.toCqlIdentifier(), termFactory.create(collection));
 		}
 
-		return Assignment.remove(updateOp.toCqlIdentifier(), termFactory.create(updateOp.getValue()));
+		return Assignment.remove(removeOp.toCqlIdentifier(), termFactory.create(removeOp.getValue()));
 	}
 
 	private static Assignment getAssignment(AddToOp updateOp, TermFactory termFactory) {
@@ -1045,13 +1042,17 @@ public class StatementFactory {
 	}
 
 	static List<Term> toLiterals(@Nullable Object arrayOrList) {
+		return toLiterals(arrayOrList, QueryBuilder::literal);
+	}
+
+	static List<Term> toLiterals(@Nullable Object arrayOrList, Function<Object, Term> termFactory) {
 
 		if (arrayOrList instanceof List) {
 
 			List<?> list = (List<?>) arrayOrList;
 			List<Term> literals = new ArrayList<>(list.size());
 			for (Object o : list) {
-				literals.add(QueryBuilder.literal(o));
+				literals.add(termFactory.apply(o));
 			}
 
 			return literals;
@@ -1062,7 +1063,7 @@ public class StatementFactory {
 			Object[] array = (Object[]) arrayOrList;
 			List<Term> literals = new ArrayList<>(array.length);
 			for (Object o : array) {
-				literals.add(QueryBuilder.literal(o));
+				literals.add(termFactory.apply(o));
 			}
 
 			return literals;
@@ -1096,4 +1097,37 @@ public class StatementFactory {
 			builder.append(selector);
 		}
 	}
+
+	private static class RemoveCollectionElementsAssignment implements Assignment {
+
+		private final CqlIdentifier columnId;
+		private final Term value;
+
+		protected RemoveCollectionElementsAssignment(CqlIdentifier columnId, Term value) {
+			this.columnId = columnId;
+			this.value = value;
+		}
+
+		@Override
+		public void appendTo(StringBuilder builder) {
+			builder.append(String.format("%1$s=%1$s-%2$s", columnId.asCql(true), buildRightOperand()));
+		}
+
+		private String buildRightOperand() {
+			StringBuilder builder = new StringBuilder();
+			value.appendTo(builder);
+			return builder.toString();
+		}
+
+		@Override
+		public boolean isIdempotent() {
+			return value.isIdempotent();
+		}
+
+		public Term getValue() {
+			return value;
+		}
+
+	}
+
 }

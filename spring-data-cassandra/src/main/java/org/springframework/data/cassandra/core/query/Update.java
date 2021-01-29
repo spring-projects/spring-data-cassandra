@@ -121,6 +121,17 @@ public class Update {
 	}
 
 	/**
+	 * Create a new {@link RemoveFromBuilder} to remove items from a collection for {@code columnName} in a fluent style.
+	 *
+	 * @param columnName must not be {@literal null}.
+	 * @return a new {@link RemoveFromBuilder} to build an remove-from assignment.
+	 * @since 3.1.4
+	 */
+	public RemoveFromBuilder removeFrom(String columnName) {
+		return new DefaultRemoveFromBuilder(ColumnName.from(columnName));
+	}
+
+	/**
 	 * Remove {@code value} from the collection at {@code columnName}.
 	 *
 	 * @param columnName must not be {@literal null}.
@@ -400,6 +411,80 @@ public class Update {
 			Assert.notNull(map, "Map must not be null");
 
 			return add(new AddToMapOp(columnName, map));
+		}
+	}
+
+	/**
+	 * Builder to remove a single element/multiple elements from a collection associated with a {@link ColumnName}.
+	 *
+	 * @author Mark Paluch
+	 * @since 3.1.4
+	 */
+	@SuppressWarnings("unused")
+	public interface RemoveFromBuilder {
+
+		/**
+		 * Remove all entries matching {@code value} from a set, list or map (map key).
+		 *
+		 * @param value must not be {@literal null}.
+		 * @return a new {@link Update} object containing the merge result of the existing assignments and the current
+		 *         assignment.
+		 */
+		Update value(Object value);
+
+		/**
+		 * Remove all entries matching {@code values} from a set, list or map (map key).
+		 *
+		 * @param values must not be {@literal null}.
+		 * @return a new {@link Update} object containing the merge result of the existing assignments and the current
+		 *         assignment.
+		 */
+		default Update values(Object... values) {
+
+			Assert.notNull(values, "Values must not be null");
+
+			return values(Arrays.asList(values));
+		}
+
+		/**
+		 * Remove all entries matching {@code values} from a set, list or map (map key).
+		 *
+		 * @param values must not be {@literal null}.
+		 * @return a new {@link Update} object containing the merge result of the existing assignments and the current
+		 *         assignment.
+		 */
+		Update values(Iterable<? extends Object> values);
+
+	}
+
+	/**
+	 * Default {@link RemoveFromBuilder} implementation.
+	 */
+	private class DefaultRemoveFromBuilder implements RemoveFromBuilder {
+
+		private final ColumnName columnName;
+
+		DefaultRemoveFromBuilder(ColumnName columnName) {
+			this.columnName = columnName;
+		}
+
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.query.Update.RemoveFromBuilder#mapValue(java.lang.Object)
+		 */
+		@Override
+		public Update value(Object value) {
+			return add(new RemoveOp(columnName, value));
+		}
+
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.query.Update.RemoveFromBuilder#mapValues(java.lang.Iterable)
+		 */
+		@Override
+		public Update values(Iterable<?> values) {
+
+			Assert.notNull(values, "Values must not be null");
+
+			return add(new RemoveOp(columnName, values));
 		}
 	}
 
@@ -718,4 +803,5 @@ public class Update {
 			return String.format("%s = %s - %s", getColumnName(), getColumnName(), serializeToCqlSafely(getValue()));
 		}
 	}
+
 }
