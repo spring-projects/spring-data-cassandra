@@ -402,7 +402,7 @@ public class CassandraMappingContext
 
 		BasicCassandraPersistentProperty persistentProperty = owner.isTupleType()
 				? new BasicCassandraPersistentTupleProperty(property, owner, simpleTypeHolder)
-				: new BasicCassandraPersistentProperty(property, owner, simpleTypeHolder);
+				: new CachingCassandraPersistentProperty(property, owner, simpleTypeHolder);
 
 		persistentProperty.setNamingStrategy(this.namingStrategy);
 		Optional.ofNullable(this.applicationContext).ifPresent(persistentProperty::setApplicationContext);
