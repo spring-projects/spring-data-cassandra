@@ -443,17 +443,6 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 		return new DefaultCassandraColumnType(typeInformation, dataType);
 	}
 
-	private DataType getUserType(CassandraPersistentEntity<?> persistentEntity, boolean frozen) {
-		CqlIdentifier identifier = persistentEntity.getTableName();
-		com.datastax.oss.driver.api.core.type.UserDefinedType userType = userTypeResolver.resolveType(identifier);
-
-		if (userType == null) {
-			throw new MappingException(String.format("User type [%s] not found", identifier));
-		}
-
-		return userType.copy(frozen);
-	}
-
 	private Class<?> resolveToJavaType(DataType dataType) {
 		TypeCodec<Object> codec = getCodecRegistry().codecFor(dataType);
 		return codec.getJavaType().getRawType();
@@ -463,12 +452,20 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 		return codecRegistry.get();
 	}
 
-	private DataType getUserType(String userTypeName) {
+	private UserDefinedType getUserType(CassandraPersistentEntity<?> persistentEntity, boolean frozen) {
+		return getUserType(persistentEntity.getTableName()).copy(frozen);
+	}
 
-		UserDefinedType type = userTypeResolver.resolveType(CqlIdentifier.fromCql(userTypeName));
+	private UserDefinedType getUserType(String userTypeName) {
+		return getUserType(CqlIdentifier.fromCql(userTypeName));
+	}
+
+	private UserDefinedType getUserType(CqlIdentifier userTypeName) {
+
+		UserDefinedType type = userTypeResolver.resolveType(userTypeName);
 
 		if (type == null) {
-			throw new MappingException(String.format("Cannot resolve UserDefinedType for [%s]", userTypeName));
+			throw new MappingException(String.format("User type [%s] not found", userTypeName));
 		}
 
 		return type;
