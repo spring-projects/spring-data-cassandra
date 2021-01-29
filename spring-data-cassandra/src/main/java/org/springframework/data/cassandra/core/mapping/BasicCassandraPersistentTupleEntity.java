@@ -35,7 +35,6 @@ public class BasicCassandraPersistentTupleEntity<T> extends BasicCassandraPersis
 	 * Creates a new {@link BasicCassandraPersistentTupleEntity} given {@link TypeInformation}.
 	 *
 	 * @param information must not be {@literal null}.
-	 * @param tupleTypeFactory must not be {@literal null}.
 	 */
 	public BasicCassandraPersistentTupleEntity(TypeInformation<T> information) {
 
