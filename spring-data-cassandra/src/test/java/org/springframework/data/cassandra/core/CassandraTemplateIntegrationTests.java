@@ -30,8 +30,10 @@ import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -571,6 +573,38 @@ class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrat
 
 		assertThat(loaded.getTitle()).isNull();
 		assertThat(loaded.getBookmarks()).isNull();
+	}
+
+	@Test // #1007
+	void updateCollection() {
+
+		BookReference bookReference = new BookReference();
+
+		bookReference.setIsbn("isbn");
+		bookReference.setBookmarks(Arrays.asList(1, 2, 3, 4));
+		bookReference.setReferences(new LinkedHashSet<>(Arrays.asList("one", "two", "three")));
+
+		Map<String, String> credits = new LinkedHashMap<>();
+		credits.put("hello", "world");
+		credits.put("other", "world");
+		credits.put("external", "place");
+
+		bookReference.setCredits(credits);
+
+		template.insert(bookReference);
+
+		Query query = Query.query(where("isbn").is(bookReference.getIsbn()));
+
+		Update update = Update.empty().removeFrom("bookmarks").values(3, 4).removeFrom("references").values("one", "three")
+				.removeFrom("credits").values("hello", "other", "place");
+
+		template.update(query, update, BookReference.class);
+
+		BookReference loaded = template.selectOneById(bookReference.getIsbn(), BookReference.class);
+
+		assertThat(loaded.getBookmarks()).containsOnly(1, 2);
+		assertThat(loaded.getReferences()).containsOnly("two");
+		assertThat(loaded.getCredits()).containsOnlyKeys("external");
 	}
 
 	@Test // DATACASS-206

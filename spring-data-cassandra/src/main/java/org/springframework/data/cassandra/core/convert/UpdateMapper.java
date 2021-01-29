@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
+import static org.springframework.data.cassandra.core.query.Update.*;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -28,14 +30,7 @@ import java.util.Set;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.query.Filter;
 import org.springframework.data.cassandra.core.query.Update;
-import org.springframework.data.cassandra.core.query.Update.AddToMapOp;
-import org.springframework.data.cassandra.core.query.Update.AddToOp;
-import org.springframework.data.cassandra.core.query.Update.AssignmentOp;
-import org.springframework.data.cassandra.core.query.Update.IncrOp;
-import org.springframework.data.cassandra.core.query.Update.RemoveOp;
-import org.springframework.data.cassandra.core.query.Update.SetAtIndexOp;
-import org.springframework.data.cassandra.core.query.Update.SetAtKeyOp;
-import org.springframework.data.cassandra.core.query.Update.SetOp;
+import org.springframework.data.cassandra.core.query.Update.*;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
@@ -95,7 +90,7 @@ public class UpdateMapper extends QueryMapper {
 			mapped.add(getMappedUpdateOperation(assignmentOp, field));
 		}
 
-		return Update.of(mapped);
+		return of(mapped);
 	}
 
 	private AssignmentOp getMappedUpdateOperation(AssignmentOp assignmentOp, Field field) {
@@ -192,7 +187,20 @@ public class UpdateMapper extends QueryMapper {
 
 		Object value = updateOp.getValue();
 		ColumnType descriptor = getColumnType(field, value, ColumnTypeTransformer.AS_IS);
+		boolean mapLike = false;
+
+		if (field.getProperty().isPresent() && field.getProperty().get().isMapLike()) {
+
+			descriptor = getColumnType(field, value, value instanceof Collection ? ColumnTypeTransformer.ENCLOSING_MAP_KEY_SET
+					: ColumnTypeTransformer.MAP_KEY_TYPE);
+			mapLike = true;
+		}
+
 		Object mappedValue = getConverter().convertToColumnType(value, descriptor);
+
+		if (mapLike && !(mappedValue instanceof Collection)) {
+			mappedValue = Collections.singleton(mappedValue);
+		}
 
 		return new RemoveOp(field.getMappedKey(), mappedValue);
 	}

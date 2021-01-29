@@ -399,6 +399,17 @@ public class QueryMapper {
 		},
 
 		/**
+		 * Wrap {@link ColumnType} into a set.
+		 */
+		ENCLOSING_SET {
+
+			@Override
+			ColumnType transform(ColumnType typeDescriptor, CassandraPersistentProperty property) {
+				return ColumnType.setOf(typeDescriptor);
+			}
+		},
+
+		/**
 		 * Use the map key type.
 		 */
 		MAP_KEY_TYPE {
@@ -427,6 +438,17 @@ public class QueryMapper {
 				}
 
 				return typeDescriptor;
+			}
+		},
+
+		/**
+		 * Wrap {@link ColumnType} into a set.
+		 */
+		ENCLOSING_MAP_KEY_SET {
+
+			@Override
+			ColumnType transform(ColumnType typeDescriptor, CassandraPersistentProperty property) {
+				return ColumnType.setOf(MAP_KEY_TYPE.transform(typeDescriptor, property));
 			}
 		};
 

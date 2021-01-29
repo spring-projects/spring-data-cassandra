@@ -359,6 +359,20 @@ class StatementFactoryUnitTests {
 		assertThat(update.build(ParameterHandling.INLINE).getQuery()).isEqualTo("UPDATE person SET map=map+{'foo':'Euro'}");
 	}
 
+	@Test // #1007
+	void shouldRemoveFromMap() {
+
+		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory
+				.update(Query.empty(), Update.empty().removeFrom("map").value("foo"), personEntity);
+
+		assertThat(update.build(ParameterHandling.INLINE).getQuery()).isEqualTo("UPDATE person SET map=map-{'foo'}");
+
+		update = statementFactory.update(Query.empty(), Update.empty().removeFrom("map").values("foo", "bar"),
+				personEntity);
+
+		assertThat(update.build(ParameterHandling.INLINE).getQuery()).isEqualTo("UPDATE person SET map=map-{'foo','bar'}");
+	}
+
 	@Test // DATACASS-343
 	void shouldPrependAllToList() {
 

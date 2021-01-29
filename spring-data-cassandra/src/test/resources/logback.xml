@@ -8,7 +8,6 @@
     </appender>
 
 	<logger name="org.springframework" level="ERROR" />
-	<logger name="org.springframework.data.cql" level="ERROR"/>
 	<logger name="org.springframework.data.cassandra" level="ERROR" />
 
 	<logger name="com.datastax" level="ERROR" />
