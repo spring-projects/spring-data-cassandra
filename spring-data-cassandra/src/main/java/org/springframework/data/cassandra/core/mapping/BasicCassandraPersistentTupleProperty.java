@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
+import org.springframework.data.cassandra.core.cql.Ordering;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.model.Property;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
@@ -94,6 +95,15 @@ public class BasicCassandraPersistentTupleProperty extends BasicCassandraPersist
 	}
 
 	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty#getPrimaryKeyOrdering()
+	 */
+	@Nullable
+	@Override
+	public Ordering getPrimaryKeyOrdering() {
+		return null;
+	}
+
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty#isClusterKeyColumn()
 	 */
 	@Override
@@ -122,6 +132,14 @@ public class BasicCassandraPersistentTupleProperty extends BasicCassandraPersist
 	 */
 	@Override
 	public boolean isPrimaryKeyColumn() {
+		return false;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty#isEmbedded()
+	 */
+	@Override
+	public boolean isEmbedded() {
 		return false;
 	}
 
