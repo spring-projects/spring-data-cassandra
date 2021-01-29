@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.core;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.springframework.data.domain.Sort.Direction.*;
 
 import java.time.Duration;
 import java.util.Collections;
@@ -131,16 +132,40 @@ public class StatementFactoryUnitTests {
 		assertThat(select.build(ParameterHandling.INLINE).getQuery()).isEqualTo("SELECT ttl(email) FROM group");
 	}
 
-	@Test // DATACASS-343
+	@Test // #1008
 	public void shouldMapSelectQueryWithSortLimitAndAllowFiltering() {
 
-		Query query = Query.empty().sort(Sort.by("id.hashPrefix")).limit(10).withAllowFiltering();
+		Query query = Query.empty().sort(Sort.by(DESC, "email", "age"));
 
 		StatementBuilder<Select> select = statementFactory.select(query,
 				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
 
 		assertThat(select.build(ParameterHandling.INLINE).getQuery())
-				.isEqualTo("SELECT * FROM group ORDER BY hash_prefix ASC LIMIT 10 ALLOW FILTERING");
+				.isEqualTo("SELECT * FROM group ORDER BY email DESC,age DESC");
+	}
+
+	@Test // DATACASS-343
+	public void shouldMapSelectQueryWithSortByEmbeddedLimitAndAllowFiltering() {
+
+		Query query = Query.empty().sort(Sort.by(DESC, "id.hashPrefix", "id.username"));
+
+		StatementBuilder<Select> select = statementFactory.select(query,
+				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
+
+		assertThat(select.build(ParameterHandling.INLINE).getQuery())
+				.isEqualTo("SELECT * FROM group ORDER BY hash_prefix DESC,username DESC");
+	}
+
+	@Test // DATACASS-343
+	public void shouldMapSelectQueryWithLimitAndAllowFiltering() {
+
+		Query query = Query.empty().limit(10).withAllowFiltering();
+
+		StatementBuilder<Select> select = statementFactory.select(query,
+				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
+
+		assertThat(select.build(ParameterHandling.INLINE).getQuery())
+				.isEqualTo("SELECT * FROM group LIMIT 10 ALLOW FILTERING");
 	}
 
 	@Test // DATACASS-343
