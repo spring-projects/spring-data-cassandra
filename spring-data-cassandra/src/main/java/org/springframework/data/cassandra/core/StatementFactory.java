@@ -17,7 +17,6 @@ package org.springframework.data.cassandra.core;
 
 import java.beans.PropertyDescriptor;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -624,18 +623,22 @@ public class StatementFactory {
 			select = QueryBuilder.selectFrom(from).all();
 		} else {
 
-			List<com.datastax.oss.driver.api.querybuilder.select.Selector> mappedSelectors = selectors.stream()
-					.map(selector -> selector.getAlias().map(it -> getSelection(selector).as(it))
-							.orElseGet(() -> getSelection(selector)))
-					.collect(Collectors.toList());
+			List<com.datastax.oss.driver.api.querybuilder.select.Selector> mappedSelectors = new ArrayList<>(
+					selectors.size());
+			for (Selector selector : selectors) {
+				com.datastax.oss.driver.api.querybuilder.select.Selector orElseGet = selector.getAlias()
+						.map(it -> getSelection(selector).as(it)).orElseGet(() -> getSelection(selector));
+				mappedSelectors.add(orElseGet);
+			}
 
 			select = QueryBuilder.selectFrom(from).selectors(mappedSelectors);
 		}
 
 		StatementBuilder<Select> builder = StatementBuilder.of(select);
 
-		builder.bind((statement, factory) -> statement
-				.where(filter.stream().map(it -> toClause(it, factory)).collect(Collectors.toList())));
+		builder.bind((statement, factory) -> {
+			return statement.where(getRelations(filter, factory));
+		});
 
 		if (sort.isSorted()) {
 
@@ -653,6 +656,14 @@ public class StatementFactory {
 		}
 
 		return builder;
+	}
+
+	private static List<Relation> getRelations(Filter filter, TermFactory factory) {
+		List<Relation> relations = new ArrayList<>();
+		for (CriteriaDefinition criteriaDefinition : filter) {
+			relations.add(toClause(criteriaDefinition, factory));
+		}
+		return relations;
 	}
 
 	private static com.datastax.oss.driver.api.querybuilder.select.Selector getSelection(Selector selector) {
@@ -693,11 +704,7 @@ public class StatementFactory {
 							.set(assignments);
 
 				}).bind((statement, factory) -> {
-
-					List<Relation> relations = filter.stream().map(criteriaDefinition -> toClause(criteriaDefinition, factory))
-							.collect(Collectors.toList());
-
-					return statement.where(relations);
+					return statement.where(getRelations(filter, factory));
 				});
 	}
 
@@ -840,11 +847,7 @@ public class StatementFactory {
 		}
 
 		return StatementBuilder.of(select.where()).bind((statement, factory) -> {
-
-			List<Relation> relations = filter.stream().map(criteriaDefinition -> toClause(criteriaDefinition, factory))
-					.collect(Collectors.toList());
-
-			return statement.where(relations);
+			return statement.where(getRelations(filter, factory));
 		});
 	}
 
@@ -964,20 +967,9 @@ public class StatementFactory {
 
 			case IN:
 
-				if (predicate.getValue() instanceof List) {
-
-					List<Term> literals = ((List<?>) predicate.getValue()).stream().map(QueryBuilder::literal)
-							.collect(Collectors.toList());
-
-					return column.in(literals);
-				}
-
-				if (predicate.getValue() != null && predicate.getValue().getClass().isArray()) {
-
-					List<Term> literals = Arrays.stream((Object[]) predicate.getValue()).map(QueryBuilder::literal)
-							.collect(Collectors.toList());
-
-					return column.in(literals);
+				if (predicate.getValue() instanceof List
+						|| (predicate.getValue() != null && predicate.getValue().getClass().isArray())) {
+					return column.in(toLiterals(predicate.getValue()));
 				}
 
 				return column.in(factory.create(predicate.getValue()));
@@ -1040,20 +1032,9 @@ public class StatementFactory {
 
 			case IN:
 
-				if (predicate.getValue() instanceof List) {
-
-					List<Term> literals = ((List<?>) predicate.getValue()).stream().map(QueryBuilder::literal)
-							.collect(Collectors.toList());
-
-					return column.in(literals);
-				}
-
-				if (predicate.getValue() != null && predicate.getValue().getClass().isArray()) {
-
-					List<Term> literals = Arrays.stream((Object[]) predicate.getValue()).map(QueryBuilder::literal)
-							.collect(Collectors.toList());
-
-					return column.in(literals);
+				if (predicate.getValue() instanceof List
+						|| (predicate.getValue() != null && predicate.getValue().getClass().isArray())) {
+					return column.in(toLiterals(predicate.getValue()));
 				}
 
 				return column.in(factory.create(predicate.getValue()));
@@ -1061,6 +1042,33 @@ public class StatementFactory {
 
 		throw new IllegalArgumentException(String.format("Criteria %s %s %s not supported for IF Conditions", columnName,
 				predicate.getOperator(), predicate.getValue()));
+	}
+
+	static List<Term> toLiterals(@Nullable Object arrayOrList) {
+
+		if (arrayOrList instanceof List) {
+
+			List<?> list = (List<?>) arrayOrList;
+			List<Term> literals = new ArrayList<>(list.size());
+			for (Object o : list) {
+				literals.add(QueryBuilder.literal(o));
+			}
+
+			return literals;
+		}
+
+		if (arrayOrList != null && arrayOrList.getClass().isArray()) {
+
+			Object[] array = (Object[]) arrayOrList;
+			List<Term> literals = new ArrayList<>(array.length);
+			for (Object o : array) {
+				literals.add(QueryBuilder.literal(o));
+			}
+
+			return literals;
+		}
+
+		return Collections.emptyList();
 	}
 
 	static class SimpleSelector implements com.datastax.oss.driver.api.querybuilder.select.Selector {
