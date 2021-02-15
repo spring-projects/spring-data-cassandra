@@ -15,7 +15,6 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
-import static org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assume.*;
 
