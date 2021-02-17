@@ -1,6 +1,17 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 3.2.0-M3 (2021-02-17)
+----------------------------------------
+* #1087 - Include Bintray plugin repository.
+* #1086 - Upgrade to Cassandra driver 4.10.0.
+* #1084 - Null Pointer Exception when User Defined Type is not found.
+* #1082 - Cache common PersistentProperty attributes.
+* #1008 - Regression in support of sort in queries [DATACASS-842].
+* #1007 - Regression prevent using update to remove an entry from a map [DATACASS-841].
+* #182 - Update repository after GitHub issues migration.
+
+
 Changes in version 3.1.4 (2021-02-17)
 -------------------------------------
 * #1087 - Include Bintray plugin repository.
@@ -1424,6 +1435,7 @@ Changes in version 1.0.0.M1 (2014-03-31)
     * [DATACASS-100] - QueryOptions should only have ConsistencyLevel & RetryPolicy
     * [DATACASS-104] - Remove requirement for @PrimaryKeyClass when using composite primary keys
     * [DATACASS-107] - Support declarative query methods
+
 
 
 
