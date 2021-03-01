@@ -61,7 +61,7 @@ https://docs.datastax.com/en/landing_page/doc/landing_page/current.html[DataStax
 
 Spring Data for Apache Cassandra 2.x binaries require JDK level 8.0 and later and https://spring.io/docs[Spring Framework] {springVersion} and later.
 
-It requires https://cassandra.apache.org/[Cassandra] 2.0 or later.
+It requires https://cassandra.apache.org/[Cassandra] 2.0 or later and Datastax driver 4.x.
 
 == Additional Help Resources
 

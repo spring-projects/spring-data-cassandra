@@ -20,7 +20,7 @@ With the power to stay at a high level with annotated POJOs, or at a low level w
 * Exception Translation to the familiar Spring DataAccessException hierarchy
 * Convenient QueryBuilders to eliminate the need to learn CQL
 * Automatic implementation of Repository interfaces including support for custom query methods
-* Based on the 3.x DataStax CQL Java Driver
+* Based on the 4.x DataStax CQL Java Driver
 
 == Code of Conduct
 
