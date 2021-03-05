@@ -25,6 +25,7 @@ import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.ApplicationContext;
@@ -142,6 +143,18 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 				this::getCustomConversions);
 		this.setCustomConversions(mappingContext.getCustomConversions());
 		this.embeddedEntityOperations = new EmbeddedEntityOperations(mappingContext);
+	}
+
+	/**
+	 * Creates a new {@link ConversionContext} given {@link ObjectPath}.
+	 *
+	 * @param path the current {@link ObjectPath}, must not be {@literal null}.
+	 * @return the {@link ConversionContext}.
+	 */
+	protected ConversionContext getConversionContext() {
+
+		return new ConversionContext(this::doReadRow, this::doReadTupleValue, this::doReadUdtValue,
+				this::readCollectionOrArray, this::readMap, this::getPotentiallyConvertedSimpleRead);
 	}
 
 	private static ConversionService newConversionService() {
@@ -265,17 +278,17 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			CassandraPersistentEntity<?> entity) {
 
 		PersistentPropertyAccessor<S> propertyAccessor = source instanceof PersistentPropertyAccessor
-				? (PersistentPropertyAccessor) source
+				? (PersistentPropertyAccessor<S>) source
 				: entity.getPropertyAccessor(source);
 
-		return new ConvertingPropertyAccessor<S>(propertyAccessor, getConversionService());
+		return new ConvertingPropertyAccessor<>(propertyAccessor, getConversionService());
 	}
 
 	private <S> PersistentEntityParameterValueProvider<CassandraPersistentProperty> newParameterValueProvider(
-			CassandraPersistentEntity<S> entity, CassandraValueProvider valueProvider) {
+			ConversionContext context, CassandraPersistentEntity<S> entity, CassandraValueProvider valueProvider) {
 
-		return new PersistentEntityParameterValueProvider<>(entity, new MappingAndConvertingValueProvider(valueProvider),
-				null);
+		return new PersistentEntityParameterValueProvider<>(entity,
+				new MappingAndConvertingValueProvider(valueProvider, context), null);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -308,64 +321,95 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 * @param row must not be {@literal null}.
 	 * @return the converted valued.
 	 */
-	@SuppressWarnings("unchecked")
 	public <R> R readRow(Class<R> type, Row row) {
 
 		Class<R> beanClassLoaderClass = transformClassToBeanClassLoaderClass(type);
 		TypeInformation<? extends R> typeInfo = ClassTypeInformation.from(beanClassLoaderClass);
-		Class<? extends R> rawType = typeInfo.getType();
 
-		if (Row.class.isAssignableFrom(rawType)) {
-			return (R) row;
-		}
-
-		if (getCustomConversions().hasCustomReadTarget(Row.class, rawType)
-				|| getConversionService().canConvert(Row.class, rawType)) {
-
-			return getConversionService().convert(row, rawType);
-		}
-
-		if (getCustomConversions().hasCustomReadTarget(com.datastax.oss.driver.api.core.cql.Row.class, rawType)
-				|| getConversionService().canConvert(com.datastax.oss.driver.api.core.cql.Row.class, rawType)) {
-
-			return getConversionService().convert(row, rawType);
-		}
-
-		if (typeInfo.isCollectionLike() || typeInfo.isMap()) {
-			return getConversionService().convert(row, type);
-		}
-
-		CassandraPersistentEntity<R> persistentEntity = (CassandraPersistentEntity<R>) getMappingContext()
-				.getRequiredPersistentEntity(typeInfo);
-
-		return readEntityFromRow(persistentEntity, row);
+		return doReadRow(getConversionContext(), row, typeInfo);
 	}
 
-	private <S> S readEntityFromRow(CassandraPersistentEntity<S> entity, Row row) {
-		return doReadEntity(entity, row, expressionEvaluator -> new RowValueProvider(row, expressionEvaluator));
+	<S> S doReadRow(ConversionContext context, Row row, TypeInformation<? extends S> typeHint) {
+		return doReadEntity(context, row, expressionEvaluator -> new RowValueProvider(row, expressionEvaluator), typeHint);
 	}
 
-	private <S> S readEntityFromTuple(CassandraPersistentEntity<S> entity, TupleValue tupleValue) {
-
-		return doReadEntity(entity, tupleValue,
-				expressionEvaluator -> new TupleValueProvider(tupleValue, expressionEvaluator));
+	<S> S doReadTupleValue(ConversionContext context, TupleValue tupleValue, TypeInformation<? extends S> typeHint) {
+		return doReadEntity(context, tupleValue,
+				expressionEvaluator -> new TupleValueProvider(tupleValue, expressionEvaluator), typeHint);
 	}
 
-	private <S> S readEntityFromUdt(CassandraPersistentEntity<S> entity, UdtValue udtValue) {
-
-		return doReadEntity(entity, udtValue, expressionEvaluator -> new UdtValueProvider(udtValue, expressionEvaluator));
+	<S> S doReadUdtValue(ConversionContext context, UdtValue udtValue, TypeInformation<? extends S> typeHint) {
+		return doReadEntity(context, udtValue, expressionEvaluator -> new UdtValueProvider(udtValue, expressionEvaluator),
+				typeHint);
 	}
 
-	private <S> S doReadEntity(CassandraPersistentEntity<S> entity, Object value,
-			Function<SpELExpressionEvaluator, CassandraValueProvider> valueProviderSupplier) {
+	private <S> S doReadEntity(ConversionContext context, Object value,
+			Function<SpELExpressionEvaluator, CassandraValueProvider> valueProviderSupplier,
+			TypeInformation<? extends S> typeHint) {
 
 		SpELExpressionEvaluator expressionEvaluator = new DefaultSpELExpressionEvaluator(value, this.spELContext);
 		CassandraValueProvider valueProvider = valueProviderSupplier.apply(expressionEvaluator);
 
-		return doReadEntity(entity, valueProvider);
+		return doReadEntity(context, valueProvider, typeHint);
 	}
 
-	private <S> S doReadEntity(CassandraPersistentEntity<S> entity, CassandraValueProvider valueProvider) {
+	/**
+	 * Conversion method to materialize an object from a {@link Row}, {@link TupleValue}, or {@link UdtValue}. Can be
+	 * overridden by subclasses.
+	 *
+	 * @param context must not be {@literal null}
+	 * @param valueProvider must not be {@literal null}
+	 * @param typeHint the {@link TypeInformation} to be used to unmarshall this {@link Row}.
+	 * @return the converted object, will never be {@literal null}.
+	 */
+	@SuppressWarnings("unchecked")
+	protected <S> S doReadEntity(ConversionContext context, CassandraValueProvider valueProvider,
+			TypeInformation<? extends S> typeHint) {
+
+		Class<?> rawType = typeHint.getType();
+		Class<?> rawSourceType = getRawSourceType(valueProvider);
+
+		if (rawSourceType.isAssignableFrom(rawType) && rawSourceType.isInstance(valueProvider.getSource())) {
+			return (S) valueProvider.getSource();
+		}
+
+		if (getCustomConversions().hasCustomReadTarget(rawSourceType, rawType)
+				|| getConversionService().canConvert(rawSourceType, rawType)) {
+			return (S) getConversionService().convert(valueProvider.getSource(), rawType);
+		}
+
+		CassandraPersistentEntity<S> entity = (CassandraPersistentEntity<S>) getMappingContext()
+				.getPersistentEntity(typeHint);
+
+		if (entity == null) {
+			throw new MappingException(
+					String.format("Expected to read %s into type %s but didn't find a PersistentEntity for the latter!",
+							rawSourceType.getSimpleName(), rawType.getName()));
+		}
+
+		return doReadEntity(context, valueProvider, entity);
+	}
+
+	private static Class<?> getRawSourceType(CassandraValueProvider valueProvider) {
+
+		if (valueProvider.getSource() instanceof Row) {
+			return Row.class;
+		}
+
+		if (valueProvider.getSource() instanceof TupleValue) {
+			return TupleValue.class;
+		}
+
+		if (valueProvider.getSource() instanceof UdtValue) {
+			return UdtValue.class;
+		}
+
+		throw new InvalidDataAccessApiUsageException(
+				"Unsupported source type: " + ClassUtils.getDescriptiveType(valueProvider.getSource()));
+	}
+
+	private <S> S doReadEntity(ConversionContext context, CassandraValueProvider valueProvider,
+			CassandraPersistentEntity<S> entity) {
 
 		PreferredConstructor<S, CassandraPersistentProperty> persistenceConstructor = entity.getPersistenceConstructor();
 		ParameterValueProvider<CassandraPersistentProperty> provider;
@@ -373,9 +417,9 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		if (persistenceConstructor != null && persistenceConstructor.hasParameters()) {
 			SpELExpressionEvaluator evaluator = new DefaultSpELExpressionEvaluator(valueProvider.getSource(), spELContext);
 			PersistentEntityParameterValueProvider<CassandraPersistentProperty> parameterValueProvider = newParameterValueProvider(
-					entity, valueProvider);
+					context, entity, valueProvider);
 			provider = new ConverterAwareSpELExpressionParameterValueProvider(evaluator, getConversionService(),
-					parameterValueProvider);
+					parameterValueProvider, context);
 		} else {
 			provider = NoOpParameterValueProvider.INSTANCE;
 		}
@@ -386,31 +430,26 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		if (entity.requiresPropertyPopulation()) {
 			ConvertingPropertyAccessor<S> propertyAccessor = newConvertingPropertyAccessor(instance, entity);
 
-			readProperties(entity, valueProvider, propertyAccessor);
+			readProperties(context, entity, valueProvider, propertyAccessor);
 			return propertyAccessor.getBean();
 		}
 
 		return instance;
 	}
 
-	private void readProperties(CassandraPersistentEntity<?> entity, CassandraValueProvider valueProvider,
-			PersistentPropertyAccessor propertyAccessor) {
+	private void readProperties(ConversionContext context, CassandraPersistentEntity<?> entity,
+			CassandraValueProvider valueProvider, PersistentPropertyAccessor<?> propertyAccessor) {
 
 		for (CassandraPersistentProperty property : entity) {
-			readProperty(entity, property, valueProvider, propertyAccessor);
-		}
-	}
 
-	private void readProperty(CassandraPersistentEntity<?> entity, CassandraPersistentProperty property,
-			CassandraValueProvider valueProvider, PersistentPropertyAccessor propertyAccessor) {
+			// if true then skip; property was set in the constructor
+			if (entity.isConstructorArgument(property)) {
+				continue;
+			}
 
-		// if true then skip; property was set in the constructor
-		if (entity.isConstructorArgument(property)) {
-			return;
-		}
-
-		if (property.isCompositePrimaryKey() || valueProvider.hasProperty(property) || property.isEmbedded()) {
-			propertyAccessor.setProperty(property, getReadValue(valueProvider, property));
+			if (property.isCompositePrimaryKey() || valueProvider.hasProperty(property) || property.isEmbedded()) {
+				propertyAccessor.setProperty(property, getReadValue(context, valueProvider, property));
+			}
 		}
 	}
 
@@ -880,22 +919,31 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 	/**
 	 * Checks whether we have a custom conversion for the given simple object. Converts the given value if so, applies
+	 * {@link Enum} handling or returns the value as is. Can be overridden by subclasses.
+	 *
+	 * @since 3.2
+	 */
+	protected Object getPotentiallyConvertedSimpleRead(Object value, TypeInformation<?> target) {
+		return getPotentiallyConvertedSimpleRead(value, target.getType());
+	}
+
+	/**
+	 * Checks whether we have a custom conversion for the given simple object. Converts the given value if so, applies
 	 * {@link Enum} handling or returns the value as is.
 	 *
 	 * @param value simple value to convert into a value of type {@code target}.
 	 * @param target must not be {@literal null}.
 	 * @return the converted value.
 	 */
-	@Nullable
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private Object getPotentiallyConvertedSimpleRead(@Nullable Object value, @Nullable Class<?> target) {
+	private Object getPotentiallyConvertedSimpleRead(Object value, @Nullable Class<?> target) {
 
 		if (value == null || target == null || target.isAssignableFrom(value.getClass())) {
 			return value;
 		}
 
 		if (getCustomConversions().hasCustomReadTarget(value.getClass(), target)) {
-			return getConversionService().convert(value, target);
+			return doConvert(value, target);
 		}
 
 		if (Enum.class.isAssignableFrom(target)) {
@@ -908,6 +956,11 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			return Enum.valueOf((Class<Enum>) target, value.toString());
 		}
 
+		return doConvert(value, target);
+	}
+
+	@SuppressWarnings("ConstantConditions")
+	private <T> T doConvert(Object value, Class<T> target) {
 		return getConversionService().convert(value, target);
 	}
 
@@ -919,23 +972,25 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 * Retrieve the value to read for the given {@link CassandraPersistentProperty} from {@link CassandraValueProvider}
 	 * and perform optionally a conversion of collection element types.
 	 *
+	 * @param context must not be {@literal null}.
 	 * @param valueProvider the row.
 	 * @param property the property.
 	 * @return the return value, may be {@literal null}.
 	 */
 	@Nullable
-	private Object getReadValue(CassandraValueProvider valueProvider, CassandraPersistentProperty property) {
+	private Object getReadValue(ConversionContext context, CassandraValueProvider valueProvider,
+			CassandraPersistentProperty property) {
 
 		if (property.isCompositePrimaryKey()) {
-
-			CassandraPersistentEntity<?> keyEntity = getMappingContext().getRequiredPersistentEntity(property);
-			return doReadEntity(keyEntity, valueProvider);
+			return context.convert(valueProvider.getSource(), property.getTypeInformation());
 		}
 
 		if (property.isEmbedded()) {
 
 			CassandraPersistentEntity<?> targetEntity = embeddedEntityOperations.getEntity(property);
-			return isNullEmbedded(targetEntity, property, valueProvider) ? null : doReadEntity(targetEntity, valueProvider);
+
+			return isNullEmbedded(targetEntity, property, valueProvider) ? null
+					: doReadEntity(context, valueProvider, targetEntity);
 		}
 
 		if (!valueProvider.hasProperty(property)) {
@@ -943,13 +998,13 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		}
 
 		Object value = valueProvider.getPropertyValue(property);
-		return value == null ? null : convertReadValue(value, property.getTypeInformation());
+		return value == null ? null : context.convert(value, property.getTypeInformation());
 	}
 
 	/**
 	 * @param entity the property domain type
 	 * @param property the current property annotated with {@link Embedded}.
-	 * @param valueProvider
+	 * @param valueProvider must not be {@literal null}.
 	 * @return {@literal true} if the property represents a {@link Embedded.Nullable nullable embedded} entity where all
 	 *         values obtainable from the given {@link CassandraValueProvider} are {@literal null}.
 	 * @since 3.0
@@ -971,51 +1026,16 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		return true;
 	}
 
-	@Nullable
-	@SuppressWarnings("unchecked")
-	private Object convertReadValue(Object value, TypeInformation<?> typeInformation) {
-
-		if (typeInformation.isCollectionLike() && value instanceof Collection) {
-			return readCollectionOrArrayInternal((Collection<?>) value, typeInformation);
-		}
-
-		if (typeInformation.isMap() && value instanceof Map) {
-			return readMapInternal((Map<Object, Object>) value, typeInformation);
-		}
-
-		if (value instanceof TupleValue) {
-
-			BasicCassandraPersistentEntity<?> tupleEntity = getMappingContext()
-					.getPersistentEntity(typeInformation.getRequiredActualType());
-
-			if (tupleEntity != null) {
-				return readEntityFromTuple(tupleEntity, (TupleValue) value);
-			}
-		}
-
-		if (value instanceof UdtValue) {
-
-			BasicCassandraPersistentEntity<?> udtEntity = getMappingContext()
-					.getPersistentEntity(typeInformation.getRequiredActualType());
-
-			if (udtEntity != null && udtEntity.isUserDefinedType()) {
-				return readEntityFromUdt(udtEntity, (UdtValue) value);
-			}
-		}
-
-		return getPotentiallyConvertedSimpleRead(value, typeInformation.getType());
-	}
-
 	/**
-	 * Reads the given {@link Collection} into a collection of the given {@link TypeInformation}.
+	 * Reads the given {@link Collection} into a collection of the given {@link TypeInformation}. Will recursively resolve
+	 * nested {@link List}s as well. Can be overridden by subclasses.
 	 *
 	 * @param source must not be {@literal null}.
 	 * @param targetType must not be {@literal null}.
 	 * @return the converted {@link Collection} or array, will never be {@literal null}.
 	 */
-	@Nullable
-	@SuppressWarnings({ "rawtypes" })
-	private Object readCollectionOrArrayInternal(Collection<?> source, TypeInformation<?> targetType) {
+	protected Object readCollectionOrArray(ConversionContext context, Collection<?> source,
+			TypeInformation<?> targetType) {
 
 		Assert.notNull(targetType, "Target type must not be null");
 
@@ -1029,34 +1049,24 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			return getPotentiallyConvertedSimpleRead(collection, collectionType);
 		}
 
-		BasicCassandraPersistentEntity<?> entity = getMappingContext().getPersistentEntity(elementType);
+		TypeInformation<?> componentType = targetType.getComponentType();
+		componentType = componentType == null ? ClassTypeInformation.from(elementType) : componentType;
 
-		if (entity != null && entity.isUserDefinedType()) {
-			for (Object element : source) {
-				collection.add(readEntityFromUdt(entity, (UdtValue) element));
-			}
-
-		} else if (entity != null && entity.isTupleType()) {
-			for (Object element : source) {
-				collection.add(readEntityFromTuple(entity, (TupleValue) element));
-			}
-		} else {
-			for (Object element : source) {
-				collection.add(getPotentiallyConvertedSimpleRead(element, elementType));
-			}
+		for (Object element : source) {
+			collection.add(context.convert(element, componentType));
 		}
 
 		return getPotentiallyConvertedSimpleRead(collection, targetType.getType());
 	}
 
-	private Class<?> resolveCollectionType(TypeInformation typeInformation) {
+	private static Class<?> resolveCollectionType(TypeInformation<?> typeInformation) {
 
 		Class<?> collectionType = typeInformation.getType();
 
 		return Collection.class.isAssignableFrom(collectionType) ? collectionType : List.class;
 	}
 
-	private Class<?> resolveElementType(TypeInformation typeInformation) {
+	private static Class<?> resolveElementType(TypeInformation<?> typeInformation) {
 
 		TypeInformation<?> componentType = typeInformation.getComponentType();
 
@@ -1064,13 +1074,14 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	}
 
 	/**
-	 * Reads the given {@link Map} into a map of the given {@link TypeInformation}.
+	 * Reads the given {@link Map} into a map of the given {@link TypeInformation}. Will recursively resolve nested
+	 * {@link Map}s as well. Can be overridden by subclasses.
 	 *
 	 * @param source must not be {@literal null}.
 	 * @param targetType must not be {@literal null}.
 	 * @return the converted {@link Collection} or array, will never be {@literal null}.
 	 */
-	private Object readMapInternal(Map<Object, Object> source, TypeInformation<?> targetType) {
+	protected Object readMap(ConversionContext context, Map<?, ?> source, TypeInformation<?> targetType) {
 
 		Assert.notNull(targetType, "Target type must not be null");
 
@@ -1085,23 +1096,23 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			return map;
 		}
 
-		for (Entry<Object, Object> entry : source.entrySet()) {
+		for (Entry<?, ?> entry : source.entrySet()) {
 
 			Object key = entry.getKey();
 
 			if (key != null && rawKeyType != null && !rawKeyType.isAssignableFrom(key.getClass())) {
-				key = convertReadValue(key, keyType);
+				key = context.convert(key, keyType);
 			}
 
 			Object value = entry.getValue();
 
-			map.put(key, convertReadValue(value, valueType));
+			map.put(key, context.convert(value, valueType == null ? ClassTypeInformation.OBJECT : valueType));
 		}
 
 		return map;
 	}
 
-	private Class<?> resolveMapType(TypeInformation<?> typeInformation) {
+	private static Class<?> resolveMapType(TypeInformation<?> typeInformation) {
 
 		Class<?> mapType = typeInformation.getType();
 
@@ -1125,17 +1136,22 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	private class ConverterAwareSpELExpressionParameterValueProvider
 			extends SpELExpressionParameterValueProvider<CassandraPersistentProperty> {
 
+		private final ConversionContext context;
+
 		/**
 		 * Creates a new {@link ConverterAwareSpELExpressionParameterValueProvider}.
 		 *
 		 * @param evaluator must not be {@literal null}.
 		 * @param conversionService must not be {@literal null}.
 		 * @param delegate must not be {@literal null}.
+		 * @param context must not be {@literal null}.
 		 */
 		public ConverterAwareSpELExpressionParameterValueProvider(SpELExpressionEvaluator evaluator,
-				ConversionService conversionService, ParameterValueProvider<CassandraPersistentProperty> delegate) {
+				ConversionService conversionService, ParameterValueProvider<CassandraPersistentProperty> delegate,
+				ConversionContext context) {
 
 			super(evaluator, conversionService, delegate);
+			this.context = context;
 		}
 
 		/*
@@ -1144,7 +1160,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		 */
 		@Override
 		protected <T> T potentiallyConvertSpelValue(Object object, Parameter<T, CassandraPersistentProperty> parameter) {
-			return (T) convertReadValue(object, parameter.getType());
+			return (T) context.convert(object, parameter.getType());
 		}
 	}
 
@@ -1158,9 +1174,11 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	class MappingAndConvertingValueProvider implements CassandraValueProvider {
 
 		private final CassandraValueProvider parent;
+		private final ConversionContext context;
 
-		public MappingAndConvertingValueProvider(CassandraValueProvider parent) {
+		public MappingAndConvertingValueProvider(CassandraValueProvider parent, ConversionContext context) {
 			this.parent = parent;
+			this.context = context;
 		}
 
 		/* (non-Javadoc)
@@ -1178,7 +1196,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		@Override
 		@SuppressWarnings("unchecked")
 		public <T> T getPropertyValue(CassandraPersistentProperty property) {
-			return (T) getReadValue(this.parent, property);
+			return (T) getReadValue(context, this.parent, property);
 		}
 
 		/* (non-Javadoc)
@@ -1188,5 +1206,109 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		public Object getSource() {
 			return parent.getSource();
 		}
+	}
+
+	/**
+	 * Conversion context holding references to simple {@link ValueConverter} and {@link ContainerValueConverter}.
+	 * Entrypoint for recursive conversion of {@link Row} and other types.
+	 *
+	 * @since 3.2
+	 */
+	protected static class ConversionContext {
+
+		private final ContainerValueConverter<Row> rowConverter;
+
+		private final ContainerValueConverter<TupleValue> tupleConverter;
+
+		private final ContainerValueConverter<UdtValue> udtConverter;
+
+		private final ContainerValueConverter<Collection<?>> collectionConverter;
+
+		private final ContainerValueConverter<Map<?, ?>> mapConverter;
+
+		private final ValueConverter<Object> elementConverter;
+
+		public ConversionContext(ContainerValueConverter<Row> rowConverter,
+				ContainerValueConverter<TupleValue> tupleConverter, ContainerValueConverter<UdtValue> udtConverter,
+				ContainerValueConverter<Collection<?>> collectionConverter, ContainerValueConverter<Map<?, ?>> mapConverter,
+				ValueConverter<Object> elementConverter) {
+			this.rowConverter = rowConverter;
+			this.tupleConverter = tupleConverter;
+			this.udtConverter = udtConverter;
+			this.collectionConverter = collectionConverter;
+			this.mapConverter = mapConverter;
+			this.elementConverter = elementConverter;
+		}
+
+		/**
+		 * Converts a source object into {@link TypeInformation target}.
+		 *
+		 * @param source must not be {@literal null}.
+		 * @param typeHint must not be {@literal null}.
+		 * @return the converted object.
+		 */
+		@SuppressWarnings("unchecked")
+		public <S extends Object> S convert(Object source, TypeInformation<? extends S> typeHint) {
+
+			Assert.notNull(typeHint, "TypeInformation must not be null");
+
+			if (source instanceof Collection) {
+
+				Class<?> rawType = typeHint.getType();
+				if (!Object.class.equals(rawType)) {
+					if (!rawType.isArray() && !ClassUtils.isAssignable(Iterable.class, rawType)) {
+						throw new MappingException(String.format(
+								"Cannot convert %1$s of type %2$s into an instance of %3$s! Implement a custom Converter<%2$s, %3$s> and register it with the CustomConversions.",
+								source, source.getClass(), rawType));
+					}
+				}
+
+				if (typeHint.isCollectionLike() || typeHint.getType().isAssignableFrom(Collection.class)) {
+					return (S) collectionConverter.convert(this, (Collection<?>) source, typeHint);
+				}
+			}
+
+			if (typeHint.isMap()) {
+				return (S) mapConverter.convert(this, (Map<?, ?>) source, typeHint);
+			}
+
+			if (source instanceof Row) {
+				return (S) rowConverter.convert(this, (Row) source, typeHint);
+			}
+
+			if (source instanceof TupleValue) {
+				return (S) tupleConverter.convert(this, (TupleValue) source, typeHint);
+			}
+
+			if (source instanceof UdtValue) {
+				return (S) udtConverter.convert(this, (UdtValue) source, typeHint);
+			}
+
+			return (S) elementConverter.convert(source, typeHint);
+		}
+
+		/**
+		 * Converts a simple {@code source} value into {@link TypeInformation the target type}.
+		 *
+		 * @param <T>
+		 */
+		interface ValueConverter<T> {
+
+			Object convert(T source, TypeInformation<?> typeHint);
+
+		}
+
+		/**
+		 * Converts a container {@code source} value into {@link TypeInformation the target type}. Containers may
+		 * recursively apply conversions for entities, collections, maps, etc.
+		 *
+		 * @param <T>
+		 */
+		interface ContainerValueConverter<T> {
+
+			Object convert(ConversionContext context, T source, TypeInformation<?> typeHint);
+
+		}
+
 	}
 }
