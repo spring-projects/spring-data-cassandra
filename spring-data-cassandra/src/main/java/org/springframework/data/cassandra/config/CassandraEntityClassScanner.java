@@ -232,11 +232,10 @@ public class CassandraEntityClassScanner {
 	/**
 	 * @return entity annotations.
 	 * @see Table
-	 * @see Persistent
 	 * @see PrimaryKeyClass
 	 */
 	@SuppressWarnings("unchecked")
 	protected Class<? extends Annotation>[] getEntityAnnotations() {
-		return new Class[] { Table.class, Persistent.class, PrimaryKeyClass.class };
+		return new Class[] { Table.class, PrimaryKeyClass.class };
 	}
 }
