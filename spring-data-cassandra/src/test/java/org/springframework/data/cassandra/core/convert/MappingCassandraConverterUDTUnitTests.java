@@ -40,7 +40,9 @@ import org.mockito.quality.Strictness;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.core.mapping.Embedded;
+import org.springframework.data.cassandra.core.mapping.Frozen;
 import org.springframework.data.cassandra.core.mapping.UserDefinedType;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.support.UserDefinedTypeBuilder;
@@ -237,6 +239,21 @@ class MappingCassandraConverterUDTUnitTests {
 		assertThat(target.udtValue.nested.age).isEqualTo(30);
 	}
 
+	@Test // #1098
+	void shouldWriteMapWithTypeHintToUdtValue() {
+
+		when(userTypeResolver.resolveType(CqlIdentifier.fromCql("udt"))).thenReturn(manufacturer);
+
+		MapWithUdt mapWithUdt = new MapWithUdt();
+		mapWithUdt.map = Collections.singletonMap("key", new Manufacturer("name", "display"));
+
+		Map<CqlIdentifier, Object> sink = new LinkedHashMap<>();
+		mappingCassandraConverter.write(mapWithUdt, sink);
+
+		Map<String, UdtValue> map = (Map) sink.get(CqlIdentifier.fromCql("map"));
+		assertThat(map.get("key")).isInstanceOf(UdtValue.class);
+	}
+
 	@UserDefinedType
 	@Data
 	@AllArgsConstructor
@@ -315,6 +332,14 @@ class MappingCassandraConverterUDTUnitTests {
 		public Integer getAge() {
 			return age;
 		}
+	}
+
+	static class MapWithUdt {
+
+		@Id String id;
+
+		@CassandraType(type = CassandraType.Name.MAP, userTypeName = "udt", typeArguments = { CassandraType.Name.TEXT,
+				CassandraType.Name.UDT }) private Map<String, @Frozen Manufacturer> map;
 	}
 
 }
