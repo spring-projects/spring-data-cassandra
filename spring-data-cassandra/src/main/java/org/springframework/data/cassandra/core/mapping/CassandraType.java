@@ -57,8 +57,10 @@ public @interface CassandraType {
 
 	/**
 	 * If the property maps to a User-Defined Type (UDT) then this attribute holds the user type name. For
-	 * {@link java.util.Collection Collection-like} properties the user type name applies to the component type. The user
-	 * type name is only required if the UDT does not map to a class annotated with {@link UserDefinedType}.
+	 * {@link java.util.Collection Collection-like} properties the user type name applies to the component type. For
+	 * {@link java.util.Map} properties, {@link #typeArguments()} configured to {@link Name#UDT} are resolved using the
+	 * user type name. The user type name is only required if the UDT does not map to a class annotated with
+	 * {@link UserDefinedType}.
 	 *
 	 * @return {@link String name} of the user type
 	 * @since 1.5

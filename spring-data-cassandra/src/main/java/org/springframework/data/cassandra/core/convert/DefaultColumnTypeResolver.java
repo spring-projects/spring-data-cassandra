@@ -225,9 +225,9 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 				assertTypeArguments(annotation.typeArguments().length, 2);
 
 				CassandraColumnType keyType = createCassandraTypeDescriptor(
-						CassandraSimpleTypeHolder.getDataTypeFor(annotation.typeArguments()[0]));
+						getRequiredDataType(annotation, 0));
 				CassandraColumnType valueType = createCassandraTypeDescriptor(
-						CassandraSimpleTypeHolder.getDataTypeFor(annotation.typeArguments()[1]));
+						getRequiredDataType(annotation, 1));
 
 				return ColumnType.mapOf(keyType, valueType);
 
@@ -235,8 +235,7 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 			case SET:
 				assertTypeArguments(annotation.typeArguments().length, 1);
 
-				DataType componentType = annotation.typeArguments()[0] == Name.UDT ? getUserType(annotation.userTypeName())
-						: CassandraSimpleTypeHolder.getDataTypeFor(annotation.typeArguments()[0]);
+				DataType componentType = getRequiredDataType(annotation, 0);
 
 				if (type == Name.SET) {
 					return ColumnType.setOf(createCassandraTypeDescriptor(componentType));
@@ -259,7 +258,7 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 
 				return createCassandraTypeDescriptor(getUserType(annotation.userTypeName()));
 			default:
-				return createCassandraTypeDescriptor(CassandraSimpleTypeHolder.getDataTypeFor(type));
+				return createCassandraTypeDescriptor(CassandraSimpleTypeHolder.getRequiredDataTypeFor(type));
 		}
 	}
 
@@ -441,6 +440,13 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 		}
 
 		return new DefaultCassandraColumnType(typeInformation, dataType);
+	}
+
+	private DataType getRequiredDataType(CassandraType annotation, int typeIndex) {
+
+		Name typeName = annotation.typeArguments()[typeIndex];
+		return typeName == Name.UDT ? getUserType(annotation.userTypeName())
+				: CassandraSimpleTypeHolder.getRequiredDataTypeFor(typeName);
 	}
 
 	private Class<?> resolveToJavaType(DataType dataType) {

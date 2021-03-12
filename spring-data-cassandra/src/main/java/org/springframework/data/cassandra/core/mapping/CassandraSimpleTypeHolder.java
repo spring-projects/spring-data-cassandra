@@ -190,13 +190,57 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 	}
 
 	/**
+	 * Returns the required default {@link DataType} for a {@link Class}. This method resolves only simple types to a
+	 * Cassandra {@link DataType}. Throws {@link IllegalStateException} if the {@link Class} cannot be resolved to a
+	 * {@link DataType}.
+	 *
+	 * @param javaType must not be {@literal null}.
+	 * @return the {@link DataType} for {@code javaClass} if resolvable, otherwise {@literal null}.
+	 * @throws IllegalStateException if the {@link Class} cannot be resolved to a {@link DataType}.
+	 * @since 3.1.6
+	 * @see #getDataTypeFor(Class)
+	 */
+	public static DataType getRequiredDataTypeFor(Class<?> javaType) {
+
+		DataType dataType = getDataTypeFor(javaType);
+
+		if (dataType == null) {
+			throw new IllegalStateException(String.format("Required DataType cannot be resolved for %s", javaType.getName()));
+		}
+
+		return dataType;
+	}
+
+	/**
 	 * Returns the {@link DataType} for a {@link CassandraType.Name}.
 	 *
 	 * @param dataTypeName must not be {@literal null}.
 	 * @return the {@link DataType} for {@link CassandraType.Name}.
 	 */
+	@Nullable
 	public static DataType getDataTypeFor(CassandraType.Name dataTypeName) {
 		return nameToDataType.get(dataTypeName);
+	}
+
+	/**
+	 * Returns the required {@link DataType} for a {@link CassandraType.Name}. Throws {@link IllegalStateException} if the
+	 * {@link CassandraType.Name} cannot be resolved to a {@link DataType}.
+	 *
+	 * @param dataTypeName must not be {@literal null}.
+	 * @return the {@link DataType} for {@link CassandraType.Name}.
+	 * @throws IllegalStateException if the {@link CassandraType.Name} cannot be resolved to a {@link DataType}.
+	 * @since 3.1.6
+	 * @see #getDataTypeFor(CassandraType.Name)
+	 */
+	public static DataType getRequiredDataTypeFor(CassandraType.Name dataTypeName) {
+
+		DataType dataType = getDataTypeFor(dataTypeName);
+
+		if (dataType == null) {
+			throw new IllegalStateException(String.format("Required DataType cannot be resolved for %s", dataTypeName));
+		}
+
+		return dataType;
 	}
 
 }

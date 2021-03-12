@@ -46,7 +46,9 @@ import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.data.cassandra.core.cql.util.StatementBuilder;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
+import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.core.mapping.Embedded;
+import org.springframework.data.cassandra.core.mapping.Frozen;
 import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.core.mapping.UserDefinedType;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
@@ -425,6 +427,21 @@ class MappingCassandraConverterUDTUnitTests {
 				.isEqualTo("INSERT INTO car (engine,id) VALUES ({manufacturer:{name:'a good one',displayname:NULL}},'1')");
 	}
 
+	@Test // #1098
+	void shouldWriteMapWithTypeHintToUdtValue() {
+
+		when(userTypeResolver.resolveType(CqlIdentifier.fromCql("udt"))).thenReturn(manufacturer);
+
+		MapWithUdt mapWithUdt = new MapWithUdt();
+		mapWithUdt.map = Collections.singletonMap("key", new Manufacturer("name", "display"));
+
+		Map<CqlIdentifier, Object> sink = new LinkedHashMap<>();
+		converter.write(mapWithUdt, sink);
+
+		Map<String, UdtValue> map = (Map) sink.get(CqlIdentifier.fromCql("map"));
+		assertThat(map.get("key")).isInstanceOf(UdtValue.class);
+	}
+
 	@Table
 	@Getter
 	@AllArgsConstructor
@@ -603,4 +620,13 @@ class MappingCassandraConverterUDTUnitTests {
 			return udtValue;
 		}
 	}
+
+	static class MapWithUdt {
+
+		@Id String id;
+
+		@CassandraType(type = CassandraType.Name.MAP, userTypeName = "udt", typeArguments = { CassandraType.Name.TEXT,
+				CassandraType.Name.UDT }) private Map<String, @Frozen Manufacturer> map;
+	}
+
 }
