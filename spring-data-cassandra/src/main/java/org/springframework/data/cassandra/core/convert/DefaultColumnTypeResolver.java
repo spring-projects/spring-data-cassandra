@@ -45,7 +45,7 @@ import org.springframework.data.util.Lazy;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
+import org.springframework.util.ObjectUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.data.TupleValue;
@@ -104,7 +104,7 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 
 			CassandraType annotation = property.getRequiredAnnotation(CassandraType.class);
 
-			if (annotation.type() == Name.UDT && StringUtils.isEmpty(annotation.userTypeName())) {
+			if (annotation.type() == Name.UDT && ObjectUtils.isEmpty(annotation.userTypeName())) {
 				throw new InvalidDataAccessApiUsageException(
 						String.format("Expected user type name in property ['%s'] of type ['%s'] in entity [%s]",
 								property.getName(), property.getType(), property.getOwner().getName()));
@@ -251,7 +251,7 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 				return ColumnType.tupleOf(DataTypes.tupleOf(dataTypes));
 			case UDT:
 
-				if (StringUtils.isEmpty(annotation.userTypeName())) {
+				if (ObjectUtils.isEmpty(annotation.userTypeName())) {
 					throw new InvalidDataAccessApiUsageException(
 							"Cannot resolve user type for @CassandraType(type=UDT) without userTypeName");
 				}
