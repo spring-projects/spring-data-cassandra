@@ -139,18 +139,19 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 			Flux<T> result = this.template.doSelect(this.query.limit(2), this.domainType, getTableName(), this.returnType);
 
 			return result.collectList() //
-					.flatMap(it -> {
+					.handle((objects, sink) -> {
 
-						if (it.isEmpty()) {
-							return Mono.empty();
+						if (objects.isEmpty()) {
+							return;
 						}
 
-						if (it.size() > 1) {
-							return Mono.error(new IncorrectResultSizeDataAccessException(
-									String.format("Query [%s] returned non unique result.", this.query), 1));
+						if (objects.size() == 1) {
+							sink.next(objects.get(0));
+							return;
 						}
 
-						return Mono.just(it.get(0));
+						sink.error(new IncorrectResultSizeDataAccessException(
+								String.format("Query [%s] returned non unique result.", this.query), 1));
 					});
 		}
 
