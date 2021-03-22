@@ -150,6 +150,7 @@ interface ReactiveCassandraQueryExecution {
 
 				if (objects.size() == 1 || limiting) {
 					sink.next(objects.get(0));
+					return;
 				}
 
 				sink.error(new IncorrectResultSizeDataAccessException(1, objects.size()));
