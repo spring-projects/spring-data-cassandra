@@ -188,6 +188,21 @@ class CreateTableCqlGeneratorUnitTests {
 				+ "WITH CLUSTERING ORDER BY (date_of_birth ASC) AND COMPACT STORAGE;");
 	}
 
+	@Test // DATACASS-812
+	void createTableWithStaticColumns() {
+
+		CreateTableSpecification table = CreateTableSpecification.createTable("person")
+				.partitionKeyColumn("id", DataTypes.ASCII)
+				.clusteredKeyColumn("date_of_birth", DataTypes.DATE, Ordering.ASCENDING)
+				.column("name", DataTypes.ASCII)
+				.staticColumn("country", DataTypes.ASCII);
+
+		assertThat(toCql(table)).isEqualTo("CREATE TABLE person ("
+				+ "id ascii, date_of_birth date, name ascii, country ascii static, "
+				+ "PRIMARY KEY (id, date_of_birth)) "
+				+ "WITH CLUSTERING ORDER BY (date_of_birth ASC);");
+	}
+
 	/**
 	 * Asserts that the preamble is first & correctly formatted in the given CQL string.
 	 */

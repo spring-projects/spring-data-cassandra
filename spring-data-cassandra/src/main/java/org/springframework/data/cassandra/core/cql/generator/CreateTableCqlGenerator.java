@@ -77,7 +77,11 @@ public class CreateTableCqlGenerator extends TableOptionsCqlGenerator<TableSpeci
 		List<ColumnSpecification> partitionKeys = new ArrayList<>();
 		List<ColumnSpecification> clusterKeys = new ArrayList<>();
 		for (ColumnSpecification col : spec().getColumns()) {
-			col.toCql(cql).append(", ");
+			if (col.isStatic()) {
+				col.toCql(cql).append(" static, ");
+			} else {
+				col.toCql(cql).append(", ");
+			}
 
 			if (col.getKeyType() == PARTITIONED) {
 				partitionKeys.add(col);

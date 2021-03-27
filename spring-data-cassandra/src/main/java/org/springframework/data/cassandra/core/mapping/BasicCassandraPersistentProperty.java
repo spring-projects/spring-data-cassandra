@@ -176,6 +176,16 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		return isAnnotationPresent(PrimaryKeyColumn.class);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty#isStaticColumn()
+	 */
+	@Override
+	public boolean isStaticColumn() {
+		Column annotation = findAnnotation(Column.class);
+
+		return annotation != null && annotation.isStatic();
+	}
+
 	@Nullable
 	private CqlIdentifier determineColumnName() {
 

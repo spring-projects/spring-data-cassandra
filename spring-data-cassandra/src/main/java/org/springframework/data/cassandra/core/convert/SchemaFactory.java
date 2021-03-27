@@ -174,6 +174,8 @@ public class SchemaFactory {
 					specification.partitionKeyColumn(property.getRequiredColumnName(), type);
 				} else if (property.isClusterKeyColumn()) {
 					specification.clusteredKeyColumn(property.getRequiredColumnName(), type, property.getPrimaryKeyOrdering());
+				} else if (property.isStaticColumn()) {
+					specification.staticColumn(property.getRequiredColumnName(), type);
 				} else {
 					specification.column(property.getRequiredColumnName(), type);
 				}
