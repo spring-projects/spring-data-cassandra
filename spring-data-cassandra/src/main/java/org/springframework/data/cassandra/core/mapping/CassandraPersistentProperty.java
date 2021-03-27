@@ -160,6 +160,12 @@ public interface CassandraPersistentProperty
 	boolean isPrimaryKeyColumn();
 
 	/**
+	 * Whether the property is a static column.
+	 * @since 3.2
+	 */
+	boolean isStaticColumn();
+
+	/**
 	 * @return {@literal true} if the property should be embedded.
 	 * @since 3.0
 	 */

@@ -29,10 +29,10 @@ import com.datastax.oss.driver.api.core.type.DataType;
 /**
  * Object to configure a CQL column specification.
  * <p/>
- * Use {@link #name(String)} and {@link #type(String)} to set the name and type of the column, respectively. To specify
+ * Use {@link #name(String)} and {@link #type(DataType)} to set the name and type of the column, respectively. To specify
  * a clustered {@code PRIMARY KEY} column, use {@link #clustered()} or {@link #clustered(Ordering)}. To specify that the
  * {@code PRIMARY KEY} column is or is part of the partition key, use {@link #partitioned()} instead of
- * {@link #clustered()} or {@link #clustered(Ordering)}.
+ * {@link #clustered()} or {@link #clustered(Ordering)}. To specify {@code STATIC} column, use {@link #staticColumn()}.
  *
  * @author Matthew T. Adams
  * @author Alex Shvid
@@ -52,6 +52,8 @@ public class ColumnSpecification {
 	private @Nullable PrimaryKeyType keyType;
 
 	private @Nullable Ordering ordering;
+
+	private boolean isStatic;
 
 	private ColumnSpecification(CqlIdentifier name) {
 		this.name = name;
@@ -178,6 +180,19 @@ public class ColumnSpecification {
 		return this;
 	}
 
+	/**
+	 * Identifies this column as a static column. Sets the column's {@link #isStatic} to {@literal true}.
+	 *
+	 * @return this
+	 * @since 3.2
+	 */
+	public ColumnSpecification staticColumn() {
+
+		this.isStatic = true;
+
+		return this;
+	}
+
 	public CqlIdentifier getName() {
 		return name;
 	}
@@ -197,6 +212,10 @@ public class ColumnSpecification {
 		return ordering;
 	}
 
+	public boolean isStatic() {
+		return isStatic;
+	}
+
 	public String toCql() {
 		return toCql(new StringBuilder()).toString();
 	}
@@ -211,7 +230,10 @@ public class ColumnSpecification {
 	 */
 	@Override
 	public String toString() {
-		return toCql(new StringBuilder()).append(" /* keyType=").append(keyType).append(", ordering=").append(ordering)
+		return toCql(new StringBuilder()).append(" /* ")
+				.append("keyType=").append(keyType).append(", ")
+				.append("ordering=").append(ordering).append(", ")
+				.append("isStatic=").append(isStatic)
 				.append(" */ ").toString();
 	}
 }

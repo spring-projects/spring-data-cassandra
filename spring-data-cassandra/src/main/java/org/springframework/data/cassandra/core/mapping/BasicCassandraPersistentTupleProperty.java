@@ -136,6 +136,14 @@ public class BasicCassandraPersistentTupleProperty extends BasicCassandraPersist
 	}
 
 	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty#isStaticColumn()
+	 */
+	@Override
+	public boolean isStaticColumn() {
+		return false;
+	}
+
+	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty#isEmbedded()
 	 */
 	@Override

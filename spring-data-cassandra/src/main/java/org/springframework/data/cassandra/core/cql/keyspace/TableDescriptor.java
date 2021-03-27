@@ -59,6 +59,11 @@ public interface TableDescriptor {
 	List<ColumnSpecification> getNonKeyColumns();
 
 	/**
+	 * Returns an unmodifiable list of static columns.
+	 */
+	List<ColumnSpecification> getStaticColumns();
+
+	/**
 	 * Returns an unmodifiable {@link Map} of table options.
 	 */
 	Map<String, Object> getOptions();

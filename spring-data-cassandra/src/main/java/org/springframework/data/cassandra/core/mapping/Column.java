@@ -54,6 +54,12 @@ public @interface Column {
 	String value() default "";
 
 	/**
+	 * Whether the column is static.
+	 * Default is {@literal false}.
+	 */
+	boolean isStatic() default false;
+
+	/**
 	 * Whether to cause the column name to be force-quoted.
 	 *
 	 * @deprecated since 3.0. The column name gets converted into {@link com.datastax.oss.driver.api.core.CqlIdentifier}

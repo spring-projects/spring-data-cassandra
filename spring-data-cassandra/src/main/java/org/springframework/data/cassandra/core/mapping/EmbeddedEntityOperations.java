@@ -405,6 +405,11 @@ public class EmbeddedEntityOperations {
 		}
 
 		@Override
+		public boolean isStaticColumn() {
+			return delegate.isStaticColumn();
+		}
+
+		@Override
 		@org.springframework.lang.Nullable
 		public AnnotatedType findAnnotatedType(Class<? extends Annotation> annotationType) {
 			return delegate.findAnnotatedType(annotationType);

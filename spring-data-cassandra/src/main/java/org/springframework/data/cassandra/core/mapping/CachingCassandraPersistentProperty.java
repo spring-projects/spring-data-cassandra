@@ -34,6 +34,7 @@ public class CachingCassandraPersistentProperty extends BasicCassandraPersistent
 	private final boolean isPartitionKeyColumn;
 	private final boolean isPrimaryKeyColumn;
 	private final boolean isEmbedded;
+	private final boolean isStaticColumn;
 
 	public CachingCassandraPersistentProperty(Property property, CassandraPersistentEntity<?> owner,
 			SimpleTypeHolder simpleTypeHolder) {
@@ -45,6 +46,7 @@ public class CachingCassandraPersistentProperty extends BasicCassandraPersistent
 		isPartitionKeyColumn = super.isPartitionKeyColumn();
 		isPrimaryKeyColumn = super.isPrimaryKeyColumn();
 		isEmbedded = super.isEmbedded();
+		isStaticColumn = super.isStaticColumn();
 	}
 
 	/* (non-Javadoc)
@@ -86,6 +88,14 @@ public class CachingCassandraPersistentProperty extends BasicCassandraPersistent
 	@Override
 	public boolean isPrimaryKeyColumn() {
 		return isPrimaryKeyColumn;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentProperty#isStaticColumn()
+	 */
+	@Override
+	public boolean isStaticColumn() {
+		return isStaticColumn;
 	}
 
 	/* (non-Javadoc)

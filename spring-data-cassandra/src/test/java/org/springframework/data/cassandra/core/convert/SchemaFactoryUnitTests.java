@@ -875,4 +875,53 @@ public class SchemaFactoryUnitTests {
 		assertThat(aegolastname.getColumnName()).isEqualTo(CqlIdentifier.fromCql("aegolastname"));
 	}
 
+	@Table
+	@Data
+	static class TypeWithStatic {
+
+		@Id String id;
+		@Column(isStatic = true) String name;
+	}
+
+	@Table
+	@Data
+	static class TypeWithStaticTuple {
+
+		@Id String id;
+
+		@Column(isStatic = true) Address address;
+	}
+
+	@Tuple
+	static class Address {
+		@Element(0) String street;
+		@Element(1) int number;
+	}
+
+	@Test // DATACASS-812
+	void createdTableSpecificationShouldConsiderStaticColumns() {
+
+		CassandraPersistentEntity<?> persistentEntity = ctx
+				.getRequiredPersistentEntity(TypeWithStatic.class);
+
+		CreateTableSpecification tableSpecification = schemaFactory.getCreateTableSpecificationFor(persistentEntity);
+
+		ColumnSpecification name = tableSpecification.getStaticColumns().get(0);
+		assertThat(name.getName().toString()).isEqualTo("name");
+		assertThat(name.isStatic()).isTrue();
+	}
+
+	@Test // DATACASS-812
+	void createdTableSpecificationShouldConsiderStaticForTypedTupleColumns() {
+
+		CassandraPersistentEntity<?> persistentEntity = ctx
+				.getRequiredPersistentEntity(TypeWithStaticTuple.class);
+
+		CreateTableSpecification tableSpecification = schemaFactory.getCreateTableSpecificationFor(persistentEntity);
+
+		ColumnSpecification name = tableSpecification.getStaticColumns().get(0);
+		assertThat(name.getName().toString()).isEqualTo("address");
+		assertThat(name.isStatic()).isTrue();
+	}
+
 }
