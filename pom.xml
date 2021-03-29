@@ -121,14 +121,10 @@
 			<!-- Cassandra Driver -->
 			<dependency>
 				<groupId>com.datastax.oss</groupId>
-				<artifactId>java-driver-core</artifactId>
+				<artifactId>java-driver-bom</artifactId>
 				<version>${cassandra-driver.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>com.datastax.oss</groupId>
-				<artifactId>java-driver-query-builder</artifactId>
-				<version>${cassandra-driver.version}</version>
+				<scope>import</scope>
+				<type>pom</type>
 			</dependency>
 
 			<!-- CDI -->
