@@ -457,7 +457,7 @@ class StatementFactoryUnitTests {
 		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory
 				.update(Query.empty(), Update.empty().increment("number"), personEntity);
 
-		assertThat(update.build(ParameterHandling.INLINE).getQuery()).isEqualTo("UPDATE person SET number+=1");
+		assertThat(update.build(ParameterHandling.INLINE).getQuery()).isEqualTo("UPDATE person SET number=number+1");
 	}
 
 	@Test // DATACASS-735
@@ -467,7 +467,7 @@ class StatementFactoryUnitTests {
 				.update(Query.empty(), Update.empty().increment("number", Long.MAX_VALUE), personEntity);
 
 		assertThat(update.build(ParameterHandling.INLINE).getQuery())
-				.isEqualTo("UPDATE person SET number+=" + Long.MAX_VALUE);
+				.isEqualTo("UPDATE person SET number=number+" + Long.MAX_VALUE);
 	}
 
 	@Test // DATACASS-343
@@ -476,7 +476,7 @@ class StatementFactoryUnitTests {
 		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory
 				.update(Query.empty(), Update.empty().decrement("number"), personEntity);
 
-		assertThat(update.build(ParameterHandling.INLINE).getQuery()).isEqualTo("UPDATE person SET number-=1");
+		assertThat(update.build(ParameterHandling.INLINE).getQuery()).isEqualTo("UPDATE person SET number=number-1");
 	}
 
 	@Test // DATACASS-735
@@ -486,7 +486,7 @@ class StatementFactoryUnitTests {
 				.update(Query.empty(), Update.empty().decrement("number", Long.MAX_VALUE), personEntity);
 
 		assertThat(update.build(ParameterHandling.INLINE).getQuery())
-				.isEqualTo("UPDATE person SET number-=" + Long.MAX_VALUE);
+				.isEqualTo("UPDATE person SET number=number-" + Long.MAX_VALUE);
 	}
 
 	@Test // DATACASS-569
