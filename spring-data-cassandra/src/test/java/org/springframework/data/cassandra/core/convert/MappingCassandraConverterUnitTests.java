@@ -46,15 +46,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
-import org.springframework.data.cassandra.core.mapping.BasicMapId;
-import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
-import org.springframework.data.cassandra.core.mapping.CassandraType;
-import org.springframework.data.cassandra.core.mapping.Embedded;
-import org.springframework.data.cassandra.core.mapping.MapId;
-import org.springframework.data.cassandra.core.mapping.PrimaryKey;
-import org.springframework.data.cassandra.core.mapping.PrimaryKeyClass;
-import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
-import org.springframework.data.cassandra.core.mapping.Table;
+import org.springframework.data.cassandra.core.mapping.*;
+import org.springframework.data.cassandra.core.mapping.Column;
 import org.springframework.data.cassandra.domain.AllPossibleTypes;
 import org.springframework.data.cassandra.domain.CompositeKey;
 import org.springframework.data.cassandra.domain.TypeWithCompositeKey;
@@ -67,6 +60,8 @@ import org.springframework.data.cassandra.test.util.RowMockUtil;
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.type.DataTypes;
+import com.datastax.oss.driver.internal.core.data.DefaultTupleValue;
+import com.datastax.oss.driver.internal.core.type.DefaultTupleType;
 
 /**
  * Unit tests for {@link MappingCassandraConverter}.
@@ -1014,6 +1009,39 @@ public class MappingCassandraConverterUnitTests {
 		assertThat(insert).containsEntry(CqlIdentifier.fromCql("conditionmap"), Collections.singletonMap(0, 1));
 	}
 
+	@Test
+	void shouldConsiderColumnAnnotationOnConstructor() {
+
+		rowMock = RowMockUtil.newRowMock(RowMockUtil.column("fn", "Walter", DataTypes.ASCII),
+				RowMockUtil.column("firstname", "Heisenberg", DataTypes.ASCII),
+				RowMockUtil.column("lastname", "White", DataTypes.ASCII));
+
+		WithColumnAnnotationInConstructor converted = this.mappingCassandraConverter
+				.read(WithColumnAnnotationInConstructor.class, rowMock);
+
+		assertThat(converted.firstname).isEqualTo("Walter");
+		assertThat(converted.lastname).isEqualTo("White");
+	}
+
+	@Test
+	void shouldConsiderElementAnnotationOnConstructor() {
+
+		DefaultTupleValue value = new DefaultTupleValue(
+				new DefaultTupleType(Arrays.asList(DataTypes.ASCII, DataTypes.ASCII, DataTypes.ASCII)));
+
+		value.setString(0, "Zero");
+		value.setString(1, "One");
+		value.setString(2, "Two");
+
+		rowMock = RowMockUtil.newRowMock(RowMockUtil.column("firstname", "Heisenberg", DataTypes.ASCII),
+				RowMockUtil.column("tuple", value, value.getType()));
+
+		WithMappedTuple converted = this.mappingCassandraConverter.read(WithMappedTuple.class, rowMock);
+
+		assertThat(converted.firstname).isEqualTo("Heisenberg");
+		assertThat(converted.tuple.firstname).isEqualTo("Two");
+	}
+
 	private static List<Object> getValues(Map<CqlIdentifier, Object> statement) {
 		return new ArrayList<>(statement.values());
 	}
@@ -1259,6 +1287,37 @@ public class MappingCassandraConverterUnitTests {
 
 		private WithValue(String id, @Value("#root.getString(1)") String firstname) {
 			this.id = id;
+			this.firstname = firstname;
+		}
+	}
+
+	private static class WithColumnAnnotationInConstructor {
+
+		String firstname;
+		final @Transient String lastname;
+
+		public WithColumnAnnotationInConstructor(@Column("fn") String firstname, @Column("lastname") String lastname) {
+			this.firstname = firstname;
+			this.lastname = lastname;
+		}
+	}
+
+	private static class WithMappedTuple {
+
+		String firstname;
+		TupleWithElementAnnotationInConstructor tuple;
+	}
+
+	@Tuple
+	private static class TupleWithElementAnnotationInConstructor {
+
+		@Element(0) String zero;
+		@Element(1) String one;
+		@Element(2) String two;
+
+		@Transient String firstname;
+
+		public TupleWithElementAnnotationInConstructor(@Element(2) String firstname) {
 			this.firstname = firstname;
 		}
 	}

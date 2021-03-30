@@ -31,20 +31,12 @@ import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.CollectionFactory;
+import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
-import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity;
-import org.springframework.data.cassandra.core.mapping.BasicMapId;
-import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
-import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
-import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
-import org.springframework.data.cassandra.core.mapping.Embedded;
+import org.springframework.data.cassandra.core.mapping.*;
 import org.springframework.data.cassandra.core.mapping.Embedded.OnEmpty;
-import org.springframework.data.cassandra.core.mapping.EmbeddedEntityOperations;
-import org.springframework.data.cassandra.core.mapping.MapId;
-import org.springframework.data.cassandra.core.mapping.MapIdentifiable;
-import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.PreferredConstructor;
@@ -54,7 +46,6 @@ import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
 import org.springframework.data.mapping.model.DefaultSpELExpressionEvaluator;
 import org.springframework.data.mapping.model.EntityInstantiator;
 import org.springframework.data.mapping.model.ParameterValueProvider;
-import org.springframework.data.mapping.model.PersistentEntityParameterValueProvider;
 import org.springframework.data.mapping.model.SpELContext;
 import org.springframework.data.mapping.model.SpELExpressionEvaluator;
 import org.springframework.data.mapping.model.SpELExpressionParameterValueProvider;
@@ -284,11 +275,10 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		return new ConvertingPropertyAccessor<>(propertyAccessor, getConversionService());
 	}
 
-	private <S> PersistentEntityParameterValueProvider<CassandraPersistentProperty> newParameterValueProvider(
-			ConversionContext context, CassandraPersistentEntity<S> entity, CassandraValueProvider valueProvider) {
+	private <S> CassandraPersistentEntityParameterValueProvider newParameterValueProvider(ConversionContext context,
+			CassandraPersistentEntity<S> entity, CassandraValueProvider valueProvider) {
 
-		return new PersistentEntityParameterValueProvider<>(entity,
-				new MappingAndConvertingValueProvider(valueProvider, context), null);
+		return new CassandraPersistentEntityParameterValueProvider(entity, valueProvider, context, null);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -416,8 +406,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 		if (persistenceConstructor != null && persistenceConstructor.hasParameters()) {
 			SpELExpressionEvaluator evaluator = new DefaultSpELExpressionEvaluator(valueProvider.getSource(), spELContext);
-			PersistentEntityParameterValueProvider<CassandraPersistentProperty> parameterValueProvider = newParameterValueProvider(
-					context, entity, valueProvider);
+			ParameterValueProvider<CassandraPersistentProperty> parameterValueProvider = newParameterValueProvider(context,
+					entity, valueProvider);
 			provider = new ConverterAwareSpELExpressionParameterValueProvider(evaluator, getConversionService(),
 					parameterValueProvider, context);
 		} else {
@@ -1165,50 +1155,6 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	}
 
 	/**
-	 * {@link CassandraRowValueProvider} that delegates reads to {@link CassandraValueProvider} applying mapping and
-	 * custom conversion from {@link MappingCassandraConverter}.
-	 *
-	 * @author Mark Paluch
-	 * @since 1.5.1
-	 */
-	class MappingAndConvertingValueProvider implements CassandraValueProvider {
-
-		private final CassandraValueProvider parent;
-		private final ConversionContext context;
-
-		public MappingAndConvertingValueProvider(CassandraValueProvider parent, ConversionContext context) {
-			this.parent = parent;
-			this.context = context;
-		}
-
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.convert.CassandraValueProvider#hasProperty(org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty)
-		 */
-		@Override
-		public boolean hasProperty(CassandraPersistentProperty property) {
-			return this.parent.hasProperty(property);
-		}
-
-		/* (non-Javadoc)
-		 * @see org.springframework.data.mapping.model.PropertyValueProvider#getPropertyValue(org.springframework.data.mapping.PersistentProperty)
-		 */
-		@Nullable
-		@Override
-		@SuppressWarnings("unchecked")
-		public <T> T getPropertyValue(CassandraPersistentProperty property) {
-			return (T) getReadValue(context, this.parent, property);
-		}
-
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.convert.CassandraValueProvider#getSource()
-		 */
-		@Override
-		public Object getSource() {
-			return parent.getSource();
-		}
-	}
-
-	/**
 	 * Conversion context holding references to simple {@link ValueConverter} and {@link ContainerValueConverter}.
 	 * Entrypoint for recursive conversion of {@link Row} and other types.
 	 *
@@ -1311,4 +1257,74 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		}
 
 	}
+
+	/**
+	 * Cassandra-specific {@link ParameterValueProvider} considering {@link Column @Column} and {@link Element @Element}
+	 * annotations on constructor parameters.
+	 *
+	 * @since 3.2
+	 */
+	class CassandraPersistentEntityParameterValueProvider implements ParameterValueProvider<CassandraPersistentProperty> {
+
+		private final CassandraPersistentEntity<?> entity;
+		private final CassandraValueProvider provider;
+		private final ConversionContext context;
+		private final @Nullable Object parent;
+
+		public CassandraPersistentEntityParameterValueProvider(CassandraPersistentEntity<?> entity,
+				CassandraValueProvider provider, ConversionContext context, @Nullable Object parent) {
+			this.entity = entity;
+			this.provider = provider;
+			this.context = context;
+			this.parent = parent;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see org.springframework.data.mapping.model.ParameterValueProvider#getParameterValue(org.springframework.data.mapping.PreferredConstructor.Parameter)
+		 */
+		@Nullable
+		@SuppressWarnings("unchecked")
+		public <T> T getParameterValue(Parameter<T, CassandraPersistentProperty> parameter) {
+
+			PreferredConstructor<CassandraPersistentEntity<?>, CassandraPersistentProperty> constructor = (PreferredConstructor<CassandraPersistentEntity<?>, CassandraPersistentProperty>) entity
+					.getPersistenceConstructor();
+
+			if (constructor != null && constructor.isEnclosingClassParameter(parameter)) {
+				return (T) parent;
+			}
+
+			String name = parameter.getName();
+
+			if (name == null) {
+				throw new MappingException(String.format("Parameter %s does not have a name!", parameter));
+			}
+
+			CassandraPersistentProperty property = getPersistentProperty(name, parameter.getType(),
+					parameter.getAnnotations());
+
+			if (property == null) {
+
+				throw new MappingException(String.format("No property %s found on entity %s to bind constructor parameter to!",
+						name, entity.getType()));
+			}
+
+			return (T) getReadValue(context, provider, property);
+		}
+
+		@Nullable
+		private <T> CassandraPersistentProperty getPersistentProperty(String name, TypeInformation<?> typeInformation,
+				MergedAnnotations annotations) {
+
+			CassandraPersistentProperty property = entity.getPersistentProperty(name);
+
+			if (annotations.isPresent(Column.class) || annotations.isPresent(Element.class)) {
+				return new AnnotatedCassandraConstructorProperty(
+						property == null ? new CassandraConstructorProperty(name, entity, typeInformation) : property, annotations);
+			}
+
+			return property;
+		}
+	}
+
 }

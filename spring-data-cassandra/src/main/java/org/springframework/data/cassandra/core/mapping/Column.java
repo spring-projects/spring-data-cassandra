@@ -41,10 +41,11 @@ import java.lang.annotation.Target;
  *
  * @author Alex Shvid
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target(value = { ElementType.ANNOTATION_TYPE, ElementType.FIELD, ElementType.METHOD })
+@Target(value = { ElementType.ANNOTATION_TYPE, ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER })
 public @interface Column {
 
 	/**
