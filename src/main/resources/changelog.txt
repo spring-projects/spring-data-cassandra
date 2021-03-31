@@ -1,6 +1,16 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 3.2.0-RC1 (2021-03-31)
+-----------------------------------------
+* #1111 - Use SAM constructors for Kotlin extensions.
+* #1110 - Switch to Driver BOM.
+* #1109 - Upgrade to Datastax driver 4.11.0.
+* #1107 - `SingleEntityExecution` emits both, item and error signal.
+* #1106 - Readme lists artifacts with .RELEASE and .BUILD-SNAPSHOT suffixes.
+* #1104 - Consider `@Column` and `@Element` annotated constructor parameters.
+
+
 Changes in version 3.2.0-M5 (2021-03-17)
 ----------------------------------------
 * #1100 - Remove @Persistent from entity-scan include filters.
@@ -1455,6 +1465,7 @@ Changes in version 1.0.0.M1 (2014-03-31)
     * [DATACASS-100] - QueryOptions should only have ConsistencyLevel & RetryPolicy
     * [DATACASS-104] - Remove requirement for @PrimaryKeyClass when using composite primary keys
     * [DATACASS-107] - Support declarative query methods
+
 
 
 
