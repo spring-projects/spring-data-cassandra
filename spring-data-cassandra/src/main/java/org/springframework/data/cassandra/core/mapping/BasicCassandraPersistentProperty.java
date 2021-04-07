@@ -54,6 +54,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * @author Antoine Toulme
  * @author Mark Paluch
  * @author John Blum
+ * @author Aleksei Zotov
  */
 public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentProperty<CassandraPersistentProperty>
 		implements CassandraPersistentProperty, ApplicationContextAware {
@@ -181,6 +182,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	 */
 	@Override
 	public boolean isStaticColumn() {
+
 		Column annotation = findAnnotation(Column.class);
 
 		return annotation != null && annotation.isStatic();

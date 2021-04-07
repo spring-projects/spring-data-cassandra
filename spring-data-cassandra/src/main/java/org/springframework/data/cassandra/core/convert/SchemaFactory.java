@@ -46,6 +46,7 @@ import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
  *
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Aleksei Zotov
  * @since 3.0
  * @see CreateUserTypeSpecification
  * @see CreateTableSpecification

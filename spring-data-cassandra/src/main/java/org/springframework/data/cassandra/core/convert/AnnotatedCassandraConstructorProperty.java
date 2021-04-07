@@ -106,6 +106,11 @@ class AnnotatedCassandraConstructorProperty implements CassandraPersistentProper
 	}
 
 	@Override
+	public boolean isStaticColumn() {
+		return delegate.isStaticColumn();
+	}
+
+	@Override
 	@Nullable
 	public AnnotatedType findAnnotatedType(Class<? extends Annotation> annotationType) {
 		return delegate.findAnnotatedType(annotationType);

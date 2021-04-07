@@ -36,6 +36,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * @author John Blum
  * @author Christoph Strobl
  * @author Frank Spitulski
+ * @author Aleksei Zotov
  */
 public interface CassandraPersistentProperty
 		extends PersistentProperty<CassandraPersistentProperty>, ApplicationContextAware {
@@ -160,7 +161,8 @@ public interface CassandraPersistentProperty
 	boolean isPrimaryKeyColumn();
 
 	/**
-	 * Whether the property is a static column.
+	 * Whether the property maps to a static column.
+	 *
 	 * @since 3.2
 	 */
 	boolean isStaticColumn();

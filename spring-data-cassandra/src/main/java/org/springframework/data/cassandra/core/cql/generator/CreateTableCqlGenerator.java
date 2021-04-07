@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.core.cql.generator;
 
+import static org.springframework.data.cassandra.core.cql.PrimaryKeyType.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -25,14 +27,13 @@ import org.springframework.data.cassandra.core.cql.keyspace.Option;
 import org.springframework.data.cassandra.core.cql.keyspace.TableSpecification;
 import org.springframework.util.StringUtils;
 
-import static org.springframework.data.cassandra.core.cql.PrimaryKeyType.*;
-
 /**
  * CQL generator for generating a {@code CREATE TABLE} statement.
  *
  * @author Matthew T. Adams
  * @author Alex Shvid
  * @author Mark Paluch
+ * @author Aleksei Zotov
  */
 public class CreateTableCqlGenerator extends TableOptionsCqlGenerator<TableSpecification<CreateTableSpecification>> {
 
@@ -78,7 +79,7 @@ public class CreateTableCqlGenerator extends TableOptionsCqlGenerator<TableSpeci
 		List<ColumnSpecification> clusterKeys = new ArrayList<>();
 		for (ColumnSpecification col : spec().getColumns()) {
 			if (col.isStatic()) {
-				col.toCql(cql).append(" static, ");
+				col.toCql(cql).append(" STATIC, ");
 			} else {
 				col.toCql(cql).append(", ");
 			}

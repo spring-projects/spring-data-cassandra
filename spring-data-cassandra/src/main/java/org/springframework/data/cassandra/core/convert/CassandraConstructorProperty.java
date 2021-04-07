@@ -98,6 +98,11 @@ class CassandraConstructorProperty implements CassandraPersistentProperty {
 		return false;
 	}
 
+	@Override
+	public boolean isStaticColumn() {
+		return false;
+	}
+
 	@Nullable
 	@Override
 	public AnnotatedType findAnnotatedType(Class<? extends Annotation> annotationType) {

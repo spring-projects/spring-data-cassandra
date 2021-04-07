@@ -67,6 +67,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Matthew T. Adams
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Aleksei Zotov
  */
 public class SchemaFactoryUnitTests {
 
@@ -898,7 +899,7 @@ public class SchemaFactoryUnitTests {
 		@Element(1) int number;
 	}
 
-	@Test // DATACASS-812
+	@Test // GH-978
 	void createdTableSpecificationShouldConsiderStaticColumns() {
 
 		CassandraPersistentEntity<?> persistentEntity = ctx
@@ -911,7 +912,7 @@ public class SchemaFactoryUnitTests {
 		assertThat(name.isStatic()).isTrue();
 	}
 
-	@Test // DATACASS-812
+	@Test // GH-978
 	void createdTableSpecificationShouldConsiderStaticForTypedTupleColumns() {
 
 		CassandraPersistentEntity<?> persistentEntity = ctx

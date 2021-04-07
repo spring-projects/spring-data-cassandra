@@ -24,6 +24,7 @@ import org.springframework.lang.Nullable;
  * {@link BasicCassandraPersistentProperty} that pre-computes primary key and embedded flags.
  *
  * @author Mark Paluch
+ * @author Aleksei Zotov
  * @since 3.1.4
  */
 public class CachingCassandraPersistentProperty extends BasicCassandraPersistentProperty {

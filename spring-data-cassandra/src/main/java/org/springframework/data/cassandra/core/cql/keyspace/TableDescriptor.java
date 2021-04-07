@@ -25,6 +25,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  *
  * @author Matthew T. Adams
  * @author Alex Shvid
+ * @author Aleksei Zotov
  */
 public interface TableDescriptor {
 
@@ -60,6 +61,8 @@ public interface TableDescriptor {
 
 	/**
 	 * Returns an unmodifiable list of static columns.
+	 *
+	 * @since 3.2
 	 */
 	List<ColumnSpecification> getStaticColumns();
 

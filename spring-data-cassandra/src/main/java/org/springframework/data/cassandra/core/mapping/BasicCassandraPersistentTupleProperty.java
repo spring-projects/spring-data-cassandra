@@ -29,6 +29,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  *
  * @author Mark Paluch
  * @author Frank Spitulski
+ * @author Aleksei Zotov
  * @since 2.1
  * @see Element
  */

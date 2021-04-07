@@ -15,19 +15,19 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
+import static org.springframework.data.cassandra.core.cql.PrimaryKeyType.*;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import com.datastax.oss.driver.api.core.CqlIdentifier;
-import com.datastax.oss.driver.api.core.type.DataType;
-
 import org.springframework.data.cassandra.core.cql.Ordering;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.util.Assert;
 
-import static org.springframework.data.cassandra.core.cql.PrimaryKeyType.*;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.type.DataType;
 
 /**
  * Object to support the configuration of table specifications that have columns. This class can also be used as a
@@ -36,6 +36,7 @@ import static org.springframework.data.cassandra.core.cql.PrimaryKeyType.*;
  * @author Matthew T. Adams
  * @author Alex Shvid
  * @author Mark Paluch
+ * @author Aleksei Zotov
  */
 public class TableSpecification<T> extends TableOptionsSpecification<TableSpecification<T>> implements TableDescriptor {
 
@@ -355,8 +356,6 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 
 	/**
 	 * Returns an unmodifiable list of static columns.
-	 *
-	 * @since 3.2
 	 */
 	@Override
 	public List<ColumnSpecification> getStaticColumns() {

@@ -29,14 +29,15 @@ import com.datastax.oss.driver.api.core.type.DataType;
 /**
  * Object to configure a CQL column specification.
  * <p/>
- * Use {@link #name(String)} and {@link #type(DataType)} to set the name and type of the column, respectively. To specify
- * a clustered {@code PRIMARY KEY} column, use {@link #clustered()} or {@link #clustered(Ordering)}. To specify that the
- * {@code PRIMARY KEY} column is or is part of the partition key, use {@link #partitioned()} instead of
+ * Use {@link #name(String)} and {@link #type(DataType)} to set the name and type of the column, respectively. To
+ * specify a clustered {@code PRIMARY KEY} column, use {@link #clustered()} or {@link #clustered(Ordering)}. To specify
+ * that the {@code PRIMARY KEY} column is or is part of the partition key, use {@link #partitioned()} instead of
  * {@link #clustered()} or {@link #clustered(Ordering)}. To specify {@code STATIC} column, use {@link #staticColumn()}.
  *
  * @author Matthew T. Adams
  * @author Alex Shvid
  * @author Mark Paluch
+ * @author Aleksei Zotov
  */
 public class ColumnSpecification {
 

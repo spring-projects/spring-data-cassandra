@@ -42,6 +42,7 @@ import java.lang.annotation.Target;
  * @author Alex Shvid
  * @author Matthew T. Adams
  * @author Mark Paluch
+ * @author Aleksei Zotov
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
@@ -54,8 +55,9 @@ public @interface Column {
 	String value() default "";
 
 	/**
-	 * Whether the column is static.
-	 * Default is {@literal false}.
+	 * Whether the column is {@code static}. Default is {@literal false}. Used primarily for schema creation.
+	 *
+	 * @since 3.2
 	 */
 	boolean isStatic() default false;
 

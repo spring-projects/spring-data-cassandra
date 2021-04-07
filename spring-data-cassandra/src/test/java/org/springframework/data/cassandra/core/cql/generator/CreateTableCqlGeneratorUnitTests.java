@@ -42,6 +42,7 @@ import com.datastax.oss.driver.api.core.type.DataTypes;
  * @author Matthew T. Adams
  * @author David Webb
  * @author Mark Paluch
+ * @author Aleksei Zotov
  */
 class CreateTableCqlGeneratorUnitTests {
 
@@ -188,7 +189,7 @@ class CreateTableCqlGeneratorUnitTests {
 				+ "WITH CLUSTERING ORDER BY (date_of_birth ASC) AND COMPACT STORAGE;");
 	}
 
-	@Test // DATACASS-812
+	@Test // GH-978
 	void createTableWithStaticColumns() {
 
 		CreateTableSpecification table = CreateTableSpecification.createTable("person")
@@ -198,7 +199,7 @@ class CreateTableCqlGeneratorUnitTests {
 				.staticColumn("country", DataTypes.ASCII);
 
 		assertThat(toCql(table)).isEqualTo("CREATE TABLE person ("
-				+ "id ascii, date_of_birth date, name ascii, country ascii static, "
+				+ "id ascii, date_of_birth date, name ascii, country ascii STATIC, "
 				+ "PRIMARY KEY (id, date_of_birth)) "
 				+ "WITH CLUSTERING ORDER BY (date_of_birth ASC);");
 	}

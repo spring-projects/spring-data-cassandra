@@ -8,6 +8,7 @@ This chapter summarizes changes and new features for each release.
 
 * <<cassandra.template.prepared-statements,Support for prepared statements>> using `CassandraTemplate` and repositories (enabled by default).
 * `@Column` and `@Element` can be used on constructor arguments.
+* Schema support for static columns through `@Column(isStatic = …)`.
 
 [[new-features.3-1-0]]
 == What's new in Spring Data for Apache Cassandra 3.1
