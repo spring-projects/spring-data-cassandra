@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 
 /**
@@ -31,79 +32,75 @@ import org.springframework.util.Assert;
  * the build and can be override using system properties.
  *
  * @author Mark Paluch
+ * @author John Blum
  */
-@SuppressWarnings("serial")
+@SuppressWarnings("unused")
 public class CassandraConnectionProperties extends Properties {
 
 	private final static List<WeakReference<CassandraConnectionProperties>> instances = new ArrayList<>();
 
-	private String resourceName;
+	private final String resourceName;
 
 	/**
-	 * Create a new {@link CassandraConnectionProperties} using properties from
-	 * {@code config/cassandra-connection.properties}.
+	 * Construct a new instance of {@link CassandraConnectionProperties} using properties
+	 * from {@code config/cassandra-connection.properties}.
 	 */
 	public CassandraConnectionProperties() {
 		this("/config/cassandra-connection.properties");
 	}
 
+	private CassandraConnectionProperties(@NonNull String resourceName) {
+
+		this.resourceName = resourceName;
+
+		loadProperties();
+
+		instances.add(new WeakReference<>(this));
+	}
+
 	public void update() {
+
 		try {
 			// Caution: Rewriting properties during initialization.
-			File file = new File(getClass().getResource(resourceName).toURI());
+			File file = new File(getClass().getResource(this.resourceName).toURI());
 
-			try (FileOutputStream fos = new FileOutputStream(file)) {
-				store(fos, "");
+			try (FileOutputStream out = new FileOutputStream(file)) {
+				store(out, "");
 			}
 
 			reload();
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new IllegalStateException(e);
+		}
+		catch (Exception cause) {
+			cause.printStackTrace();
+			throw new IllegalStateException(cause);
 		}
 	}
 
 	private static void reload() {
+
 		for (WeakReference<CassandraConnectionProperties> ref : instances) {
 
 			CassandraConnectionProperties properties = ref.get();
+
 			if (properties != null) {
 				properties.loadProperties();
 			}
 		}
 	}
 
-	private CassandraConnectionProperties(String resourceName) {
-
-		this.resourceName = resourceName;
-		loadProperties();
-
-		instances.add(new WeakReference<>(this));
-	}
-
 	private void loadProperties() {
-
 		loadProperties(this.resourceName);
 	}
 
 	private void loadProperties(String resourceName) {
 
-		InputStream in = null;
-
-		try {
-			in = getClass().getResourceAsStream(resourceName);
-
+		try (InputStream in = getClass().getResourceAsStream(resourceName)){
 			if (in != null) {
 				load(in);
 			}
-		} catch (Exception cause) {
+		}
+		catch (Exception cause) {
 			throw new RuntimeException(cause);
-		} finally {
-			if (in != null) {
-				try {
-					in.close();
-				} catch (Exception ignore) {}
-			}
 		}
 	}
 
@@ -111,6 +108,7 @@ public class CassandraConnectionProperties extends Properties {
 	public String getProperty(String key) {
 
 		String value = super.getProperty(key);
+
 		if (value == null) {
 			value = System.getProperty(key);
 		}
@@ -154,17 +152,17 @@ public class CassandraConnectionProperties extends Properties {
 	}
 
 	/**
-	 * @return the Cassandra Storage port
-	 */
-	public int getCassandraStoragePort() {
-		return getInt("build.cassandra.storage_port");
-	}
-
-	/**
 	 * @return the Cassandra SSL Storage port
 	 */
 	public int getCassandraSslStoragePort() {
 		return getInt("build.cassandra.ssl_storage_port");
+	}
+
+	/**
+	 * @return the Cassandra Storage port
+	 */
+	public int getCassandraStoragePort() {
+		return getInt("build.cassandra.storage_port");
 	}
 
 	/**
@@ -174,12 +172,9 @@ public class CassandraConnectionProperties extends Properties {
 
 		String cassandraType = getProperty("build.cassandra.mode");
 
-		if (CassandraType.TESTCONTAINERS.name().equalsIgnoreCase(cassandraType)) {
-			return CassandraType.TESTCONTAINERS;
-		}
-
-		return CassandraType.EXTERNAL.name().equalsIgnoreCase(cassandraType) ? CassandraType.EXTERNAL
-				: CassandraType.EMBEDDED;
+		return CassandraType.TESTCONTAINERS.name().equalsIgnoreCase(cassandraType) ? CassandraType.TESTCONTAINERS
+			: CassandraType.EXTERNAL.name().equalsIgnoreCase(cassandraType) ? CassandraType.EXTERNAL
+			: CassandraType.EMBEDDED;
 	}
 
 	/**
@@ -229,6 +224,6 @@ public class CassandraConnectionProperties extends Properties {
 	}
 
 	public enum CassandraType {
-		EMBEDDED, EXTERNAL, TESTCONTAINERS;
+		EMBEDDED, EXTERNAL, TESTCONTAINERS
 	}
 }

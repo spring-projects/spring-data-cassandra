@@ -44,9 +44,10 @@ import org.springframework.util.FileSystemUtils;
  *
  * @author Mark Paluch
  */
+@SuppressWarnings("unused")
 class EmbeddedCassandraServerHelper {
 
-	private static Logger log = LoggerFactory.getLogger(EmbeddedCassandraServerHelper.class);
+	private static final Logger log = LoggerFactory.getLogger(EmbeddedCassandraServerHelper.class);
 
 	public static final long DEFAULT_STARTUP_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(20);
 	private static final String DEFAULT_TMP_DIR = "target/embeddedCassandra";
@@ -95,9 +96,10 @@ class EmbeddedCassandraServerHelper {
 	/**
 	 * Start an embedded Cassandra instance.
 	 *
-	 * @param yamlResource
-	 * @param timeout
-	 * @throws Exception
+	 * @param yamlResource {@link String location} of a YAML file to configure Cassandra.
+	 * @param timeout {@link Long} value specifying the timeout used to wait for the Cassandra server to startup.
+	 * @throws Exception if the Cassandra server fails to start.
+	 * @see #startEmbeddedCassandra(String, String, long)
 	 */
 	public static void startEmbeddedCassandra(String yamlResource, long timeout) throws Exception {
 		startEmbeddedCassandra(yamlResource, DEFAULT_TMP_DIR, timeout);
@@ -106,10 +108,10 @@ class EmbeddedCassandraServerHelper {
 	/**
 	 * Start an embedded Cassandra instance.
 	 *
-	 * @param yamlResource
-	 * @param tmpDir
-	 * @param timeout
-	 * @throws Exception
+	 * @param yamlResource {@link String resource location} of a YAML file to configure Cassandra.
+	 * @param tmpDir {@link String filesystem location} used by the embedded Cassandra instance.
+	 * @param timeout {@link Long} value specifying the timeout used to wait for the Cassandra server to startup.
+	 * @throws Exception if the Cassandra server fails to start.
 	 */
 	private static void startEmbeddedCassandra(String yamlResource, String tmpDir, long timeout) throws Exception {
 

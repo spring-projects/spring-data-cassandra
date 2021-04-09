@@ -19,7 +19,6 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -27,6 +26,8 @@ import org.junit.jupiter.api.extension.TestInstancePostProcessor;
 import org.junit.platform.commons.util.AnnotationUtils;
 import org.junit.platform.commons.util.ReflectionUtils;
 import org.junit.platform.commons.util.StringUtils;
+
+import org.apache.commons.lang3.reflect.FieldUtils;
 
 import org.springframework.data.cassandra.support.RandomKeyspaceName;
 import org.springframework.util.Assert;
@@ -63,16 +64,6 @@ public class CassandraExtension implements BeforeAllCallback, AfterAllCallback, 
 	private final CassandraDelegate delegate = new CassandraDelegate("embedded-cassandra.yaml");
 
 	/**
-	 * Retrieve the system {@link CqlSession} that is associated with the current {@link Thread}.
-	 *
-	 * @return the system {@link CqlSession}.
-	 * @throws IllegalStateException if no system session was associated with the current {@link Thread}.
-	 */
-	public static CqlSession currentSystemSession() {
-		return getResources().systemSession;
-	}
-
-	/**
 	 * Retrieve the keyspace {@link CqlSession} that is associated with the current {@link Thread}.
 	 *
 	 * @return the keyspace {@link CqlSession}.
@@ -82,28 +73,36 @@ public class CassandraExtension implements BeforeAllCallback, AfterAllCallback, 
 
 		CqlSession cqlSession = getResources().cqlSession;
 
-		if (cqlSession == null) {
-			throw new IllegalStateException(
-					"No keyspace-bound session. Make sure to annotate your test class with @TestKeyspaceName");
-		}
+		Assert.state(cqlSession != null,
+			"No keyspace-bound session. Make sure to annotate your test class with @TestKeyspaceName");
 
 		return cqlSession;
 	}
 
+	/**
+	 * Retrieve the system {@link CqlSession} that is associated with the current {@link Thread}.
+	 *
+	 * @return the system {@link CqlSession}.
+	 * @throws IllegalStateException if no system session was associated with the current {@link Thread}.
+	 */
+	public static CqlSession currentSystemSession() {
+		return getResources().systemSession;
+	}
+
 	public static Resources getResources() {
+
 		Resources resources = TEST_RESOURCES.get();
 
-		if (resources == null) {
-			throw new IllegalStateException(
-					"No test in progress. Did you annotate your test class with @ExtendWith(CassandraExtension.class)?");
-		}
+		Assert.state(resources != null,
+			"No test in progress. Did you annotate your test class with @ExtendWith(CassandraExtension.class)?");
+
 		return resources;
 	}
 
 	@Override
 	public void beforeAll(ExtensionContext context) throws Exception {
 
-		Optional<String> keyspaceName = getKeyspaceName(context.getTestClass());
+		Optional<String> keyspaceName = getKeyspaceName(context);
 		ExtensionContext.Store store = context.getStore(CASSANDRA);
 
 		delegate.before();
@@ -115,7 +114,6 @@ public class CassandraExtension implements BeforeAllCallback, AfterAllCallback, 
 		if (keyspaceName.isPresent()) {
 
 			keyspaceName.ifPresent(name -> {
-
 				store.put("KEYSPACE", name);
 				TestKeyspaceDelegate.before(session, name);
 				store.put(CqlSession.class, session);
@@ -129,6 +127,7 @@ public class CassandraExtension implements BeforeAllCallback, AfterAllCallback, 
 		TEST_RESOURCES.remove();
 
 		ExtensionContext.Store store = context.getStore(CASSANDRA);
+
 		String keyspaceName = store.getOrDefault("KEYSPACE", String.class, null);
 
 		if (keyspaceName != null) {
@@ -148,14 +147,16 @@ public class CassandraExtension implements BeforeAllCallback, AfterAllCallback, 
 	@Override
 	public void postProcessTestInstance(Object testInstance, ExtensionContext context) throws Exception {
 
-		ExtensionContext.Store store = context.getStore(CASSANDRA);
-
 		List<Field> fields = ReflectionUtils.findFields(testInstance.getClass(),
 				field -> AnnotationUtils.isAnnotated(field, TestKeyspace.class),
 				ReflectionUtils.HierarchyTraversalMode.TOP_DOWN);
 
 		if (!fields.isEmpty()) {
+
+			ExtensionContext.Store store = context.getStore(CASSANDRA);
+
 			String keyspaceName = store.get("KEYSPACE", String.class);
+
 			CqlSession cqlSession = store.get(CqlSession.class, CqlSession.class);
 
 			Assert.state(!cqlSession.isClosed(), "CQL Session closed");
@@ -172,14 +173,16 @@ public class CassandraExtension implements BeforeAllCallback, AfterAllCallback, 
 		}
 	}
 
-	private Optional<String> getKeyspaceName(Optional<Class<?>> instance) {
+	private Optional<String> getKeyspaceName(ExtensionContext context) {
 
-		return instance.map(it -> {
+		return context.getTestClass().map(it -> {
+
 			Optional<TestKeyspaceName> annotation = AnnotationUtils.findAnnotation(it, TestKeyspaceName.class);
 
 			if (annotation.isPresent()) {
-				return annotation.map(TestKeyspaceName::value).filter(StringUtils::isNotBlank)
-						.orElseGet(RandomKeyspaceName::create);
+				return annotation.map(TestKeyspaceName::value)
+					.filter(StringUtils::isNotBlank)
+					.orElseGet(RandomKeyspaceName::create);
 			}
 
 			return null;

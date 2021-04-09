@@ -22,14 +22,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.testcontainers.containers.CassandraContainer;
+
 import org.springframework.data.cassandra.core.cql.SessionCallback;
 import org.springframework.data.cassandra.support.CassandraConnectionProperties;
 import org.springframework.data.cassandra.support.CqlDataSet;
+import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 import org.springframework.util.SocketUtils;
 import org.springframework.util.StringUtils;
-
-import org.testcontainers.containers.CassandraContainer;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
@@ -48,22 +49,25 @@ import com.datastax.oss.driver.api.core.metadata.Node;
  * @author Mark Paluch
  * @author John Blum
  * @author Tomasz Lelek
+ * @see org.springframework.data.cassandra.support.CassandraConnectionProperties
+ * @see com.datastax.oss.driver.api.core.CqlSessionBuilder
+ * @see com.datastax.oss.driver.api.core.CqlSession
  * @since 1.5
- * @see CassandraConnectionProperties
  */
 class CassandraDelegate {
 
-	private static ResourceHolder resourceHolder;
-
 	private static CassandraContainer<?> container;
+
+	private static ResourceHolder resourceHolder;
 
 	private final long startupTimeout;
 
-	@SuppressWarnings("all") private final CassandraConnectionProperties properties = new CassandraConnectionProperties();
-
-	private CqlSession system;
+	private final CassandraConnectionProperties properties = new CassandraConnectionProperties();
 
 	private CqlSession session;
+	private CqlSession system;
+
+	private CqlSessionBuilder sessionBuilder;
 
 	private Integer cassandraPort;
 
@@ -72,16 +76,16 @@ class CassandraDelegate {
 
 	private final Map<SessionCallback<?>, InvocationMode> invocationModeMap = new HashMap<>();
 
-	private CqlSessionBuilder sessionBuilder;
-
 	private final String configurationFilename;
 
 	/**
-	 * Create a new {@link CassandraDelegate} and allows the use of a config file.
+	 * Create a new {@link CassandraDelegate} allowing the use of a config file.
 	 *
-	 * @param yamlConfigurationResource name of the configuration resource, must not be {@literal null} and not empty
+	 * @param yamlConfigurationResource {@link String name} of the configuration resource;
+	 * must not be {@literal null} or {@literal empty}.
+	 * @see #CassandraDelegate(String, long)
 	 */
-	public CassandraDelegate(String yamlConfigurationResource) {
+	public CassandraDelegate(@NonNull String yamlConfigurationResource) {
 		this(yamlConfigurationResource, EmbeddedCassandraServerHelper.DEFAULT_STARTUP_TIMEOUT_MS);
 	}
 
@@ -232,6 +236,7 @@ class CassandraDelegate {
 	private void startCassandraIfNeeded() throws Exception {
 
 		if (isStartNeeded()) {
+
 			configureRemoteJmxPort();
 
 			if (isEmbedded()) {
@@ -263,12 +268,9 @@ class CassandraDelegate {
 	private void runTestcontainerCassandra() {
 
 		if (container == null) {
-			String cassandra_version = System.getenv("CASSANDRA_VERSION");
-			if (StringUtils.hasText(cassandra_version)) {
-				container = new CassandraContainer<>("cassandra:" + cassandra_version);
-			} else {
-				container = new CassandraContainer<>();
-			}
+
+			container = getCassandraDockerImageName().map(CassandraContainer::new)
+				.orElseGet(CassandraContainer::new);
 
 			container.start();
 
@@ -276,6 +278,13 @@ class CassandraDelegate {
 			this.properties.setCassandraPort(container.getFirstMappedPort());
 			this.properties.update();
 		}
+	}
+
+	private Optional<String> getCassandraDockerImageName() {
+
+		return Optional.ofNullable(System.getenv("CASSANDRA_VERSION"))
+			.filter(StringUtils::hasText)
+			.map(cassandraVersion -> String.format("cassandra:%s", cassandraVersion));
 	}
 
 	private synchronized void initializeConnection() {
@@ -420,7 +429,8 @@ class CassandraDelegate {
 	/**
 	 * Create a {@link CqlSession} object.
 	 *
-	 * @return
+	 * @return a new {@link CqlSession}.
+	 * @see com.datastax.oss.driver.api.core.CqlSession
 	 */
 	CqlSession createSession() {
 		return sessionBuilder.build();
