@@ -1,6 +1,11 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 3.0.9.RELEASE (2021-04-14)
+---------------------------------------------
+* #1110 - Switch to Driver BOM.
+
+
 Changes in version 3.1.7 (2021-03-31)
 -------------------------------------
 * #1110 - Switch to Driver BOM.
@@ -1479,6 +1484,7 @@ Changes in version 1.0.0.M1 (2014-03-31)
     * [DATACASS-100] - QueryOptions should only have ConsistencyLevel & RetryPolicy
     * [DATACASS-104] - Remove requirement for @PrimaryKeyClass when using composite primary keys
     * [DATACASS-107] - Support declarative query methods
+
 
 
 
