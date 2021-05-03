@@ -68,7 +68,7 @@ pipeline {
 		stage("test: baseline (jdk8)") {
 			when {
 				anyOf {
-					branch '2.5.x'
+					branch '3.2.x'
 					not { triggeredBy 'UpstreamCause' }
 				}
 			}
@@ -95,7 +95,7 @@ pipeline {
 		stage("Test other configurations") {
 			when {
 				allOf {
-					branch '2.5.x'
+					branch '3.2.x'
 					not { triggeredBy 'UpstreamCause' }
 				}
 			}
@@ -145,7 +145,7 @@ pipeline {
 		stage('Release to artifactory') {
 			when {
 				anyOf {
-					branch '2.5.x'
+					branch '3.2.x'
 					not { triggeredBy 'UpstreamCause' }
 				}
 			}
@@ -178,7 +178,7 @@ pipeline {
 		}
 		stage('Publish documentation') {
 			when {
-				branch '2.5.x'
+				branch '3.2.x'
 			}
 			agent {
 				label 'data'
