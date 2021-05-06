@@ -131,15 +131,9 @@ class PrimaryKeyClassEntityMetadataVerifierUnitTests {
 		}
 	}
 
-	@Test // DATACASS-258
-	void shouldFailForPrimaryKeyDerivedFromOtherThanObject() {
-
-		try {
+	@Test // DATACASS-258, #1126
+	void shouldAllowPrimaryKeyDerivedFromOtherThanObject() {
 			verifier.verify(getEntity(SubclassPK.class));
-			fail("Missing MappingException");
-		} catch (MappingException e) {
-			assertThat(e).hasMessageContaining("@PrimaryKeyClass must only extend Object");
-		}
 	}
 
 	@Test // DATACASS-213
