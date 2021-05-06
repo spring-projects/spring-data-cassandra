@@ -312,7 +312,7 @@ include::../{example-root}/LoginEvent.java[tags=class]
 ==== Primary Key Class
 
 A primary key class is a composite primary key class that is mapped to multiple fields or properties of the entity.
-It is annotated with `@PrimaryKeyClass` and must define `equals` and `hashCode` methods.
+It is annotated with `@PrimaryKeyClass` and should define `equals` and `hashCode` methods.
 The semantics of value equality for these methods should be consistent with the database equality for the database types to which the key is mapped.
 Primary key classes can be used with repositories (as the `Id` type) and to represent an entity's identity in a single complex object.
 The following example shows a composite primary key class:

@@ -62,12 +62,6 @@ public class PrimaryKeyClassEntityMetadataVerifier implements CassandraPersisten
 					Table.class.getSimpleName(), PrimaryKeyClass.class.getSimpleName())));
 		}
 
-		// Ensure PrimaryKeyClass only extends Object
-		if (!entityType.getSuperclass().equals(Object.class)) {
-			exceptions.add(
-					new MappingException(String.format("@%s must only extend Object", PrimaryKeyClass.class.getSimpleName())));
-		}
-
 		entity.forEach(property -> {
 			if (property.isCompositePrimaryKey()) {
 				compositePrimaryKeys.add(property);
@@ -93,7 +87,7 @@ public class PrimaryKeyClassEntityMetadataVerifier implements CassandraPersisten
 							entity.getType().getName(), PrimaryKeyColumn.class.getSimpleName())));
 		}
 
-		// At least one of the PrimaryKeyColumns must have a type PARTIONED
+		// At least one of the PrimaryKeyColumns must have a type PARTITIONED
 		if (partitionKeyColumns.isEmpty()) {
 			exceptions
 					.add(new MappingException(String.format("At least one of the @%s annotations must have a type of PARTITIONED",
