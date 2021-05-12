@@ -40,8 +40,8 @@ class DataClassRowMapperUnitTests {
 		val definitions = forColumns("firstname", "age")
 
 		every { row.columnDefinitions } returns definitions
-		every { row.get(0, String::class.java) } returns "Walter"
-		every { row.get(1, Int::class.javaPrimitiveType) } returns 42
+		every { row.getObject(0) } returns "Walter"
+		every { row.getObject(1) } returns 42
 
 		val rowMapper = DataClassRowMapper<Person>()
 		val person = rowMapper.mapRow(row, 0)
@@ -50,7 +50,24 @@ class DataClassRowMapperUnitTests {
 		assertThat(person.age).isEqualTo(42)
 	}
 
+	@Test // #1129
+	fun createBeanWithGenericsFromRow() {
+
+		val definitions = forColumns("firstname", "age")
+
+		every { row.columnDefinitions } returns definitions
+		every { row.getObject(0) } returns "Walter"
+		every { row.getObject(1) } returns 42
+
+		val rowMapper = DataClassRowMapper<PersonWithAgeList>()
+		val person = rowMapper.mapRow(row, 0)
+
+		assertThat(person.firstname).isEqualTo("Walter")
+		assertThat(person.age).contains(42)
+	}
+
 	data class Person(val firstname: String, val age: Int)
+	data class PersonWithAgeList(val firstname: String, val age: List<Int>)
 
 	private fun forColumns(vararg columns: String): ColumnDefinitions {
 
@@ -59,7 +76,8 @@ class DataClassRowMapperUnitTests {
 		for (column in columns) {
 			val columnDefinition = Mockito.mock(ColumnDefinition::class.java)
 			val columnIndex = index++
-			Mockito.`when`(columnDefinition.name).thenReturn(CqlIdentifier.fromInternal(column))
+			Mockito.`when`(columnDefinition.name)
+				.thenReturn(CqlIdentifier.fromInternal(column))
 			Mockito.`when`(definitions[columnIndex]).thenReturn(columnDefinition)
 			Mockito.`when`(definitions.firstIndexOf(column)).thenReturn(columnIndex)
 		}
