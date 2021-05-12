@@ -389,7 +389,7 @@ public class BeanPropertyRowMapper<T> implements RowMapper<T> {
 	 */
 	@Nullable
 	protected Object getColumnValue(Row row, int index, Class<?> paramType) {
-		return row.get(index, paramType);
+		return row.getObject(index);
 	}
 
 	/**
