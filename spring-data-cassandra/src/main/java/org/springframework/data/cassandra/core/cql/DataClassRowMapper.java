@@ -19,7 +19,9 @@ import java.lang.reflect.Constructor;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.TypeConverter;
+import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -43,7 +45,7 @@ public class DataClassRowMapper<T> extends BeanPropertyRowMapper<T> {
 
 	private @Nullable String[] constructorParameterNames;
 
-	private @Nullable Class<?>[] constructorParameterTypes;
+	private @Nullable TypeDescriptor[] constructorParameterTypes;
 
 	/**
 	 * Create a new {@code DataClassRowMapper}.
@@ -60,9 +62,13 @@ public class DataClassRowMapper<T> extends BeanPropertyRowMapper<T> {
 		super.initialize(mappedClass);
 
 		this.mappedConstructor = BeanUtils.getResolvableConstructor(mappedClass);
-		if (this.mappedConstructor.getParameterCount() > 0) {
+		int paramCount = this.mappedConstructor.getParameterCount();
+		if (paramCount > 0) {
 			this.constructorParameterNames = BeanUtils.getParameterNames(this.mappedConstructor);
-			this.constructorParameterTypes = this.mappedConstructor.getParameterTypes();
+			this.constructorParameterTypes = new TypeDescriptor[paramCount];
+			for (int i = 0; i < paramCount; i++) {
+				this.constructorParameterTypes[i] = new TypeDescriptor(new MethodParameter(this.mappedConstructor, i));
+			}
 		}
 	}
 
@@ -76,8 +82,9 @@ public class DataClassRowMapper<T> extends BeanPropertyRowMapper<T> {
 			args = new Object[this.constructorParameterNames.length];
 			for (int i = 0; i < args.length; i++) {
 				String name = underscoreName(this.constructorParameterNames[i]);
-				Class<?> type = this.constructorParameterTypes[i];
-				args[i] = tc.convertIfNecessary(getColumnValue(row, row.getColumnDefinitions().firstIndexOf(name), type), type);
+				TypeDescriptor td = this.constructorParameterTypes[i];
+				Object value = getColumnValue(row, row.getColumnDefinitions().firstIndexOf(name), td.getType());
+				args[i] = tc.convertIfNecessary(value, td.getType(), td);
 			}
 		} else {
 			args = new Object[0];
