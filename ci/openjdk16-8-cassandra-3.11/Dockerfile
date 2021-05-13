@@ -1,4 +1,4 @@
-FROM adoptopenjdk/openjdk15:latest
+FROM adoptopenjdk/openjdk16:latest
 
 RUN set -eux; \
 	CASSANDRA_URL='https://www-us.apache.org/dist/cassandra/3.11.9/apache-cassandra-3.11.9-bin.tar.gz'; \

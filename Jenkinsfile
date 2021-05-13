@@ -46,16 +46,16 @@ pipeline {
 						}
 					}
 				}
-				stage('Publish JDK 15 + Cassandra 3.11') {
+				stage('Publish JDK 16 + Cassandra 3.11') {
 					when {
-						changeset "ci/openjdk15-8-cassandra-3.11/**"
+						changeset "ci/openjdk16-8-cassandra-3.11/**"
 					}
 					agent { label 'data' }
 					options { timeout(time: 30, unit: 'MINUTES') }
 
 					steps {
 						script {
-							def image = docker.build("springci/spring-data-openjdk15-8-cassandra-3.11", "ci/openjdk15-8-cassandra-3.11/")
+							def image = docker.build("springci/spring-data-openjdk16-8-cassandra-3.11", "ci/openjdk16-8-cassandra-3.11/")
 							docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
 								image.push()
 							}
@@ -120,7 +120,7 @@ pipeline {
 						}
 					}
 				}
-				stage("test: baseline (jdk15)") {
+				stage("test: baseline (jdk16)") {
 					agent {
 						label 'data'
 					}
@@ -131,7 +131,7 @@ pipeline {
 					steps {
 						script {
 							docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
-								docker.image('springci/spring-data-openjdk15-8-cassandra-3.11:latest').inside('-v $HOME:/tmp/jenkins-home') {
+								docker.image('springci/spring-data-openjdk16-8-cassandra-3.11:latest').inside('-v $HOME:/tmp/jenkins-home') {
 									sh 'mkdir -p /tmp/jenkins-home'
 									sh 'JAVA_HOME=/opt/java/openjdk8 /opt/cassandra/bin/cassandra -R &'
 									sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -s settings.xml -Pci,external-cassandra,java11 clean dependency:list verify -Dsort -U -B'
