@@ -87,7 +87,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 	private CodecRegistry codecRegistry;
 
-	private UserTypeResolver userTypeResolver;
+	private @Nullable UserTypeResolver userTypeResolver;
 
 	private @Nullable ClassLoader beanClassLoader;
 

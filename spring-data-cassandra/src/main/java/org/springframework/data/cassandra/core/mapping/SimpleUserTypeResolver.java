@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
+import java.util.function.Supplier;
+
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -32,7 +34,7 @@ import com.datastax.oss.driver.api.core.type.UserDefinedType;
  */
 public class SimpleUserTypeResolver implements UserTypeResolver {
 
-	private final CqlSession session;
+	private final Supplier<Metadata> metadataSupplier;
 
 	private final CqlIdentifier keyspaceName;
 
@@ -46,7 +48,7 @@ public class SimpleUserTypeResolver implements UserTypeResolver {
 
 		Assert.notNull(session, "Session must not be null");
 
-		this.session = session;
+		this.metadataSupplier = session::getMetadata;
 		this.keyspaceName = session.getKeyspace().orElse(CqlIdentifier.fromCql("system"));
 	}
 
@@ -62,7 +64,23 @@ public class SimpleUserTypeResolver implements UserTypeResolver {
 		Assert.notNull(session, "Session must not be null");
 		Assert.notNull(keyspaceName, "Keyspace must not be null");
 
-		this.session = session;
+		this.metadataSupplier = session::getMetadata;
+		this.keyspaceName = keyspaceName;
+	}
+
+	/**
+	 * Create a new {@link SimpleUserTypeResolver}.
+	 *
+	 * @param metadataSupplier must not be {@literal null}.
+	 * @param keyspaceName must not be {@literal null}.
+	 * @since 3.2.2
+	 */
+	public SimpleUserTypeResolver(Supplier<Metadata> metadataSupplier, CqlIdentifier keyspaceName) {
+
+		Assert.notNull(metadataSupplier, "Metadata supplier must not be null");
+		Assert.notNull(keyspaceName, "Keyspace must not be null");
+
+		this.metadataSupplier = metadataSupplier;
 		this.keyspaceName = keyspaceName;
 	}
 
@@ -72,7 +90,7 @@ public class SimpleUserTypeResolver implements UserTypeResolver {
 	@Nullable
 	@Override
 	public UserDefinedType resolveType(CqlIdentifier typeName) {
-		return session.getMetadata().getKeyspace(keyspaceName) //
+		return metadataSupplier.get().getKeyspace(keyspaceName) //
 				.flatMap(it -> it.getUserDefinedType(typeName)) //
 				.orElse(null);
 	}
