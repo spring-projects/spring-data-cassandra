@@ -50,6 +50,7 @@ import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.data.cassandra.core.cql.session.DefaultSessionFactory;
 import org.springframework.data.cassandra.core.cql.util.StatementBuilder;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
+import org.springframework.data.cassandra.core.mapping.SimpleUserTypeResolver;
 import org.springframework.data.cassandra.core.mapping.event.AfterConvertEvent;
 import org.springframework.data.cassandra.core.mapping.event.AfterDeleteEvent;
 import org.springframework.data.cassandra.core.mapping.event.AfterLoadEvent;
@@ -140,7 +141,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	 * @see Session
 	 */
 	public CassandraTemplate(CqlSession session) {
-		this(session, newConverter());
+		this(session, newConverter(session));
 	}
 
 	/**
@@ -1017,9 +1018,11 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		return targetType.isInterface() || targetType.isAssignableFrom(entityType) ? entityType : targetType;
 	}
 
-	private static MappingCassandraConverter newConverter() {
+	private static MappingCassandraConverter newConverter(CqlSession session) {
 
 		MappingCassandraConverter converter = new MappingCassandraConverter();
+		converter.setUserTypeResolver(new SimpleUserTypeResolver(session));
+		converter.setCodecRegistry(session.getContext().getCodecRegistry());
 
 		converter.afterPropertiesSet();
 
