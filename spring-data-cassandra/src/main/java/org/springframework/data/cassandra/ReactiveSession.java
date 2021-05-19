@@ -19,12 +19,17 @@ import reactor.core.publisher.Mono;
 
 import java.io.Closeable;
 import java.util.Map;
+import java.util.Optional;
 
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.CqlSessionBuilder;
 import com.datastax.oss.driver.api.core.context.DriverContext;
 import com.datastax.oss.driver.api.core.cql.BoundStatement;
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.Statement;
+import com.datastax.oss.driver.api.core.metadata.Metadata;
+import com.datastax.oss.driver.api.core.metadata.Node;
 
 /**
  * A session holds connections to a Cassandra cluster, allowing it to be queried. {@link ReactiveSession} executes
@@ -48,6 +53,40 @@ import com.datastax.oss.driver.api.core.cql.Statement;
  * @see ReactiveResultSet
  */
 public interface ReactiveSession extends Closeable {
+
+	/**
+	 * Returns a snapshot of the Cassandra cluster's topology and schema metadata.
+	 * <p/>
+	 * In order to provide atomic updates, this method returns an immutable object: the node list, token map, and schema
+	 * contained in a given instance will always be consistent with each other (but note that {@link Node} itself is not
+	 * immutable: some of its properties will be updated dynamically, in particular {@link Node#getState()}).
+	 * <p/>
+	 * As a consequence of the above, you should call this method each time you need a fresh view of the metadata. <b>Do
+	 * not</b> call it once and store the result, because it is a frozen snapshot that will become stale over time.
+	 * <p>
+	 * If a metadata refresh triggers events (such as node added/removed, or schema events), then the new version of the
+	 * metadata is guaranteed to be visible by the time you receive these events.
+	 * <p>
+	 *
+	 * @return never {@code null}, but may be empty if metadata has been disabled in the configuration.
+	 * @since 3.1.10
+	 */
+	Metadata getMetadata();
+
+	/**
+	 * The keyspace that this session is currently connected to, or {@link Optional#empty()} if this session is not
+	 * connected to any keyspace.
+	 * <p/>
+	 * There are two ways that this can be set: before initializing the session (either with the {@code session-keyspace}
+	 * option in the configuration, or with {@link CqlSessionBuilder#withKeyspace(CqlIdentifier)}); or at runtime, if the
+	 * client issues a request that changes the keyspace (such as a CQL {@code USE} query). Note that this second method
+	 * is inherently unsafe, since other requests expecting the old keyspace might be executing concurrently. Therefore it
+	 * is highly discouraged, aside from trivial cases (such as a cqlsh-style program where requests are never
+	 * concurrent).
+	 *
+	 * @since 3.1.10
+	 */
+	Optional<CqlIdentifier> getKeyspace();
 
 	/**
 	 * Whether this Session instance has been closed.

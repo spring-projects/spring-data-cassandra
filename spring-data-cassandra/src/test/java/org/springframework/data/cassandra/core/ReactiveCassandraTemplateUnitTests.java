@@ -47,12 +47,15 @@ import org.springframework.data.mapping.callback.ReactiveEntityCallbacks;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.NoNodeAvailableException;
+import com.datastax.oss.driver.api.core.context.DriverContext;
 import com.datastax.oss.driver.api.core.cql.ColumnDefinition;
 import com.datastax.oss.driver.api.core.cql.ColumnDefinitions;
 import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.Statement;
 import com.datastax.oss.driver.api.core.type.DataTypes;
+import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
+import com.datastax.oss.driver.internal.core.type.codec.registry.DefaultCodecRegistry;
 
 /**
  * Unit tests for {@link ReactiveCassandraTemplate}.
@@ -64,6 +67,8 @@ import com.datastax.oss.driver.api.core.type.DataTypes;
 class ReactiveCassandraTemplateUnitTests {
 
 	@Mock ReactiveSession session;
+	CodecRegistry codecRegistry = new DefaultCodecRegistry("foo");
+	@Mock DriverContext driverContext;
 	@Mock ReactiveResultSet reactiveResultSet;
 	@Mock Row row;
 	@Mock ColumnDefinition columnDefinition;
@@ -80,8 +85,8 @@ class ReactiveCassandraTemplateUnitTests {
 	@BeforeEach
 	void setUp() {
 
-		template = new ReactiveCassandraTemplate(session);
-
+		when(driverContext.getCodecRegistry()).thenReturn(codecRegistry);
+		when(session.getContext()).thenReturn(driverContext);
 		when(session.execute(any(Statement.class))).thenReturn(Mono.just(reactiveResultSet));
 		when(row.getColumnDefinitions()).thenReturn(columnDefinitions);
 
@@ -101,7 +106,14 @@ class ReactiveCassandraTemplateUnitTests {
 			return Mono.just(entity);
 		});
 
+		template = new ReactiveCassandraTemplate(session);
 		template.setEntityCallbacks(callbacks);
+	}
+
+	@Test // gh-1133
+	void shouldConfigureConverterFromSession() {
+		assertThat(template.getConverter().getCodecRegistry()).isEqualTo(session.getContext().getCodecRegistry());
+		assertThat(template.getConverter()).extracting("userTypeResolver").isNotNull();
 	}
 
 	@Test // DATACASS-335

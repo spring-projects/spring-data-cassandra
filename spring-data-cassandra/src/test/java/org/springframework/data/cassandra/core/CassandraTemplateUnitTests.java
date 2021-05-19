@@ -46,6 +46,7 @@ import org.springframework.data.mapping.callback.EntityCallbacks;
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.NoNodeAvailableException;
+import com.datastax.oss.driver.api.core.context.DriverContext;
 import com.datastax.oss.driver.api.core.cql.ColumnDefinition;
 import com.datastax.oss.driver.api.core.cql.ColumnDefinitions;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
@@ -53,6 +54,8 @@ import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.Statement;
 import com.datastax.oss.driver.api.core.type.DataTypes;
+import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
+import com.datastax.oss.driver.internal.core.type.codec.registry.DefaultCodecRegistry;
 
 /**
  * Unit tests for {@link CassandraTemplate}.
@@ -64,11 +67,12 @@ import com.datastax.oss.driver.api.core.type.DataTypes;
 class CassandraTemplateUnitTests {
 
 	@Mock CqlSession session;
+	CodecRegistry codecRegistry = new DefaultCodecRegistry("foo");
+	@Mock DriverContext driverContext;
 	@Mock ResultSet resultSet;
 	@Mock Row row;
 	@Mock ColumnDefinition columnDefinition;
 	@Mock ColumnDefinitions columnDefinitions;
-
 	@Captor ArgumentCaptor<SimpleStatement> statementCaptor;
 
 	private CassandraTemplate template;
@@ -80,8 +84,8 @@ class CassandraTemplateUnitTests {
 	@BeforeEach
 	void setUp() {
 
-		template = new CassandraTemplate(session);
-
+		when(driverContext.getCodecRegistry()).thenReturn(codecRegistry);
+		when(session.getContext()).thenReturn(driverContext);
 		when(session.execute(any(Statement.class))).thenReturn(resultSet);
 		when(row.getColumnDefinitions()).thenReturn(columnDefinitions);
 
@@ -101,7 +105,14 @@ class CassandraTemplateUnitTests {
 			return entity;
 		});
 
+		template = new CassandraTemplate(session);
 		template.setEntityCallbacks(callbacks);
+	}
+
+	@Test // gh-1133
+	void shouldConfigureConverterFromSession() {
+		assertThat(template.getConverter().getCodecRegistry()).isEqualTo(session.getContext().getCodecRegistry());
+		assertThat(template.getConverter()).extracting("userTypeResolver").isNotNull();
 	}
 
 	@Test // DATACASS-292

@@ -23,6 +23,7 @@ import reactor.core.scheduler.Scheduler;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
 import org.slf4j.Logger;
@@ -32,6 +33,7 @@ import org.springframework.data.cassandra.ReactiveResultSet;
 import org.springframework.data.cassandra.ReactiveSession;
 import org.springframework.util.Assert;
 
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.context.DriverContext;
 import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
@@ -44,6 +46,7 @@ import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.Statement;
+import com.datastax.oss.driver.api.core.metadata.Metadata;
 
 /**
  * Default implementation of a {@link ReactiveSession}. This implementation bridges asynchronous {@link CqlSession}
@@ -85,6 +88,22 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 		Assert.notNull(session, "Session must not be null");
 
 		this.session = session;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.ReactiveSession#getMetadata()
+	 */
+	@Override
+	public Metadata getMetadata() {
+		return this.session.getMetadata();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.ReactiveSession#getKeyspace()
+	 */
+	@Override
+	public Optional<CqlIdentifier> getKeyspace() {
+		return this.session.getKeyspace();
 	}
 
 	/* (non-Javadoc)
