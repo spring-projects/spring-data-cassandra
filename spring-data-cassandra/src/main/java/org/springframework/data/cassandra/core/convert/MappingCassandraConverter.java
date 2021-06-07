@@ -482,7 +482,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		if (sink instanceof Where) {
 			writeWhereFromObject(source, (Where) sink, entity);
 		} else if (sink instanceof Map) {
-			writeMapFromWrapper(newConvertingPropertyAccessor(source, entity), (Map<CqlIdentifier, Object>) sink, entity);
+			writeInternal(newConvertingPropertyAccessor(source, entity), (Map<CqlIdentifier, Object>) sink, entity);
 		} else if (sink instanceof TupleValue) {
 			writeTupleValue(newConvertingPropertyAccessor(source, entity), (TupleValue) sink, entity);
 		} else if (sink instanceof UdtValue) {
@@ -492,7 +492,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		}
 	}
 
-	private void writeMapFromWrapper(ConvertingPropertyAccessor<?> accessor, Map<CqlIdentifier, Object> sink,
+	private void writeInternal(ConvertingPropertyAccessor<?> accessor, Map<CqlIdentifier, Object> sink,
 			CassandraPersistentEntity<?> entity) {
 
 		for (CassandraPersistentProperty property : entity) {
@@ -511,7 +511,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 				CassandraPersistentEntity<?> compositePrimaryKey = getMappingContext().getRequiredPersistentEntity(property);
 
-				writeMapFromWrapper(newConvertingPropertyAccessor(value, compositePrimaryKey), sink, compositePrimaryKey);
+				writeInternal(newConvertingPropertyAccessor(value, compositePrimaryKey), sink, compositePrimaryKey);
 
 				continue;
 			}
@@ -583,8 +583,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 			CassandraPersistentEntity<?> compositePrimaryKey = getMappingContext()
 					.getRequiredPersistentEntity(compositeIdProperty);
-
-			writeWhere(newConvertingPropertyAccessor(id, compositePrimaryKey), sink, compositePrimaryKey);
+			writeInternal(newConvertingPropertyAccessor(id, compositePrimaryKey), sink, compositePrimaryKey);
 			return;
 		}
 
