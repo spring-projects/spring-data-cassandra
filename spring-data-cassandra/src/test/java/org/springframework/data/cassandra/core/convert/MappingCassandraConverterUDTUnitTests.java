@@ -39,10 +39,18 @@ import org.mockito.quality.Strictness;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
+import org.springframework.data.cassandra.core.StatementFactory;
+import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
+import org.springframework.data.cassandra.core.cql.WriteOptions;
+import org.springframework.data.cassandra.core.cql.util.StatementBuilder;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.core.mapping.Embedded;
 import org.springframework.data.cassandra.core.mapping.Frozen;
+import org.springframework.data.cassandra.core.mapping.PrimaryKey;
+import org.springframework.data.cassandra.core.mapping.PrimaryKeyClass;
+import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
+import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.core.mapping.UserDefinedType;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.support.UserDefinedTypeBuilder;
@@ -50,11 +58,12 @@ import org.springframework.data.cassandra.test.util.RowMockUtil;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.data.UdtValue;
 import com.datastax.oss.driver.api.core.type.DataTypes;
 
 /**
- * Unit tests for UDT through {@link MappingCassandraConverter}.
+ * Unit tests for UDT through {@link converter}.
  *
  * @author Mark Paluch
  * @author Christoph Strobl
@@ -77,10 +86,14 @@ class MappingCassandraConverterUDTUnitTests {
 			.forName("withnullableembeddedtype").withField("value", DataTypes.TEXT)
 			.withField("prefixfirstname", DataTypes.TEXT).withField("prefixage", DataTypes.INT).build();
 
+	private com.datastax.oss.driver.api.core.type.UserDefinedType address = UserDefinedTypeBuilder.forName("address")
+			.withField("zip", DataTypes.TEXT).withField("city", DataTypes.TEXT)
+			.withField("streetLines", DataTypes.listOf(DataTypes.TEXT)).build();
+
 	private Row rowMock;
 
 	private CassandraMappingContext mappingContext;
-	private MappingCassandraConverter mappingCassandraConverter;
+	private MappingCassandraConverter converter;
 
 	@BeforeEach
 	void setUp() {
@@ -88,15 +101,83 @@ class MappingCassandraConverterUDTUnitTests {
 		mappingContext = new CassandraMappingContext();
 		mappingContext.setUserTypeResolver(userTypeResolver);
 
-		mappingCassandraConverter = new MappingCassandraConverter(mappingContext);
-		mappingCassandraConverter.afterPropertiesSet();
+		converter = new MappingCassandraConverter(mappingContext);
+		converter.afterPropertiesSet();
 
+		when(userTypeResolver.resolveType(CqlIdentifier.fromCql("address"))).thenReturn(address);
 		when(userTypeResolver.resolveType(CqlIdentifier.fromCql("manufacturer"))).thenReturn(manufacturer);
 		when(userTypeResolver.resolveType(CqlIdentifier.fromCql("currency"))).thenReturn(currency);
 		when(userTypeResolver.resolveType(CqlIdentifier.fromCql("withnullableembeddedtype")))
 				.thenReturn(withnullableembeddedtype);
 		when(userTypeResolver.resolveType(CqlIdentifier.fromCql("withprefixednullableembeddedtype")))
 				.thenReturn(withprefixednullableembeddedtype);
+	}
+
+		@Test // #1137
+	void shouldWriteCompositeUdtPk() {
+
+		AddressUserType addressUserType = prepareAddressUserType();
+
+		WithCompositePrimaryKey withUdt = new WithCompositePrimaryKey();
+		withUdt.addressUserType = addressUserType;
+		withUdt.id = "foo";
+
+		SimpleStatement statement = new StatementFactory(converter).insert(withUdt, WriteOptions
+				.empty())
+				.build(StatementBuilder.ParameterHandling.INLINE);
+
+		assertThat(statement.getQuery()).isEqualTo("INSERT INTO withcompositeprimarykey (id,addressusertype) "
+				+ "VALUES ('foo',{zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']})");
+	}
+
+	private static AddressUserType prepareAddressUserType() {
+
+		AddressUserType addressUserType = new AddressUserType();
+		addressUserType.setZip("69469");
+		addressUserType.setCity("Weinheim");
+		addressUserType.setStreetLines(Arrays.asList("Heckenpfad", "14"));
+
+		return addressUserType;
+	}
+
+	@Test // #1137
+	void shouldWriteCompositeUdtPkClass() {
+
+		WithCompositePrimaryKeyClassWithUdt object = prepareCompositePrimaryKeyClassWithUdt();
+
+		SimpleStatement statement = new StatementFactory(converter).insert(object, WriteOptions.empty())
+				.build(StatementBuilder.ParameterHandling.INLINE);
+
+		assertThat(statement.getQuery())
+				.isEqualTo("INSERT INTO withcompositeprimarykeyclasswithudt (id,addressusertype,currency) "
+						+ "VALUES ('foo',{zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']},{currency:'EUR'})");
+	}
+
+	@Test // #1137
+	void shouldWriteCompositeUdtPkClassToWhere() {
+
+		WithCompositePrimaryKeyClassWithUdt object = prepareCompositePrimaryKeyClassWithUdt();
+
+		Where where = new Where();
+		converter.write(object, where);
+
+		assertThat((UdtValue) where.get(CqlIdentifier.fromCql("currency"))) //
+				.extracting(UdtValue::getFormattedContents) //
+				.isEqualTo("{currency:'EUR'}");
+	}
+
+	private static WithCompositePrimaryKeyClassWithUdt prepareCompositePrimaryKeyClassWithUdt() {
+
+		AddressUserType addressUserType = prepareAddressUserType();
+
+		CompositePrimaryKeyClassWithUdt withUdt = new CompositePrimaryKeyClassWithUdt();
+		withUdt.addressUserType = addressUserType;
+		withUdt.id = "foo";
+		withUdt.currency = new Currency("EUR");
+
+		WithCompositePrimaryKeyClassWithUdt object = new WithCompositePrimaryKeyClassWithUdt();
+		object.id = withUdt;
+		return object;
 	}
 
 	@Test // DATACASS-487, DATACASS-623
@@ -113,7 +194,7 @@ class MappingCassandraConverterUDTUnitTests {
 		rowMock = RowMockUtil
 				.newRowMock(column("acceptedCurrencies", map, DataTypes.mapOf(manufacturer, DataTypes.listOf(currency))));
 
-		Supplier supplier = mappingCassandraConverter.read(Supplier.class, rowMock);
+		Supplier supplier = converter.read(Supplier.class, rowMock);
 
 		assertThat(supplier.getAcceptedCurrencies()).isNotEmpty();
 
@@ -132,7 +213,7 @@ class MappingCassandraConverterUDTUnitTests {
 
 		Map<CqlIdentifier, Object> insert = new LinkedHashMap<>();
 
-		mappingCassandraConverter.write(supplier, insert);
+		converter.write(supplier, insert);
 
 		Map<UdtValue, List<UdtValue>> acceptedcurrencies = (Map) insert.get(CqlIdentifier.fromCql("acceptedcurrencies"));
 
@@ -159,7 +240,7 @@ class MappingCassandraConverterUDTUnitTests {
 
 		Map<CqlIdentifier, Object> sink = new LinkedHashMap<>();
 
-		mappingCassandraConverter.write(entity, sink);
+		converter.write(entity, sink);
 
 		assertThat(sink).containsEntry(CqlIdentifier.fromInternal("id"), "id-1");
 		assertThat((UdtValue) sink.get(CqlIdentifier.fromInternal("udtvalue"))).extracting(UdtValue::getFormattedContents)
@@ -177,7 +258,7 @@ class MappingCassandraConverterUDTUnitTests {
 
 		Map<CqlIdentifier, Object> sink = new LinkedHashMap<>();
 
-		mappingCassandraConverter.write(entity, sink);
+		converter.write(entity, sink);
 
 		assertThat(sink).containsEntry(CqlIdentifier.fromInternal("id"), "id-1");
 		assertThat((UdtValue) sink.get(CqlIdentifier.fromInternal("udtvalue"))).extracting(UdtValue::getFormattedContents)
@@ -197,7 +278,7 @@ class MappingCassandraConverterUDTUnitTests {
 
 		Map<CqlIdentifier, Object> sink = new LinkedHashMap<>();
 
-		mappingCassandraConverter.write(entity, sink);
+		converter.write(entity, sink);
 
 		assertThat(sink).containsEntry(CqlIdentifier.fromInternal("id"), "id-1");
 		assertThat((UdtValue) sink.get(CqlIdentifier.fromInternal("udtvalue"))).extracting(UdtValue::getFormattedContents)
@@ -213,7 +294,7 @@ class MappingCassandraConverterUDTUnitTests {
 		rowMock = RowMockUtil.newRowMock(column("id", "id-1", DataTypes.TEXT),
 				column("udtvalue", udtValue, withnullableembeddedtype));
 
-		OuterWithNullableEmbeddedType target = mappingCassandraConverter.read(OuterWithNullableEmbeddedType.class, rowMock);
+		OuterWithNullableEmbeddedType target = converter.read(OuterWithNullableEmbeddedType.class, rowMock);
 		assertThat(target.getId()).isEqualTo("id-1");
 		assertThat(target.udtValue).isNotNull();
 		assertThat(target.udtValue.value).isEqualTo("value-string");
@@ -230,7 +311,7 @@ class MappingCassandraConverterUDTUnitTests {
 		rowMock = RowMockUtil.newRowMock(column("id", "id-1", DataTypes.TEXT),
 				column("udtvalue", udtValue, withprefixednullableembeddedtype));
 
-		OuterWithPrefixedNullableEmbeddedType target = mappingCassandraConverter
+		OuterWithPrefixedNullableEmbeddedType target = converter
 				.read(OuterWithPrefixedNullableEmbeddedType.class, rowMock);
 		assertThat(target.getId()).isEqualTo("id-1");
 		assertThat(target.udtValue).isNotNull();
@@ -248,7 +329,7 @@ class MappingCassandraConverterUDTUnitTests {
 		mapWithUdt.map = Collections.singletonMap("key", new Manufacturer("name", "display"));
 
 		Map<CqlIdentifier, Object> sink = new LinkedHashMap<>();
-		mappingCassandraConverter.write(mapWithUdt, sink);
+		converter.write(mapWithUdt, sink);
 
 		Map<String, UdtValue> map = (Map) sink.get(CqlIdentifier.fromCql("map"));
 		assertThat(map.get("key")).isInstanceOf(UdtValue.class);
@@ -332,6 +413,37 @@ class MappingCassandraConverterUDTUnitTests {
 		public Integer getAge() {
 			return age;
 		}
+	}
+
+	@UserDefinedType("address")
+	@Data
+	public static class AddressUserType {
+
+		String zip;
+		String city;
+
+		List<String> streetLines;
+	}
+
+	@Data
+	@Table
+	public static class WithCompositePrimaryKey {
+		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) String id;
+		@PrimaryKeyColumn(ordinal = 1) AddressUserType addressUserType;
+	}
+
+	@Data
+	@Table
+	public static class WithCompositePrimaryKeyClassWithUdt {
+		@PrimaryKey CompositePrimaryKeyClassWithUdt id;
+	}
+
+	@Data
+	@PrimaryKeyClass
+	public static class CompositePrimaryKeyClassWithUdt {
+		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) String id;
+		@PrimaryKeyColumn(ordinal = 1) AddressUserType addressUserType;
+		@PrimaryKeyColumn(ordinal = 2) Currency currency;
 	}
 
 	static class MapWithUdt {
