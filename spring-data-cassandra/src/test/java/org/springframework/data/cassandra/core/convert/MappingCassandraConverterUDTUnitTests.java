@@ -42,16 +42,10 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.cassandra.core.StatementFactory;
+import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.data.cassandra.core.cql.util.StatementBuilder;
-import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
-import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
-import org.springframework.data.cassandra.core.mapping.CassandraType;
-import org.springframework.data.cassandra.core.mapping.Embedded;
-import org.springframework.data.cassandra.core.mapping.Frozen;
-import org.springframework.data.cassandra.core.mapping.Table;
-import org.springframework.data.cassandra.core.mapping.UserDefinedType;
-import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
+import org.springframework.data.cassandra.core.mapping.*;
 import org.springframework.data.cassandra.support.UserDefinedTypeBuilder;
 import org.springframework.data.cassandra.test.util.RowMockUtil;
 
@@ -127,10 +121,7 @@ class MappingCassandraConverterUDTUnitTests {
 	@Test // DATACASS-172
 	void shouldWriteMappedUdt() {
 
-		AddressUserType addressUserType = new AddressUserType();
-		addressUserType.setZip("69469");
-		addressUserType.setCity("Weinheim");
-		addressUserType.setStreetLines(Arrays.asList("Heckenpfad", "14"));
+		AddressUserType addressUserType = prepareAddressUserType();
 
 		AddressBook addressBook = new AddressBook();
 		addressBook.setId("1");
@@ -146,10 +137,7 @@ class MappingCassandraConverterUDTUnitTests {
 	@Test // DATACASS-172
 	void shouldWriteMappedUdtCollection() {
 
-		AddressUserType addressUserType = new AddressUserType();
-		addressUserType.setZip("69469");
-		addressUserType.setCity("Weinheim");
-		addressUserType.setStreetLines(Arrays.asList("Heckenpfad", "14"));
+		AddressUserType addressUserType = prepareAddressUserType();
 
 		AddressBook addressBook = new AddressBook();
 		addressBook.setId("1");
@@ -188,10 +176,7 @@ class MappingCassandraConverterUDTUnitTests {
 	@Test // DATACASS-172
 	void shouldWriteUdtPk() {
 
-		AddressUserType addressUserType = new AddressUserType();
-		addressUserType.setZip("69469");
-		addressUserType.setCity("Weinheim");
-		addressUserType.setStreetLines(Arrays.asList("Heckenpfad", "14"));
+		AddressUserType addressUserType = prepareAddressUserType();
 
 		WithMappedUdtId withUdtId = new WithMappedUdtId();
 		withUdtId.setId(addressUserType);
@@ -201,6 +186,72 @@ class MappingCassandraConverterUDTUnitTests {
 
 		assertThat(statement.getQuery()).isEqualTo(
 				"INSERT INTO withmappedudtid (id) " + "VALUES ({zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']})");
+	}
+
+	@Test // #1137
+	void shouldWriteCompositeUdtPk() {
+
+		AddressUserType addressUserType = prepareAddressUserType();
+
+		WithCompositePrimaryKey withUdt = new WithCompositePrimaryKey();
+		withUdt.addressUserType = addressUserType;
+		withUdt.id = "foo";
+
+		SimpleStatement statement = new StatementFactory(converter).insert(withUdt, WriteOptions.empty())
+				.build(StatementBuilder.ParameterHandling.INLINE);
+
+		assertThat(statement.getQuery()).isEqualTo("INSERT INTO withcompositeprimarykey (id,addressusertype) "
+				+ "VALUES ('foo',{zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']})");
+	}
+
+	private static AddressUserType prepareAddressUserType() {
+
+		AddressUserType addressUserType = new AddressUserType();
+		addressUserType.setZip("69469");
+		addressUserType.setCity("Weinheim");
+		addressUserType.setStreetLines(Arrays.asList("Heckenpfad", "14"));
+
+		return addressUserType;
+	}
+
+	@Test // #1137
+	void shouldWriteCompositeUdtPkClass() {
+
+		WithCompositePrimaryKeyClassWithUdt object = prepareCompositePrimaryKeyClassWithUdt();
+
+		SimpleStatement statement = new StatementFactory(converter).insert(object, WriteOptions.empty())
+				.build(StatementBuilder.ParameterHandling.INLINE);
+
+		assertThat(statement.getQuery())
+				.isEqualTo("INSERT INTO withcompositeprimarykeyclasswithudt (id,addressusertype,currency) "
+						+ "VALUES ('foo',{zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']},{currency:'EUR'})");
+	}
+
+	@Test // #1137
+	void shouldWriteCompositeUdtPkClassToWhere() {
+
+		WithCompositePrimaryKeyClassWithUdt object = prepareCompositePrimaryKeyClassWithUdt();
+
+		Where where = new Where();
+		converter.write(object, where);
+
+		assertThat((UdtValue) where.get(CqlIdentifier.fromCql("currency"))) //
+				.extracting(UdtValue::getFormattedContents) //
+				.isEqualTo("{currency:'EUR'}");
+	}
+
+	private static WithCompositePrimaryKeyClassWithUdt prepareCompositePrimaryKeyClassWithUdt() {
+
+		AddressUserType addressUserType = prepareAddressUserType();
+
+		CompositePrimaryKeyClassWithUdt withUdt = new CompositePrimaryKeyClassWithUdt();
+		withUdt.addressUserType = addressUserType;
+		withUdt.id = "foo";
+		withUdt.currency = new Currency("EUR");
+
+		WithCompositePrimaryKeyClassWithUdt object = new WithCompositePrimaryKeyClassWithUdt();
+		object.id = withUdt;
+		return object;
 	}
 
 	@Test // DATACASS-172
@@ -583,6 +634,27 @@ class MappingCassandraConverterUDTUnitTests {
 	@Table
 	public static class Money {
 		@Id private Currency currency;
+	}
+
+	@Data
+	@Table
+	public static class WithCompositePrimaryKey {
+		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) String id;
+		@PrimaryKeyColumn(ordinal = 1) AddressUserType addressUserType;
+	}
+
+	@Data
+	@Table
+	public static class WithCompositePrimaryKeyClassWithUdt {
+		@PrimaryKey CompositePrimaryKeyClassWithUdt id;
+	}
+
+	@Data
+	@PrimaryKeyClass
+	public static class CompositePrimaryKeyClassWithUdt {
+		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) String id;
+		@PrimaryKeyColumn(ordinal = 1) AddressUserType addressUserType;
+		@PrimaryKeyColumn(ordinal = 2) Currency currency;
 	}
 
 	@Table
