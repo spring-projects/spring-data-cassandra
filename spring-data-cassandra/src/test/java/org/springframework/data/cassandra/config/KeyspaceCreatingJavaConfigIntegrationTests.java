@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledForJreRange;
+import org.junit.jupiter.api.condition.JRE;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -39,6 +41,7 @@ import com.datastax.oss.driver.api.core.CqlSession;
  * @author Mark Paluch
  */
 @SpringJUnitConfig(classes = KeyspaceCreatingJavaConfigIntegrationTests.KeyspaceCreatingJavaConfig.class)
+@DisabledForJreRange(min = JRE.JAVA_9)
 class KeyspaceCreatingJavaConfigIntegrationTests extends AbstractKeyspaceCreatingIntegrationTests {
 
 	@Autowired CqlSession session;
