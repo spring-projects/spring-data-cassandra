@@ -24,6 +24,7 @@ import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Range;
 import org.springframework.data.domain.Sort;
 import org.springframework.lang.Nullable;
 
@@ -152,6 +153,10 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 
 		if (bindableValue == null) {
 			return null;
+		}
+
+		if (bindableValue instanceof Range) {
+			return bindableValue;
 		}
 
 		CassandraType cassandraType = this.delegate.findCassandraType(index);
