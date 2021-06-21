@@ -17,8 +17,12 @@ package org.springframework.data.cassandra.core;
 
 import reactor.core.publisher.Mono;
 
+import java.util.Collections;
+
 import org.reactivestreams.Subscriber;
+
 import org.springframework.data.cassandra.core.cql.WriteOptions;
+import org.springframework.util.Assert;
 
 /**
  * Reactive Batch operations for insert/update/delete actions on a table. {@link ReactiveCassandraBatchOperations} use
@@ -57,6 +61,22 @@ public interface ReactiveCassandraBatchOperations {
 	 * @throws IllegalStateException if the batch was already executed.
 	 */
 	ReactiveCassandraBatchOperations withTimestamp(long timestamp);
+
+	/**
+	 * Add an insert to the batch.
+	 *
+	 * @param entity the entity to insert; must not be {@literal null}.
+	 * @param options the WriteOptions to apply; must not be {@literal null}.
+	 * @return {@code this} {@link ReactiveCassandraBatchOperations}.
+	 * @throws IllegalStateException if the batch was already executed.
+	 * @since 3.2.2
+	 */
+	default ReactiveCassandraBatchOperations insert(Object entity, WriteOptions options) {
+
+		Assert.notNull(entity, "Entity must not be null");
+
+		return insert(Collections.singleton(entity), options);
+	}
 
 	/**
 	 * Add an array of inserts to the batch.
@@ -108,6 +128,22 @@ public interface ReactiveCassandraBatchOperations {
 	ReactiveCassandraBatchOperations insert(Mono<? extends Iterable<?>> entities, WriteOptions options);
 
 	/**
+	 * Add an update to the batch.
+	 *
+	 * @param entity the entity to update; must not be {@literal null}.
+	 * @param options the WriteOptions to apply; must not be {@literal null}.
+	 * @return {@code this} {@link ReactiveCassandraBatchOperations}.
+	 * @throws IllegalStateException if the batch was already executed.
+	 * @since 3.2.2
+	 */
+	default ReactiveCassandraBatchOperations update(Object entity, WriteOptions options) {
+
+		Assert.notNull(entity, "Entity must not be null");
+
+		return insert(Collections.singleton(entity), options);
+	}
+
+	/**
 	 * Add an array of updates to the batch.
 	 *
 	 * @param entities the entities to update; must not be {@literal null}.
@@ -155,6 +191,22 @@ public interface ReactiveCassandraBatchOperations {
 	 * @see UpdateOptions
 	 */
 	ReactiveCassandraBatchOperations update(Mono<? extends Iterable<?>> entities, WriteOptions options);
+
+	/**
+	 * Add delete to the batch.
+	 *
+	 * @param entity the entity to delete; must not be {@literal null}.
+	 * @param options the WriteOptions to apply; must not be {@literal null}.
+	 * @return {@code this} {@link ReactiveCassandraBatchOperations}.
+	 * @throws IllegalStateException if the batch was already executed.
+	 * @since 3.2.2
+	 */
+	default ReactiveCassandraBatchOperations delete(Object entity, WriteOptions options) {
+
+		Assert.notNull(entity, "Entity must not be null");
+
+		return delete(Collections.singleton(entity), options);
+	}
 
 	/**
 	 * Add an array of deletes to the batch.
