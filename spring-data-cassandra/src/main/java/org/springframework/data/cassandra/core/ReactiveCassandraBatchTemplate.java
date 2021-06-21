@@ -15,6 +15,9 @@
  */
 package org.springframework.data.cassandra.core;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -22,10 +25,9 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.UpdateMapper;
+import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
@@ -193,9 +195,9 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 	public ReactiveCassandraBatchOperations insert(Iterable<?> entities, WriteOptions options) {
 
 		assertNotExecuted();
-
 		Assert.notNull(entities, "Entities must not be null");
 		Assert.notNull(options, "WriteOptions must not be null");
+		assertNotQueryOptions(entities);
 
 		this.batchMonos.add(Mono.just(doInsert(entities, options)));
 
@@ -209,7 +211,6 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 	public ReactiveCassandraBatchOperations insert(Mono<? extends Iterable<?>> entities, WriteOptions options) {
 
 		assertNotExecuted();
-
 		Assert.notNull(entities, "Entities must not be null");
 		Assert.notNull(options, "WriteOptions must not be null");
 
@@ -273,9 +274,9 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 	public ReactiveCassandraBatchOperations update(Iterable<?> entities, WriteOptions options) {
 
 		assertNotExecuted();
-
 		Assert.notNull(entities, "Entities must not be null");
 		Assert.notNull(options, "WriteOptions must not be null");
+		assertNotQueryOptions(entities);
 
 		this.batchMonos.add(Mono.just(doUpdate(entities, options)));
 
@@ -289,7 +290,6 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 	public ReactiveCassandraBatchOperations update(Mono<? extends Iterable<?>> entities, WriteOptions options) {
 
 		assertNotExecuted();
-
 		Assert.notNull(entities, "Entities must not be null");
 		Assert.notNull(options, "WriteOptions must not be null");
 
@@ -351,9 +351,9 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 	public ReactiveCassandraBatchOperations delete(Iterable<?> entities, WriteOptions options) {
 
 		assertNotExecuted();
-
 		Assert.notNull(entities, "Entities must not be null");
 		Assert.notNull(options, "WriteOptions must not be null");
+		assertNotQueryOptions(entities);
 
 		this.batchMonos.add(Mono.just(doDelete(entities, options)));
 
@@ -367,13 +367,23 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 	public ReactiveCassandraBatchOperations delete(Mono<? extends Iterable<?>> entities, WriteOptions options) {
 
 		assertNotExecuted();
-
 		Assert.notNull(entities, "Entities must not be null");
 		Assert.notNull(options, "WriteOptions must not be null");
 
 		this.batchMonos.add(entities.map(it -> doDelete(it, options)));
 
 		return this;
+	}
+
+	private void assertNotQueryOptions(Iterable<?> entities) {
+
+		for (Object entity : entities) {
+			if (entity instanceof QueryOptions) {
+				throw new IllegalArgumentException(
+						String.format("%s must not be used as entity. Please make sure to call the appropriate method accepting %s",
+								ClassUtils.getDescriptiveType(entity), ClassUtils.getShortName(entity.getClass())));
+			}
+		}
 	}
 
 	private Collection<SimpleStatement> doDelete(Iterable<?> entities, WriteOptions options) {

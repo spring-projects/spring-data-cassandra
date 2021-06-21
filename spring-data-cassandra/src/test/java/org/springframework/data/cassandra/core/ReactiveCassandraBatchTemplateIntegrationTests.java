@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.cassandra.ReactiveResultSet;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.ReactiveCqlTemplate;
@@ -38,6 +39,8 @@ import org.springframework.data.cassandra.domain.Group;
 import org.springframework.data.cassandra.domain.GroupKey;
 import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
+
+import com.datastax.oss.driver.api.core.cql.Row;
 
 /**
  * Integration tests for {@link ReactiveCassandraBatchTemplate}.
@@ -73,6 +76,12 @@ class ReactiveCassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCre
 				.verifyComplete();
 	}
 
+	@Test // #1135
+	void insertAsVarargsShouldRejectQueryOptions() {
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> template.batchOps().insert(mike, walter, InsertOptions.empty()));
+	}
+
 	@Test // DATACASS-574
 	void shouldInsertEntities() {
 
@@ -104,19 +113,29 @@ class ReactiveCassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCre
 	void shouldInsertCollectionOfEntitiesWithTtl() {
 
 		walter.setEmail("walter@white.com");
-		mike.setEmail("mike@sauls.com");
 
 		int ttl = 30;
 		WriteOptions options = WriteOptions.builder().ttl(30).build();
 
 		ReactiveCassandraBatchOperations batchOperations = new ReactiveCassandraBatchTemplate(template);
-		Mono<ReactiveResultSet> resultSet = batchOperations.insert(Arrays.asList(walter, mike), options).execute()
-				.then(template.getReactiveCqlOperations().queryForResultSet("SELECT TTL(email) FROM group;"));
+		Mono<ReactiveResultSet> resultSet = batchOperations.insert(walter, options).execute()
+				.then(template.getReactiveCqlOperations().queryForResultSet("SELECT TTL(email), email FROM group;"));
 
 		resultSet.flatMapMany(ReactiveResultSet::availableRows) //
+				.collectList()
 				.as(StepVerifier::create) //
-				.assertNext(row -> assertThat(row.getInt(0)).isBetween(1, ttl))
-				.assertNext(row -> assertThat(row.getInt(0)).isBetween(1, ttl)).verifyComplete();
+				.assertNext(rows -> {
+
+					for (Row row : rows) {
+
+						if (walter.getEmail().equals(row.getString(1))) {
+							assertThat(row.getInt(0)).isBetween(1, ttl);
+						} else {
+							assertThat(row.getInt(0)).isZero();
+						}
+
+					}
+				}).verifyComplete();
 	}
 
 	@Test // DATACASS-574
@@ -136,6 +155,12 @@ class ReactiveCassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCre
 				.as(StepVerifier::create) //
 				.assertNext(row -> assertThat(row.getInt(0)).isBetween(1, ttl))
 				.assertNext(row -> assertThat(row.getInt(0)).isBetween(1, ttl)).verifyComplete();
+	}
+
+	@Test // #1135
+	void updateAsVarargsShouldRejectQueryOptions() {
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> template.batchOps().update(mike, walter, InsertOptions.empty()));
 	}
 
 	@Test // DATACASS-574
@@ -187,20 +212,29 @@ class ReactiveCassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCre
 	void shouldUpdateCollectionOfEntitiesWithTtl() {
 
 		walter.setEmail("walter@white.com");
-		mike.setEmail("mike@sauls.com");
 
 		int ttl = 30;
 		WriteOptions options = WriteOptions.builder().ttl(ttl).build();
 
 		ReactiveCassandraBatchOperations batchOperations = new ReactiveCassandraBatchTemplate(template);
-		Mono<ReactiveResultSet> resultSet = batchOperations.update(Arrays.asList(walter, mike), options).execute()
-				.then(template.getReactiveCqlOperations().queryForResultSet("SELECT TTL(email) FROM group;"));
+		Mono<ReactiveResultSet> resultSet = batchOperations.update(walter, options).execute()
+				.then(template.getReactiveCqlOperations().queryForResultSet("SELECT TTL(email), email FROM group;"));
 
 		resultSet.flatMapMany(ReactiveResultSet::availableRows) //
+				.collectList()
 				.as(StepVerifier::create) //
+				.assertNext(rows -> {
 
-				.assertNext(row -> assertThat(row.getInt(0)).isBetween(1, ttl))
-				.assertNext(row -> assertThat(row.getInt(0)).isBetween(1, ttl)).verifyComplete();
+					for (Row row : rows) {
+
+						if (walter.getEmail().equals(row.getString(1))) {
+							assertThat(row.getInt(0)).isBetween(1, ttl);
+						} else {
+							assertThat(row.getInt(0)).isZero();
+						}
+
+					}
+				}).verifyComplete();
 	}
 
 	@Test // DATACASS-574
@@ -258,6 +292,12 @@ class ReactiveCassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCre
 		loadedMono //
 				.as(StepVerifier::create) //
 				.assertNext(loaded -> assertThat(loaded.getEmail()).isEqualTo(walter.getEmail())).verifyComplete();
+	}
+
+	@Test // #1135
+	void deleteAsVarargsShouldRejectQueryOptions() {
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> template.batchOps().delete(mike, walter, InsertOptions.empty()));
 	}
 
 	@Test // DATACASS-574

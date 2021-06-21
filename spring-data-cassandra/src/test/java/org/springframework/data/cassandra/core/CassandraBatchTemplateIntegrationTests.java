@@ -18,7 +18,6 @@ package org.springframework.data.cassandra.core;
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -73,6 +72,12 @@ class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 		assertThat(loaded.getId().getUsername()).isEqualTo(walter.getId().getUsername());
 	}
 
+	@Test // #1135
+	void insertAsVarargsShouldRejectQueryOptions() {
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> template.batchOps().insert(mike, walter, InsertOptions.empty()));
+	}
+
 	@Test // DATACASS-288
 	void shouldInsertEntitiesWithLwt() {
 
@@ -85,7 +90,8 @@ class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 		walter.setAge(100);
 
 		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
-		WriteResult writeResult = batchOperations.insert(Collections.singleton(walter), lwtOptions).insert(mike).execute();
+
+		WriteResult writeResult = batchOperations.insert(walter, lwtOptions).insert(mike).execute();
 
 		Group loadedWalter = template.selectOneById(walter.getId(), Group.class);
 		Group loadedMike = template.selectOneById(mike.getId(), Group.class);
@@ -131,6 +137,12 @@ class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 		}
 	}
 
+	@Test // #1135
+	void updateAsVarargsShouldRejectQueryOptions() {
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> template.batchOps().update(mike, walter, InsertOptions.empty()));
+	}
+
 	@Test // DATACASS-288
 	void shouldUpdateEntities() {
 
@@ -169,14 +181,19 @@ class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 		WriteOptions options = WriteOptions.builder().ttl(ttl).build();
 
 		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
-		batchOperations.update(Arrays.asList(walter, mike), options).execute();
+		batchOperations.update(walter, options).execute();
 
-		ResultSet resultSet = template.getCqlOperations().queryForResultSet("SELECT TTL(email) FROM group;");
+		ResultSet resultSet = template.getCqlOperations().queryForResultSet("SELECT TTL(email), email FROM group");
 
 		assertThat(resultSet.getAvailableWithoutFetching()).isEqualTo(2);
 
 		for (Row row : resultSet) {
-			assertThat(row.getInt(0)).isBetween(1, ttl);
+
+			if (walter.getEmail().equals(row.getString("email"))) {
+				assertThat(row.getInt(0)).isBetween(1, ttl);
+			} else {
+				assertThat(row.getInt(0)).isZero();
+			}
 		}
 	}
 
@@ -198,6 +215,12 @@ class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 		FlatGroup loaded = template.selectOneById(walter, FlatGroup.class);
 
 		assertThat(loaded.getEmail()).isEqualTo(walter.getEmail());
+	}
+
+	@Test // #1135
+	void deleteAsVarargsShouldRejectQueryOptions() {
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> template.batchOps().delete(mike, walter, InsertOptions.empty()));
 	}
 
 	@Test // DATACASS-288

@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.UpdateMapper;
+import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
@@ -154,9 +155,9 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 	public CassandraBatchOperations insert(Iterable<?> entities, WriteOptions options) {
 
 		assertNotExecuted();
-
 		Assert.notNull(entities, "Entities must not be null");
 		Assert.notNull(options, "WriteOptions must not be null");
+		assertNotQueryOptions(entities);
 
 		CassandraMappingContext mappingContext = getMappingContext();
 
@@ -202,9 +203,9 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 	public CassandraBatchOperations update(Iterable<?> entities, WriteOptions options) {
 
 		assertNotExecuted();
-
 		Assert.notNull(entities, "Entities must not be null");
 		Assert.notNull(options, "WriteOptions must not be null");
+		assertNotQueryOptions(entities);
 
 		for (Object entity : entities) {
 
@@ -247,9 +248,9 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 	public CassandraBatchOperations delete(Iterable<?> entities, WriteOptions options) {
 
 		assertNotExecuted();
-
 		Assert.notNull(entities, "Entities must not be null");
 		Assert.notNull(options, "WriteOptions must not be null");
+		assertNotQueryOptions(entities);
 
 		for (Object entity : entities) {
 
@@ -264,6 +265,17 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 		}
 
 		return this;
+	}
+
+	private void assertNotQueryOptions(Iterable<?> entities) {
+
+		for (Object entity : entities) {
+			if (entity instanceof QueryOptions) {
+				throw new IllegalArgumentException(
+						String.format("%s must not be used as entity. Please make sure to call the appropriate method accepting %s",
+								ClassUtils.getDescriptiveType(entity), ClassUtils.getShortName(entity.getClass())));
+			}
+		}
 	}
 
 	private void assertNotExecuted() {
