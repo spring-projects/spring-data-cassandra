@@ -612,6 +612,17 @@ public class EmbeddedEntityOperations {
 		}
 
 		@Override
+		public Iterable<? extends TypeInformation<?>> getPersistentEntityTypeInformation() {
+			return delegate.getPersistentEntityTypeInformation();
+		}
+
+		@Nullable
+		@Override
+		public TypeInformation<?> getAssociationTargetTypeInformation() {
+			return delegate.getAssociationTargetTypeInformation();
+		}
+
+		@Override
 		public <T> PersistentPropertyAccessor<T> getAccessorForOwner(T owner) {
 			return delegate.getAccessorForOwner(owner);
 		}

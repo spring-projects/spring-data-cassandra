@@ -278,6 +278,17 @@ class AnnotatedCassandraConstructorProperty implements CassandraPersistentProper
 	}
 
 	@Override
+	public Iterable<? extends TypeInformation<?>> getPersistentEntityTypeInformation() {
+		return delegate.getPersistentEntityTypeInformation();
+	}
+
+	@Nullable
+	@Override
+	public TypeInformation<?> getAssociationTargetTypeInformation() {
+		return delegate.getAssociationTargetTypeInformation();
+	}
+
+	@Override
 	public void setColumnName(CqlIdentifier columnName) {
 		throw new UnsupportedOperationException();
 	}

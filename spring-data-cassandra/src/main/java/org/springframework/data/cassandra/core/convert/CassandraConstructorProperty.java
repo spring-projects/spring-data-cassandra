@@ -271,6 +271,17 @@ class CassandraConstructorProperty implements CassandraPersistentProperty {
 	}
 
 	@Override
+	public Iterable<? extends TypeInformation<?>> getPersistentEntityTypeInformation() {
+		return Collections.emptyList();
+	}
+
+	@Nullable
+	@Override
+	public TypeInformation<?> getAssociationTargetTypeInformation() {
+		return null;
+	}
+
+	@Override
 	public void setColumnName(CqlIdentifier columnName) {
 		throw new UnsupportedOperationException();
 	}
