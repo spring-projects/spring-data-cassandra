@@ -1,6 +1,23 @@
 Spring Data Cassandra Changelog
 ===============================
 
+Changes in version 3.3.0-M1 (2021-07-16)
+----------------------------------------
+* #1149 - Adapt to newly introduced methods in `PersistentProperty`.
+* #1142 - Upgrade to Cassandra Driver 4.12.0.
+* #1140 - Avoid conversion for `Range` objects used in query methods.
+* #1139 - Investigate CI failures.
+* #1137 - Cannot write composite key that contains a UDT to `Where`.
+* #1135 - Add overloads to `CassandraBatchOperations.insert(…)` accepting `WriteOptions`.
+* #1134 - Upgrade to Apache Cassandra 3.11.10.
+* #1133 - Improve `CassandraTemplate` creation from `Session`.
+* #1129 - `DataClassRowMapper` doesn't correctly convert generic fields.
+* #1127 - Upgrade to Cassandra driver 4.11.1.
+* #1126 - Allow Java 16 records to be used for `@PrimaryKeyClass`.
+* #1124 - Document impact of pre-populated Id on `@CreatedDate` not working as expected.
+* #1105 - Update CI to Java 16.
+
+
 Changes in version 3.1.11 (2021-07-16)
 --------------------------------------
 
@@ -1529,6 +1546,7 @@ Changes in version 1.0.0.M1 (2014-03-31)
     * [DATACASS-100] - QueryOptions should only have ConsistencyLevel & RetryPolicy
     * [DATACASS-104] - Remove requirement for @PrimaryKeyClass when using composite primary keys
     * [DATACASS-107] - Support declarative query methods
+
 
 
 
