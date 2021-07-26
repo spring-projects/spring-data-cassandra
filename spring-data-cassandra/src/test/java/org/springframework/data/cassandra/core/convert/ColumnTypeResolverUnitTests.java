@@ -260,6 +260,18 @@ public class ColumnTypeResolverUnitTests {
 				.describedAs("The element type should be frozen").isTrue();
 	}
 
+	@Test // GH-1148
+	void frozenMapProperty() {
+
+		BasicCassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(Person.class);
+
+		DataType dataType = resolver.resolve(entity.getRequiredPersistentProperty("frozenMap")).getDataType();
+
+		assertThat(dataType).isInstanceOf(MapType.class);
+		assertThat(((MapType) dataType).isFrozen()).isTrue();
+		assertThat(dataType.asCql(true, false)).isEqualTo("frozen<map<text, text>>");
+	}
+
 	@Test // DATACASS-465
 	void mapPropertyWithFrozenAnnotationOnKey() {
 
@@ -344,6 +356,8 @@ public class ColumnTypeResolverUnitTests {
 
 		@Frozen Set<String> frozenSet;
 		Set<@Frozen MyUdt> frozenSetContent;
+
+		@Frozen Map<String, String> frozenMap;
 
 		Map<@Frozen MyUdt, MyUdt> frozenMapKey;
 
