@@ -159,8 +159,21 @@ public interface ColumnType {
 	 * @return
 	 */
 	static CassandraColumnType mapOf(CassandraColumnType keyType, CassandraColumnType valueType) {
+		return ColumnType.mapOf(keyType, valueType, false);
+	}
+
+	/**
+	 * Creates a Map {@link CassandraColumnType} given its {@link CassandraColumnType key and value types}.
+	 *
+	 * @param keyType must not be {@literal null}.
+	 * @param valueType must not be {@literal null}.
+	 * @param frozen
+	 * @return
+	 * @since 3.1.12
+	 */
+	static CassandraColumnType mapOf(CassandraColumnType keyType, CassandraColumnType valueType, boolean frozen) {
 		return new DefaultCassandraColumnType(ClassTypeInformation.MAP,
-				() -> DataTypes.mapOf(keyType.getDataType(), valueType.getDataType()), keyType, valueType);
+				() -> DataTypes.mapOf(keyType.getDataType(), valueType.getDataType(), frozen), keyType, valueType);
 	}
 
 	/**
