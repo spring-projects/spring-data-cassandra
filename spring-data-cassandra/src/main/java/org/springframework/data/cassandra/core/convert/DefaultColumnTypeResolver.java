@@ -410,7 +410,7 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 			FrozenIndicator frozenValue = frozen.getFrozen(1);
 
 			return ColumnType.mapOf(resolve(typeInformation.getRequiredComponentType(), frozenKey),
-					resolve(typeInformation.getRequiredMapValueType(), frozenValue));
+					resolve(typeInformation.getRequiredMapValueType(), frozenValue), frozen.isFrozen());
 		}
 
 		CassandraPersistentEntity<?> persistentEntity = mappingContext.getPersistentEntity(typeInformation);
