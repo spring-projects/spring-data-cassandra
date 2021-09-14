@@ -21,12 +21,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.datastax.oss.driver.api.core.AllNodesFailedException;
-import com.datastax.oss.driver.api.core.DriverException;
-import com.datastax.oss.driver.api.core.auth.AuthenticationException;
-import com.datastax.oss.driver.api.core.metadata.Node;
-import com.datastax.oss.driver.api.core.servererrors.*;
-
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.dao.TransientDataAccessResourceException;
@@ -35,6 +29,12 @@ import org.springframework.data.cassandra.*;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
+
+import com.datastax.oss.driver.api.core.AllNodesFailedException;
+import com.datastax.oss.driver.api.core.DriverException;
+import com.datastax.oss.driver.api.core.auth.AuthenticationException;
+import com.datastax.oss.driver.api.core.metadata.Node;
+import com.datastax.oss.driver.api.core.servererrors.*;
 
 /**
  * Simple {@link PersistenceExceptionTranslator} for Cassandra.
@@ -156,8 +156,13 @@ public class CassandraExceptionTranslator implements CqlExceptionTranslator {
 			return new DataAccessResourceFailureException(message, exception);
 		}
 
-		// unknown or unhandled exception
-		return new CassandraUncategorizedException(message, exception);
+		if (exception instanceof DriverException
+				|| (exception.getClass().getName().startsWith("com.datastax.oss.driver"))) {
+			// unknown or unhandled exception
+			return new CassandraUncategorizedException(message, exception);
+		}
+
+		return null;
 	}
 
 	/**
