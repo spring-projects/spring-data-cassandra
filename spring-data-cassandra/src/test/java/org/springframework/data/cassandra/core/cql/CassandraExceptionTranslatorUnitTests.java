@@ -18,7 +18,6 @@ package org.springframework.data.cassandra.core.cql;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import java.lang.reflect.Constructor;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,7 +28,6 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.dao.TransientDataAccessResourceException;
 import org.springframework.data.cassandra.*;
-import org.springframework.util.ClassUtils;
 
 import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
 import com.datastax.oss.driver.api.core.NoNodeAvailableException;
@@ -232,6 +230,11 @@ class CassandraExceptionTranslatorUnitTests {
 				Arrays.asList(ProtocolVersion.V3, ProtocolVersion.V4)))).isInstanceOf(CassandraUncategorizedException.class);
 	}
 
+	@Test // GH-1155
+	void shouldNotTranslateUnknownExceptions() {
+		assertThat(sut.translateExceptionIfPossible(new UnsupportedOperationException())).isNull();
+	}
+
 	@Test // DATACASS-335
 	void shouldTranslateWithCqlMessage() {
 
@@ -240,15 +243,5 @@ class CassandraExceptionTranslatorUnitTests {
 
 		assertThat(dax).hasRootCauseInstanceOf(InvalidConfigurationInQueryException.class).hasMessage(
 				"Query; CQL [SELECT * FROM person]; err; nested exception is com.datastax.oss.driver.api.core.servererrors.InvalidConfigurationInQueryException: err");
-	}
-
-	@SuppressWarnings("unchecked")
-	<T> T createInstance(String className, Class<?> argTypes[], Object... args)
-			throws ReflectiveOperationException {
-
-		Class<T> exceptionClass = (Class) ClassUtils.forName(className, getClass().getClassLoader());
-		Constructor<T> constructor = exceptionClass.getDeclaredConstructor(argTypes);
-
-		return constructor.newInstance(args);
 	}
 }
