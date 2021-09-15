@@ -163,7 +163,7 @@ class CqlSessionParser extends AbstractSingleBeanDefinitionParser {
 	 * Wrapper to enable setting contact points as string to avoid over loaded setContactPoints reflection confusion that
 	 * depends on the reflection method load order.
 	 */
-	static class ExtendedCqlSessionFactoryBean extends CqlSessionFactoryBean {
+	public static class ExtendedCqlSessionFactoryBean extends CqlSessionFactoryBean {
 
 		/**
 		 * Bridge method for {@link #setContactPoints(String)}.
