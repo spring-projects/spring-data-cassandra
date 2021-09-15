@@ -24,7 +24,7 @@ import org.springframework.data.mapping.context.PersistentEntities;
  * Simple helper to be able to wire the {@link MappingContext} from a {@link CassandraConverter} bean available in the
  * application context.
  */
-class PersistentEntitiesFactoryBean implements FactoryBean<PersistentEntities> {
+public class PersistentEntitiesFactoryBean implements FactoryBean<PersistentEntities> {
 
 	private final CassandraConverter converter;
 

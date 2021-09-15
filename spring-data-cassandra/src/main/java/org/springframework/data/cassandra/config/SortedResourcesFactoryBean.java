@@ -35,7 +35,7 @@ import org.springframework.core.io.support.ResourcePatternUtils;
  * @author Mark Paluch
  * @since 3.0
  */
-class SortedResourcesFactoryBean extends AbstractFactoryBean<Resource[]> implements ResourceLoaderAware {
+public class SortedResourcesFactoryBean extends AbstractFactoryBean<Resource[]> implements ResourceLoaderAware {
 
 	private final List<String> locations;
 
