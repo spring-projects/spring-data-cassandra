@@ -18,16 +18,16 @@ package org.springframework.data.cassandra.core.cql.converter;
 import java.util.List;
 import java.util.Map;
 
-import com.datastax.oss.driver.api.core.cql.ResultSet;
-
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.Nullable;
+
+import com.datastax.oss.driver.api.core.cql.ResultSet;
 
 /**
  * Convenient converter that can be used to convert a single-row-single-column, single-row-multi-column, or multi-row
  * {@link ResultSet} into the a value of a given type. The majority of the expected usage is to convert a
  * single-row-single-column result set into the target type.
- * <p/>
+ * <p>
  * The algorithm is:
  * <ul>
  * <li>if there is one row with one column, convert that value to this converter's type if possible or throw,</li>
@@ -35,7 +35,7 @@ import org.springframework.lang.Nullable;
  * throw,</li>
  * <li>else convert the rows into this converter's type (since there are multiple rows) or throw.</li>
  * </ul>
- * <p/>
+ * <p>
  * If the converter throws due to the inability to convert a given {@link ResultSet}, it will throw an
  * {@link IllegalArgumentException}.
  *
@@ -66,7 +66,7 @@ public abstract class AbstractResultSetConverter<T> implements Converter<ResultS
 	}
 
 	/**
-	 * @return surrogate value if the {@link ResultSet} is {@link ResultSet#isExhausted() exhausted}.
+	 * @return surrogate value if the {@link ResultSet} is {@link ResultSet#isFullyFetched()}}.
 	 */
 	@Nullable
 	protected T getExhaustedResultSetValue() {

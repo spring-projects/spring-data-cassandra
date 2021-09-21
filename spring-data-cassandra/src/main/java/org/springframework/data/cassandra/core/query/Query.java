@@ -196,7 +196,7 @@ public class Query implements Filter {
 	/**
 	 * Create a {@link Query} initialized with a {@link PageRequest} to fetch the first page of results or advance in
 	 * paging along with sorting. Reads (and overrides, if set) {@link Pageable#getPageSize() page size} into
-	 * {@link QueryOptions#getPageSize()} and sets {@link PagingState} and {@link Sort}.
+	 * {@link QueryOptions#getPageSize()} and sets {@code pagingState} and {@link Sort}.
 	 *
 	 * @param pageable must not be {@literal null}.
 	 * @return a new {@link Query} object containing the former settings with {@link PageRequest} applied.

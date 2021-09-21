@@ -207,7 +207,7 @@ class CassandraQueryCreator extends AbstractQueryCreator<Query, Filter> {
 
 	/**
 	 * Compute a {@link Type#BETWEEN} {@link Part}.
-	 * <p/>
+	 * <p>
 	 * In case the first {@literal value} is actually a {@link Range} the lower and upper bounds of the {@link Range} are
 	 * used according to their {@link Range.Bound#isInclusive() inclusion} definition. Otherwise the {@literal value} is
 	 * used for greater than and {@link Iterator#next() parameters.next()} as less than criterions.

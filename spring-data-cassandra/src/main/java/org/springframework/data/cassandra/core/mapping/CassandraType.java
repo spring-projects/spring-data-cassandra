@@ -43,10 +43,10 @@ public @interface CassandraType {
 	/**
 	 * If the property is {@link java.util.Collection Collection-like}, then this attribute holds a single {@link Name
 	 * DataType Name} representing the element type of the {@link java.util.Collection}.
-	 * <p/>
+	 * <p>
 	 * If the property is a {@link java.util.Map}, then this attribute holds exactly two {@link Name DataType Names}; the
 	 * first is the key type and the second is the value type.
-	 * <p/>
+	 * <p>
 	 * If the property is neither {@link java.util.Collection Collection-like} nor a {@link java.util.Map}, then this
 	 * attribute is ignored.
 	 *

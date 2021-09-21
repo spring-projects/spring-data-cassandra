@@ -21,7 +21,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.cql.Row;
 
 /**
- * Event to be triggered after loading {@link com.datastax.driver.core.Row}s to be mapped onto a given type.
+ * Event to be triggered after loading {@link Row}s to be mapped onto a given type.
  *
  * @author Lukasz Antoniak
  * @author Mark Paluch

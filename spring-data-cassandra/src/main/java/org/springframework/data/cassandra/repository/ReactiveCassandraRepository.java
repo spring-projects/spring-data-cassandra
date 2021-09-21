@@ -63,16 +63,16 @@ public interface ReactiveCassandraRepository<T, ID> extends ReactiveCrudReposito
 
 	/**
 	 * {@inheritDoc}
-	 * <p/>
+	 * <p>
 	 * Note: Cassandra supports single-field {@code IN} queries only. Fetches each row individually when using
-	 * {@link MapId} with multiple components.
+	 * {@link org.springframework.data.cassandra.core.mapping.MapId} with multiple components.
 	 */
 	@Override
 	Flux<T> findAllById(Iterable<ID> iterable);
 
 	/**
 	 * {@inheritDoc}
-	 * <p/>
+	 * <p>
 	 * Fetches each row individually.
 	 */
 	@Override

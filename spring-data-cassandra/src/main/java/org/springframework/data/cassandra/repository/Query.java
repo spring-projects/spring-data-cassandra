@@ -81,7 +81,7 @@ public @interface Query {
 
 		/**
 		 * Undefined state (default for all non-{@code SELECT} statements. Leaves
-		 * {@link com.datastax.oss.driver.api.core.cql.Statement#setIdempotent(boolean)} state unchanged.
+		 * {@link com.datastax.oss.driver.api.core.cql.Statement#setIdempotent(Boolean)} state unchanged.
 		 */
 		UNDEFINED,
 
@@ -92,7 +92,7 @@ public @interface Query {
 
 		/**
 		 * Statement considered non-idempotent. Sets
-		 * {@link com.datastax.oss.driver.api.core.cql.Statement#setIdempotent(boolean)} to {@code false}.
+		 * {@link com.datastax.oss.driver.api.core.cql.Statement#setIdempotent(Boolean)} to {@code false}.
 		 */
 		NON_IDEMPOTENT
 	}

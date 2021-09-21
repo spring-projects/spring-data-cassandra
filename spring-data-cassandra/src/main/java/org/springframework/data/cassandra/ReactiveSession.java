@@ -35,11 +35,11 @@ import com.datastax.oss.driver.api.core.metadata.Node;
  * A session holds connections to a Cassandra cluster, allowing it to be queried. {@link ReactiveSession} executes
  * queries and prepares statements in a reactive style returning results wrapped in {@link Mono} and
  * {@link reactor.core.publisher.Flux}.
- * <p/>
+ * <p>
  * Each session maintains multiple connections to the cluster nodes, provides policies to choose which node to use for
  * each query (round-robin on all nodes of the cluster by default), and handles retries for failed queries (when it
  * makes sense).
- * <p/>
+ * <p>
  * Session instances are thread-safe and usually a single instance is enough per application. As a given session can
  * only be "logged" into one keyspace at a time (where the "logged" keyspace is the one used by queries that don't
  * explicitly use a fully qualified table name), it can make sense to create one session per keyspace used. This is
@@ -56,11 +56,11 @@ public interface ReactiveSession extends Closeable {
 
 	/**
 	 * Returns a snapshot of the Cassandra cluster's topology and schema metadata.
-	 * <p/>
+	 * <p>
 	 * In order to provide atomic updates, this method returns an immutable object: the node list, token map, and schema
 	 * contained in a given instance will always be consistent with each other (but note that {@link Node} itself is not
 	 * immutable: some of its properties will be updated dynamically, in particular {@link Node#getState()}).
-	 * <p/>
+	 * <p>
 	 * As a consequence of the above, you should call this method each time you need a fresh view of the metadata. <b>Do
 	 * not</b> call it once and store the result, because it is a frozen snapshot that will become stale over time.
 	 * <p>
@@ -76,7 +76,7 @@ public interface ReactiveSession extends Closeable {
 	/**
 	 * The keyspace that this session is currently connected to, or {@link Optional#empty()} if this session is not
 	 * connected to any keyspace.
-	 * <p/>
+	 * <p>
 	 * There are two ways that this can be set: before initializing the session (either with the {@code session-keyspace}
 	 * option in the configuration, or with {@link CqlSessionBuilder#withKeyspace(CqlIdentifier)}); or at runtime, if the
 	 * client issues a request that changes the keyspace (such as a CQL {@code USE} query). Note that this second method
@@ -90,7 +90,7 @@ public interface ReactiveSession extends Closeable {
 
 	/**
 	 * Whether this Session instance has been closed.
-	 * <p/>
+	 * <p>
 	 * Note that this method returns true as soon as the closing of this Session has started but it does not guarantee
 	 * that the closing is done. If you want to guarantee that the closing is done, you can call {@code close()} and wait
 	 * until it returns (or call the get method on {@code closeAsync()} with a very short timeout and check this doesn't
@@ -109,7 +109,7 @@ public interface ReactiveSession extends Closeable {
 
 	/**
 	 * Executes the provided query.
-	 * <p/>
+	 * <p>
 	 * This is a convenience method for {@code execute(new SimpleStatement(query))}.
 	 *
 	 * @param query the CQL query to execute.
@@ -120,7 +120,7 @@ public interface ReactiveSession extends Closeable {
 
 	/**
 	 * Executes the provided query using the provided values.
-	 * <p/>
+	 * <p>
 	 * This is a convenience method for {@code execute(new SimpleStatement(query, values))}.
 	 *
 	 * @param query the CQL query to execute.
@@ -133,7 +133,7 @@ public interface ReactiveSession extends Closeable {
 
 	/**
 	 * Executes the provided query using the provided named values.
-	 * <p/>
+	 * <p>
 	 * This is a convenience method for {@code execute(new SimpleStatement(query, values))}.
 	 *
 	 * @param query the CQL query to execute.
@@ -146,7 +146,7 @@ public interface ReactiveSession extends Closeable {
 
 	/**
 	 * Executes the provided query.
-	 * <p/>
+	 * <p>
 	 * This method blocks until at least some result has been received from the database. However, for SELECT queries, it
 	 * does not guarantee that the result has been received in full. But it does guarantee that some response has been
 	 * received from the database, and in particular guarantees that if the request is invalid, an exception will be
@@ -168,7 +168,7 @@ public interface ReactiveSession extends Closeable {
 
 	/**
 	 * Prepares the provided query.
-	 * <p/>
+	 * <p>
 	 * This method behaves like {@link #prepare(String)}, but note that the resulting {@code PreparedStatement} will
 	 * inherit the query properties set on {@code statement}. Concretely, this means that in the following code:
 	 *
@@ -180,7 +180,7 @@ public interface ReactiveSession extends Closeable {
 	 * </pre>
 	 *
 	 * the final execution will be performed with Quorum consistency.
-	 * <p/>
+	 * <p>
 	 * Please note that if the same CQL statement is prepared more than once, all calls to this method will return the
 	 * same {@code PreparedStatement} object but the method will still apply the properties of the prepared
 	 * {@code Statement} to this object.

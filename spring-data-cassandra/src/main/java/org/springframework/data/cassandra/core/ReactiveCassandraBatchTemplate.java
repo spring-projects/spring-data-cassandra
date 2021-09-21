@@ -85,7 +85,7 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 
 	/**
 	 * Return a reference to the configured {@link CassandraConverter} used to map {@link Object Objects} to
-	 * {@link com.datastax.driver.core.Row Rows}.
+	 * {@link com.datastax.oss.driver.api.core.cql.Row Rows}.
 	 *
 	 * @return a reference to the configured {@link CassandraConverter}.
 	 * @see org.springframework.data.cassandra.core.convert.CassandraConverter

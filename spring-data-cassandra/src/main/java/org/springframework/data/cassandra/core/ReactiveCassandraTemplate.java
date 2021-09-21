@@ -134,7 +134,7 @@ public class ReactiveCassandraTemplate
 	 *
 	 * @param session {@link ReactiveSession} used to interact with Cassandra; must not be {@literal null}.
 	 * @see CassandraConverter
-	 * @see Session
+	 * @see ReactiveSession
 	 */
 	public ReactiveCassandraTemplate(ReactiveSession session) {
 		this(session, newConverter(session));
@@ -148,7 +148,7 @@ public class ReactiveCassandraTemplate
 	 * @param converter {@link CassandraConverter} used to convert between Java and Cassandra types; must not be
 	 *          {@literal null}.
 	 * @see org.springframework.data.cassandra.core.convert.CassandraConverter
-	 * @see com.datastax.oss.driver.api.core.CqlSession
+	 * @see ReactiveSession
 	 */
 	public ReactiveCassandraTemplate(ReactiveSession session, CassandraConverter converter) {
 		this(new DefaultReactiveSessionFactory(session), converter);
@@ -162,7 +162,7 @@ public class ReactiveCassandraTemplate
 	 * @param converter {@link CassandraConverter} used to convert between Java and Cassandra types; must not be
 	 *          {@literal null}.
 	 * @see org.springframework.data.cassandra.core.convert.CassandraConverter
-	 * @see com.datastax.oss.driver.api.core.CqlSession
+	 * @see ReactiveSession
 	 */
 	public ReactiveCassandraTemplate(ReactiveSessionFactory sessionFactory, CassandraConverter converter) {
 		this(new ReactiveCqlTemplate(sessionFactory), converter);
@@ -177,7 +177,7 @@ public class ReactiveCassandraTemplate
 	 * @param converter {@link CassandraConverter} used to convert between Java and Cassandra types; must not be
 	 *          {@literal null}.
 	 * @see org.springframework.data.cassandra.core.convert.CassandraConverter
-	 * @see com.datastax.oss.driver.api.core.CqlSession
+	 * @see ReactiveSession
 	 */
 	public ReactiveCassandraTemplate(ReactiveCqlOperations reactiveCqlOperations, CassandraConverter converter) {
 

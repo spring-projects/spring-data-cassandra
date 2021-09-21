@@ -28,7 +28,7 @@ import com.datastax.oss.driver.api.core.type.DataType;
 
 /**
  * Object to configure a CQL column specification.
- * <p/>
+ * <p>
  * Use {@link #name(String)} and {@link #type(DataType)} to set the name and type of the column, respectively. To
  * specify a clustered {@code PRIMARY KEY} column, use {@link #clustered()} or {@link #clustered(Ordering)}. To specify
  * that the {@code PRIMARY KEY} column is or is part of the partition key, use {@link #partitioned()} instead of

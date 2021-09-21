@@ -38,8 +38,7 @@ import com.datastax.oss.driver.api.core.cql.PreparedStatement;
  *
  * @author David Webb
  * @author Mark Paluch
- * @deprecated since 2.0. This class uses an unsafe, static held cache and is not able to prepare
- *             {@link com.datastax.driver.core.querybuilder.BuiltStatement}.
+ * @deprecated since 2.0. This class uses an unsafe, static held cache.
  */
 @Deprecated
 public class CachedPreparedStatementCreator implements PreparedStatementCreator {

@@ -98,7 +98,7 @@ public interface CassandraOperations extends FluentCassandraOperations {
 	/**
 	 * Execute a {@code SELECT} query and convert the resulting items to a {@link Iterator} of entities.
 	 * <p>
-	 * Returns a {@link Iterator} that wraps the Cassandra {@link com.datastax.driver.core.ResultSet}.
+	 * Returns a {@link Iterator} that wraps the Cassandra {@link ResultSet}.
 	 *
 	 * @param <T> element return type.
 	 * @param cql query to execute. Must not be empty or {@literal null}.
@@ -160,7 +160,7 @@ public interface CassandraOperations extends FluentCassandraOperations {
 	/**
 	 * Execute a {@code SELECT} query and convert the resulting items to a {@link Iterator} of entities.
 	 * <p>
-	 * Returns a {@link Iterator} that wraps the Cassandra {@link com.datastax.driver.core.ResultSet}.
+	 * Returns a {@link Iterator} that wraps the Cassandra {@link ResultSet}.
 	 *
 	 * @param <T> element return type.
 	 * @param statement query to execute. Must not be empty or {@literal null}.
@@ -212,7 +212,7 @@ public interface CassandraOperations extends FluentCassandraOperations {
 	/**
 	 * Execute a {@code SELECT} query and convert the resulting items to a {@link Iterator} of entities.
 	 * <p>
-	 * Returns a {@link Iterator} that wraps the Cassandra {@link com.datastax.driver.core.ResultSet}.
+	 * Returns a {@link Iterator} that wraps the Cassandra {@link ResultSet}.
 	 *
 	 * @param <T> element return type.
 	 * @param query query to execute. Must not be empty or {@literal null}.

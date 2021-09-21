@@ -87,8 +87,6 @@ public @interface SASI {
 	 * Apply standard analyzer to SASI indexing. This analyzer is used for analysis that involves stemming, case
 	 * normalization, case sensitivity, skipping common words like "and" and "the", and localization of the language used
 	 * to complete the analysis
-	 *
-	 * @see org.apache.cassandra.index.sasi.analyzer.StandardAnalyzer
 	 */
 	@Retention(value = RetentionPolicy.RUNTIME)
 	@Target(value = { ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE })
@@ -126,8 +124,6 @@ public @interface SASI {
 	/**
 	 * Apply non-tokenizing analyzer to SASI indexing. Use this analyzer for cases where the text is not analyzed, but
 	 * case normalization or sensitivity is required.
-	 *
-	 * @see org.apache.cassandra.index.sasi.analyzer.NonTokenizingAnalyzer
 	 */
 	@Retention(value = RetentionPolicy.RUNTIME)
 	@Target(value = { ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE })

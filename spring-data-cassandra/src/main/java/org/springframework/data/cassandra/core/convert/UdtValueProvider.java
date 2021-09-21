@@ -35,7 +35,7 @@ public class UdtValueProvider implements CassandraValueProvider {
 	private final SpELExpressionEvaluator evaluator;
 
 	/**
-	 * Create a new {@link UdtValueProvider} with the given {@link UDTValue} and {@link SpELExpressionEvaluator}.
+	 * Create a new {@link UdtValueProvider} with the given {@link UdtValue} and {@link SpELExpressionEvaluator}.
 	 *
 	 * @param udtValue must not be {@literal null}.
 	 * @param evaluator must not be {@literal null}.

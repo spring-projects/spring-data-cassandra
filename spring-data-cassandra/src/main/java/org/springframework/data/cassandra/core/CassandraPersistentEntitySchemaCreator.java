@@ -61,7 +61,6 @@ public class CassandraPersistentEntitySchemaCreator {
 	 * Create a new {@link CassandraPersistentEntitySchemaCreator} for the given {@link CassandraMappingContext} and
 	 * {@link CassandraAdminOperations}.
 	 *
-	 * @param mappingContext must not be {@literal null}.
 	 * @param cassandraAdminOperations must not be {@literal null}.
 	 * @since 3.0
 	 */

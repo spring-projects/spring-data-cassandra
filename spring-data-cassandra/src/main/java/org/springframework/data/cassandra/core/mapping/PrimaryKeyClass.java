@@ -26,7 +26,7 @@ import org.springframework.data.annotation.Persistent;
 
 /**
  * Annotates a type that represents the identity type of another class whose instances are stored in a table.
- * <p/>
+ * <p>
  * If your Cassandra table has multiple primary key columns, then you must define a primary key class, annotate it with
  * this annotation, and use that class as the {@link PrimaryKey} of your entity class!
  *

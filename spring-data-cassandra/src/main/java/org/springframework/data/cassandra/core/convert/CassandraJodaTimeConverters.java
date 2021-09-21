@@ -52,7 +52,6 @@ public abstract class CassandraJodaTimeConverters {
 	 * @return a {@link Collection} of Joda Time {@link Converter Converters} to register.
 	 * @see org.springframework.core.convert.converter.Converter
 	 * @see java.util.Collection
-	 * @see org.joda.time
 	 */
 	public static Collection<Converter<?, ?>> getConvertersToRegister() {
 

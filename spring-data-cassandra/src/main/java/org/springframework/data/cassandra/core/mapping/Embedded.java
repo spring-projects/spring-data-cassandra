@@ -27,7 +27,7 @@ import org.springframework.core.annotation.AliasFor;
 
 /**
  * The annotation to configure a value object as embedded in the current table.
- * <p />
+ * <p>
  * Depending on the {@link OnEmpty value} of {@link #onEmpty()} the property is set to {@literal null} or an empty
  * instance in the case all embedded values are {@literal null} when reading from the result set.
  *
@@ -41,10 +41,10 @@ public @interface Embedded {
 
 	/**
 	 * Set the load strategy for the embedded object if all contained fields yield {@literal null} values.
-	 * <p />
+	 * <p>
 	 * {@link Nullable @Embedded.Nullable} and {@link Empty @Embedded.Empty} offer shortcuts for this.
 	 *
-	 * @return never {@link} null.
+	 * @return never {@code null}.
 	 */
 	OnEmpty onEmpty();
 

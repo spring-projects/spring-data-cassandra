@@ -29,7 +29,7 @@ import org.springframework.util.Assert;
  * allows creation of the first page request and represents through Cassandra paging is based on the progress of fetched
  * pages and allows forward-only navigation. Accessing a particular page requires fetching of all pages until the
  * desired page is reached.
- * <p/>
+ * <p>
  * The fetching progress is represented as {@link ByteBuffer paging state}. Query results are associated with a
  * {@link com.datastax.oss.driver.api.core.cql.ExecutionInfo#getPagingState paging state} that is used on the next query
  * as input parameter to continue page fetching.

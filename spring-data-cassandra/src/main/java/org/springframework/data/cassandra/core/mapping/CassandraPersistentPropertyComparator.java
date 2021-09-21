@@ -25,8 +25,7 @@ import java.util.Comparator;
  * <li>Composite primary keys first (equal if both {@link CassandraPersistentProperty} are a composite primary key)</li>
  * <li>Primary key columns (see {@link CassandraPrimaryKeyColumnAnnotationComparator}, compare by ordinal/name/ordering)
  * </li>
- * <li>Regular columns, compared by column name (see
- * {@link com.datastax.oss.driver.api.core.CqlIdentifier#compareTo(CqlIdentifier)})</li>
+ * <li>Regular columns, compared by column name (see {@link String#compareTo(String)}).</li>
  * </ul>
  *
  * @author Alex Shvid

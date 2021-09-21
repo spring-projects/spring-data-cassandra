@@ -27,7 +27,7 @@ import com.datastax.oss.driver.api.core.cql.Statement;
 
 /**
  * {@link PreparedStatementCreator} implementation using caching of prepared statements.
- * <p />
+ * <p>
  * Regular CQL statements are prepared on first use and executed as prepared statements. Prepared statements are cached
  * by Cassandra itself (invalidation/eviction possible), in the driver to be able to re-prepare a statement and in this
  * {@link CachedPreparedStatementCreator} using {@link PreparedStatementCache}.
@@ -35,7 +35,8 @@ import com.datastax.oss.driver.api.core.cql.Statement;
  * @author Mark Paluch
  * @since 2.0
  * @see PreparedStatementCache
- * @deprecated since 3.2, the Cassandra driver has a built-in prepared statement cache with makes external caching of prepared statements superfluous.
+ * @deprecated since 3.2, the Cassandra driver has a built-in prepared statement cache with makes external caching of
+ *             prepared statements superfluous.
  */
 @Deprecated
 public class CachedPreparedStatementCreator implements PreparedStatementCreator {

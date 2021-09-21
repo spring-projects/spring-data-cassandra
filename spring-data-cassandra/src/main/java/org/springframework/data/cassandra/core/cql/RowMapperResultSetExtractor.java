@@ -18,12 +18,12 @@ package org.springframework.data.cassandra.core.cql;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.dao.DataAccessException;
+import org.springframework.util.Assert;
+
 import com.datastax.oss.driver.api.core.DriverException;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
-
-import org.springframework.dao.DataAccessException;
-import org.springframework.util.Assert;
 
 /**
  * Adapter implementation of the {@link ResultSetExtractor} interface that delegates to a {@link RowMapper} which is
@@ -70,7 +70,7 @@ public class RowMapperResultSetExtractor<T> implements ResultSetExtractor<List<T
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.ResultSetExtractor#extractData(com.datastax.driver.core.ResultSet)
+	 * @see org.springframework.data.cassandra.core.cql.ResultSetExtractor#extractData(ResultSet)
 	 */
 	@Override
 	public List<T> extractData(ResultSet resultSet) throws DriverException, DataAccessException {

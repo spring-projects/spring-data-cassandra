@@ -19,9 +19,9 @@ import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
-import com.datastax.oss.driver.api.core.metadata.Node;
-
 import org.springframework.util.Assert;
+
+import com.datastax.oss.driver.api.core.metadata.Node;
 
 /**
  * Domain object representing a Cassandra host.
@@ -45,7 +45,7 @@ public final class RingMember implements Serializable {
 	private final String rack;
 
 	/**
-	 * Creates a new {@link RingMember} given {@link Host}.
+	 * Creates a new {@link RingMember} given {@link Node}.
 	 *
 	 * @param host
 	 * @return

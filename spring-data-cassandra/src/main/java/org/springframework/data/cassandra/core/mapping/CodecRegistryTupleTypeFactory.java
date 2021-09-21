@@ -23,9 +23,8 @@ import com.datastax.oss.driver.api.core.type.TupleType;
 import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
 
 /**
- * {@link CodecRegistry}-based {@link TupleTypeFactory} using
- * {@link TupleType#of(ProtocolVersion, CodecRegistry, DataType...)} to create tuple types. {@link TupleType tuple
- * types}.
+ * {@link CodecRegistry}-based {@link TupleTypeFactory} using {@link SimpleTupleTypeFactory#create(DataType...)} to
+ * create tuple types. {@link TupleType tuple types}.
  *
  * @author Mark Paluch
  * @since 2.1

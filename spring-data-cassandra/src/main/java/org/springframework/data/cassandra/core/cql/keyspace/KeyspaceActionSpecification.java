@@ -25,7 +25,6 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  *
  * @author John McPeek
  * @author David Webb
- * @param <T> The subtype of the {@link KeyspaceActionSpecification}
  */
 public abstract class KeyspaceActionSpecification {
 

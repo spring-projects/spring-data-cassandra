@@ -138,7 +138,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	 *
 	 * @param session {@link CqlSession} used to interact with Cassandra; must not be {@literal null}.
 	 * @see CassandraConverter
-	 * @see Session
+	 * @see CqlSession
 	 */
 	public CassandraTemplate(CqlSession session) {
 		this(session, newConverter(session));
@@ -152,7 +152,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	 * @param converter {@link CassandraConverter} used to convert between Java and Cassandra types; must not be
 	 *          {@literal null}.
 	 * @see CassandraConverter
-	 * @see Session
+	 * @see CqlSession
 	 */
 	public CassandraTemplate(CqlSession session, CassandraConverter converter) {
 		this(new DefaultSessionFactory(session), converter);
@@ -180,7 +180,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	 * @param converter {@link CassandraConverter} used to convert between Java and Cassandra types; must not be
 	 *          {@literal null}.
 	 * @see CassandraConverter
-	 * @see Session
+	 * @see CqlSession
 	 */
 	public CassandraTemplate(CqlOperations cqlOperations, CassandraConverter converter) {
 

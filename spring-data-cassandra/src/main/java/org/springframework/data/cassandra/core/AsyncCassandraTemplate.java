@@ -135,7 +135,7 @@ public class AsyncCassandraTemplate
 	 *
 	 * @param session {@link CqlSession} used to interact with Cassandra; must not be {@literal null}.
 	 * @see CassandraConverter
-	 * @see Session
+	 * @see CqlSession
 	 */
 	public AsyncCassandraTemplate(CqlSession session) {
 		this(session, newConverter(session));

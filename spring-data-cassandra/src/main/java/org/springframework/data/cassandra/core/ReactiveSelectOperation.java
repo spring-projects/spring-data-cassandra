@@ -29,7 +29,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * <p>
  * The starting {@literal domainType} is used for mapping the {@link Query} provided via {@code matching} int the
  * Cassandra specific representation. By default, the originating {@literal domainType} is also used for mapping back
- * the result from the {@link com.datastax.driver.core.Row}. However, it is possible to define an different
+ * the result from the {@link com.datastax.oss.driver.api.core.cql.Row}. However, it is possible to define an different
  * {@literal returnType} via {@code as} to mapping the result.
  * <p>
  * By default, the table to operate on is derived from the initial {@literal domainType} and can be defined there via

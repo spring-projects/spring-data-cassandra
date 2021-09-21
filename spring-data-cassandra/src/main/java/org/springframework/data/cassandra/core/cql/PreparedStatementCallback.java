@@ -15,21 +15,22 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
-import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.DriverException;
-import com.datastax.oss.driver.api.core.cql.PreparedStatement;
-
 import org.springframework.dao.DataAccessException;
 import org.springframework.lang.Nullable;
 
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.DriverException;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+import com.datastax.oss.driver.api.core.cql.Statement;
+
 /**
  * Generic callback interface for code that operates on a {@link PreparedStatement}. Allows to execute any number of
- * operations on a single {@link PreparedStatement}, for example a single {@link Session#execute(Statement).
+ * operations on a single {@link PreparedStatement}, for example a single {@link CqlSession#execute(Statement)}.
  * <p>
  * Used internally by {@link CqlTemplate}, but also useful for application code. Note that the passed-in
  * {@link PreparedStatement} can have been created by the framework or by a custom {@link PreparedStatementCreator}.
  * However, the latter is hardly ever necessary, as most custom callback actions will perform updates in which case a
- * standard {@link PreparedStatement is fine. Custom actions will always set parameter values themselves, so that
+ * standard {@link PreparedStatement} is fine. Custom actions will always set parameter values themselves, so that
  * {@link PreparedStatementCreator} capability is not needed either.
  *
  * @author David Webb

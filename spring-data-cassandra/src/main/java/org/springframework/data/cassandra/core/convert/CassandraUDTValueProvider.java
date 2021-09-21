@@ -44,7 +44,7 @@ public class CassandraUDTValueProvider extends UdtValueProvider {
 	}
 
 	/**
-	 * Create a new {@link CassandraUDTValueProvider} with the given {@link UDTValue} and
+	 * Create a new {@link CassandraUDTValueProvider} with the given {@link UdtValue} and
 	 * {@link DefaultSpELExpressionEvaluator}.
 	 *
 	 * @param udtValue must not be {@literal null}.

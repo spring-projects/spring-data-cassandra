@@ -40,7 +40,6 @@ public class RowValueProvider implements CassandraValueProvider {
 	 * {@link SpELExpressionEvaluator}.
 	 *
 	 * @param source must not be {@literal null}.
-	 * @param codecRegistry must not be {@literal null}.
 	 * @param evaluator must not be {@literal null}.
 	 */
 	public RowValueProvider(Row source, SpELExpressionEvaluator evaluator) {

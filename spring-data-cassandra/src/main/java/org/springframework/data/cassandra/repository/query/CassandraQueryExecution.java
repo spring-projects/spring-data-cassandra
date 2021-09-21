@@ -211,7 +211,7 @@ interface CassandraQueryExecution {
 	}
 
 	/**
-	 * {@link CassandraQueryExecution} to return a {@link com.datastax.driver.core.ResultSet}.
+	 * {@link CassandraQueryExecution} to return a {@link ResultSet}.
 	 *
 	 * @author Mark Paluch
 	 */

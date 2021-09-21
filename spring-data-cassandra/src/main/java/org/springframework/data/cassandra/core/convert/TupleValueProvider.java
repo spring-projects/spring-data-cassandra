@@ -42,7 +42,6 @@ public class TupleValueProvider implements CassandraValueProvider {
 	 * Create a new {@link TupleValueProvider} with the given {@link TupleValue} and {@link SpELExpressionEvaluator}.
 	 *
 	 * @param tupleValue must not be {@literal null}.
-	 * @param codecRegistry must not be {@literal null}.
 	 * @param evaluator must not be {@literal null}.
 	 */
 	public TupleValueProvider(TupleValue tupleValue, SpELExpressionEvaluator evaluator) {

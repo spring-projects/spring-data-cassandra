@@ -58,7 +58,6 @@ public abstract class CassandraThreeTenBackPortConverters {
 	 * @return a {@link Collection} of ThreeTen Backport {@link Converter Converters} to register.
 	 * @see org.springframework.core.convert.converter.Converter
 	 * @see java.util.Collection
-	 * @see org.joda.time
 	 */
 	public static Collection<Converter<?, ?>> getConvertersToRegister() {
 

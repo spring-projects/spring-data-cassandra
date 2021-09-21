@@ -17,12 +17,12 @@ package org.springframework.data.cassandra.core.cql;
 
 import java.util.Map;
 
+import org.springframework.lang.Nullable;
+import org.springframework.util.LinkedCaseInsensitiveMap;
+
 import com.datastax.oss.driver.api.core.cql.ColumnDefinition;
 import com.datastax.oss.driver.api.core.cql.ColumnDefinitions;
 import com.datastax.oss.driver.api.core.cql.Row;
-
-import org.springframework.lang.Nullable;
-import org.springframework.util.LinkedCaseInsensitiveMap;
 
 /**
  * {@link RowMapper} implementation that creates a {@code java.util.Map} for each row, representing all columns as
@@ -44,7 +44,7 @@ import org.springframework.util.LinkedCaseInsensitiveMap;
 public class ColumnMapRowMapper implements RowMapper<Map<String, Object>> {
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.RowMapper#mapRow(com.datastax.driver.core.Row, int)
+	 * @see org.springframework.data.cassandra.core.cql.RowMapper#mapRow(com.datastax.oss.driver.api.core.cql.Row, int)
 	 */
 	@Override
 	public Map<String, Object> mapRow(Row rs, int rowNum) {
@@ -82,7 +82,7 @@ public class ColumnMapRowMapper implements RowMapper<Map<String, Object>> {
 	 *
 	 * @param columnName the column name as returned by the {@link Row}, must not be {@literal null}.
 	 * @return the column key to use.
-	 * @see ColumnDefinitions#getName(int)
+	 * @see ColumnDefinitions#get(int)
 	 */
 	protected String getColumnKey(String columnName) {
 		return columnName;

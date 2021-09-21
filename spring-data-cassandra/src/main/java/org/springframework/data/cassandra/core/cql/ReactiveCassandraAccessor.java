@@ -25,6 +25,8 @@ import org.springframework.data.cassandra.ReactiveSessionFactory;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
+import com.datastax.oss.driver.api.core.DriverException;
+
 /**
  * Base class for {@link ReactiveCqlTemplate} and other CQL-accessing DAO helpers, defining common properties such as
  * {@link ReactiveSessionFactory} and exception translator.

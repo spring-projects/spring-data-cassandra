@@ -34,7 +34,8 @@ import reactor.core.publisher.Mono;
 public interface ReactiveSessionFactory {
 
 	/**
-	 * Return a {@link ReactiveSession} to be used directly or inside a callback inside {@link ReactiveCqlTemplate}.
+	 * Return a {@link ReactiveSession} to be used directly or inside a callback inside
+	 * {@link org.springframework.data.cassandra.core.cql.ReactiveCqlTemplate}.
 	 *
 	 * @return a {@link ReactiveSession}.
 	 */

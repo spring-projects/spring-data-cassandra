@@ -163,7 +163,7 @@ public class CassandraQueryMethod extends QueryMethod {
 	}
 
 	/**
-	 * @return whether the method has an annotated {@link com.datastax.driver.core.ConsistencyLevel}.
+	 * @return whether the method has an annotated {@link ConsistencyLevel}.
 	 * @since 2.0
 	 */
 	public boolean hasConsistencyLevel() {

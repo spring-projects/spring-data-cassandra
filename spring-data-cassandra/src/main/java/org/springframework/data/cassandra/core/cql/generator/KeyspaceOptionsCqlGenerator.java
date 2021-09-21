@@ -24,7 +24,7 @@ import org.springframework.data.cassandra.core.cql.keyspace.Option;
  * Base class that contains behavior common to CQL generation for table operations.
  *
  * @author Matthew T. Adams
- * @param T The subtype of this class for which this is a CQL generator.
+ * @param <T> the subtype of this class for which this is a CQL generator.
  */
 public abstract class KeyspaceOptionsCqlGenerator<T extends KeyspaceOptionsSpecification<T>>
 		extends KeyspaceNameCqlGenerator<KeyspaceOptionsSpecification<T>> {

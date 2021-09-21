@@ -24,7 +24,7 @@ import org.springframework.data.cassandra.core.cql.keyspace.TableOptionsSpecific
  * Base class that contains behavior common to CQL generation for table operations.
  *
  * @author Matthew T. Adams
- * @param T The subtype of this class for which this is a CQL generator.
+ * @param <T> the subtype of this class for which this is a CQL generator.
  */
 public abstract class TableOptionsCqlGenerator<T extends TableOptionsSpecification<T>>
 		extends TableNameCqlGenerator<T> {

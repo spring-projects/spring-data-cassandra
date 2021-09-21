@@ -145,8 +145,8 @@ public interface CriteriaDefinition {
 
 		/**
 		 * Render to a CQL-like representation. Rendering does not apply conversion via
-		 * {@link com.datastax.driver.core.CodecRegistry} therefore this output is an approximation towards CQL and not
-		 * necessarily valid CQL.
+		 * {@link com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry} therefore this output is an
+		 * approximation towards CQL and not necessarily valid CQL.
 		 *
 		 * @param value optional predicate value, can be {@literal null}.
 		 * @return A CQL-like representation.

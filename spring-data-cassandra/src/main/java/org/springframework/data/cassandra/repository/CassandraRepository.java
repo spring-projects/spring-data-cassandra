@@ -29,7 +29,7 @@ import org.springframework.data.repository.NoRepositoryBean;
 /**
  * Cassandra-specific extension of the {@link CrudRepository} interface that allows the specification of a type for the
  * identity of the {@link Table @Table} (or {@link Persistable @Persistable}) type.
- * <p />
+ * <p>
  * Repositories based on {@link CassandraRepository} can define either a single primary key, use a primary key class or
  * a compound primary key without a primary key class. Types using a compound primary key without a primary key class
  * must use {@link MapId} to declare their key value.
@@ -56,7 +56,7 @@ public interface CassandraRepository<T, ID> extends CrudRepository<T, ID> {
 
 	/**
 	 * {@inheritDoc}
-	 * <p/>
+	 * <p>
 	 * Note: Cassandra supports single-field {@code IN} queries only. When using {@link MapId} with multiple components,
 	 * use {@link #findById(Object)}.
 	 *

@@ -17,13 +17,13 @@ package org.springframework.data.cassandra.core.cql;
 
 import java.util.regex.Pattern;
 
-import com.datastax.oss.driver.api.core.CqlIdentifier;
-
 import org.springframework.util.Assert;
+
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * This encapsulates the logic for keyspace identifiers.
- * <p/>
+ * <p>
  * Keyspace identifiers are converted to lower case. To render, use any of the methods {@link #toCql()},
  * {@link #toCql(StringBuilder)}, or {@link #toString()}.
  *

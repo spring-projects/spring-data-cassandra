@@ -57,7 +57,7 @@ public class MapBuilder<K, V> implements Map<K, V> {
 	}
 
 	/**
-	 * Factory method to construct a new {@code MapBuilder<Object,Object>}. Convenient if imported statically.
+	 * Factory method to construct a new {@code MapBuilder}. Convenient if imported statically.
 	 */
 	public static MapBuilder<Object, Object> map() {
 		return map(Object.class, Object.class);
@@ -90,7 +90,7 @@ public class MapBuilder<K, V> implements Map<K, V> {
 	/**
 	 * Return a new map based on the current state of this builder's map.
 	 *
-	 * @return A new Map<K, V> with this builder's map's current content.
+	 * @return a new Map with this builder's map's current content.
 	 */
 	public Map<K, V> build() {
 		return new LinkedHashMap<>(map);

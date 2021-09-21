@@ -838,7 +838,7 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 		}
 
 		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.ResultSetExtractor#extractData(com.datastax.driver.core.ResultSet)
+		 * @see org.springframework.data.cassandra.core.cql.ResultSetExtractor#extractData(ResultSet)
 		 */
 		@Override
 		@Nullable

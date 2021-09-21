@@ -137,9 +137,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	}
 
 	/**
-	 * Creates a new {@link ConversionContext} given {@link ObjectPath}.
+	 * Creates a new {@link ConversionContext}.
 	 *
-	 * @param path the current {@link ObjectPath}, must not be {@literal null}.
 	 * @return the {@link ConversionContext}.
 	 */
 	protected ConversionContext getConversionContext() {

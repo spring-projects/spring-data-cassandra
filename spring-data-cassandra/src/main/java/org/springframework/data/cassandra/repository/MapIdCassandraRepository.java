@@ -23,11 +23,11 @@ import org.springframework.data.repository.NoRepositoryBean;
 
 /**
  * Cassandra repository interface using {@link MapId} to represent Ids.
- * <p/>
+ * <p>
  * This interface uses {@link MapId} for the id type, allowing you to annotate entity fields or properties with
  * {@link PrimaryKeyColumn @PrimaryKeyColumn}. Use this interface if you do not require a composite primary key class
  * and want to specify the Id with {@link MapId}.
- * <p/>
+ * <p>
  * Steps to use this interface:
  * <ul>
  * <li>Define your entity, including a field or property for each column, including those for partition and (optional)

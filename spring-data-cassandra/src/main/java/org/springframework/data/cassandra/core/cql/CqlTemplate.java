@@ -850,7 +850,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		}
 
 		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.ResultSetExtractor#extractData(com.datastax.driver.core.ResultSet)
+		 * @see org.springframework.data.cassandra.core.cql.ResultSetExtractor#extractData(ResultSet)
 		 */
 		@Override
 		@Nullable

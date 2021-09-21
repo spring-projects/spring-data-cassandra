@@ -25,7 +25,7 @@ import org.springframework.util.Assert;
 
 /**
  * Simple implementation of {@link MapId}.
- * <p/>
+ * <p>
  * <em>Note:</em> This could be extended in various cool ways, like one that takes a type and validates that the given
  * name corresponds to an actual field or bean property on that type. There could also be another one that uses a
  * {@link CassandraPersistentEntity} and {@link CassandraPersistentProperty} instead of a String name.

@@ -23,7 +23,7 @@ import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 
 /**
  * Cache interface to synchronously prepare CQL statements.
- * <p />
+ * <p>
  * Implementing classes of {@link PreparedStatementCache} come with own synchronization and cache implementation
  * characteristics. A cache implementation should optimize for reduction of preparation calls and cache statements using
  * Cassandras cache key which is specific to the Cluster, keyspace, and CQL text.

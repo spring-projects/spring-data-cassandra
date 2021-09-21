@@ -19,7 +19,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 
 import org.reactivestreams.Publisher;
@@ -116,8 +115,8 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	private @Nullable ConsistencyLevel serialConsistencyLevel;
 
 	/**
-	 * Construct a new {@link ReactiveCqlTemplate Note: The {@link ReactiveSessionFactory} has to be set before using the
-	 * instance.
+	 * Construct a new {@link ReactiveCqlTemplate}. Note: The {@link ReactiveSessionFactory} has to be set before using
+	 * the instance.
 	 *
 	 * @see #setSessionFactory
 	 */
@@ -810,7 +809,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	}
 
 	/**
-	 * Exception translation {@link Function} intended for {@link Mono#otherwise(Function)} usage.
+	 * Exception translation {@link Function} intended for {@link Mono#onErrorMap(Function)} usage.
 	 *
 	 * @param task readable text describing the task being attempted
 	 * @param cql CQL query or update that caused the problem (may be {@literal null})
@@ -846,7 +845,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	/**
 	 * Prepare the given CQL Statement applying statement settings such as page size and consistency level.
 	 *
-	 * @param stmt the CQL Statement to prepare
+	 * @param statement the CQL Statement to prepare
 	 * @see #setConsistencyLevel(ConsistencyLevel)
 	 * @see #setSerialConsistencyLevel(ConsistencyLevel)
 	 * @see #setPageSize(int)

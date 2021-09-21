@@ -184,9 +184,11 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 	 * Returns the identifier <em>without</em> encasing quotes, regardless of the value of {@link #isQuoted()}. For
 	 * example, if {@link #isQuoted()} is {@code true}, then this value will be the same as {@link #toCql()} and
 	 * {@link #toString()}.
-	 * <p/>
-	 * This is needed, for example, to get the correct {@link TableMetadata} from
-	 * {@link KeyspaceMetadata#getTable(String)}: the given string must <em>not</em> be quoted.
+	 * <p>
+	 * This is needed, for example, to get the correct
+	 * {@link com.datastax.oss.driver.api.core.metadata.schema.TableMetadata} from
+	 * {@link com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata#getTable(String)}: the given string must
+	 * <em>not</em> be quoted.
 	 */
 	public String getUnquoted() {
 		return unquoted;

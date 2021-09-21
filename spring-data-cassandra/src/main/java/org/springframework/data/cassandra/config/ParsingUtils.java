@@ -143,7 +143,7 @@ abstract class ParsingUtils {
 	/**
 	 * Adds the named property and value, or reference to the given {@link BeanDefinitionBuilder} with an optional default
 	 * value if the value has not been specified.
-	 * <p/>
+	 * <p>
 	 * If {@code required} is <code>false</code>, <code>value</code> is null or empty, and {@code defaultValue} is null or
 	 * empty, then no property is added to the bean definition and this method silently returns.
 	 *

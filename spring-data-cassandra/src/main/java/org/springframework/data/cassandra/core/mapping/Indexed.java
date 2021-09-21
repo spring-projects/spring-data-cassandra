@@ -39,8 +39,8 @@ import java.lang.annotation.Target;
  * &#64;Table
  * class Person {
  *
- * 	Map<@Indexed String, String> indexedKey; // allows CONTAINS KEY queries
- * 	Map<String, @Indexed String> indexedValue; // allows CONTAINS queries
+ * 	Map&lt;@Indexed String, String&gt; indexedKey; // allows CONTAINS KEY queries
+ * 	Map&lt;String, @Indexed String&gt; indexedValue; // allows CONTAINS queries
  * }
  * </pre>
  *
