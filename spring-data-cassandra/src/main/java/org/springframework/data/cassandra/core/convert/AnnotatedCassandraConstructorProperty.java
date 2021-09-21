@@ -146,11 +146,6 @@ class AnnotatedCassandraConstructorProperty implements CassandraPersistentProper
 	}
 
 	@Override
-	public Iterable<? extends TypeInformation<?>> getPersistentEntityTypes() {
-		return delegate.getPersistentEntityTypes();
-	}
-
-	@Override
 	@Nullable
 	public Method getGetter() {
 		return delegate.getGetter();

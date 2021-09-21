@@ -134,11 +134,6 @@ class CassandraConstructorProperty implements CassandraPersistentProperty {
 		return typeInformation;
 	}
 
-	@Override
-	public Iterable<? extends TypeInformation<?>> getPersistentEntityTypes() {
-		return Collections.emptyList();
-	}
-
 	@Nullable
 	@Override
 	public Method getGetter() {

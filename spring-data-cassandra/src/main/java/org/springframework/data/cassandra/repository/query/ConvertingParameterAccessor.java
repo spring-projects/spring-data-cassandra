@@ -17,7 +17,6 @@ package org.springframework.data.cassandra.repository.query;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Optional;
 
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
@@ -64,14 +63,6 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 	@Override
 	public Sort getSort() {
 		return this.delegate.getSort();
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.query.ParameterAccessor#getDynamicProjection()
-	 */
-	@Override
-	public Optional<Class<?>> getDynamicProjection() {
-		return this.delegate.getDynamicProjection();
 	}
 
 	/* (non-Javadoc)

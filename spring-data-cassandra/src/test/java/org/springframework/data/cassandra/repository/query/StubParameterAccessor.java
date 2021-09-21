@@ -17,7 +17,6 @@ package org.springframework.data.cassandra.repository.query;
 
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.Optional;
 
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
@@ -51,7 +50,6 @@ class StubParameterAccessor implements CassandraParameterAccessor {
 		return new ConvertingParameterAccessor(converter, new StubParameterAccessor(parameters));
 	}
 
-	@SuppressWarnings("unchecked")
 	private StubParameterAccessor(Object... values) {
 		this.values = values;
 	}
@@ -80,11 +78,6 @@ class StubParameterAccessor implements CassandraParameterAccessor {
 	@Override
 	public Sort getSort() {
 		return null;
-	}
-
-	@Override
-	public Optional<Class<?>> getDynamicProjection() {
-		return Optional.empty();
 	}
 
 	@Nullable
