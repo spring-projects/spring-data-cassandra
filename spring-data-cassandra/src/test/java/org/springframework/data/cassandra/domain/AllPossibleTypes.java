@@ -15,12 +15,7 @@
  */
 package org.springframework.data.cassandra.domain;
 
-import static org.springframework.data.cassandra.core.mapping.CassandraType.*;
-
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import static org.springframework.data.cassandra.core.mapping.CassandraType.Name;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -38,6 +33,11 @@ import org.springframework.data.cassandra.core.mapping.PrimaryKey;
 import org.springframework.data.cassandra.core.mapping.Table;
 
 import com.datastax.oss.driver.api.core.data.TupleValue;
+
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 /**
  * @author Mark Paluch
@@ -100,16 +100,5 @@ public class AllPossibleTypes {
 	// supported by conversion
 	java.time.LocalDateTime localDateTime;
 	java.time.ZoneId zoneId;
-
-	org.joda.time.DateTime jodaDateTime;
-	org.joda.time.LocalDate jodaLocalDate;
-	org.joda.time.LocalDateTime jodaLocalDateTime;
-	org.joda.time.LocalTime jodaLocalTime;
-
-	org.threeten.bp.Instant bpInstant;
-	org.threeten.bp.LocalDate bpLocalDate;
-	org.threeten.bp.LocalDateTime bpLocalDateTime;
-	org.threeten.bp.LocalTime bpLocalTime;
-	org.threeten.bp.ZoneId bpZoneId;
 
 }

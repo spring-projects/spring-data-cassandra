@@ -19,9 +19,8 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.domain.Sort.Order.*;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Currency;
@@ -30,8 +29,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import org.joda.time.LocalDate;
-import org.joda.time.LocalTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -67,6 +64,9 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.data.TupleValue;
 import com.datastax.oss.driver.api.core.data.UdtValue;
 import com.datastax.oss.driver.api.core.type.DataTypes;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 /**
  * Unit tests for {@link QueryMapper}.
@@ -370,7 +370,7 @@ public class QueryMapperUnitTests {
 	@Test // DATACASS-302
 	void shouldMapTime() {
 
-		Filter filter = Filter.from(Criteria.where("localTime").gt(LocalTime.fromMillisOfDay(1000)));
+		Filter filter = Filter.from(Criteria.where("localTime").gt(LocalTime.ofNanoOfDay(1000)));
 
 		Filter mappedObject = this.queryMapper.getMappedObject(filter,
 				this.mappingContext.getRequiredPersistentEntity(Person.class));

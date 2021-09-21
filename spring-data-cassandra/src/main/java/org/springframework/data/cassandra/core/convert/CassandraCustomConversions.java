@@ -47,9 +47,7 @@ public class CassandraCustomConversions extends org.springframework.data.convert
 		List<Object> converters = new ArrayList<>();
 
 		converters.addAll(CassandraConverters.getConvertersToRegister());
-		converters.addAll(CassandraJodaTimeConverters.getConvertersToRegister());
 		converters.addAll(CassandraJsr310Converters.getConvertersToRegister());
-		converters.addAll(CassandraThreeTenBackPortConverters.getConvertersToRegister());
 
 		STORE_CONVERTERS = Collections.unmodifiableList(converters);
 		STORE_CONVERSIONS = StoreConversions.of(CassandraSimpleTypeHolder.HOLDER, STORE_CONVERTERS);

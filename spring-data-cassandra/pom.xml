@@ -61,18 +61,6 @@
 			<version>${springdata.commons}</version>
 		</dependency>
 
-		<dependency>
-			<groupId>joda-time</groupId>
-			<artifactId>joda-time</artifactId>
-			<optional>true</optional>
-		</dependency>
-
-		<dependency>
-			<groupId>org.threeten</groupId>
-			<artifactId>threetenbp</artifactId>
-			<optional>true</optional>
-		</dependency>
-
 		<!-- Cassandra driver -->
 		<dependency>
 			<groupId>com.datastax.oss</groupId>

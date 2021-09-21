@@ -15,14 +15,13 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-import static org.springframework.data.cassandra.core.mapping.CassandraType.*;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.springframework.data.cassandra.core.mapping.CassandraType.Name;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -35,6 +34,7 @@ import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.cql.Ordering;
@@ -43,7 +43,18 @@ import org.springframework.data.cassandra.core.cql.keyspace.ColumnSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification.ColumnFunction;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
-import org.springframework.data.cassandra.core.mapping.*;
+import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
+import org.springframework.data.cassandra.core.mapping.CassandraType;
+import org.springframework.data.cassandra.core.mapping.Column;
+import org.springframework.data.cassandra.core.mapping.Element;
+import org.springframework.data.cassandra.core.mapping.Embedded;
+import org.springframework.data.cassandra.core.mapping.Indexed;
+import org.springframework.data.cassandra.core.mapping.PrimaryKey;
+import org.springframework.data.cassandra.core.mapping.PrimaryKeyClass;
+import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
+import org.springframework.data.cassandra.core.mapping.Table;
+import org.springframework.data.cassandra.core.mapping.Tuple;
 import org.springframework.data.cassandra.domain.AllPossibleTypes;
 import org.springframework.data.cassandra.support.UserDefinedTypeBuilder;
 import org.springframework.data.mapping.MappingException;
@@ -60,6 +71,10 @@ import com.datastax.oss.driver.api.core.type.TupleType;
 import com.datastax.oss.driver.api.core.type.UserDefinedType;
 import com.datastax.oss.protocol.internal.ProtocolConstants;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * Unit tests for {@link SchemaFactory}.
@@ -502,15 +517,6 @@ public class SchemaFactoryUnitTests {
 	}
 
 	@Test // DATACASS-296
-	void columnsShouldMapToTimestampUsingOverrides() {
-
-		CreateTableSpecification specification = getCreateTableSpecificationFor(TypeWithOverrides.class);
-
-		assertThat(getColumnType("localDate", specification)).isEqualTo(DataTypes.TIMESTAMP);
-		assertThat(getColumnType("jodaLocalDate", specification)).isEqualTo(DataTypes.TIMESTAMP);
-	}
-
-	@Test // DATACASS-296
 	void columnsShouldMapToBlob() {
 
 		CreateTableSpecification specification = getCreateTableSpecificationFor(AllPossibleTypes.class);
@@ -686,16 +692,6 @@ public class SchemaFactoryUnitTests {
 
 		String firstname;
 		String lastname;
-	}
-
-	@Data
-	@Table
-	private static class TypeWithOverrides {
-
-		@Id String id;
-
-		@CassandraType(type = Name.TIMESTAMP) java.time.LocalDate localDate;
-		@CassandraType(type = Name.TIMESTAMP) org.joda.time.LocalDate jodaLocalDate;
 	}
 
 	private static class PersonReadConverter implements Converter<String, Human> {

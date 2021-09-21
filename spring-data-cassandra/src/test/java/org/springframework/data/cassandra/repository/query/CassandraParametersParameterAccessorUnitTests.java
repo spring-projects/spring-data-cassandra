@@ -15,10 +15,11 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.springframework.data.cassandra.core.mapping.CassandraType.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.data.cassandra.core.mapping.CassandraType.Name;
 
 import java.lang.reflect.Method;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -34,8 +35,6 @@ import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
-
-import org.threeten.bp.LocalDateTime;
 
 import com.datastax.oss.driver.api.core.type.DataTypes;
 

@@ -15,16 +15,10 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.springframework.data.cassandra.core.mapping.BasicMapId.*;
-import static org.springframework.data.cassandra.test.util.RowMockUtil.*;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.springframework.data.cassandra.core.mapping.BasicMapId.id;
+import static org.springframework.data.cassandra.test.util.RowMockUtil.column;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -34,10 +28,20 @@ import java.net.UnknownHostException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -51,8 +55,18 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
-import org.springframework.data.cassandra.core.mapping.*;
+import org.springframework.data.cassandra.core.mapping.BasicMapId;
+import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.core.mapping.Column;
+import org.springframework.data.cassandra.core.mapping.Element;
+import org.springframework.data.cassandra.core.mapping.Embedded;
+import org.springframework.data.cassandra.core.mapping.MapId;
+import org.springframework.data.cassandra.core.mapping.PrimaryKey;
+import org.springframework.data.cassandra.core.mapping.PrimaryKeyClass;
+import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
+import org.springframework.data.cassandra.core.mapping.Table;
+import org.springframework.data.cassandra.core.mapping.Tuple;
 import org.springframework.data.cassandra.domain.AllPossibleTypes;
 import org.springframework.data.cassandra.domain.CompositeKey;
 import org.springframework.data.cassandra.domain.TypeWithCompositeKey;
@@ -70,6 +84,13 @@ import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.datastax.oss.driver.internal.core.data.DefaultTupleValue;
 import com.datastax.oss.driver.internal.core.type.DefaultTupleType;
+
+
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 /**
  * Unit tests for {@link MappingCassandraConverter}.
@@ -347,37 +368,6 @@ public class MappingCassandraConverterUnitTests {
 		assertThat(insert.get(CqlIdentifier.fromCql("timestamp"))).isInstanceOf(Instant.class);
 	}
 
-	@Test // DATACASS-656, DATACASS-727
-	void shouldReadAndWriteTimestampFromObjectWithConversion() {
-
-		AllPossibleTypes entity = new AllPossibleTypes("1");
-		entity.setInstant(Instant.now());
-		entity.setTimestamp(new Date(1));
-		entity.setJodaDateTime(new org.joda.time.DateTime(2010, 7, 4, 1, 2, 3));
-		entity.setBpInstant(org.threeten.bp.Instant.now());
-
-		Map<CqlIdentifier, Object> insert = new LinkedHashMap<>();
-
-		mappingCassandraConverter.write(entity, insert);
-
-		assertThat(insert.get(CqlIdentifier.fromCql("jodadatetime"))).isInstanceOf(Instant.class);
-		assertThat(insert.get(CqlIdentifier.fromCql("bpinstant"))).isInstanceOf(Instant.class);
-	}
-
-	@Test // DATACASS-656
-	void shouldReadAndWriteTimeFromObjectWithConversion() {
-
-		AllPossibleTypes entity = new AllPossibleTypes("1");
-
-		entity.setJodaLocalTime(org.joda.time.LocalTime.fromMillisOfDay(50000));
-
-		Map<CqlIdentifier, Object> insert = new LinkedHashMap<>();
-
-		mappingCassandraConverter.write(entity, insert);
-
-		assertThat(insert.get(CqlIdentifier.fromCql("jodalocaltime"))).isInstanceOf(LocalTime.class);
-	}
-
 	@Test // DATACASS-271
 	void shouldReadDateCorrectly() {
 
@@ -566,88 +556,6 @@ public class MappingCassandraConverterUnitTests {
 
 		assertThat(result.zoneId).isNotNull();
 		assertThat(result.zoneId.getId()).isEqualTo("Europe/Paris");
-	}
-
-	@Test // DATACASS-296
-	void shouldReadJodaLocalDateTimeUsingCassandraDateCorrectly() {
-
-		rowMock = RowMockUtil.newRowMock(column("id", "my-id", DataTypes.ASCII),
-				column("localDate", LocalDate.of(2010, 7, 4), DataTypes.DATE));
-
-		TypeWithJodaLocalDateMappedToDate result = mappingCassandraConverter
-				.readRow(TypeWithJodaLocalDateMappedToDate.class, rowMock);
-
-		assertThat(result.localDate).isNotNull();
-		assertThat(result.localDate.getYear()).isEqualTo(2010);
-		assertThat(result.localDate.getMonthOfYear()).isEqualTo(7);
-		assertThat(result.localDate.getDayOfMonth()).isEqualTo(4);
-	}
-
-	@Test // DATACASS-296
-	void shouldCreateInsertWithJodaLocalDateUsingCassandraDateCorrectly() {
-
-		TypeWithJodaLocalDateMappedToDate typeWithLocalDate = new TypeWithJodaLocalDateMappedToDate();
-		typeWithLocalDate.localDate = new org.joda.time.LocalDate(2010, 7, 4);
-
-		Map<CqlIdentifier, Object> insert = new LinkedHashMap<>();
-
-		mappingCassandraConverter.write(typeWithLocalDate, insert);
-
-		assertThat(getValues(insert)).contains(LocalDate.of(2010, 7, 4));
-	}
-
-	@Test // DATACASS-296
-	void shouldCreateUpdateWithJodaLocalDateUsingCassandraDateCorrectly() {
-
-		TypeWithJodaLocalDateMappedToDate typeWithLocalDate = new TypeWithJodaLocalDateMappedToDate();
-		typeWithLocalDate.localDate = new org.joda.time.LocalDate(2010, 7, 4);
-
-		Map<CqlIdentifier, Object> update = new LinkedHashMap<>();
-
-		mappingCassandraConverter.write(typeWithLocalDate, update);
-
-		assertThat(getValues(update)).contains(LocalDate.of(2010, 7, 4));
-	}
-
-	@Test // DATACASS-296
-	void shouldReadThreeTenBpLocalDateTimeUsingCassandraDateCorrectly() {
-
-		rowMock = RowMockUtil.newRowMock(column("id", "my-id", DataTypes.ASCII),
-				column("localDate", LocalDate.of(2010, 7, 4), DataTypes.DATE));
-
-		TypeWithThreeTenBpLocalDateMappedToDate result = mappingCassandraConverter
-				.readRow(TypeWithThreeTenBpLocalDateMappedToDate.class, rowMock);
-
-		assertThat(result.localDate).isNotNull();
-		assertThat(result.localDate.getYear()).isEqualTo(2010);
-		assertThat(result.localDate.getMonthValue()).isEqualTo(7);
-		assertThat(result.localDate.getDayOfMonth()).isEqualTo(4);
-	}
-
-	@Test // DATACASS-296
-	void shouldCreateInsertWithThreeTenBpLocalDateUsingCassandraDateCorrectly() {
-
-		TypeWithThreeTenBpLocalDateMappedToDate typeWithLocalDate = new TypeWithThreeTenBpLocalDateMappedToDate();
-		typeWithLocalDate.localDate = org.threeten.bp.LocalDate.of(2010, 7, 4);
-
-		Map<CqlIdentifier, Object> insert = new LinkedHashMap<>();
-
-		mappingCassandraConverter.write(typeWithLocalDate, insert);
-
-		assertThat(getValues(insert)).contains(LocalDate.of(2010, 7, 4));
-	}
-
-	@Test // DATACASS-296
-	void shouldCreateUpdateWithThreeTenBpLocalDateUsingCassandraDateCorrectly() {
-
-		TypeWithThreeTenBpLocalDateMappedToDate typeWithLocalDate = new TypeWithThreeTenBpLocalDateMappedToDate();
-		typeWithLocalDate.localDate = org.threeten.bp.LocalDate.of(2010, 7, 4);
-
-		Map<CqlIdentifier, Object> update = new LinkedHashMap<>();
-
-		mappingCassandraConverter.write(typeWithLocalDate, update);
-
-		assertThat(getValues(update)).contains(LocalDate.of(2010, 7, 4));
 	}
 
 	@Test // DATACASS-206
@@ -1242,28 +1150,6 @@ public class MappingCassandraConverterUnitTests {
 		@PrimaryKey private String id;
 
 		@CassandraType(type = CassandraType.Name.DATE) java.time.LocalDate localDate;
-	}
-
-	/**
-	 * Uses Cassandra's {@link Name#DATE} which maps by default to Joda {@link LocalDate}
-	 */
-	@Table
-	private static class TypeWithJodaLocalDateMappedToDate {
-
-		@PrimaryKey private String id;
-
-		@CassandraType(type = CassandraType.Name.DATE) private org.joda.time.LocalDate localDate;
-	}
-
-	/**
-	 * Uses Cassandra's {@link Name#DATE} which maps by default to Joda {@link LocalDate}
-	 */
-	@Table
-	private static class TypeWithThreeTenBpLocalDateMappedToDate {
-
-		@PrimaryKey private String id;
-
-		@CassandraType(type = CassandraType.Name.DATE) private org.threeten.bp.LocalDate localDate;
 	}
 
 	@Table

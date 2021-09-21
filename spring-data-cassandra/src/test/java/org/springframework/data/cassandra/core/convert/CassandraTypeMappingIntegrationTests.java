@@ -15,12 +15,8 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.Assume.*;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assume.assumeTrue;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -58,6 +54,10 @@ import com.datastax.oss.driver.api.core.data.CqlDuration;
 import com.datastax.oss.driver.api.core.data.TupleValue;
 import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.datastax.oss.driver.api.core.type.TupleType;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * Integration tests for type mapping using {@link CassandraOperations}.
@@ -589,22 +589,6 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 		assertThat(entity.getTime()).isEqualTo(LocalTime.of(1, 2, 3, 0));
 	}
 
-	@Test // DATACASS-296, DATACASS-563
-	void shouldReadAndWriteJodaLocalTime() {
-
-		assumeTrue(cassandraVersion.isGreaterThanOrEqualTo(VERSION_3_10));
-
-		AllPossibleTypes entity = new AllPossibleTypes("1");
-
-		entity.setJodaLocalTime(org.joda.time.LocalTime.fromMillisOfDay(50000));
-
-		operations.insert(entity);
-
-		AllPossibleTypes loaded = load(entity);
-
-		assertThat(loaded.getJodaLocalTime()).isEqualTo(entity.getJodaLocalTime());
-	}
-
 	@Test // DATACASS-296
 	void shouldReadAndWriteInstant() {
 
@@ -632,106 +616,6 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 		AllPossibleTypes loaded = load(entity);
 
 		assertThat(loaded.getZoneId()).isEqualTo(entity.getZoneId());
-	}
-
-	@Test // DATACASS-296
-	void shouldReadAndWriteJodaLocalDate() {
-
-		AllPossibleTypes entity = new AllPossibleTypes("1");
-
-		entity.setJodaLocalDate(new org.joda.time.LocalDate(2010, 7, 4));
-
-		operations.insert(entity);
-
-		AllPossibleTypes loaded = load(entity);
-
-		assertThat(loaded.getJodaLocalDate()).isEqualTo(entity.getJodaLocalDate());
-	}
-
-	@Test // DATACASS-296, DATACASS-727
-	void shouldReadAndWriteJodaDateTime() {
-
-		AllPossibleTypes entity = new AllPossibleTypes("1");
-
-		entity.setJodaDateTime(new org.joda.time.DateTime(2010, 7, 4, 1, 2, 3));
-
-		operations.insert(entity);
-
-		AllPossibleTypes loaded = load(entity);
-
-		assertThat(loaded.getJodaDateTime()).isEqualTo(entity.getJodaDateTime());
-	}
-
-	@Test // DATACASS-296
-	void shouldReadAndWriteBpLocalDate() {
-
-		AllPossibleTypes entity = new AllPossibleTypes("1");
-
-		entity.setBpLocalDate(org.threeten.bp.LocalDate.of(2010, 7, 4));
-
-		operations.insert(entity);
-
-		AllPossibleTypes loaded = load(entity);
-
-		assertThat(loaded.getBpLocalDate()).isEqualTo(entity.getBpLocalDate());
-	}
-
-	@Test // DATACASS-296
-	void shouldReadAndWriteBpLocalDateTime() {
-
-		AllPossibleTypes entity = new AllPossibleTypes("1");
-
-		entity.setBpLocalDateTime(org.threeten.bp.LocalDateTime.of(2010, 7, 4, 1, 2, 3));
-
-		operations.insert(entity);
-
-		AllPossibleTypes loaded = load(entity);
-
-		assertThat(loaded.getBpLocalDateTime()).isEqualTo(entity.getBpLocalDateTime());
-	}
-
-	@Test // DATACASS-296, DATACASS-563
-	void shouldReadAndWriteBpLocalTime() {
-
-		assumeTrue(cassandraVersion.isGreaterThanOrEqualTo(VERSION_3_10));
-
-		AllPossibleTypes entity = new AllPossibleTypes("1");
-
-		entity.setBpLocalTime(org.threeten.bp.LocalTime.of(1, 2, 3));
-
-		operations.insert(entity);
-
-		AllPossibleTypes loaded = load(entity);
-
-		assertThat(loaded.getBpLocalTime()).isEqualTo(entity.getBpLocalTime());
-	}
-
-	@Test // DATACASS-296, DATACASS-727
-	void shouldReadAndWriteBpInstant() {
-
-		AllPossibleTypes entity = new AllPossibleTypes("1");
-
-		entity.setBpInstant(org.threeten.bp.Instant.now());
-
-		operations.insert(entity);
-
-		AllPossibleTypes loaded = load(entity);
-
-		assertThat(loaded.getBpInstant()).isEqualTo(entity.getBpInstant());
-	}
-
-	@Test // DATACASS-296
-	void shouldReadAndWriteBpZoneId() {
-
-		AllPossibleTypes entity = new AllPossibleTypes("1");
-
-		entity.setBpZoneId(org.threeten.bp.ZoneId.of("Europe/Paris"));
-
-		operations.insert(entity);
-
-		AllPossibleTypes loaded = load(entity);
-
-		assertThat(loaded.getBpZoneId()).isEqualTo(entity.getBpZoneId());
 	}
 
 	@Test // DATACASS-429, DATACASS-727
