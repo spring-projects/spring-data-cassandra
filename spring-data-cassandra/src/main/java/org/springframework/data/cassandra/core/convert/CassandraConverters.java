@@ -92,7 +92,10 @@ abstract class CassandraConverters {
 
 		@Override
 		public Date convert(Row row) {
-			return Date.from(row.getInstant(0));
+
+			Instant instant = row.getInstant(0);
+
+			return instant != null ? Date.from(instant) : null;
 		}
 	}
 

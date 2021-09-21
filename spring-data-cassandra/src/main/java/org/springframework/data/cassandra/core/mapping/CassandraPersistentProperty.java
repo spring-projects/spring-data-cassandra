@@ -126,10 +126,23 @@ public interface CassandraPersistentProperty
 
 		Integer ordinal = getOrdinal();
 
-		Assert.state(ordinal != null, () -> String.format("No ordinal available for this persistent property [%1$s.%2$s]",
+		Assert.state(ordinal != null,
+			() -> String.format("No ordinal available for this persistent property [%1$s.%2$s]",
 				getOwner().getName(), getName()));
 
 		return ordinal;
+	}
+
+	/**
+	 * Determines whether this {@link CassandraPersistentProperty} is persisted (mapped) to an element ordinal
+	 * when the owning type is a mapped tuple.
+	 *
+	 * @return a boolean value indicating whether this {@link CassandraPersistentProperty} is persisted (mapped) to
+	 * an element ordinal when the owning type is a mapped tuple.
+	 * @see #getOrdinal()
+	 */
+	default boolean hasOrdinal() {
+		return getOrdinal() != null;
 	}
 
 	/**

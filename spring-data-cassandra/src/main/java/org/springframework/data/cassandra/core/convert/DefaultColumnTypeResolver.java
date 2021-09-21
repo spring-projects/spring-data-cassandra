@@ -174,16 +174,11 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 
 	private CassandraColumnType resolve(TypeInformation<?> typeInformation, FrozenIndicator frozen) {
 
-		return getCustomWriteTarget(typeInformation).map(it -> {
-			return createCassandraTypeDescriptor(tryResolve(it), ClassTypeInformation.from(it));
-		}).orElseGet(() -> {
-
-			if (typeInformation.getType().isEnum()) {
-				return ColumnType.create(String.class, DataTypes.TEXT);
-			}
-
-			return createCassandraTypeDescriptor(typeInformation, frozen);
-		});
+		return getCustomWriteTarget(typeInformation)
+			.map(it -> createCassandraTypeDescriptor(tryResolve(it), ClassTypeInformation.from(it)))
+			.orElseGet(() -> typeInformation.getType().isEnum()
+				? ColumnType.create(String.class, DataTypes.TEXT)
+				: createCassandraTypeDescriptor(typeInformation, frozen));
 	}
 
 	private Optional<Class<?>> getCustomWriteTarget(TypeInformation<?> typeInformation) {
@@ -203,9 +198,9 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 
 		try {
 			return getCodecRegistry().codecFor(type).getCqlType();
-		} catch (CodecNotFoundException e) {
+		} catch (CodecNotFoundException cause) {
 			if (log.isDebugEnabled()) {
-				log.debug(String.format("Cannot resolve Codec for %s", type.getName()), e);
+				log.debug(String.format("Cannot resolve Codec for %s", type.getName()), cause);
 			}
 			return null;
 		}
@@ -435,11 +430,10 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 		}
 
 		DataType dataType = tryResolve(typeInformation.getType());
-		if (dataType == null) {
-			return new UnresolvableCassandraType(typeInformation);
-		}
 
-		return new DefaultCassandraColumnType(typeInformation, dataType);
+		return dataType == null
+			? new UnresolvableCassandraType(typeInformation)
+			: new DefaultCassandraColumnType(typeInformation, dataType);
 	}
 
 	private DataType getRequiredDataType(CassandraType annotation, int typeIndex) {

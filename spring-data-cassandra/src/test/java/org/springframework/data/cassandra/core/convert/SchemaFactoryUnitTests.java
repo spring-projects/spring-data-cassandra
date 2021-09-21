@@ -86,7 +86,8 @@ import lombok.NoArgsConstructor;
  */
 public class SchemaFactoryUnitTests {
 
-	private CassandraMappingContext ctx = new CassandraMappingContext();
+	private final CassandraMappingContext mappingContext = new CassandraMappingContext();
+
 	private SchemaFactory schemaFactory;
 
 	@BeforeEach
@@ -98,14 +99,14 @@ public class SchemaFactoryUnitTests {
 		converters.add(HumanToStringConverter.INSTANCE);
 
 		CassandraCustomConversions customConversions = new CassandraCustomConversions(converters);
-		ctx.setCustomConversions(customConversions);
-		schemaFactory = new SchemaFactory(new MappingCassandraConverter(ctx));
+		mappingContext.setCustomConversions(customConversions);
+		schemaFactory = new SchemaFactory(new MappingCassandraConverter(mappingContext));
 	}
 
 	@Test // DATACASS-340
 	void createdTableSpecificationShouldConsiderClusterColumnOrdering() {
 
-		CassandraPersistentEntity<?> persistentEntity = ctx
+		CassandraPersistentEntity<?> persistentEntity = mappingContext
 				.getRequiredPersistentEntity(EntityWithOrderedClusteredColumns.class);
 
 		CreateTableSpecification tableSpecification = schemaFactory.getCreateTableSpecificationFor(persistentEntity);
@@ -129,7 +130,7 @@ public class SchemaFactoryUnitTests {
 	@Test // DATACASS-340
 	void createdTableSpecificationShouldConsiderPrimaryKeyClassClusterColumnOrdering() {
 
-		CassandraPersistentEntity<?> persistentEntity = ctx
+		CassandraPersistentEntity<?> persistentEntity = mappingContext
 				.getRequiredPersistentEntity(EntityWithPrimaryKeyWithOrderedClusteredColumns.class);
 
 		CreateTableSpecification tableSpecification = schemaFactory.getCreateTableSpecificationFor(persistentEntity);
@@ -155,9 +156,9 @@ public class SchemaFactoryUnitTests {
 
 		UserDefinedType mappedudt = UserDefinedTypeBuilder.forName("mappedudt").withField("foo", DataTypes.ASCII).build();
 
-		this.ctx.setUserTypeResolver(typeName -> mappedudt);
+		this.mappingContext.setUserTypeResolver(typeName -> mappedudt);
 
-		CassandraPersistentEntity<?> persistentEntity = this.ctx.getRequiredPersistentEntity(WithMapOfMixedTypes.class);
+		CassandraPersistentEntity<?> persistentEntity = this.mappingContext.getRequiredPersistentEntity(WithMapOfMixedTypes.class);
 
 		CreateTableSpecification tableSpecification = schemaFactory.getCreateTableSpecificationFor(persistentEntity);
 
@@ -221,7 +222,7 @@ public class SchemaFactoryUnitTests {
 	void createIndexShouldConsiderAnnotatedProperties() {
 
 		List<CreateIndexSpecification> specifications = schemaFactory
-				.getCreateIndexSpecificationsFor(ctx.getRequiredPersistentEntity(IndexedType.class));
+				.getCreateIndexSpecificationsFor(mappingContext.getRequiredPersistentEntity(IndexedType.class));
 
 		CreateIndexSpecification firstname = getSpecificationFor("first_name", specifications);
 
@@ -242,7 +243,7 @@ public class SchemaFactoryUnitTests {
 	void createIndexForClusteredPrimaryKeyShouldConsiderAnnotatedAccessors() {
 
 		List<CreateIndexSpecification> specifications = schemaFactory
-				.getCreateIndexSpecificationsFor(ctx.getRequiredPersistentEntity(CompositeKeyEntity.class));
+				.getCreateIndexSpecificationsFor(mappingContext.getRequiredPersistentEntity(CompositeKeyEntity.class));
 
 		CreateIndexSpecification entries = getSpecificationFor("last_name", specifications);
 
@@ -256,11 +257,11 @@ public class SchemaFactoryUnitTests {
 	void shouldRejectUntypedTuples() {
 
 		assertThatThrownBy(() -> this.schemaFactory
-				.getCreateTableSpecificationFor(this.ctx.getRequiredPersistentEntity(UntypedTupleEntity.class)))
+				.getCreateTableSpecificationFor(this.mappingContext.getRequiredPersistentEntity(UntypedTupleEntity.class)))
 						.isInstanceOf(MappingException.class);
 
 		assertThatThrownBy(() -> this.schemaFactory
-				.getCreateTableSpecificationFor(this.ctx.getRequiredPersistentEntity(UntypedTupleMapEntity.class)))
+				.getCreateTableSpecificationFor(this.mappingContext.getRequiredPersistentEntity(UntypedTupleMapEntity.class)))
 						.isInstanceOf(MappingException.class);
 	}
 
@@ -268,7 +269,7 @@ public class SchemaFactoryUnitTests {
 	void shouldCreateTableForTypedTupleType() {
 
 		CreateTableSpecification tableSpecification = this.schemaFactory
-				.getCreateTableSpecificationFor(this.ctx.getRequiredPersistentEntity(TypedTupleEntity.class));
+				.getCreateTableSpecificationFor(this.mappingContext.getRequiredPersistentEntity(TypedTupleEntity.class));
 
 		assertThat(tableSpecification.getColumns()).hasSize(2);
 
@@ -282,7 +283,7 @@ public class SchemaFactoryUnitTests {
 	void shouldCreateTableForEntityWithMapOfTuples() {
 
 		CreateTableSpecification tableSpecification = this.schemaFactory
-				.getCreateTableSpecificationFor(this.ctx.getRequiredPersistentEntity(EntityWithMapOfTuples.class));
+				.getCreateTableSpecificationFor(this.mappingContext.getRequiredPersistentEntity(EntityWithMapOfTuples.class));
 
 		assertThat(tableSpecification.getColumns()).hasSize(2);
 
@@ -325,9 +326,9 @@ public class SchemaFactoryUnitTests {
 	@Test // DATACASS-506
 	void shouldCreatedUserTypeSpecificationsWithAnnotatedTypeName() {
 
-		assertThat(schemaFactory.getCreateUserTypeSpecificationFor(ctx.getRequiredPersistentEntity(WithUdt.class)))
+		assertThat(schemaFactory.getCreateUserTypeSpecificationFor(mappingContext.getRequiredPersistentEntity(WithUdt.class)))
 				.isNotNull();
-		assertThat(schemaFactory.getCreateUserTypeSpecificationFor(ctx.getRequiredPersistentEntity(Nested.class)))
+		assertThat(schemaFactory.getCreateUserTypeSpecificationFor(mappingContext.getRequiredPersistentEntity(Nested.class)))
 				.isNotNull();
 	}
 
@@ -336,7 +337,7 @@ public class SchemaFactoryUnitTests {
 
 		try {
 			schemaFactory
-					.getCreateTableSpecificationFor(ctx.getRequiredPersistentEntity(EntityWithComplexPrimaryKeyColumn.class));
+					.getCreateTableSpecificationFor(mappingContext.getRequiredPersistentEntity(EntityWithComplexPrimaryKeyColumn.class));
 			fail("Missing MappingException");
 		} catch (MappingException e) {
 			assertThat(e).hasMessageContaining(
@@ -344,7 +345,7 @@ public class SchemaFactoryUnitTests {
 		}
 
 		try {
-			schemaFactory.getCreateTableSpecificationFor(ctx.getRequiredPersistentEntity(EntityWithComplexId.class));
+			schemaFactory.getCreateTableSpecificationFor(mappingContext.getRequiredPersistentEntity(EntityWithComplexId.class));
 			fail("Missing MappingException");
 		} catch (MappingException e) {
 			assertThat(e).hasMessageContaining(
@@ -353,7 +354,7 @@ public class SchemaFactoryUnitTests {
 
 		try {
 			schemaFactory.getCreateTableSpecificationFor(
-					ctx.getRequiredPersistentEntity(EntityWithPrimaryKeyClassWithComplexId.class));
+					mappingContext.getRequiredPersistentEntity(EntityWithPrimaryKeyClassWithComplexId.class));
 			fail("Missing MappingException");
 		} catch (MappingException e) {
 			assertThat(e).hasMessageContaining(
@@ -364,7 +365,7 @@ public class SchemaFactoryUnitTests {
 	@Test // DATACASS-296
 	void customConversionTestShouldCreateCorrectTableDefinition() {
 
-		CassandraPersistentEntity<?> persistentEntity = ctx.getRequiredPersistentEntity(Employee.class);
+		CassandraPersistentEntity<?> persistentEntity = mappingContext.getRequiredPersistentEntity(Employee.class);
 
 		CreateTableSpecification specification = schemaFactory.getCreateTableSpecificationFor(persistentEntity);
 
@@ -388,7 +389,7 @@ public class SchemaFactoryUnitTests {
 	@Test // DATACASS-296
 	void customConversionTestShouldHonorTypeAnnotationAndCreateCorrectTableDefinition() {
 
-		CassandraPersistentEntity<?> persistentEntity = ctx.getRequiredPersistentEntity(Employee.class);
+		CassandraPersistentEntity<?> persistentEntity = mappingContext.getRequiredPersistentEntity(Employee.class);
 
 		CreateTableSpecification specification = schemaFactory.getCreateTableSpecificationFor(persistentEntity);
 
@@ -409,7 +410,6 @@ public class SchemaFactoryUnitTests {
 
 		assertThat(getColumnType("id", specification)).isEqualTo(DataTypes.TEXT);
 		assertThat(getColumnType("zoneId", specification)).isEqualTo(DataTypes.TEXT);
-		assertThat(getColumnType("bpZoneId", specification)).isEqualTo(DataTypes.TEXT);
 		assertThat(getColumnType("anEnum", specification)).isEqualTo(DataTypes.TEXT);
 	}
 
@@ -498,8 +498,6 @@ public class SchemaFactoryUnitTests {
 		CreateTableSpecification specification = getCreateTableSpecificationFor(AllPossibleTypes.class);
 
 		assertThat(getColumnType("date", specification)).isEqualTo(DataTypes.DATE);
-		assertThat(getColumnType("jodaLocalDate", specification)).isEqualTo(DataTypes.DATE);
-		assertThat(getColumnType("bpLocalDate", specification)).isEqualTo(DataTypes.DATE);
 	}
 
 	@Test // DATACASS-296
@@ -510,10 +508,6 @@ public class SchemaFactoryUnitTests {
 		assertThat(getColumnType("timestamp", specification)).isEqualTo(DataTypes.TIMESTAMP);
 		assertThat(getColumnType("localDateTime", specification)).isEqualTo(DataTypes.TIMESTAMP);
 		assertThat(getColumnType("instant", specification)).isEqualTo(DataTypes.TIMESTAMP);
-		assertThat(getColumnType("jodaLocalDateTime", specification)).isEqualTo(DataTypes.TIMESTAMP);
-		assertThat(getColumnType("jodaDateTime", specification)).isEqualTo(DataTypes.TIMESTAMP);
-		assertThat(getColumnType("bpLocalDateTime", specification)).isEqualTo(DataTypes.TIMESTAMP);
-		assertThat(getColumnType("bpInstant", specification)).isEqualTo(DataTypes.TIMESTAMP);
 	}
 
 	@Test // DATACASS-296
@@ -539,7 +533,7 @@ public class SchemaFactoryUnitTests {
 
 		UserDefinedType mappedUdt = new SchemaFactory.ShallowUserDefinedType("mappedudt", true);
 
-		ctx.setUserTypeResolver(typeName -> {
+		mappingContext.setUserTypeResolver(typeName -> {
 
 			if (typeName.equals(mappedUdt.getName())) {
 				return mappedUdt;
@@ -568,7 +562,7 @@ public class SchemaFactoryUnitTests {
 		when(mappedUdt.asCql(anyBoolean(), anyBoolean())).thenReturn("mappedudt");
 		when(human_udt.asCql(anyBoolean(), anyBoolean())).thenReturn("human_udt");
 
-		ctx.setUserTypeResolver(typeName -> {
+		mappingContext.setUserTypeResolver(typeName -> {
 
 			if (typeName.toString().equals(mappedUdt.toString())) {
 				return mappedUdt;
@@ -594,7 +588,7 @@ public class SchemaFactoryUnitTests {
 
 		CqlIdentifier customTableName = CqlIdentifier.fromCql("my_custom_came");
 
-		CassandraPersistentEntity<?> persistentEntity = ctx.getRequiredPersistentEntity(Employee.class);
+		CassandraPersistentEntity<?> persistentEntity = mappingContext.getRequiredPersistentEntity(Employee.class);
 		CreateTableSpecification specification = schemaFactory.getCreateTableSpecificationFor(persistentEntity,
 				customTableName);
 
@@ -605,9 +599,9 @@ public class SchemaFactoryUnitTests {
 	private CreateTableSpecification getCreateTableSpecificationFor(Class<?> persistentEntityClass) {
 
 		CassandraCustomConversions customConversions = new CassandraCustomConversions(Collections.emptyList());
-		ctx.setCustomConversions(customConversions);
+		mappingContext.setCustomConversions(customConversions);
 
-		CassandraPersistentEntity<?> persistentEntity = ctx.getRequiredPersistentEntity(persistentEntityClass);
+		CassandraPersistentEntity<?> persistentEntity = mappingContext.getRequiredPersistentEntity(persistentEntityClass);
 		return schemaFactory.getCreateTableSpecificationFor(persistentEntity);
 	}
 
@@ -851,7 +845,7 @@ public class SchemaFactoryUnitTests {
 	void createIndexSpecificationShouldConsiderEmbeddedType() {
 
 		List<CreateIndexSpecification> specifications = schemaFactory
-				.getCreateIndexSpecificationsFor(ctx.getRequiredPersistentEntity(TypeWithEmbedded.class));
+				.getCreateIndexSpecificationsFor(mappingContext.getRequiredPersistentEntity(TypeWithEmbedded.class));
 
 		CreateIndexSpecification firstname = getSpecificationFor("firstname", specifications);
 
@@ -898,7 +892,7 @@ public class SchemaFactoryUnitTests {
 	@Test // GH-978
 	void createdTableSpecificationShouldConsiderStaticColumns() {
 
-		CassandraPersistentEntity<?> persistentEntity = ctx
+		CassandraPersistentEntity<?> persistentEntity = mappingContext
 				.getRequiredPersistentEntity(TypeWithStatic.class);
 
 		CreateTableSpecification tableSpecification = schemaFactory.getCreateTableSpecificationFor(persistentEntity);
@@ -911,7 +905,7 @@ public class SchemaFactoryUnitTests {
 	@Test // GH-978
 	void createdTableSpecificationShouldConsiderStaticForTypedTupleColumns() {
 
-		CassandraPersistentEntity<?> persistentEntity = ctx
+		CassandraPersistentEntity<?> persistentEntity = mappingContext
 				.getRequiredPersistentEntity(TypeWithStaticTuple.class);
 
 		CreateTableSpecification tableSpecification = schemaFactory.getCreateTableSpecificationFor(persistentEntity);
@@ -920,5 +914,4 @@ public class SchemaFactoryUnitTests {
 		assertThat(name.getName().toString()).isEqualTo("address");
 		assertThat(name.isStatic()).isTrue();
 	}
-
 }

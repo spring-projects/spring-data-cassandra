@@ -64,31 +64,18 @@ public class CassandraCustomConversions extends org.springframework.data.convert
 
 	/**
 	 * Cassandra-specific extension to {@link org.springframework.data.convert.CustomConversions.ConverterConfiguration}.
-	 * This extension avoids {@link Converter} registrations that enforce date mapping to {@link Date} from JSR-310, Joda
-	 * Time and ThreeTenBackport.
+	 * This extension avoids {@link Converter} registrations that enforce date mapping to {@link Date} from JSR-310.
 	 */
 	static class CassandraConverterConfiguration extends ConverterConfiguration {
 
-		public CassandraConverterConfiguration(StoreConversions storeConversions, List<?> userConverters) {
+		CassandraConverterConfiguration(StoreConversions storeConversions, List<?> userConverters) {
 			super(storeConversions, userConverters, getConverterFilter());
 		}
 
 		static Predicate<ConvertiblePair> getConverterFilter() {
 
-			return convertiblePair -> {
-
-				if (sourceMatches(convertiblePair, "org.joda.time") || sourceMatches(convertiblePair, "org.threeten.bp")
-						|| Jsr310Converters.supports(convertiblePair.getSourceType())
-								&& Date.class.isAssignableFrom(convertiblePair.getTargetType())) {
-					return false;
-				}
-
-				return true;
-			};
-		}
-
-		private static boolean sourceMatches(ConvertiblePair convertiblePair, String packagePrefix) {
-			return convertiblePair.getSourceType().getName().startsWith(packagePrefix);
+			return convertiblePair -> !(Jsr310Converters.supports(convertiblePair.getSourceType())
+				&& Date.class.isAssignableFrom(convertiblePair.getTargetType()));
 		}
 	}
 }

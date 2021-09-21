@@ -67,6 +67,8 @@ public class CassandraMappingContext
 
 	private @Nullable ClassLoader beanClassLoader;
 
+	private @Deprecated CodecRegistry codecRegistry = CodecRegistry.DEFAULT;
+
 	private @Deprecated CustomConversions customConversions = new CassandraCustomConversions(Collections.emptyList());
 
 	private Mapping mapping = new Mapping();
@@ -74,8 +76,6 @@ public class CassandraMappingContext
 	private NamingStrategy namingStrategy = NamingStrategy.INSTANCE;
 
 	private @Deprecated @Nullable UserTypeResolver userTypeResolver;
-
-	private @Deprecated CodecRegistry codecRegistry = CodecRegistry.DEFAULT;
 
 	// caches
 	private final Map<CqlIdentifier, Set<CassandraPersistentEntity<?>>> entitySetsByTableName = new ConcurrentHashMap<>();

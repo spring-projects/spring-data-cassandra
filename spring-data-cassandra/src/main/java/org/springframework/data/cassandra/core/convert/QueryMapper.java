@@ -121,17 +121,18 @@ public class QueryMapper {
 
 			field.getProperty().filter(CassandraPersistentProperty::isCompositePrimaryKey).ifPresent(it -> {
 				throw new IllegalArgumentException(
-						"Cannot use composite primary key directly. Reference a property of the composite primary key");
+					"Cannot use composite primary key directly. Reference a property of the composite primary key");
 			});
 
-			field.getProperty().filter(it -> it.getOrdinal() != null).ifPresent(it -> {
+			field.getProperty().filter(CassandraPersistentProperty::hasOrdinal).ifPresent(it -> {
 				throw new IllegalArgumentException(
-						String.format("Cannot reference tuple value elements, property [%s]", field.getMappedKey()));
+					String.format("Cannot reference tuple value elements, property [%s]", field.getMappedKey()));
 			});
 
 			Predicate predicate = criteriaDefinition.getPredicate();
 
 			Object value = predicate.getValue();
+
 			ColumnType typeDescriptor = getColumnType(field, value, ColumnTypeTransformer.of(field, predicate.getOperator()));
 
 			Object mappedValue = value != null ? getConverter().convertToColumnType(value, typeDescriptor) : null;
@@ -220,10 +221,11 @@ public class QueryMapper {
 						}
 
 						return obj;
+
 					}).toArray());
 
-			return functionCall.getAlias() //
-					.map(mappedFunctionCall::as) //
+			return functionCall.getAlias()
+					.map(mappedFunctionCall::as)
 					.orElse(mappedFunctionCall);
 		}
 
@@ -312,6 +314,7 @@ public class QueryMapper {
 	private List<CqlIdentifier> getCqlIdentifier(ColumnName column, Field field) {
 
 		List<CqlIdentifier> identifiers = new ArrayList<>(1);
+
 		try {
 			if (field.getProperty().isPresent()) {
 
@@ -342,16 +345,18 @@ public class QueryMapper {
 
 	Field createPropertyField(@Nullable CassandraPersistentEntity<?> entity, ColumnName key) {
 
-		return Optional.ofNullable(entity).<Field> map(e -> new MetadataBackedField(key, e, getMappingContext()))
-				.orElseGet(() -> new Field(key));
+		return Optional.ofNullable(entity)
+			.<Field>map(e -> new MetadataBackedField(key, e, getMappingContext()))
+			.orElseGet(() -> new Field(key));
 	}
 
 	ColumnType getColumnType(Field field, @Nullable Object value, ColumnTypeTransformer operator) {
 
 		ColumnTypeResolver resolver = converter.getColumnTypeResolver();
 
-		return field.getProperty().map(it -> operator.transform(resolver.resolve(it), it)).map(ColumnType.class::cast)
-				.orElseGet(() -> resolver.resolve(value));
+		return field.getProperty()
+			.map(it -> operator.transform(resolver.resolve(it), it))
+			.orElseGet(() -> resolver.resolve(value));
 	}
 
 	/**
@@ -378,12 +383,7 @@ public class QueryMapper {
 
 			@Override
 			ColumnType transform(ColumnType typeDescriptor, CassandraPersistentProperty property) {
-
-				if (property.isCollectionLike()) {
-					return typeDescriptor.getRequiredComponentType();
-				}
-
-				return typeDescriptor;
+				return property.isCollectionLike() ? typeDescriptor.getRequiredComponentType() : typeDescriptor;
 			}
 		},
 
@@ -416,12 +416,7 @@ public class QueryMapper {
 
 			@Override
 			ColumnType transform(ColumnType typeDescriptor, CassandraPersistentProperty property) {
-
-				if (property.isMapLike()) {
-					return typeDescriptor.getRequiredComponentType();
-				}
-
-				return typeDescriptor;
+				return property.isMapLike() ? typeDescriptor.getRequiredComponentType() : typeDescriptor;
 			}
 		},
 
@@ -432,12 +427,7 @@ public class QueryMapper {
 
 			@Override
 			ColumnType transform(ColumnType typeDescriptor, CassandraPersistentProperty property) {
-
-				if (property.isMapLike()) {
-					return typeDescriptor.getRequiredMapValueType();
-				}
-
-				return typeDescriptor;
+				return property.isMapLike() ? typeDescriptor.getRequiredMapValueType() : typeDescriptor;
 			}
 		},
 
@@ -472,8 +462,10 @@ public class QueryMapper {
 		static ColumnTypeTransformer of(Field field, CriteriaDefinition.Operator operator) {
 
 			if (operator == CriteriaDefinition.Operators.CONTAINS) {
-				return field.getProperty().filter(CassandraPersistentProperty::isMapLike).map(it -> MAP_VALUE_TYPE)
-						.orElse(COLLECTION_COMPONENT_TYPE);
+				return field.getProperty()
+					.filter(CassandraPersistentProperty::isMapLike)
+					.map(it -> MAP_VALUE_TYPE)
+					.orElse(COLLECTION_COMPONENT_TYPE);
 			}
 
 			if (operator == CriteriaDefinition.Operators.CONTAINS_KEY) {
@@ -643,12 +635,14 @@ public class QueryMapper {
 			for (CassandraPersistentProperty p : path.get()) {
 
 				leafProperty = p;
+
 				if (embedded) {
 
 					embedded = false;
 					leafProperty = parentEntity.getPersistentProperty(p.getName());
 					parentEntity = null;
 				}
+
 				if (p.isEmbedded()) {
 					embedded = true;
 					parentEntity = new EmbeddedEntityOperations(mappingContext).getEntity(p);

@@ -55,7 +55,7 @@ public abstract class CassandraJsr310Converters {
 		converters.add(LocalTimeToMillisOfDayConverter.INSTANCE);
 
 		converters.add(DateToInstantConverter.INSTANCE);
-		converters.add(LocalDateToInstantConverter.INSTANCE);
+		converters.add(LocalDateTimeToInstantConverter.INSTANCE);
 
 		return converters;
 	}
@@ -117,7 +117,7 @@ public abstract class CassandraJsr310Converters {
 	 * @since 3.0
 	 */
 	@WritingConverter
-	enum LocalDateToInstantConverter implements Converter<LocalDateTime, Instant> {
+	enum LocalDateTimeToInstantConverter implements Converter<LocalDateTime, Instant> {
 
 		INSTANCE;
 

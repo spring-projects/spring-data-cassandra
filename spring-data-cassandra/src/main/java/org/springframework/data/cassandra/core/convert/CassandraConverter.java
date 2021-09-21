@@ -152,4 +152,5 @@ public interface CassandraConverter
 	 * @param entity must not be {@literal null}.
 	 */
 	void write(Object source, Object sink, CassandraPersistentEntity<?> entity);
+
 }

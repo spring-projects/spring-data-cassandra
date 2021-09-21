@@ -15,7 +15,6 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-
 import java.util.Collections;
 
 import org.springframework.beans.factory.InitializingBean;
