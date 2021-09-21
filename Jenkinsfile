@@ -55,7 +55,7 @@ pipeline {
 
 					steps {
 						script {
-							def image = docker.build("springci/spring-data-openjdk17-8-cassandra-3.11", "ci/openjdk16-8-cassandra-3.11/")
+							def image = docker.build("springci/spring-data-openjdk17-8-cassandra-3.11", "ci/openjdk17-8-cassandra-3.11/")
 							docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
 								image.push()
 							}

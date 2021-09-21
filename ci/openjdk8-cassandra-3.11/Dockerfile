@@ -1,7 +1,8 @@
 FROM adoptopenjdk/openjdk8:latest
 
 RUN set -eux; \
-	CASSANDRA_URL='https://www-us.apache.org/dist/cassandra/3.11.10/apache-cassandra-3.11.10-bin.tar.gz'; \
+	CASSANDRA_URL='https://archive.apache.org/dist/cassandra/3.11.10/apache-cassandra-3.11.10-bin.tar.gz'; \
+	sed -i -e 's/http/https/g' /etc/apt/sources.list ; \
 	curl -LfsSo /tmp/cassandra.tar.gz ${CASSANDRA_URL}; \
 		mkdir -p /opt/cassandra /opt/cassandra/data /opt/cassandra/logs; \
 		cd /opt/cassandra; \

@@ -1,7 +1,8 @@
 FROM adoptopenjdk/openjdk11:latest
 
 RUN set -eux; \
-	CASSANDRA_URL='https://www-us.apache.org/dist/cassandra/3.11.10/apache-cassandra-3.11.10-bin.tar.gz'; \
+	CASSANDRA_URL='https://archive.apache.org/dist/cassandra/3.11.10/apache-cassandra-3.11.10-bin.tar.gz'; \
+	sed -i -e 's/http/https/g' /etc/apt/sources.list ; \
 	curl -LfsSo /tmp/cassandra.tar.gz ${CASSANDRA_URL}; \
 		mkdir -p /opt/cassandra /opt/cassandra/data /opt/cassandra/logs; \
 		cd /opt/cassandra; \
@@ -11,7 +12,7 @@ RUN set -eux; \
 		useradd -d /home/jenkins-docker -m -u 1001 -U jenkins-docker;
 
 RUN set -eux; \
-	BINARY_URL='https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u275-b01/OpenJDK8U-jdk_x64_linux_hotspot_8u275b01.tar.gz'; \
+	BINARY_URL='https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u292-b10/OpenJDK8U-jdk_x64_linux_hotspot_8u292b10.tar.gz'; \
 	curl -LfsSo /tmp/openjdk.tar.gz ${BINARY_URL}; \
 		mkdir -p /opt/java/openjdk8; \
 		cd /opt/java/openjdk8; \
