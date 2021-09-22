@@ -134,12 +134,13 @@ public interface CassandraPersistentProperty
 	}
 
 	/**
-	 * Determines whether this {@link CassandraPersistentProperty} is persisted (mapped) to an element ordinal
-	 * when the owning type is a mapped tuple.
+	 * Determines whether this {@link CassandraPersistentProperty} is persisted (mapped) to an element ordinal when the
+	 * owning type is a mapped tuple.
 	 *
-	 * @return a boolean value indicating whether this {@link CassandraPersistentProperty} is persisted (mapped) to
-	 * an element ordinal when the owning type is a mapped tuple.
+	 * @return a boolean value indicating whether this {@link CassandraPersistentProperty} is persisted (mapped) to an
+	 *         element ordinal when the owning type is a mapped tuple.
 	 * @see #getOrdinal()
+	 * @since 4.0
 	 */
 	default boolean hasOrdinal() {
 		return getOrdinal() != null;

@@ -3,7 +3,7 @@ pipeline {
 
 	triggers {
 		pollSCM 'H/10 * * * *'
-		upstream(upstreamProjects: "spring-data-commons/main", threshold: hudson.model.Result.SUCCESS)
+		upstream(upstreamProjects: "spring-data-commons/3.0.x", threshold: hudson.model.Result.SUCCESS)
 	}
 
 	options {
@@ -16,14 +16,14 @@ pipeline {
 			parallel {
 				stage('Publish JDK 17 + Cassandra 3.11') {
 					when {
-						changeset "ci/openjdk17-cassandra-3.11/**"
+						changeset "ci/openjdk17-8-cassandra-3.11/**"
 					}
 					agent { label 'data' }
 					options { timeout(time: 30, unit: 'MINUTES') }
 
 					steps {
 						script {
-							def image = docker.build("springci/spring-data-openjdk17-cassandra-3.11", "ci/openjdk17-cassandra-3.11/")
+							def image = docker.build("springci/spring-data-openjdk17-8-cassandra-3.11", "ci/openjdk17-8-cassandra-3.11/")
 							docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
 								image.push()
 							}
@@ -33,7 +33,7 @@ pipeline {
 			}
 		}
 
-		stage("test: baseline (jdk17)") {
+		stage("test: baseline (Java 17)") {
 			when {
 				beforeAgent(true)
 				anyOf {
@@ -51,9 +51,9 @@ pipeline {
 			steps {
 				script {
 					docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
-						docker.image('springci/spring-data-openjdk17-cassandra-3.11:latest').inside('-u root -v /usr/bin/docker:/usr/bin/docker -v /var/run/docker.sock:/var/run/docker.sock -v $HOME:/tmp/jenkins-home') {
+						docker.image('springci/spring-data-openjdk17-8-cassandra-3.11:latest').inside('-v $HOME:/tmp/jenkins-home') {
 							sh 'mkdir -p /tmp/jenkins-home'
-							sh 'JAVA_HOME=/opt/java/openjdk /opt/cassandra/bin/cassandra -R &'
+							sh 'JAVA_HOME=/opt/java/openjdk8 /opt/cassandra/bin/cassandra -R &'
 							sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -s settings.xml -Pci,external-cassandra clean dependency:list verify -Dsort -U -B'
 						}
 					}
@@ -81,7 +81,7 @@ pipeline {
 			steps {
 				script {
 					docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
-						docker.image('adoptopenjdk/openjdk17:latest').inside('-u root -v /usr/bin/docker:/usr/bin/docker -v /var/run/docker.sock:/var/run/docker.sock -v $HOME:/tmp/jenkins-home') {
+						docker.image('openjdk:17-bullseye').inside('-v $HOME:/tmp/jenkins-home') {
 							sh 'mkdir -p /tmp/jenkins-home'
 							sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -s settings.xml -Pci,artifactory ' +
 									'-Dartifactory.server=https://repo.spring.io ' +
@@ -90,36 +90,6 @@ pipeline {
 									"-Dartifactory.staging-repository=libs-snapshot-local " +
 									"-Dartifactory.build-name=spring-data-cassandra " +
 									"-Dartifactory.build-number=${BUILD_NUMBER} " +
-									'-Dmaven.test.skip=true clean deploy -U -B'
-						}
-					}
-				}
-			}
-		}
-
-		stage('Publish documentation') {
-			when {
-				branch 'main'
-			}
-			agent {
-				label 'data'
-			}
-			options { timeout(time: 20, unit: 'MINUTES') }
-
-			environment {
-				ARTIFACTORY = credentials('02bd1690-b54f-4c9f-819d-a77cb7a9822c')
-			}
-
-			steps {
-				script {
-					docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
-						docker.image('adoptopenjdk/openjdk17:latest').inside('-u root -v /usr/bin/docker:/usr/bin/docker -v /var/run/docker.sock:/var/run/docker.sock -v $HOME:/tmp/jenkins-home') {
-							sh 'mkdir -p /tmp/jenkins-home'
-							sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -s settings.xml -Pci,distribute ' +
-									'-Dartifactory.server=https://repo.spring.io ' +
-									"-Dartifactory.username=${ARTIFACTORY_USR} " +
-									"-Dartifactory.password=${ARTIFACTORY_PSW} " +
-									"-Dartifactory.distribution-repository=temp-private-local " +
 									'-Dmaven.test.skip=true clean deploy -U -B'
 						}
 					}
