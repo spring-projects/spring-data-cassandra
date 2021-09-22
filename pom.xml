@@ -354,6 +354,11 @@
 		</profile>
 		<profile>
 			<id>testcontainers-cassandra</id>
+
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+
 			<properties>
 				<build.cassandra.mode>testcontainers</build.cassandra.mode>
 				<build.cassandra.native_transport_port>0 </build.cassandra.native_transport_port>
