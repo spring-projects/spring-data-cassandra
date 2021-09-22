@@ -51,7 +51,7 @@ pipeline {
 			steps {
 				script {
 					docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
-						docker.image('springci/spring-data-openjdk17-cassandra-3.11:latest').inside('-v $HOME:/tmp/jenkins-home') {
+						docker.image('springci/spring-data-openjdk17-cassandra-3.11:latest').inside('-u root -v /usr/bin/docker:/usr/bin/docker -v /var/run/docker.sock:/var/run/docker.sock -v $HOME:/tmp/jenkins-home') {
 							sh 'mkdir -p /tmp/jenkins-home'
 							sh 'JAVA_HOME=/opt/java/openjdk /opt/cassandra/bin/cassandra -R &'
 							sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -s settings.xml -Pci,external-cassandra clean dependency:list verify -Dsort -U -B'
@@ -81,7 +81,7 @@ pipeline {
 			steps {
 				script {
 					docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
-						docker.image('adoptopenjdk/openjdk17:latest').inside('-v $HOME:/tmp/jenkins-home') {
+						docker.image('adoptopenjdk/openjdk17:latest').inside('-u root -v /usr/bin/docker:/usr/bin/docker -v /var/run/docker.sock:/var/run/docker.sock -v $HOME:/tmp/jenkins-home') {
 							sh 'mkdir -p /tmp/jenkins-home'
 							sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -s settings.xml -Pci,artifactory ' +
 									'-Dartifactory.server=https://repo.spring.io ' +
@@ -113,7 +113,7 @@ pipeline {
 			steps {
 				script {
 					docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
-						docker.image('adoptopenjdk/openjdk17:latest').inside('-v $HOME:/tmp/jenkins-home') {
+						docker.image('adoptopenjdk/openjdk17:latest').inside('-u root -v /usr/bin/docker:/usr/bin/docker -v /var/run/docker.sock:/var/run/docker.sock -v $HOME:/tmp/jenkins-home') {
 							sh 'mkdir -p /tmp/jenkins-home'
 							sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -s settings.xml -Pci,distribute ' +
 									'-Dartifactory.server=https://repo.spring.io ' +
