@@ -90,7 +90,7 @@
 		<build.cassandra.rpc_port>19160</build.cassandra.rpc_port>
 		<build.cassandra.ssl_storage_port>17001</build.cassandra.ssl_storage_port>
 		<build.cassandra.storage_port>17000</build.cassandra.storage_port>
-		<cassandra.version>3.11.10</cassandra.version>
+		<cassandra.version>3.11.11</cassandra.version>
 		<cassandra-driver.version>4.13.0</cassandra-driver.version>
 		<dist.id>spring-data-cassandra</dist.id>
 		<el.version>1.0</el.version>
