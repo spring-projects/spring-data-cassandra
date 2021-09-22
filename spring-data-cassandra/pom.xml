@@ -21,9 +21,9 @@
 	</url>
 
 	<properties>
-		<validation>1.1.0.Final</validation>
 		<java-module-name>spring.data.cassandra</java-module-name>
 		<project.root>${basedir}/..</project.root>
+		<jakarta.enterprise.cdi-api.version>3.0.0</jakarta.enterprise.cdi-api.version>
 	</properties>
 
 	<dependencies>
@@ -31,7 +31,7 @@
 		<!-- Spring -->
 		<dependency>
 			<groupId>org.springframework</groupId>
-			<artifactId>spring-context</artifactId>
+			<artifactId>spring-core</artifactId>
 		</dependency>
 
 		<dependency>
@@ -41,17 +41,17 @@
 
 		<dependency>
 			<groupId>org.springframework</groupId>
-			<artifactId>spring-core</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-tx</artifactId>
+			<artifactId>spring-context</artifactId>
 		</dependency>
 
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-expression</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-tx</artifactId>
 		</dependency>
 
 		<!-- Spring Data -->
@@ -116,13 +116,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>javax.interceptor</groupId>
-			<artifactId>javax.interceptor-api</artifactId>
-			<version>1.2.1</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
 			<groupId>javax.enterprise</groupId>
 			<artifactId>cdi-api</artifactId>
 			<version>${cdi}</version>
@@ -130,12 +123,14 @@
 			<optional>true</optional>
 		</dependency>
 
+<!--
 		<dependency>
-			<groupId>javax.annotation</groupId>
-			<artifactId>javax.annotation-api</artifactId>
-			<version>${javax-annotation-api}</version>
-			<scope>test</scope>
+			<groupId>jakarta.enterprise</groupId>
+			<artifactId>jakarta.enterprise.cdi-api</artifactId>
+			<version>${jakarta.enterprise.cdi-api.version}</version>
+			<optional>true</optional>
 		</dependency>
+-->
 
 		<dependency>
 			<groupId>org.apache.openwebbeans</groupId>
@@ -147,6 +142,12 @@
 		<dependency>
 			<groupId>org.apache.cassandra</groupId>
 			<artifactId>cassandra-all</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>javax.inject</groupId>
+					<artifactId>javax.inject</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>
