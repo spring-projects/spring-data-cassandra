@@ -15,14 +15,17 @@
  */
 package org.springframework.data.cassandra.test.util;
 
-import static java.util.concurrent.TimeUnit.*;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -47,10 +50,12 @@ import org.springframework.util.FileSystemUtils;
 @SuppressWarnings("unused")
 class EmbeddedCassandraServerHelper {
 
+	public static final long DEFAULT_STARTUP_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(20);
+
 	private static final Log LOG = LogFactory.getLog(EmbeddedCassandraServerHelper.class);
 
-	public static final long DEFAULT_STARTUP_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(20);
 	private static final String DEFAULT_TMP_DIR = "target/embeddedCassandra";
+	private static final String LOCALHOST = "localhost";
 
 	private static final AtomicReference<Object> sync = new AtomicReference<>();
 	private static final AtomicReference<CassandraDaemon> cassandraRef = new AtomicReference<>();
@@ -72,7 +77,20 @@ class EmbeddedCassandraServerHelper {
 	 * @return the cassandra host
 	 */
 	public static String getHost() {
-		return DatabaseDescriptor.getRpcAddress().getHostName();
+
+		return Optional.ofNullable(DatabaseDescriptor.getRpcAddress())
+			.map(InetAddress::getHostName)
+			.orElseGet(EmbeddedCassandraServerHelper::getLocalhost);
+	}
+
+	private static String getLocalhost() {
+
+		try {
+			return InetAddress.getLocalHost().getHostName();
+		}
+		catch (UnknownHostException ignore) {
+			return LOCALHOST;
+		}
 	}
 
 	/**
@@ -155,7 +173,7 @@ class EmbeddedCassandraServerHelper {
 
 		checkConfigNameForRestart(file.getAbsolutePath());
 
-		LOG.debug("Starting cassandra...");
+		LOG.info(String.format("Starting Embedded Cassandra [v%s]...", System.getProperty("cassandra.version")));
 		LOG.debug("Initialization needed");
 
 		System.setProperty("cassandra.config", "file:" + file.getAbsolutePath());

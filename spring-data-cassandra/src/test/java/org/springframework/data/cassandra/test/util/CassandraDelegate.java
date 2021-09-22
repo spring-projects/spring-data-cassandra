@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.CassandraContainer;
 
 import org.springframework.data.cassandra.core.cql.SessionCallback;
@@ -57,6 +59,8 @@ import com.datastax.oss.driver.api.core.metadata.Node;
 class CassandraDelegate {
 
 	private static CassandraContainer<?> container;
+
+	private static final Logger log = LoggerFactory.getLogger(CassandraDelegate.class);
 
 	private static ResourceHolder resourceHolder;
 
@@ -269,10 +273,13 @@ class CassandraDelegate {
 
 		if (container == null) {
 
-			container = getCassandraDockerImageName().map(CassandraContainer::new)
+			container = getCassandraDockerImageName()
+				.map(CassandraContainer::new)
 				.orElseGet(CassandraContainer::new);
 
 			container.start();
+
+			log.info("Running with Cassandra Docker Testcontainer Image Name [{}]", container.getDockerImageName());
 
 			this.properties.setCassandraHost(container.getContainerIpAddress());
 			this.properties.setCassandraPort(container.getFirstMappedPort());
@@ -282,9 +289,14 @@ class CassandraDelegate {
 
 	private Optional<String> getCassandraDockerImageName() {
 
-		return Optional.ofNullable(System.getenv("CASSANDRA_VERSION"))
-			.filter(StringUtils::hasText)
+		return resolveCassandraVersion()
 			.map(cassandraVersion -> String.format("cassandra:%s", cassandraVersion));
+	}
+
+	private Optional<String> resolveCassandraVersion() {
+
+		return Optional.ofNullable(System.getProperty("cassandra.version", System.getenv("CASSANDRA_VERSION")))
+			.filter(StringUtils::hasText);
 	}
 
 	private synchronized void initializeConnection() {

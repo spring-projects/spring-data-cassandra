@@ -85,8 +85,7 @@
 	<properties>
 		<build.cassandra.host>localhost</build.cassandra.host>
 		<build.cassandra.mode>embedded</build.cassandra.mode>
-		<build.cassandra.native_transport_port>19042
-		</build.cassandra.native_transport_port>
+		<build.cassandra.native_transport_port>19042</build.cassandra.native_transport_port>
 		<build.cassandra.rpc_port>19160</build.cassandra.rpc_port>
 		<build.cassandra.ssl_storage_port>17001</build.cassandra.ssl_storage_port>
 		<build.cassandra.storage_port>17000</build.cassandra.storage_port>
@@ -240,8 +239,8 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-failsafe-plugin</artifactId>
 				<configuration>
+					<argLine>-Xms1g -Xmx1500m -Xss256k -Dcassandra.version=${cassandra.version}</argLine>
 					<forkCount>1</forkCount>
-					<argLine>-Xms1g -Xmx1500m -Xss256k</argLine>
 					<reuseForks>true</reuseForks>
 					<useFile>false</useFile>
 					<includes>
@@ -345,26 +344,22 @@
 		</profile>
 		<profile>
 			<id>external-cassandra</id>
-
 			<properties>
 				<build.cassandra.mode>external</build.cassandra.mode>
-				<build.cassandra.native_transport_port>9042
-				</build.cassandra.native_transport_port>
+				<build.cassandra.native_transport_port>9042 </build.cassandra.native_transport_port>
 				<build.cassandra.rpc_port>9160</build.cassandra.rpc_port>
-				<build.cassandra.storage_port>7000</build.cassandra.storage_port>
 				<build.cassandra.ssl_storage_port>7001</build.cassandra.ssl_storage_port>
+				<build.cassandra.storage_port>7000</build.cassandra.storage_port>
 			</properties>
 		</profile>
 		<profile>
 			<id>testcontainers-cassandra</id>
-
 			<properties>
 				<build.cassandra.mode>testcontainers</build.cassandra.mode>
-				<build.cassandra.native_transport_port>0
-				</build.cassandra.native_transport_port>
+				<build.cassandra.native_transport_port>0 </build.cassandra.native_transport_port>
 				<build.cassandra.rpc_port>0</build.cassandra.rpc_port>
-				<build.cassandra.storage_port>0</build.cassandra.storage_port>
 				<build.cassandra.ssl_storage_port>0</build.cassandra.ssl_storage_port>
+				<build.cassandra.storage_port>0</build.cassandra.storage_port>
 			</properties>
 		</profile>
 	</profiles>

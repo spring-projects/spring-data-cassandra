@@ -10,6 +10,8 @@
 	<logger name="org.springframework" level="ERROR" />
 	<logger name="org.springframework.data.cassandra" level="ERROR" />
 
+	<logger name="org.springframework.data.cassandra.test.util" level="INFO"/>
+
 	<logger name="com.datastax" level="ERROR" />
 
 	<!-- See https://issues.apache.org/jira/browse/CASSANDRA-8220 -->
