@@ -15,14 +15,15 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.data.cassandra.core.mapping.CassandraType.Name;
+import static org.assertj.core.api.Assertions.*;
+import static org.springframework.data.cassandra.core.mapping.CassandraType.*;
+
+import io.reactivex.rxjava3.core.Single;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.lang.reflect.Method;
 import java.time.LocalDateTime;
-
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,7 +40,6 @@ import org.springframework.data.repository.core.support.DefaultRepositoryMetadat
 
 import com.datastax.oss.driver.api.core.type.DataTypes;
 
-import rx.Single;
 
 /**
  * Unit tests for {@link ReactiveCassandraParameterAccessor}.

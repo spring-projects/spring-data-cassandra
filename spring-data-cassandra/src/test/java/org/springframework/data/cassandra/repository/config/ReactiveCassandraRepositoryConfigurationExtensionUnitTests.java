@@ -21,6 +21,7 @@ import java.util.Collection;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.core.env.Environment;
@@ -34,7 +35,7 @@ import org.springframework.data.repository.config.AnnotationRepositoryConfigurat
 import org.springframework.data.repository.config.RepositoryConfiguration;
 import org.springframework.data.repository.config.RepositoryConfigurationSource;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
-import org.springframework.data.repository.reactive.RxJava2CrudRepository;
+import org.springframework.data.repository.reactive.RxJava3CrudRepository;
 
 /**
  * Unit tests for {@link ReactiveCassandraRepositoryConfigurationExtension}.
@@ -107,7 +108,7 @@ public class ReactiveCassandraRepositoryConfigurationExtensionUnitTests {
 	@Table
 	private static class Sample {}
 
-	interface SampleRepository extends RxJava2CrudRepository<Sample, Long> {}
+	interface SampleRepository extends RxJava3CrudRepository<Sample, Long> {}
 
 	interface UnannotatedRepository extends ReactiveCrudRepository<Object, Long> {}
 

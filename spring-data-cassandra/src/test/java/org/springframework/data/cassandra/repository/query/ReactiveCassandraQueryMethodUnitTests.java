@@ -17,9 +17,9 @@ package org.springframework.data.cassandra.repository.query;
 
 import static org.assertj.core.api.Assertions.*;
 
+import io.reactivex.rxjava3.core.Single;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import rx.Single;
 
 import java.lang.reflect.Method;
 

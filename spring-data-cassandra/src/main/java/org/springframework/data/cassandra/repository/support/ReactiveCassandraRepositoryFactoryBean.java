@@ -35,7 +35,6 @@ import org.springframework.util.Assert;
  * @author Mark Paluch
  * @since 2.0
  * @see org.springframework.data.repository.reactive.ReactiveSortingRepository
- * @see org.springframework.data.repository.reactive.RxJava2SortingRepository
  */
 public class ReactiveCassandraRepositoryFactoryBean<T extends Repository<S, ID>, S, ID>
 		extends RepositoryFactoryBeanSupport<T, S, ID> {

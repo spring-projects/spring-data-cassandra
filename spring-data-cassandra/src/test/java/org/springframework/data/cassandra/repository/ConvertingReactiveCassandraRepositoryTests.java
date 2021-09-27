@@ -17,13 +17,10 @@ package org.springframework.data.cassandra.repository;
 
 import static org.assertj.core.api.Assertions.*;
 
-import io.reactivex.Flowable;
-import io.reactivex.Maybe;
+import io.reactivex.rxjava3.core.Single;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-import rx.Observable;
-import rx.Single;
 
 import java.util.Arrays;
 import java.util.List;
@@ -40,7 +37,6 @@ import org.springframework.data.cassandra.repository.config.EnableReactiveCassan
 import org.springframework.data.cassandra.repository.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.data.cassandra.repository.support.IntegrationTestConfig;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
-import org.springframework.data.repository.reactive.RxJava2CrudRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
@@ -71,8 +67,7 @@ class ConvertingReactiveCassandraRepositoryTests extends AbstractSpringDataEmbed
 	@Autowired CqlSession session;
 	@Autowired MixedUserRepository reactiveRepository;
 	@Autowired UserRepostitory reactiveUserRepostitory;
-	@Autowired RxJava1UserRepository rxJava1UserRepository;
-	@Autowired RxJava2UserRepository rxJava2UserRepository;
+	@Autowired RxJava3UserRepository rxJava3UserRepository;
 
 	private User dave;
 	private User oliver;
@@ -123,143 +118,72 @@ class ConvertingReactiveCassandraRepositoryTests extends AbstractSpringDataEmbed
 	}
 
 	@Test // DATACASS-335
-	void simpleRxJava1MethodsShouldWork() {
+	void simpleRxJava3MethodsShouldWork() throws InterruptedException {
 
-		rxJava1UserRepository.existsById(dave.getId()) //
+		rxJava3UserRepository.existsById(dave.getId()) //
 				.test() //
-				.awaitTerminalEvent() //
+				.await() //
 				.assertResult(true) //
-				.assertCompleted() //
+				.assertComplete() //
 				.assertNoErrors();
 	}
 
 	@Test // DATACASS-335
-	void existsWithSingleRxJava1IdMethodsShouldWork() {
+	void existsWithSingleRxJava3IdMethodsShouldWork() throws InterruptedException {
 
-		rxJava1UserRepository.existsById(Single.just(dave.getId())) //
+		rxJava3UserRepository.existsById(Single.just(dave.getId())) //
 				.test() //
-				.awaitTerminalEvent() //
+				.await() //
 				.assertResult(true) //
-				.assertCompleted() //
+				.assertComplete() //
 				.assertNoErrors();
 	}
 
 	@Test // DATACASS-335
-	void singleRxJava1QueryMethodShouldWork() {
+	void singleRxJava3QueryMethodShouldWork() throws InterruptedException {
 
-		rxJava1UserRepository.findManyByLastname(dave.getLastname()) //
+		rxJava3UserRepository.findManyByLastname(dave.getLastname()) //
 				.test() //
-				.awaitTerminalEvent() //
+				.await() //
 				.assertValueCount(2) //
 				.assertNoErrors() //
-				.assertCompleted();
+				.assertComplete();
 	}
 
 	@Test // DATACASS-335
-	void singleProjectedRxJava1QueryMethodShouldWork() {
+	void singleProjectedRxJava3QueryMethodShouldWork() throws InterruptedException {
 
-		List<ProjectedUser> values = rxJava1UserRepository.findProjectedByLastname(carter.getLastname()) //
+		List<ProjectedUser> values = rxJava3UserRepository.findProjectedByLastname(carter.getLastname()) //
 				.test() //
-				.awaitTerminalEvent() //
+				.await() //
 				.assertValueCount(1) //
-				.assertCompleted() //
+				.assertComplete() //
 				.assertNoErrors() //
-				.getOnNextEvents();
+				.values();
 
 		ProjectedUser projectedUser = values.get(0);
 		assertThat(projectedUser.getFirstname()).isEqualTo(carter.getFirstname());
 	}
 
 	@Test // DATACASS-335
-	void observableRxJava1QueryMethodShouldWork() {
+	void observableRxJava3QueryMethodShouldWork() throws InterruptedException {
 
-		rxJava1UserRepository.findByLastname(boyd.getLastname()) //
+		rxJava3UserRepository.findByLastname(boyd.getLastname()) //
 				.test() //
-				.awaitTerminalEvent() //
+				.await() //
 				.assertValue(boyd) //
 				.assertNoErrors() //
-				.assertCompleted();
-	}
-
-	@Test // DATACASS-398
-	void simpleRxJava2MethodsShouldWork() {
-
-		rxJava2UserRepository.existsById(dave.getId()) //
-				.test()//
-				.assertValue(true) //
-				.assertNoErrors() //
-				.assertComplete() //
-				.awaitTerminalEvent();
-	}
-
-	@Test // DATACASS-398
-	void existsWithSingleRxJava2IdMethodsShouldWork() {
-
-		rxJava2UserRepository.existsById(io.reactivex.Single.just(dave.getId())).test() //
-				.assertValue(true) //
-				.assertNoErrors() //
-				.assertComplete() //
-				.awaitTerminalEvent();
-	}
-
-	@Test // DATACASS-398
-	void flowableRxJava2QueryMethodShouldWork() {
-
-		rxJava2UserRepository.findManyByLastname(dave.getLastname()) //
-				.test() //
-				.assertValueCount(2) //
-				.assertNoErrors() //
-				.assertComplete() //
-				.awaitTerminalEvent();
-	}
-
-	@Test // DATACASS-398
-	void singleProjectedRxJava2QueryMethodShouldWork() {
-
-		rxJava2UserRepository.findProjectedByLastname(Maybe.just(carter.getLastname())) //
-				.test() //
-				.assertValue(actual -> {
-					assertThat(actual.getFirstname()).isEqualTo(carter.getFirstname());
-					return true;
-				}) //
-				.assertComplete() //
-				.assertNoErrors() //
-				.awaitTerminalEvent();
-	}
-
-	@Test // DATACASS-398
-	void observableProjectedRxJava2QueryMethodShouldWork() {
-
-		rxJava2UserRepository.findProjectedByLastname(Single.just(carter.getLastname())) //
-				.test() //
-				.assertValue(actual -> {
-					assertThat(actual.getFirstname()).isEqualTo(carter.getFirstname());
-					return true;
-				}) //
-				.assertComplete() //
-				.assertNoErrors() //
-				.awaitTerminalEvent();
-	}
-
-	@Test // DATACASS-398
-	void maybeRxJava2QueryMethodShouldWork() {
-
-		rxJava2UserRepository.findByLastname(boyd.getLastname()) //
-				.test() //
-				.assertValue(boyd) //
-				.assertNoErrors() //
-				.assertComplete() //
-				.awaitTerminalEvent();
+				.assertComplete();
 	}
 
 	@Test // DATACASS-335
-	void mixedRepositoryShouldWork() {
+	void mixedRepositoryShouldWork() throws InterruptedException {
 
 		reactiveRepository.findByLastname(boyd.getLastname()) //
 				.test() //
-				.awaitTerminalEvent() //
+				.await() //
 				.assertValue(boyd) //
-				.assertCompleted() //
+				.assertComplete() //
 				.assertNoErrors();
 	}
 
@@ -280,29 +204,17 @@ class ConvertingReactiveCassandraRepositoryTests extends AbstractSpringDataEmbed
 	}
 
 	@Repository
-	interface RxJava1UserRepository extends org.springframework.data.repository.Repository<User, String> {
+	interface RxJava3UserRepository extends org.springframework.data.repository.Repository<User, String> {
 
-		Observable<User> findManyByLastname(String lastname);
+		io.reactivex.rxjava3.core.Observable<User> findManyByLastname(String lastname);
 
-		Single<User> findByLastname(String lastname);
+		io.reactivex.rxjava3.core.Single<User> findByLastname(String lastname);
 
-		Single<ProjectedUser> findProjectedByLastname(String lastname);
+		io.reactivex.rxjava3.core.Single<ProjectedUser> findProjectedByLastname(String lastname);
 
-		Single<Boolean> existsById(String id);
+		io.reactivex.rxjava3.core.Single<Boolean> existsById(String id);
 
-		Single<Boolean> existsById(Single<String> id);
-	}
-
-	@Repository
-	interface RxJava2UserRepository extends RxJava2CrudRepository<User, String> {
-
-		Flowable<User> findManyByLastname(String lastname);
-
-		Maybe<User> findByLastname(String lastname);
-
-		io.reactivex.Single<ProjectedUser> findProjectedByLastname(Maybe<String> lastname);
-
-		io.reactivex.Observable<ProjectedUser> findProjectedByLastname(Single<String> lastname);
+		io.reactivex.rxjava3.core.Single<Boolean> existsById(io.reactivex.rxjava3.core.Single<String> id);
 	}
 
 	@Repository
