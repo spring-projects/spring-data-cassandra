@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.repository.cdi;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  * @author Mohsin Husen

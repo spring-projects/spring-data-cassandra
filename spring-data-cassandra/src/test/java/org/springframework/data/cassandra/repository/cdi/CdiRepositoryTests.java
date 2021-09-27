@@ -17,10 +17,10 @@ package org.springframework.data.cassandra.repository.cdi;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.util.Optional;
+import jakarta.enterprise.inject.se.SeContainer;
+import jakarta.enterprise.inject.se.SeContainerInitializer;
 
-import javax.enterprise.inject.se.SeContainer;
-import javax.enterprise.inject.se.SeContainerInitializer;
+import java.util.Optional;
 
 import org.junit.AfterClass;
 import org.junit.jupiter.api.BeforeAll;

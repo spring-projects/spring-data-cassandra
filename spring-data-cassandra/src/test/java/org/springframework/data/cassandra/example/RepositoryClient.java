@@ -15,9 +15,9 @@
  */
 package org.springframework.data.cassandra.example;
 
-import java.util.List;
+import jakarta.inject.Inject;
 
-import javax.inject.Inject;
+import java.util.List;
 
 import org.springframework.data.cassandra.repository.CassandraRepository;
 
