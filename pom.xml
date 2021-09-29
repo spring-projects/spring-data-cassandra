@@ -119,15 +119,6 @@
 				<type>pom</type>
 			</dependency>
 
-			<!-- CDI -->
-			<dependency>
-				<groupId>javax.enterprise</groupId>
-				<artifactId>cdi-api</artifactId>
-				<version>${cdi}</version>
-				<scope>provided</scope>
-				<optional>true</optional>
-			</dependency>
-
 			<!-- Test Dependencies -->
 			<dependency>
 				<groupId>org.apache.cassandra</groupId>
