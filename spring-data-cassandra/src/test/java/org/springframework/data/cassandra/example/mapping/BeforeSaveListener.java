@@ -25,4 +25,4 @@ class BeforeSaveListener extends AbstractCassandraEventListener<Person> {
 		// … change values, delete them, whatever …
 	}
 }
-// tag::class[]
+// end::class[]
