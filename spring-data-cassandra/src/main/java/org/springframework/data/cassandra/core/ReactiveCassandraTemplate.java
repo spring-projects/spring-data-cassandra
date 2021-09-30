@@ -69,6 +69,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.DriverException;
 import com.datastax.oss.driver.api.core.config.DefaultDriverOption;
 import com.datastax.oss.driver.api.core.context.DriverContext;
+import com.datastax.oss.driver.api.core.cql.BatchType;
 import com.datastax.oss.driver.api.core.cql.BoundStatement;
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 import com.datastax.oss.driver.api.core.cql.Row;
@@ -105,6 +106,7 @@ import com.datastax.oss.driver.api.querybuilder.update.Update;
  * @author John Blum
  * @author Lukasz Antoniak
  * @author Hleb Albau
+ * @author Sam Lightfoot
  * @since 2.0
  */
 public class ReactiveCassandraTemplate
@@ -197,6 +199,14 @@ public class ReactiveCassandraTemplate
 	@Override
 	public ReactiveCassandraBatchOperations batchOps() {
 		return new ReactiveCassandraBatchTemplate(this);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#batchOps(com.datastax.oss.driver.api.core.cql.BatchType)
+	 */
+	@Override
+	public ReactiveCassandraBatchOperations batchOps(BatchType batchType) {
+		return new ReactiveCassandraBatchTemplate(this, batchType);
 	}
 
 	/* (non-Javadoc)
