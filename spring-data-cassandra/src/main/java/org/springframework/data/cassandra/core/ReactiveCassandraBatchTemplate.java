@@ -46,13 +46,14 @@ import com.datastax.oss.driver.api.core.cql.SimpleStatement;
  *
  * @author Oleh Dokuka
  * @author Mark Paluch
+ * @author Sam Lightfoot
  * @since 2.1
  */
 class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations {
 
 	private final AtomicBoolean executed = new AtomicBoolean();
 
-	private final BatchStatementBuilder batch = BatchStatement.builder(BatchType.LOGGED);
+	private final BatchStatementBuilder batch;
 
 	private final CassandraConverter converter;
 
@@ -70,10 +71,23 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 	 * @param operations must not be {@literal null}.
 	 */
 	ReactiveCassandraBatchTemplate(ReactiveCassandraOperations operations) {
+		this(operations, BatchType.LOGGED);
+	}
+
+	/**
+	 * Create a new {@link CassandraBatchTemplate} given {@link CassandraOperations} and {@link BatchType}.
+	 *
+	 * @param operations must not be {@literal null}.
+	 * @param batchType must not be {@literal null}.
+	 * @since 3.3.0
+	 */
+	ReactiveCassandraBatchTemplate(ReactiveCassandraOperations operations, BatchType batchType) {
 
 		Assert.notNull(operations, "CassandraOperations must not be null");
+		Assert.notNull(batchType, "BatchType must not be null");
 
 		this.operations = operations;
+		this.batch = BatchStatement.builder(batchType);
 		this.converter = operations.getConverter();
 		this.mappingContext = this.converter.getMappingContext();
 		this.statementFactory = new StatementFactory(new UpdateMapper(converter));
@@ -155,7 +169,6 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 	public ReactiveCassandraBatchOperations withTimestamp(long timestamp) {
 
 		assertNotExecuted();
-
 		this.batch.setQueryTimestamp(timestamp);
 
 		return this;

@@ -29,6 +29,7 @@ import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.core.query.Update;
 import org.springframework.data.domain.Slice;
 
+import com.datastax.oss.driver.api.core.cql.BatchType;
 import com.datastax.oss.driver.api.core.cql.Statement;
 
 /**
@@ -38,6 +39,7 @@ import com.datastax.oss.driver.api.core.cql.Statement;
  * @author Mark Paluch
  * @author Hleb Albau
  * @author Oleh Dokuka
+ * @author Sam Lightfoot
  * @since 2.0
  * @see ReactiveCassandraTemplate
  * @see ReactiveCqlOperations
@@ -51,13 +53,24 @@ public interface ReactiveCassandraOperations extends ReactiveFluentCassandraOper
 
 	/**
 	 * Returns a new {@link ReactiveCassandraBatchOperations}. Each {@link ReactiveCassandraBatchOperations} instance can
-	 * be executed only once so you might want to obtain new {@link ReactiveCassandraBatchOperations} instances for each
+	 * be executed only once, so you might want to obtain new {@link ReactiveCassandraBatchOperations} instances for each
 	 * batch.
 	 *
 	 * @return a new {@link ReactiveCassandraBatchOperations} associated with the given entity class.
 	 * @since 2.1
 	 */
 	ReactiveCassandraBatchOperations batchOps();
+
+	/**
+	 * Returns a new {@link ReactiveCassandraBatchOperations}. Each {@link ReactiveCassandraBatchOperations} instance can
+	 * be executed only once, so you might want to obtain new {@link ReactiveCassandraBatchOperations} instances for each
+	 * batch.
+	 *
+	 * @param batchType must not be {@literal null}.
+	 * @return a new {@link ReactiveCassandraBatchOperations} associated with the given entity class.
+	 * @since 3.3.0
+	 */
+	ReactiveCassandraBatchOperations batchOps(BatchType batchType);
 
 	/**
 	 * Expose the underlying {@link ReactiveCqlOperations} to allow CQL operations.

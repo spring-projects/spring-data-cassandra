@@ -31,6 +31,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.cql.BatchType;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Statement;
 
@@ -42,6 +43,7 @@ import com.datastax.oss.driver.api.core.cql.Statement;
  * @author David Webb
  * @author Matthew Adams
  * @author Mark Paluch
+ * @author Sam Lightfoot
  * @see CassandraTemplate
  * @see CqlOperations
  * @see Statement
@@ -52,11 +54,21 @@ public interface CassandraOperations extends FluentCassandraOperations {
 
 	/**
 	 * Returns a new {@link CassandraBatchOperations}. Each {@link CassandraBatchOperations} instance can be executed only
-	 * once so you might want to obtain new {@link CassandraBatchOperations} instances for each batch.
+	 * once, so you might want to obtain new {@link CassandraBatchOperations} instances for each batch.
 	 *
 	 * @return a new {@link CassandraBatchOperations} associated with the given entity class.
 	 */
 	CassandraBatchOperations batchOps();
+
+	/**
+	 * Returns a new {@link CassandraBatchOperations}. Each {@link CassandraBatchOperations} instance can be executed only
+	 * once, so you might want to obtain new {@link CassandraBatchOperations} instances for each batch.
+	 *
+	 * @param batchType must not be {@literal null}.
+	 * @return a new {@link ReactiveCassandraBatchOperations} associated with the given entity class.
+	 * @since 3.3.0
+	 */
+	CassandraBatchOperations batchOps(BatchType batchType);
 
 	/**
 	 * Expose the underlying {@link CqlOperations} to allow CQL operations.
