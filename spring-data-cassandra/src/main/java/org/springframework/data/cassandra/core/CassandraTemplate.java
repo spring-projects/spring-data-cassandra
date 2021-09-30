@@ -73,6 +73,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.DriverException;
 import com.datastax.oss.driver.api.core.config.DefaultDriverOption;
+import com.datastax.oss.driver.api.core.cql.BatchType;
 import com.datastax.oss.driver.api.core.cql.BoundStatement;
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
@@ -109,6 +110,7 @@ import com.datastax.oss.driver.api.querybuilder.update.Update;
  * @author Mark Paluch
  * @author John Blum
  * @author Lukasz Antoniak
+ * @author Sam Lightfoot
  * @see org.springframework.data.cassandra.core.CassandraOperations
  * @since 2.0
  */
@@ -200,6 +202,14 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	@Override
 	public CassandraBatchOperations batchOps() {
 		return new CassandraBatchTemplate(this);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.CassandraOperations#batchOps(com.datastax.oss.driver.api.core.cql.BatchType)
+	 */
+	@Override
+	public CassandraBatchOperations batchOps(BatchType batchType) {
+		return new CassandraBatchTemplate(this, batchType);
 	}
 
 	/* (non-Javadoc)
