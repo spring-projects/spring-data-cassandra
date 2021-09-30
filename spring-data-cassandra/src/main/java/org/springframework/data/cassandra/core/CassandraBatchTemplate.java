@@ -39,13 +39,14 @@ import com.datastax.oss.driver.api.core.cql.SimpleStatement;
  * @author Mark Paluch
  * @author John Blum
  * @author Anup Sabbi
+ * @author Sam Lightfoot
  * @since 1.5
  */
 class CassandraBatchTemplate implements CassandraBatchOperations {
 
 	private final AtomicBoolean executed = new AtomicBoolean();
 
-	private final BatchStatementBuilder batch = BatchStatement.builder(BatchType.LOGGED);
+	private final BatchStatementBuilder batch;
 
 	private final CassandraConverter converter;
 
@@ -61,10 +62,23 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 	 * @param operations must not be {@literal null}.
 	 */
 	CassandraBatchTemplate(CassandraOperations operations) {
+		this(operations, BatchType.LOGGED);
+	}
+
+	/**
+	 * Create a new {@link CassandraBatchTemplate} given {@link CassandraOperations} and {@link BatchType}.
+	 *
+	 * @param operations must not be {@literal null}.
+	 * @param batchType must not be {@literal null}.
+	 * @since 3.3.0
+	 */
+	CassandraBatchTemplate(CassandraOperations operations, BatchType batchType) {
 
 		Assert.notNull(operations, "CassandraOperations must not be null");
+		Assert.notNull(batchType, "BatchType must not be null");
 
 		this.operations = operations;
+		this.batch = BatchStatement.builder(batchType);
 		this.converter = operations.getConverter();
 		this.mappingContext = this.converter.getMappingContext();
 		this.statementFactory = new StatementFactory(new UpdateMapper(converter));
