@@ -57,20 +57,11 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 	private final StatementFactory statementFactory;
 
 	/**
-	 * Create a new {@link CassandraBatchTemplate} given {@link CassandraOperations}.
-	 *
-	 * @param operations must not be {@literal null}.
-	 */
-	CassandraBatchTemplate(CassandraOperations operations) {
-		this(operations, BatchType.LOGGED);
-	}
-
-	/**
 	 * Create a new {@link CassandraBatchTemplate} given {@link CassandraOperations} and {@link BatchType}.
 	 *
 	 * @param operations must not be {@literal null}.
 	 * @param batchType must not be {@literal null}.
-	 * @since 3.3.0
+	 * @since 3.2.6
 	 */
 	CassandraBatchTemplate(CassandraOperations operations, BatchType batchType) {
 

@@ -30,6 +30,7 @@ import org.springframework.data.cassandra.domain.GroupKey;
 import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
 
+import com.datastax.oss.driver.api.core.cql.BatchType;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
 
@@ -64,7 +65,7 @@ class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 	@Test // DATACASS-288
 	void shouldInsertEntities() {
 
-		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
+		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template, BatchType.LOGGED);
 		batchOperations.insert(walter).insert(mike).execute();
 
 		Group loaded = template.selectOneById(walter.getId(), Group.class);
@@ -89,7 +90,7 @@ class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 
 		walter.setAge(100);
 
-		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
+		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template, BatchType.LOGGED);
 
 		WriteResult writeResult = batchOperations.insert(walter, lwtOptions).insert(mike).execute();
 
@@ -108,7 +109,7 @@ class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 	@Test // DATACASS-288
 	void shouldInsertCollectionOfEntities() {
 
-		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
+		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template, BatchType.LOGGED);
 		batchOperations.insert(Arrays.asList(walter, mike)).execute();
 
 		Group loaded = template.selectOneById(walter.getId(), Group.class);
@@ -125,7 +126,7 @@ class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 		int ttl = 30;
 		WriteOptions options = WriteOptions.builder().ttl(30).build();
 
-		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
+		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template, BatchType.LOGGED);
 		batchOperations.insert(Arrays.asList(walter, mike), options).execute();
 
 		ResultSet resultSet = template.getCqlOperations().queryForResultSet("SELECT TTL(email) FROM group;");
@@ -149,7 +150,7 @@ class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 		walter.setEmail("walter@white.com");
 		mike.setEmail("mike@sauls.com");
 
-		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
+		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template, BatchType.LOGGED);
 		batchOperations.update(walter).update(mike).execute();
 
 		Group loaded = template.selectOneById(walter.getId(), Group.class);
@@ -163,7 +164,7 @@ class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 		walter.setEmail("walter@white.com");
 		mike.setEmail("mike@sauls.com");
 
-		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
+		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template, BatchType.LOGGED);
 		batchOperations.update(Arrays.asList(walter, mike)).execute();
 
 		Group loaded = template.selectOneById(walter.getId(), Group.class);
@@ -180,7 +181,7 @@ class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 		int ttl = 30;
 		WriteOptions options = WriteOptions.builder().ttl(ttl).build();
 
-		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
+		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template, BatchType.LOGGED);
 		batchOperations.update(walter, options).execute();
 
 		ResultSet resultSet = template.getCqlOperations().queryForResultSet("SELECT TTL(email), email FROM group");
@@ -209,7 +210,7 @@ class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 		walter.setEmail("walter@white.com");
 		mike.setEmail("mike@sauls.com");
 
-		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
+		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template, BatchType.LOGGED);
 		batchOperations.update(Arrays.asList(walter, mike)).execute();
 
 		FlatGroup loaded = template.selectOneById(walter, FlatGroup.class);
@@ -226,7 +227,7 @@ class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 	@Test // DATACASS-288
 	void shouldDeleteEntities() {
 
-		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
+		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template, BatchType.LOGGED);
 
 		batchOperations.delete(walter).delete(mike).execute();
 
@@ -238,7 +239,7 @@ class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 	@Test // DATACASS-288
 	void shouldDeleteCollectionOfEntities() {
 
-		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
+		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template, BatchType.LOGGED);
 
 		batchOperations.delete(Arrays.asList(walter, mike)).execute();
 
@@ -255,7 +256,7 @@ class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 
 		long timestamp = (System.currentTimeMillis() + TimeUnit.DAYS.toMillis(1)) * 1000;
 
-		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
+		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template, BatchType.LOGGED);
 		batchOperations.insert(walter).insert(mike).withTimestamp(timestamp).execute();
 
 		ResultSet resultSet = template.getCqlOperations().queryForResultSet("SELECT writetime(email) FROM group;");
@@ -270,7 +271,7 @@ class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 	@Test // DATACASS-288
 	void shouldNotExecuteTwice() {
 
-		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
+		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template, BatchType.LOGGED);
 		batchOperations.insert(walter).execute();
 
 		assertThatIllegalStateException().isThrownBy(() -> batchOperations.execute());
@@ -279,7 +280,7 @@ class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 	@Test // DATACASS-288
 	void shouldNotAllowModificationAfterExecution() {
 
-		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template);
+		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template, BatchType.LOGGED);
 		batchOperations.insert(walter).execute();
 
 		assertThatIllegalStateException().isThrownBy(() -> batchOperations.update(new Group()));
