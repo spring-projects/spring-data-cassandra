@@ -52,23 +52,25 @@ import com.datastax.oss.driver.api.core.cql.Statement;
 public interface ReactiveCassandraOperations extends ReactiveFluentCassandraOperations {
 
 	/**
-	 * Returns a new {@link ReactiveCassandraBatchOperations}. Each {@link ReactiveCassandraBatchOperations} instance can
-	 * be executed only once, so you might want to obtain new {@link ReactiveCassandraBatchOperations} instances for each
-	 * batch.
+	 * Returns a new {@link ReactiveCassandraBatchOperations} using {@link BatchType#LOGGED}. Each
+	 * {@link ReactiveCassandraBatchOperations} instance can be executed only once, so you need to obtain new
+	 * {@link ReactiveCassandraBatchOperations} instances for each batch.
 	 *
 	 * @return a new {@link ReactiveCassandraBatchOperations} associated with the given entity class.
 	 * @since 2.1
+	 * @see #batchOps(BatchType)
 	 */
-	ReactiveCassandraBatchOperations batchOps();
+	default ReactiveCassandraBatchOperations batchOps() {
+		return batchOps(BatchType.LOGGED);
+	}
 
 	/**
 	 * Returns a new {@link ReactiveCassandraBatchOperations}. Each {@link ReactiveCassandraBatchOperations} instance can
-	 * be executed only once, so you might want to obtain new {@link ReactiveCassandraBatchOperations} instances for each
-	 * batch.
+	 * be executed only once, so you need to obtain new {@link ReactiveCassandraBatchOperations} instances for each batch.
 	 *
 	 * @param batchType must not be {@literal null}.
 	 * @return a new {@link ReactiveCassandraBatchOperations} associated with the given entity class.
-	 * @since 3.3.0
+	 * @since 3.2.6
 	 */
 	ReactiveCassandraBatchOperations batchOps(BatchType batchType);
 

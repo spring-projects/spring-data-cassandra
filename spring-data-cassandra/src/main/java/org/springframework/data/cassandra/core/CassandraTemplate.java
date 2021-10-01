@@ -197,14 +197,6 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#batchOps()
-	 */
-	@Override
-	public CassandraBatchOperations batchOps() {
-		return new CassandraBatchTemplate(this);
-	}
-
-	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.CassandraOperations#batchOps(com.datastax.oss.driver.api.core.cql.BatchType)
 	 */
 	@Override

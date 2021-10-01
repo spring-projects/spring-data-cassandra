@@ -194,14 +194,6 @@ public class ReactiveCassandraTemplate
 	}
 
 	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#batchOps()
-	 */
-	@Override
-	public ReactiveCassandraBatchOperations batchOps() {
-		return new ReactiveCassandraBatchTemplate(this);
-	}
-
-	/* (non-Javadoc)
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#batchOps(com.datastax.oss.driver.api.core.cql.BatchType)
 	 */
 	@Override

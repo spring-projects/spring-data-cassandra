@@ -53,20 +53,24 @@ import com.datastax.oss.driver.api.core.cql.Statement;
 public interface CassandraOperations extends FluentCassandraOperations {
 
 	/**
-	 * Returns a new {@link CassandraBatchOperations}. Each {@link CassandraBatchOperations} instance can be executed only
-	 * once, so you might want to obtain new {@link CassandraBatchOperations} instances for each batch.
+	 * Returns a new {@link CassandraBatchOperations} using {@link BatchType#LOGGED}. Each
+	 * {@link CassandraBatchOperations} instance can be executed only once, so you need to obtain new
+	 * {@link CassandraBatchOperations} instances for each batch.
 	 *
 	 * @return a new {@link CassandraBatchOperations} associated with the given entity class.
+	 * @see #batchOps(BatchType)
 	 */
-	CassandraBatchOperations batchOps();
+	default CassandraBatchOperations batchOps() {
+		return batchOps(BatchType.LOGGED);
+	}
 
 	/**
 	 * Returns a new {@link CassandraBatchOperations}. Each {@link CassandraBatchOperations} instance can be executed only
-	 * once, so you might want to obtain new {@link CassandraBatchOperations} instances for each batch.
+	 * once, so you need to obtain new {@link CassandraBatchOperations} instances for each batch.
 	 *
 	 * @param batchType must not be {@literal null}.
 	 * @return a new {@link ReactiveCassandraBatchOperations} associated with the given entity class.
-	 * @since 3.3.0
+	 * @since 3.2.6
 	 */
 	CassandraBatchOperations batchOps(BatchType batchType);
 
