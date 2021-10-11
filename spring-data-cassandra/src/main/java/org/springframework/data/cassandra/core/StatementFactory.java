@@ -69,6 +69,7 @@ import org.springframework.util.ClassUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.metadata.schema.ClusteringOrder;
+import com.datastax.oss.driver.api.querybuilder.BindMarker;
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
 import com.datastax.oss.driver.api.querybuilder.condition.Condition;
 import com.datastax.oss.driver.api.querybuilder.condition.ConditionBuilder;
@@ -91,6 +92,7 @@ import com.datastax.oss.driver.api.querybuilder.update.UpdateWithAssignments;
  *
  * @author Mark Paluch
  * @author John Blum
+ * @author Sam Lightfoot
  * @see com.datastax.oss.driver.api.core.cql.Statement
  * @see org.springframework.data.cassandra.core.query.Query
  * @see org.springframework.data.cassandra.core.query.Update
@@ -966,6 +968,11 @@ public class StatementFactory {
 
 				if (predicate.getValue() instanceof List
 						|| (predicate.getValue() != null && predicate.getValue().getClass().isArray())) {
+					Term term = factory.create(predicate.getValue());
+					if (term instanceof BindMarker) {
+						return column.in((BindMarker) term);
+					}
+
 					return column.in(toLiterals(predicate.getValue()));
 				}
 
@@ -1031,6 +1038,11 @@ public class StatementFactory {
 
 				if (predicate.getValue() instanceof List
 						|| (predicate.getValue() != null && predicate.getValue().getClass().isArray())) {
+					Term term = factory.create(predicate.getValue());
+					if (term instanceof BindMarker) {
+						return column.in((BindMarker) term);
+					}
+
 					return column.in(toLiterals(predicate.getValue()));
 				}
 
