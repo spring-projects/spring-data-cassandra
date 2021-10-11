@@ -53,6 +53,7 @@ import com.datastax.oss.driver.api.querybuilder.select.Select;
  * Unit tests for {@link StatementFactory}.
  *
  * @author Mark Paluch
+ * @author Sam Lightfoot
  */
 class StatementFactoryUnitTests {
 
@@ -168,6 +169,16 @@ class StatementFactoryUnitTests {
 
 		assertThat(select.build(ParameterHandling.INLINE).getQuery())
 				.isEqualTo("SELECT * FROM group LIMIT 10 ALLOW FILTERING");
+	}
+
+	@Test
+	void shouldMapSelectInQuery() {
+
+		Query query = Query.query(Criteria.where("foo").in("bar"));
+
+		StatementBuilder<Select> select = statementFactory.select(query, groupEntity);
+
+		assertThat(select.build(ParameterHandling.INLINE).getQuery()).isEqualTo("SELECT * FROM group WHERE foo IN ('bar')");
 	}
 
 	@Test // DATACASS-343
