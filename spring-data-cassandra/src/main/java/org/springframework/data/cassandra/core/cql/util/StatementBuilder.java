@@ -206,7 +206,17 @@ public class StatementBuilder<S extends BuildableQuery> {
 
 		if (parameterHandling == ParameterHandling.INLINE) {
 
-			TermFactory termFactory = value -> toLiteralTerms(value, codecRegistry);
+			TermFactory termFactory = new TermFactory() {
+				@Override
+				public Term create(@Nullable Object value) {
+					return toLiteralTerms(value, codecRegistry);
+				}
+
+				@Override
+				public boolean canBindCollection() {
+					return false;
+				}
+			};
 
 			for (BuilderRunnable<S> runnable : queryActions) {
 				statement = runnable.run(statement, termFactory);

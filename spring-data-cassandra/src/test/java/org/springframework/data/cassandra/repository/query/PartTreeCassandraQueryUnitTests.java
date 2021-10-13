@@ -158,7 +158,7 @@ class PartTreeCassandraQueryUnitTests {
 		String query = deriveQueryFromMethod(Repo.class, "findByFirstnameIn", new Class[] { Collection.class },
 				Arrays.asList("Hank", "Walter")).getQuery();
 
-		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname IN ?");
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname IN ('Hank','Walter')");
 	}
 
 	@Test // DATACASS-172
@@ -184,7 +184,7 @@ class PartTreeCassandraQueryUnitTests {
 		String query = deriveQueryFromMethod(Repo.class, "findByMainAddressIn", new Class[] { Collection.class },
 				Collections.singleton(udtValue)).getQuery();
 
-		assertThat(query).isEqualTo("SELECT * FROM person WHERE mainaddress IN ?");
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE mainaddress IN ({city:NULL,country:NULL})");
 	}
 
 	@Test // DATACASS-343
