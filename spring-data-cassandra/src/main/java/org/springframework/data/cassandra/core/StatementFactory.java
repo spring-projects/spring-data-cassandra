@@ -944,63 +944,65 @@ public class StatementFactory {
 						() -> new IllegalArgumentException(String.format("Unknown operator [%s]", predicate.getOperator())));
 
 		ColumnRelationBuilder<Relation> column = Relation.column(columnName);
+		Object value = predicate.getValue();
+
 		switch (predicateOperator) {
 
 			case EQ:
-				return column.isEqualTo(factory.create(predicate.getValue()));
+				return column.isEqualTo(factory.create(value));
 
 			case NE:
-				return column.isNotEqualTo(factory.create(predicate.getValue()));
+				return column.isNotEqualTo(factory.create(value));
 
 			case GT:
-				return column.isGreaterThan(factory.create(predicate.getValue()));
+				return column.isGreaterThan(factory.create(value));
 
 			case GTE:
-				return column.isGreaterThanOrEqualTo(factory.create(predicate.getValue()));
+				return column.isGreaterThanOrEqualTo(factory.create(value));
 
 			case LT:
-				return column.isLessThan(factory.create(predicate.getValue()));
+				return column.isLessThan(factory.create(value));
 
 			case LTE:
-				return column.isLessThanOrEqualTo(factory.create(predicate.getValue()));
+				return column.isLessThanOrEqualTo(factory.create(value));
 
 			case IN:
 
-				if (predicate.getValue() instanceof List
-						|| (predicate.getValue() != null && predicate.getValue().getClass().isArray())) {
-					Term term = factory.create(predicate.getValue());
-					if (term instanceof BindMarker) {
-						return column.in((BindMarker) term);
+				if (isCollectionLike(value)) {
+
+					if (factory.canBindCollection()) {
+						Term term = factory.create(value);
+						return term instanceof BindMarker ? column.in((BindMarker) term) : column.in(term);
 					}
 
-					return column.in(toLiterals(predicate.getValue()));
+					return column.in(toLiterals(value));
 				}
 
-				return column.in(factory.create(predicate.getValue()));
+				return column.in(factory.create(value));
 
 			case LIKE:
-				return column.like(factory.create(predicate.getValue()));
+				return column.like(factory.create(value));
 
 			case IS_NOT_NULL:
 				return column.isNotNull();
 
 			case CONTAINS:
 
-				Assert.state(predicate.getValue() != null,
+				Assert.state(value != null,
 						() -> String.format("CONTAINS value for column %s is null", columnName));
 
-				return column.contains(factory.create(predicate.getValue()));
+				return column.contains(factory.create(value));
 
 			case CONTAINS_KEY:
 
-				Assert.state(predicate.getValue() != null,
+				Assert.state(value != null,
 						() -> String.format("CONTAINS KEY value for column %s is null", columnName));
 
-				return column.containsKey(factory.create(predicate.getValue()));
+				return column.containsKey(factory.create(value));
 		}
 
 		throw new IllegalArgumentException(
-				String.format("Criteria %s %s %s not supported", columnName, predicate.getOperator(), predicate.getValue()));
+				String.format("Criteria %s %s %s not supported", columnName, predicate.getOperator(), value));
 	}
 
 	private static Condition toCondition(CriteriaDefinition criteriaDefinition, TermFactory factory) {
@@ -1014,43 +1016,45 @@ public class StatementFactory {
 						() -> new IllegalArgumentException(String.format("Unknown operator [%s]", predicate.getOperator())));
 
 		ConditionBuilder<Condition> column = Condition.column(columnName);
+		Object value = predicate.getValue();
+
 		switch (predicateOperator) {
 
 			case EQ:
-				return column.isEqualTo(factory.create(predicate.getValue()));
+				return column.isEqualTo(factory.create(value));
 
 			case NE:
-				return column.isNotEqualTo(factory.create(predicate.getValue()));
+				return column.isNotEqualTo(factory.create(value));
 
 			case GT:
-				return column.isGreaterThan(factory.create(predicate.getValue()));
+				return column.isGreaterThan(factory.create(value));
 
 			case GTE:
-				return column.isGreaterThanOrEqualTo(factory.create(predicate.getValue()));
+				return column.isGreaterThanOrEqualTo(factory.create(value));
 
 			case LT:
-				return column.isLessThan(factory.create(predicate.getValue()));
+				return column.isLessThan(factory.create(value));
 
 			case LTE:
-				return column.isLessThanOrEqualTo(factory.create(predicate.getValue()));
+				return column.isLessThanOrEqualTo(factory.create(value));
 
 			case IN:
 
-				if (predicate.getValue() instanceof List
-						|| (predicate.getValue() != null && predicate.getValue().getClass().isArray())) {
-					Term term = factory.create(predicate.getValue());
-					if (term instanceof BindMarker) {
-						return column.in((BindMarker) term);
+				if (isCollectionLike(value)) {
+
+					if (factory.canBindCollection()) {
+						Term term = factory.create(value);
+						return term instanceof BindMarker ? column.in((BindMarker) term) : column.in(term);
 					}
 
-					return column.in(toLiterals(predicate.getValue()));
+					return column.in(toLiterals(value));
 				}
 
-				return column.in(factory.create(predicate.getValue()));
+				return column.in(factory.create(value));
 		}
 
 		throw new IllegalArgumentException(String.format("Criteria %s %s %s not supported for IF Conditions", columnName,
-				predicate.getOperator(), predicate.getValue()));
+				predicate.getOperator(), value));
 	}
 
 	static List<Term> toLiterals(@Nullable Object arrayOrList) {
@@ -1082,6 +1086,10 @@ public class StatementFactory {
 		}
 
 		return Collections.emptyList();
+	}
+
+	private static boolean isCollectionLike(@Nullable Object value) {
+		return value instanceof List || (value != null && value.getClass().isArray());
 	}
 
 	static class SimpleSelector implements com.datastax.oss.driver.api.querybuilder.select.Selector {

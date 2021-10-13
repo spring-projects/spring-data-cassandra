@@ -15,9 +15,9 @@
  */
 package org.springframework.data.cassandra.core.cql.util;
 
-import com.datastax.oss.driver.api.querybuilder.term.Term;
-
 import org.springframework.lang.Nullable;
+
+import com.datastax.oss.driver.api.querybuilder.term.Term;
 
 /**
  * Factory for {@link Term} objects encapsulating a binding {@code value}. Classes implementing this factory interface
@@ -39,4 +39,14 @@ public interface TermFactory {
 	 * @return the {@link Term} for the given {@code value}.
 	 */
 	Term create(@Nullable Object value);
+
+	/**
+	 * Check whether the term factory accepts {@link java.util.Collection} values to be created as {@link Term}.
+	 *
+	 * @return {@code true} whether the term factory can {@link java.util.Collection} values.
+	 * @since 3.2.6
+	 */
+	default boolean canBindCollection() {
+		return true;
+	}
 }

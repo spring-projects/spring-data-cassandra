@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.domain.Sort.Direction.*;
 
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +44,7 @@ import org.springframework.data.cassandra.core.query.Update;
 import org.springframework.data.cassandra.domain.Group;
 import org.springframework.data.domain.Sort;
 
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.querybuilder.delete.Delete;
@@ -171,14 +173,54 @@ class StatementFactoryUnitTests {
 				.isEqualTo("SELECT * FROM group LIMIT 10 ALLOW FILTERING");
 	}
 
-	@Test
-	void shouldMapSelectInQuery() {
+	@Test // GH-1172
+	void shouldMapSelectInQueryAsInlineValue() {
 
-		Query query = Query.query(Criteria.where("foo").in("bar"));
-
-		StatementBuilder<Select> select = statementFactory.select(query, groupEntity);
+		StatementBuilder<Select> select = statementFactory.select(Query.query(Criteria.where("foo").in("bar")),
+				groupEntity);
 
 		assertThat(select.build(ParameterHandling.INLINE).getQuery()).isEqualTo("SELECT * FROM group WHERE foo IN ('bar')");
+
+		select = statementFactory.select(Query.query(Criteria.where("foo").in("bar", "baz")), groupEntity);
+
+		assertThat(select.build(ParameterHandling.INLINE).getQuery())
+				.isEqualTo("SELECT * FROM group WHERE foo IN ('bar','baz')");
+	}
+
+	@Test // GH-1172
+	void shouldMapSelectInQueryAsByIndexValue() {
+
+		StatementBuilder<Select> select = statementFactory.select(Query.query(Criteria.where("foo").in("bar")),
+				groupEntity);
+		SimpleStatement statement = select.build(ParameterHandling.BY_INDEX);
+
+		assertThat(statement.getQuery()).isEqualTo("SELECT * FROM group WHERE foo IN ?");
+		assertThat(statement.getPositionalValues()).containsOnly(Collections.singletonList("bar"));
+
+		select = statementFactory.select(Query.query(Criteria.where("foo").in("bar", "baz")), groupEntity);
+		statement = select.build(ParameterHandling.BY_INDEX);
+
+		assertThat(statement.getQuery()).isEqualTo("SELECT * FROM group WHERE foo IN ?");
+		assertThat(statement.getPositionalValues()).containsOnly(Arrays.asList("bar", "baz"));
+	}
+
+	@Test // GH-1172
+	void shouldMapSelectInQueryAsByNamedValue() {
+
+		StatementBuilder<Select> select = statementFactory.select(Query.query(Criteria.where("foo").in("bar")),
+				groupEntity);
+		SimpleStatement statement = select.build(ParameterHandling.BY_NAME);
+
+		assertThat(statement.getQuery()).isEqualTo("SELECT * FROM group WHERE foo IN :p0");
+		assertThat(statement.getNamedValues()).hasSize(1).containsEntry(CqlIdentifier.fromCql("p0"),
+				Collections.singletonList("bar"));
+
+		select = statementFactory.select(Query.query(Criteria.where("foo").in("bar", "baz")), groupEntity);
+		statement = select.build(ParameterHandling.BY_NAME);
+
+		assertThat(statement.getQuery()).isEqualTo("SELECT * FROM group WHERE foo IN :p0");
+		assertThat(statement.getNamedValues()).hasSize(1).containsEntry(CqlIdentifier.fromCql("p0"),
+				(Arrays.asList("bar", "baz")));
 	}
 
 	@Test // DATACASS-343
