@@ -143,7 +143,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 */
 	protected ConversionContext getConversionContext() {
 
-		return new ConversionContext(this::doReadRow, this::doReadTupleValue, this::doReadUdtValue,
+		return new ConversionContext(getCustomConversions(), this::doReadRow, this::doReadTupleValue, this::doReadUdtValue,
 				this::readCollectionOrArray, this::readMap, this::getPotentiallyConvertedSimpleRead);
 	}
 
@@ -1160,6 +1160,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 */
 	protected static class ConversionContext {
 
+		private final org.springframework.data.convert.CustomConversions conversions;
+
 		private final ContainerValueConverter<Row> rowConverter;
 
 		private final ContainerValueConverter<TupleValue> tupleConverter;
@@ -1172,10 +1174,12 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 		private final ValueConverter<Object> elementConverter;
 
-		public ConversionContext(ContainerValueConverter<Row> rowConverter,
+		public ConversionContext(org.springframework.data.convert.CustomConversions conversions,
+				ContainerValueConverter<Row> rowConverter,
 				ContainerValueConverter<TupleValue> tupleConverter, ContainerValueConverter<UdtValue> udtConverter,
 				ContainerValueConverter<Collection<?>> collectionConverter, ContainerValueConverter<Map<?, ?>> mapConverter,
 				ValueConverter<Object> elementConverter) {
+			this.conversions = conversions;
 			this.rowConverter = rowConverter;
 			this.tupleConverter = tupleConverter;
 			this.udtConverter = udtConverter;
@@ -1195,6 +1199,10 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		public <S extends Object> S convert(Object source, TypeInformation<? extends S> typeHint) {
 
 			Assert.notNull(typeHint, "TypeInformation must not be null");
+
+			if (conversions.hasCustomReadTarget(source.getClass(), typeHint.getType())) {
+				return (S) elementConverter.convert(source, typeHint);
+			}
 
 			if (source instanceof Collection) {
 
