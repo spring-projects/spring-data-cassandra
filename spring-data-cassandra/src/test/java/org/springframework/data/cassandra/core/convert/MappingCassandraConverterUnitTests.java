@@ -38,10 +38,14 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.*;
 
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.annotation.Transient;
@@ -1444,5 +1448,54 @@ public class MappingCassandraConverterUnitTests {
 
 		WithNullableEmbeddedType target = mappingCassandraConverter.read(WithNullableEmbeddedType.class, source);
 		assertThat(target.nested).isNull();
+	}
+
+	@Test // DATACASS-1181
+	void shouldApplyCustomConverterToMapLikeType() {
+
+		CassandraCustomConversions conversions = new CassandraCustomConversions(
+				Arrays.asList(JsonToStringConverter.INSTANCE, StringToJsonConverter.INSTANCE));
+
+		this.mappingContext = new CassandraMappingContext();
+		this.mappingContext.setSimpleTypeHolder(conversions.getSimpleTypeHolder());
+
+		this.mappingCassandraConverter = new MappingCassandraConverter(mappingContext);
+		this.mappingCassandraConverter.setCustomConversions(conversions);
+		this.mappingCassandraConverter.afterPropertiesSet();
+
+		Row source = RowMockUtil.newRowMock(column("thejson", "{\"hello\":\"world\"}", DataTypes.TEXT));
+
+		TypeWithJsonObject target = mappingCassandraConverter.read(TypeWithJsonObject.class, source);
+		assertThat(target.theJson).isNotNull();
+		assertThat(target.theJson.get("hello")).isEqualTo("world");
+	}
+
+	static class TypeWithJsonObject {
+
+		JSONObject theJson;
+	}
+
+	enum StringToJsonConverter implements Converter<String, JSONObject> {
+		INSTANCE;
+
+		@Override
+		public JSONObject convert(String source) {
+			try {
+				return (JSONObject) new JSONParser().parse(source);
+			} catch (ParseException e) {
+				throw new RuntimeException(e);
+			}
+		}
+
+	}
+
+	enum JsonToStringConverter implements Converter<JSONObject, String> {
+		INSTANCE;
+
+		@Override
+		public String convert(JSONObject source) {
+			return source.toJSONString();
+		}
+
 	}
 }
