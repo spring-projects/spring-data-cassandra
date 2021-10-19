@@ -61,7 +61,6 @@ import com.datastax.oss.driver.api.core.metadata.Metadata;
  * <p>
  * All CQL operations performed by this class are logged at debug level, using
  * {@code org.springframework.data.cassandra.core.cql.DefaultBridgedReactiveSession} as log category.
- * <p>
  *
  * @author Mark Paluch
  * @author Mateusz Stefek

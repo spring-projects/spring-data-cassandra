@@ -15,10 +15,16 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
-import static org.springframework.data.cassandra.core.mapping.BasicMapId.id;
-import static org.springframework.data.cassandra.test.util.RowMockUtil.column;
+import static org.assertj.core.api.Assertions.*;
+import static org.springframework.data.cassandra.core.mapping.BasicMapId.*;
+import static org.springframework.data.cassandra.test.util.RowMockUtil.*;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -30,18 +36,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -55,18 +50,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
-import org.springframework.data.cassandra.core.mapping.BasicMapId;
-import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
-import org.springframework.data.cassandra.core.mapping.CassandraType;
+import org.springframework.data.cassandra.core.mapping.*;
 import org.springframework.data.cassandra.core.mapping.Column;
-import org.springframework.data.cassandra.core.mapping.Element;
-import org.springframework.data.cassandra.core.mapping.Embedded;
-import org.springframework.data.cassandra.core.mapping.MapId;
-import org.springframework.data.cassandra.core.mapping.PrimaryKey;
-import org.springframework.data.cassandra.core.mapping.PrimaryKeyClass;
-import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
-import org.springframework.data.cassandra.core.mapping.Table;
-import org.springframework.data.cassandra.core.mapping.Tuple;
 import org.springframework.data.cassandra.domain.AllPossibleTypes;
 import org.springframework.data.cassandra.domain.CompositeKey;
 import org.springframework.data.cassandra.domain.TypeWithCompositeKey;
@@ -84,13 +69,6 @@ import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.datastax.oss.driver.internal.core.data.DefaultTupleValue;
 import com.datastax.oss.driver.internal.core.type.DefaultTupleType;
-
-
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
 
 /**
  * Unit tests for {@link MappingCassandraConverter}.
@@ -1194,9 +1172,8 @@ public class MappingCassandraConverterUnitTests {
 		@CassandraType(type = CassandraType.Name.SET,
 				typeArguments = CassandraType.Name.INT) private Set<Condition> conditionSet;
 
-		@CassandraType(type = CassandraType.Name.MAP,
-				typeArguments = { CassandraType.Name.INT,
-						CassandraType.Name.INT }) private Map<Condition, Condition> conditionMap;
+		@CassandraType(type = CassandraType.Name.MAP, typeArguments = { CassandraType.Name.INT,
+				CassandraType.Name.INT }) private Map<Condition, Condition> conditionMap;
 
 	}
 
@@ -1367,7 +1344,8 @@ public class MappingCassandraConverterUnitTests {
 		Row source = RowMockUtil.newRowMock(column("id", "id-1", DataTypes.TEXT), column("prefixage", 30, DataTypes.INT),
 				column("prefixfirstname", "fn", DataTypes.TEXT));
 
-		WithPrefixedNullableEmbeddedType target = mappingCassandraConverter.read(WithPrefixedNullableEmbeddedType.class, source);
+		WithPrefixedNullableEmbeddedType target = mappingCassandraConverter.read(WithPrefixedNullableEmbeddedType.class,
+				source);
 		assertThat(target.nested).isEqualTo(new EmbeddedWithSimpleTypes("fn", 30, null));
 	}
 

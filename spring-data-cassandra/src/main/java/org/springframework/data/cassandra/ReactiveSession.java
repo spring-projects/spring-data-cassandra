@@ -66,7 +66,6 @@ public interface ReactiveSession extends Closeable {
 	 * <p>
 	 * If a metadata refresh triggers events (such as node added/removed, or schema events), then the new version of the
 	 * metadata is guaranteed to be visible by the time you receive these events.
-	 * <p>
 	 *
 	 * @return never {@code null}, but may be empty if metadata has been disabled in the configuration.
 	 * @since 3.2.2

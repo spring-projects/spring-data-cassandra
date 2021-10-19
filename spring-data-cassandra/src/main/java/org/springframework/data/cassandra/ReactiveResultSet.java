@@ -52,7 +52,6 @@ public interface ReactiveResultSet {
 	 * The {@link Flux} will stream over all records that in this {@link ReactiveResultSet} according to the reactive
 	 * demand and fetch next result chunks by issuing the underlying query with the current {@link java.nio.ByteBuffer
 	 * paging state} applied.
-	 * <p>
 	 *
 	 * @return a {@link Flux} of rows that will stream over all {@link Row rows} of the entire result.
 	 */

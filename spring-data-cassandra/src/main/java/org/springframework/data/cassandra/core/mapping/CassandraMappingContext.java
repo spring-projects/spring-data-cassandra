@@ -414,7 +414,7 @@ public class CassandraMappingContext
 	 * Returns whether this mapping context has any entities mapped to the given table.
 	 *
 	 * @param name must not be {@literal null}.
-	 * @return @return {@literal true} is this {@literal TableMetadata} is used by a mapping.
+	 * @return {@literal true} is this {@literal TableMetadata} is used by a mapping.
 	 */
 	public boolean usesTable(CqlIdentifier name) {
 
