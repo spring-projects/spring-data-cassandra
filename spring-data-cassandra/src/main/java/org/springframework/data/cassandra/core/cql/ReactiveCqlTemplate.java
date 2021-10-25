@@ -15,23 +15,9 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
-
-import org.reactivestreams.Publisher;
-
-import org.springframework.dao.DataAccessException;
-import org.springframework.dao.support.DataAccessUtils;
-import org.springframework.data.cassandra.ReactiveResultSet;
-import org.springframework.data.cassandra.ReactiveSession;
-import org.springframework.data.cassandra.ReactiveSessionFactory;
-import org.springframework.data.cassandra.core.cql.session.DefaultReactiveSessionFactory;
-import org.springframework.lang.Nullable;
-import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -44,6 +30,18 @@ import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.Statement;
 import com.datastax.oss.driver.api.core.retry.RetryPolicy;
+import org.reactivestreams.Publisher;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.support.DataAccessUtils;
+import org.springframework.data.cassandra.ReactiveResultSet;
+import org.springframework.data.cassandra.ReactiveSession;
+import org.springframework.data.cassandra.ReactiveSessionFactory;
+import org.springframework.data.cassandra.core.cql.session.DefaultReactiveSessionFactory;
+import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
 
 /**
  * <b>This is the central class in the CQL core package for reactive Cassandra data access.</b> It simplifies the use of
@@ -303,7 +301,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 
 		Assert.notNull(action, "Callback object must not be null");
 
-		return createFlux(action).onErrorMap(translateException("ReactiveSessionCallback", getCql(action)));
+		return createFlux(action).onErrorMap(translateException("ReactiveSessionCallback", toCql(action)));
 	}
 
 	// -------------------------------------------------------------------------
@@ -440,11 +438,12 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 		return createFlux(statement, (session, stmt) -> {
 
 			if (logger.isDebugEnabled()) {
-				logger.debug("Executing statement [{}]", QueryExtractorDelegate.getCql(statement));
+				logger.debug(String.format("Executing statement [%s]", toCql(statement)));
 			}
 
-			return session.execute(applyStatementSettings(statement)).flatMapMany(rse::extractData);
-		}).onErrorMap(translateException("Query", statement.toString()));
+			return session.execute(applyStatementSettings(statement))
+					.flatMapMany(rse::extractData);
+		}).onErrorMap(translateException("Query", toCql(statement)));
 	}
 
 	/* (non-Javadoc)
@@ -507,17 +506,17 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 		return createMono(statement, (session, executedStatement) -> {
 
 			if (logger.isDebugEnabled()) {
-				logger.debug("Executing statement [{}]", QueryExtractorDelegate.getCql(statement));
+				logger.debug(String.format("Executing statement [%s]", toCql(statement)));
 			}
 
 			return session.execute(applyStatementSettings(executedStatement));
-		}).onErrorMap(translateException("QueryForResultSet", statement.toString()));
+		}).onErrorMap(translateException("QueryForResultSet", toCql(statement)));
 	}
 
 	@Override
 	public Flux<Row> queryForRows(Statement<?> statement) throws DataAccessException {
 		return queryForResultSet(statement).flatMapMany(ReactiveResultSet::rows)
-				.onErrorMap(translateException("QueryForRows", statement.toString()));
+				.onErrorMap(translateException("QueryForRows", toCql(statement)));
 	}
 
 	// -------------------------------------------------------------------------
@@ -536,10 +535,11 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 
 		return createFlux(session -> {
 
-			logger.debug("Preparing statement [{}] using {}", getCql(psc), psc);
+			logger.debug(String.format("Preparing statement [%s] using %s", toCql(psc), psc));
 
-			return psc.createPreparedStatement(session).flatMapMany(ps -> action.doInPreparedStatement(session, ps));
-		}).onErrorMap(translateException("ReactivePreparedStatementCallback", getCql(psc)));
+			return psc.createPreparedStatement(session)
+					.flatMapMany(ps -> action.doInPreparedStatement(session, ps));
+		}).onErrorMap(translateException("ReactivePreparedStatementCallback", toCql(psc)));
 	}
 
 	/* (non-Javadoc)
@@ -570,7 +570,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 		return execute(psc, (session, preparedStatement) -> Mono.just(preparedStatement).flatMapMany(pps -> {
 
 			if (logger.isDebugEnabled()) {
-				logger.debug("Executing prepared statement [{}]", QueryExtractorDelegate.getCql(preparedStatement));
+				logger.debug(String.format("Executing prepared statement [%s]", toCql(preparedStatement)));
 			}
 
 			BoundStatement boundStatement = (preparedStatementBinder != null
@@ -578,7 +578,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 					: preparedStatement.bind());
 
 			return session.execute(applyStatementSettings(boundStatement));
-		}).flatMap(rse::extractData)).onErrorMap(translateException("Query", getCql(psc)));
+		}).flatMap(rse::extractData)).onErrorMap(translateException("Query", toCql(psc)));
 	}
 
 	/* (non-Javadoc)
@@ -738,7 +738,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 		return execute(newReactivePreparedStatementCreator(cql), (session, ps) -> Flux.from(args).flatMap(objects -> {
 
 			if (logger.isDebugEnabled()) {
-				logger.debug("Executing prepared CQL statement [{}]", cql);
+				logger.debug(String.format("Executing prepared CQL statement [%s]", cql));
 			}
 
 			BoundStatement boundStatement = newArgPreparedStatementBinder(objects).bindValues(ps);
@@ -907,18 +907,6 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 		Assert.state(sessionFactory != null, "SessionFactory is null");
 
 		return sessionFactory.getSession();
-	}
-
-	/**
-	 * Determine CQL from potential provider object.
-	 *
-	 * @param cqlProvider object that's potentially a {@link CqlProvider}
-	 * @return the CQL string, or {@literal null}
-	 * @see CqlProvider
-	 */
-	@Nullable
-	private static String getCql(@Nullable Object cqlProvider) {
-		return QueryExtractorDelegate.getCql(cqlProvider);
 	}
 
 	static class SimpleReactivePreparedStatementCreator implements ReactivePreparedStatementCreator, CqlProvider {

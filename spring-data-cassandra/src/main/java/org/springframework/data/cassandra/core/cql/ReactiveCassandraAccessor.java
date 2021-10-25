@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
+import com.datastax.oss.driver.api.core.DriverException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -146,5 +147,18 @@ public abstract class ReactiveCassandraAccessor implements InitializingBean {
 		Assert.notNull(ex, "DriverException must not be null");
 
 		return getExceptionTranslator().translate(task, cql, ex);
+	}
+
+	/**
+	 * Determine CQL from potential provider object.
+	 *
+	 * @param cqlProvider object that's potentially a {@link CqlProvider}
+	 * @return the CQL string, or {@literal null}
+	 * @see CqlProvider
+	 * @since 3.2.7
+	 */
+	@Nullable
+	protected static String toCql(@Nullable Object cqlProvider) {
+		return QueryExtractorDelegate.getCql(cqlProvider);
 	}
 }
