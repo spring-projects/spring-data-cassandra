@@ -25,12 +25,6 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import org.springframework.dao.DataAccessException;
-import org.springframework.dao.support.DataAccessUtils;
-import org.springframework.data.cassandra.SessionFactory;
-import org.springframework.lang.Nullable;
-import org.springframework.util.Assert;
-
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.DriverException;
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
@@ -39,6 +33,12 @@ import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.Statement;
 import com.datastax.oss.driver.api.core.metadata.Node;
+
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.support.DataAccessUtils;
+import org.springframework.data.cassandra.SessionFactory;
+import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
 
 /**
  * <b>This is the central class in the CQL core package.</b> It simplifies the use of CQL and helps to avoid common
@@ -166,7 +166,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 		try {
 			if (logger.isDebugEnabled()) {
-				logger.debug("Executing CQL statement [{}]", cql);
+				logger.debug(String.format("Executing CQL statement [%s]", cql));
 			}
 
 			Statement<?> statement = applyStatementSettings(newStatement(cql));
@@ -292,12 +292,12 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 		try {
 			if (logger.isDebugEnabled()) {
-				logger.debug("Executing statement [{}]", QueryExtractorDelegate.getCql(statement));
+				logger.debug(String.format("Executing statement [%s]", toCql(statement)));
 			}
 
 			return resultSetExtractor.extractData(getCurrentSession().execute(applyStatementSettings(statement)));
 		} catch (DriverException e) {
-			throw translateException("Query", statement.toString(), e);
+			throw translateException("Query", toCql(statement), e);
 		}
 	}
 
@@ -453,7 +453,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 		try {
 			if (logger.isDebugEnabled()) {
-				logger.debug("Preparing statement [{}] using {}", toCql(preparedStatementCreator), preparedStatementCreator);
+				logger.debug(String.format("Preparing statement [%s] using %s", toCql(preparedStatementCreator), preparedStatementCreator));
 			}
 
 			CqlSession session = getCurrentSession();
@@ -523,7 +523,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 		try {
 			if (logger.isDebugEnabled()) {
-				logger.debug("Preparing statement [{}] using {}", toCql(preparedStatementCreator), preparedStatementCreator);
+				logger.debug(String.format("Preparing statement [%s] using %s", toCql(preparedStatementCreator), preparedStatementCreator));
 			}
 
 			CqlSession session = getCurrentSession();
@@ -531,7 +531,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 			PreparedStatement preparedStatement = preparedStatementCreator.createPreparedStatement(session);
 
 			if (logger.isDebugEnabled()) {
-				logger.debug("Executing prepared statement [{}]", QueryExtractorDelegate.getCql(preparedStatement));
+				logger.debug(String.format("Executing prepared statement [%s]", QueryExtractorDelegate.getCql(preparedStatement)));
 			}
 
 			Statement<?> boundStatement = applyStatementSettings(
