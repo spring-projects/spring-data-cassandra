@@ -294,7 +294,6 @@ public class StatementFactory {
 		Assert.notNull(tableName, "TableName must not be null");
 		Assert.notNull(objectToInsert, "Object to insert must not be null");
 		Assert.notNull(persistentEntity, "CassandraPersistentEntity must not be null");
-		Assert.notNull(tableName, "Table name must not be null");
 
 		boolean insertNulls;
 		if (options instanceof InsertOptions) {
