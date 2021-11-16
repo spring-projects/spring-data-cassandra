@@ -23,8 +23,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Function;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -81,7 +81,7 @@ import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
 public class MappingCassandraConverter extends AbstractCassandraConverter
 		implements ApplicationContextAware, BeanClassLoaderAware {
 
-	private final Logger log = LoggerFactory.getLogger(getClass());
+	private final Log log = LogFactory.getLog(getClass());
 
 	private final CassandraMappingContext mappingContext;
 
@@ -518,7 +518,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			Object value = getWriteValue(property, accessor);
 
 			if (log.isDebugEnabled()) {
-				log.debug("doWithProperties Property.type {}, Property.value {}", property.getType().getName(), value);
+				log.debug(
+						String.format("doWithProperties Property.type %s, Property.value %s", property.getType().getName(), value));
 			}
 
 			if (!property.isWritable()) {
@@ -528,14 +529,14 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			if (value != null && property.isEmbedded()) {
 
 				if (log.isDebugEnabled()) {
-					log.debug("Mapping embedded property [{}] - [{}]", property.getRequiredColumnName(), value);
+					log.debug(String.format("Mapping embedded property [%s] - [%s]", property.getRequiredColumnName(), value));
 				}
 
 				write(value, sink, embeddedEntityOperations.getEntity(property));
 			} else {
 
 				if (log.isDebugEnabled()) {
-					log.debug("Adding map.entry [{}] - [{}]", property.getRequiredColumnName(), value);
+					log.debug(String.format("Adding map.entry [%s] - [%s]", property.getRequiredColumnName(), value));
 				}
 
 				sink.put(property.getRequiredColumnName(), value);
@@ -644,11 +645,12 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			Object value = getWriteValue(property, propertyAccessor);
 
 			if (log.isDebugEnabled()) {
-				log.debug("writeTupleValue Property.type {}, Property.value {}", property.getType().getName(), value);
+				log.debug(
+						String.format("writeTupleValue Property.type %s, Property.value %s", property.getType().getName(), value));
 			}
 
 			if (log.isDebugEnabled()) {
-				log.debug("Adding tuple value [{}] - [{}]", property.getOrdinal(), value);
+				log.debug(String.format("Adding tuple value [%s] - [%s]", property.getOrdinal(), value));
 			}
 
 			TypeCodec<Object> typeCodec = getCodec(property);
@@ -670,18 +672,18 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			Object value = getWriteValue(property, propertyAccessor);
 
 			if (log.isDebugEnabled()) {
-				log.debug("writeUDTValueWhereFromObject Property.type {}, Property.value {}", property.getType().getName(),
-						value);
+				log.debug(String.format("writeUDTValueWhereFromObject Property.type %s, Property.value %s",
+						property.getType().getName(), value));
 			}
 
 			if (log.isDebugEnabled()) {
-				log.debug("Adding udt.value [{}] - [{}]", property.getRequiredColumnName(), value);
+				log.debug(String.format("Adding udt.value [%s] - [%s]", property.getRequiredColumnName(), value));
 			}
 
 			if (property.isEmbedded()) {
 
 				if (log.isDebugEnabled()) {
-					log.debug("Mapping embedded property [{}] - [{}]", property.getRequiredColumnName(), value);
+					log.debug(String.format("Mapping embedded property [%s] - [%s]", property.getRequiredColumnName(), value));
 				}
 
 				if (value == null) {

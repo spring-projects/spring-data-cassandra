@@ -17,8 +17,8 @@ package org.springframework.data.cassandra.repository.query;
 
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
@@ -42,7 +42,7 @@ import org.springframework.util.ClassUtils;
  */
 public abstract class CassandraRepositoryQuerySupport implements RepositoryQuery {
 
-	protected final Logger log = LoggerFactory.getLogger(getClass());
+	protected final Log log = LogFactory.getLog(getClass());
 
 	private final CassandraQueryMethod queryMethod;
 

@@ -18,8 +18,8 @@ package org.springframework.data.cassandra.core.cql;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.util.Assert;
 
@@ -45,7 +45,7 @@ public class CachedPreparedStatementCreator implements PreparedStatementCreator 
 
 	private static final Map<CqlSession, Map<String, PreparedStatement>> CACHE = new ConcurrentHashMap<>();
 
-	protected final Logger log = LoggerFactory.getLogger(getClass());
+	protected final Log log = LogFactory.getLog(getClass());
 
 	private final String cql;
 
@@ -79,7 +79,7 @@ public class CachedPreparedStatementCreator implements PreparedStatementCreator 
 		CqlIdentifier keyspace = session.getKeyspace().orElse(CqlIdentifier.fromCql("unknown"));
 		String cacheKey = keyspace.asInternal().concat("|").concat(this.cql);
 
-		log.debug("Cacheable PreparedStatement in Keyspace {}", keyspace.asCql(true));
+		log.debug(String.format("Cacheable PreparedStatement in Keyspace %s", keyspace.asCql(true)));
 
 		Map<String, PreparedStatement> sessionCache = getOrCreateSessionLocalCache(session);
 

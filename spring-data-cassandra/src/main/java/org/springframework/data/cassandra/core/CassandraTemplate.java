@@ -20,26 +20,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import com.datastax.oss.driver.api.core.CqlIdentifier;
-import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.DriverException;
-import com.datastax.oss.driver.api.core.config.DefaultDriverOption;
-import com.datastax.oss.driver.api.core.cql.BatchType;
-import com.datastax.oss.driver.api.core.cql.BoundStatement;
-import com.datastax.oss.driver.api.core.cql.PreparedStatement;
-import com.datastax.oss.driver.api.core.cql.ResultSet;
-import com.datastax.oss.driver.api.core.cql.Row;
-import com.datastax.oss.driver.api.core.cql.SimpleStatement;
-import com.datastax.oss.driver.api.core.cql.Statement;
-import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
-import com.datastax.oss.driver.api.querybuilder.delete.Delete;
-import com.datastax.oss.driver.api.querybuilder.insert.Insert;
-import com.datastax.oss.driver.api.querybuilder.insert.RegularInsert;
-import com.datastax.oss.driver.api.querybuilder.select.Select;
-import com.datastax.oss.driver.api.querybuilder.truncate.Truncate;
-import com.datastax.oss.driver.api.querybuilder.update.Update;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -78,6 +60,25 @@ import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.DriverException;
+import com.datastax.oss.driver.api.core.config.DefaultDriverOption;
+import com.datastax.oss.driver.api.core.cql.BatchType;
+import com.datastax.oss.driver.api.core.cql.BoundStatement;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.cql.Statement;
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
+import com.datastax.oss.driver.api.querybuilder.delete.Delete;
+import com.datastax.oss.driver.api.querybuilder.insert.Insert;
+import com.datastax.oss.driver.api.querybuilder.insert.RegularInsert;
+import com.datastax.oss.driver.api.querybuilder.select.Select;
+import com.datastax.oss.driver.api.querybuilder.truncate.Truncate;
+import com.datastax.oss.driver.api.querybuilder.update.Update;
+
 /**
  * Primary implementation of {@link CassandraOperations}. It simplifies the use of Cassandra usage and helps to avoid
  * common errors. It executes core Cassandra workflow. This class executes CQL queries or updates, initiating iteration
@@ -106,7 +107,7 @@ import org.springframework.util.Assert;
  */
 public class CassandraTemplate implements CassandraOperations, ApplicationEventPublisherAware, ApplicationContextAware {
 
-	private final Logger logger = LoggerFactory.getLogger(getClass());
+	private final Log log = LogFactory.getLog(getClass());
 
 	private final CqlOperations cqlOperations;
 
@@ -919,7 +920,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 
 	private <T> List<T> doQuery(Statement<?> statement, RowMapper<T> rowMapper) {
 
-		if (PreparedStatementDelegate.canPrepare(isUsePreparedStatements(), statement, logger)) {
+		if (PreparedStatementDelegate.canPrepare(isUsePreparedStatements(), statement, log)) {
 
 			PreparedStatementHandler statementHandler = new PreparedStatementHandler(statement);
 			return getCqlOperations().query(statementHandler, statementHandler, rowMapper);
@@ -934,7 +935,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 
 	private <T> Stream<T> doQueryForStream(Statement<?> statement, RowMapper<T> rowMapper) {
 
-		if (PreparedStatementDelegate.canPrepare(isUsePreparedStatements(), statement, logger)) {
+		if (PreparedStatementDelegate.canPrepare(isUsePreparedStatements(), statement, log)) {
 
 			PreparedStatementHandler statementHandler = new PreparedStatementHandler(statement);
 			return getCqlOperations().queryForStream(statementHandler, statementHandler, rowMapper);
@@ -953,7 +954,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 
 	private <T> T doExecute(Statement<?> statement, Function<ResultSet, T> mappingFunction) {
 
-		if (PreparedStatementDelegate.canPrepare(isUsePreparedStatements(), statement, logger)) {
+		if (PreparedStatementDelegate.canPrepare(isUsePreparedStatements(), statement, log)) {
 
 			PreparedStatementHandler statementHandler = new PreparedStatementHandler(statement);
 			return getCqlOperations().query(statementHandler, statementHandler, mappingFunction::apply);

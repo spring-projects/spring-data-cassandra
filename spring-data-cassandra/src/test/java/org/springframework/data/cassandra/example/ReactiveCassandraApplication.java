@@ -20,8 +20,8 @@ import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.core.ReactiveCassandraTemplate;
@@ -33,7 +33,7 @@ import com.datastax.oss.driver.api.core.CqlSession;
 
 public class ReactiveCassandraApplication {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(ReactiveCassandraApplication.class);
+	private static final Log LOG = LogFactory.getLog(ReactiveCassandraApplication.class);
 
 	private static Person newPerson(String name, int age) {
 		return new Person(UUID.randomUUID().toString(), name, age);
@@ -48,7 +48,7 @@ public class ReactiveCassandraApplication {
     Mono<Person> jonDoe = template.insert(newPerson("Jon Doe", 40));
 
     jonDoe.flatMap(it -> template.selectOne(Query.query(Criteria.where("id").is(it.getId())), Person.class))
-        .doOnNext(it -> LOGGER.info(it.toString()))
+				.doOnNext(it -> LOG.info(it.toString()))
         .then(template.truncate(Person.class))
         .block();
 

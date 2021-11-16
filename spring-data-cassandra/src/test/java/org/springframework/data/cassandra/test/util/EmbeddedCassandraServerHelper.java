@@ -33,8 +33,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.apache.cassandra.config.DatabaseDescriptor;
 import org.apache.cassandra.db.commitlog.CommitLog;
 import org.apache.cassandra.service.CassandraDaemon;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.util.FileCopyUtils;
 import org.springframework.util.FileSystemUtils;
@@ -47,7 +47,7 @@ import org.springframework.util.FileSystemUtils;
 @SuppressWarnings("unused")
 class EmbeddedCassandraServerHelper {
 
-	private static final Logger log = LoggerFactory.getLogger(EmbeddedCassandraServerHelper.class);
+	private static final Log LOG = LogFactory.getLog(EmbeddedCassandraServerHelper.class);
 
 	public static final long DEFAULT_STARTUP_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(20);
 	private static final String DEFAULT_TMP_DIR = "target/embeddedCassandra";
@@ -155,8 +155,8 @@ class EmbeddedCassandraServerHelper {
 
 		checkConfigNameForRestart(file.getAbsolutePath());
 
-		log.debug("Starting cassandra...");
-		log.debug("Initialization needed");
+		LOG.debug("Starting cassandra...");
+		LOG.debug("Initialization needed");
 
 		System.setProperty("cassandra.config", "file:" + file.getAbsolutePath());
 		System.setProperty("cassandra-foreground", "true");
@@ -177,12 +177,12 @@ class EmbeddedCassandraServerHelper {
 			future.get(timeout, MILLISECONDS);
 		} catch (ExecutionException cause) {
 
-			log.error("Cassandra daemon did not start after " + timeout + " ms. Consider increasing the timeout");
+			LOG.error("Cassandra daemon did not start after " + timeout + " ms. Consider increasing the timeout");
 
 			throw new IllegalStateException("Cassandra daemon did not start within timeout", cause);
 		} catch (InterruptedException cause) {
 
-			log.error("Interrupted waiting for Cassandra daemon to start:", cause);
+			LOG.error("Interrupted waiting for Cassandra daemon to start:", cause);
 			Thread.currentThread().interrupt();
 
 			throw new IllegalStateException(cause);

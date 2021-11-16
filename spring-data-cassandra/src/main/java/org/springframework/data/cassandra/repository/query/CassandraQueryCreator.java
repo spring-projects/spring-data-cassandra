@@ -21,8 +21,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
@@ -51,7 +51,7 @@ import org.springframework.util.Assert;
  */
 class CassandraQueryCreator extends AbstractQueryCreator<Query, Filter> {
 
-	private static final Logger LOG = LoggerFactory.getLogger(CassandraQueryCreator.class);
+	private static final Log LOG = LogFactory.getLog(CassandraQueryCreator.class);
 
 	private final MappingContext<?, CassandraPersistentProperty> mappingContext;
 

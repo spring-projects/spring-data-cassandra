@@ -26,8 +26,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.data.cassandra.ReactiveResultSet;
 import org.springframework.data.cassandra.ReactiveSession;
@@ -73,7 +73,7 @@ import com.datastax.oss.driver.api.core.metadata.Metadata;
  */
 public class DefaultBridgedReactiveSession implements ReactiveSession {
 
-	private final Logger logger = LoggerFactory.getLogger(getClass());
+	private final Log log = LogFactory.getLog(getClass());
 
 	private final CqlSession session;
 
@@ -165,8 +165,8 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 
 		return Mono.fromCompletionStage(() -> {
 
-			if (logger.isDebugEnabled()) {
-				logger.debug(String.format("Executing statement [%s]", getCql(statement)));
+			if (log.isDebugEnabled()) {
+				log.debug(String.format("Executing statement [%s]", getCql(statement)));
 			}
 
 			return this.session.executeAsync(statement);
@@ -194,8 +194,8 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 
 		return Mono.fromCompletionStage(() -> {
 
-			if (logger.isDebugEnabled()) {
-				logger.debug(String.format("Preparing statement [%s]", getCql(statement)));
+			if (log.isDebugEnabled()) {
+				log.debug(String.format("Preparing statement [%s]", getCql(statement)));
 			}
 
 			return this.session.prepareAsync(statement);

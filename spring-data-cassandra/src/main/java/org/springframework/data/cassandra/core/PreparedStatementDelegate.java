@@ -17,7 +17,7 @@ package org.springframework.data.cassandra.core;
 
 import java.util.Map;
 
-import org.slf4j.Logger;
+import org.apache.commons.logging.Log;
 
 import org.springframework.data.cassandra.core.cql.QueryExtractorDelegate;
 import org.springframework.util.StringUtils;
@@ -92,7 +92,7 @@ class PreparedStatementDelegate {
 	 * @param logger
 	 * @return
 	 */
-	static boolean canPrepare(boolean usePreparedStatements, Statement<?> statement, Logger logger) {
+	static boolean canPrepare(boolean usePreparedStatements, Statement<?> statement, Log logger) {
 
 		if (usePreparedStatements) {
 

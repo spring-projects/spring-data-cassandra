@@ -15,33 +15,17 @@
  */
 package org.springframework.data.cassandra.core;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.publisher.SynchronousSink;
+
 import java.util.Collections;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import com.datastax.oss.driver.api.core.CqlIdentifier;
-import com.datastax.oss.driver.api.core.DriverException;
-import com.datastax.oss.driver.api.core.config.DefaultDriverOption;
-import com.datastax.oss.driver.api.core.context.DriverContext;
-import com.datastax.oss.driver.api.core.cql.BatchType;
-import com.datastax.oss.driver.api.core.cql.BoundStatement;
-import com.datastax.oss.driver.api.core.cql.PreparedStatement;
-import com.datastax.oss.driver.api.core.cql.Row;
-import com.datastax.oss.driver.api.core.cql.SimpleStatement;
-import com.datastax.oss.driver.api.core.cql.Statement;
-import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
-import com.datastax.oss.driver.api.querybuilder.delete.Delete;
-import com.datastax.oss.driver.api.querybuilder.insert.Insert;
-import com.datastax.oss.driver.api.querybuilder.insert.RegularInsert;
-import com.datastax.oss.driver.api.querybuilder.select.Select;
-import com.datastax.oss.driver.api.querybuilder.truncate.Truncate;
-import com.datastax.oss.driver.api.querybuilder.update.Update;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.reactivestreams.Publisher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-import reactor.core.publisher.SynchronousSink;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -82,6 +66,24 @@ import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.DriverException;
+import com.datastax.oss.driver.api.core.config.DefaultDriverOption;
+import com.datastax.oss.driver.api.core.context.DriverContext;
+import com.datastax.oss.driver.api.core.cql.BatchType;
+import com.datastax.oss.driver.api.core.cql.BoundStatement;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.cql.Statement;
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
+import com.datastax.oss.driver.api.querybuilder.delete.Delete;
+import com.datastax.oss.driver.api.querybuilder.insert.Insert;
+import com.datastax.oss.driver.api.querybuilder.insert.RegularInsert;
+import com.datastax.oss.driver.api.querybuilder.select.Select;
+import com.datastax.oss.driver.api.querybuilder.truncate.Truncate;
+import com.datastax.oss.driver.api.querybuilder.update.Update;
+
 /**
  * Primary implementation of {@link ReactiveCassandraOperations}. It simplifies the use of Reactive Cassandra usage and
  * helps to avoid common errors. It executes core Cassandra workflow. This class executes CQL queries or updates,
@@ -111,7 +113,7 @@ import org.springframework.util.Assert;
 public class ReactiveCassandraTemplate
 		implements ReactiveCassandraOperations, ApplicationEventPublisherAware, ApplicationContextAware {
 
-	private final Logger logger = LoggerFactory.getLogger(getClass());
+	private final Log log = LogFactory.getLog(getClass());
 
 	private final ReactiveCqlOperations cqlOperations;
 
@@ -886,7 +888,7 @@ public class ReactiveCassandraTemplate
 
 	private <T> Flux<T> doQuery(Statement<?> statement, RowMapper<T> rowMapper) {
 
-		if (PreparedStatementDelegate.canPrepare(isUsePreparedStatements(), statement, logger)) {
+		if (PreparedStatementDelegate.canPrepare(isUsePreparedStatements(), statement, log)) {
 
 			PreparedStatementHandler statementHandler = new PreparedStatementHandler(statement);
 			return getReactiveCqlOperations().query(statementHandler, statementHandler, rowMapper);
@@ -897,7 +899,7 @@ public class ReactiveCassandraTemplate
 
 	private <T> Mono<T> doExecute(Statement<?> statement, Function<ReactiveResultSet, T> mappingFunction) {
 
-		if (PreparedStatementDelegate.canPrepare(isUsePreparedStatements(), statement, logger)) {
+		if (PreparedStatementDelegate.canPrepare(isUsePreparedStatements(), statement, log)) {
 
 			PreparedStatementHandler statementHandler = new PreparedStatementHandler(statement);
 			return getReactiveCqlOperations()
@@ -910,7 +912,7 @@ public class ReactiveCassandraTemplate
 	private <T> Mono<T> doExecuteAndFlatMap(Statement<?> statement,
 			Function<ReactiveResultSet, Mono<T>> mappingFunction) {
 
-		if (PreparedStatementDelegate.canPrepare(isUsePreparedStatements(), statement, logger)) {
+		if (PreparedStatementDelegate.canPrepare(isUsePreparedStatements(), statement, log)) {
 
 			PreparedStatementHandler statementHandler = new PreparedStatementHandler(statement);
 			return getReactiveCqlOperations().query(statementHandler, statementHandler, mappingFunction::apply).next();

@@ -19,8 +19,8 @@ package org.springframework.data.cassandra.repository.query;
 import java.util.Optional;
 import java.util.function.Function;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.data.cassandra.core.StatementFactory;
 import org.springframework.data.cassandra.core.cql.QueryExtractorDelegate;
@@ -50,7 +50,7 @@ import com.datastax.oss.driver.api.core.cql.Statement;
  */
 class QueryStatementCreator {
 
-	private static final Logger LOG = LoggerFactory.getLogger(QueryStatementCreator.class);
+	private static final Log LOG = LogFactory.getLog(QueryStatementCreator.class);
 
 	private final CassandraQueryMethod queryMethod;
 

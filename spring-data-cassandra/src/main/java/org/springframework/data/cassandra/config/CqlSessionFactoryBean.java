@@ -27,8 +27,8 @@ import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
@@ -82,6 +82,8 @@ public class CqlSessionFactoryBean
 
 	private static final CassandraExceptionTranslator EXCEPTION_TRANSLATOR = new CassandraExceptionTranslator();
 
+	protected final Log log = LogFactory.getLog(getClass());
+
 	private int port = DEFAULT_PORT;
 
 	private @Nullable CassandraConverter converter;
@@ -100,8 +102,6 @@ public class CqlSessionFactoryBean
 
 	private List<String> startupScripts = Collections.emptyList();
 	private List<String> shutdownScripts = Collections.emptyList();
-
-	protected final Logger logger = LoggerFactory.getLogger(getClass());
 
 	private Set<KeyspaceActionSpecification> keyspaceSpecifications = new HashSet<>();
 
@@ -683,7 +683,9 @@ public class CqlSessionFactoryBean
 	private void executeCql(Stream<String> cql, CqlSession session) {
 
 		cql.forEach(query -> {
-			this.logger.info("Executing CQL [{}]", query);
+			if (this.log.isInfoEnabled()) {
+				this.log.info(String.format("Executing CQL [%s]", query));
+			}
 			session.execute(query);
 		});
 	}

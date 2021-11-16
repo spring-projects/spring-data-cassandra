@@ -15,9 +15,8 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
-import com.datastax.oss.driver.api.core.DriverException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.DataAccessException;
@@ -25,6 +24,8 @@ import org.springframework.data.cassandra.ReactiveSession;
 import org.springframework.data.cassandra.ReactiveSessionFactory;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+
+import com.datastax.oss.driver.api.core.DriverException;
 
 /**
  * Base class for {@link ReactiveCqlTemplate} and other CQL-accessing DAO helpers, defining common properties such as
@@ -41,7 +42,7 @@ import org.springframework.util.Assert;
 public abstract class ReactiveCassandraAccessor implements InitializingBean {
 
 	/** Logger available to subclasses */
-	protected final Logger logger = LoggerFactory.getLogger(getClass());
+	protected final Log logger = LogFactory.getLog(getClass());
 
 	private CqlExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
 

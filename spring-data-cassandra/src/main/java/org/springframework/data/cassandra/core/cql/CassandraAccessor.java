@@ -17,8 +17,8 @@ package org.springframework.data.cassandra.core.cql;
 
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.DataAccessException;
@@ -52,7 +52,7 @@ import com.datastax.oss.driver.api.core.retry.RetryPolicy;
 public class CassandraAccessor implements InitializingBean {
 
 	/** Logger available to subclasses */
-	protected final Logger logger = LoggerFactory.getLogger(getClass());
+	protected final Log logger = LogFactory.getLog(getClass());
 
 	private CqlExceptionTranslator exceptionTranslator = new CassandraExceptionTranslator();
 

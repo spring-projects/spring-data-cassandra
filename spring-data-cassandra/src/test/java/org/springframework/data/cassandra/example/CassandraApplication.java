@@ -18,8 +18,8 @@ package org.springframework.data.cassandra.example;
 
 import java.util.UUID;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
@@ -30,7 +30,7 @@ import com.datastax.oss.driver.api.core.CqlSession;
 
 public class CassandraApplication {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(CassandraApplication.class);
+	private static final Log LOG = LogFactory.getLog(CassandraApplication.class);
 
 	private static Person newPerson(String name, int age) {
 		return new Person(UUID.randomUUID().toString(), name, age);
@@ -44,7 +44,7 @@ public class CassandraApplication {
 
 		Person jonDoe = template.insert(newPerson("Jon Doe", 40));
 
-		LOGGER.info(template.selectOne(Query.query(Criteria.where("id").is(jonDoe.getId())), Person.class).getId());
+		LOG.info(template.selectOne(Query.query(Criteria.where("id").is(jonDoe.getId())), Person.class).getId());
 
 		template.truncate(Person.class);
 		cqlSession.close();

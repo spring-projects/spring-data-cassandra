@@ -15,8 +15,9 @@
  */
 package org.springframework.data.cassandra.core.mapping.event;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.springframework.context.ApplicationListener;
 import org.springframework.core.GenericTypeResolver;
 
@@ -29,7 +30,7 @@ import org.springframework.core.GenericTypeResolver;
  */
 public abstract class AbstractCassandraEventListener<E> implements ApplicationListener<CassandraMappingEvent<?>> {
 
-	protected static final Logger log = LoggerFactory.getLogger(AbstractCassandraEventListener.class);
+	protected static final Log log = LogFactory.getLog(AbstractCassandraEventListener.class);
 
 	private final Class<?> domainClass;
 
@@ -101,7 +102,7 @@ public abstract class AbstractCassandraEventListener<E> implements ApplicationLi
 	 */
 	public void onBeforeSave(BeforeSaveEvent<E> event) {
 		if (log.isDebugEnabled()) {
-			log.debug("onBeforeSave({})", event.getSource());
+			log.debug(String.format("onBeforeSave(%s)", event.getSource()));
 		}
 	}
 
@@ -112,7 +113,7 @@ public abstract class AbstractCassandraEventListener<E> implements ApplicationLi
 	 */
 	public void onAfterSave(AfterSaveEvent<E> event) {
 		if (log.isDebugEnabled()) {
-			log.debug("onAfterSave({})", event.getSource());
+			log.debug(String.format("onAfterSave(%s)", event.getSource()));
 		}
 	}
 
@@ -123,7 +124,7 @@ public abstract class AbstractCassandraEventListener<E> implements ApplicationLi
 	 */
 	public void onBeforeDelete(BeforeDeleteEvent<E> event) {
 		if (log.isDebugEnabled()) {
-			log.debug("onBeforeDelete({})", event.getSource());
+			log.debug(String.format("onBeforeDelete(%s)", event.getSource()));
 		}
 	}
 
@@ -134,7 +135,7 @@ public abstract class AbstractCassandraEventListener<E> implements ApplicationLi
 	 */
 	public void onAfterDelete(AfterDeleteEvent<E> event) {
 		if (log.isDebugEnabled()) {
-			log.debug("onAfterDelete({})", event.getSource());
+			log.debug(String.format("onAfterDelete(%s)", event.getSource()));
 		}
 	}
 
@@ -145,7 +146,7 @@ public abstract class AbstractCassandraEventListener<E> implements ApplicationLi
 	 */
 	public void onAfterLoad(AfterLoadEvent<E> event) {
 		if (log.isDebugEnabled()) {
-			log.debug("onAfterLoad({})", event.getSource());
+			log.debug(String.format("onAfterLoad(%s)", event.getSource()));
 		}
 	}
 
@@ -156,7 +157,7 @@ public abstract class AbstractCassandraEventListener<E> implements ApplicationLi
 	 */
 	public void onAfterConvert(AfterConvertEvent<E> event) {
 		if (log.isDebugEnabled()) {
-			log.debug("onAfterConvert({})", event.getSource());
+			log.debug(String.format("onAfterConvert(%s)", event.getSource()));
 		}
 	}
 }
