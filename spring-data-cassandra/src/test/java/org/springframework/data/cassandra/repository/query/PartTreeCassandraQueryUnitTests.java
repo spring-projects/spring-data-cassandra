@@ -150,7 +150,8 @@ class PartTreeCassandraQueryUnitTests {
 
 		String query = deriveQueryFromMethod("findPersonProjectedByNickname", "foo");
 
-		assertThat(query).isEqualTo("SELECT lastname,firstname FROM person WHERE nickname='foo'");
+		assertThat(query.equals("SELECT lastname,firstname FROM person WHERE nickname='foo'")
+				|| query.equals("SELECT firstname,lastname FROM person WHERE nickname='foo'")).isTrue();
 	}
 
 	@Test // DATACASS-357
