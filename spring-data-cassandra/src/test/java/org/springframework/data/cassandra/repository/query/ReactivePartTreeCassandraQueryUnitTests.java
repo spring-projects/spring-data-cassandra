@@ -109,7 +109,8 @@ class ReactivePartTreeCassandraQueryUnitTests {
 
 		String query = deriveQueryFromMethod("findDynamicallyProjectedBy", PersonProjection.class);
 
-		assertThat(query).isEqualTo("SELECT lastname,firstname FROM person");
+		assertThat(query.equals("SELECT lastname,firstname FROM person")
+				|| query.equals("SELECT firstname,lastname FROM person")).isTrue();
 	}
 
 	@Test // DATACASS-146
