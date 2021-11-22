@@ -48,8 +48,7 @@ class ColumnsUnitTests {
 	void shouldCreateFromColumns() {
 
 		Columns columns = Columns.from("asc", "bar");
-
-		assertThat(columns.toString()).isEqualTo("asc, bar");
+		assertThat(columns.toString()).contains("asc").contains("bar");
 	}
 
 	@Test // DATACASS-343
