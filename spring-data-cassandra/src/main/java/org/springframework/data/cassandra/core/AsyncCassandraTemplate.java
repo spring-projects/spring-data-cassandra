@@ -55,6 +55,7 @@ import org.springframework.data.cassandra.core.mapping.event.CassandraMappingEve
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.mapping.callback.EntityCallbacks;
+import org.springframework.data.projection.EntityProjection;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.util.Streamable;
@@ -118,8 +119,6 @@ public class AsyncCassandraTemplate
 	private final CqlExceptionTranslator exceptionTranslator;
 
 	private final EntityOperations entityOperations;
-
-	private final SpelAwareProxyProjectionFactory projectionFactory;
 
 	private final StatementFactory statementFactory;
 
@@ -186,9 +185,8 @@ public class AsyncCassandraTemplate
 
 		this.converter = converter;
 		this.cqlOperations = asyncCqlTemplate;
-		this.entityOperations = new EntityOperations(converter.getMappingContext());
+		this.entityOperations = new EntityOperations(converter);
 		this.exceptionTranslator = asyncCqlTemplate.getExceptionTranslator();
-		this.projectionFactory = new SpelAwareProxyProjectionFactory();
 		this.statementFactory = new StatementFactory(converter);
 	}
 
@@ -209,9 +207,6 @@ public class AsyncCassandraTemplate
 		if (entityCallbacks == null) {
 			setEntityCallbacks(EntityCallbacks.create(applicationContext));
 		}
-
-		projectionFactory.setBeanFactory(applicationContext);
-		projectionFactory.setBeanClassLoader(applicationContext.getClassLoader());
 	}
 
 	/**
@@ -284,9 +279,11 @@ public class AsyncCassandraTemplate
 	 *         projections.
 	 * @see org.springframework.data.projection.SpelAwareProxyProjectionFactory
 	 * @since 2.1
+	 * @deprecated since 3.4, use {@link CassandraConverter#getProjectionFactory()} instead.
 	 */
+	@Deprecated
 	protected SpelAwareProxyProjectionFactory getProjectionFactory() {
-		return this.projectionFactory;
+		return (SpelAwareProxyProjectionFactory) getConverter().getProjectionFactory();
 	}
 
 	private CassandraPersistentEntity<?> getRequiredPersistentEntity(Class<?> entityType) {
@@ -953,15 +950,13 @@ public class AsyncCassandraTemplate
 	@SuppressWarnings("unchecked")
 	private <T> Function<Row, T> getMapper(Class<?> entityType, Class<T> targetType, CqlIdentifier tableName) {
 
-		Class<?> typeToRead = resolveTypeToRead(entityType, targetType);
+		EntityProjection<T, ?> projection = entityOperations.introspectProjection(targetType, entityType);
 
 		return row -> {
 
 			maybeEmitEvent(new AfterLoadEvent<>(row, targetType, tableName));
 
-			Object source = getConverter().read(typeToRead, row);
-
-			T result = (T) (targetType.isInterface() ? getProjectionFactory().createProjection(targetType, source) : source);
+			T result = getConverter().project(projection, row);
 
 			if (result != null) {
 				maybeEmitEvent(new AfterConvertEvent<>(row, result, tableName));
@@ -969,10 +964,6 @@ public class AsyncCassandraTemplate
 
 			return result;
 		};
-	}
-
-	private Class<?> resolveTypeToRead(Class<?> entityType, Class<?> targetType) {
-		return targetType.isInterface() || targetType.isAssignableFrom(entityType) ? entityType : targetType;
 	}
 
 	private static MappingCassandraConverter newConverter(CqlSession session) {

@@ -102,6 +102,14 @@ public interface CassandraPersistentProperty
 	void setForceQuote(boolean forceQuote);
 
 	/**
+	 * Return whether the property has an explicitly configured column name.
+	 *
+	 * @return
+	 * @since 3.4
+	 */
+	boolean hasExplicitColumnName();
+
+	/**
 	 * The name of the element ordinal to which the property is persisted when the owning type is a mapped tuple.
 	 */
 	@Nullable

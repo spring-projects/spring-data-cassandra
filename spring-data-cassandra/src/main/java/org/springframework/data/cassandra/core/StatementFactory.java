@@ -37,6 +37,8 @@ import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.data.cassandra.core.cql.util.StatementBuilder;
 import org.springframework.data.cassandra.core.cql.util.TermFactory;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
+import org.springframework.data.cassandra.core.mapping.PersistentPropertyTranslator;
 import org.springframework.data.cassandra.core.query.Columns;
 import org.springframework.data.cassandra.core.query.Columns.ColumnSelector;
 import org.springframework.data.cassandra.core.query.Columns.FunctionCall;
@@ -57,11 +59,10 @@ import org.springframework.data.cassandra.core.query.Update.SetAtKeyOp;
 import org.springframework.data.cassandra.core.query.Update.SetOp;
 import org.springframework.data.convert.EntityWriter;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.projection.ProjectionFactory;
+import org.springframework.data.projection.EntityProjection;
 import org.springframework.data.projection.ProjectionInformation;
-import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
+import org.springframework.data.util.Predicates;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -105,8 +106,6 @@ public class StatementFactory {
 	private final QueryMapper queryMapper;
 
 	private final UpdateMapper updateMapper;
-
-	private final ProjectionFactory projectionFactory = new SpelAwareProxyProjectionFactory();
 
 	/**
 	 * Create {@link StatementFactory} given {@link CassandraConverter}.
@@ -560,22 +559,39 @@ public class StatementFactory {
 	 * {@literal closed interface projection}.
 	 *
 	 * @param columns must not be {@literal null}.
-	 * @param persistentEntity must not be {@literal null}.
+	 * @param domainType must not be {@literal null}.
 	 * @param returnType must not be {@literal null}.
 	 * @return {@link Columns} with columns to be included.
 	 * @since 2.2
 	 */
-	Columns computeColumnsForProjection(Columns columns, PersistentEntity<?, ?> persistentEntity, Class<?> returnType) {
+	Columns computeColumnsForProjection(EntityProjection<?, ?> projection, Columns columns,
+			CassandraPersistentEntity<?> domainType, Class<?> returnType) {
 
-		if (!columns.isEmpty() || ClassUtils.isAssignable(persistentEntity.getType(), returnType)) {
+		if (!columns.isEmpty() || ClassUtils.isAssignable(domainType.getType(), returnType)) {
 			return columns;
+		}
+
+		if (projection.getMappedType().getType().isInterface()) {
+			projection.forEach(propertyPath -> columns.include(propertyPath.getPropertyPath().getSegment()));
+		} else {
+
+			// DTO projections use merged metadata between domain type and result type
+			PersistentPropertyTranslator translator = PersistentPropertyTranslator.create(domainType,
+					Predicates.negate(CassandraPersistentProperty::hasExplicitColumnName));
+
+			CassandraPersistentEntity<?> persistentEntity = getQueryMapper().getConverter().getMappingContext()
+					.getRequiredPersistentEntity(projection.getMappedType());
+			for (CassandraPersistentProperty property : persistentEntity) {
+				columns.include(translator.translate(property).getColumnName());
+			}
 		}
 
 		Columns projectedColumns = Columns.empty();
 
 		if (returnType.isInterface()) {
 
-			ProjectionInformation projectionInformation = projectionFactory.getProjectionInformation(returnType);
+			ProjectionInformation projectionInformation = cassandraConverter.getProjectionFactory()
+					.getProjectionInformation(returnType);
 
 			if (projectionInformation.isClosed()) {
 
@@ -584,7 +600,7 @@ public class StatementFactory {
 				}
 			}
 		} else {
-			for (PersistentProperty<?> property : persistentEntity) {
+			for (PersistentProperty<?> property : domainType) {
 				projectedColumns = projectedColumns.include(property.getName());
 			}
 		}

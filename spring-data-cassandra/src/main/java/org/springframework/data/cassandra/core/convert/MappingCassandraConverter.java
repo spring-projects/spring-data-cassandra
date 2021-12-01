@@ -18,10 +18,12 @@ package org.springframework.data.cassandra.core.convert;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -37,8 +39,14 @@ import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.core.mapping.*;
 import org.springframework.data.cassandra.core.mapping.Embedded.OnEmpty;
+import org.springframework.data.convert.CustomConversions;
+import org.springframework.data.mapping.AccessOptions;
 import org.springframework.data.mapping.MappingException;
+import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
+import org.springframework.data.mapping.PersistentPropertyPath;
+import org.springframework.data.mapping.PersistentPropertyPathAccessor;
 import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.mapping.PreferredConstructor.Parameter;
 import org.springframework.data.mapping.context.MappingContext;
@@ -49,7 +57,11 @@ import org.springframework.data.mapping.model.ParameterValueProvider;
 import org.springframework.data.mapping.model.SpELContext;
 import org.springframework.data.mapping.model.SpELExpressionEvaluator;
 import org.springframework.data.mapping.model.SpELExpressionParameterValueProvider;
+import org.springframework.data.projection.EntityProjection;
+import org.springframework.data.projection.ProjectionFactory;
+import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.Predicates;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -95,6 +107,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 	private final DefaultColumnTypeResolver cassandraTypeResolver;
 	private final EmbeddedEntityOperations embeddedEntityOperations;
+	private final SpelAwareProxyProjectionFactory projectionFactory = new SpelAwareProxyProjectionFactory();
 
 	/**
 	 * Create a new {@link MappingCassandraConverter} with a {@link CassandraMappingContext}.
@@ -167,6 +180,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.spELContext = new SpELContext(this.spELContext, applicationContext);
+		this.projectionFactory.setBeanFactory(applicationContext);
 	}
 
 	/* (non-Javadoc)
@@ -175,10 +189,22 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	@Override
 	public void setBeanClassLoader(ClassLoader classLoader) {
 		this.beanClassLoader = classLoader;
+		this.projectionFactory.setBeanClassLoader(classLoader);
 	}
 
 	private TypeCodec<Object> getCodec(CassandraPersistentProperty property) {
 		return getCodecRegistry().codecFor(cassandraTypeResolver.resolve(property).getDataType());
+	}
+
+	/**
+	 * Returns the {@link ProjectionFactory} for this converter.
+	 *
+	 * @return will never be {@literal null}.
+	 * @since 3.4
+	 */
+	@Override
+	public ProjectionFactory getProjectionFactory() {
+		return projectionFactory;
 	}
 
 	/**
@@ -288,6 +314,119 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		} catch (ClassNotFoundException | LinkageError ignore) {
 			return entity;
 		}
+	}
+
+	@Override
+	public <R> R project(EntityProjection<R, ?> projection, Row row) {
+
+		if (!projection.isProjection()) {
+
+			TypeInformation<?> typeToRead = projection.getMappedType().getType().isInterface() ? projection.getDomainType()
+					: projection.getMappedType();
+			return (R) read(typeToRead.getType(), row);
+		}
+
+		ProjectingConversionContext context = new ProjectingConversionContext(getCustomConversions(), this::doReadRow,
+				this::doReadTupleValue, this::doReadUdtValue, this::readCollectionOrArray, this::readMap,
+				this::getPotentiallyConvertedSimpleRead, projection);
+
+		return doReadProjection(context, new RowValueProvider(row, new DefaultSpELExpressionEvaluator(row, spELContext)),
+				projection);
+	}
+
+	@SuppressWarnings("unchecked")
+	private <R> R doReadProjection(ConversionContext context, CassandraValueProvider valueProvider,
+			EntityProjection<R, ?> projection) {
+
+		CassandraPersistentEntity<?> entity = getMappingContext()
+				.getRequiredPersistentEntity(projection.getActualDomainType());
+		TypeInformation<?> mappedType = projection.getActualMappedType();
+		CassandraPersistentEntity<R> mappedEntity = (CassandraPersistentEntity<R>) getMappingContext()
+				.getPersistentEntity(mappedType);
+
+		boolean isInterfaceProjection = mappedType.getType().isInterface();
+		if (isInterfaceProjection) {
+
+			PersistentPropertyTranslator propertyTranslator = PersistentPropertyTranslator.create(mappedEntity);
+			PersistentPropertyAccessor<?> accessor = PropertyTranslatingPropertyAccessor
+					.create(new MapPersistentPropertyAccessor(), propertyTranslator);
+
+			readProperties(context, entity, valueProvider, accessor, Predicates.isTrue());
+			return (R) projectionFactory.createProjection(mappedType.getType(), accessor.getBean());
+		}
+
+		// DTO projection
+		if (mappedEntity == null) {
+			throw new MappingException(String.format("No mapping metadata found for %s", mappedType.getType().getName()));
+		}
+
+		// create target instance, merge metadata from underlying DTO type
+		PersistentPropertyTranslator propertyTranslator = PersistentPropertyTranslator.create(entity,
+				Predicates.negate(CassandraPersistentProperty::hasExplicitColumnName));
+		CassandraValueProvider valueProviderToUse = new TranslatingCassandraValueProvider(propertyTranslator,
+				valueProvider);
+
+		PreferredConstructor<?, CassandraPersistentProperty> persistenceConstructor = mappedEntity
+				.getPersistenceConstructor();
+
+		ParameterValueProvider<CassandraPersistentProperty> provider;
+		if (persistenceConstructor != null && persistenceConstructor.hasParameters()) {
+			SpELExpressionEvaluator evaluator = new DefaultSpELExpressionEvaluator(valueProviderToUse.getSource(),
+					spELContext);
+			ParameterValueProvider<CassandraPersistentProperty> parameterValueProvider = newParameterValueProvider(context,
+					entity, valueProviderToUse);
+			provider = new ConverterAwareSpELExpressionParameterValueProvider(evaluator, getConversionService(),
+					parameterValueProvider, context);
+		} else {
+			provider = NoOpParameterValueProvider.INSTANCE;
+		}
+
+		EntityInstantiator instantiator = instantiators.getInstantiatorFor(mappedEntity);
+		R instance = instantiator.createInstance(mappedEntity, provider);
+		PersistentPropertyAccessor<R> accessor = mappedEntity.getPropertyAccessor(instance);
+
+		readProperties(context, mappedEntity, valueProviderToUse, accessor, Predicates.isTrue());
+
+		return accessor.getBean();
+	}
+
+	private Object doReadOrProject(ConversionContext context, Row row, TypeInformation<?> typeHint,
+			EntityProjection<?, ?> typeDescriptor) {
+
+		if (typeDescriptor.isProjection()) {
+
+			CassandraValueProvider valueProvider = new RowValueProvider(row,
+					new DefaultSpELExpressionEvaluator(row, this.spELContext));
+			return doReadProjection(context, valueProvider, typeDescriptor);
+		}
+
+		return doReadRow(context, row, typeHint);
+	}
+
+	private Object doReadOrProject(ConversionContext context, UdtValue udtValue, TypeInformation<?> typeHint,
+			EntityProjection<?, ?> typeDescriptor) {
+
+		if (typeDescriptor.isProjection()) {
+
+			CassandraValueProvider valueProvider = new UdtValueProvider(udtValue,
+					new DefaultSpELExpressionEvaluator(udtValue, this.spELContext));
+			return doReadProjection(context, valueProvider, typeDescriptor);
+		}
+
+		return doReadUdtValue(context, udtValue, typeHint);
+	}
+
+	private Object doReadOrProject(ConversionContext context, TupleValue tupleValue, TypeInformation<?> typeHint,
+			EntityProjection<?, ?> typeDescriptor) {
+
+		if (typeDescriptor.isProjection()) {
+
+			CassandraValueProvider valueProvider = new TupleValueProvider(tupleValue,
+					new DefaultSpELExpressionEvaluator(tupleValue, this.spELContext));
+			return doReadProjection(context, valueProvider, typeDescriptor);
+		}
+
+		return doReadTupleValue(context, tupleValue, typeHint);
 	}
 
 	/* (non-Javadoc)
@@ -419,7 +558,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		if (entity.requiresPropertyPopulation()) {
 			ConvertingPropertyAccessor<S> propertyAccessor = newConvertingPropertyAccessor(instance, entity);
 
-			readProperties(context, entity, valueProvider, propertyAccessor);
+			readProperties(context, entity, valueProvider, propertyAccessor, isConstructorArgument(entity).negate());
 			return propertyAccessor.getBean();
 		}
 
@@ -427,17 +566,19 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	}
 
 	private void readProperties(ConversionContext context, CassandraPersistentEntity<?> entity,
-			CassandraValueProvider valueProvider, PersistentPropertyAccessor<?> propertyAccessor) {
+			CassandraValueProvider valueProvider, PersistentPropertyAccessor<?> propertyAccessor,
+			Predicate<CassandraPersistentProperty> propertyFilter) {
 
 		for (CassandraPersistentProperty property : entity) {
 
-			// if true then skip; property was set in the constructor
-			if (entity.isConstructorArgument(property)) {
+			if (!propertyFilter.test(property)) {
 				continue;
 			}
 
+			ConversionContext contextToUse = context.forProperty(property.getName());
+
 			if (property.isCompositePrimaryKey() || valueProvider.hasProperty(property) || property.isEmbedded()) {
-				propertyAccessor.setProperty(property, getReadValue(context, valueProvider, property));
+				propertyAccessor.setProperty(property, getReadValue(contextToUse, valueProvider, property));
 			}
 		}
 	}
@@ -1109,6 +1250,10 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		return Map.class.isAssignableFrom(mapType) ? mapType : Map.class;
 	}
 
+	static Predicate<CassandraPersistentProperty> isConstructorArgument(PersistentEntity<?, ?> entity) {
+		return entity::isConstructorArgument;
+	}
+
 	enum NoOpParameterValueProvider implements ParameterValueProvider<CassandraPersistentProperty> {
 
 		INSTANCE;
@@ -1162,19 +1307,19 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 */
 	protected static class ConversionContext {
 
-		private final org.springframework.data.convert.CustomConversions conversions;
+		final org.springframework.data.convert.CustomConversions conversions;
 
-		private final ContainerValueConverter<Row> rowConverter;
+		final ContainerValueConverter<Row> rowConverter;
 
-		private final ContainerValueConverter<TupleValue> tupleConverter;
+		final ContainerValueConverter<TupleValue> tupleConverter;
 
-		private final ContainerValueConverter<UdtValue> udtConverter;
+		final ContainerValueConverter<UdtValue> udtConverter;
 
-		private final ContainerValueConverter<Collection<?>> collectionConverter;
+		final ContainerValueConverter<Collection<?>> collectionConverter;
 
-		private final ContainerValueConverter<Map<?, ?>> mapConverter;
+		final ContainerValueConverter<Map<?, ?>> mapConverter;
 
-		private final ValueConverter<Object> elementConverter;
+		final ValueConverter<Object> elementConverter;
 
 		public ConversionContext(org.springframework.data.convert.CustomConversions conversions,
 				ContainerValueConverter<Row> rowConverter,
@@ -1188,6 +1333,10 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			this.collectionConverter = collectionConverter;
 			this.mapConverter = mapConverter;
 			this.elementConverter = elementConverter;
+		}
+
+		public ConversionContext forProperty(String name) {
+			return this;
 		}
 
 		/**
@@ -1332,6 +1481,135 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			}
 
 			return property;
+		}
+	}
+
+	private static class PropertyTranslatingPropertyAccessor<T> implements PersistentPropertyPathAccessor<T> {
+
+		private final PersistentPropertyAccessor<T> delegate;
+		private final PersistentPropertyTranslator propertyTranslator;
+
+		private PropertyTranslatingPropertyAccessor(PersistentPropertyAccessor<T> delegate,
+				PersistentPropertyTranslator propertyTranslator) {
+			this.delegate = delegate;
+			this.propertyTranslator = propertyTranslator;
+		}
+
+		static <T> PersistentPropertyAccessor<T> create(PersistentPropertyAccessor<T> delegate,
+				PersistentPropertyTranslator propertyTranslator) {
+			return new PropertyTranslatingPropertyAccessor<>(delegate, propertyTranslator);
+		}
+
+		@Override
+		public void setProperty(PersistentProperty property, @Nullable Object value) {
+			delegate.setProperty(translate(property), value);
+		}
+
+		@Override
+		public Object getProperty(PersistentProperty<?> property) {
+			return delegate.getProperty(translate(property));
+		}
+
+		@Override
+		public T getBean() {
+			return delegate.getBean();
+		}
+
+		@Override
+		public void setProperty(PersistentPropertyPath<? extends PersistentProperty<?>> path, Object value,
+				AccessOptions.SetOptions options) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public Object getProperty(PersistentPropertyPath<? extends PersistentProperty<?>> path,
+				AccessOptions.GetOptions context) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public void setProperty(PersistentPropertyPath<? extends PersistentProperty<?>> path, Object value) {
+			throw new UnsupportedOperationException();
+		}
+
+		private CassandraPersistentProperty translate(PersistentProperty<?> property) {
+			return propertyTranslator.translate((CassandraPersistentProperty) property);
+		}
+	}
+
+	static class TranslatingCassandraValueProvider implements CassandraValueProvider {
+
+		private final PersistentPropertyTranslator translator;
+		private final CassandraValueProvider delegate;
+
+		public TranslatingCassandraValueProvider(PersistentPropertyTranslator translator, CassandraValueProvider delegate) {
+			this.translator = translator;
+			this.delegate = delegate;
+		}
+
+		@Override
+		public boolean hasProperty(CassandraPersistentProperty property) {
+			return delegate.hasProperty(translator.translate(property));
+		}
+
+		@Nullable
+		@Override
+		public <T> T getPropertyValue(CassandraPersistentProperty property) {
+			return delegate.getPropertyValue(translator.translate(property));
+		}
+
+		@Override
+		public Object getSource() {
+			return delegate.getSource();
+		}
+
+	}
+
+	class ProjectingConversionContext extends ConversionContext {
+
+		private final EntityProjection<?, ?> projection;
+
+		public ProjectingConversionContext(CustomConversions conversions, ContainerValueConverter<Row> rowConverter,
+				ContainerValueConverter<TupleValue> tupleConverter, ContainerValueConverter<UdtValue> udtConverter,
+				ContainerValueConverter<Collection<?>> collectionConverter, ContainerValueConverter<Map<?, ?>> mapConverter,
+				ValueConverter<Object> elementConverter, EntityProjection<?, ?> projection) {
+			super(conversions, (context, source, typeHint) -> doReadOrProject(context, source, typeHint, projection),
+					(context, source, typeHint) -> doReadOrProject(context, source, typeHint, projection),
+					(context, source, typeHint) -> doReadOrProject(context, source, typeHint, projection), collectionConverter,
+					mapConverter, elementConverter);
+			this.projection = projection;
+		}
+
+		@Override
+		public ConversionContext forProperty(String name) {
+
+			EntityProjection<?, ?> property = projection.findProperty(name);
+			if (property == null) {
+				return super.forProperty(name);
+			}
+
+			return new ProjectingConversionContext(conversions, rowConverter, tupleConverter, udtConverter,
+					collectionConverter, mapConverter, elementConverter, property);
+		}
+	}
+
+	static class MapPersistentPropertyAccessor implements PersistentPropertyAccessor<Map<String, Object>> {
+
+		Map<String, Object> map = new LinkedHashMap<>();
+
+		@Override
+		public void setProperty(PersistentProperty<?> persistentProperty, Object o) {
+			map.put(persistentProperty.getName(), o);
+		}
+
+		@Override
+		public Object getProperty(PersistentProperty<?> persistentProperty) {
+			return map.get(persistentProperty.getName());
+		}
+
+		@Override
+		public Map<String, Object> getBean() {
+			return map;
 		}
 	}
 

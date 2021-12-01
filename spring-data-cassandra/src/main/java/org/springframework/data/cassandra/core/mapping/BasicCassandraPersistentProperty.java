@@ -42,6 +42,7 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -209,7 +210,6 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 				overriddenName = primaryKey.value();
 				forceQuote = primaryKey.forceQuote();
 			}
-
 		} else if (isPrimaryKeyColumn()) { // then it's a simple type
 
 			PrimaryKeyColumn primaryKeyColumn = findAnnotation(PrimaryKeyColumn.class);
@@ -218,7 +218,6 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 				overriddenName = primaryKeyColumn.value();
 				forceQuote = primaryKeyColumn.forceQuote();
 			}
-
 		} else { // then it's a vanilla column with the assumption that it's mapped to a single column
 
 			Column column = findAnnotation(Column.class);
@@ -230,6 +229,32 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		}
 
 		return createColumnName(defaultName, overriddenName, forceQuote);
+	}
+
+	@Override
+	public boolean hasExplicitColumnName() {
+
+		if (isCompositePrimaryKey()) {
+			return false;
+		}
+
+		if (isIdProperty()) { // then the id is of a simple type (since it's not a composite primary key)
+
+			PrimaryKey primaryKey = findAnnotation(PrimaryKey.class);
+
+			return primaryKey != null && !ObjectUtils.isEmpty(primaryKey.value());
+
+		} else if (isPrimaryKeyColumn()) { // then it's a simple type
+
+			PrimaryKeyColumn primaryKeyColumn = findAnnotation(PrimaryKeyColumn.class);
+
+			return primaryKeyColumn != null && !ObjectUtils.isEmpty(primaryKeyColumn.value());
+		} else { // then it's a vanilla column with the assumption that it's mapped to a single column
+
+			Column column = findAnnotation(Column.class);
+
+			return column != null && !ObjectUtils.isEmpty(column.value());
+		}
 	}
 
 	@Nullable

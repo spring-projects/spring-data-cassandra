@@ -21,10 +21,13 @@ import org.springframework.data.cassandra.core.mapping.CassandraPersistentProper
 import org.springframework.data.cassandra.core.mapping.MapId;
 import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.convert.EntityConverter;
+import org.springframework.data.projection.EntityProjection;
+import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
+import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
 
 /**
@@ -38,9 +41,17 @@ public interface CassandraConverter
 		extends EntityConverter<CassandraPersistentEntity<?>, CassandraPersistentProperty, Object, Object> {
 
 	/**
-	 * Returns the {@link CustomConversions} registered in the {@link CassandraConverter}.
+	 * Returns the {@link ProjectionFactory} for this converter.
 	 *
-	 * @return the {@link CustomConversions}.
+	 * @return will never be {@literal null}.
+	 * @since 3.4
+	 */
+	ProjectionFactory getProjectionFactory();
+
+	/**
+	 * Returns the {@link CustomConversions} for this converter.
+	 *
+	 * @return will never be {@literal null}.
 	 */
 	CustomConversions getCustomConversions();
 
@@ -66,6 +77,19 @@ public interface CassandraConverter
 	 * @since 3.0
 	 */
 	ColumnTypeResolver getColumnTypeResolver();
+
+	/**
+	 * Apply a projection to {@link Row} and return the projection return type {@code R}.
+	 * {@link EntityProjection#isProjection() Non-projecting} descriptors fall back to {@link #read(Class, Object) regular
+	 * object materialization}.
+	 *
+	 * @param descriptor the projection descriptor, must not be {@literal null}.
+	 * @param row must not be {@literal null}.
+	 * @param <R>
+	 * @return a new instance of the projection return type {@code R}.
+	 * @since 3.4
+	 */
+	<R> R project(EntityProjection<R, ?> descriptor, Row row);
 
 	/**
 	 * Returns the Id for an entity. It can return:

@@ -120,6 +120,11 @@ class CassandraConstructorProperty implements CassandraPersistentProperty {
 	}
 
 	@Override
+	public boolean hasExplicitColumnName() {
+		return false;
+	}
+
+	@Override
 	public Class<?> getType() {
 		return null;
 	}

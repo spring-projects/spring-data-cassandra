@@ -358,6 +358,11 @@ public class EmbeddedEntityOperations {
 		}
 
 		@Override
+		public boolean hasExplicitColumnName() {
+			return false;
+		}
+
+		@Override
 		@org.springframework.lang.Nullable
 		public Integer getOrdinal() {
 			return delegate.getOrdinal();

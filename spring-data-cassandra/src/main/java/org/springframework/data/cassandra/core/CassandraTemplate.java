@@ -55,6 +55,7 @@ import org.springframework.data.cassandra.core.query.Columns;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.mapping.callback.EntityCallbacks;
+import org.springframework.data.projection.EntityProjection;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.lang.Nullable;
@@ -114,8 +115,6 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	private final CassandraConverter converter;
 
 	private final EntityOperations entityOperations;
-
-	private final SpelAwareProxyProjectionFactory projectionFactory;
 
 	private final StatementFactory statementFactory;
 
@@ -182,8 +181,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 
 		this.converter = converter;
 		this.cqlOperations = cqlOperations;
-		this.entityOperations = new EntityOperations(converter.getMappingContext());
-		this.projectionFactory = new SpelAwareProxyProjectionFactory();
+		this.entityOperations = new EntityOperations(converter);
 		this.statementFactory = new StatementFactory(new QueryMapper(converter), new UpdateMapper(converter));
 	}
 
@@ -212,9 +210,6 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		if (entityCallbacks == null) {
 			setEntityCallbacks(EntityCallbacks.create(applicationContext));
 		}
-
-		projectionFactory.setBeanFactory(applicationContext);
-		projectionFactory.setBeanClassLoader(applicationContext.getClassLoader());
 	}
 
 	/**
@@ -287,9 +282,10 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	 *         projections.
 	 * @see org.springframework.data.projection.SpelAwareProxyProjectionFactory
 	 * @since 2.1
+	 * @deprecated since 3.4, use {@link CassandraConverter#getProjectionFactory()} instead.
 	 */
 	protected SpelAwareProxyProjectionFactory getProjectionFactory() {
-		return this.projectionFactory;
+		return (SpelAwareProxyProjectionFactory) getConverter().getProjectionFactory();
 	}
 
 	private CassandraPersistentEntity<?> getRequiredPersistentEntity(Class<?> entityType) {
@@ -378,7 +374,8 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		Assert.notNull(statement, "Statement must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		Function<Row, T> mapper = getMapper(entityClass, entityClass, EntityQueryUtils.getTableName(statement));
+		Function<Row, T> mapper = getMapper(EntityProjection.nonProjecting(entityClass),
+				EntityQueryUtils.getTableName(statement));
 
 		return doQuery(statement, (row, rowNum) -> mapper.apply(row));
 	}
@@ -404,7 +401,8 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 
 		ResultSet resultSet = doQueryForResultSet(statement);
 
-		Function<Row, T> mapper = getMapper(entityClass, entityClass, EntityQueryUtils.getTableName(statement));
+		Function<Row, T> mapper = getMapper(EntityProjection.nonProjecting(entityClass),
+				EntityQueryUtils.getTableName(statement));
 
 		return EntityQueryUtils.readSlice(resultSet, (row, rowNum) -> mapper.apply(row), 0,
 				getEffectivePageSize(statement));
@@ -419,7 +417,8 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		Assert.notNull(statement, "Statement must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		Function<Row, T> mapper = getMapper(entityClass, entityClass, EntityQueryUtils.getTableName(statement));
+		Function<Row, T> mapper = getMapper(EntityProjection.nonProjecting(entityClass),
+				EntityQueryUtils.getTableName(statement));
 		return doQueryForStream(statement, (row, rowNum) -> mapper.apply(row));
 	}
 
@@ -442,14 +441,14 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	<T> List<T> doSelect(Query query, Class<?> entityClass, CqlIdentifier tableName, Class<T> returnType) {
 
 		CassandraPersistentEntity<?> entity = getRequiredPersistentEntity(entityClass);
-
-		Columns columns = getStatementFactory().computeColumnsForProjection(query.getColumns(), entity, returnType);
+		EntityProjection<T, ?> projection = entityOperations.introspectProjection(returnType, entityClass);
+		Columns columns = getStatementFactory().computeColumnsForProjection(projection, query.getColumns(), entity,
+				returnType);
 
 		Query queryToUse = query.columns(columns);
 
 		StatementBuilder<Select> select = getStatementFactory().select(queryToUse, entity, tableName);
-
-		Function<Row, T> mapper = getMapper(entityClass, returnType, tableName);
+		Function<Row, T> mapper = getMapper(projection, tableName);
 
 		return doQuery(select.build(), (row, rowNum) -> mapper.apply(row));
 	}
@@ -495,8 +494,9 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 
 		StatementBuilder<Select> select = getStatementFactory().select(query, getRequiredPersistentEntity(entityClass),
 				tableName);
+		EntityProjection<T, ?> projection = entityOperations.introspectProjection(returnType, entityClass);
 
-		Function<Row, T> mapper = getMapper(entityClass, returnType, tableName);
+		Function<Row, T> mapper = getMapper(projection, tableName);
 		return doQueryForStream(select.build(), (row, rowNum) -> mapper.apply(row));
 	}
 
@@ -639,7 +639,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		CassandraPersistentEntity<?> entity = getRequiredPersistentEntity(entityClass);
 		CqlIdentifier tableName = entity.getTableName();
 		StatementBuilder<Select> select = getStatementFactory().selectOneById(id, entity, tableName);
-		Function<Row, T> mapper = getMapper(entityClass, entityClass, tableName);
+		Function<Row, T> mapper = getMapper(EntityProjection.nonProjecting(entityClass), tableName);
 		List<T> result = doQuery(select.build(), (row, rowNum) -> mapper.apply(row));
 
 		return result.isEmpty() ? null : result.get(0);
@@ -999,17 +999,15 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T> Function<Row, T> getMapper(Class<?> entityType, Class<T> targetType, CqlIdentifier tableName) {
+	private <T> Function<Row, T> getMapper(EntityProjection<T, ?> projection, CqlIdentifier tableName) {
 
-		Class<?> typeToRead = resolveTypeToRead(entityType, targetType);
+		Class<T> targetType = projection.getMappedType().getType();
 
 		return row -> {
 
 			maybeEmitEvent(new AfterLoadEvent<>(row, targetType, tableName));
 
-			Object source = getConverter().read(typeToRead, row);
-
-			T result = (T) (targetType.isInterface() ? getProjectionFactory().createProjection(targetType, source) : source);
+			T result = getConverter().project(projection, row);
 
 			if (result != null) {
 				maybeEmitEvent(new AfterConvertEvent<>(row, result, tableName));
@@ -1017,10 +1015,6 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 
 			return result;
 		};
-	}
-
-	private Class<?> resolveTypeToRead(Class<?> entityType, Class<?> targetType) {
-		return targetType.isInterface() || targetType.isAssignableFrom(entityType) ? entityType : targetType;
 	}
 
 	private static MappingCassandraConverter newConverter(CqlSession session) {

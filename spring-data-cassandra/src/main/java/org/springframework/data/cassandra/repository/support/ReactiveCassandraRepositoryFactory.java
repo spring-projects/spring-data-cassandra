@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.repository.support;
 import java.lang.reflect.Method;
 import java.util.Optional;
 
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
@@ -68,6 +69,11 @@ public class ReactiveCassandraRepositoryFactory extends ReactiveRepositoryFactor
 		this.mappingContext = cassandraOperations.getConverter().getMappingContext();
 
 		setEvaluationContextProvider(ReactiveQueryMethodEvaluationContextProvider.DEFAULT);
+	}
+
+	@Override
+	protected ProjectionFactory getProjectionFactory(ClassLoader classLoader, BeanFactory beanFactory) {
+		return this.operations.getConverter().getProjectionFactory();
 	}
 
 	/* (non-Javadoc)

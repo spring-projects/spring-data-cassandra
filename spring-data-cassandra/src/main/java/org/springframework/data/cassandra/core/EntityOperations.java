@@ -16,12 +16,17 @@
 package org.springframework.data.cassandra.core;
 
 import org.springframework.core.convert.ConversionService;
+import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.cql.util.StatementBuilder;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
+import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
+import org.springframework.data.projection.EntityProjection;
+import org.springframework.data.projection.EntityProjectionIntrospector;
+import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -44,10 +49,19 @@ import com.datastax.oss.driver.api.querybuilder.update.Update;
 class EntityOperations {
 
 	private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
+	private final EntityProjectionIntrospector introspector;
 
-	public EntityOperations(
-			MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext) {
-		this.mappingContext = mappingContext;
+	EntityOperations(CassandraConverter converter) {
+		this(converter.getMappingContext(), converter.getCustomConversions(), converter.getProjectionFactory());
+	}
+
+	EntityOperations(MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> context,
+			CustomConversions conversions, ProjectionFactory projectionFactory) {
+		this.mappingContext = context;
+		this.introspector = EntityProjectionIntrospector.create(projectionFactory,
+				EntityProjectionIntrospector.ProjectionPredicate.typeHierarchy()
+						.and(((target, underlyingType) -> !conversions.isSimpleType(target))),
+				context);
 	}
 
 	/**
@@ -99,6 +113,9 @@ class EntityOperations {
 		return getRequiredPersistentEntity(entityClass).getTableName();
 	}
 
+	public <M, D> EntityProjection<M, D> introspectProjection(Class<M> resultType, Class<D> entityType) {
+		return introspector.introspect(resultType, entityType);
+	}
 
 	protected MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> getMappingContext() {
 		return this.mappingContext;

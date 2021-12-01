@@ -20,6 +20,7 @@ import static org.springframework.data.cassandra.core.mapping.BasicMapId.*;
 import static org.springframework.data.cassandra.test.util.RowMockUtil.*;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -60,6 +61,9 @@ import org.springframework.data.cassandra.domain.TypeWithMapId;
 import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.domain.UserToken;
 import org.springframework.data.cassandra.test.util.RowMockUtil;
+import org.springframework.data.projection.EntityProjection;
+import org.springframework.data.projection.EntityProjectionIntrospector;
+import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.cql.Row;
@@ -1046,6 +1050,32 @@ public class MappingCassandraConverterUnitTests {
 		assertThat(converted.tuple.firstname).isEqualTo("Two");
 	}
 
+	@Test
+	void shouldConsiderNestedProjections() {
+
+		DefaultTupleValue value = new DefaultTupleValue(
+				new DefaultTupleType(Arrays.asList(DataTypes.ASCII, DataTypes.ASCII, DataTypes.ASCII)));
+
+		value.setString(0, "Zero");
+		value.setString(1, "One");
+		value.setString(2, "Two");
+
+		EntityProjectionIntrospector introspector = EntityProjectionIntrospector.create(
+				new SpelAwareProxyProjectionFactory(), EntityProjectionIntrospector.ProjectionPredicate.typeHierarchy(),
+				this.mappingContext);
+
+		rowMock = RowMockUtil.newRowMock(RowMockUtil.column("firstname", "Heisenberg", DataTypes.ASCII),
+				RowMockUtil.column("tuple", value, value.getType()));
+
+		EntityProjection<WithMappedTupleDtoProjection, WithMappedTuple> projection = introspector
+				.introspect(WithMappedTupleDtoProjection.class, WithMappedTuple.class);
+
+		WithMappedTupleDtoProjection result = this.mappingCassandraConverter.project(projection, rowMock);
+
+		assertThat(result.getFirstname()).isEqualTo("Heisenberg");
+		assertThat(result.getTuple().getOne()).isEqualTo("One");
+	}
+
 	private static List<Object> getValues(Map<CqlIdentifier, Object> statement) {
 		return new ArrayList<>(statement.values());
 	}
@@ -1310,6 +1340,20 @@ public class MappingCassandraConverterUnitTests {
 
 		String firstname;
 		TupleWithElementAnnotationInConstructor tuple;
+	}
+
+	@Data
+	private static class WithMappedTupleDtoProjection {
+
+		String firstname;
+		TupleProjection tuple;
+	}
+
+	private static interface TupleProjection {
+
+		String getZero();
+
+		String getOne();
 	}
 
 	@Tuple

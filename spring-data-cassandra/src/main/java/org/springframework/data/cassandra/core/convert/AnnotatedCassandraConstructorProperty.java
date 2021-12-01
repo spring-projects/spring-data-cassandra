@@ -31,6 +31,7 @@ import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
+import org.springframework.util.ObjectUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 
@@ -61,6 +62,14 @@ class AnnotatedCassandraConstructorProperty implements CassandraPersistentProper
 		}
 
 		return delegate.getColumnName();
+	}
+
+	@Override
+	public boolean hasExplicitColumnName() {
+		if (annotations.isPresent(Column.class)) {
+			return !ObjectUtils.isEmpty(annotations.get(Column.class).getString("value"));
+		}
+		return false;
 	}
 
 	@Override

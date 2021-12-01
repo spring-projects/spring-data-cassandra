@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.core;
 
+import org.springframework.data.projection.EntityProjection;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.SynchronousSink;
@@ -121,8 +122,6 @@ public class ReactiveCassandraTemplate
 
 	private final EntityOperations entityOperations;
 
-	private final SpelAwareProxyProjectionFactory projectionFactory;
-
 	private final StatementFactory statementFactory;
 
 	private @Nullable ApplicationEventPublisher eventPublisher;
@@ -189,8 +188,7 @@ public class ReactiveCassandraTemplate
 
 		this.converter = converter;
 		this.cqlOperations = reactiveCqlOperations;
-		this.entityOperations = new EntityOperations(converter.getMappingContext());
-		this.projectionFactory = new SpelAwareProxyProjectionFactory();
+		this.entityOperations = new EntityOperations(converter);
 		this.statementFactory = new StatementFactory(converter);
 	}
 
@@ -219,9 +217,6 @@ public class ReactiveCassandraTemplate
 		if (entityCallbacks == null) {
 			setEntityCallbacks(ReactiveEntityCallbacks.create(applicationContext));
 		}
-
-		projectionFactory.setBeanFactory(applicationContext);
-		projectionFactory.setBeanClassLoader(applicationContext.getClassLoader());
 	}
 
 	/**
@@ -294,9 +289,11 @@ public class ReactiveCassandraTemplate
 	 *         projections.
 	 * @see org.springframework.data.projection.SpelAwareProxyProjectionFactory
 	 * @since 2.1
+	 * @deprecated since 3.4, use {@link CassandraConverter#getProjectionFactory()} instead.
 	 */
+	@Deprecated
 	protected SpelAwareProxyProjectionFactory getProjectionFactory() {
-		return this.projectionFactory;
+		return (SpelAwareProxyProjectionFactory) getConverter().getProjectionFactory();
 	}
 
 	private CassandraPersistentEntity<?> getRequiredPersistentEntity(Class<?> entityType) {
@@ -365,7 +362,8 @@ public class ReactiveCassandraTemplate
 		Assert.notNull(statement, "Statement must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		Function<Row, T> mapper = getMapper(entityClass, entityClass, EntityQueryUtils.getTableName(statement));
+		Function<Row, T> mapper = getMapper(EntityProjection.nonProjecting(entityClass),
+				EntityQueryUtils.getTableName(statement));
 
 		return doQuery(statement, (row, rowNum) -> mapper.apply(row));
 	}
@@ -421,15 +419,15 @@ public class ReactiveCassandraTemplate
 	<T> Flux<T> doSelect(Query query, Class<?> entityClass, CqlIdentifier tableName, Class<T> returnType) {
 
 		CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entityClass);
-
-		Columns columns = getStatementFactory().computeColumnsForProjection(query.getColumns(), persistentEntity,
+		EntityProjection<T, ?> projection = entityOperations.introspectProjection(returnType, entityClass);
+		Columns columns = getStatementFactory().computeColumnsForProjection(projection, query.getColumns(),
+				persistentEntity,
 				returnType);
 
 		Query queryToUse = query.columns(columns);
 
 		StatementBuilder<Select> select = getStatementFactory().select(queryToUse, persistentEntity, tableName);
-
-		Function<Row, T> mapper = getMapper(entityClass, returnType, tableName);
+		Function<Row, T> mapper = getMapper(projection, tableName);
 
 		return doQuery(select.build(), (row, rowNum) -> mapper.apply(row));
 	}
@@ -956,17 +954,15 @@ public class ReactiveCassandraTemplate
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T> Function<Row, T> getMapper(Class<?> entityType, Class<T> targetType, CqlIdentifier tableName) {
+	private <T> Function<Row, T> getMapper(EntityProjection<T, ?> projection, CqlIdentifier tableName) {
 
-		Class<?> typeToRead = resolveTypeToRead(entityType, targetType);
+		Class<T> targetType = projection.getMappedType().getType();
 
 		return row -> {
 
 			maybeEmitEvent(new AfterLoadEvent<>(row, targetType, tableName));
 
-			Object source = getConverter().read(typeToRead, row);
-
-			T result = (T) (targetType.isInterface() ? getProjectionFactory().createProjection(targetType, source) : source);
+			T result = getConverter().project(projection, row);
 
 			if (result != null) {
 				maybeEmitEvent(new AfterConvertEvent<>(row, result, tableName));
@@ -979,10 +975,6 @@ public class ReactiveCassandraTemplate
 	static Mono<WriteResult> toWriteResult(ReactiveResultSet resultSet) {
 		return resultSet.rows().collectList()
 				.map(rows -> new WriteResult(resultSet.getAllExecutionInfo(), resultSet.wasApplied(), rows));
-	}
-
-	private Class<?> resolveTypeToRead(Class<?> entityType, Class<?> targetType) {
-		return targetType.isInterface() || targetType.isAssignableFrom(entityType) ? entityType : targetType;
 	}
 
 	private static MappingCassandraConverter newConverter(ReactiveSession session) {

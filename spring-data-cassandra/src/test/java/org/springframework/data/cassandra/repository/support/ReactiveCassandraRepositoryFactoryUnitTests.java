@@ -25,6 +25,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import org.springframework.data.cassandra.core.ReactiveCassandraTemplate;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
@@ -32,6 +34,7 @@ import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentE
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;
+import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.Repository;
 
 /**
@@ -40,6 +43,7 @@ import org.springframework.data.repository.Repository;
  * @author Mark Paluch
  */
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class ReactiveCassandraRepositoryFactoryUnitTests {
 
@@ -52,6 +56,7 @@ public class ReactiveCassandraRepositoryFactoryUnitTests {
 	void setUp() {
 
 		when(template.getConverter()).thenReturn(converter);
+		when(converter.getProjectionFactory()).thenReturn(new SpelAwareProxyProjectionFactory());
 		when(converter.getMappingContext()).thenReturn(mappingContext);
 	}
 
