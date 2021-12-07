@@ -17,7 +17,6 @@ package org.springframework.data.cassandra.core.query;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -70,10 +69,11 @@ public class Columns implements Iterable<ColumnName> {
 
 		Assert.notNull(columnNames, "Column names must not be null");
 
-		Map<ColumnName, Selector> columns = new HashMap<>(columnNames.length, 1);
+		Map<ColumnName, Selector> columns = new LinkedHashMap<>(columnNames.length, 1);
 
-		Arrays.stream(columnNames)
-				.forEach(columnName -> columns.put(ColumnName.from(columnName), ColumnSelector.from(columnName)));
+		for (String columnName : columnNames) {
+			columns.put(ColumnName.from(columnName), ColumnSelector.from(columnName));
+		}
 
 		return new Columns(columns);
 	}
@@ -88,9 +88,11 @@ public class Columns implements Iterable<ColumnName> {
 
 		Assert.notNull(columnNames, "Column names must not be null");
 
-		Map<ColumnName, Selector> columns = new HashMap<>(columnNames.length, 1);
+		Map<ColumnName, Selector> columns = new LinkedHashMap<>(columnNames.length, 1);
 
-		Arrays.stream(columnNames).forEach(cqlId -> columns.put(ColumnName.from(cqlId), ColumnSelector.from(cqlId)));
+		for (CqlIdentifier cqlId : columnNames) {
+			columns.put(ColumnName.from(cqlId), ColumnSelector.from(cqlId));
+		}
 
 		return new Columns(columns);
 	}
