@@ -20,6 +20,7 @@ import static org.springframework.data.cassandra.core.query.SerializationUtils.*
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 
 import org.junit.jupiter.api.Test;
 
@@ -113,7 +114,7 @@ class CriteriaUnitTests {
 	@Test // DATACASS-343
 	void shouldCreateIsInSet() {
 
-		CriteriaDefinition criteria = Criteria.where("foo").in(new HashSet<>(Arrays.asList("a", "b", "c")));
+		CriteriaDefinition criteria = Criteria.where("foo").in(new LinkedHashSet<>(Arrays.asList("a", "b", "c")));
 
 		assertThat(serializeToCqlSafely(criteria)).isEqualTo("foo IN {'a','b','c'}");
 	}
