@@ -1050,7 +1050,7 @@ public class MappingCassandraConverterUnitTests {
 		assertThat(converted.tuple.firstname).isEqualTo("Two");
 	}
 
-	@Test
+	@Test // GH-1202
 	void shouldConsiderNestedProjections() {
 
 		DefaultTupleValue value = new DefaultTupleValue(

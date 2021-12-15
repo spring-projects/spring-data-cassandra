@@ -196,12 +196,6 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		return getCodecRegistry().codecFor(cassandraTypeResolver.resolve(property).getDataType());
 	}
 
-	/**
-	 * Returns the {@link ProjectionFactory} for this converter.
-	 *
-	 * @return will never be {@literal null}.
-	 * @since 3.4
-	 */
 	@Override
 	public ProjectionFactory getProjectionFactory() {
 		return projectionFactory;
@@ -1335,7 +1329,14 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			this.elementConverter = elementConverter;
 		}
 
-		public ConversionContext forProperty(String name) {
+		/**
+		 * Obtain the {@link ConversionContext} for the property identified by the given name.
+		 *
+		 * @param name must not be {@literal null}.
+		 * @return never {@literal null}.
+		 * @since 3.4
+		 */
+		ConversionContext forProperty(String name) {
 			return this;
 		}
 
@@ -1581,7 +1582,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		}
 
 		@Override
-		public ConversionContext forProperty(String name) {
+		ConversionContext forProperty(String name) {
 
 			EntityProjection<?, ?> property = projection.findProperty(name);
 			if (property == null) {

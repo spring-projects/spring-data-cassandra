@@ -102,9 +102,10 @@ public interface CassandraPersistentProperty
 	void setForceQuote(boolean forceQuote);
 
 	/**
-	 * Return whether the property has an explicitly configured column name.
+	 * Return whether the property has an explicitly configured column name. Eg. via {@link Column#value()},
+	 * {@link PrimaryKey#value()} or {@link PrimaryKeyColumn#name()}
 	 *
-	 * @return
+	 * @return {@literal true} if a configured column name is present and non empty.
 	 * @since 3.4
 	 */
 	boolean hasExplicitColumnName();
