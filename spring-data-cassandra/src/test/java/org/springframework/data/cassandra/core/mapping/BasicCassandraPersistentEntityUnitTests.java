@@ -170,7 +170,7 @@ class BasicCassandraPersistentEntityUnitTests {
 		AssociationHandler<CassandraPersistentProperty> handlerMock = mock(AssociationHandler.class);
 		entity.doWithAssociations(handlerMock);
 
-		verifyZeroInteractions(handlerMock);
+		verifyNoInteractions(handlerMock);
 	}
 
 	@Table("messages")

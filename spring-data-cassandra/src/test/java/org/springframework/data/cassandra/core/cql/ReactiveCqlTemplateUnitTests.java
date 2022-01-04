@@ -117,7 +117,7 @@ class ReactiveCqlTemplateUnitTests {
 
 		Mono<Boolean> mono = template.execute("UPDATE user SET a = 'b';");
 
-		verifyZeroInteractions(session);
+		verifyNoInteractions(session);
 
 		mono.as(StepVerifier::create).expectNext(false).verifyComplete();
 
@@ -209,7 +209,7 @@ class ReactiveCqlTemplateUnitTests {
 
 		Flux<Boolean> flux = template.query("UPDATE user SET a = 'b';", resultSet -> Mono.just(resultSet.wasApplied()));
 
-		verifyZeroInteractions(session);
+		verifyNoInteractions(session);
 
 		flux.as(StepVerifier::create).expectNext(true).verifyComplete();
 
@@ -328,7 +328,7 @@ class ReactiveCqlTemplateUnitTests {
 
 		Flux<Boolean> flux = template.execute(Flux.just("UPDATE user SET a = 'b';", "UPDATE user SET x = 'y';"));
 
-		verifyZeroInteractions(session);
+		verifyNoInteractions(session);
 
 		flux.as(StepVerifier::create).expectNext(true).expectNext(false).verifyComplete();
 
@@ -419,7 +419,7 @@ class ReactiveCqlTemplateUnitTests {
 		Flux<Boolean> flux = template.query(SimpleStatement.newInstance("UPDATE user SET a = 'b';"),
 				resultSet -> Mono.just(resultSet.wasApplied()));
 
-		verifyZeroInteractions(session);
+		verifyNoInteractions(session);
 		flux.as(StepVerifier::create).expectNext(true).verifyComplete();
 		verify(session).execute(any(Statement.class));
 	}
@@ -591,7 +591,7 @@ class ReactiveCqlTemplateUnitTests {
 		Flux<ReactiveResultSet> flux = template.execute("UPDATE user SET a = 'b';",
 				(session, ps) -> session.execute(ps.bind()));
 
-		verifyZeroInteractions(session);
+		verifyNoInteractions(session);
 
 		flux.as(StepVerifier::create).expectNext(reactiveResultSet).verifyComplete();
 
@@ -607,7 +607,7 @@ class ReactiveCqlTemplateUnitTests {
 		Flux<ReactiveResultSet> flux = template.execute(session -> Mono.just(preparedStatement),
 				(session, ps) -> session.execute(boundStatement));
 
-		verifyZeroInteractions(session);
+		verifyNoInteractions(session);
 
 		flux.as(StepVerifier::create).expectNext(reactiveResultSet).verifyComplete();
 
@@ -643,7 +643,7 @@ class ReactiveCqlTemplateUnitTests {
 
 		Flux<Row> flux = template.query(session -> Mono.just(preparedStatement), ReactiveResultSet::rows);
 
-		verifyZeroInteractions(session);
+		verifyNoInteractions(session);
 
 		flux.as(StepVerifier::create).expectNext(row).verifyComplete();
 		verify(preparedStatement).bind();
@@ -660,7 +660,7 @@ class ReactiveCqlTemplateUnitTests {
 			return boundStatement;
 		}, ReactiveResultSet::rows);
 
-		verifyZeroInteractions(session);
+		verifyNoInteractions(session);
 
 		flux.as(StepVerifier::create).expectNext(row).verifyComplete();
 
@@ -678,7 +678,7 @@ class ReactiveCqlTemplateUnitTests {
 			return boundStatement;
 		}, (row, rowNum) -> row);
 
-		verifyZeroInteractions(session);
+		verifyNoInteractions(session);
 
 		flux.as(StepVerifier::create).expectNext(row).verifyComplete();
 

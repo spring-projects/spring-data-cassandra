@@ -46,8 +46,8 @@ class CassandraPersistentPropertyComparatorUnitTests {
 
 		assertThat(INSTANCE.compare(null, null)).isEqualTo(0);
 
-		verifyZeroInteractions(left);
-		verifyZeroInteractions(right);
+		verifyNoInteractions(left);
+		verifyNoInteractions(right);
 	}
 
 	@Test // DATACASS-248
@@ -55,8 +55,8 @@ class CassandraPersistentPropertyComparatorUnitTests {
 
 		assertThat(INSTANCE.compare(left, null)).isEqualTo(1);
 
-		verifyZeroInteractions(left);
-		verifyZeroInteractions(right);
+		verifyNoInteractions(left);
+		verifyNoInteractions(right);
 	}
 
 	@Test // DATACASS-248
@@ -64,8 +64,8 @@ class CassandraPersistentPropertyComparatorUnitTests {
 
 		assertThat(INSTANCE.compare(null, right)).isEqualTo(-1);
 
-		verifyZeroInteractions(left);
-		verifyZeroInteractions(right);
+		verifyNoInteractions(left);
+		verifyNoInteractions(right);
 	}
 
 	@Test // DATACASS-248
@@ -74,8 +74,8 @@ class CassandraPersistentPropertyComparatorUnitTests {
 		assertThat(INSTANCE.compare(left, left)).isEqualTo(0);
 		assertThat(INSTANCE.compare(right, right)).isEqualTo(0);
 
-		verifyZeroInteractions(left);
-		verifyZeroInteractions(right);
+		verifyNoInteractions(left);
+		verifyNoInteractions(right);
 	}
 
 	@Test // DATACASS-248
