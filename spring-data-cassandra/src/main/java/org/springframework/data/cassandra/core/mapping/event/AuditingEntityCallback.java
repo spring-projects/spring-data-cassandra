@@ -47,19 +47,11 @@ public class AuditingEntityCallback implements BeforeConvertCallback<Object>, Or
 		this.auditingHandlerFactory = auditingHandlerFactory;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.event.BeforeConvertCallback#onBeforeConvert(java.lang.Object, com.datastax.oss.driver.api.core.CqlIdentifier)
-	 */
 	@Override
 	public Object onBeforeConvert(Object entity, CqlIdentifier tableName) {
 		return auditingHandlerFactory.getObject().markAudited(entity);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.core.Ordered#getOrder()
-	 */
 	@Override
 	public int getOrder() {
 		return 100;

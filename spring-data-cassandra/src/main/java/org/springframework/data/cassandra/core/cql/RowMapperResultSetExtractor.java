@@ -69,9 +69,6 @@ public class RowMapperResultSetExtractor<T> implements ResultSetExtractor<List<T
 		this.rowsExpected = rowsExpected;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.ResultSetExtractor#extractData(ResultSet)
-	 */
 	@Override
 	public List<T> extractData(ResultSet resultSet) throws DriverException, DataAccessException {
 

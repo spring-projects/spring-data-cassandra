@@ -32,9 +32,6 @@ public class AddColumnCqlGenerator extends ColumnChangeCqlGenerator<AddColumnSpe
 		super(specification);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.generator.ColumnChangeCqlGenerator#toCql(java.lang.StringBuilder)
-	 */
 	@Override
 	public StringBuilder toCql(StringBuilder cql) {
 		return cql.append("ADD ").append(spec().getName().asCql(true)).append(' ')

@@ -125,9 +125,6 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 		return this.statementFactory;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraBatchOperations#execute()
-	 */
 	@Override
 	public Mono<WriteResult> execute() {
 
@@ -153,9 +150,6 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 		});
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraBatchOperations#withTimestamp(long)
-	 */
 	@Override
 	public ReactiveCassandraBatchOperations withTimestamp(long timestamp) {
 
@@ -165,9 +159,6 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 		return this;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraBatchOperations#insert(java.lang.Object[])
-	 */
 	@Override
 	public ReactiveCassandraBatchOperations insert(Object... entities) {
 
@@ -176,25 +167,16 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 		return insert(Arrays.asList(entities));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraBatchOperations#insert(java.lang.Iterable)
-	 */
 	@Override
 	public ReactiveCassandraBatchOperations insert(Iterable<?> entities) {
 		return insert(entities, InsertOptions.empty());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraBatchOperations#insert(reactor.core.publisher.Mono)
-	 */
 	@Override
 	public ReactiveCassandraBatchOperations insert(Mono<? extends Iterable<?>> entities) {
 		return insert(entities, InsertOptions.empty());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraBatchOperations#insert(java.lang.Iterable, org.springframework.data.cassandra.core.cql.WriteOptions)
-	 */
 	@Override
 	public ReactiveCassandraBatchOperations insert(Iterable<?> entities, WriteOptions options) {
 
@@ -208,9 +190,6 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 		return this;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraBatchOperations#insert(reactor.core.publisher.Mono, org.springframework.data.cassandra.core.cql.WriteOptions)
-	 */
 	@Override
 	public ReactiveCassandraBatchOperations insert(Mono<? extends Iterable<?>> entities, WriteOptions options) {
 
@@ -244,9 +223,6 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 		return insertQueries;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraBatchOperations#update(java.lang.Object[])
-	 */
 	@Override
 	public ReactiveCassandraBatchOperations update(Object... entities) {
 
@@ -255,25 +231,16 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 		return update(Arrays.asList(entities));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraBatchOperations#update(java.lang.Iterable)
-	 */
 	@Override
 	public ReactiveCassandraBatchOperations update(Iterable<?> entities) {
 		return update(entities, UpdateOptions.empty());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraBatchOperations#update(reactor.core.publisher.Mono)
-	 */
 	@Override
 	public ReactiveCassandraBatchOperations update(Mono<? extends Iterable<?>> entities) {
 		return update(entities, UpdateOptions.empty());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraBatchOperations#update(java.lang.Iterable, org.springframework.data.cassandra.core.cql.WriteOptions)
-	 */
 	@Override
 	public ReactiveCassandraBatchOperations update(Iterable<?> entities, WriteOptions options) {
 
@@ -287,9 +254,6 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 		return this;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraBatchOperations#update(reactor.core.publisher.Mono, org.springframework.data.cassandra.core.cql.WriteOptions)
-	 */
 	@Override
 	public ReactiveCassandraBatchOperations update(Mono<? extends Iterable<?>> entities, WriteOptions options) {
 
@@ -321,9 +285,6 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 		return updateQueries;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraBatchOperations#delete(java.lang.Object[])
-	 */
 	@Override
 	public ReactiveCassandraBatchOperations delete(Object... entities) {
 
@@ -332,25 +293,16 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 		return delete(Arrays.asList(entities));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraBatchOperations#delete(java.lang.Iterable)
-	 */
 	@Override
 	public ReactiveCassandraBatchOperations delete(Iterable<?> entities) {
 		return delete(entities, DeleteOptions.empty());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraBatchOperations#delete(reactor.core.publisher.Mono)
-	 */
 	@Override
 	public ReactiveCassandraBatchOperations delete(Mono<? extends Iterable<?>> entities) {
 		return delete(entities, DeleteOptions.empty());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraBatchOperations#delete(java.lang.Iterable, org.springframework.data.cassandra.core.cql.WriteOptions)
-	 */
 	@Override
 	public ReactiveCassandraBatchOperations delete(Iterable<?> entities, WriteOptions options) {
 
@@ -364,9 +316,6 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 		return this;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraBatchOperations#delete(reactor.core.publisher.Mono, org.springframework.data.cassandra.core.cql.WriteOptions)
-	 */
 	@Override
 	public ReactiveCassandraBatchOperations delete(Mono<? extends Iterable<?>> entities, WriteOptions options) {
 

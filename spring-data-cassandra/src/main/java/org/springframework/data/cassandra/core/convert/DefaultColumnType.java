@@ -46,75 +46,43 @@ class DefaultColumnType implements ColumnType {
 		return parameters;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.convert.ColumnType#getType()
-	 */
 	@Override
 	public Class<?> getType() {
 		return typeInformation.getType();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.convert.ColumnType#isCollectionLike()
-	 */
 	@Override
 	public boolean isCollectionLike() {
 		return typeInformation.isCollectionLike();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.convert.ColumnType#isList()
-	 */
 	@Override
 	public boolean isList() {
 		return List.class.isAssignableFrom(typeInformation.getType());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.convert.ColumnType#isSet()
-	 */
 	@Override
 	public boolean isSet() {
 		return Set.class.isAssignableFrom(typeInformation.getType());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.convert.ColumnType#isMap()
-	 */
 	@Override
 	public boolean isMap() {
 		return typeInformation.isMap();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.convert.ColumnType#getComponentType()
-	 */
 	@Nullable
 	@Override
 	public ColumnType getComponentType() {
 		return !parameters.isEmpty() ? parameters.get(0) : null;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.convert.ColumnType#getMapValueType()
-	 */
 	@Nullable
 	@Override
 	public ColumnType getMapValueType() {
 		return parameters.size() > 1 ? parameters.get(1) : null;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 

@@ -28,17 +28,11 @@ public class ResultSetToFloatConverter extends AbstractResultSetToBasicFixedType
 
 	public static final ResultSetToFloatConverter INSTANCE = new ResultSetToFloatConverter();
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.converter.AbstractResultSetConverter#doConvertSingleValue(java.lang.Object)
-	 */
 	@Override
 	protected Float doConvertSingleValue(Object object) {
 		return CONVERTER.convert(object, Float.class);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.converter.AbstractResultSetConverter#getType()
-	 */
 	@Override
 	protected Class<?> getType() {
 		return Float.class;

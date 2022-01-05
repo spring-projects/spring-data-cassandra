@@ -80,28 +80,16 @@ public class CreateTableSpecification extends TableSpecification<CreateTableSpec
 		return this.ifNotExists;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.keyspace.TableOptionsSpecification#with(org.springframework.data.cassandra.core.cql.keyspace.TableOption)
-	 */
 	@Override
 	public CreateTableSpecification with(TableOption option) {
 		return (CreateTableSpecification) super.with(option);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.keyspace.TableOptionsSpecification#with(org.springframework.data.cassandra.core.cql.keyspace.TableOption, java.lang.Object)
-	 */
 	@Override
 	public CreateTableSpecification with(TableOption option, Object value) {
 		return (CreateTableSpecification) super.with(option, value);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.keyspace.TableOptionsSpecification#with(java.lang.String, java.lang.Object, boolean, boolean)
-	 */
 	@Override
 	public CreateTableSpecification with(String name, @Nullable Object value, boolean escape, boolean quote) {
 		return (CreateTableSpecification) super.with(name, value, escape, quote);

@@ -49,9 +49,6 @@ public class UdtValueProvider implements CassandraValueProvider {
 		this.evaluator = evaluator;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.mapping.model.PropertyValueProvider#getPropertyValue(org.springframework.data.mapping.PersistentProperty)
-	 */
 	@Nullable
 	public <T> T getPropertyValue(CassandraPersistentProperty property) {
 
@@ -64,17 +61,11 @@ public class UdtValueProvider implements CassandraValueProvider {
 		return (T) this.udtValue.getObject(property.getRequiredColumnName());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.convert.CassandraValueProvider#hasProperty(org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty)
-	 */
 	@Override
 	public boolean hasProperty(CassandraPersistentProperty property) {
 		return this.udtValue.getType().contains(property.getRequiredColumnName());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.convert.CassandraValueProvider#getSource()
-	 */
 	@Override
 	public Object getSource() {
 		return this.udtValue;

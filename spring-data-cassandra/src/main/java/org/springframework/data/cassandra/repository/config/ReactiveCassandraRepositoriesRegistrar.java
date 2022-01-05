@@ -30,19 +30,11 @@ import org.springframework.data.repository.config.RepositoryConfigurationExtensi
  */
 class ReactiveCassandraRepositoriesRegistrar extends RepositoryBeanDefinitionRegistrarSupport {
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryBeanDefinitionRegistrarSupport#getAnnotation()
-	 */
 	@Override
 	protected Class<? extends Annotation> getAnnotation() {
 		return EnableReactiveCassandraRepositories.class;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryBeanDefinitionRegistrarSupport#getExtension()
-	 */
 	@Override
 	protected RepositoryConfigurationExtension getExtension() {
 		return new ReactiveCassandraRepositoryConfigurationExtension();

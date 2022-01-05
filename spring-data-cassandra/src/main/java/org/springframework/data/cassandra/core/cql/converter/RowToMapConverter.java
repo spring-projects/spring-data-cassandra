@@ -37,9 +37,6 @@ public enum RowToMapConverter implements Converter<Row, Map<String, Object>> {
 
 	INSTANCE;
 
-	/* (non-Javadoc)
-	 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
-	 */
 	@Override
 	public Map<String, Object> convert(Row row) {
 

@@ -108,9 +108,6 @@ public class CassandraMappingContext
 		setSimpleTypeHolder(customConversions.getSimpleTypeHolder());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.mapping.context.AbstractMappingContext#initialize()
-	 */
 	@Override
 	public void initialize() {
 
@@ -167,17 +164,11 @@ public class CassandraMappingContext
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
-	 */
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.beans.factory.BeanClassLoaderAware#setBeanClassLoader(java.lang.ClassLoader)
-	 */
 	public void setBeanClassLoader(ClassLoader beanClassLoader) {
 		this.beanClassLoader = beanClassLoader;
 	}
@@ -326,9 +317,6 @@ public class CassandraMappingContext
 		return this.verifier;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.mapping.context.AbstractMappingContext#addPersistentEntity(org.springframework.data.util.TypeInformation)
-	 */
 	@Override
 	protected Optional<BasicCassandraPersistentEntity<?>> addPersistentEntity(TypeInformation<?> typeInformation) {
 
@@ -358,18 +346,12 @@ public class CassandraMappingContext
 		return optional;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.mapping.context.AbstractMappingContext#shouldCreatePersistentEntityFor(org.springframework.data.util.TypeInformation)
-	 */
 	@Override
 	protected boolean shouldCreatePersistentEntityFor(TypeInformation<?> typeInfo) {
 		return !this.customConversions.hasCustomWriteTarget(typeInfo.getType())
 				&& super.shouldCreatePersistentEntityFor(typeInfo);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.mapping.context.AbstractMappingContext#createPersistentEntity(org.springframework.data.util.TypeInformation)
-	 */
 	@Override
 	protected <T> BasicCassandraPersistentEntity<T> createPersistentEntity(TypeInformation<T> typeInformation) {
 
@@ -393,9 +375,6 @@ public class CassandraMappingContext
 		return AnnotatedElementUtils.hasAnnotation(typeInformation.getType(), UserDefinedType.class);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.mapping.context.AbstractMappingContext#createPersistentProperty(org.springframework.data.mapping.model.Property, org.springframework.data.mapping.model.MutablePersistentEntity, org.springframework.data.mapping.model.SimpleTypeHolder)
-	 */
 	@Override
 	protected CassandraPersistentProperty createPersistentProperty(Property property,
 			BasicCassandraPersistentEntity<?> owner, SimpleTypeHolder simpleTypeHolder) {

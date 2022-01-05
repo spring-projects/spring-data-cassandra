@@ -60,18 +60,12 @@ class ReactiveCassandraParameterAccessor extends CassandraParametersParameterAcc
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.query.ParametersParameterAccessor#getValue(int)
-	 */
 	@SuppressWarnings({ "unchecked", "ConstantConditions" })
 	@Override
 	protected <T> T getValue(int index) {
 		return (subscriptions.get(index) != null ? (T) subscriptions.get(index).block() : super.getValue(index));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.query.CassandraParametersParameterAccessor#getValues()
-	 */
 	@Override
 	public Object[] getValues() {
 
@@ -84,9 +78,6 @@ class ReactiveCassandraParameterAccessor extends CassandraParametersParameterAcc
 		return result;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.query.ParametersParameterAccessor#getBindableValue(int)
-	 */
 	public Object getBindableValue(int index) {
 		return getValue(getParameters().getBindableParameter(index).getIndex());
 	}

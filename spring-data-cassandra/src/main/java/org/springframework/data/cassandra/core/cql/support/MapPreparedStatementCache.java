@@ -81,9 +81,6 @@ public class MapPreparedStatementCache implements PreparedStatementCache {
 		return this.cache;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.support.PreparedStatementCache#getPreparedStatement(com.datastax.oss.driver.api.core.CqlSession, com.datastax.oss.driver.api.core.cql.SimpleStatement, java.util.function.Supplier)
-	 */
 	@Override
 	public PreparedStatement getPreparedStatement(CqlSession session, SimpleStatement statement,
 			Supplier<PreparedStatement> preparer) {
@@ -109,10 +106,6 @@ public class MapPreparedStatementCache implements PreparedStatementCache {
 			this.cql = cql;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
 		@Override
 		public boolean equals(Object o) {
 			if (this == o) {
@@ -131,10 +124,6 @@ public class MapPreparedStatementCache implements PreparedStatementCache {
 			return ObjectUtils.nullSafeEquals(cql, cacheKey.cql);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
 		@Override
 		public int hashCode() {
 			int result = ObjectUtils.nullSafeHashCode(sessionName);

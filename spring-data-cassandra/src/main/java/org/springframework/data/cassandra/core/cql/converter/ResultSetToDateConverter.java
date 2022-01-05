@@ -30,17 +30,11 @@ public class ResultSetToDateConverter extends AbstractResultSetToBasicFixedTypeC
 
 	public static final ResultSetToDateConverter INSTANCE = new ResultSetToDateConverter();
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.converter.AbstractResultSetConverter#doConvertSingleValue(java.lang.Object)
-	 */
 	@Override
 	protected Date doConvertSingleValue(Object object) {
 		return CONVERTER.convert(object, Date.class);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.converter.AbstractResultSetConverter#getType()
-	 */
 	@Override
 	protected Class<?> getType() {
 		return Date.class;

@@ -37,9 +37,6 @@ class ExecutableDeleteOperationSupport implements ExecutableDeleteOperation {
 		this.template = template;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ExecutableDeleteOperation#remove(java.lang.Class)
-	 */
 	@Override
 	public ExecutableDelete delete(Class<?> domainType) {
 
@@ -66,9 +63,6 @@ class ExecutableDeleteOperationSupport implements ExecutableDeleteOperation {
 			this.tableName = tableName;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ExecutableDeleteOperation.DeleteWithTable#inTable(org.springframework.data.cassandra.core.cql.CqlIdentifier)
-		 */
 		@Override
 		public DeleteWithQuery inTable(CqlIdentifier tableName) {
 
@@ -77,9 +71,6 @@ class ExecutableDeleteOperationSupport implements ExecutableDeleteOperation {
 			return new ExecutableDeleteSupport(this.template, this.domainType, this.query, tableName);
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ExecutableDeleteOperation.DeleteWithQuery#matching(org.springframework.data.cassandra.core.query.Query)
-		 */
 		@Override
 		public TerminatingDelete matching(Query query) {
 
@@ -88,9 +79,6 @@ class ExecutableDeleteOperationSupport implements ExecutableDeleteOperation {
 			return new ExecutableDeleteSupport(this.template, this.domainType, query, this.tableName);
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ExecutableDeleteOperation.TerminatingDelete#all()
-		 */
 		public WriteResult all() {
 			return this.template.doDelete(this.query, this.domainType, getTableName());
 		}

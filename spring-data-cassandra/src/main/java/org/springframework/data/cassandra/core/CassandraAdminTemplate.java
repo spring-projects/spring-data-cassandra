@@ -104,9 +104,6 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 		return schemaFactory;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#createTable(boolean, org.springframework.data.cassandra.core.cql.CqlIdentifier, java.lang.Class, java.util.Map)
-	 */
 	@Override
 	public void createTable(boolean ifNotExists, CqlIdentifier tableName, Class<?> entityClass,
 			Map<String, Object> optionsByName) {
@@ -119,25 +116,16 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 		getCqlOperations().execute(CreateTableCqlGenerator.toCql(createTableSpecification));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#dropTable(java.lang.Class)
-	 */
 	@Override
 	public void dropTable(Class<?> entityClass) {
 		dropTable(getTableName(entityClass));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#dropTable(org.springframework.data.cassandra.core.cql.CqlIdentifier)
-	 */
 	@Override
 	public void dropTable(CqlIdentifier tableName) {
 		dropTable(DEFAULT_DROP_TABLE_IF_EXISTS, tableName);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#dropTable(boolean, CqlIdentifier)
-	 */
 	@Override
 	public void dropTable(boolean ifExists, CqlIdentifier tableName) {
 
@@ -146,9 +134,6 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 		getCqlOperations().execute(dropTableCql);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#dropUserType(org.springframework.data.cassandra.core.cql.CqlIdentifier)
-	 */
 	@Override
 	public void dropUserType(CqlIdentifier typeName) {
 
@@ -159,9 +144,6 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 		getCqlOperations().execute(dropUserTypeCql);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#getTableMetadata(com.datastax.oss.driver.api.core.CqlIdentifier, com.datastax.oss.driver.api.core.CqlIdentifier)
-	 */
 	@Override
 	public Optional<TableMetadata> getTableMetadata(CqlIdentifier keyspace, CqlIdentifier tableName) {
 
@@ -174,9 +156,6 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 		});
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraAdminOperations#getKeyspaceMetadata()
-	 */
 	@Override
 	public KeyspaceMetadata getKeyspaceMetadata() {
 

@@ -57,9 +57,6 @@ public class KeyspaceActionSpecificationFactoryBean implements FactoryBean<Keysp
 
 	private @Nullable KeyspaceActions actions;
 
-	/* (non-Javadoc)
-	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-	 */
 	@Override
 	public void afterPropertiesSet() {
 
@@ -103,25 +100,16 @@ public class KeyspaceActionSpecificationFactoryBean implements FactoryBean<Keysp
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.beans.factory.FactoryBean#getObject()
-	 */
 	@Override
 	public KeyspaceActions getObject() {
 		return actions;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
-	 */
 	@Override
 	public Class<?> getObjectType() {
 		return Set.class;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.beans.factory.FactoryBean#isSingleton()
-	 */
 	@Override
 	public boolean isSingleton() {
 		return false;

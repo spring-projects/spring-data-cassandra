@@ -100,10 +100,6 @@ public class DeleteOptions extends WriteOptions {
 		return ifCondition;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object o) {
 
@@ -127,10 +123,6 @@ public class DeleteOptions extends WriteOptions {
 		return ObjectUtils.nullSafeEquals(ifCondition, that.ifCondition);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public int hashCode() {
 		int result = super.hashCode();
@@ -159,9 +151,6 @@ public class DeleteOptions extends WriteOptions {
 			this.ifExists = deleteOptions.ifExists;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#consistencyLevel(com.datastax.driver.core.ConsistencyLevel)
-		 */
 		@Override
 		public DeleteOptionsBuilder consistencyLevel(ConsistencyLevel consistencyLevel) {
 
@@ -169,27 +158,18 @@ public class DeleteOptions extends WriteOptions {
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#executionProfile(String)
-		 */
 		@Override
 		public DeleteOptionsBuilder executionProfile(String profileName) {
 			super.executionProfile(profileName);
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#executionProfile(org.springframework.data.cassandra.core.cql.ExecutionProfileResolver)
-		 */
 		@Override
 		public DeleteOptionsBuilder executionProfile(ExecutionProfileResolver executionProfileResolver) {
 			super.executionProfile(executionProfileResolver);
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#fetchSize(int)
-		 */
 		@Override
 		@Deprecated
 		public DeleteOptionsBuilder fetchSize(int fetchSize) {
@@ -198,9 +178,6 @@ public class DeleteOptions extends WriteOptions {
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#keyspace()
-		 */
 		@Override
 		public DeleteOptionsBuilder keyspace(CqlIdentifier keyspace) {
 
@@ -208,9 +185,6 @@ public class DeleteOptions extends WriteOptions {
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#pageSize(int)
-		 */
 		@Override
 		public DeleteOptionsBuilder pageSize(int pageSize) {
 
@@ -218,9 +192,6 @@ public class DeleteOptions extends WriteOptions {
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#readTimeout(long)
-		 */
 		@Override
 		@Deprecated
 		public DeleteOptionsBuilder readTimeout(long readTimeout) {
@@ -229,9 +200,6 @@ public class DeleteOptions extends WriteOptions {
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#readTimeout(long, java.util.concurrent.TimeUnit)
-		 */
 		@Override
 		@Deprecated
 		public DeleteOptionsBuilder readTimeout(long readTimeout, TimeUnit timeUnit) {
@@ -240,18 +208,12 @@ public class DeleteOptions extends WriteOptions {
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#serialConsistencyLevel(com.datastax.oss.driver.api.core.ConsistencyLevel)
-		 */
 		@Override
 		public DeleteOptionsBuilder serialConsistencyLevel(ConsistencyLevel consistencyLevel) {
 			super.serialConsistencyLevel(consistencyLevel);
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#readTimeout(java.time.Duration)
-		 */
 		@Override
 		public DeleteOptionsBuilder timeout(Duration timeout) {
 
@@ -259,9 +221,6 @@ public class DeleteOptions extends WriteOptions {
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#ttl(java.time.Duration)
-		 */
 		@Override
 		public DeleteOptionsBuilder ttl(Duration ttl) {
 
@@ -269,9 +228,6 @@ public class DeleteOptions extends WriteOptions {
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#tracing(boolean)
-		 */
 		@Override
 		public DeleteOptionsBuilder tracing(boolean tracing) {
 
@@ -279,9 +235,6 @@ public class DeleteOptions extends WriteOptions {
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#withTracing()
-		 */
 		@Override
 		public DeleteOptionsBuilder withTracing() {
 
@@ -289,18 +242,12 @@ public class DeleteOptions extends WriteOptions {
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#ttl(int)
-		 */
 		public DeleteOptionsBuilder ttl(int ttl) {
 
 			super.ttl(ttl);
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#timestamp(long)
-		 */
 		@Override
 		public DeleteOptionsBuilder timestamp(long timestamp) {
 
@@ -308,9 +255,6 @@ public class DeleteOptions extends WriteOptions {
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#timestamp(java.time.Instant)
-		 */
 		@Override
 		public DeleteOptionsBuilder timestamp(Instant timestamp) {
 

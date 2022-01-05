@@ -41,9 +41,6 @@ class ReactiveUpdateOperationSupport implements ReactiveUpdateOperation {
 		this.template = template;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveUpdateOperation#update(java.lang.Class)
-	 */
 	@Override
 	public ReactiveUpdate update(Class<?> domainType) {
 
@@ -70,9 +67,6 @@ class ReactiveUpdateOperationSupport implements ReactiveUpdateOperation {
 			this.tableName = tableName;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ReactiveUpdateOperation.UpdateWithTable#inTable(org.springframework.data.cassandra.core.cql.CqlIdentifier)
-		 */
 		@Override
 		public UpdateWithQuery inTable(CqlIdentifier tableName) {
 
@@ -81,9 +75,6 @@ class ReactiveUpdateOperationSupport implements ReactiveUpdateOperation {
 			return new ReactiveUpdateSupport(this.template, this.domainType, this.query, tableName);
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ReactiveUpdateOperation.UpdateWithQuery#matching(org.springframework.data.cassandra.core.query.Query)
-		 */
 		@Override
 		public TerminatingUpdate matching(Query query) {
 
@@ -92,9 +83,6 @@ class ReactiveUpdateOperationSupport implements ReactiveUpdateOperation {
 			return new ReactiveUpdateSupport(this.template, this.domainType, query, this.tableName);
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ReactiveUpdateOperation.UpdateWithUpdate#apply(org.springframework.data.cassandra.core.query.Update)
-		 */
 		@Override
 		public Mono<WriteResult> apply(Update update) {
 

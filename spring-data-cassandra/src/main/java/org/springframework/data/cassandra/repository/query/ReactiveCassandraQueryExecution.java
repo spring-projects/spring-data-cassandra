@@ -69,9 +69,6 @@ interface ReactiveCassandraQueryExecution {
 			this.pageable = pageable;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.repository.query.CassandraQueryExecution#execute(java.lang.String, java.lang.Class)
-		 */
 		@Override
 		public Publisher<? extends Object> execute(Statement<?> statement, Class<?> type) {
 
@@ -110,10 +107,6 @@ interface ReactiveCassandraQueryExecution {
 			this.operations = operations;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution#execute(java.lang.String, java.lang.Class)
-		 */
 		@Override
 		public Publisher<? extends Object> execute(Statement<?> statement, Class<?> type) {
 			return operations.select(statement, type);
@@ -135,10 +128,6 @@ interface ReactiveCassandraQueryExecution {
 			this.limiting = limiting;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution#execute(java.lang.String, java.lang.Class)
-		 */
 		@Override
 		public Publisher<? extends Object> execute(Statement<?> statement, Class<?> type) {
 
@@ -173,9 +162,6 @@ interface ReactiveCassandraQueryExecution {
 			this.operations = operations;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution#execute(com.datastax.oss.driver.api.core.cql.Statement, java.lang.Class)
-		 */
 		@Override
 		public Publisher<? extends Object> execute(Statement<?> statement, Class<?> type) {
 
@@ -220,10 +206,6 @@ interface ReactiveCassandraQueryExecution {
 			this.converter = converter;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution#execute(java.lang.String, java.lang.Class)
-		 */
 		@Override
 		public Publisher<? extends Object> execute(Statement<?> statement, Class<?> type) {
 			return (Publisher) converter.convert(delegate.execute(statement, type));
@@ -249,10 +231,6 @@ interface ReactiveCassandraQueryExecution {
 			this.instantiators = instantiators;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
-		 */
 		@Override
 		public Object convert(Object source) {
 

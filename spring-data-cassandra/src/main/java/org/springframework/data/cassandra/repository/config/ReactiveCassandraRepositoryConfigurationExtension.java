@@ -34,25 +34,16 @@ import org.springframework.util.StringUtils;
  */
 public class ReactiveCassandraRepositoryConfigurationExtension extends CassandraRepositoryConfigurationExtension {
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.config.CassandraRepositoryConfigurationExtension#getModuleName()
-	 */
 	@Override
 	public String getModuleName() {
 		return "Reactive Cassandra";
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.config.CassandraRepositoryConfigurationExtension#getRepositoryFactoryClassName()
-	 */
 	@Override
 	public String getRepositoryFactoryBeanClassName() {
 		return ReactiveCassandraRepositoryFactoryBean.class.getName();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.config.CassandraRepositoryConfigurationExtension#postProcess(org.springframework.beans.factory.support.BeanDefinitionBuilder, org.springframework.data.repository.config.AnnotationRepositoryConfigurationSource)
-	 */
 	@Override
 	public void postProcess(BeanDefinitionBuilder builder, AnnotationRepositoryConfigurationSource config) {
 
@@ -63,18 +54,11 @@ public class ReactiveCassandraRepositoryConfigurationExtension extends Cassandra
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.config.CassandraRepositoryConfigurationExtension#getIdentifyingTypes()
-	 */
 	@Override
 	protected Collection<Class<?>> getIdentifyingTypes() {
 		return Collections.singleton(ReactiveCassandraRepository.class);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport#useRepositoryConfiguration(org.springframework.data.repository.core.RepositoryMetadata)
-	 */
 	protected boolean useRepositoryConfiguration(RepositoryMetadata metadata) {
 		return metadata.isReactiveRepository();
 	}

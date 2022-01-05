@@ -54,10 +54,6 @@ public class CassandraMappingEvent<T> extends ApplicationEvent {
 		return tableName;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.util.EventObject#getSource()
-	 */
 	@SuppressWarnings({ "unchecked" })
 	@Override
 	public T getSource() {

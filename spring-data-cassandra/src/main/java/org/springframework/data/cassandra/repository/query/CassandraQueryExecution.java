@@ -63,9 +63,6 @@ interface CassandraQueryExecution {
 			this.resultProcessing = resultProcessing;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.repository.query.CassandraQueryExecution#execute(java.lang.String, java.lang.Class)
-		 */
 		@Override
 		public Object execute(Statement<?> statement, Class<?> type) {
 			return operations.stream(statement, type).map(resultProcessing::convert);
@@ -88,9 +85,6 @@ interface CassandraQueryExecution {
 
 		private final Pageable pageable;
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.repository.query.CassandraQueryExecution#execute(java.lang.String, java.lang.Class)
-		 */
 		@Override
 		public Object execute(Statement<?> statement, Class<?> type) {
 
@@ -126,9 +120,6 @@ interface CassandraQueryExecution {
 			this.operations = operations;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.repository.query.CassandraQueryExecution#execute(java.lang.String, java.lang.Class)
-		 */
 		@Override
 		public Object execute(Statement<?> statement, Class<?> type) {
 			return operations.select(statement, type);
@@ -150,9 +141,6 @@ interface CassandraQueryExecution {
 			this.limiting = limiting;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.repository.query.CassandraQueryExecution#execute(java.lang.String, java.lang.Class)
-		 */
 		@Override
 		@SuppressWarnings("unchecked")
 		public Object execute(Statement<?> statement, Class<?> type) {
@@ -185,9 +173,6 @@ interface CassandraQueryExecution {
 			this.operations = operations;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.repository.query.CassandraQueryExecution#execute(java.lang.String, java.lang.Class)
-		 */
 		@Override
 		public Object execute(Statement<?> statement, Class<?> type) {
 
@@ -223,9 +208,6 @@ interface CassandraQueryExecution {
 			this.operations = operations;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.repository.query.CassandraQueryExecution#execute(java.lang.String, java.lang.Class)
-		 */
 		@Override
 		public Object execute(Statement<?> statement, Class<?> type) {
 			return operations.execute(statement);
@@ -247,9 +229,6 @@ interface CassandraQueryExecution {
 			this.converter = converter;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.repository.query.CassandraQueryExecution#execute(java.lang.String, java.lang.Class)
-		 */
 		@Nullable
 		@Override
 		public Object execute(Statement<?> statement, Class<?> type) {
@@ -279,9 +258,6 @@ interface CassandraQueryExecution {
 			this.instantiators = instantiators;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
-		 */
 		@Override
 		public Object convert(@Nullable Object source) {
 

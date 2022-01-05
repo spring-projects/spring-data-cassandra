@@ -42,9 +42,6 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 		this.template = template;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ExecutableSelectOperation#query(java.lang.Class)
-	 */
 	@Override
 	public <T> ExecutableSelect<T> query(Class<T> domainType) {
 
@@ -74,9 +71,6 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 			this.tableName = tableName;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ExecutableSelectOperation.SelectWithTable#inTable(org.springframework.data.cassandra.core.cql.CqlIdentifier)
-		 */
 		@Override
 		public SelectWithProjection<T> inTable(CqlIdentifier tableName) {
 
@@ -85,9 +79,6 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 			return new ExecutableSelectSupport<>(this.template, this.domainType, this.returnType, this.query, tableName);
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ExecutableSelectOperation.SelectWithProjection#as(java.lang.Class)
-		 */
 		@Override
 		public <R> SelectWithQuery<R> as(Class<R> returnType) {
 
@@ -96,9 +87,6 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 			return new ExecutableSelectSupport<>(this.template, this.domainType, returnType, this.query, this.tableName);
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ExecutableSelectOperation.SelectWithQuery#matching(org.springframework.data.cassandra.core.query.Query)
-		 */
 		@Override
 		public TerminatingSelect<T> matching(Query query) {
 
@@ -107,25 +95,16 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 			return new ExecutableSelectSupport<>(this.template, this.domainType, this.returnType, query, this.tableName);
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ExecutableSelectOperation.TerminatingSelect#count()
-		 */
 		@Override
 		public long count() {
 			return this.template.doCount(this.query, this.domainType, getTableName());
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ExecutableSelectOperation.TerminatingSelect#exists()
-		 */
 		@Override
 		public boolean exists() {
 			return this.template.doExists(this.query, this.domainType, getTableName());
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ExecutableSelectOperation.TerminatingSelect#firstValue()
-		 */
 		@Override
 		public T firstValue() {
 
@@ -134,9 +113,6 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 			return ObjectUtils.isEmpty(result) ? null : result.iterator().next();
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ExecutableSelectOperation.TerminatingSelect#oneValue()
-		 */
 		@Override
 		public T oneValue() {
 
@@ -154,17 +130,11 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 			return result.iterator().next();
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ExecutableSelectOperation.TerminatingSelect#all()
-		 */
 		@Override
 		public List<T> all() {
 			return this.template.doSelect(this.query, this.domainType, getTableName(), this.returnType);
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ExecutableSelectOperation.TerminatingSelect#stream()
-		 */
 		@Override
 		public Stream<T> stream() {
 			return this.template.doStream(this.query, this.domainType, getTableName(), this.returnType);

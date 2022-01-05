@@ -41,9 +41,6 @@ public class CassandraUserTypePersistentEntity<T> extends BasicCassandraPersiste
 		super(typeInformation, verifier);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity#determineTableName()
-	 */
 	@Override
 	protected CqlIdentifier determineTableName() {
 
@@ -56,9 +53,6 @@ public class CassandraUserTypePersistentEntity<T> extends BasicCassandraPersiste
 		return IdentifierFactory.create(getNamingStrategy().getUserDefinedTypeName(this), false);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity#isUserDefinedType()
-	 */
 	@Override
 	public boolean isUserDefinedType() {
 		return true;

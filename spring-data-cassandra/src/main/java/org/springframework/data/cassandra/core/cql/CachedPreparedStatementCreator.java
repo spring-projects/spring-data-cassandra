@@ -70,9 +70,6 @@ public class CachedPreparedStatementCreator implements PreparedStatementCreator 
 		return this.cql;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.PreparedStatementCreator#createPreparedStatement(com.datastax.oss.driver.api.core.CqlSession)
-	 */
 	@Override
 	public PreparedStatement createPreparedStatement(CqlSession session) throws DriverException {
 

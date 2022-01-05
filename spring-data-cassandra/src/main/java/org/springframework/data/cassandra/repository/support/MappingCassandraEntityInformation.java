@@ -54,9 +54,6 @@ public class MappingCassandraEntityInformation<T, ID> extends PersistentEntityIn
 		this.converter = converter;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.core.EntityInformation#getId(java.lang.Object)
-	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	@Nullable
@@ -70,9 +67,6 @@ public class MappingCassandraEntityInformation<T, ID> extends PersistentEntityIn
 				: (ID) converter.getId(entity, entityMetadata);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.core.EntityInformation#getIdType()
-	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public Class<ID> getIdType() {
@@ -84,17 +78,11 @@ public class MappingCassandraEntityInformation<T, ID> extends PersistentEntityIn
 		return (Class<ID>) MapId.class;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.query.CassandraEntityInformation#getIdAttribute()
-	 */
 	@Override
 	public String getIdAttribute() {
 		return this.entityMetadata.getRequiredIdProperty().getName();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.query.CassandraEntityMetadata#getTableName()
-	 */
 	@Override
 	public CqlIdentifier getTableName() {
 		return this.entityMetadata.getTableName();

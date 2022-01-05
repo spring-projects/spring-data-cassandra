@@ -192,25 +192,16 @@ public class ReactiveCassandraTemplate
 		this.statementFactory = new StatementFactory(converter);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#batchOps(com.datastax.oss.driver.api.core.cql.BatchType)
-	 */
 	@Override
 	public ReactiveCassandraBatchOperations batchOps(BatchType batchType) {
 		return new ReactiveCassandraBatchTemplate(this, batchType);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.context.ApplicationEventPublisherAware#setApplicationEventPublisher(org.springframework.context.ApplicationEventPublisher)
-	 */
 	@Override
 	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
 		this.eventPublisher = applicationEventPublisher;
 	}
 
-	/* (non-Javadoc)
-	* @see org.springframework.context.ApplicationContextAware(org.springframework.context.ApplicationContext)
-	*/
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 
@@ -228,17 +219,11 @@ public class ReactiveCassandraTemplate
 		this.entityCallbacks = entityCallbacks;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#getReactiveCqlOperations()
-	 */
 	@Override
 	public ReactiveCqlOperations getReactiveCqlOperations() {
 		return this.cqlOperations;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#getConverter()
-	 */
 	@Override
 	public CassandraConverter getConverter() {
 		return this.converter;
@@ -319,9 +304,6 @@ public class ReactiveCassandraTemplate
 	// Methods dealing with static CQL
 	// -------------------------------------------------------------------------
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#select(java.lang.String, java.lang.Class)
-	 */
 	@Override
 	public <T> Flux<T> select(String cql, Class<T> entityClass) {
 
@@ -330,9 +312,6 @@ public class ReactiveCassandraTemplate
 		return select(SimpleStatement.newInstance(cql), entityClass);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#selectOne(java.lang.String, java.lang.Class)
-	 */
 	@Override
 	public <T> Mono<T> selectOne(String cql, Class<T> entityClass) {
 		return select(cql, entityClass).next();
@@ -342,9 +321,6 @@ public class ReactiveCassandraTemplate
 	// Methods dealing with com.datastax.oss.driver.api.core.cql.Statement
 	// -------------------------------------------------------------------------
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#execute(com.datastax.oss.driver.api.core.cql.Statement)
-	 */
 	@Override
 	public Mono<ReactiveResultSet> execute(Statement<?> statement) throws DataAccessException {
 
@@ -353,9 +329,6 @@ public class ReactiveCassandraTemplate
 		return doExecute(statement, Function.identity());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#select(com.datastax.oss.driver.api.core.cql.Statement, java.lang.Class)
-	 */
 	@Override
 	public <T> Flux<T> select(Statement<?> statement, Class<T> entityClass) {
 
@@ -368,17 +341,11 @@ public class ReactiveCassandraTemplate
 		return doQuery(statement, (row, rowNum) -> mapper.apply(row));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#selectOne(com.datastax.oss.driver.api.core.cql.Statement, java.lang.Class)
-	 */
 	@Override
 	public <T> Mono<T> selectOne(Statement<?> statement, Class<T> entityClass) {
 		return select(statement, entityClass).next();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#slice(com.datastax.oss.driver.api.core.cql.Statement, java.lang.Class)
-	 */
 	@Override
 	public <T> Mono<Slice<T>> slice(Statement<?> statement, Class<T> entityClass) {
 
@@ -404,9 +371,6 @@ public class ReactiveCassandraTemplate
 	// Methods dealing with org.springframework.data.cassandra.core.query.Query
 	// -------------------------------------------------------------------------
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#select(org.springframework.data.cassandra.core.query.Query, java.lang.Class)
-	 */
 	@Override
 	public <T> Flux<T> select(Query query, Class<T> entityClass) throws DataAccessException {
 
@@ -432,9 +396,6 @@ public class ReactiveCassandraTemplate
 		return doQuery(select.build(), (row, rowNum) -> mapper.apply(row));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#selectOne(org.springframework.data.cassandra.core.query.Query, java.lang.Class)
-	 */
 	@Override
 	public <T> Mono<T> selectOne(Query query, Class<T> entityClass) throws DataAccessException {
 
@@ -444,9 +405,6 @@ public class ReactiveCassandraTemplate
 		return select(query, entityClass).next();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#slice(org.springframework.data.cassandra.core.query.Query, java.lang.Class)
-	 */
 	@Override
 	public <T> Mono<Slice<T>> slice(Query query, Class<T> entityClass) throws DataAccessException {
 
@@ -458,9 +416,6 @@ public class ReactiveCassandraTemplate
 		return slice(select.build(), entityClass);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#update(org.springframework.data.cassandra.core.query.Query, org.springframework.data.cassandra.core.query.Update, java.lang.Class)
-	 */
 	@Override
 	public Mono<Boolean> update(Query query, org.springframework.data.cassandra.core.query.Update update,
 			Class<?> entityClass) throws DataAccessException {
@@ -481,9 +436,6 @@ public class ReactiveCassandraTemplate
 		return doExecuteAndFlatMap(statement.build(), ReactiveCassandraTemplate::toWriteResult);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#delete(org.springframework.data.cassandra.core.query.Query, java.lang.Class)
-	 */
 	@Override
 	public Mono<Boolean> delete(Query query, Class<?> entityClass) throws DataAccessException {
 
@@ -510,9 +462,6 @@ public class ReactiveCassandraTemplate
 	// Methods dealing with entities
 	// -------------------------------------------------------------------------
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#count(java.lang.Class)
-	 */
 	@Override
 	public Mono<Long> count(Class<?> entityClass) {
 
@@ -521,9 +470,6 @@ public class ReactiveCassandraTemplate
 		return doCount(Query.empty(), entityClass, getTableName(entityClass));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#count(org.springframework.data.cassandra.core.query.Query, java.lang.Class)
-	 */
 	@Override
 	public Mono<Long> count(Query query, Class<?> entityClass) throws DataAccessException {
 
@@ -548,9 +494,6 @@ public class ReactiveCassandraTemplate
 		return mono.switchIfEmpty(Mono.just(0L));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#exists(java.lang.Object, java.lang.Class)
-	 */
 	@Override
 	public Mono<Boolean> exists(Object id, Class<?> entityClass) {
 
@@ -563,9 +506,6 @@ public class ReactiveCassandraTemplate
 		return doQuery(builder.build(), (row, rowNum) -> row).hasElements();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#exists(org.springframework.data.cassandra.core.query.Query, java.lang.Class)
-	 */
 	@Override
 	public Mono<Boolean> exists(Query query, Class<?> entityClass) throws DataAccessException {
 
@@ -583,9 +523,6 @@ public class ReactiveCassandraTemplate
 		return doQuery(builder.build(), (row, rowNum) -> row).hasElements();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#selectOneById(java.lang.Object, java.lang.Class)
-	 */
 	@Override
 	public <T> Mono<T> selectOneById(Object id, Class<T> entityClass) {
 
@@ -598,17 +535,11 @@ public class ReactiveCassandraTemplate
 		return selectOne(builder.build(), entityClass);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#insert(java.lang.Object)
-	 */
 	@Override
 	public <T> Mono<T> insert(T entity) {
 		return insert(entity, InsertOptions.empty()).map(EntityWriteResult::getEntity);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#insert(java.lang.Object, org.springframework.data.cassandra.core.InsertOptions)
-	 */
 	@Override
 	public <T> Mono<EntityWriteResult<T>> insert(T entity, InsertOptions options) {
 
@@ -662,17 +593,11 @@ public class ReactiveCassandraTemplate
 		return executeSave(entity, tableName, insert);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#update(java.lang.Object)
-	 */
 	@Override
 	public <T> Mono<T> update(T entity) {
 		return update(entity, UpdateOptions.empty()).map(EntityWriteResult::getEntity);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#update(java.lang.Object, org.springframework.data.cassandra.core.UpdateOptions)
-	 */
 	@Override
 	public <T> Mono<EntityWriteResult<T>> update(T entity, UpdateOptions options) {
 
@@ -723,17 +648,11 @@ public class ReactiveCassandraTemplate
 		return executeSave(entity, tableName, builder.build());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#delete(java.lang.Object)
-	 */
 	@Override
 	public <T> Mono<T> delete(T entity) {
 		return delete(entity, QueryOptions.empty()).map(reactiveWriteResult -> entity);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#delete(java.lang.Object, org.springframework.data.cql.core.QueryOptions)
-	 */
 	@Override
 	public Mono<WriteResult> delete(Object entity, QueryOptions options) {
 
@@ -773,9 +692,6 @@ public class ReactiveCassandraTemplate
 		return executeDelete(entity, tableName, delete, (result, sink) -> sink.next(result));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#deleteById(java.lang.Object, java.lang.Class)
-	 */
 	@Override
 	public Mono<Boolean> deleteById(Object id, Class<?> entityClass) {
 
@@ -794,9 +710,6 @@ public class ReactiveCassandraTemplate
 		return result.doOnNext(it -> maybeEmitEvent(new AfterDeleteEvent<>(delete, entityClass, tableName)));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations#truncate(java.lang.Class)
-	 */
 	@Override
 	public Mono<Void> truncate(Class<?> entityClass) {
 
@@ -816,33 +729,21 @@ public class ReactiveCassandraTemplate
 	// Fluent API entry points
 	// -------------------------------------------------------------------------
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveDeleteOperation#remove(java.lang.Class)
-	 */
 	@Override
 	public ReactiveDelete delete(Class<?> domainType) {
 		return new ReactiveDeleteOperationSupport(this).delete(domainType);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveInsertOperation#insert(java.lang.Class)
-	 */
 	@Override
 	public <T> ReactiveInsert<T> insert(Class<T> domainType) {
 		return new ReactiveInsertOperationSupport(this).insert(domainType);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveSelectOperation#query(java.lang.Class)
-	 */
 	@Override
 	public <T> ReactiveSelect<T> query(Class<T> domainType) {
 		return new ReactiveSelectOperationSupport(this).query(domainType);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveUpdateOperation#update(java.lang.Class)
-	 */
 	@Override
 	public ReactiveUpdate update(Class<?> domainType) {
 		return new ReactiveUpdateOperationSupport(this).update(domainType);
@@ -1029,28 +930,16 @@ public class ReactiveCassandraTemplate
 			this.statement = PreparedStatementDelegate.getStatementForPrepare(statement);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.ReactivePreparedStatementCreator#doInSession(org.springframework.data.cassandra.ReactiveSession)
-		 */
 		@Override
 		public Mono<PreparedStatement> createPreparedStatement(ReactiveSession session) throws DriverException {
 			return session.prepare(statement);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.PreparedStatementBinder#bindValues(com.datastax.oss.driver.api.core.cql.PreparedStatement)
-		 */
 		@Override
 		public BoundStatement bindValues(PreparedStatement ps) throws DriverException {
 			return PreparedStatementDelegate.bind(statement, ps);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.CqlProvider#getCql()
-		 */
 		@Override
 		public String getCql() {
 			return statement.getQuery();

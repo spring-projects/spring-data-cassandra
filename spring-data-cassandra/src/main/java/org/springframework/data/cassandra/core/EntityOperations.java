@@ -246,33 +246,21 @@ class EntityOperations {
 			return new MappedEntity<>(entity, propertyAccessor);
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.EntityOperations.Entity#getBean()
-		 */
 		@Override
 		public T getBean() {
 			return this.propertyAccessor.getBean();
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.EntityOperations.Entity#isNew()
-		 */
 		@Override
 		public boolean isNew() {
 			return this.entity.isNew(getBean());
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.EntityOperations.Entity#isVersionedEntity()
-		 */
 		@Override
 		public boolean isVersionedEntity() {
 			return this.entity.hasVersionProperty();
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.EntityOperations.Entity#getVersion()
-		 */
 		@Override
 		@Nullable
 		public Object getVersion() {
@@ -304,9 +292,6 @@ class EntityOperations {
 			this.propertyAccessor = propertyAccessor;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.EntityOperations.AdaptibleEntity#appendVersionCondition(com.datastax.oss.driver.api.querybuilder.update.Update, java.lang.Number)
-		 */
 		@Override
 		public StatementBuilder<Update> appendVersionCondition(StatementBuilder<Update> update,
 				Number currentVersionNumber) {
@@ -316,9 +301,6 @@ class EntityOperations {
 			});
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.EntityOperations.AdaptibleEntity#appendVersionCondition(com.datastax.oss.driver.api.querybuilder.delete.Delete)
-		 */
 		@Override
 		public StatementBuilder<Delete> appendVersionCondition(StatementBuilder<Delete> delete) {
 
@@ -327,9 +309,6 @@ class EntityOperations {
 			});
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.EntityOperations.AdaptibleEntity#initializeVersionProperty()
-		 */
 		@Override
 		public T initializeVersionProperty() {
 
@@ -343,9 +322,6 @@ class EntityOperations {
 			return this.propertyAccessor.getBean();
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.EntityOperations.AdaptibleEntity#incrementVersion()
-		 */
 		@Override
 		public T incrementVersion() {
 
@@ -359,9 +335,6 @@ class EntityOperations {
 			return this.propertyAccessor.getBean();
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.EntityOperations.MappedEntity#getVersion()
-		 */
 		@Override
 		@Nullable
 		public Number getVersion() {
@@ -371,9 +344,6 @@ class EntityOperations {
 			return this.propertyAccessor.getProperty(versionProperty, Number.class);
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.EntityOperations.AdaptibleEntity#getPersistentEntity()
-		 */
 		@Override
 		public CassandraPersistentEntity<?> getPersistentEntity() {
 			return this.entity;

@@ -90,9 +90,6 @@ public class VerifierMappingExceptions extends MappingException {
 		return exceptions.stream().map(Throwable::getMessage).collect(Collectors.toList());
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Throwable#getMessage()
-	 */
 	@Override
 	public String getMessage() {
 

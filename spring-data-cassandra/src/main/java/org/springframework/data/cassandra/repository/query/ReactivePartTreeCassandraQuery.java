@@ -91,10 +91,6 @@ public class ReactivePartTreeCassandraQuery extends AbstractReactiveCassandraQue
 		return this.tree;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.query.AbstractCassandraQuery#createQuery(org.springframework.data.cassandra.repository.query.CassandraParameterAccessor, boolean)
-	 */
 	@Override
 	protected Mono<SimpleStatement> createQuery(CassandraParameterAccessor parameterAccessor) {
 
@@ -117,33 +113,21 @@ public class ReactivePartTreeCassandraQuery extends AbstractReactiveCassandraQue
 		});
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.query.AbstractReactiveCassandraQuery#isCountQuery()
-	 */
 	@Override
 	protected boolean isCountQuery() {
 		return getTree().isCountProjection();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.query.AbstractReactiveCassandraQuery#isExistsQuery()
-	 */
 	@Override
 	protected boolean isExistsQuery() {
 		return getTree().isExistsProjection();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.query.AbstractReactiveCassandraQuery#isLimiting()
-	 */
 	@Override
 	protected boolean isLimiting() {
 		return getTree().isLimiting();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.query.AbstractCassandraQuery#isModifyingQuery()
-	 */
 	@Override
 	protected boolean isModifyingQuery() {
 		return getTree().isDelete();

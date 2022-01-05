@@ -38,17 +38,11 @@ public enum SimpleTupleTypeFactory implements TupleTypeFactory {
 	 */
 	DEFAULT;
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.TupleTypeFactory#create(com.datastax.oss.driver.api.core.type.DataType[])
-	 */
 	@Override
 	public TupleType create(DataType... types) {
 		return create(Arrays.asList(types));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.TupleTypeFactory#create(java.util.List)
-	 */
 	@Override
 	public TupleType create(List<DataType> types) {
 		return new DefaultTupleType(types);

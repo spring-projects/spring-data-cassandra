@@ -46,9 +46,6 @@ public class DefaultSessionFactory implements SessionFactory {
 		this.session = session;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.session.SessionFactory#getSession()
-	 */
 	@Override
 	public CqlSession getSession() {
 		return session;

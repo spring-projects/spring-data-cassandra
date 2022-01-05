@@ -54,9 +54,6 @@ public class TupleValueProvider implements CassandraValueProvider {
 		this.evaluator = evaluator;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.mapping.model.PropertyValueProvider#getPropertyValue(org.springframework.data.mapping.PersistentProperty)
-	 */
 	@Nullable
 	@Override
 	public <T> T getPropertyValue(CassandraPersistentProperty property) {
@@ -73,17 +70,11 @@ public class TupleValueProvider implements CassandraValueProvider {
 		return tupleValue.get(ordinal, codecRegistry.codecFor(elementType));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.convert.CassandraValueProvider#hasProperty(org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty)
-	 */
 	@Override
 	public boolean hasProperty(CassandraPersistentProperty property) {
 		return this.tupleValue.getType().getComponentTypes().size() >= property.getRequiredOrdinal();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.convert.CassandraValueProvider#getSource()
-	 */
 	@Override
 	public Object getSource() {
 		return this.tupleValue;

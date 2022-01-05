@@ -52,18 +52,10 @@ class DefaultCassandraColumnType extends DefaultColumnType implements CassandraC
 		this.dataType = Lazy.of(dataType);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.convert.CassandraColumnType#getDataType()
-	 */
 	public DataType getDataType() {
 		return dataType.get();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.convert.DefaultColumnType#toString()
-	 */
 	@Override
 	public String toString() {
 

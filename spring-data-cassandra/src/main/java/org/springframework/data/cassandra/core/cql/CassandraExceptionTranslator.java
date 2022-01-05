@@ -58,9 +58,6 @@ public class CassandraExceptionTranslator implements CqlExceptionTranslator {
 	private static final Set<String> RESOURCE_FAILURE_TYPES = new HashSet<>(
 			Arrays.asList("ReadFailureException", "WriteFailureException", "FunctionExecutionException"));
 
-	/* (non-Javadoc)
-	 * @see org.springframework.dao.support.PersistenceExceptionTranslator#translateExceptionIfPossible(java.lang.RuntimeException)
-	 */
 	@Override
 	@Nullable
 	public DataAccessException translateExceptionIfPossible(RuntimeException exception) {
@@ -72,9 +69,6 @@ public class CassandraExceptionTranslator implements CqlExceptionTranslator {
 		return translate(null, null, exception);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.cql.CQLExceptionTranslator#translate(java.lang.String, java.lang.String, com.datastax.oss.driver.api.core.DriverException)
-	 */
 	@Override
 	public DataAccessException translate(@Nullable String task, @Nullable String cql, RuntimeException exception) {
 

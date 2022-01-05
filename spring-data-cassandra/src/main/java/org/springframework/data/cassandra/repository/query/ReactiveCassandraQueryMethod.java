@@ -54,20 +54,11 @@ public class ReactiveCassandraQueryMethod extends CassandraQueryMethod {
 				&& ReactiveWrappers.isMultiValueType(metadata.getReturnType(method).getType())) || super.isCollectionQuery());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.query.QueryMethod#isCollectionQuery()
-	 */
 	@Override
 	public boolean isCollectionQuery() {
 		return isCollectionQuery.get();
 	}
 
-	/*
-	 * All reactive query methods are streaming queries.
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.query.QueryMethod#isStreamQuery()
-	 */
 	@Override
 	public boolean isStreamQuery() {
 		return true;

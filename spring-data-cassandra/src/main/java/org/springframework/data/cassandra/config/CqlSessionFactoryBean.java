@@ -439,10 +439,6 @@ public class CqlSessionFactoryBean
 		return Collections.unmodifiableList(this.shutdownScripts);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-	 */
 	@Override
 	public void afterPropertiesSet() {
 
@@ -618,38 +614,22 @@ public class CqlSessionFactoryBean
 		schemaCreator.createIndexes(ifNotExists);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.FactoryBean#getObject()
-	 */
 	@Override
 	public CqlSession getObject() {
 		return this.session;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
-	 */
 	@Override
 	public Class<? extends CqlSession> getObjectType() {
 		return CqlSession.class;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.dao.support.PersistenceExceptionTranslator#translateExceptionIfPossible(java.lang.RuntimeException)
-	 */
 	@Nullable
 	@Override
 	public DataAccessException translateExceptionIfPossible(RuntimeException e) {
 		return EXCEPTION_TRANSLATOR.translateExceptionIfPossible(e);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.DisposableBean#destroy()
-	 */
 	@Override
 	public void destroy() {
 

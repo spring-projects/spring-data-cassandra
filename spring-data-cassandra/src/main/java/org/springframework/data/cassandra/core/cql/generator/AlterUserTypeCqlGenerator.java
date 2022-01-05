@@ -49,10 +49,6 @@ public class AlterUserTypeCqlGenerator extends UserTypeNameCqlGenerator<AlterUse
 		return new AlterUserTypeCqlGenerator(specification).toCql();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.generator.UserTypeNameCqlGenerator#toCql(java.lang.StringBuilder)
-	 */
 	@Override
 	public StringBuilder toCql(StringBuilder cql) {
 

@@ -120,9 +120,6 @@ public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandra
 		return this.stringBasedQuery;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.query.AbstractCassandraQuery#createQuery(org.springframework.data.cassandra.repository.query.CassandraParameterAccessor)
-	 */
 	@Override
 	public Mono<SimpleStatement> createQuery(CassandraParameterAccessor parameterAccessor) {
 
@@ -134,33 +131,21 @@ public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandra
 		return spelEvaluator.map(it -> getQueryStatementCreator().select(query, parameterAccessor, it));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.query.AbstractReactiveCassandraQuery#isCountQuery()
-	 */
 	@Override
 	protected boolean isCountQuery() {
 		return this.isCountQuery;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.query.AbstractReactiveCassandraQuery#isExistsQuery()
-	 */
 	@Override
 	protected boolean isExistsQuery() {
 		return this.isExistsQuery;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.query.AbstractReactiveCassandraQuery#isLimiting()
-	 */
 	@Override
 	protected boolean isLimiting() {
 		return false;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.query.AbstractCassandraQuery#isModifyingQuery()
-	 */
 	@Override
 	protected boolean isModifyingQuery() {
 		return false;

@@ -43,10 +43,6 @@ public final class KeyspaceActions {
 		return this.actions;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object o) {
 
@@ -62,19 +58,11 @@ public final class KeyspaceActions {
 		return ObjectUtils.nullSafeEquals(actions, that.actions);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public int hashCode() {
 		return ObjectUtils.nullSafeHashCode(actions);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		return "KeyspaceActions(actions=" + this.getActions() + ")";

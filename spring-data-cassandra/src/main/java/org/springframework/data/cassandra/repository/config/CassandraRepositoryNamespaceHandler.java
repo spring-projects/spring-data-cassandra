@@ -26,10 +26,6 @@ import org.springframework.data.repository.config.RepositoryBeanDefinitionParser
  */
 class CassandraRepositoryNamespaceHandler extends CassandraNamespaceHandler {
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.xml.NamespaceHandler#init()
-	 */
 	@Override
 	public void init() {
 

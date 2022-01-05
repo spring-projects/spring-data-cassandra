@@ -118,10 +118,6 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 	// Methods dealing with a plain com.datastax.oss.driver.api.core.CqlSession
 	// -------------------------------------------------------------------------
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#execute(org.springframework.data.cassandra.core.cql.AsyncSessionCallback)
-	 */
 	@Override
 	public <T> ListenableFuture<T> execute(AsyncSessionCallback<T> action) throws DataAccessException {
 
@@ -138,10 +134,6 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 	// Methods dealing with static CQL
 	// -------------------------------------------------------------------------
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#execute(java.lang.String)
-	 */
 	@Override
 	public ListenableFuture<Boolean> execute(String cql) throws DataAccessException {
 
@@ -150,10 +142,6 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 		return new MappingListenableFutureAdapter<>(queryForResultSet(cql), AsyncResultSet::wasApplied);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#query(java.lang.String, org.springframework.data.cassandra.core.cql.AsyncResultSetExtractor)
-	 */
 	@Override
 	public <T> ListenableFuture<T> query(String cql, AsyncResultSetExtractor<T> resultSetExtractor)
 			throws DataAccessException {
@@ -176,10 +164,6 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#query(java.lang.String, org.springframework.data.cassandra.core.cql.RowCallbackHandler)
-	 */
 	@Override
 	public ListenableFuture<Void> query(String cql, RowCallbackHandler rowCallbackHandler) throws DataAccessException {
 
@@ -189,55 +173,31 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#query(java.lang.String, org.springframework.data.cassandra.core.cql.RowMapper)
-	 */
 	@Override
 	public <T> ListenableFuture<List<T>> query(String cql, RowMapper<T> rowMapper) throws DataAccessException {
 		return query(cql, newAsyncResultSetExtractor(rowMapper));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#queryForList(java.lang.String)
-	 */
 	@Override
 	public ListenableFuture<List<Map<String, Object>>> queryForList(String cql) throws DataAccessException {
 		return query(cql, newAsyncResultSetExtractor(newColumnMapRowMapper()));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#queryForList(java.lang.String, java.lang.Class)
-	 */
 	@Override
 	public <T> ListenableFuture<List<T>> queryForList(String cql, Class<T> elementType) throws DataAccessException {
 		return query(cql, newAsyncResultSetExtractor(newSingleColumnRowMapper(elementType)));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#queryForMap(java.lang.String)
-	 */
 	@Override
 	public ListenableFuture<Map<String, Object>> queryForMap(String cql) throws DataAccessException {
 		return queryForObject(cql, newColumnMapRowMapper());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#queryForObject(java.lang.String, java.lang.Class)
-	 */
 	@Override
 	public <T> ListenableFuture<T> queryForObject(String cql, Class<T> requiredType) throws DataAccessException {
 		return queryForObject(cql, newSingleColumnRowMapper(requiredType));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#queryForObject(java.lang.String, org.springframework.data.cassandra.core.cql.RowMapper)
-	 */
 	@Override
 	public <T> ListenableFuture<T> queryForObject(String cql, RowMapper<T> rowMapper) throws DataAccessException {
 
@@ -247,10 +207,6 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 				new MappingListenableFutureAdapter<>(results, DataAccessUtils::requiredSingleResult), getExceptionTranslator());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#queryForResultSet(java.lang.String)
-	 */
 	@Override
 	public ListenableFuture<AsyncResultSet> queryForResultSet(String cql) throws DataAccessException {
 		return query(cql, AsyncCqlTemplate::toResultSet);
@@ -260,10 +216,6 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 	// Methods dealing with com.datastax.oss.driver.api.core.cql.Statement
 	// -------------------------------------------------------------------------
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#execute(com.datastax.oss.driver.api.core.cql.Statement)
-	 */
 	@Override
 	public ListenableFuture<Boolean> execute(Statement<?> statement) throws DataAccessException {
 
@@ -272,10 +224,6 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 		return new MappingListenableFutureAdapter<>(queryForResultSet(statement), AsyncResultSet::wasApplied);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#query(com.datastax.oss.driver.api.core.cql.Statement, org.springframework.data.cassandra.core.cql.AsyncResultSetExtractor)
-	 */
 	@Override
 	public <T> ListenableFuture<T> query(Statement<?> statement, AsyncResultSetExtractor<T> resultSetExtractor)
 			throws DataAccessException {
@@ -299,10 +247,6 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#query(com.datastax.oss.driver.api.core.cql.Statement, org.springframework.data.cassandra.core.cql.RowCallbackHandler)
-	 */
 	@Override
 	public ListenableFuture<Void> query(Statement<?> statement, RowCallbackHandler rowCallbackHandler)
 			throws DataAccessException {
@@ -313,58 +257,34 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 				getExceptionTranslator());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#query(com.datastax.oss.driver.api.core.cql.Statement, org.springframework.data.cassandra.core.cql.RowMapper)
-	 */
 	@Override
 	public <T> ListenableFuture<List<T>> query(Statement<?> statement, RowMapper<T> rowMapper)
 			throws DataAccessException {
 		return query(statement, newAsyncResultSetExtractor(rowMapper));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#queryForList(com.datastax.oss.driver.api.core.cql.Statement)
-	 */
 	@Override
 	public ListenableFuture<List<Map<String, Object>>> queryForList(Statement<?> statement) throws DataAccessException {
 		return query(statement, newAsyncResultSetExtractor(newColumnMapRowMapper()));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#queryForList(com.datastax.oss.driver.api.core.cql.Statement, java.lang.Class)
-	 */
 	@Override
 	public <T> ListenableFuture<List<T>> queryForList(Statement<?> statement, Class<T> elementType)
 			throws DataAccessException {
 		return query(statement, newAsyncResultSetExtractor(newSingleColumnRowMapper(elementType)));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#queryForMap(com.datastax.oss.driver.api.core.cql.Statement)
-	 */
 	@Override
 	public ListenableFuture<Map<String, Object>> queryForMap(Statement<?> statement) throws DataAccessException {
 		return queryForObject(statement, newColumnMapRowMapper());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#queryForObject(com.datastax.oss.driver.api.core.cql.Statement, java.lang.Class)
-	 */
 	@Override
 	public <T> ListenableFuture<T> queryForObject(Statement<?> statement, Class<T> requiredType)
 			throws DataAccessException {
 		return queryForObject(statement, newSingleColumnRowMapper(requiredType));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#queryForObject(com.datastax.oss.driver.api.core.cql.Statement, org.springframework.data.cassandra.core.cql.RowMapper)
-	 */
 	@Override
 	public <T> ListenableFuture<T> queryForObject(Statement<?> statement, RowMapper<T> rowMapper)
 			throws DataAccessException {
@@ -375,10 +295,6 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 				new MappingListenableFutureAdapter<>(results, DataAccessUtils::requiredSingleResult), getExceptionTranslator());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#queryForResultSet(com.datastax.oss.driver.api.core.cql.Statement)
-	 */
 	@Override
 	public ListenableFuture<AsyncResultSet> queryForResultSet(Statement<?> statement) throws DataAccessException {
 		return query(statement, AsyncCqlTemplate::toResultSet);
@@ -388,10 +304,6 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 	// Methods dealing with com.datastax.driver.core.PreparedStatement
 	// -------------------------------------------------------------------------
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#execute(org.springframework.data.cassandra.core.cql.AsyncPreparedStatementCreator)
-	 */
 	@Override
 	public ListenableFuture<Boolean> execute(AsyncPreparedStatementCreator preparedStatementCreator)
 			throws DataAccessException {
@@ -400,19 +312,11 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 				AsyncResultSet::wasApplied);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#execute(java.lang.String, java.lang.Object[])
-	 */
 	@Override
 	public ListenableFuture<Boolean> execute(String cql, Object... args) throws DataAccessException {
 		return execute(cql, newPreparedStatementBinder(args));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#execute(java.lang.String, org.springframework.data.cassandra.core.cql.@Nullablender)
-	 */
 	@Override
 	public ListenableFuture<Boolean> execute(String cql, @Nullable PreparedStatementBinder psb)
 			throws DataAccessException {
@@ -421,19 +325,11 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 				query(newAsyncPreparedStatementCreator(cql), psb, AsyncCqlTemplate::toResultSet), AsyncResultSet::wasApplied);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#execute(java.lang.String, org.springframework.data.cassandra.core.cql.PreparedStatementCallback)
-	 */
 	@Override
 	public <T> ListenableFuture<T> execute(String cql, PreparedStatementCallback<T> action) throws DataAccessException {
 		return execute(newAsyncPreparedStatementCreator(cql), action);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#execute(org.springframework.data.cassandra.core.cql.AsyncPreparedStatementCreator, org.springframework.data.cassandra.core.cql.PreparedStatementCallback)
-	 */
 	@Override
 	public <T> ListenableFuture<T> execute(AsyncPreparedStatementCreator preparedStatementCreator,
 			PreparedStatementCallback<T> action) throws DataAccessException {
@@ -464,10 +360,6 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#query(org.springframework.data.cassandra.core.cql.AsyncPreparedStatementCreator, org.springframework.data.cassandra.core.cql.AsyncResultSetExtractor)
-	 */
 	@Override
 	public <T> ListenableFuture<T> query(AsyncPreparedStatementCreator preparedStatementCreator,
 			AsyncResultSetExtractor<T> resultSetExtractor) throws DataAccessException {
@@ -475,10 +367,6 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 		return query(preparedStatementCreator, null, resultSetExtractor);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#query(org.springframework.data.cassandra.core.cql.AsyncPreparedStatementCreator, org.springframework.data.cassandra.core.cql.RowCallbackHandler)
-	 */
 	@Override
 	public ListenableFuture<Void> query(AsyncPreparedStatementCreator preparedStatementCreator,
 			RowCallbackHandler rowCallbackHandler) throws DataAccessException {
@@ -489,10 +377,6 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 				getExceptionTranslator());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#query(org.springframework.data.cassandra.core.cql.AsyncPreparedStatementCreator, org.springframework.data.cassandra.core.cql.RowMapper)
-	 */
 	@Override
 	public <T> ListenableFuture<List<T>> query(AsyncPreparedStatementCreator preparedStatementCreator,
 			RowMapper<T> rowMapper) throws DataAccessException {
@@ -500,10 +384,6 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 		return query(preparedStatementCreator, null, newAsyncResultSetExtractor(rowMapper));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#query(org.springframework.data.cassandra.core.cql.AsyncPreparedStatementCreator, org.springframework.data.cassandra.core.cql.PreparedStatementBinder, org.springframework.data.cassandra.core.cql.AsyncResultSetExtractor)
-	 */
 	@Override
 	public <T> ListenableFuture<T> query(AsyncPreparedStatementCreator preparedStatementCreator,
 			@Nullable PreparedStatementBinder psb, AsyncResultSetExtractor<T> resultSetExtractor) throws DataAccessException {
@@ -543,10 +423,6 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#query(org.springframework.data.cassandra.core.cql.AsyncPreparedStatementCreator, org.springframework.data.cassandra.core.cql.PreparedStatementBinder, org.springframework.data.cassandra.core.cql.RowCallbackHandler)
-	 */
 	@Override
 	public ListenableFuture<Void> query(AsyncPreparedStatementCreator preparedStatementCreator,
 			@Nullable PreparedStatementBinder psb, RowCallbackHandler rowCallbackHandler) throws DataAccessException {
@@ -557,30 +433,18 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 				getExceptionTranslator());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#query(org.springframework.data.cassandra.core.cql.AsyncPreparedStatementCreator, org.springframework.data.cassandra.core.cql.PreparedStatementBinder, org.springframework.data.cassandra.core.cql.RowMapper)
-	 */
 	@Override
 	public <T> ListenableFuture<List<T>> query(AsyncPreparedStatementCreator preparedStatementCreator,
 			@Nullable PreparedStatementBinder psb, RowMapper<T> rowMapper) throws DataAccessException {
 		return query(preparedStatementCreator, psb, newAsyncResultSetExtractor(rowMapper));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#query(java.lang.String, org.springframework.data.cassandra.core.cql.AsyncResultSetExtractor, java.lang.Object[])
-	 */
 	@Override
 	public <T> ListenableFuture<T> query(String cql, AsyncResultSetExtractor<T> resultSetExtractor, Object... args)
 			throws DataAccessException {
 		return query(newAsyncPreparedStatementCreator(cql), newPreparedStatementBinder(args), resultSetExtractor);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#query(java.lang.String, org.springframework.data.cassandra.core.cql.RowCallbackHandler, java.lang.Object[])
-	 */
 	@Override
 	public ListenableFuture<Void> query(String cql, RowCallbackHandler rowCallbackHandler, Object... args)
 			throws DataAccessException {
@@ -592,10 +456,6 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 				getExceptionTranslator());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#query(java.lang.String, org.springframework.data.cassandra.core.cql.RowMapper, java.lang.Object[])
-	 */
 	@Override
 	public <T> ListenableFuture<List<T>> query(String cql, RowMapper<T> rowMapper, Object... args)
 			throws DataAccessException {
@@ -603,10 +463,6 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 				newAsyncResultSetExtractor(rowMapper));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#query(java.lang.String, org.springframework.data.cassandra.core.cql.PreparedStatementBinder, org.springframework.data.cassandra.core.cql.AsyncResultSetExtractor)
-	 */
 	@Override
 	public <T> ListenableFuture<T> query(String cql, @Nullable PreparedStatementBinder psb,
 			AsyncResultSetExtractor<T> resultSetExtractor) throws DataAccessException {
@@ -614,10 +470,6 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 		return query(newAsyncPreparedStatementCreator(cql), psb, resultSetExtractor);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#query(java.lang.String, org.springframework.data.cassandra.core.cql.PreparedStatementBinder, org.springframework.data.cassandra.core.cql.RowCallbackHandler)
-	 */
 	@Override
 	public ListenableFuture<Void> query(String cql, @Nullable PreparedStatementBinder psb,
 			RowCallbackHandler rowCallbackHandler) throws DataAccessException {
@@ -629,10 +481,6 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 				getExceptionTranslator());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#query(java.lang.String, org.springframework.data.cassandra.core.cql.PreparedStatementBinder, org.springframework.data.cassandra.core.cql.RowMapper)
-	 */
 	@Override
 	public <T> ListenableFuture<List<T>> query(String cql, @Nullable PreparedStatementBinder psb, RowMapper<T> rowMapper)
 			throws DataAccessException {
@@ -640,10 +488,6 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 		return query(newAsyncPreparedStatementCreator(cql), psb, newAsyncResultSetExtractor(rowMapper));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#queryForList(java.lang.String, java.lang.Object[])
-	 */
 	@Override
 	public ListenableFuture<List<Map<String, Object>>> queryForList(String cql, Object... args)
 			throws DataAccessException {
@@ -652,10 +496,6 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 				newAsyncResultSetExtractor(newColumnMapRowMapper()));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#queryForList(java.lang.String, java.lang.Class, java.lang.Object[])
-	 */
 	@Override
 	public <T> ListenableFuture<List<T>> queryForList(String cql, Class<T> elementType, Object... args)
 			throws DataAccessException {
@@ -664,19 +504,11 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 				newAsyncResultSetExtractor(newSingleColumnRowMapper(elementType)));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#queryForMap(java.lang.String, java.lang.Object[])
-	 */
 	@Override
 	public ListenableFuture<Map<String, Object>> queryForMap(String cql, Object... args) throws DataAccessException {
 		return queryForObject(cql, newColumnMapRowMapper(), args);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#queryForObject(java.lang.String, java.lang.Class, java.lang.Object[])
-	 */
 	@Override
 	public <T> ListenableFuture<T> queryForObject(String cql, Class<T> requiredType, Object... args)
 			throws DataAccessException {
@@ -684,10 +516,6 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 		return queryForObject(cql, newSingleColumnRowMapper(requiredType), args);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#queryForObject(java.lang.String, org.springframework.data.cassandra.core.cql.RowMapper, java.lang.Object[])
-	 */
 	@Override
 	public <T> ListenableFuture<T> queryForObject(String cql, RowMapper<T> rowMapper, Object... args)
 			throws DataAccessException {
@@ -699,10 +527,6 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 				new MappingListenableFutureAdapter<>(results, DataAccessUtils::requiredSingleResult), getExceptionTranslator());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.AsyncCqlOperations#queryForResultSet(java.lang.String, java.lang.Object[])
-	 */
 	@Override
 	public ListenableFuture<AsyncResultSet> queryForResultSet(String cql, Object... args) throws DataAccessException {
 		return query(cql, AsyncCqlTemplate::toResultSet, args);
@@ -838,9 +662,6 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 			this.rowCallbackHandler = rowCallbackHandler;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.ResultSetExtractor#extractData(ResultSet)
-		 */
 		@Override
 		@Nullable
 		public ListenableFuture<Void> extractData(AsyncResultSet resultSet) {

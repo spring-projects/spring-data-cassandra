@@ -83,9 +83,6 @@ public abstract class AbstractCassandraQuery extends CassandraRepositoryQuerySup
 		return this.operations;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.query.RepositoryQuery#execute(java.lang.Object[])
-	 */
 	@Nullable
 	@Override
 	public Object execute(Object[] parameters) {

@@ -49,90 +49,57 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 		this.delegate = delegate;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.query.ParameterAccessor#getPageable()
-	 */
 	@Override
 	public Pageable getPageable() {
 		return this.delegate.getPageable();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.query.ParameterAccessor#getSort()
-	 */
 	@Override
 	public Sort getSort() {
 		return this.delegate.getSort();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.query.ParameterAccessor#findDynamicProjection()
-	 */
 	@Nullable
 	@Override
 	public Class<?> findDynamicProjection() {
 		return this.delegate.findDynamicProjection();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.query.ParameterAccessor#getBindableValue(int)
-	 */
 	@Override
 	public Object getBindableValue(int index) {
 		return potentiallyConvert(index, this.delegate.getBindableValue(index), null);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.query.CassandraParameterAccessor#findCassandraType(int)
-	 */
 	@Override
 	public CassandraType findCassandraType(int index) {
 		return this.delegate.findCassandraType(index);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.query.CassandraParameterAccessor#getDataType(int)
-	 */
 	@Override
 	public DataType getDataType(int index) {
 		return this.delegate.getDataType(index);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.query.CassandraParameterAccessor#getParameterType(int)
-	 */
 	@Override
 	public Class<?> getParameterType(int index) {
 		return this.delegate.getParameterType(index);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.query.CassandraParameterAccessor#getQueryOptions()
-	 */
 	@Nullable
 	@Override
 	public QueryOptions getQueryOptions() {
 		return this.delegate.getQueryOptions();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.query.ParameterAccessor#hasBindableNullValue()
-	 */
 	@Override
 	public boolean hasBindableNullValue() {
 		return this.delegate.hasBindableNullValue();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.query.ParameterAccessor#iterator()
-	 */
 	public Iterator<Object> iterator() {
 		return new ConvertingIterator(this.delegate.iterator());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.query.CassandraParameterAccessor#getValues()
-	 */
 	@Override
 	public Object[] getValues() {
 		return this.delegate.getValues();
@@ -184,34 +151,19 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 			this.delegate = delegate;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.util.Iterator#hasNext()
-		 */
 		public boolean hasNext() {
 			return this.delegate.hasNext();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.util.Iterator#next()
-		 */
 		@Nullable
 		public Object next() {
 			return potentiallyConvert(this.index++, this.delegate.next(), null);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.util.Iterator#remove()
-		 */
 		public void remove() {
 			this.delegate.remove();
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.repository.query.ConvertingParameterAccessor.PotentiallyConvertingIterator#nextConverted(org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty)
-		 */
 		@Nullable
 		@Override
 		public Object nextConverted(CassandraPersistentProperty property) {

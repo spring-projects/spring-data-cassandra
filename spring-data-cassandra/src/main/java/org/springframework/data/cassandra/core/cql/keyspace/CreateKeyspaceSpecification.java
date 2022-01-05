@@ -136,34 +136,21 @@ public class CreateKeyspaceSpecification extends KeyspaceOptionsSpecification<Cr
 		return with(KeyspaceOption.REPLICATION, builder.build());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.keyspace.KeyspaceOptionsSpecification#with(org.springframework.data.cassandra.core.cql.keyspace.KeyspaceOption)
-	 */
 	@Override
 	public CreateKeyspaceSpecification with(KeyspaceOption option) {
 		return super.with(option);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.keyspace.KeyspaceOptionsSpecification#with(org.springframework.data.cassandra.core.cql.keyspace.KeyspaceOption, java.lang.Object)
-	 */
 	@Override
 	public CreateKeyspaceSpecification with(KeyspaceOption option, Object value) {
 		return super.with(option, value);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.keyspace.KeyspaceOptionsSpecification#with(java.lang.String, java.lang.Object, boolean, boolean)
-	 */
 	@Override
 	public CreateKeyspaceSpecification with(String name, @Nullable Object value, boolean escape, boolean quote) {
 		return super.with(name, value, escape, quote);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object o) {
 
@@ -183,10 +170,6 @@ public class CreateKeyspaceSpecification extends KeyspaceOptionsSpecification<Cr
 		return ifNotExists == that.ifNotExists;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public int hashCode() {
 		int result = super.hashCode();

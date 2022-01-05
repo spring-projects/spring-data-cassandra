@@ -173,18 +173,12 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		return mappingContext;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
-	 */
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.spELContext = new SpELContext(this.spELContext, applicationContext);
 		this.projectionFactory.setBeanFactory(applicationContext);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.beans.factory.BeanClassLoaderAware#setBeanClassLoader(java.lang.ClassLoader)
-	 */
 	@Override
 	public void setBeanClassLoader(ClassLoader classLoader) {
 		this.beanClassLoader = classLoader;
@@ -246,17 +240,11 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		return this.userTypeResolver != null ? this.userTypeResolver : getMappingContext().getUserTypeResolver();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.convert.CassandraConverter#getMappingContext()
-	 */
 	@Override
 	public CassandraMappingContext getMappingContext() {
 		return this.mappingContext;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.convert.CassandraConverter#getColumnTypeResolver()
-	 */
 	@Override
 	public ColumnTypeResolver getColumnTypeResolver() {
 		return this.cassandraTypeResolver;
@@ -412,9 +400,6 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		return doReadTupleValue(context, tupleValue, typeHint);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.convert.EntityReader#read(java.lang.Class, S)
-	 */
 	@Override
 	public <R> R read(Class<R> type, Object row) {
 
@@ -566,9 +551,6 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.convert.CassandraConverter#convertToColumnType(java.lang.Object)
-	 */
 	@Override
 	public Object convertToColumnType(Object obj) {
 		return convertToColumnType(obj, ClassTypeInformation.from(obj.getClass()));
@@ -1270,10 +1252,6 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			this.context = context;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.mapping.model.SpELExpressionParameterValueProvider#potentiallyConvertSpelValue(java.lang.Object, org.springframework.data.mapping.PreferredConstructor.Parameter)
-		 */
 		@Override
 		protected <T> T potentiallyConvertSpelValue(Object object, Parameter<T, CassandraPersistentProperty> parameter) {
 			return (T) context.convert(object, parameter.getType());
@@ -1423,10 +1401,6 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			this.parent = parent;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.mapping.model.ParameterValueProvider#getParameterValue(org.springframework.data.mapping.PreferredConstructor.Parameter)
-		 */
 		@Nullable
 		@SuppressWarnings("unchecked")
 		public <T> T getParameterValue(Parameter<T, CassandraPersistentProperty> parameter) {

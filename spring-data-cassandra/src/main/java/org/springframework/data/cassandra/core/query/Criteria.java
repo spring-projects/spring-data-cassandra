@@ -275,10 +275,6 @@ public class Criteria implements CriteriaDefinition {
 		return predicate;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object obj) {
 
@@ -303,9 +299,6 @@ public class Criteria implements CriteriaDefinition {
 		return keyEqual && criteriaEqual;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		int result = 17;
@@ -314,10 +307,6 @@ public class Criteria implements CriteriaDefinition {
 		return result;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		return SerializationUtils.serializeToCqlSafely(this);

@@ -72,10 +72,6 @@ public class FieldSpecification {
 		return cql.append(name.asCql(true)).append(" ").append(type.asCql(true, true));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		return toCql(new StringBuilder()).toString();

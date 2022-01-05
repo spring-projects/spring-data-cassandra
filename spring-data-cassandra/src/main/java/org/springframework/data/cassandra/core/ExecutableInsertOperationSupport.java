@@ -36,9 +36,6 @@ class ExecutableInsertOperationSupport implements ExecutableInsertOperation {
 		this.template = template;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ExecutableInsertOperation#insert(java.lang.Class)
-	 */
 	@Override
 	public <T> ExecutableInsert<T> insert(Class<T> domainType) {
 
@@ -65,9 +62,6 @@ class ExecutableInsertOperationSupport implements ExecutableInsertOperation {
 			this.tableName = tableName;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ExecutableInsertOperation.InsertWithTable#inTable(org.springframework.data.cassandra.core.cql.CqlIdentifier)
-		 */
 		@Override
 		public InsertWithOptions<T> inTable(CqlIdentifier tableName) {
 
@@ -76,9 +70,6 @@ class ExecutableInsertOperationSupport implements ExecutableInsertOperation {
 			return new ExecutableInsertSupport<>(this.template, this.domainType, this.insertOptions, tableName);
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ExecutableInsertOperation.InsertWithOptions#withOptions(org.springframework.data.cassandra.core.InsertOptions)
-		 */
 		@Override
 		public TerminatingInsert<T> withOptions(InsertOptions insertOptions) {
 
@@ -87,9 +78,6 @@ class ExecutableInsertOperationSupport implements ExecutableInsertOperation {
 			return new ExecutableInsertSupport<>(this.template, this.domainType, insertOptions, this.tableName);
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ExecutableInsertOperation.TerminatingInsert#one(java.lang.Object)
-		 */
 		@Override
 		public EntityWriteResult<T> one(T object) {
 

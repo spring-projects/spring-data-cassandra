@@ -28,17 +28,11 @@ public class ResultSetToIntegerConverter extends AbstractResultSetToBasicFixedTy
 
 	public static final ResultSetToIntegerConverter INSTANCE = new ResultSetToIntegerConverter();
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.converter.AbstractResultSetConverter#doConvertSingleValue(java.lang.Object)
-	 */
 	@Override
 	protected Integer doConvertSingleValue(Object object) {
 		return CONVERTER.convert(object, Integer.class);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.converter.AbstractResultSetConverter#getType()
-	 */
 	@Override
 	protected Class<?> getType() {
 		return Integer.class;

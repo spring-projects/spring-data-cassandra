@@ -41,9 +41,6 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 		this.template = template;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveSelectOperation#query(java.lang.Class)
-	 */
 	@Override
 	public <T> ReactiveSelect<T> query(Class<T> domainType) {
 
@@ -73,9 +70,6 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 			this.tableName = tableName;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ReactiveSelectOperation.SelectWithTable#inTable(org.springframework.data.cassandra.core.cql.CqlIdentifier)
-		 */
 		@Override
 		public SelectWithProjection<T> inTable(CqlIdentifier tableName) {
 
@@ -84,9 +78,6 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 			return new ReactiveSelectSupport<>(this.template, this.domainType, this.returnType, this.query, tableName);
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ReactiveSelectOperation.SelectWithProjection#as(java.lang.Class)
-		 */
 		@Override
 		public <R> SelectWithQuery<R> as(Class<R> returnType) {
 
@@ -95,9 +86,6 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 			return new ReactiveSelectSupport<>(this.template, this.domainType, returnType, this.query, this.tableName);
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ReactiveSelectOperation.SelectWithQuery#matching(org.springframework.data.cassandra.core.query.Query)
-		 */
 		@Override
 		public TerminatingSelect<T> matching(Query query) {
 
@@ -106,33 +94,21 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 			return new ReactiveSelectSupport<>(this.template, this.domainType, this.returnType, query, this.tableName);
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ReactiveSelectOperation.TerminatingSelect#count()
-		 */
 		@Override
 		public Mono<Long> count() {
 			return this.template.doCount(this.query, this.domainType, getTableName());
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ReactiveSelectOperation.TerminatingSelect#exists()
-		 */
 		@Override
 		public Mono<Boolean> exists() {
 			return this.template.doExists(this.query, this.domainType, getTableName());
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ReactiveSelectOperation.TerminatingSelect#first()
-		 */
 		@Override
 		public Mono<T> first() {
 			return this.template.doSelect(this.query.limit(1), this.domainType, getTableName(), this.returnType).next();
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ReactiveSelectOperation.TerminatingSelect#one()
-		 */
 		@Override
 		public Mono<T> one() {
 
@@ -155,9 +131,6 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 					});
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ReactiveSelectOperation.TerminatingSelect#all()
-		 */
 		@Override
 		public Flux<T> all() {
 			return this.template.doSelect(this.query, this.domainType, getTableName(), this.returnType);

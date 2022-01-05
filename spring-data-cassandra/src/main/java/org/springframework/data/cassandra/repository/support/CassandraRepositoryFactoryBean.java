@@ -66,9 +66,6 @@ public class CassandraRepositoryFactoryBean<T extends Repository<S, ID>, S, ID>
 		setMappingContext(cassandraTemplate.getConverter().getMappingContext());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport#afterPropertiesSet()
-	 */
 	@Override
 	public void afterPropertiesSet() {
 

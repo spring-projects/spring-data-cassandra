@@ -39,9 +39,6 @@ class ReactiveDeleteOperationSupport implements ReactiveDeleteOperation {
 		this.template = template;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveDeleteOperation#remove(java.lang.Class)
-	 */
 	@Override
 	public ReactiveDelete delete(Class<?> domainType) {
 
@@ -68,9 +65,6 @@ class ReactiveDeleteOperationSupport implements ReactiveDeleteOperation {
 			this.tableName = tableName;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ReactiveDeleteOperation.DeleteWithTable#inTable(org.springframework.data.cassandra.core.cql.CqlIdentifier)
-		 */
 		@Override
 		public DeleteWithQuery inTable(CqlIdentifier tableName) {
 
@@ -79,9 +73,6 @@ class ReactiveDeleteOperationSupport implements ReactiveDeleteOperation {
 			return new ReactiveDeleteSupport(this.template, this.domainType, this.query, tableName);
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ReactiveDeleteOperation.DeleteWithQuery#matching(org.springframework.data.cassandra.core.query.Query)
-		 */
 		@Override
 		public TerminatingDelete matching(Query query) {
 
@@ -90,9 +81,6 @@ class ReactiveDeleteOperationSupport implements ReactiveDeleteOperation {
 			return new ReactiveDeleteSupport(this.template, this.domainType, query, this.tableName);
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ReactiveDeleteOperation.TerminatingDelete#all()
-		 */
 		public Mono<WriteResult> all() {
 			return this.template.doDelete(this.query, this.domainType, getTableName());
 		}

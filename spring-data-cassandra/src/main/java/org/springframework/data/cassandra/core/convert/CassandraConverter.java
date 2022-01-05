@@ -63,9 +63,6 @@ public interface CassandraConverter
 	 */
 	CodecRegistry getCodecRegistry();
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.convert.EntityConverter#getMappingContext()
-	 */
 	@Override
 	CassandraMappingContext getMappingContext();
 

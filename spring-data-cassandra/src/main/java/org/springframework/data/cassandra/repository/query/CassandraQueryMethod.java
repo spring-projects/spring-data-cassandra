@@ -94,10 +94,6 @@ public class CassandraQueryMethod extends QueryMethod {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.query.QueryMethod#getEntityInformation()
-	 */
 	@Override
 	@SuppressWarnings("unchecked")
 	public CassandraEntityMetadata<?> getEntityInformation() {
@@ -127,18 +123,11 @@ public class CassandraQueryMethod extends QueryMethod {
 		return this.entityMetadata;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.query.QueryMethod#getParameters()
-	 */
 	@Override
 	public CassandraParameters getParameters() {
 		return (CassandraParameters) super.getParameters();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.query.QueryMethod#createParameters(java.lang.reflect.Method)
-	 */
 	@Override
 	protected CassandraParameters createParameters(Method method) {
 		return new CassandraParameters(method);

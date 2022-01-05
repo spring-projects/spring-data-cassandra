@@ -170,10 +170,6 @@ public class QueryOptions {
 		return keyspace;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object o) {
 
@@ -214,10 +210,6 @@ public class QueryOptions {
 		return ObjectUtils.nullSafeEquals(keyspace, options.keyspace);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public int hashCode() {
 		int result = ObjectUtils.nullSafeHashCode(consistencyLevel);

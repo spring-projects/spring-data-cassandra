@@ -62,9 +62,6 @@ public class ReactiveCassandraRepositoryFactoryBean<T extends Repository<S, ID>,
 		this.operations = operations;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport#setMappingContext(org.springframework.data.mapping.context.MappingContext)
-	 */
 	@Override
 	protected void setMappingContext(MappingContext<?, ?> mappingContext) {
 
@@ -73,9 +70,6 @@ public class ReactiveCassandraRepositoryFactoryBean<T extends Repository<S, ID>,
 		this.mappingContextConfigured = true;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport#createRepositoryFactory()
-	 */
 	@Override
 	protected final RepositoryFactorySupport createRepositoryFactory() {
 
@@ -84,10 +78,6 @@ public class ReactiveCassandraRepositoryFactoryBean<T extends Repository<S, ID>,
 		return getFactoryInstance(operations);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport#createDefaultQueryMethodEvaluationContextProvider(ListableBeanFactory)
-	 */
 	@Override
 	protected Optional<QueryMethodEvaluationContextProvider> createDefaultQueryMethodEvaluationContextProvider(
 			ListableBeanFactory beanFactory) {
@@ -104,9 +94,6 @@ public class ReactiveCassandraRepositoryFactoryBean<T extends Repository<S, ID>,
 		return new ReactiveCassandraRepositoryFactory(operations);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport#afterPropertiesSet()
-	 */
 	@Override
 	public void afterPropertiesSet() {
 

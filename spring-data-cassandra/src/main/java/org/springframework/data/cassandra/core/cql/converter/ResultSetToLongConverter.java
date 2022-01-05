@@ -28,17 +28,11 @@ public class ResultSetToLongConverter extends AbstractResultSetToBasicFixedTypeC
 
 	public static final ResultSetToLongConverter INSTANCE = new ResultSetToLongConverter();
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.converter.AbstractResultSetConverter#doConvertSingleValue(java.lang.Object)
-	 */
 	@Override
 	protected Long doConvertSingleValue(Object object) {
 		return CONVERTER.convert(object, Long.class);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.converter.AbstractResultSetConverter#getType()
-	 */
 	@Override
 	protected Class<?> getType() {
 		return Long.class;

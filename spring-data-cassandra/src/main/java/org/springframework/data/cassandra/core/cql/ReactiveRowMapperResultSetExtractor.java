@@ -53,9 +53,6 @@ public class ReactiveRowMapperResultSetExtractor<T> implements ReactiveResultSet
 		this.rowMapper = rowMapper;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.ReactiveResultSetExtractor#extractData(org.springframework.data.cassandra.core.cql.ReactiveResultSet)
-	 */
 	@Override
 	public Publisher<T> extractData(ReactiveResultSet resultSet) throws DriverException, DataAccessException {
 

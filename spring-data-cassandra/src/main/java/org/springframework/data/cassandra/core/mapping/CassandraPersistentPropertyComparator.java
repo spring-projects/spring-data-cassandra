@@ -42,9 +42,6 @@ public enum CassandraPersistentPropertyComparator implements Comparator<Cassandr
 	 */
 	INSTANCE;
 
-	/* (non-Javadoc)
-	 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
-	 */
 	@Override
 	public int compare(CassandraPersistentProperty left, CassandraPersistentProperty right) {
 

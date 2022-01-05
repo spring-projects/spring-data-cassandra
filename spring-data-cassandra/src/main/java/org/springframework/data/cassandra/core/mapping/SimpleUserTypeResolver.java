@@ -84,9 +84,6 @@ public class SimpleUserTypeResolver implements UserTypeResolver {
 		this.keyspaceName = keyspaceName;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.UserTypeResolver#resolveType(org.springframework.data.cassandra.core.cql.CqlIdentifier)
-	 */
 	@Nullable
 	@Override
 	public UserDefinedType resolveType(CqlIdentifier typeName) {

@@ -31,10 +31,6 @@ import org.springframework.data.mapping.MappingException;
  */
 public class PrimaryKeyClassEntityMetadataVerifier implements CassandraPersistentEntityMetadataVerifier {
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentEntityMetadataVerifier#verify(org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity)
-	 */
 	@Override
 	public void verify(CassandraPersistentEntity<?> entity) throws MappingException {
 

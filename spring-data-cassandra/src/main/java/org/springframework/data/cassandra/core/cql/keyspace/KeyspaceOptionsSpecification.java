@@ -108,10 +108,6 @@ public abstract class KeyspaceOptionsSpecification<T extends KeyspaceOptionsSpec
 		return Collections.unmodifiableMap(options);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object o) {
 
@@ -131,10 +127,6 @@ public abstract class KeyspaceOptionsSpecification<T extends KeyspaceOptionsSpec
 		return ObjectUtils.nullSafeEquals(options, that.options);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public int hashCode() {
 		int result = super.hashCode();

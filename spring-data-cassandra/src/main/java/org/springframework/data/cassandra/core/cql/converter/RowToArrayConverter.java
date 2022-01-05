@@ -30,9 +30,6 @@ public enum RowToArrayConverter implements Converter<Row, Object[]> {
 
 	INSTANCE;
 
-	/* (non-Javadoc)
-	 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
-	 */
 	@Override
 	public Object[] convert(Row row) {
 

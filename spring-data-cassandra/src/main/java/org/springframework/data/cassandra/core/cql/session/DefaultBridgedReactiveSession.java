@@ -89,41 +89,26 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 		this.session = session;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.ReactiveSession#getMetadata()
-	 */
 	@Override
 	public Metadata getMetadata() {
 		return this.session.getMetadata();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.ReactiveSession#getKeyspace()
-	 */
 	@Override
 	public Optional<CqlIdentifier> getKeyspace() {
 		return this.session.getKeyspace();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.ReactiveSession#isClosed()
-	 */
 	@Override
 	public boolean isClosed() {
 		return this.session.isClosed();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.ReactiveSession#getContext()
-	 */
 	@Override
 	public DriverContext getContext() {
 		return this.session.getContext();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.ReactiveSession#execute(java.lang.String)
-	 */
 	@Override
 	public Mono<ReactiveResultSet> execute(String query) {
 
@@ -132,9 +117,6 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 		return execute(SimpleStatement.newInstance(query));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.ReactiveSession#execute(java.lang.String, java.lang.Object[])
-	 */
 	@Override
 	public Mono<ReactiveResultSet> execute(String query, Object... values) {
 
@@ -143,9 +125,6 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 		return execute(SimpleStatement.newInstance(query, values));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.ReactiveSession#execute(java.lang.String, java.util.Map)
-	 */
 	@Override
 	public Mono<ReactiveResultSet> execute(String query, Map<String, Object> values) {
 
@@ -154,9 +133,6 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 		return execute(SimpleStatement.newInstance(query, values));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.ReactiveSession#execute(com.datastax.oss.driver.api.core.cql.Statement)
-	 */
 	@Override
 	public Mono<ReactiveResultSet> execute(Statement<?> statement) {
 
@@ -172,9 +148,6 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 		}).map(DefaultReactiveResultSet::new);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.ReactiveSession#prepare(java.lang.String)
-	 */
 	@Override
 	public Mono<PreparedStatement> prepare(String query) {
 
@@ -183,9 +156,6 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 		return prepare(SimpleStatement.newInstance(query));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.ReactiveSession#prepare(com.datastax.oss.driver.api.core.cql.SimpleStatement)
-	 */
 	@Override
 	public Mono<PreparedStatement> prepare(SimpleStatement statement) {
 
@@ -231,9 +201,6 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 		return String.format("Unknown: %s", statement);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.ReactiveSession#close()
-	 */
 	@Override
 	public void close() {
 		this.session.close();
@@ -257,17 +224,11 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 			this.wasApplied = wasApplied;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.ReactiveResultSet#rows()
-		 */
 		@Override
 		public Flux<Row> rows() {
 			return getRows(Mono.just(this.resultSet));
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.ReactiveResultSet#availableRows()
-		 */
 		@Override
 		public Flux<Row> availableRows() {
 			return toRows(this.resultSet);
@@ -312,33 +273,21 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 			}
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.ReactiveResultSet#getColumnDefinitions()
-		 */
 		@Override
 		public ColumnDefinitions getColumnDefinitions() {
 			return this.resultSet.getColumnDefinitions();
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.ReactiveResultSet#wasApplied()
-		 */
 		@Override
 		public boolean wasApplied() {
 			return this.wasApplied;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.ReactiveResultSet#getExecutionInfo()
-		 */
 		@Override
 		public ExecutionInfo getExecutionInfo() {
 			return this.resultSet.getExecutionInfo();
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.ReactiveResultSet#getAllExecutionInfo()
-		 */
 		@Override
 		public List<ExecutionInfo> getAllExecutionInfo() {
 			return Collections.singletonList(getExecutionInfo());

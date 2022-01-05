@@ -39,9 +39,6 @@ class ExecutableUpdateOperationSupport implements ExecutableUpdateOperation {
 		this.template = template;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ExecutableUpdateOperation#update(java.lang.Class)
-	 */
 	@Override
 	public ExecutableUpdate update(Class<?> domainType) {
 
@@ -68,9 +65,6 @@ class ExecutableUpdateOperationSupport implements ExecutableUpdateOperation {
 			this.tableName = tableName;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ExecutableUpdateOperation.UpdateWithTable#inTable(org.springframework.data.cassandra.core.cql.CqlIdentifier)
-		 */
 		@Override
 		public UpdateWithQuery inTable(CqlIdentifier tableName) {
 
@@ -79,9 +73,6 @@ class ExecutableUpdateOperationSupport implements ExecutableUpdateOperation {
 			return new ExecutableUpdateSupport(this.template, this.domainType, this.query, tableName);
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ExecutableUpdateOperation.UpdateWithQuery#matching(org.springframework.data.cassandra.core.query.Query)
-		 */
 		@Override
 		public TerminatingUpdate matching(Query query) {
 
@@ -90,9 +81,6 @@ class ExecutableUpdateOperationSupport implements ExecutableUpdateOperation {
 			return new ExecutableUpdateSupport(this.template, this.domainType, query, this.tableName);
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ExecutableUpdateOperation.TerminatingUpdate#apply(org.springframework.data.cassandra.core.query.Update)
-		 */
 		@Override
 		public WriteResult apply(Update update) {
 

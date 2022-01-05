@@ -48,10 +48,6 @@ public abstract class KeyspaceActionSpecification {
 		return other instanceof KeyspaceActionSpecification;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object o) {
 
@@ -67,10 +63,6 @@ public abstract class KeyspaceActionSpecification {
 		return ObjectUtils.nullSafeEquals(name, that.name);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public int hashCode() {
 		return ObjectUtils.nullSafeHashCode(name);

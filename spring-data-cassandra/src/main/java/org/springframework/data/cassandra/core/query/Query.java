@@ -135,9 +135,6 @@ public class Query implements Filter {
 				this.allowFiltering);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.query.Filter#getCriteriaDefinitions()
-	 */
 	@Override
 	public Iterable<CriteriaDefinition> getCriteriaDefinitions() {
 		return Collections.unmodifiableCollection(criteriaDefinitions);
@@ -298,10 +295,6 @@ public class Query implements Filter {
 		return this.allowFiltering;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object obj) {
 
@@ -336,10 +329,6 @@ public class Query implements Filter {
 				&& allowFilteringEqual;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public int hashCode() {
 		int result = 17;
@@ -353,10 +342,6 @@ public class Query implements Filter {
 		return result;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 

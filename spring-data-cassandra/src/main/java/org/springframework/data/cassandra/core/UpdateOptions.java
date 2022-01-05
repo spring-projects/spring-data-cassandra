@@ -103,10 +103,6 @@ public class UpdateOptions extends WriteOptions {
 		return ifCondition;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object o) {
 
@@ -131,10 +127,6 @@ public class UpdateOptions extends WriteOptions {
 		return ObjectUtils.nullSafeEquals(ifCondition, that.ifCondition);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public int hashCode() {
 		int result = super.hashCode();
@@ -166,9 +158,6 @@ public class UpdateOptions extends WriteOptions {
 			this.ifCondition = updateOptions.ifCondition;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#consistencyLevel(com.datastax.driver.core.ConsistencyLevel)
-		 */
 		@Override
 		public UpdateOptionsBuilder consistencyLevel(ConsistencyLevel consistencyLevel) {
 
@@ -176,27 +165,18 @@ public class UpdateOptions extends WriteOptions {
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#executionProfile(String)
-		 */
 		@Override
 		public UpdateOptionsBuilder executionProfile(String profileName) {
 			super.executionProfile(profileName);
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#executionProfile(org.springframework.data.cassandra.core.cql.ExecutionProfileResolver)
-		 */
 		@Override
 		public UpdateOptionsBuilder executionProfile(ExecutionProfileResolver executionProfileResolver) {
 			super.executionProfile(executionProfileResolver);
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#fetchSize(int)
-		 */
 		@Override
 		@Deprecated
 		public UpdateOptionsBuilder fetchSize(int fetchSize) {
@@ -205,9 +185,6 @@ public class UpdateOptions extends WriteOptions {
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#keyspace()
-		 */
 		@Override
 		public UpdateOptionsBuilder keyspace(CqlIdentifier keyspace) {
 
@@ -215,9 +192,6 @@ public class UpdateOptions extends WriteOptions {
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#pageSize(int)
-		 */
 		@Override
 		public UpdateOptionsBuilder pageSize(int pageSize) {
 
@@ -225,9 +199,6 @@ public class UpdateOptions extends WriteOptions {
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#readTimeout(long)
-		 */
 		@Override
 		@Deprecated
 		public UpdateOptionsBuilder readTimeout(long readTimeout) {
@@ -236,9 +207,6 @@ public class UpdateOptions extends WriteOptions {
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#readTimeout(long, java.util.concurrent.TimeUnit)
-		 */
 		@Override
 		@Deprecated
 		public UpdateOptionsBuilder readTimeout(long readTimeout, TimeUnit timeUnit) {
@@ -247,18 +215,12 @@ public class UpdateOptions extends WriteOptions {
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#serialConsistencyLevel(com.datastax.oss.driver.api.core.ConsistencyLevel)
-		 */
 		@Override
 		public UpdateOptionsBuilder serialConsistencyLevel(ConsistencyLevel consistencyLevel) {
 			super.serialConsistencyLevel(consistencyLevel);
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#readTimeout(java.time.Duration)
-		 */
 		@Override
 		public UpdateOptionsBuilder timeout(Duration timeout) {
 
@@ -266,9 +228,6 @@ public class UpdateOptions extends WriteOptions {
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#ttl(java.time.Duration)
-		 */
 		@Override
 		public UpdateOptionsBuilder ttl(Duration ttl) {
 
@@ -276,9 +235,6 @@ public class UpdateOptions extends WriteOptions {
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#tracing(boolean)
-		 */
 		@Override
 		public UpdateOptionsBuilder tracing(boolean tracing) {
 
@@ -286,9 +242,6 @@ public class UpdateOptions extends WriteOptions {
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#withTracing()
-		 */
 		@Override
 		public UpdateOptionsBuilder withTracing() {
 
@@ -296,18 +249,12 @@ public class UpdateOptions extends WriteOptions {
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#ttl(int)
-		 */
 		public UpdateOptionsBuilder ttl(int ttl) {
 
 			super.ttl(ttl);
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#timestamp(long)
-		 */
 		@Override
 		public UpdateOptionsBuilder timestamp(long timestamp) {
 
@@ -315,9 +262,6 @@ public class UpdateOptions extends WriteOptions {
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#timestamp(java.time.Instant)
-		 */
 		@Override
 		public UpdateOptionsBuilder timestamp(Instant timestamp) {
 

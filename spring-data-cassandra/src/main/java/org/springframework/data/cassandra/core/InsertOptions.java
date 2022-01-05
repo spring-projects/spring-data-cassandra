@@ -98,10 +98,6 @@ public class InsertOptions extends WriteOptions {
 		return this.insertNulls;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object o) {
 
@@ -126,10 +122,6 @@ public class InsertOptions extends WriteOptions {
 		return insertNulls == that.insertNulls;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public int hashCode() {
 		int result = super.hashCode();
@@ -161,9 +153,6 @@ public class InsertOptions extends WriteOptions {
 			this.insertNulls = insertOptions.insertNulls;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#consistencyLevel(com.datastax.driver.core.ConsistencyLevel)
-		 */
 		@Override
 		public InsertOptionsBuilder consistencyLevel(ConsistencyLevel consistencyLevel) {
 
@@ -171,36 +160,24 @@ public class InsertOptions extends WriteOptions {
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#executionProfile(String)
-		 */
 		@Override
 		public InsertOptionsBuilder executionProfile(String profileName) {
 			super.executionProfile(profileName);
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#executionProfile(org.springframework.data.cassandra.core.cql.ExecutionProfileResolver)
-		 */
 		@Override
 		public InsertOptionsBuilder executionProfile(ExecutionProfileResolver executionProfileResolver) {
 			super.executionProfile(executionProfileResolver);
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#fetchSize(int)
-		 */
 		@Override
 		@Deprecated
 		public InsertOptionsBuilder fetchSize(int fetchSize) {
 			return (InsertOptionsBuilder) super.fetchSize(fetchSize);
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#keyspace()
-		 */
 		@Override
 		public InsertOptionsBuilder keyspace(CqlIdentifier keyspace) {
 
@@ -208,17 +185,11 @@ public class InsertOptions extends WriteOptions {
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#pageSize(int)
-		 */
 		@Override
 		public InsertOptionsBuilder pageSize(int pageSize) {
 			return (InsertOptionsBuilder) super.pageSize(pageSize);
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#readTimeout(long)
-		 */
 		@Override
 		@Deprecated
 		public InsertOptionsBuilder readTimeout(long readTimeout) {
@@ -227,9 +198,6 @@ public class InsertOptions extends WriteOptions {
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#readTimeout(long, java.util.concurrent.TimeUnit)
-		 */
 		@Override
 		@Deprecated
 		public InsertOptionsBuilder readTimeout(long readTimeout, TimeUnit timeUnit) {
@@ -238,18 +206,12 @@ public class InsertOptions extends WriteOptions {
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#serialConsistencyLevel(com.datastax.oss.driver.api.core.ConsistencyLevel)
-		 */
 		@Override
 		public InsertOptionsBuilder serialConsistencyLevel(ConsistencyLevel consistencyLevel) {
 			super.serialConsistencyLevel(consistencyLevel);
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#readTimeout(java.time.Duration)
-		 */
 		@Override
 		public InsertOptionsBuilder timeout(Duration timeout) {
 
@@ -257,9 +219,6 @@ public class InsertOptions extends WriteOptions {
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#ttl(java.time.Duration)
-		 */
 		@Override
 		public InsertOptionsBuilder ttl(Duration ttl) {
 
@@ -267,9 +226,6 @@ public class InsertOptions extends WriteOptions {
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#tracing(boolean)
-		 */
 		@Override
 		public InsertOptionsBuilder tracing(boolean tracing) {
 
@@ -277,9 +233,6 @@ public class InsertOptions extends WriteOptions {
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#withTracing()
-		 */
 		@Override
 		public InsertOptionsBuilder withTracing() {
 
@@ -287,9 +240,6 @@ public class InsertOptions extends WriteOptions {
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#ttl(int)
-		 */
 		@Override
 		public InsertOptionsBuilder ttl(int ttl) {
 
@@ -297,9 +247,6 @@ public class InsertOptions extends WriteOptions {
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#timestamp(long)
-		 */
 		@Override
 		public InsertOptionsBuilder timestamp(long timestamp) {
 
@@ -307,9 +254,6 @@ public class InsertOptions extends WriteOptions {
 			return this;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#timestamp(java.time.Instant)
-		 */
 		@Override
 		public InsertOptionsBuilder timestamp(Instant timestamp) {
 

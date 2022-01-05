@@ -45,17 +45,11 @@ import org.w3c.dom.Element;
  */
 class CassandraMappingContextParser extends AbstractSingleBeanDefinitionParser {
 
-	/* (non-Javadoc)
-	 * @see org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser#getBeanClass(org.w3c.dom.Element)
-	 */
 	@Override
 	protected Class<?> getBeanClass(Element element) {
 		return CassandraMappingContext.class;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.beans.factory.xml.AbstractBeanDefinitionParser#resolveId(org.w3c.dom.Element, org.springframework.beans.factory.support.AbstractBeanDefinition, org.springframework.beans.factory.xml.ParserContext)
-	 */
 	@Override
 	protected String resolveId(Element element, AbstractBeanDefinition definition, ParserContext parserContext)
 			throws BeanDefinitionStoreException {
@@ -65,9 +59,6 @@ class CassandraMappingContextParser extends AbstractSingleBeanDefinitionParser {
 		return (StringUtils.hasText(id) ? id : DefaultBeanNames.CONTEXT);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser#doParse(org.w3c.dom.Element, org.springframework.beans.factory.xml.ParserContext, org.springframework.beans.factory.support.BeanDefinitionBuilder)
-	 */
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 		parseMapping(element, builder);

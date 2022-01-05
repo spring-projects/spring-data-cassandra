@@ -58,10 +58,6 @@ public class CompositeCassandraPersistentEntityMetadataVerifier implements Cassa
 		this.verifiers = verifiers;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentEntityMetadataVerifier#verify(org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity)
-	 */
 	@Override
 	public void verify(CassandraPersistentEntity<?> entity) throws MappingException {
 		verifiers.forEach(verifier -> verifier.verify(entity));

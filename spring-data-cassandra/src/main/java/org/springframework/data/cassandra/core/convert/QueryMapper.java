@@ -596,26 +596,16 @@ public class QueryMapper {
 			}
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.convert.QueryMapper.Field#with(org.springframework.data.cassandra.core.query.ColumnName)
-		 */
 		@Override
 		public MetadataBackedField with(ColumnName name) {
 			return new MetadataBackedField(name, entity, mappingContext, property);
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.convert.QueryMapper.Field#getProperty()
-		 */
 		@Override
 		public Optional<CassandraPersistentProperty> getProperty() {
 			return this.optionalProperty;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.mongodb.core.convert.QueryMapper.Field#getTargetKey()
-		 */
 		@Override
 		public ColumnName getMappedKey() {
 

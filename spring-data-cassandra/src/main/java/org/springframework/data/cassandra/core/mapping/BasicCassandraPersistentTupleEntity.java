@@ -41,9 +41,6 @@ public class BasicCassandraPersistentTupleEntity<T> extends BasicCassandraPersis
 		super(information, CassandraPersistentTupleMetadataVerifier.INSTANCE, TuplePropertyComparator.INSTANCE);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.mapping.model.BasicPersistentEntity#verify()
-	 */
 	@Override
 	public void verify() throws MappingException {
 
@@ -52,9 +49,6 @@ public class BasicCassandraPersistentTupleEntity<T> extends BasicCassandraPersis
 		CassandraPersistentTupleMetadataVerifier.INSTANCE.verify(this);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity#isTupleType()
-	 */
 	@Override
 	public boolean isTupleType() {
 		return true;
@@ -70,9 +64,6 @@ public class BasicCassandraPersistentTupleEntity<T> extends BasicCassandraPersis
 
 		INSTANCE;
 
-		/* (non-Javadoc)
-		 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
-		 */
 		@Override
 		public int compare(CassandraPersistentProperty propertyOne, CassandraPersistentProperty propertyTwo) {
 			return Integer.compare(propertyOne.getRequiredOrdinal(), propertyTwo.getRequiredOrdinal());

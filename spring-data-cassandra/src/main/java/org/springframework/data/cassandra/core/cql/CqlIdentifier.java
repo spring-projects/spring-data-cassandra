@@ -251,10 +251,6 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 		return identifier.equals(that.identifier);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public int hashCode() {
 		int result = identifier.hashCode();

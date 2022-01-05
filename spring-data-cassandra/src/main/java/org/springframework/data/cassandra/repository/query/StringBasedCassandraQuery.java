@@ -111,9 +111,6 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 		return this.stringBasedQuery;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.query.AbstractCassandraQuery#createQuery(org.springframework.data.cassandra.repository.query.CassandraParameterAccessor)
-	 */
 	@Override
 	public SimpleStatement createQuery(CassandraParameterAccessor parameterAccessor) {
 
@@ -126,33 +123,21 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 				new DefaultSpELExpressionEvaluator(expressionParser, evaluationContext));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.query.AbstractCassandraQuery#isCountQuery()
-	 */
 	@Override
 	protected boolean isCountQuery() {
 		return this.isCountQuery;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.query.AbstractCassandraQuery#isExistsQuery()
-	 */
 	@Override
 	protected boolean isExistsQuery() {
 		return this.isExistsQuery;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.query.AbstractCassandraQuery#isLimiting()
-	 */
 	@Override
 	protected boolean isLimiting() {
 		return false;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.query.AbstractCassandraQuery#isModifyingQuery()
-	 */
 	@Override
 	protected boolean isModifyingQuery() {
 		return false;

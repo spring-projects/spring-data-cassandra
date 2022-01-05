@@ -90,10 +90,6 @@ public class DropKeyspaceSpecification extends KeyspaceActionSpecification {
 		return ifExists;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object o) {
 
@@ -113,10 +109,6 @@ public class DropKeyspaceSpecification extends KeyspaceActionSpecification {
 		return ifExists == that.ifExists;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public int hashCode() {
 		int result = super.hashCode();

@@ -45,9 +45,6 @@ public class CreateTableCqlGenerator extends TableOptionsCqlGenerator<TableSpeci
 		return new CreateTableCqlGenerator(specification).toCql();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.generator.TableOptionsCqlGenerator#spec()
-	 */
 	@Override
 	protected CreateTableSpecification spec() {
 		return (CreateTableSpecification) super.spec();

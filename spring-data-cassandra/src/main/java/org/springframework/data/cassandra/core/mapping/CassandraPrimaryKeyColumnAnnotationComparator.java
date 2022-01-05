@@ -38,9 +38,6 @@ public enum CassandraPrimaryKeyColumnAnnotationComparator implements Comparator<
 	 */
 	INSTANCE;
 
-	/* (non-Javadoc)
-	 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
-	 */
 	@Override
 	public int compare(PrimaryKeyColumn left, PrimaryKeyColumn right) {
 

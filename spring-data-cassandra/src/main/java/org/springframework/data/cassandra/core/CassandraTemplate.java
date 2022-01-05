@@ -185,25 +185,16 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		this.statementFactory = new StatementFactory(new QueryMapper(converter), new UpdateMapper(converter));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#batchOps(com.datastax.oss.driver.api.core.cql.BatchType)
-	 */
 	@Override
 	public CassandraBatchOperations batchOps(BatchType batchType) {
 		return new CassandraBatchTemplate(this, batchType);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.context.ApplicationEventPublisherAware#setApplicationEventPublisher(org.springframework.context.ApplicationEventPublisher)
-	 */
 	@Override
 	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
 		this.eventPublisher = applicationEventPublisher;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.context.ApplicationContextAware(org.springframework.context.ApplicationContext)
-	 */
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 
@@ -221,17 +212,11 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		this.entityCallbacks = entityCallbacks;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#CqlOperations()
-	 */
 	@Override
 	public CqlOperations getCqlOperations() {
 		return this.cqlOperations;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#getConverter()
-	 */
 	@Override
 	public CassandraConverter getConverter() {
 		return this.converter;
@@ -303,9 +288,6 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		return this.statementFactory;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#getTableName(java.lang.Class)
-	 */
 	@Override
 	public CqlIdentifier getTableName(Class<?> entityClass) {
 		return getEntityOperations().getTableName(entityClass);
@@ -315,9 +297,6 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	// Methods dealing with static CQL
 	// -------------------------------------------------------------------------
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#select(java.lang.String, java.lang.Class)
-	 */
 	@Override
 	public <T> List<T> select(String cql, Class<T> entityClass) {
 
@@ -326,9 +305,6 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		return select(SimpleStatement.newInstance(cql), entityClass);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#selectOne(java.lang.String, java.lang.Class)
-	 */
 	@Override
 	public <T> T selectOne(String cql, Class<T> entityClass) {
 
@@ -338,9 +314,6 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		return selectOne(SimpleStatement.newInstance(cql), entityClass);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#stream(java.lang.String, java.lang.Class)
-	 */
 	@Override
 	public <T> Stream<T> stream(String cql, Class<T> entityClass) throws DataAccessException {
 
@@ -354,9 +327,6 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	// Methods dealing with com.datastax.oss.driver.api.core.cql.Statement
 	// -------------------------------------------------------------------------
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#execute(com.datastax.oss.driver.api.core.cql.Statement)
-	 */
 	@Override
 	public ResultSet execute(Statement<?> statement) {
 
@@ -365,9 +335,6 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		return doQueryForResultSet(statement);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#select(com.datastax.oss.driver.api.core.cql.Statement, java.lang.Class)
-	 */
 	@Override
 	public <T> List<T> select(Statement<?> statement, Class<T> entityClass) {
 
@@ -380,9 +347,6 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		return doQuery(statement, (row, rowNum) -> mapper.apply(row));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#selectOne(com.datastax.oss.driver.api.core.cql.Statement, java.lang.Class)
-	 */
 	@Override
 	public <T> T selectOne(Statement<?> statement, Class<T> entityClass) {
 
@@ -390,9 +354,6 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		return result.isEmpty() ? null : result.get(0);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#slice(com.datastax.oss.driver.api.core.cql.Statement, java.lang.Class)
-	 */
 	@Override
 	public <T> Slice<T> slice(Statement<?> statement, Class<T> entityClass) {
 
@@ -408,9 +369,6 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 				getEffectivePageSize(statement));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#stream(com.datastax.oss.driver.api.core.cql.Statement, java.lang.Class)
-	 */
 	@Override
 	public <T> Stream<T> stream(Statement<?> statement, Class<T> entityClass) throws DataAccessException {
 
@@ -426,9 +384,6 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	// Methods dealing with org.springframework.data.cassandra.core.query.Query
 	// -------------------------------------------------------------------------
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#select(org.springframework.data.cassandra.core.query.Query, java.lang.Class)
-	 */
 	@Override
 	public <T> List<T> select(Query query, Class<T> entityClass) throws DataAccessException {
 
@@ -453,9 +408,6 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		return doQuery(select.build(), (row, rowNum) -> mapper.apply(row));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#selectOne(org.springframework.data.cassandra.core.query.Query, java.lang.Class)
-	 */
 	@Override
 	public <T> T selectOne(Query query, Class<T> entityClass) throws DataAccessException {
 
@@ -464,9 +416,6 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		return result.isEmpty() ? null : result.get(0);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#slice(org.springframework.data.cassandra.core.query.Query, java.lang.Class)
-	 */
 	@Override
 	public <T> Slice<T> slice(Query query, Class<T> entityClass) throws DataAccessException {
 
@@ -478,9 +427,6 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		return slice(select.build(), entityClass);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#stream(org.springframework.data.cassandra.core.query.Query, java.lang.Class)
-	 */
 	@Override
 	public <T> Stream<T> stream(Query query, Class<T> entityClass) throws DataAccessException {
 
@@ -500,9 +446,6 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		return doQueryForStream(select.build(), (row, rowNum) -> mapper.apply(row));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#update(org.springframework.data.cassandra.core.query.Query, org.springframework.data.cassandra.core.query.Update, java.lang.Class)
-	 */
 	@Override
 	public boolean update(Query query, org.springframework.data.cassandra.core.query.Update update, Class<?> entityClass)
 			throws DataAccessException {
@@ -527,9 +470,6 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		return doExecute(updateStatement.build());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#delete(org.springframework.data.cassandra.core.query.Query, java.lang.Class)
-	 */
 	@Override
 	public boolean delete(Query query, Class<?> entityClass) throws DataAccessException {
 
@@ -561,9 +501,6 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	// Methods dealing with entities
 	// -------------------------------------------------------------------------
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#count(java.lang.Class)
-	 */
 	@Override
 	public long count(Class<?> entityClass) {
 
@@ -572,9 +509,6 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		return count(Query.empty(), entityClass);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#count(org.springframework.data.cassandra.core.query.Query, java.lang.Class)
-	 */
 	@Override
 	public long count(Query query, Class<?> entityClass) throws DataAccessException {
 
@@ -592,9 +526,6 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		return doQueryForObject(countStatement.build(), Long.class);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#exists(java.lang.Object, java.lang.Class)
-	 */
 	@Override
 	public boolean exists(Object id, Class<?> entityClass) {
 
@@ -607,9 +538,6 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		return doQueryForResultSet(select.build()).one() != null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#exists(org.springframework.data.cassandra.core.query.Query, java.lang.Class)
-	 */
 	@Override
 	public boolean exists(Query query, Class<?> entityClass) throws DataAccessException {
 
@@ -627,9 +555,6 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		return doQueryForResultSet(select.build()).one() != null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#selectOneById(java.lang.Object, java.lang.Class)
-	 */
 	@Override
 	public <T> T selectOneById(Object id, Class<T> entityClass) {
 
@@ -645,17 +570,11 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		return result.isEmpty() ? null : result.get(0);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#insert(java.lang.Object)
-	 */
 	@Override
 	public <T> T insert(T entity) {
 		return insert(entity, InsertOptions.empty()).getEntity();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#insert(java.lang.Object, org.springframework.data.cassandra.core.InsertOptions)
-	 */
 	@Override
 	public <T> EntityWriteResult<T> insert(T entity, InsertOptions options) {
 
@@ -701,17 +620,11 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		return executeSave(entity, tableName, insert);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#update(java.lang.Object)
-	 */
 	@Override
 	public <T> T update(T entity) {
 		return update(entity, UpdateOptions.empty()).getEntity();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#update(java.lang.Object, org.springframework.data.cassandra.core.UpdateOptions)
-	 */
 	@Override
 	public <T> EntityWriteResult<T> update(T entity, UpdateOptions options) {
 
@@ -757,17 +670,11 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		return executeSave(entity, tableName, builder.build());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#delete(java.lang.Object)
-	 */
 	@Override
 	public void delete(Object entity) {
 		delete(entity, QueryOptions.empty());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#delete(java.lang.Object, org.springframework.data.cassandra.core.cql.QueryOptions)
-	 */
 	@Override
 	public WriteResult delete(Object entity, QueryOptions options) {
 
@@ -803,9 +710,6 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		return executeDelete(entity, tableName, delete, result -> {});
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#deleteById(java.lang.Object, java.lang.Class)
-	 */
 	@Override
 	public boolean deleteById(Object id, Class<?> entityClass) {
 
@@ -827,9 +731,6 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		return result;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraOperations#truncate(java.lang.Class)
-	 */
 	@Override
 	public void truncate(Class<?> entityClass) {
 
@@ -850,33 +751,21 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	// Fluent API entry points
 	// -------------------------------------------------------------------------
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ExecutableSelectOperation#query(java.lang.Class)
-	 */
 	@Override
 	public <T> ExecutableSelect<T> query(Class<T> domainType) {
 		return new ExecutableSelectOperationSupport(this).query(domainType);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ExecutableInsertOperation#insert(java.lang.Class)
-	 */
 	@Override
 	public <T> ExecutableInsert<T> insert(Class<T> domainType) {
 		return new ExecutableInsertOperationSupport(this).insert(domainType);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ExecutableUpdateOperation#update(java.lang.Class)
-	 */
 	@Override
 	public ExecutableUpdate update(Class<?> domainType) {
 		return new ExecutableUpdateOperationSupport(this).update(domainType);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ExecutableDeleteOperation#remove(java.lang.Class)
-	 */
 	@Override
 	public ExecutableDelete delete(Class<?> domainType) {
 		return new ExecutableDeleteOperationSupport(this).delete(domainType);
@@ -1068,28 +957,16 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 			this.statement = PreparedStatementDelegate.getStatementForPrepare(statement);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.PreparedStatementCreator#createPreparedStatement(com.datastax.oss.driver.api.core.CqlSession)
-		 */
 		@Override
 		public PreparedStatement createPreparedStatement(CqlSession session) throws DriverException {
 			return session.prepare(statement);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.PreparedStatementBinder#bindValues(com.datastax.oss.driver.api.core.cql.PreparedStatement)
-		 */
 		@Override
 		public BoundStatement bindValues(PreparedStatement ps) throws DriverException {
 			return PreparedStatementDelegate.bind(statement, ps);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.CqlProvider#getCql()
-		 */
 		@Override
 		public String getCql() {
 			return statement.getQuery();

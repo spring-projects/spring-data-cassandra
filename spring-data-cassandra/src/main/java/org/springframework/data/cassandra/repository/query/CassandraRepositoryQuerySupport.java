@@ -81,9 +81,6 @@ public abstract class CassandraRepositoryQuerySupport implements RepositoryQuery
 		this.queryStatementCreator = new QueryStatementCreator(queryMethod, mappingContext);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.query.RepositoryQuery#getQueryMethod()
-	 */
 	@Override
 	public CassandraQueryMethod getQueryMethod() {
 		return this.queryMethod;

@@ -34,17 +34,11 @@ import org.w3c.dom.Element;
  */
 class CassandraTemplateParser extends AbstractSingleBeanDefinitionParser {
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.config.xml.CassandraCqlTemplateParser#getBeanClass(org.w3c.dom.Element)
-	 */
 	@Override
 	protected Class<?> getBeanClass(Element element) {
 		return CassandraTemplateFactoryBean.class;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.config.xml.CassandraCqlTemplateParser#resolveId(org.w3c.dom.Element, org.springframework.beans.factory.support.AbstractBeanDefinition, org.springframework.beans.factory.xml.ParserContext)
-	 */
 	@Override
 	protected String resolveId(Element element, AbstractBeanDefinition definition, ParserContext parserContext)
 			throws BeanDefinitionStoreException {
@@ -53,9 +47,6 @@ class CassandraTemplateParser extends AbstractSingleBeanDefinitionParser {
 		return StringUtils.hasText(id) ? id : DefaultBeanNames.DATA_TEMPLATE;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.cassandra.config.xml.CassandraCqlTemplateParser#doParse(org.w3c.dom.Element, org.springframework.beans.factory.xml.ParserContext, org.springframework.beans.factory.support.BeanDefinitionBuilder)
-	 */
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 

@@ -44,9 +44,6 @@ public abstract class AbstractCassandraEventListener<E> implements ApplicationLi
 		this.domainClass = typeArgument == null ? Object.class : typeArgument;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.context.ApplicationListener#onApplicationEvent(org.springframework.context.ApplicationEvent)
-	 */
 	@SuppressWarnings({ "unchecked" })
 	@Override
 	public void onApplicationEvent(CassandraMappingEvent<?> event) {

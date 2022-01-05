@@ -78,83 +78,53 @@ public class BasicCassandraPersistentTupleProperty extends BasicCassandraPersist
 		return ordinal;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty#getColumnName()
-	 */
 	@Override
 	public CqlIdentifier getColumnName() {
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentProperty#getOrdinal()
-	 */
 	@Nullable
 	@Override
 	public Integer getOrdinal() {
 		return this.ordinal;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty#getPrimaryKeyOrdering()
-	 */
 	@Nullable
 	@Override
 	public Ordering getPrimaryKeyOrdering() {
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty#isClusterKeyColumn()
-	 */
 	@Override
 	public boolean isClusterKeyColumn() {
 		return false;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty#isCompositePrimaryKey()
-	 */
 	@Override
 	public boolean isCompositePrimaryKey() {
 		return false;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty#isPartitionKeyColumn()
-	 */
 	@Override
 	public boolean isPartitionKeyColumn() {
 		return false;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty#isPrimaryKeyColumn()
-	 */
 	@Override
 	public boolean isPrimaryKeyColumn() {
 		return false;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty#isStaticColumn()
-	 */
 	@Override
 	public boolean isStaticColumn() {
 		return false;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty#isEmbedded()
-	 */
 	@Override
 	public boolean isEmbedded() {
 		return false;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty#setColumnName(org.springframework.data.cassandra.core.cql.CqlIdentifier)
-	 */
 	@Override
 	public void setColumnName(CqlIdentifier columnName) {
 		throw new UnsupportedOperationException("Cannot set a column name on a property representing a tuple element");

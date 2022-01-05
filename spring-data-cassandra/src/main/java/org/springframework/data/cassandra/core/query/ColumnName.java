@@ -81,9 +81,6 @@ public abstract class ColumnName {
 	 */
 	public abstract String toCql();
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.query.Criteria#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object obj) {
 
@@ -100,9 +97,6 @@ public abstract class ColumnName {
 		return toCql().equals(that.toCql());
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		int hashValue = 17;
@@ -123,33 +117,21 @@ public abstract class ColumnName {
 			this.columnName = columnName;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.query.ColumnName#getColumnName()
-		 */
 		@Override
 		public Optional<String> getColumnName() {
 			return Optional.of(columnName);
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.query.ColumnName#getCqlIdentifier()
-		 */
 		@Override
 		public Optional<CqlIdentifier> getCqlIdentifier() {
 			return Optional.empty();
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.query.ColumnName#toCql()
-		 */
 		@Override
 		public String toCql() {
 			return this.columnName;
 		}
 
-		/* (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
 		@Override
 		public String toString() {
 			return this.columnName;
@@ -169,33 +151,21 @@ public abstract class ColumnName {
 			this.cqlIdentifier = cqlIdentifier;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.query.ColumnName#getColumnName()
-		 */
 		@Override
 		public Optional<String> getColumnName() {
 			return Optional.empty();
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.query.ColumnName#getCqlIdentifier()
-		 */
 		@Override
 		public Optional<CqlIdentifier> getCqlIdentifier() {
 			return Optional.of(this.cqlIdentifier);
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.query.ColumnName#toCql()
-		 */
 		@Override
 		public String toCql() {
 			return this.cqlIdentifier.toString();
 		}
 
-		/* (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
 		@Override
 		public String toString() {
 			return this.cqlIdentifier.toString();

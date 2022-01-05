@@ -102,9 +102,6 @@ public class MapSessionFactoryLookup implements SessionFactoryLookup {
 		this.sessionFactories.put(sessionFactoryName, sessionFactory);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.session.lookup.SessionFactoryLookup#getSessionFactory(java.lang.String)
-	 */
 	@Override
 	public SessionFactory getSessionFactory(String sessionFactoryName) throws SessionFactoryLookupFailureException {
 

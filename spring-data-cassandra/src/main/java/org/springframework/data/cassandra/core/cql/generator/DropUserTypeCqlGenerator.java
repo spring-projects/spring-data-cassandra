@@ -40,10 +40,6 @@ public class DropUserTypeCqlGenerator extends UserTypeNameCqlGenerator<DropUserT
 		return new DropUserTypeCqlGenerator(specification).toCql();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.generator.UserTypeNameCqlGenerator#toCql(java.lang.StringBuilder)
-	 */
 	@Override
 	public StringBuilder toCql(StringBuilder cql) {
 		return cql.append("DROP TYPE").append(spec().getIfExists() ? " IF EXISTS " : " ")

@@ -107,10 +107,6 @@ public final class KeyspaceIdentifier implements Comparable<KeyspaceIdentifier> 
 		return toCql();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public int hashCode() {
 		return identifier.hashCode();
@@ -139,9 +135,6 @@ public final class KeyspaceIdentifier implements Comparable<KeyspaceIdentifier> 
 		return this.identifier.equals(other.identifier);
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Comparable#compareTo(java.lang.Object)
-	 */
 	@Override
 	public int compareTo(KeyspaceIdentifier that) {
 		return this.identifier.compareTo(that.identifier);

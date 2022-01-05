@@ -195,9 +195,6 @@ public class CassandraPageRequest extends PageRequest {
 		return (getPagingState() != null && this.nextAllowed);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.domain.PageRequest#next()
-	 */
 	@Override
 	public CassandraPageRequest next() {
 
@@ -220,9 +217,6 @@ public class CassandraPageRequest extends PageRequest {
 		return new CassandraPageRequest(this.getPageNumber(), this.getPageSize(), sort, getPagingState(), this.nextAllowed);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.domain.PageRequest#previous()
-	 */
 	@Override
 	public PageRequest previous() {
 
@@ -231,9 +225,6 @@ public class CassandraPageRequest extends PageRequest {
 		return super.previous();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.domain.PageRequest#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(@Nullable Object obj) {
 
@@ -256,9 +247,6 @@ public class CassandraPageRequest extends PageRequest {
 		return (pagingState != null ? pagingState.equals(that.pagingState) : that.pagingState == null);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.domain.PageRequest#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 
@@ -270,9 +258,6 @@ public class CassandraPageRequest extends PageRequest {
 		return result;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		return String.format("Cassandra page request [number: %d, size %d, sort: %s, paging state: %s]", getPageNumber(),

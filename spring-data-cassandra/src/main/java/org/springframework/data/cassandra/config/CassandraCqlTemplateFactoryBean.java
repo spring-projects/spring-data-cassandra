@@ -37,33 +37,21 @@ public class CassandraCqlTemplateFactoryBean implements FactoryBean<CqlTemplate>
 
 	private @Nullable SessionFactory sessionFactory;
 
-	/* (non-Javadoc)
-	 * @see org.springframework.beans.factory.FactoryBean#getObject()
-	 */
 	@Override
 	public CqlTemplate getObject() {
 		return template;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
-	 */
 	@Override
 	public Class<CqlTemplate> getObjectType() {
 		return CqlTemplate.class;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.beans.factory.FactoryBean#isSingleton()
-	 */
 	@Override
 	public boolean isSingleton() {
 		return true;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
 

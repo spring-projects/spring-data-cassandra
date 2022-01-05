@@ -56,17 +56,11 @@ public class CodecRegistryTupleTypeFactory implements TupleTypeFactory {
 	@Deprecated
 	public CodecRegistryTupleTypeFactory(ProtocolVersion protocolVersion, CodecRegistry codecRegistry) {}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.TupleTypeFactory#create(com.datastax.oss.driver.api.core.type.DataType[])
-	 */
 	@Override
 	public TupleType create(DataType... types) {
 		return SimpleTupleTypeFactory.DEFAULT.create(types);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.TupleTypeFactory#create(java.util.List)
-	 */
 	@Override
 	public TupleType create(List<DataType> types) {
 		return SimpleTupleTypeFactory.DEFAULT.create(types);

@@ -62,9 +62,6 @@ public interface Filter extends Streamable<CriteriaDefinition> {
 		return new DefaultFilter(criteriaDefinitions);
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Iterable#iterator()
-	 */
 	@Override
 	default Iterator<CriteriaDefinition> iterator() {
 		return getCriteriaDefinitions().iterator();

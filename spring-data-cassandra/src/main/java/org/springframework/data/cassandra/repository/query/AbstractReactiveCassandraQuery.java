@@ -65,19 +65,11 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 		this.operations = operations;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.query.RepositoryQuery#getQueryMethod()
-	 */
 	@Override
 	public ReactiveCassandraQueryMethod getQueryMethod() {
 		return (ReactiveCassandraQueryMethod) super.getQueryMethod();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.query.RepositoryQuery#execute(java.lang.Object[])
-	 */
 	@Override
 	public Object execute(Object[] parameters) {
 		return Flux.defer(() -> executeLater(parameters));

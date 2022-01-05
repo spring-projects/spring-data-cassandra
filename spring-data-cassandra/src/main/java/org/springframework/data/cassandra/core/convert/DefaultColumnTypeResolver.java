@@ -163,10 +163,6 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 		return AnnotatedElementUtils.hasAnnotation(type, Frozen.class);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.convert.ColumnTypeResolver#resolve(org.springframework.data.util.TypeInformation)
-	 */
 	@Override
 	public CassandraColumnType resolve(TypeInformation<?> typeInformation) {
 		return resolve(typeInformation, FrozenIndicator.NOT_FROZEN);
@@ -206,10 +202,6 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.convert.ColumnTypeResolver#resolve(org.springframework.data.cassandra.core.mapping.CassandraType)
-	 */
 	@Override
 	public CassandraColumnType resolve(CassandraType annotation) {
 
@@ -257,10 +249,6 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 		}
 	}
 
-	/*
-	 *  (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.convert.ColumnTypeResolver#resolve(java.lang.Object)
-	 */
 	@Override
 	public ColumnType resolve(@Nullable Object value) {
 
@@ -485,10 +473,6 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 			super(type, Lazy.empty(), parameters);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.convert.DefaultCassandraColumnType#getDataType()
-		 */
 		@Override
 		public DataType getDataType() {
 			throw new MappingException(String.format("Cannot resolve DataType for %s", getType().getName()));

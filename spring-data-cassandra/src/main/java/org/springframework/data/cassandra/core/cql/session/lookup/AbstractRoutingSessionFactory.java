@@ -118,9 +118,6 @@ public abstract class AbstractRoutingSessionFactory implements SessionFactory, I
 		this.sessionFactoryLookup = (sessionFactoryLookup != null ? sessionFactoryLookup : new MapSessionFactoryLookup());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.session.SessionFactory#getSession()
-	 */
 	@Override
 	public CqlSession getSession() {
 		return determineTargetSessionFactory().getSession();

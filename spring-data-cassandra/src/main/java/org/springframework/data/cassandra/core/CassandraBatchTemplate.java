@@ -108,9 +108,6 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 		return this.statementFactory;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraBatchOperations#execute()
-	 */
 	@Override
 	public WriteResult execute() {
 
@@ -121,9 +118,6 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 		throw new IllegalStateException("This Cassandra Batch was already executed");
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraBatchOperations#withTimestamp(long)
-	 */
 	@Override
 	public CassandraBatchOperations withTimestamp(long timestamp) {
 
@@ -134,9 +128,6 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 		return this;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraBatchOperations#insert(java.lang.Object[])
-	 */
 	@Override
 	public CassandraBatchOperations insert(Object... entities) {
 
@@ -145,17 +136,11 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 		return insert(Arrays.asList(entities));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraBatchOperations#insert(java.lang.Iterable)
-	 */
 	@Override
 	public CassandraBatchOperations insert(Iterable<?> entities) {
 		return insert(entities, InsertOptions.empty());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraBatchOperations#insert(java.lang.Iterable, org.springframework.data.cassandra.core.cql.WriteOptions)
-	 */
 	@Override
 	public CassandraBatchOperations insert(Iterable<?> entities, WriteOptions options) {
 
@@ -182,9 +167,6 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 		return this;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraBatchOperations#update(java.lang.Object[])
-	 */
 	@Override
 	public CassandraBatchOperations update(Object... entities) {
 
@@ -193,17 +175,11 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 		return update(Arrays.asList(entities));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraBatchOperations#update(java.lang.Iterable)
-	 */
 	@Override
 	public CassandraBatchOperations update(Iterable<?> entities) {
 		return update(entities, UpdateOptions.empty());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraBatchOperations#update(java.lang.Iterable, org.springframework.data.cassandra.core.cql.WriteOptions)
-	 */
 	@Override
 	public CassandraBatchOperations update(Iterable<?> entities, WriteOptions options) {
 
@@ -227,9 +203,6 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 		return this;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraBatchOperations#delete(java.lang.Object[])
-	 */
 	@Override
 	public CassandraBatchOperations delete(Object... entities) {
 
@@ -238,17 +211,11 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 		return delete(Arrays.asList(entities));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraBatchOperations#delete(java.lang.Iterable)
-	 */
 	@Override
 	public CassandraBatchOperations delete(Iterable<?> entities) {
 		return delete(entities, DeleteOptions.empty());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.CassandraBatchOperations#delete(java.lang.Iterable, org.springframework.data.cassandra.core.cql.WriteOptions)
-	 */
 	@Override
 	public CassandraBatchOperations delete(Iterable<?> entities, WriteOptions options) {
 

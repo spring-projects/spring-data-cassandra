@@ -95,9 +95,6 @@ class CassandraQueryCreator extends AbstractQueryCreator<Query, Filter> {
 		return this.queryBuilder;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.query.parser.AbstractQueryCreator#create(org.springframework.data.repository.query.parser.Part, java.util.Iterator)
-	 */
 	@Override
 	protected Filter create(Part part, Iterator<Object> iterator) {
 
@@ -118,9 +115,6 @@ class CassandraQueryCreator extends AbstractQueryCreator<Query, Filter> {
 		return (Filter) filterOrCriteria;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.query.parser.AbstractQueryCreator#and(org.springframework.data.repository.query.parser.Part, java.lang.Object, java.util.Iterator)
-	 */
 	@Override
 	protected Filter and(Part part, Filter base, Iterator<Object> iterator) {
 
@@ -131,20 +125,11 @@ class CassandraQueryCreator extends AbstractQueryCreator<Query, Filter> {
 		return create(part, iterator);
 	}
 
-	/*
-	 * Cassandra does not support OR queries.
-	 *
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.query.parser.AbstractQueryCreator#or(java.lang.Object, java.lang.Object)
-	 */
 	@Override
 	protected Filter or(Filter base, Filter criteria) {
 		throw new InvalidDataAccessApiUsageException("Cassandra does not support an OR operator");
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.query.parser.AbstractQueryCreator#complete(java.lang.Object, org.springframework.data.domain.Sort)
-	 */
 	@Override
 	protected Query complete(Filter criteria, Sort sort) {
 

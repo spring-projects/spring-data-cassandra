@@ -89,10 +89,6 @@ public class PartTreeCassandraQuery extends AbstractCassandraQuery {
 		return this.tree;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.query.AbstractCassandraQuery#createQuery(org.springframework.data.cassandra.repository.query.CassandraParameterAccessor, boolean)
-	 */
 	@Override
 	protected SimpleStatement createQuery(CassandraParameterAccessor parameterAccessor) {
 
@@ -112,33 +108,21 @@ public class PartTreeCassandraQuery extends AbstractCassandraQuery {
 				getQueryMethod().getResultProcessor());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.query.AbstractCassandraQuery#isCountQuery()
-	 */
 	@Override
 	protected boolean isCountQuery() {
 		return getTree().isCountProjection();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.query.AbstractCassandraQuery#isExistsQuery()
-	 */
 	@Override
 	protected boolean isExistsQuery() {
 		return getTree().isExistsProjection();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.query.AbstractCassandraQuery#isLimiting()
-	 */
 	@Override
 	protected boolean isLimiting() {
 		return getTree().isLimiting();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.query.AbstractCassandraQuery#isModifyingQuery()
-	 */
 	@Override
 	protected boolean isModifyingQuery() {
 		return getTree().isDelete();

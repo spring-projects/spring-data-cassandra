@@ -190,17 +190,11 @@ public class AsyncCassandraTemplate
 		this.statementFactory = new StatementFactory(converter);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.context.ApplicationEventPublisherAware#setApplicationEventPublisher(org.springframework.context.ApplicationEventPublisher)
-	 */
 	@Override
 	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
 		this.eventPublisher = applicationEventPublisher;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.context.ApplicationContextAware(org.springframework.context.ApplicationContext)
-	 */
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 
@@ -218,17 +212,11 @@ public class AsyncCassandraTemplate
 		this.entityCallbacks = entityCallbacks;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#getAsyncCqlOperations()
-	 */
 	@Override
 	public AsyncCqlOperations getAsyncCqlOperations() {
 		return this.cqlOperations;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#getConverter()
-	 */
 	@Override
 	public CassandraConverter getConverter() {
 		return this.converter;
@@ -309,9 +297,6 @@ public class AsyncCassandraTemplate
 	// Methods dealing with static CQL
 	// -------------------------------------------------------------------------
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#select(java.lang.String, java.lang.Class)
-	 */
 	@Override
 	public <T> ListenableFuture<List<T>> select(String cql, Class<T> entityClass) {
 
@@ -320,9 +305,6 @@ public class AsyncCassandraTemplate
 		return select(SimpleStatement.newInstance(cql), entityClass);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#select(java.lang.String, java.util.function.Consumer, java.lang.Class)
-	 */
 	@Override
 	public <T> ListenableFuture<Void> select(String cql, Consumer<T> entityConsumer, Class<T> entityClass)
 			throws DataAccessException {
@@ -334,9 +316,6 @@ public class AsyncCassandraTemplate
 		return select(SimpleStatement.newInstance(cql), entityConsumer, entityClass);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#selectOne(java.lang.String, java.lang.Class)
-	 */
 	@Override
 	public <T> ListenableFuture<T> selectOne(String cql, Class<T> entityClass) {
 
@@ -350,9 +329,6 @@ public class AsyncCassandraTemplate
 	// Methods dealing with com.datastax.oss.driver.api.core.cql.Statement
 	// -------------------------------------------------------------------------
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#select(com.datastax.oss.driver.api.core.cql.Statement, java.lang.Class)
-	 */
 	@Override
 	public ListenableFuture<AsyncResultSet> execute(Statement<?> statement) throws DataAccessException {
 
@@ -361,9 +337,6 @@ public class AsyncCassandraTemplate
 		return doQueryForResultSet(statement);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#select(com.datastax.oss.driver.api.core.cql.Statement, java.lang.Class)
-	 */
 	@Override
 	public <T> ListenableFuture<List<T>> select(Statement<?> statement, Class<T> entityClass) {
 
@@ -375,9 +348,6 @@ public class AsyncCassandraTemplate
 		return doQuery(statement, (row, rowNum) -> mapper.apply(row));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#select(com.datastax.oss.driver.api.core.cql.Statement, java.util.function.Consumer, java.lang.Class)
-	 */
 	@Override
 	public <T> ListenableFuture<Void> select(Statement<?> statement, Consumer<T> entityConsumer, Class<T> entityClass)
 			throws DataAccessException {
@@ -393,18 +363,12 @@ public class AsyncCassandraTemplate
 		});
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#selectOne(com.datastax.oss.driver.api.core.cql.Statement, java.lang.Class)
-	 */
 	@Override
 	public <T> ListenableFuture<T> selectOne(Statement<?> statement, Class<T> entityClass) {
 		return new MappingListenableFutureAdapter<>(select(statement, entityClass),
 				list -> list.isEmpty() ? null : list.get(0));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#slice(com.datastax.oss.driver.api.core.cql.Statement, java.lang.Class)
-	 */
 	@Override
 	public <T> ListenableFuture<Slice<T>> slice(Statement<?> statement, Class<T> entityClass) {
 
@@ -423,9 +387,6 @@ public class AsyncCassandraTemplate
 	// Methods dealing with org.springframework.data.cassandra.core.query.Query
 	// -------------------------------------------------------------------------
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#select(org.springframework.data.cassandra.core.query.Query, java.lang.Class)
-	 */
 	@Override
 	public <T> ListenableFuture<List<T>> select(Query query, Class<T> entityClass) throws DataAccessException {
 
@@ -435,9 +396,6 @@ public class AsyncCassandraTemplate
 		return select(getStatementFactory().select(query, getRequiredPersistentEntity(entityClass)).build(), entityClass);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#select(org.springframework.data.cassandra.core.query.Query, java.util.function.Consumer, java.lang.Class)
-	 */
 	@Override
 	public <T> ListenableFuture<Void> select(Query query, Consumer<T> entityConsumer, Class<T> entityClass)
 			throws DataAccessException {
@@ -450,9 +408,6 @@ public class AsyncCassandraTemplate
 				entityClass);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#selectOne(org.springframework.data.cassandra.core.query.Query, java.lang.Class)
-	 */
 	@Override
 	public <T> ListenableFuture<T> selectOne(Query query, Class<T> entityClass) throws DataAccessException {
 
@@ -463,9 +418,6 @@ public class AsyncCassandraTemplate
 				entityClass);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#slice(org.springframework.data.cassandra.core.query.Query, java.lang.Class)
-	 */
 	@Override
 	public <T> ListenableFuture<Slice<T>> slice(Query query, Class<T> entityClass) throws DataAccessException {
 
@@ -475,9 +427,6 @@ public class AsyncCassandraTemplate
 		return slice(getStatementFactory().select(query, getRequiredPersistentEntity(entityClass)).build(), entityClass);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#update(org.springframework.data.cassandra.core.query.Query, org.springframework.data.cassandra.core.query.Update, java.lang.Class)
-	 */
 	@Override
 	public ListenableFuture<Boolean> update(Query query, org.springframework.data.cassandra.core.query.Update update,
 			Class<?> entityClass) throws DataAccessException {
@@ -490,9 +439,6 @@ public class AsyncCassandraTemplate
 				AsyncResultSet::wasApplied);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#delete(org.springframework.data.cassandra.core.query.Query, java.lang.Class)
-	 */
 	@Override
 	public ListenableFuture<Boolean> delete(Query query, Class<?> entityClass) throws DataAccessException {
 
@@ -521,9 +467,6 @@ public class AsyncCassandraTemplate
 	// Methods dealing with entities
 	// -------------------------------------------------------------------------
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#count(java.lang.Class)
-	 */
 	@Override
 	public ListenableFuture<Long> count(Class<?> entityClass) {
 
@@ -532,9 +475,6 @@ public class AsyncCassandraTemplate
 		return doCount(Query.empty(), entityClass, getTableName(entityClass));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#count(org.springframework.data.cassandra.core.query.Query, java.lang.Class)
-	 */
 	@Override
 	public ListenableFuture<Long> count(Query query, Class<?> entityClass) throws DataAccessException {
 
@@ -562,9 +502,6 @@ public class AsyncCassandraTemplate
 		return new MappingListenableFutureAdapter<>(result, it -> it != null ? it : 0L);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#exists(java.lang.Object, java.lang.Class)
-	 */
 	@Override
 	public ListenableFuture<Boolean> exists(Object id, Class<?> entityClass) {
 
@@ -579,9 +516,6 @@ public class AsyncCassandraTemplate
 		return doExecute(select.build(), resultSet -> resultSet.one() != null);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#exists(org.springframework.data.cassandra.core.query.Query, java.lang.Class)
-	 */
 	@Override
 	public ListenableFuture<Boolean> exists(Query query, Class<?> entityClass) throws DataAccessException {
 
@@ -594,9 +528,6 @@ public class AsyncCassandraTemplate
 		return doExecute(select.build(), resultSet -> resultSet.one() != null);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#selectOneById(java.lang.Object, java.lang.Class)
-	 */
 	@Override
 	public <T> ListenableFuture<T> selectOneById(Object id, Class<T> entityClass) {
 
@@ -612,17 +543,11 @@ public class AsyncCassandraTemplate
 				it -> it.isEmpty() ? null : it.get(0));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#insert(java.lang.Object)
-	 */
 	@Override
 	public <T> ListenableFuture<T> insert(T entity) {
 		return new MappingListenableFutureAdapter<>(insert(entity, InsertOptions.empty()), EntityWriteResult::getEntity);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#insert(java.lang.Object, org.springframework.data.cassandra.core.InsertOptions)
-	 */
 	@Override
 	public <T> ListenableFuture<EntityWriteResult<T>> insert(T entity, InsertOptions options) {
 
@@ -672,17 +597,11 @@ public class AsyncCassandraTemplate
 		return executeSave(entity, tableName, insert);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#update(java.lang.Object)
-	 */
 	@Override
 	public <T> ListenableFuture<T> update(T entity) {
 		return new MappingListenableFutureAdapter<>(update(entity, UpdateOptions.empty()), EntityWriteResult::getEntity);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#update(java.lang.Object, org.springframework.data.cassandra.core.UpdateOptions)
-	 */
 	@Override
 	public <T> ListenableFuture<EntityWriteResult<T>> update(T entity, UpdateOptions options) {
 
@@ -727,17 +646,11 @@ public class AsyncCassandraTemplate
 		return executeSave(entity, tableName, update.build());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#delete(java.lang.Object)
-	 */
 	@Override
 	public <T> ListenableFuture<T> delete(T entity) {
 		return new MappingListenableFutureAdapter<>(delete(entity, QueryOptions.empty()), writeResult -> entity);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#delete(java.lang.Object, org.springframework.data.cassandra.core.cql.QueryOptions)
-	 */
 	@Override
 	public ListenableFuture<WriteResult> delete(Object entity, QueryOptions options) {
 
@@ -775,9 +688,6 @@ public class AsyncCassandraTemplate
 		return executeDelete(entity, tableName, delete.build(), result -> {});
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#deleteById(java.lang.Object, java.lang.Class)
-	 */
 	@Override
 	public ListenableFuture<Boolean> deleteById(Object id, Class<?> entityClass) {
 
@@ -798,9 +708,6 @@ public class AsyncCassandraTemplate
 		return future;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.AsyncCassandraOperations#truncate(java.lang.Class)
-	 */
 	@Override
 	public ListenableFuture<Void> truncate(Class<?> entityClass) {
 
@@ -1012,9 +919,6 @@ public class AsyncCassandraTemplate
 			this.mapper = mapper;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.util.concurrent.FutureAdapter#adapt(java.lang.Object)
-		 */
 		@Override
 		protected T adapt(@Nullable S adapteeResult) {
 			return this.mapper.apply(adapteeResult);
@@ -1036,28 +940,16 @@ public class AsyncCassandraTemplate
 			this.statement = PreparedStatementDelegate.getStatementForPrepare(statement);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.AsyncPreparedStatementCreator#createPreparedStatement(com.datastax.oss.driver.api.core.CqlSession)
-		 */
 		@Override
 		public ListenableFuture<PreparedStatement> createPreparedStatement(CqlSession session) throws DriverException {
 			return new CassandraFutureAdapter<>(session.prepareAsync(statement), exceptionTranslator);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.PreparedStatementBinder#bindValues(com.datastax.oss.driver.api.core.cql.PreparedStatement)
-		 */
 		@Override
 		public BoundStatement bindValues(PreparedStatement ps) throws DriverException {
 			return PreparedStatementDelegate.bind(statement, ps);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.CqlProvider#getCql()
-		 */
 		@Override
 		public String getCql() {
 			return statement.getQuery();

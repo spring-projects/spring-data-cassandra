@@ -35,9 +35,6 @@ enum CassandraPersistentTupleMetadataVerifier implements CassandraPersistentEnti
 
 	INSTANCE;
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentEntityMetadataVerifier#verify(org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity)
-	 */
 	public void verify(CassandraPersistentEntity<?> entity) throws MappingException {
 
 		if (entity.getType().isInterface() || !entity.isAnnotationPresent(Tuple.class)) {

@@ -115,10 +115,6 @@ public class SessionFactoryFactoryBean extends AbstractFactoryBean<SessionFactor
 		this.session = session;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.cassandra.config.CassandraCqlSessionFactoryBean#afterPropertiesSet()
-	 */
 	@Override
 	@SuppressWarnings("all")
 	public void afterPropertiesSet() throws Exception {

@@ -90,58 +90,36 @@ class ExceptionTranslatingListenableFutureAdapter<T> implements ListenableFuture
 		return settableFuture;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.util.concurrent.ListenableFuture#addCallback(org.springframework.util.concurrent.ListenableFutureCallback)
-	 */
 	@Override
 	public void addCallback(ListenableFutureCallback<? super T> callback) {
 		future.addCallback(callback);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.util.concurrent.ListenableFuture#addCallback(org.springframework.util.concurrent.SuccessCallback, org.springframework.util.concurrent.FailureCallback)
-	 */
 	@Override
 	public void addCallback(SuccessCallback<? super T> successCallback, FailureCallback failureCallback) {
 		future.addCallback(successCallback, failureCallback);
 	}
 
-	/* (non-Javadoc)
-	 * @see java.util.concurrent.Future#cancel(boolean)
-	 */
 	@Override
 	public boolean cancel(boolean mayInterruptIfRunning) {
 		return adaptee.cancel(mayInterruptIfRunning);
 	}
 
-	/* (non-Javadoc)
-	 * @see java.util.concurrent.Future#isCancelled()
-	 */
 	@Override
 	public boolean isCancelled() {
 		return adaptee.isCancelled();
 	}
 
-	/* (non-Javadoc)
-	 * @see java.util.concurrent.Future#isDone()
-	 */
 	@Override
 	public boolean isDone() {
 		return future.isDone();
 	}
 
-	/* (non-Javadoc)
-	 * @see java.util.concurrent.Future#get()
-	 */
 	@Override
 	public T get() throws InterruptedException, ExecutionException {
 		return future.get();
 	}
 
-	/* (non-Javadoc)
-	 * @see java.util.concurrent.Future#get(long, java.util.concurrent.TimeUnit)
-	 */
 	@Override
 	public T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
 		return future.get(timeout, unit);

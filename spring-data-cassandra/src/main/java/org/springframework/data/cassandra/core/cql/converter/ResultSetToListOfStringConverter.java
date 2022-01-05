@@ -34,17 +34,11 @@ public class ResultSetToListOfStringConverter extends AbstractResultSetConverter
 
 	public static final ResultSetToListOfStringConverter INSTANCE = new ResultSetToListOfStringConverter();
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.converter.AbstractResultSetConverter#doConvertSingleValue(java.lang.Object)
-	 */
 	@Override
 	protected List<String> doConvertSingleValue(Object object) {
 		return Collections.singletonList(object.toString());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.converter.AbstractResultSetConverter#doConvertSingleRow(java.util.Map)
-	 */
 	@Override
 	protected List<String> doConvertSingleRow(Map<String, Object> row) {
 		return row.values().stream().map(value -> value == null ? null : value.toString()).collect(Collectors.toList());

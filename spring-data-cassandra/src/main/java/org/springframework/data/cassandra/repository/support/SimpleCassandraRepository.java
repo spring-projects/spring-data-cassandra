@@ -76,9 +76,6 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 	// Methods from CrudRepository
 	// -------------------------------------------------------------------------
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#save(S)
-	 */
 	@Override
 	public <S extends T> S save(S entity) {
 
@@ -96,9 +93,6 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 		return this.operations.insert(entity, INSERT_NULLS).getEntity();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#saveAll(java.lang.Iterable)
-	 */
 	@Override
 	public <S extends T> List<S> saveAll(Iterable<S> entities) {
 
@@ -113,9 +107,6 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 		return result;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#findById(java.lang.Object)
-	 */
 	@Override
 	public Optional<T> findById(ID id) {
 
@@ -128,9 +119,6 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 		return this.operations.selectOneById(id, this.entityInformation.getJavaType());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#existsById(java.lang.Object)
-	 */
 	@Override
 	public boolean existsById(ID id) {
 
@@ -139,17 +127,11 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 		return this.operations.exists(id, this.entityInformation.getJavaType());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#findAll()
-	 */
 	@Override
 	public List<T> findAll() {
 		return this.operations.select(Query.empty(), this.entityInformation.getJavaType());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#findAll(java.lang.Iterable)
-	 */
 	@Override
 	public List<T> findAllById(Iterable<ID> ids) {
 
@@ -162,17 +144,11 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 		return this.operations.select(createIdsInQuery(ids), this.entityInformation.getJavaType());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#count()
-	 */
 	@Override
 	public long count() {
 		return this.operations.count(this.entityInformation.getJavaType());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#deleteById(java.lang.Object)
-	 */
 	@Override
 	public void deleteById(ID id) {
 
@@ -181,9 +157,6 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 		this.operations.deleteById(id, this.entityInformation.getJavaType());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#delete(java.lang.Object)
-	 */
 	@Override
 	public void delete(T entity) {
 
@@ -192,9 +165,6 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 		deleteById(this.entityInformation.getRequiredId(entity));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#deleteAllById(java.lang.Iterable)
-	 */
 	@Override
 	public void deleteAllById(Iterable<? extends ID> ids) {
 
@@ -207,9 +177,6 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 		this.operations.delete(createIdsInQuery(ids), this.entityInformation.getJavaType());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#deleteAll(java.lang.Iterable)
-	 */
 	@Override
 	public void deleteAll(Iterable<? extends T> entities) {
 
@@ -218,9 +185,6 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 		entities.forEach(this.operations::delete);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#deleteAll()
-	 */
 	@Override
 	public void deleteAll() {
 		this.operations.truncate(this.entityInformation.getJavaType());
@@ -230,9 +194,6 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 	// Methods from CassandraRepository
 	// -------------------------------------------------------------------------
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.CassandraRepository#findAll(org.springframework.data.domain.Pageable)
-	 */
 	@Override
 	public Slice<T> findAll(Pageable pageable) {
 
@@ -241,9 +202,6 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 		return this.operations.slice(Query.empty().pageRequest(pageable), this.entityInformation.getJavaType());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.TypedIdCassandraRepository#insert(java.lang.Object)
-	 */
 	@Override
 	public <S extends T> S insert(S entity) {
 
@@ -252,9 +210,6 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 		return this.operations.insert(entity);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.repository.TypedIdCassandraRepository#insert(java.lang.Iterable)
-	 */
 	@Override
 	public <S extends T> List<S> insert(Iterable<S> entities) {
 

@@ -50,58 +50,37 @@ public class CachingCassandraPersistentProperty extends BasicCassandraPersistent
 		isStaticColumn = super.isStaticColumn();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty#getPrimaryKeyOrdering()
-	 */
 	@Nullable
 	@Override
 	public Ordering getPrimaryKeyOrdering() {
 		return primaryKeyOrdering;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty#isCompositePrimaryKey()
-	 */
 	@Override
 	public boolean isCompositePrimaryKey() {
 		return isCompositePrimaryKey;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty#isClusterKeyColumn()
-	 */
 	@Override
 	public boolean isClusterKeyColumn() {
 		return isClusterKeyColumn;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty#isPartitionKeyColumn()
-	 */
 	@Override
 	public boolean isPartitionKeyColumn() {
 		return isPartitionKeyColumn;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty#isPrimaryKeyColumn()
-	 */
 	@Override
 	public boolean isPrimaryKeyColumn() {
 		return isPrimaryKeyColumn;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentProperty#isStaticColumn()
-	 */
 	@Override
 	public boolean isStaticColumn() {
 		return isStaticColumn;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentProperty#isEmbedded()
-	 */
 	@Override
 	public boolean isEmbedded() {
 		return isEmbedded;

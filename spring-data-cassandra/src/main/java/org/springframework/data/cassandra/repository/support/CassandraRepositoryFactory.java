@@ -77,17 +77,11 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 		return this.operations.getConverter().getProjectionFactory();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getRepositoryBaseClass(org.springframework.data.repository.core.RepositoryMetadata)
-	 */
 	@Override
 	protected Class<?> getRepositoryBaseClass(RepositoryMetadata metadata) {
 		return SimpleCassandraRepository.class;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getTargetRepository(org.springframework.data.repository.core.RepositoryInformation)
-	 */
 	@Override
 	protected Object getTargetRepository(RepositoryInformation information) {
 
@@ -96,9 +90,6 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 		return getTargetRepositoryViaReflection(information, entityInformation, operations);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getEntityInformation(java.lang.Class)
-	 */
 	@Override
 	@SuppressWarnings("unchecked")
 	public <T, ID> CassandraEntityInformation<T, ID> getEntityInformation(Class<T> domainClass) {
@@ -108,10 +99,6 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 		return new MappingCassandraEntityInformation<>((CassandraPersistentEntity<T>) entity, operations.getConverter());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getQueryLookupStrategy(Key, EvaluationContextProvider)
-	 */
 	@Override
 	protected Optional<QueryLookupStrategy> getQueryLookupStrategy(@Nullable Key key,
 			QueryMethodEvaluationContextProvider evaluationContextProvider) {
@@ -138,9 +125,6 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 			this.mappingContext = mappingContext;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.repository.query.QueryLookupStrategy#resolveQuery(java.lang.reflect.Method, org.springframework.data.repository.core.RepositoryMetadata, org.springframework.data.projection.ProjectionFactory, org.springframework.data.repository.core.NamedQueries)
-		 */
 		@Override
 		public RepositoryQuery resolveQuery(Method method, RepositoryMetadata metadata, ProjectionFactory factory,
 				NamedQueries namedQueries) {

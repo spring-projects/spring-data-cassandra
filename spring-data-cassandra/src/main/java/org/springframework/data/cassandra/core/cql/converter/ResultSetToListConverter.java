@@ -53,9 +53,6 @@ public class ResultSetToListConverter implements Converter<ResultSet, List<Map<S
 		this.rowConverter = rowConverter;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
-	 */
 	@Override
 	public List<Map<String, Object>> convert(ResultSet resultSet) {
 

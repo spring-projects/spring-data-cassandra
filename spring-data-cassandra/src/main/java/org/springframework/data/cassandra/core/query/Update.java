@@ -228,10 +228,6 @@ public class Update {
 		return new Update(map);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		return StringUtils.collectionToDelimitedString(updateOperations.values(), ", ");
@@ -330,17 +326,11 @@ public class Update {
 			this.columnName = columnName;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.query.Update.AddToBuilder#prepend(java.lang.Object)
-		 */
 		@Override
 		public Update prepend(Object value) {
 			return prependAll(Collections.singletonList(value));
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.query.Update.AddToBuilder#prependAll(java.lang.Object[])
-		 */
 		@Override
 		public Update prependAll(Object... values) {
 
@@ -349,9 +339,6 @@ public class Update {
 			return prependAll(Arrays.asList(values));
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.query.Update.AddToBuilder#prependAll(java.lang.Iterable)
-		 */
 		@Override
 		public Update prependAll(Iterable<? extends Object> values) {
 
@@ -360,17 +347,11 @@ public class Update {
 			return add(new AddToOp(columnName, values, Mode.PREPEND));
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.query.Update.AddToBuilder#append(java.lang.Object)
-		 */
 		@Override
 		public Update append(Object value) {
 			return appendAll(Collections.singletonList(value));
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.query.Update.AddToBuilder#appendAll(java.lang.Object[])
-		 */
 		@Override
 		public Update appendAll(Object... values) {
 
@@ -379,9 +360,6 @@ public class Update {
 			return appendAll(Arrays.asList(values));
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.query.Update.AddToBuilder#appendAll(java.lang.Iterable)
-		 */
 		@Override
 		public Update appendAll(Iterable<? extends Object> values) {
 
@@ -390,9 +368,6 @@ public class Update {
 			return add(new AddToOp(columnName, values, Mode.APPEND));
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.query.Update.AddToBuilder#entry(java.lang.Object, java.lang.Object)
-		 */
 		@Override
 		public Update entry(Object key, Object value) {
 
@@ -402,9 +377,6 @@ public class Update {
 			return addAll(Collections.singletonMap(key, value));
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.query.Update.AddToBuilder#addAll(java.util.Map)
-		 */
 		@Override
 		public Update addAll(Map<?, ?> map) {
 
@@ -468,17 +440,11 @@ public class Update {
 			this.columnName = columnName;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.query.Update.RemoveFromBuilder#mapValue(java.lang.Object)
-		 */
 		@Override
 		public Update value(Object value) {
 			return add(new RemoveOp(columnName, value));
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.query.Update.RemoveFromBuilder#mapValues(java.lang.Iterable)
-		 */
 		@Override
 		public Update values(Iterable<?> values) {
 
@@ -541,17 +507,11 @@ public class Update {
 			this.columnName = columnName;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.query.Update.SetBuilder#atIndex(int)
-		 */
 		@Override
 		public SetValueBuilder atIndex(int index) {
 			return value -> add(new SetAtIndexOp(this.columnName, index, value));
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.query.Update.SetBuilder#atKey(java.lang.Object)
-		 */
 		@Override
 		public SetValueBuilder atKey(Object key) {
 			return value -> add(new SetAtKeyOp(this.columnName, key, value));
@@ -609,10 +569,6 @@ public class Update {
 			return this.mode;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
 		@Override
 		public String toString() {
 
@@ -643,10 +599,6 @@ public class Update {
 			return value;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
 		@Override
 		public String toString() {
 			return String.format("%s = %s + %s", getColumnName(), getColumnName(), serializeToCqlSafely(value));
@@ -670,10 +622,6 @@ public class Update {
 			return value;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
 		@Override
 		public String toString() {
 			return String.format("%s = %s", getColumnName(), serializeToCqlSafely(value));
@@ -700,10 +648,6 @@ public class Update {
 			return index;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
 		@Override
 		public String toString() {
 			return String.format("%s[%d] = %s", getColumnName(), index, serializeToCqlSafely(getValue()));
@@ -737,10 +681,6 @@ public class Update {
 			return value;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
 		@Override
 		public String toString() {
 			return String.format("%s[%s] = %s", getColumnName(), serializeToCqlSafely(key), serializeToCqlSafely(getValue()));
@@ -763,10 +703,6 @@ public class Update {
 			return value;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
 		@Override
 		public String toString() {
 			return String.format("%s = %s %s %d", getColumnName(), getColumnName(), value.doubleValue() > 0 ? "+" : "-",
@@ -794,10 +730,6 @@ public class Update {
 			return value;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
 		@Override
 		public String toString() {
 			return String.format("%s = %s - %s", getColumnName(), getColumnName(), serializeToCqlSafely(getValue()));

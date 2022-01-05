@@ -30,17 +30,11 @@ public class ResultSetToBigIntegerConverter extends AbstractResultSetToBasicFixe
 
 	public static final ResultSetToBigIntegerConverter INSTANCE = new ResultSetToBigIntegerConverter();
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.converter.AbstractResultSetConverter#doConvertSingleValue(java.lang.Object)
-	 */
 	@Override
 	protected BigInteger doConvertSingleValue(Object object) {
 		return CONVERTER.convert(object, BigInteger.class);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.converter.AbstractResultSetConverter#getType()
-	 */
 	@Override
 	protected Class<?> getType() {
 		return BigInteger.class;

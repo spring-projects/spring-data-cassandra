@@ -37,9 +37,6 @@ public enum RowToListConverter implements Converter<Row, List<Object>> {
 
 	INSTANCE;
 
-	/* (non-Javadoc)
-	 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
-	 */
 	@Override
 	public List<Object> convert(Row row) {
 

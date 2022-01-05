@@ -98,51 +98,30 @@ public class DefaultOption implements Option {
 		return false;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.keyspace.Option#getType()
-	 */
 	public Class<?> getType() {
 		return type;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.keyspace.Option#getName()
-	 */
 	public String getName() {
 		return name;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.keyspace.Option#takesValue()
-	 */
 	public boolean takesValue() {
 		return type != Void.class;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.keyspace.Option#requiresValue()
-	 */
 	public boolean requiresValue() {
 		return this.requiresValue;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.keyspace.Option#escapesValue()
-	 */
 	public boolean escapesValue() {
 		return this.escapesValue;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.keyspace.Option#quotesValue()
-	 */
 	public boolean quotesValue() {
 		return this.quotesValue;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.keyspace.Option#checkValue(java.lang.Object)
-	 */
 	public void checkValue(@Nullable Object value) {
 		if (takesValue()) {
 			if (value == null) {
@@ -179,10 +158,6 @@ public class DefaultOption implements Option {
 		return string;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		return "[name=" + name + ", type=" + type.getName() + ", requiresValue=" + requiresValue + ", escapesValue="

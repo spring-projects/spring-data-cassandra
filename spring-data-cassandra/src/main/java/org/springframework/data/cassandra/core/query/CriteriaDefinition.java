@@ -97,10 +97,6 @@ public interface CriteriaDefinition {
 			return mappingFunction.apply(this.value);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
 		@Override
 		public boolean equals(Object o) {
 
@@ -121,10 +117,6 @@ public interface CriteriaDefinition {
 			return ObjectUtils.nullSafeEquals(value, predicate.value);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
 		@Override
 		public int hashCode() {
 			int result = ObjectUtils.nullSafeHashCode(operator);
@@ -198,10 +190,6 @@ public interface CriteriaDefinition {
 			this.operator = operator;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
 		@Override
 		public String toString() {
 			return this.operator;

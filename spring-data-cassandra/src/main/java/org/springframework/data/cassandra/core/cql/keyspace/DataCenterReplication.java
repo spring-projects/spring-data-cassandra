@@ -57,10 +57,6 @@ public class DataCenterReplication {
 		return replicationFactor;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		return "DataCenterReplication(dataCenter=" + this.getDataCenter() + ", replicationFactor="

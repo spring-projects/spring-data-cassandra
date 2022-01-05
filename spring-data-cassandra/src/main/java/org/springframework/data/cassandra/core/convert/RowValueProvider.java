@@ -51,9 +51,6 @@ public class RowValueProvider implements CassandraValueProvider {
 		this.evaluator = evaluator;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.mapping.model.PropertyValueProvider#getPropertyValue(org.springframework.data.mapping.PersistentProperty)
-	 */
 	@Nullable
 	@Override
 	@SuppressWarnings("unchecked")
@@ -65,9 +62,6 @@ public class RowValueProvider implements CassandraValueProvider {
 				: (T) this.reader.get(property.getRequiredColumnName());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.convert.CassandraValueProvider#hasProperty(org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty)
-	 */
 	@Override
 	public boolean hasProperty(CassandraPersistentProperty property) {
 
@@ -76,9 +70,6 @@ public class RowValueProvider implements CassandraValueProvider {
 		return this.reader.contains(property.getRequiredColumnName());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.convert.CassandraValueProvider#getSource()
-	 */
 	@Override
 	public Object getSource() {
 		return this.reader.getRow();

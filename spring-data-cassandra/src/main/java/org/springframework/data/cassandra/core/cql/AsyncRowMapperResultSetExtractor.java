@@ -56,9 +56,6 @@ public class AsyncRowMapperResultSetExtractor<T> implements AsyncResultSetExtrac
 		this.rowMapper = rowMapper;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.ResultSetExtractor#extractData(ResultSet)
-	 */
 	@Override
 	public ListenableFuture<List<T>> extractData(AsyncResultSet resultSet) throws DriverException, DataAccessException {
 		return AsyncResultStream.from(resultSet).map(rowMapper).collect(Collectors.toList());

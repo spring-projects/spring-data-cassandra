@@ -36,9 +36,6 @@ class ReactiveInsertOperationSupport implements ReactiveInsertOperation {
 		this.template = template;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.ReactiveInsertOperation#insert(java.lang.Class)
-	 */
 	@Override
 	public <T> ReactiveInsert<T> insert(Class<T> domainType) {
 
@@ -65,9 +62,6 @@ class ReactiveInsertOperationSupport implements ReactiveInsertOperation {
 			this.tableName = tableName;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ReactiveInsertOperation.InsertWithTable#inTable(org.springframework.data.cassandra.core.cql.CqlIdentifier)
-		 */
 		@Override
 		public InsertWithOptions<T> inTable(CqlIdentifier tableName) {
 
@@ -76,9 +70,6 @@ class ReactiveInsertOperationSupport implements ReactiveInsertOperation {
 			return new ReactiveInsertSupport<>(this.template, this.domainType, this.insertOptions, tableName);
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ReactiveInsertOperation.InsertWithOptions#withOptions(org.springframework.data.cassandra.core.InsertOptions)
-		 */
 		@Override
 		public TerminatingInsert<T> withOptions(InsertOptions insertOptions) {
 
@@ -87,9 +78,6 @@ class ReactiveInsertOperationSupport implements ReactiveInsertOperation {
 			return new ReactiveInsertSupport<>(this.template, this.domainType, insertOptions, this.tableName);
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.ReactiveInsertOperation.TerminatingInsert#one(java.lang.Object)
-		 */
 		@Override
 		public Mono<EntityWriteResult<T>> one(T object) {
 

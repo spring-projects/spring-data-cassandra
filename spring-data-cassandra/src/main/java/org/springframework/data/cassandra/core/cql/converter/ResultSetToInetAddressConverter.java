@@ -30,17 +30,11 @@ public class ResultSetToInetAddressConverter extends AbstractResultSetToBasicFix
 
 	public static final ResultSetToInetAddressConverter INSTANCE = new ResultSetToInetAddressConverter();
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.converter.AbstractResultSetConverter#doConvertSingleValue(java.lang.Object)
-	 */
 	@Override
 	protected InetAddress doConvertSingleValue(Object object) {
 		return CONVERTER.convert(object, InetAddress.class);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.cassandra.core.cql.converter.AbstractResultSetConverter#getType()
-	 */
 	@Override
 	protected Class<?> getType() {
 		return InetAddress.class;

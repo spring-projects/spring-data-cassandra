@@ -42,10 +42,6 @@ public class CassandraTemplateFactoryBean implements FactoryBean<CassandraTempla
 
 	protected @Nullable CassandraConverter converter;
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
 
@@ -58,10 +54,6 @@ public class CassandraTemplateFactoryBean implements FactoryBean<CassandraTempla
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.FactoryBean#getObject()
-	 */
 	@Override
 	public CassandraTemplate getObject() throws Exception {
 
@@ -72,19 +64,11 @@ public class CassandraTemplateFactoryBean implements FactoryBean<CassandraTempla
 		return new CassandraTemplate(sessionFactory, converter);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
-	 */
 	@Override
 	public Class<CassandraTemplate> getObjectType() {
 		return CassandraTemplate.class;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.FactoryBean#isSingleton()
-	 */
 	@Override
 	public boolean isSingleton() {
 		return true;

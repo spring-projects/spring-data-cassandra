@@ -198,9 +198,6 @@ public class Columns implements Iterable<ColumnName> {
 		return new Columns(result);
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Iterable#iterator()
-	 */
 	@Override
 	public Iterator<ColumnName> iterator() {
 		return this.columns.keySet().iterator();
@@ -217,10 +214,6 @@ public class Columns implements Iterable<ColumnName> {
 		return Optional.ofNullable(this.columns.get(columnName));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object object) {
 
@@ -237,10 +230,6 @@ public class Columns implements Iterable<ColumnName> {
 		return this.columns.equals(that.columns);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public int hashCode() {
 		int result = 17;
@@ -248,10 +237,6 @@ public class Columns implements Iterable<ColumnName> {
 		return result;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 
@@ -376,19 +361,12 @@ public class Columns implements Iterable<ColumnName> {
 			return columnName.toCql();
 		}
 
-		/* (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
 		@Override
 		public String toString() {
 			return getAlias().map(cqlIdentifier -> String.format("%s AS %s", getExpression(), cqlIdentifier))
 					.orElseGet(this::getExpression);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
 		@Override
 		public boolean equals(Object o) {
 			if (this == o) {
@@ -404,10 +382,6 @@ public class Columns implements Iterable<ColumnName> {
 			return ObjectUtils.nullSafeEquals(alias, that.alias);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
 		@Override
 		public int hashCode() {
 			int result = ObjectUtils.nullSafeHashCode(columnName);
@@ -477,9 +451,6 @@ public class Columns implements Iterable<ColumnName> {
 			return params;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.query.Columns.Column#toString()
-		 */
 		@Override
 		public String toString() {
 
@@ -490,10 +461,6 @@ public class Columns implements Iterable<ColumnName> {
 					.orElseGet(() -> String.format("%s(%s)", getExpression(), parameters));
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
 		@Override
 		public boolean equals(Object o) {
 			if (this == o) {
@@ -512,10 +479,6 @@ public class Columns implements Iterable<ColumnName> {
 			return ObjectUtils.nullSafeEquals(alias, that.alias);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#toString()
-		 */
 		@Override
 		public int hashCode() {
 			int result = ObjectUtils.nullSafeHashCode(expression);
