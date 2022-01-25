@@ -1,3 +1,9 @@
+def p = [:]
+node {
+    checkout scm
+    p = readProperties interpolate: true, file: 'ci/pipeline.properties'
+}
+
 pipeline {
 	agent none
 
@@ -16,14 +22,17 @@ pipeline {
 			parallel {
 				stage('Publish JDK 17 + Cassandra 3.11') {
 					when {
-						changeset "ci/openjdk17-8-cassandra-3.11/**"
+					    anyOf {
+						    changeset "ci/openjdk17-8-cassandra-3.11/**"
+						    changeset "ci/pipeline.properties"
+						}
 					}
 					agent { label 'data' }
 					options { timeout(time: 30, unit: 'MINUTES') }
 
 					steps {
 						script {
-							def image = docker.build("springci/spring-data-openjdk17-8-cassandra-3.11", "ci/openjdk17-8-cassandra-3.11/")
+							def image = docker.build("springci/spring-data-with-cassandra-3.11:${p['java.lts.tag']}", "--build-arg BASE=${p['docker.java.lts.image']} --build-arg CASSANDRA=${p['docker.cassandra.3.version']} ci/openjdk17-8-cassandra-3.11/")
 							docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
 								image.push()
 							}
@@ -81,7 +90,7 @@ pipeline {
 			steps {
 				script {
 					docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
-						docker.image('openjdk:17-bullseye').inside('-v $HOME:/tmp/jenkins-home') {
+						docker.image(p['docker.java.main.image']).inside(p['docker.java.inside.basic']) {
 							sh 'mkdir -p /tmp/jenkins-home'
 							sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -s settings.xml -Pci,artifactory ' +
 									'-Dartifactory.server=https://repo.spring.io ' +
