@@ -15,7 +15,7 @@ RUN set -eux; \
 		useradd -d /home/jenkins-docker -m -u 1001 -U jenkins-docker;
 
 RUN set -eux; \
-	BINARY_URL='https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u292-b10/OpenJDK8U-jdk_x64_linux_hotspot_8u292b10.tar.gz'; \
+	BINARY_URL='https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u322-b06/OpenJDK8U-jdk_x64_linux_hotspot_8u322b06.tar.gz'; \
 	curl -LfsSo /tmp/openjdk.tar.gz ${BINARY_URL}; \
 		mkdir -p /opt/java/openjdk8; \
 		cd /opt/java/openjdk8; \

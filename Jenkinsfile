@@ -23,8 +23,8 @@ pipeline {
 				stage('Publish JDK (main) + Cassandra 3.11') {
 					when {
 					    anyOf {
-						    changeset "ci/openjdk8-cassandra-3.11/**"
-						    changeset "ci/pipeline.properties"
+							changeset "ci/openjdk8-cassandra-3.11/**"
+							changeset "ci/pipeline.properties"
 						}
 					}
 					agent { label 'data' }
@@ -33,7 +33,7 @@ pipeline {
 					steps {
 						script {
 							def image = docker.build("springci/spring-data-with-cassandra-3.11:${p['java.main.tag']}", "--build-arg BASE=${p['docker.java.main.image']} --build-arg CASSANDRA=${p['docker.cassandra.3.version']} ci/openjdk8-cassandra-3.11/")
-							docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
+							docker.withRegistry(p['docker.registry'], p['docker.credentials']) {
 								image.push()
 							}
 						}
@@ -42,8 +42,8 @@ pipeline {
 				stage('Publish JDK (next) + Cassandra 3.11') {
 					when {
 					    anyOf {
-						    changeset "ci/openjdk11-8-cassandra-3.11/**"
-						    changeset "ci/pipeline.properties"
+							changeset "ci/openjdk11-8-cassandra-3.11/**"
+							changeset "ci/pipeline.properties"
                         }
 					}
 					agent { label 'data' }
@@ -52,7 +52,7 @@ pipeline {
 					steps {
 						script {
 							def image = docker.build("springci/spring-data-with-cassandra-3.11:${p['java.next.tag']}", "--build-arg BASE=${p['docker.java.next.image']} --build-arg CASSANDRA=${p['docker.cassandra.3.version']} ci/openjdk11-8-cassandra-3.11/")
-							docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
+							docker.withRegistry(p['docker.registry'], p['docker.credentials']) {
 								image.push()
 							}
 						}
@@ -71,7 +71,7 @@ pipeline {
 					steps {
 						script {
 							def image = docker.build("springci/spring-data-with-cassandra-3.11:${p['java.lts.tag']}", "--build-arg BASE=${p['docker.java.lts.image']} --build-arg CASSANDRA=${p['docker.cassandra.3.version']} ci/openjdk17-8-cassandra-3.11/")
-							docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
+							docker.withRegistry(p['docker.registry'], p['docker.credentials']) {
 								image.push()
 							}
 						}
@@ -97,7 +97,7 @@ pipeline {
 			}
 			steps {
 				script {
-					docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
+					docker.withRegistry(p['docker.registry'], p['docker.credentials']) {
 						docker.image("springci/spring-data-with-cassandra-3.11:${p['java.main.tag']}").inside(p['docker.java.inside.basic']) {
 							sh 'mkdir -p /tmp/jenkins-home'
 							sh 'JAVA_HOME=/opt/java/openjdk /opt/cassandra/bin/cassandra -R &'
@@ -127,7 +127,7 @@ pipeline {
 					}
 					steps {
 						script {
-							docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
+							docker.withRegistry(p['docker.registry'], p['docker.credentials']) {
 								docker.image("springci/spring-data-with-cassandra-3.11:${p['java.next.tag']}").inside(p['docker.java.inside.basic']) {
 									sh 'mkdir -p /tmp/jenkins-home'
 									sh 'JAVA_HOME=/opt/java/openjdk8 /opt/cassandra/bin/cassandra -R &'
@@ -147,7 +147,7 @@ pipeline {
 					}
 					steps {
 						script {
-							docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
+							docker.withRegistry(p['docker.registry'], p['docker.credentials']) {
 								docker.image("springci/spring-data-with-cassandra-3.11:${p['java.lts.tag']}").inside(p['docker.java.inside.basic']) {
 									sh 'mkdir -p /tmp/jenkins-home'
 									sh 'JAVA_HOME=/opt/java/openjdk8 /opt/cassandra/bin/cassandra -R &'
@@ -159,6 +159,7 @@ pipeline {
 				}
 			}
 		}
+
 		stage('Release to artifactory') {
 			when {
 				beforeAgent(true)
@@ -178,7 +179,7 @@ pipeline {
 
 			steps {
 				script {
-					docker.withRegistry('', 'hub.docker.com-springbuildmaster') {
+					docker.withRegistry(p['docker.registry'], p['docker.credentials']) {
 						docker.image(p['docker.java.main.image']).inside(p['docker.java.inside.basic']) {
 							sh 'mkdir -p /tmp/jenkins-home'
 							sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -s settings.xml -Pci,artifactory ' +
