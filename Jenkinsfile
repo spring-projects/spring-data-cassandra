@@ -98,7 +98,7 @@ pipeline {
 			steps {
 				script {
 					docker.withRegistry(p['docker.registry'], p['docker.credentials']) {
-						docker.image("springci/spring-data-with-cassandra-3.11:${p['java.main.tag']}").inside(p['docker.java.inside.basic']) {
+						docker.image("harbor-repo.vmware.com/dockerhub-proxy-cache/springci/spring-data-with-cassandra-3.11:${p['java.main.tag']}").inside(p['docker.java.inside.basic']) {
 							sh 'mkdir -p /tmp/jenkins-home'
 							sh 'JAVA_HOME=/opt/java/openjdk /opt/cassandra/bin/cassandra -R &'
 							sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -s settings.xml -Pci,external-cassandra clean dependency:list verify -Dsort -U -B'
@@ -128,7 +128,7 @@ pipeline {
 					steps {
 						script {
 							docker.withRegistry(p['docker.registry'], p['docker.credentials']) {
-								docker.image("springci/spring-data-with-cassandra-3.11:${p['java.next.tag']}").inside(p['docker.java.inside.basic']) {
+								docker.image("harbor-repo.vmware.com/dockerhub-proxy-cache/springci/spring-data-with-cassandra-3.11:${p['java.next.tag']}").inside(p['docker.java.inside.basic']) {
 									sh 'mkdir -p /tmp/jenkins-home'
 									sh 'JAVA_HOME=/opt/java/openjdk8 /opt/cassandra/bin/cassandra -R &'
 									sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -s settings.xml -Pci,external-cassandra,java11 clean dependency:list verify -Dsort -U -B'
@@ -148,7 +148,7 @@ pipeline {
 					steps {
 						script {
 							docker.withRegistry(p['docker.registry'], p['docker.credentials']) {
-								docker.image("springci/spring-data-with-cassandra-3.11:${p['java.lts.tag']}").inside(p['docker.java.inside.basic']) {
+								docker.image("harbor-repo.vmware.com/dockerhub-proxy-cache/springci/spring-data-with-cassandra-3.11:${p['java.lts.tag']}").inside(p['docker.java.inside.basic']) {
 									sh 'mkdir -p /tmp/jenkins-home'
 									sh 'JAVA_HOME=/opt/java/openjdk8 /opt/cassandra/bin/cassandra -R &'
 									sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -s settings.xml -Pci,external-cassandra,java11 clean dependency:list verify -Dsort -U -B'
