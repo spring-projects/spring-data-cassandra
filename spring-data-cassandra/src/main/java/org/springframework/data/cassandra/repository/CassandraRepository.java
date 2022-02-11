@@ -24,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Persistable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.ListCrudRepository;
 import org.springframework.data.repository.NoRepositoryBean;
 
 /**
@@ -40,13 +41,7 @@ import org.springframework.data.repository.NoRepositoryBean;
  * @see MapIdCassandraRepository
  */
 @NoRepositoryBean
-public interface CassandraRepository<T, ID> extends CrudRepository<T, ID> {
-
-	@Override
-	<S extends T> List<S> saveAll(Iterable<S> entites);
-
-	@Override
-	List<T> findAll();
+public interface CassandraRepository<T, ID> extends ListCrudRepository<T, ID> {
 
 	/**
 	 * {@inheritDoc}
