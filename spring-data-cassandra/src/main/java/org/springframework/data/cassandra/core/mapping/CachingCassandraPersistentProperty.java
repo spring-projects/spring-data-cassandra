@@ -15,6 +15,12 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedType;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.springframework.data.cassandra.core.cql.Ordering;
 import org.springframework.data.mapping.model.Property;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
@@ -36,6 +42,7 @@ public class CachingCassandraPersistentProperty extends BasicCassandraPersistent
 	private final boolean isPrimaryKeyColumn;
 	private final boolean isEmbedded;
 	private final boolean isStaticColumn;
+	private final Map<Class<? extends Annotation>, Optional<AnnotatedType>> findAnnotatedTypeCache = new ConcurrentHashMap<>();
 
 	public CachingCassandraPersistentProperty(Property property, CassandraPersistentEntity<?> owner,
 			SimpleTypeHolder simpleTypeHolder) {
@@ -105,5 +112,14 @@ public class CachingCassandraPersistentProperty extends BasicCassandraPersistent
 	@Override
 	public boolean isEmbedded() {
 		return isEmbedded;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentProperty#findAnnotatedType(Class)
+	 */
+	@Override
+	public AnnotatedType findAnnotatedType(Class<? extends Annotation> annotationType) {
+		return findAnnotatedTypeCache
+				.computeIfAbsent(annotationType, key -> Optional.ofNullable(super.findAnnotatedType(key))).orElse(null);
 	}
 }

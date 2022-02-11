@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 import java.util.stream.StreamSupport;
 
@@ -76,6 +77,8 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 	private final UserTypeResolver userTypeResolver;
 	private final Supplier<CodecRegistry> codecRegistry;
 	private final Supplier<CustomConversions> customConversions;
+	private final Map<CassandraPersistentProperty, CassandraColumnType> columnTypeCache = new ConcurrentHashMap<>();
+	private final Map<TypeInformation<?>, CassandraColumnType> typeInformationColumnTypeCache = new ConcurrentHashMap<>();
 
 	/**
 	 * Creates a new {@link DefaultColumnTypeResolver}.
@@ -99,6 +102,18 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 	public CassandraColumnType resolve(CassandraPersistentProperty property) {
 
 		Assert.notNull(property, "Property must not be null");
+
+		CassandraColumnType cassandraColumnType = columnTypeCache.get(property);
+		if (cassandraColumnType == null) {
+			// avoid recursive update
+			cassandraColumnType = doResolve(property);
+			columnTypeCache.put(property, cassandraColumnType);
+		}
+
+		return cassandraColumnType;
+	}
+
+	private CassandraColumnType doResolve(CassandraPersistentProperty property) {
 
 		if (property.isAnnotationPresent(CassandraType.class)) {
 
@@ -169,7 +184,17 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 	 */
 	@Override
 	public CassandraColumnType resolve(TypeInformation<?> typeInformation) {
-		return resolve(typeInformation, FrozenIndicator.NOT_FROZEN);
+
+		Assert.notNull(typeInformation, "TypeInformation must not be null");
+
+		CassandraColumnType cassandraColumnType = typeInformationColumnTypeCache.get(typeInformation);
+		if (cassandraColumnType == null) {
+			// avoid recursive update
+			cassandraColumnType = resolve(typeInformation, FrozenIndicator.NOT_FROZEN);
+			typeInformationColumnTypeCache.put(typeInformation, cassandraColumnType);
+		}
+
+		return cassandraColumnType;
 	}
 
 	private CassandraColumnType resolve(TypeInformation<?> typeInformation, FrozenIndicator frozen) {
