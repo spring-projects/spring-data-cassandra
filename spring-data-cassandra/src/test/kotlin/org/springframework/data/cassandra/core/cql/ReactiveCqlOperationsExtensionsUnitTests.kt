@@ -63,7 +63,13 @@ class ReactiveCqlOperationsExtensionsUnitTests {
 	fun `queryForObject(String, RowMapper, array) extension should call its Java counterpart`() {
 
 		operations.queryForObject("", 3) { rs: Row, _: Int -> rs.getInt(1) }
-		verify { operations.queryForObject(eq(""), any<RowMapper<Int>>(), eq(3)) }
+		verify {
+			operations.queryForObject(
+				eq(""),
+				any<RowMapper<Int>>(),
+				eq(arrayOf(3))
+			)
+		}
 	}
 
 	@Test // DATACASS-484
