@@ -1063,7 +1063,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private Object getPotentiallyConvertedSimpleRead(Object value, @Nullable Class<?> target) {
 
-		if (value == null || target == null || target.isAssignableFrom(value.getClass())) {
+		if (value == null || target == null
+				|| ClassUtils.resolvePrimitiveIfNecessary(target).isAssignableFrom(value.getClass())) {
 			return value;
 		}
 

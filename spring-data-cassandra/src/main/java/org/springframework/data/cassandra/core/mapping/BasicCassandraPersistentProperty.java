@@ -114,7 +114,9 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 			this.columnName = determineColumnName();
 		}
 
-		Assert.state(this.columnName != null, () -> String.format("Cannot determine column name for %s", this));
+		if (columnName == null) {
+			throw new IllegalStateException(String.format("Cannot determine column name for %s", this));
+		}
 
 		return this.columnName;
 	}
