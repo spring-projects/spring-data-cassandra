@@ -56,7 +56,7 @@ class QueryOptionsUnitTests {
 		assertThat(queryOptions.getKeyspace()).isEqualTo(CqlIdentifier.fromCql("ks1"));
 		assertThat(queryOptions.isIdempotent()).isEqualTo(true);
 		assertThat(queryOptions.getRoutingKeyspace()).isEqualTo(CqlIdentifier.fromCql("rksl"));
-		assertThat(queryOptions.getRoutingKey()).isNotNull();
+		assertThat(queryOptions.getRoutingKey()).isEqualTo(ByteBuffer.allocate(1));
 	}
 
 	@Test // DATACASS-56
@@ -84,6 +84,6 @@ class QueryOptionsUnitTests {
 		assertThat(mutated.getKeyspace()).isEqualTo(CqlIdentifier.fromCql("ks1"));
 		assertThat(mutated.isIdempotent()).isEqualTo(true);
 		assertThat(mutated.getRoutingKeyspace()).isEqualTo(CqlIdentifier.fromCql("rksl"));
-		assertThat(mutated.getRoutingKey()).isNotNull();
+		assertThat(mutated.getRoutingKey()).isEqualTo(ByteBuffer.allocate(1));
 	}
 }

@@ -62,7 +62,7 @@ class WriteOptionsUnitTests {
 		assertThat(writeOptions.isIdempotent()).isEqualTo(true);
 		assertThat(writeOptions.getRoutingKeyspace()).isEqualTo(
 				CqlIdentifier.fromCql("routing_keyspace"));
-		assertThat(writeOptions.getRoutingKey()).isNotNull();
+		assertThat(writeOptions.getRoutingKey()).isEqualTo(ByteBuffer.allocate(1));
 	}
 
 	@Test // DATACASS-202
@@ -104,6 +104,6 @@ class WriteOptionsUnitTests {
 		assertThat(writeOptions.isIdempotent()).isEqualTo(true);
 		assertThat(writeOptions.getRoutingKeyspace()).isEqualTo(
 				CqlIdentifier.fromCql("routing_keyspace"));
-		assertThat(writeOptions.getRoutingKey()).isNotNull();
+		assertThat(writeOptions.getRoutingKey()).isEqualTo(ByteBuffer.allocate(1));
 	}
 }
