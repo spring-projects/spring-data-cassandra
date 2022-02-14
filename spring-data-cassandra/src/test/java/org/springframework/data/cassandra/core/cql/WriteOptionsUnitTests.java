@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2021 the original author or authors.
+ * Copyright 2016-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.core.cql;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -31,6 +32,7 @@ import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
  * Unit tests for {@link WriteOptions}.
  *
  * @author Mark Paluch
+ * @author Sam Lightfoot
  */
 class WriteOptionsUnitTests {
 
@@ -44,7 +46,11 @@ class WriteOptionsUnitTests {
 				.readTimeout(1) //
 				.pageSize(10) //
 				.withTracing() //
-				.keyspace(CqlIdentifier.fromCql("my_keyspace")).build();
+				.keyspace(CqlIdentifier.fromCql("my_keyspace"))
+				.idempotent(true)
+				.routingKeyspace(CqlIdentifier.fromCql("routing_keyspace"))
+				.routingKey(ByteBuffer.allocate(1))
+				.build();
 
 		assertThat(writeOptions.getTtl()).isEqualTo(Duration.ofSeconds(123));
 		assertThat(writeOptions.getTimestamp()).isEqualTo(1519000753);
@@ -53,6 +59,10 @@ class WriteOptionsUnitTests {
 		assertThat(writeOptions.getPageSize()).isEqualTo(10);
 		assertThat(writeOptions.getTracing()).isTrue();
 		assertThat(writeOptions.getKeyspace()).isEqualTo(CqlIdentifier.fromCql("my_keyspace"));
+		assertThat(writeOptions.isIdempotent()).isEqualTo(true);
+		assertThat(writeOptions.getRoutingKeyspace()).isEqualTo(
+				CqlIdentifier.fromCql("routing_keyspace"));
+		assertThat(writeOptions.getRoutingKey()).isNotNull();
 	}
 
 	@Test // DATACASS-202
@@ -76,6 +86,9 @@ class WriteOptionsUnitTests {
 				.readTimeout(1) //
 				.pageSize(10) //
 				.withTracing() //
+				.idempotent(true)
+				.routingKeyspace(CqlIdentifier.fromCql("routing_keyspace"))
+				.routingKey(ByteBuffer.allocate(1))
 				.build();
 
 		WriteOptions mutated = writeOptions.mutate().timeout(Duration.ofMillis(100)).build();
@@ -88,5 +101,9 @@ class WriteOptionsUnitTests {
 		assertThat(mutated.getTimeout()).isEqualTo(Duration.ofMillis(100));
 		assertThat(mutated.getPageSize()).isEqualTo(10);
 		assertThat(mutated.getTracing()).isTrue();
+		assertThat(writeOptions.isIdempotent()).isEqualTo(true);
+		assertThat(writeOptions.getRoutingKeyspace()).isEqualTo(
+				CqlIdentifier.fromCql("routing_keyspace"));
+		assertThat(writeOptions.getRoutingKey()).isNotNull();
 	}
 }

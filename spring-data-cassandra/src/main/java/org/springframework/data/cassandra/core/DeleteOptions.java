@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 the original author or authors.
+ * Copyright 2019-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.core;
 
+import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
@@ -35,6 +36,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  *
  * @author Mark Paluch
  * @author Tomasz Lelek
+ * @author Sam Lightfoot
  * @since 2.2
  */
 public class DeleteOptions extends WriteOptions {
@@ -48,10 +50,11 @@ public class DeleteOptions extends WriteOptions {
 	private DeleteOptions(@Nullable ConsistencyLevel consistencyLevel, ExecutionProfileResolver executionProfileResolver,
 			@Nullable CqlIdentifier keyspace, @Nullable Integer pageSize, @Nullable ConsistencyLevel serialConsistencyLevel,
 			Duration timeout, Duration ttl, @Nullable Long timestamp, @Nullable Boolean tracing, boolean ifExists,
-			@Nullable Filter ifCondition) {
+			@Nullable Filter ifCondition, @Nullable Boolean idempotent, @Nullable CqlIdentifier routingKeyspace,
+			@Nullable ByteBuffer routingKey) {
 
 		super(consistencyLevel, executionProfileResolver, keyspace, pageSize, serialConsistencyLevel, timeout, ttl,
-				timestamp, tracing);
+				timestamp, tracing, idempotent, routingKeyspace, routingKey);
 
 		this.ifExists = ifExists;
 		this.ifCondition = ifCondition;
@@ -290,6 +293,16 @@ public class DeleteOptions extends WriteOptions {
 		}
 
 		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#idempotent(boolean)
+		 */
+		@Override
+		public DeleteOptionsBuilder idempotent(boolean idempotent) {
+
+			super.idempotent(idempotent);
+			return this;
+		}
+
+		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#ttl(int)
 		 */
 		public DeleteOptionsBuilder ttl(int ttl) {
@@ -318,6 +331,25 @@ public class DeleteOptions extends WriteOptions {
 			return this;
 		}
 
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#routingKeyspace(com.datastax.oss.driver.api.core.CqlIdentifier)
+		 */
+		@Override
+		public DeleteOptionsBuilder routingKeyspace(CqlIdentifier routingKeyspace) {
+
+			super.routingKeyspace(routingKeyspace);
+			return this;
+		}
+
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#routingKeyspace(java.nio.ByteBuffer)
+		 */
+		@Override
+		public DeleteOptionsBuilder routingKey(ByteBuffer routingKey) {
+
+			super.routingKey(routingKey);
+			return this;
+		}
 
 		/**
 		 * Use light-weight transactions by applying {@code IF EXISTS}. Replaces a previous {@link #ifCondition(Filter)}.
@@ -382,7 +414,7 @@ public class DeleteOptions extends WriteOptions {
 
 			return new DeleteOptions(this.consistencyLevel, this.executionProfileResolver, this.keyspace, this.pageSize,
 					this.serialConsistencyLevel, this.timeout, this.ttl, this.timestamp, this.tracing, this.ifExists,
-					this.ifCondition);
+					this.ifCondition, this.idempotent, this.routingKeyspace, this.routingKey);
 		}
 	}
 }

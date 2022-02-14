@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2021 the original author or authors.
+ * Copyright 2013-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
+import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
@@ -34,6 +35,7 @@ import com.datastax.oss.driver.api.core.config.DriverExecutionProfile;
  * @author David Webb
  * @author Mark Paluch
  * @author Tomasz Lelek
+ * @author Sam Lightfoot
  */
 public class QueryOptions {
 
@@ -53,9 +55,16 @@ public class QueryOptions {
 
 	private final @Nullable Boolean tracing;
 
+	private final @Nullable Boolean idempotent;
+
+	private final @Nullable CqlIdentifier routingKeyspace;
+
+	private final @Nullable ByteBuffer routingKey;
+
 	protected QueryOptions(@Nullable ConsistencyLevel consistencyLevel, ExecutionProfileResolver executionProfileResolver,
 			@Nullable CqlIdentifier keyspace, @Nullable Integer pageSize, @Nullable ConsistencyLevel serialConsistencyLevel,
-			Duration timeout, @Nullable Boolean tracing) {
+			Duration timeout, @Nullable Boolean tracing, @Nullable Boolean idempotent, @Nullable CqlIdentifier routingKeyspace,
+			@Nullable ByteBuffer routingKey) {
 
 		this.consistencyLevel = consistencyLevel;
 		this.executionProfileResolver = executionProfileResolver;
@@ -64,6 +73,9 @@ public class QueryOptions {
 		this.serialConsistencyLevel = serialConsistencyLevel;
 		this.timeout = timeout;
 		this.tracing = tracing;
+		this.idempotent = idempotent;
+		this.routingKey = routingKey;
+		this.routingKeyspace = routingKeyspace;
 	}
 
 	/**
@@ -161,6 +173,16 @@ public class QueryOptions {
 	}
 
 	/**
+	 * @return whether query is idempotent. May be {@literal null} if not set.
+	 * @since 3.3.2
+	 * @see com.datastax.oss.driver.api.core.cql.Statement#setIdempotent(Boolean)
+	 */
+	@Nullable
+	protected Boolean isIdempotent() {
+		return this.idempotent;
+	}
+
+	/**
 	 * @return the keyspace associated with the query. If it is {@literal null}, it means that either keyspace configured
 	 *         on the statement or from the {@link CqlSession} will be used.
 	 * @since 3.1
@@ -168,6 +190,26 @@ public class QueryOptions {
 	@Nullable
 	public CqlIdentifier getKeyspace() {
 		return keyspace;
+	}
+
+	/**
+	 * @return the keyspace used for token-aware routing. May be {@literal null} if token-aware routing is disabled.
+	 * @since 3.3.2
+	 * @see com.datastax.oss.driver.api.core.cql.Statement#setRoutingKeyspace(CqlIdentifier)
+	 */
+	@Nullable
+	protected CqlIdentifier getRoutingKeyspace() {
+		return this.routingKeyspace;
+	}
+
+	/**
+	 * @return the key used for token-aware routing. May be {@literal null} if token-aware routing is disabled.
+	 * @since 3.3.2
+	 * @see com.datastax.oss.driver.api.core.cql.Statement#setRoutingKey(ByteBuffer)
+	 */
+	@Nullable
+	protected ByteBuffer getRoutingKey() {
+		return this.routingKey;
 	}
 
 	/*
@@ -211,6 +253,18 @@ public class QueryOptions {
 			return false;
 		}
 
+		if (!ObjectUtils.nullSafeEquals(idempotent, options.idempotent)) {
+			return false;
+		}
+
+		if (!ObjectUtils.nullSafeEquals(routingKeyspace, options.routingKeyspace)) {
+			return false;
+		}
+
+		if (!ObjectUtils.nullSafeEquals(routingKey, options.routingKey)) {
+			return false;
+		}
+
 		return ObjectUtils.nullSafeEquals(keyspace, options.keyspace);
 	}
 
@@ -226,7 +280,10 @@ public class QueryOptions {
 		result = 31 * result + ObjectUtils.nullSafeHashCode(serialConsistencyLevel);
 		result = 31 * result + ObjectUtils.nullSafeHashCode(timeout);
 		result = 31 * result + ObjectUtils.nullSafeHashCode(tracing);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(idempotent);
 		result = 31 * result + ObjectUtils.nullSafeHashCode(keyspace);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(routingKeyspace);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(routingKey);
 		return result;
 	}
 
@@ -244,6 +301,8 @@ public class QueryOptions {
 
 		protected @Nullable CqlIdentifier keyspace;
 
+		protected @Nullable CqlIdentifier routingKeyspace;
+
 		protected @Nullable Integer pageSize;
 
 		protected @Nullable ConsistencyLevel serialConsistencyLevel;
@@ -251,6 +310,10 @@ public class QueryOptions {
 		protected Duration timeout = Duration.ofMillis(-1);
 
 		protected @Nullable Boolean tracing;
+
+		protected @Nullable Boolean idempotent;
+
+		protected @Nullable ByteBuffer routingKey;
 
 		QueryOptionsBuilder() {}
 
@@ -263,6 +326,9 @@ public class QueryOptions {
 			this.serialConsistencyLevel = queryOptions.serialConsistencyLevel;
 			this.timeout = queryOptions.timeout;
 			this.tracing = queryOptions.tracing;
+			this.idempotent = queryOptions.idempotent;
+			this.routingKeyspace = queryOptions.routingKeyspace;
+			this.routingKey = queryOptions.routingKey;
 		}
 
 		/**
@@ -472,13 +538,53 @@ public class QueryOptions {
 		}
 
 		/**
+		 * Set query execution idempotency.
+		 *
+		 * @param idempotent {@literal true} to mark the query as idempotent.
+		 * @return {@code this} {@link QueryOptionsBuilder}
+		 */
+		public QueryOptionsBuilder idempotent(boolean idempotent) {
+
+			this.idempotent = idempotent;
+
+			return this;
+		}
+
+		/**
+		 * Set query routing keyspace.
+		 *
+		 * @param routingKeyspace the routing keyspace to use for token-aware routing. Can be {@literal null}.
+		 * @return {@code this} {@link QueryOptionsBuilder}
+		 */
+		public QueryOptionsBuilder routingKeyspace(CqlIdentifier routingKeyspace) {
+
+			this.routingKeyspace = routingKeyspace;
+
+			return this;
+		}
+
+		/**
+		 * Set query routing key.
+		 *
+		 * @param routingKey the routing key to use for token-aware routing. Can be {@literal null}.
+		 * @return {@code this} {@link QueryOptionsBuilder}
+		 */
+		public QueryOptionsBuilder routingKey(ByteBuffer routingKey) {
+
+			this.routingKey = routingKey;
+
+			return this;
+		}
+
+		/**
 		 * Builds a new {@link QueryOptions} with the configured values.
 		 *
 		 * @return a new {@link QueryOptions} with the configured values
 		 */
 		public QueryOptions build() {
-			return new QueryOptions(this.consistencyLevel, this.executionProfileResolver, this.keyspace, this.pageSize,
-					this.serialConsistencyLevel, this.timeout, this.tracing);
+			return new QueryOptions(this.consistencyLevel, this.executionProfileResolver, this.keyspace,
+					this.pageSize, this.serialConsistencyLevel, this.timeout, this.tracing, this.idempotent,
+					this.routingKeyspace, this.routingKey);
 		}
 	}
 }
