@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2021 the original author or authors.
+ * Copyright 2013-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
+import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
@@ -34,6 +35,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * @author Mark Paluch
  * @author Lukasz Antoniak
  * @author Tomasz Lelek
+ * @author Sam Lightfoot
  * @see QueryOptions
  */
 public class WriteOptions extends QueryOptions {
@@ -46,10 +48,10 @@ public class WriteOptions extends QueryOptions {
 
 	protected WriteOptions(@Nullable ConsistencyLevel consistencyLevel, ExecutionProfileResolver executionProfileResolver,
 			@Nullable CqlIdentifier keyspace, @Nullable Integer pageSize, @Nullable ConsistencyLevel serialConsistencyLevel,
-			Duration timeout, Duration ttl,
-			@Nullable Long timestamp, @Nullable Boolean tracing) {
+			Duration timeout, Duration ttl, @Nullable Long timestamp, @Nullable Boolean tracing, @Nullable Boolean idempotent,
+			@Nullable CqlIdentifier routingKeyspace, @Nullable ByteBuffer routingKey) {
 
-		super(consistencyLevel, executionProfileResolver, keyspace, pageSize, serialConsistencyLevel, timeout, tracing);
+		super(consistencyLevel, executionProfileResolver, keyspace, pageSize, serialConsistencyLevel, timeout, tracing, idempotent, routingKeyspace, routingKey);
 
 		this.ttl = ttl;
 		this.timestamp = timestamp;
@@ -241,6 +243,27 @@ public class WriteOptions extends QueryOptions {
 			return this;
 		}
 
+		@Override
+		public WriteOptionsBuilder idempotent(boolean idempotent) {
+
+			super.idempotent(idempotent);
+			return this;
+		}
+
+		@Override
+		public WriteOptionsBuilder routingKeyspace(CqlIdentifier routingKeyspace) {
+
+			super.routingKeyspace(routingKeyspace);
+			return this;
+		}
+
+		@Override
+		public WriteOptionsBuilder routingKey(ByteBuffer routingKey) {
+
+			super.routingKey(routingKey);
+			return this;
+		}
+
 		/**
 		 * Sets the time to live in seconds for write operations.
 		 *
@@ -313,7 +336,8 @@ public class WriteOptions extends QueryOptions {
 		 */
 		public WriteOptions build() {
 			return new WriteOptions(this.consistencyLevel, this.executionProfileResolver, this.keyspace, this.pageSize,
-					this.serialConsistencyLevel, this.timeout, this.ttl, this.timestamp, this.tracing);
+					this.serialConsistencyLevel, this.timeout, this.ttl, this.timestamp, this.tracing, this.idempotent,
+					this.routingKeyspace, this.routingKey);
 		}
 	}
 }

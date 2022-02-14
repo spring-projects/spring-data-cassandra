@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 the original author or authors.
+ * Copyright 2017-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.core;
 
+import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
@@ -36,6 +37,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * @author Mark Paluch
  * @author Lukasz Antoniak
  * @author Tomasz Lelek
+ * @author Sam Lightfoot
  * @since 2.0
  */
 public class UpdateOptions extends WriteOptions {
@@ -49,10 +51,11 @@ public class UpdateOptions extends WriteOptions {
 	private UpdateOptions(@Nullable ConsistencyLevel consistencyLevel, ExecutionProfileResolver executionProfileResolver,
 			@Nullable CqlIdentifier keyspace, @Nullable Integer pageSize, @Nullable ConsistencyLevel serialConsistencyLevel,
 			Duration timeout, Duration ttl, @Nullable Long timestamp, @Nullable Boolean tracing, boolean ifExists,
-			@Nullable Filter ifCondition) {
+			@Nullable Filter ifCondition, @Nullable Boolean idempotent, @Nullable CqlIdentifier routingKeyspace,
+			@Nullable ByteBuffer routingKey) {
 
 		super(consistencyLevel, executionProfileResolver, keyspace, pageSize, serialConsistencyLevel, timeout, ttl,
-				timestamp, tracing);
+				timestamp, tracing, idempotent, routingKeyspace, routingKey);
 
 		this.ifExists = ifExists;
 		this.ifCondition = ifCondition;
@@ -249,6 +252,13 @@ public class UpdateOptions extends WriteOptions {
 			return this;
 		}
 
+		@Override
+		public UpdateOptionsBuilder idempotent(boolean idempotent) {
+
+			super.idempotent(idempotent);
+			return this;
+		}
+
 		public UpdateOptionsBuilder ttl(int ttl) {
 
 			super.ttl(ttl);
@@ -266,6 +276,20 @@ public class UpdateOptions extends WriteOptions {
 		public UpdateOptionsBuilder timestamp(Instant timestamp) {
 
 			super.timestamp(timestamp);
+			return this;
+		}
+
+		@Override
+		public UpdateOptionsBuilder routingKeyspace(CqlIdentifier routingKeyspace) {
+
+			super.routingKeyspace(routingKeyspace);
+			return this;
+		}
+
+		@Override
+		public UpdateOptionsBuilder routingKey(ByteBuffer routingKey) {
+
+			super.routingKey(routingKey);
 			return this;
 		}
 
@@ -333,7 +357,7 @@ public class UpdateOptions extends WriteOptions {
 		public UpdateOptions build() {
 			return new UpdateOptions(this.consistencyLevel, this.executionProfileResolver, this.keyspace, this.pageSize,
 					this.serialConsistencyLevel, this.timeout, this.ttl, this.timestamp, this.tracing, this.ifExists,
-					this.ifCondition);
+					this.ifCondition, this.idempotent, this.routingKeyspace, this.routingKey);
 		}
 	}
 }

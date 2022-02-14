@@ -1,5 +1,5 @@
 /*
- *  Copyright 2016-2021 the original author or authors.
+ *  Copyright 2016-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.core.cql;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
@@ -38,6 +39,7 @@ import com.datastax.oss.driver.api.core.cql.SimpleStatement;
  * @author John Blum
  * @author Mark Paluch
  * @author Tomasz Lelek
+ * @author Sam Lightfoot
  */
 @ExtendWith(MockitoExtension.class)
 class QueryOptionsUtilUnitTests {
@@ -82,11 +84,17 @@ class QueryOptionsUtilUnitTests {
 		when(simpleStatement.setPageSize(anyInt())).thenReturn(simpleStatement);
 		when(simpleStatement.setTimeout(any())).thenReturn(simpleStatement);
 		when(simpleStatement.setTracing(anyBoolean())).thenReturn(simpleStatement);
+		when(simpleStatement.setIdempotent(anyBoolean())).thenReturn(simpleStatement);
+		when(simpleStatement.setRoutingKeyspace(any(CqlIdentifier.class))).thenReturn(simpleStatement);
+		when(simpleStatement.setRoutingKey(any(ByteBuffer.class))).thenReturn(simpleStatement);
 
 		QueryOptions queryOptions = QueryOptions.builder() //
 				.pageSize(10) //
 				.readTimeout(1, TimeUnit.MINUTES) //
 				.withTracing() //
+				.idempotent(true)
+				.routingKeyspace(CqlIdentifier.fromCql("routing_ks"))
+				.routingKey(ByteBuffer.allocate(1))
 				.build();
 
 		QueryOptionsUtil.addQueryOptions(simpleStatement, queryOptions);
@@ -94,6 +102,9 @@ class QueryOptionsUtilUnitTests {
 		verify(simpleStatement).setTimeout(Duration.ofMinutes(1));
 		verify(simpleStatement).setPageSize(10);
 		verify(simpleStatement).setTracing(true);
+		verify(simpleStatement).setIdempotent(true);
+		verify(simpleStatement).setRoutingKeyspace(CqlIdentifier.fromCql("routing_ks"));
+		verify(simpleStatement).setRoutingKey(ByteBuffer.allocate(1));
 	}
 
 	@Test // DATACASS-767

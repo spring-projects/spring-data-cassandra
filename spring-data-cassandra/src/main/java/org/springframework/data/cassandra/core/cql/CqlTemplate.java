@@ -529,7 +529,6 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		return hostMapper.mapHosts(getHosts());
 	}
 
-	/* (non-Javadoc) */
 	private Collection<Node> getHosts() {
 		return getCurrentSession().getMetadata().getNodes().values();
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 the original author or authors.
+ * Copyright 2017-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.core;
 
+import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
@@ -32,6 +33,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * @author Mark Paluch
  * @author Lukasz Antoniak
  * @author Tomasz Lelek
+ * @author Sam Lightfoot
  * @since 2.0
  */
 public class InsertOptions extends WriteOptions {
@@ -45,10 +47,11 @@ public class InsertOptions extends WriteOptions {
 	private InsertOptions(@Nullable ConsistencyLevel consistencyLevel, ExecutionProfileResolver executionProfileResolver,
 			@Nullable CqlIdentifier keyspace, @Nullable Integer pageSize, @Nullable ConsistencyLevel serialConsistencyLevel,
 			Duration timeout, Duration ttl, @Nullable Long timestamp, @Nullable Boolean tracing, boolean ifNotExists,
-			boolean insertNulls) {
+			boolean insertNulls, @Nullable Boolean idempotent, @Nullable CqlIdentifier routingKeyspace,
+			@Nullable ByteBuffer routingKey) {
 
 		super(consistencyLevel, executionProfileResolver, keyspace, pageSize, serialConsistencyLevel, timeout, ttl,
-				timestamp, tracing);
+				timestamp, tracing, idempotent, routingKeyspace, routingKey);
 
 		this.ifNotExists = ifNotExists;
 		this.insertNulls = insertNulls;
@@ -261,6 +264,27 @@ public class InsertOptions extends WriteOptions {
 			return this;
 		}
 
+		@Override
+		public InsertOptionsBuilder idempotent(boolean idempotent) {
+
+			super.idempotent(idempotent);
+			return this;
+		}
+
+		@Override
+		public InsertOptionsBuilder routingKeyspace(CqlIdentifier routingKeyspace) {
+
+			super.routingKeyspace(routingKeyspace);
+			return this;
+		}
+
+		@Override
+		public InsertOptionsBuilder routingKey(ByteBuffer routingKey) {
+
+			super.routingKey(routingKey);
+			return this;
+		}
+
 		/**
 		 * Use light-weight transactions by applying {@code IF NOT EXISTS}.
 		 *
@@ -319,7 +343,7 @@ public class InsertOptions extends WriteOptions {
 		public InsertOptions build() {
 			return new InsertOptions(this.consistencyLevel, this.executionProfileResolver, this.keyspace, this.pageSize,
 					this.serialConsistencyLevel, this.timeout, this.ttl, this.timestamp, this.tracing, this.ifNotExists,
-					this.insertNulls);
+					this.insertNulls, this.idempotent, this.routingKeyspace, this.routingKey);
 		}
 	}
 }
