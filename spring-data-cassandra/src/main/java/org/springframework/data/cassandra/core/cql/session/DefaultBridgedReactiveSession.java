@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 the original author or authors.
+ * Copyright 2017-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package org.springframework.data.cassandra.core.cql.session;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.publisher.MonoProcessor;
 import reactor.core.scheduler.Scheduler;
 
 import java.util.Collections;
@@ -33,6 +32,7 @@ import org.springframework.data.cassandra.ReactiveResultSet;
 import org.springframework.data.cassandra.ReactiveSession;
 import org.springframework.util.Assert;
 
+import com.datastax.oss.driver.api.core.AsyncPagingIterable;
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.context.DriverContext;
@@ -263,7 +263,13 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 		 */
 		@Override
 		public Flux<Row> rows() {
-			return getRows(Mono.just(this.resultSet));
+
+			return Mono.just(this.resultSet).expand(asyncResultSet -> {
+				if (asyncResultSet.hasMorePages()) {
+					return Mono.fromCompletionStage(asyncResultSet.fetchNextPage());
+				}
+				return Mono.empty();
+			}).flatMapIterable(AsyncPagingIterable::currentPage);
 		}
 
 		/* (non-Javadoc)
@@ -271,47 +277,9 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 		 */
 		@Override
 		public Flux<Row> availableRows() {
-			return toRows(this.resultSet);
-		}
-
-		private Flux<Row> getRows(Mono<AsyncResultSet> nextResults) {
-
-			return nextResults.flatMapMany(it -> {
-
-				Flux<Row> rows = toRows(it);
-
-				if (!it.hasMorePages()) {
-					return rows;
-				}
-
-				MonoProcessor<AsyncResultSet> processor = MonoProcessor.create();
-
-				return rows.doOnComplete(() -> fetchMore(it.fetchNextPage(), processor)).concatWith(getRows(processor));
-			});
-		}
-
-		static Flux<Row> toRows(AsyncResultSet resultSet) {
 			return Flux.fromIterable(resultSet.currentPage());
 		}
 
-		static void fetchMore(CompletionStage<AsyncResultSet> future, MonoProcessor<AsyncResultSet> sink) {
-
-			try {
-
-				future.whenComplete((rs, err) -> {
-
-					if (err != null) {
-						sink.onError(err);
-					} else {
-						sink.onNext(rs);
-						sink.onComplete();
-					}
-				});
-
-			} catch (Exception cause) {
-				sink.onError(cause);
-			}
-		}
 
 		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.ReactiveResultSet#getColumnDefinitions()
