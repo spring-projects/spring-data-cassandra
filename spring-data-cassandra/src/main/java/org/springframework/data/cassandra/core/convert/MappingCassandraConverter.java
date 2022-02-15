@@ -27,7 +27,6 @@ import java.util.function.Predicate;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.ApplicationContext;
@@ -40,15 +39,7 @@ import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.core.mapping.*;
 import org.springframework.data.cassandra.core.mapping.Embedded.OnEmpty;
 import org.springframework.data.convert.CustomConversions;
-import org.springframework.data.mapping.AccessOptions;
-import org.springframework.data.mapping.MappingException;
-import org.springframework.data.mapping.PersistentEntity;
-import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.mapping.PersistentPropertyAccessor;
-import org.springframework.data.mapping.PersistentPropertyPath;
-import org.springframework.data.mapping.PersistentPropertyPathAccessor;
-import org.springframework.data.mapping.PreferredConstructor;
-import org.springframework.data.mapping.PreferredConstructor.Parameter;
+import org.springframework.data.mapping.*;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
 import org.springframework.data.mapping.model.DefaultSpELExpressionEvaluator;
@@ -1446,10 +1437,9 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		@SuppressWarnings("unchecked")
 		public <T> T getParameterValue(Parameter<T, CassandraPersistentProperty> parameter) {
 
-			PreferredConstructor<CassandraPersistentEntity<?>, CassandraPersistentProperty> constructor = (PreferredConstructor<CassandraPersistentEntity<?>, CassandraPersistentProperty>) entity
-					.getPersistenceConstructor();
+			InstanceCreatorMetadata<CassandraPersistentProperty> creatorMetadata = entity.getInstanceCreatorMetadata();
 
-			if (constructor != null && constructor.isEnclosingClassParameter(parameter)) {
+			if (creatorMetadata != null && creatorMetadata.isParentParameter(parameter)) {
 				return (T) parent;
 			}
 
