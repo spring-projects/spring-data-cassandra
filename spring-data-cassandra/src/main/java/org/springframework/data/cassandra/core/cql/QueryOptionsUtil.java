@@ -57,11 +57,22 @@ public abstract class QueryOptionsUtil {
 		if (queryOptions.getConsistencyLevel() != null) {
 			statementToUse = statementToUse.setConsistencyLevel(queryOptions.getConsistencyLevel());
 		}
-
 		statementToUse = queryOptions.getExecutionProfileResolver().apply(statementToUse);
+
+		if (queryOptions.isIdempotent() != null) {
+			statementToUse = statementToUse.setIdempotent(queryOptions.isIdempotent());
+		}
 
 		if (queryOptions.getPageSize() != null) {
 			statementToUse = statementToUse.setPageSize(queryOptions.getPageSize());
+		}
+
+		if (queryOptions.getRoutingKeyspace() != null) {
+			statementToUse = statementToUse.setRoutingKeyspace(queryOptions.getRoutingKeyspace());
+		}
+
+		if (queryOptions.getRoutingKey() != null) {
+			statementToUse = statement.setRoutingKey(queryOptions.getRoutingKey());
 		}
 
 		if (queryOptions.getSerialConsistencyLevel() != null) {
@@ -77,18 +88,6 @@ public abstract class QueryOptionsUtil {
 			// is null since Statements are immutable and the call creates a new object.  Therefore keep the following
 			// statement wrapped in the conditional null check to avoid additional garbage and added GC pressure.
 			statementToUse = statementToUse.setTracing(Boolean.TRUE.equals(queryOptions.getTracing()));
-		}
-
-		if (queryOptions.isIdempotent() != null) {
-			statementToUse = statementToUse.setIdempotent(queryOptions.isIdempotent());
-		}
-
-		if (queryOptions.getRoutingKeyspace() != null) {
-			statementToUse = statementToUse.setRoutingKeyspace(queryOptions.getRoutingKeyspace());
-		}
-
-		if (queryOptions.getRoutingKey() != null) {
-			statementToUse = statement.setRoutingKey(queryOptions.getRoutingKey());
 		}
 
 		if (queryOptions.getKeyspace() != null) {

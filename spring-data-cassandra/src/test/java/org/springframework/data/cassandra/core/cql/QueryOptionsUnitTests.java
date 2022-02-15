@@ -34,7 +34,7 @@ import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
  */
 class QueryOptionsUnitTests {
 
-	@Test // DATACASS-202
+	@Test // DATACASS-202, GH-1220
 	void buildQueryOptions() {
 
 		QueryOptions queryOptions = QueryOptions.builder() //
@@ -43,9 +43,9 @@ class QueryOptionsUnitTests {
 				.pageSize(10) //
 				.tracing(true) //
 				.keyspace(CqlIdentifier.fromCql("ks1")) //
-				.idempotent(true)
-				.routingKeyspace(CqlIdentifier.fromCql("rksl"))
-				.routingKey(ByteBuffer.allocate(1))
+				.idempotent(true) //
+				.routingKeyspace(CqlIdentifier.fromCql("rksl")) //
+				.routingKey(ByteBuffer.allocate(1)) //
 				.build();
 
 		assertThat(queryOptions.getClass()).isEqualTo(QueryOptions.class);
@@ -59,7 +59,7 @@ class QueryOptionsUnitTests {
 		assertThat(queryOptions.getRoutingKey()).isEqualTo(ByteBuffer.allocate(1));
 	}
 
-	@Test // DATACASS-56
+	@Test // DATACASS-56, GH-1220
 	void buildQueryOptionsMutate() {
 
 		QueryOptions queryOptions = QueryOptions.builder() //
@@ -68,9 +68,9 @@ class QueryOptionsUnitTests {
 				.pageSize(10) //
 				.tracing(true) //
 				.keyspace(CqlIdentifier.fromCql("ks1")) //
-				.idempotent(true)
-				.routingKeyspace(CqlIdentifier.fromCql("rksl"))
-				.routingKey(ByteBuffer.allocate(1))
+				.idempotent(true) //
+				.routingKeyspace(CqlIdentifier.fromCql("rksl")) //
+				.routingKey(ByteBuffer.allocate(1)) //
 				.build();
 
 		QueryOptions mutated = queryOptions.mutate().timeout(Duration.ofSeconds(5)).build();

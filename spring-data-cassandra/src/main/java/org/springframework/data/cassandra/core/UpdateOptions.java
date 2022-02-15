@@ -44,21 +44,21 @@ public class UpdateOptions extends WriteOptions {
 
 	private static final UpdateOptions EMPTY = new UpdateOptionsBuilder().build();
 
-	private final boolean ifExists;
-
 	private final @Nullable Filter ifCondition;
 
+	private final boolean ifExists;
+
 	private UpdateOptions(@Nullable ConsistencyLevel consistencyLevel, ExecutionProfileResolver executionProfileResolver,
-			@Nullable CqlIdentifier keyspace, @Nullable Integer pageSize, @Nullable ConsistencyLevel serialConsistencyLevel,
-			Duration timeout, Duration ttl, @Nullable Long timestamp, @Nullable Boolean tracing, boolean ifExists,
-			@Nullable Filter ifCondition, @Nullable Boolean idempotent, @Nullable CqlIdentifier routingKeyspace,
-			@Nullable ByteBuffer routingKey) {
+			@Nullable Filter ifCondition, boolean ifExists, @Nullable Boolean idempotent, @Nullable CqlIdentifier keyspace,
+			@Nullable Integer pageSize, @Nullable CqlIdentifier routingKeyspace, @Nullable ByteBuffer routingKey,
+			@Nullable ConsistencyLevel serialConsistencyLevel, Duration timeout, Duration ttl, @Nullable Long timestamp,
+			@Nullable Boolean tracing) {
 
-		super(consistencyLevel, executionProfileResolver, keyspace, pageSize, serialConsistencyLevel, timeout, ttl,
-				timestamp, tracing, idempotent, routingKeyspace, routingKey);
+		super(consistencyLevel, executionProfileResolver, idempotent, keyspace, pageSize, routingKeyspace, routingKey,
+				serialConsistencyLevel, timeout, ttl, timestamp, tracing);
 
-		this.ifExists = ifExists;
 		this.ifCondition = ifCondition;
+		this.ifExists = ifExists;
 	}
 
 	/**
@@ -91,19 +91,19 @@ public class UpdateOptions extends WriteOptions {
 	}
 
 	/**
-	 * @return {@literal true} to apply {@code IF EXISTS} to {@code UPDATE} operations.
-	 */
-	public boolean isIfExists() {
-		return this.ifExists;
-	}
-
-	/**
 	 * @return the {@link Filter IF condition} for conditional updates.
 	 * @since 2.2
 	 */
 	@Nullable
 	public Filter getIfCondition() {
 		return ifCondition;
+	}
+
+	/**
+	 * @return {@literal true} to apply {@code IF EXISTS} to {@code UPDATE} operations.
+	 */
+	public boolean isIfExists() {
+		return this.ifExists;
 	}
 
 	/*
@@ -155,9 +155,9 @@ public class UpdateOptions extends WriteOptions {
 	 */
 	public static class UpdateOptionsBuilder extends WriteOptionsBuilder {
 
-		private boolean ifExists;
-
 		private @Nullable Filter ifCondition;
+
+		private boolean ifExists;
 
 		private UpdateOptionsBuilder() {}
 
@@ -165,8 +165,8 @@ public class UpdateOptions extends WriteOptions {
 
 			super(updateOptions);
 
-			this.ifExists = updateOptions.ifExists;
 			this.ifCondition = updateOptions.ifCondition;
+			this.ifExists = updateOptions.ifExists;
 		}
 
 		/* (non-Javadoc)
@@ -209,6 +209,16 @@ public class UpdateOptions extends WriteOptions {
 		}
 
 		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#idempotent(boolean)
+		 */
+		@Override
+		public UpdateOptionsBuilder idempotent(boolean idempotent) {
+
+			super.idempotent(idempotent);
+			return this;
+		}
+
+		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#keyspace()
 		 */
 		@Override
@@ -247,6 +257,26 @@ public class UpdateOptions extends WriteOptions {
 		public UpdateOptionsBuilder readTimeout(long readTimeout, TimeUnit timeUnit) {
 
 			super.readTimeout(readTimeout, timeUnit);
+			return this;
+		}
+
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#routingKeyspace(com.datastax.oss.driver.api.core.CqlIdentifier)
+		 */
+		@Override
+		public UpdateOptionsBuilder routingKeyspace(CqlIdentifier routingKeyspace) {
+
+			super.routingKeyspace(routingKeyspace);
+			return this;
+		}
+
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#routingKeyspace(java.nio.ByteBuffer)
+		 */
+		@Override
+		public UpdateOptionsBuilder routingKey(ByteBuffer routingKey) {
+
+			super.routingKey(routingKey);
 			return this;
 		}
 
@@ -300,16 +330,6 @@ public class UpdateOptions extends WriteOptions {
 		}
 
 		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#idempotent(boolean)
-		 */
-		@Override
-		public UpdateOptionsBuilder idempotent(boolean idempotent) {
-
-			super.idempotent(idempotent);
-			return this;
-		}
-
-		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.core.cql.WriteOptions.WriteOptionsBuilder#ttl(int)
 		 */
 		public UpdateOptionsBuilder ttl(int ttl) {
@@ -335,49 +355,6 @@ public class UpdateOptions extends WriteOptions {
 		public UpdateOptionsBuilder timestamp(Instant timestamp) {
 
 			super.timestamp(timestamp);
-			return this;
-		}
-
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#routingKeyspace(com.datastax.oss.driver.api.core.CqlIdentifier)
-		 */
-		@Override
-		public UpdateOptionsBuilder routingKeyspace(CqlIdentifier routingKeyspace) {
-
-			super.routingKeyspace(routingKeyspace);
-			return this;
-		}
-
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#routingKeyspace(java.nio.ByteBuffer)
-		 */
-		@Override
-		public UpdateOptionsBuilder routingKey(ByteBuffer routingKey) {
-
-			super.routingKey(routingKey);
-			return this;
-		}
-
-		/**
-		 * Use light-weight transactions by applying {@code IF EXISTS}. Replaces a previous {@link #ifCondition(Filter)}.
-		 *
-		 * @return {@code this} {@link UpdateOptionsBuilder}
-		 */
-		public UpdateOptionsBuilder withIfExists() {
-			return ifExists(true);
-		}
-
-		/**
-		 * Use light-weight transactions by applying {@code IF EXISTS}. Replaces a previous {@link #ifCondition(Filter)}.
-		 *
-		 * @param ifNotExists {@literal true} to enable {@code IF EXISTS}.
-		 * @return {@code this} {@link UpdateOptionsBuilder}
-		 */
-		public UpdateOptionsBuilder ifExists(boolean ifNotExists) {
-
-			this.ifExists = ifNotExists;
-			this.ifCondition = null;
-
 			return this;
 		}
 
@@ -415,14 +392,37 @@ public class UpdateOptions extends WriteOptions {
 		}
 
 		/**
+		 * Use light-weight transactions by applying {@code IF EXISTS}. Replaces a previous {@link #ifCondition(Filter)}.
+		 *
+		 * @return {@code this} {@link UpdateOptionsBuilder}
+		 */
+		public UpdateOptionsBuilder withIfExists() {
+			return ifExists(true);
+		}
+
+		/**
+		 * Use light-weight transactions by applying {@code IF EXISTS}. Replaces a previous {@link #ifCondition(Filter)}.
+		 *
+		 * @param ifNotExists {@literal true} to enable {@code IF EXISTS}.
+		 * @return {@code this} {@link UpdateOptionsBuilder}
+		 */
+		public UpdateOptionsBuilder ifExists(boolean ifNotExists) {
+
+			this.ifExists = ifNotExists;
+			this.ifCondition = null;
+
+			return this;
+		}
+
+		/**
 		 * Builds a new {@link UpdateOptions} with the configured values.
 		 *
 		 * @return a new {@link UpdateOptions} with the configured values
 		 */
 		public UpdateOptions build() {
-			return new UpdateOptions(this.consistencyLevel, this.executionProfileResolver, this.keyspace, this.pageSize,
-					this.serialConsistencyLevel, this.timeout, this.ttl, this.timestamp, this.tracing, this.ifExists,
-					this.ifCondition, this.idempotent, this.routingKeyspace, this.routingKey);
+			return new UpdateOptions(this.consistencyLevel, this.executionProfileResolver, this.ifCondition, this.ifExists,
+					this.idempotent, this.keyspace, this.pageSize, this.routingKeyspace, this.routingKey,
+					this.serialConsistencyLevel, this.timeout, this.ttl, this.timestamp, this.tracing);
 		}
 	}
 }

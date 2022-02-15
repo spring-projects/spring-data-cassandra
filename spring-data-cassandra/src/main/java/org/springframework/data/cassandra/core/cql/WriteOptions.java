@@ -47,11 +47,13 @@ public class WriteOptions extends QueryOptions {
 	private final @Nullable Long timestamp;
 
 	protected WriteOptions(@Nullable ConsistencyLevel consistencyLevel, ExecutionProfileResolver executionProfileResolver,
-			@Nullable CqlIdentifier keyspace, @Nullable Integer pageSize, @Nullable ConsistencyLevel serialConsistencyLevel,
-			Duration timeout, Duration ttl, @Nullable Long timestamp, @Nullable Boolean tracing, @Nullable Boolean idempotent,
-			@Nullable CqlIdentifier routingKeyspace, @Nullable ByteBuffer routingKey) {
+			@Nullable Boolean idempotent, @Nullable CqlIdentifier keyspace, @Nullable Integer pageSize,
+			@Nullable CqlIdentifier routingKeyspace, @Nullable ByteBuffer routingKey,
+			@Nullable ConsistencyLevel serialConsistencyLevel, Duration timeout, Duration ttl, @Nullable Long timestamp,
+			@Nullable Boolean tracing) {
 
-		super(consistencyLevel, executionProfileResolver, keyspace, pageSize, serialConsistencyLevel, timeout, tracing, idempotent, routingKeyspace, routingKey);
+		super(consistencyLevel, executionProfileResolver, idempotent, keyspace, pageSize, routingKeyspace, routingKey,
+				serialConsistencyLevel, timeout, tracing);
 
 		this.ttl = ttl;
 		this.timestamp = timestamp;
@@ -207,6 +209,16 @@ public class WriteOptions extends QueryOptions {
 		}
 
 		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#idempotent(boolean)
+		 */
+		@Override
+		public WriteOptionsBuilder idempotent(boolean idempotent) {
+
+			super.idempotent(idempotent);
+			return this;
+		}
+
+		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#keyspace()
 		 */
 		@Override
@@ -249,6 +261,26 @@ public class WriteOptions extends QueryOptions {
 		}
 
 		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#routingKeyspace(com.datastax.oss.driver.api.core.CqlIdentifier)
+		 */
+		@Override
+		public WriteOptionsBuilder routingKeyspace(CqlIdentifier routingKeyspace) {
+
+			super.routingKeyspace(routingKeyspace);
+			return this;
+		}
+
+		/* (non-Javadoc)
+		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#routingKeyspace(java.nio.ByteBuffer)
+		 */
+		@Override
+		public WriteOptionsBuilder routingKey(ByteBuffer routingKey) {
+
+			super.routingKey(routingKey);
+			return this;
+		}
+
+		/* (non-Javadoc)
 		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#serialConsistencyLevel(com.datastax.oss.driver.api.core.ConsistencyLevel)
 		 */
 		@Override
@@ -284,36 +316,6 @@ public class WriteOptions extends QueryOptions {
 		public WriteOptionsBuilder withTracing() {
 
 			super.withTracing();
-			return this;
-		}
-
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#idempotent(boolean)
-		 */
-		@Override
-		public WriteOptionsBuilder idempotent(boolean idempotent) {
-
-			super.idempotent(idempotent);
-			return this;
-		}
-
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#routingKeyspace(com.datastax.oss.driver.api.core.CqlIdentifier)
-		 */
-		@Override
-		public WriteOptionsBuilder routingKeyspace(CqlIdentifier routingKeyspace) {
-
-			super.routingKeyspace(routingKeyspace);
-			return this;
-		}
-
-		/* (non-Javadoc)
-		 * @see org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder#routingKeyspace(java.nio.ByteBuffer)
-		 */
-		@Override
-		public WriteOptionsBuilder routingKey(ByteBuffer routingKey) {
-
-			super.routingKey(routingKey);
 			return this;
 		}
 
@@ -388,9 +390,9 @@ public class WriteOptions extends QueryOptions {
 		 * @return a new {@link WriteOptions} with the configured values
 		 */
 		public WriteOptions build() {
-			return new WriteOptions(this.consistencyLevel, this.executionProfileResolver, this.keyspace, this.pageSize,
-					this.serialConsistencyLevel, this.timeout, this.ttl, this.timestamp, this.tracing, this.idempotent,
-					this.routingKeyspace, this.routingKey);
+			return new WriteOptions(this.consistencyLevel, this.executionProfileResolver, this.idempotent, this.keyspace,
+					this.pageSize, this.routingKeyspace, this.routingKey, this.serialConsistencyLevel, this.timeout, this.ttl,
+					this.timestamp, this.tracing);
 		}
 	}
 }

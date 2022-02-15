@@ -78,7 +78,7 @@ class QueryOptionsUtilUnitTests {
 		verifyNoInteractions(simpleStatement);
 	}
 
-	@Test // DATACASS-202
+	@Test // DATACASS-202, GH-1220
 	void addStatementQueryOptionsShouldAddGenericQueryOptions() {
 
 		when(simpleStatement.setPageSize(anyInt())).thenReturn(simpleStatement);
@@ -92,9 +92,9 @@ class QueryOptionsUtilUnitTests {
 				.pageSize(10) //
 				.readTimeout(1, TimeUnit.MINUTES) //
 				.withTracing() //
-				.idempotent(true)
-				.routingKeyspace(CqlIdentifier.fromCql("routing_ks"))
-				.routingKey(ByteBuffer.allocate(1))
+				.idempotent(true) //
+				.routingKeyspace(CqlIdentifier.fromCql("routing_ks")) //
+				.routingKey(ByteBuffer.allocate(1)) //
 				.build();
 
 		QueryOptionsUtil.addQueryOptions(simpleStatement, queryOptions);

@@ -36,7 +36,7 @@ import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
  */
 class WriteOptionsUnitTests {
 
-	@Test // DATACASS-202, DATACASS-767
+	@Test // DATACASS-202, DATACASS-767, GH-1220
 	void buildWriteOptions() {
 
 		WriteOptions writeOptions = WriteOptions.builder() //
@@ -46,10 +46,10 @@ class WriteOptionsUnitTests {
 				.readTimeout(1) //
 				.pageSize(10) //
 				.withTracing() //
-				.keyspace(CqlIdentifier.fromCql("my_keyspace"))
-				.idempotent(true)
-				.routingKeyspace(CqlIdentifier.fromCql("routing_keyspace"))
-				.routingKey(ByteBuffer.allocate(1))
+				.keyspace(CqlIdentifier.fromCql("my_keyspace")) //
+				.idempotent(true) //
+				.routingKeyspace(CqlIdentifier.fromCql("routing_keyspace")) //
+				.routingKey(ByteBuffer.allocate(1)) //
 				.build();
 
 		assertThat(writeOptions.getTtl()).isEqualTo(Duration.ofSeconds(123));
@@ -75,7 +75,7 @@ class WriteOptionsUnitTests {
 		assertThat(writeOptions.getTracing()).isNull();
 	}
 
-	@Test // DATACASS-56
+	@Test // DATACASS-56, GH-1220
 	void buildWriteOptionsMutate() {
 		Instant now = LocalDateTime.now().toInstant(ZoneOffset.UTC);
 
@@ -86,9 +86,9 @@ class WriteOptionsUnitTests {
 				.readTimeout(1) //
 				.pageSize(10) //
 				.withTracing() //
-				.idempotent(true)
-				.routingKeyspace(CqlIdentifier.fromCql("routing_keyspace"))
-				.routingKey(ByteBuffer.allocate(1))
+				.idempotent(true) //
+				.routingKeyspace(CqlIdentifier.fromCql("routing_keyspace")) //
+				.routingKey(ByteBuffer.allocate(1)) //
 				.build();
 
 		WriteOptions mutated = writeOptions.mutate().timeout(Duration.ofMillis(100)).build();
