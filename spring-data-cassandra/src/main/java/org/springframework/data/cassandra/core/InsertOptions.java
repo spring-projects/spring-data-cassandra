@@ -45,13 +45,14 @@ public class InsertOptions extends WriteOptions {
 	private final boolean insertNulls;
 
 	private InsertOptions(@Nullable ConsistencyLevel consistencyLevel, ExecutionProfileResolver executionProfileResolver,
-			@Nullable CqlIdentifier keyspace, @Nullable Integer pageSize, @Nullable ConsistencyLevel serialConsistencyLevel,
+			@Nullable Boolean idempotent, @Nullable CqlIdentifier keyspace, @Nullable Integer pageSize,
+			@Nullable CqlIdentifier routingKeyspace, @Nullable ByteBuffer routingKey,
+			@Nullable ConsistencyLevel serialConsistencyLevel,
 			Duration timeout, Duration ttl, @Nullable Long timestamp, @Nullable Boolean tracing, boolean ifNotExists,
-			boolean insertNulls, @Nullable Boolean idempotent, @Nullable CqlIdentifier routingKeyspace,
-			@Nullable ByteBuffer routingKey) {
+			boolean insertNulls) {
 
-		super(consistencyLevel, executionProfileResolver, keyspace, pageSize, serialConsistencyLevel, timeout, ttl,
-				timestamp, tracing, idempotent, routingKeyspace, routingKey);
+		super(consistencyLevel, executionProfileResolver, idempotent, keyspace, pageSize, routingKeyspace, routingKey,
+				serialConsistencyLevel, timeout, ttl, timestamp, tracing);
 
 		this.ifNotExists = ifNotExists;
 		this.insertNulls = insertNulls;
@@ -182,6 +183,13 @@ public class InsertOptions extends WriteOptions {
 		}
 
 		@Override
+		public InsertOptionsBuilder idempotent(boolean idempotent) {
+
+			super.idempotent(idempotent);
+			return this;
+		}
+
+		@Override
 		public InsertOptionsBuilder keyspace(CqlIdentifier keyspace) {
 
 			super.keyspace(keyspace);
@@ -206,6 +214,20 @@ public class InsertOptions extends WriteOptions {
 		public InsertOptionsBuilder readTimeout(long readTimeout, TimeUnit timeUnit) {
 
 			super.readTimeout(readTimeout, timeUnit);
+			return this;
+		}
+
+		@Override
+		public InsertOptionsBuilder routingKeyspace(CqlIdentifier routingKeyspace) {
+
+			super.routingKeyspace(routingKeyspace);
+			return this;
+		}
+
+		@Override
+		public InsertOptionsBuilder routingKey(ByteBuffer routingKey) {
+
+			super.routingKey(routingKey);
 			return this;
 		}
 
@@ -261,27 +283,6 @@ public class InsertOptions extends WriteOptions {
 		public InsertOptionsBuilder timestamp(Instant timestamp) {
 
 			super.timestamp(timestamp);
-			return this;
-		}
-
-		@Override
-		public InsertOptionsBuilder idempotent(boolean idempotent) {
-
-			super.idempotent(idempotent);
-			return this;
-		}
-
-		@Override
-		public InsertOptionsBuilder routingKeyspace(CqlIdentifier routingKeyspace) {
-
-			super.routingKeyspace(routingKeyspace);
-			return this;
-		}
-
-		@Override
-		public InsertOptionsBuilder routingKey(ByteBuffer routingKey) {
-
-			super.routingKey(routingKey);
 			return this;
 		}
 
@@ -341,9 +342,10 @@ public class InsertOptions extends WriteOptions {
 		 * @return a new {@link InsertOptions} with the configured values
 		 */
 		public InsertOptions build() {
-			return new InsertOptions(this.consistencyLevel, this.executionProfileResolver, this.keyspace, this.pageSize,
+			return new InsertOptions(this.consistencyLevel, this.executionProfileResolver, this.idempotent, this.keyspace,
+					this.pageSize, this.routingKeyspace, this.routingKey,
 					this.serialConsistencyLevel, this.timeout, this.ttl, this.timestamp, this.tracing, this.ifNotExists,
-					this.insertNulls, this.idempotent, this.routingKeyspace, this.routingKey);
+					this.insertNulls);
 		}
 	}
 }

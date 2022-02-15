@@ -48,13 +48,14 @@ public class DeleteOptions extends WriteOptions {
 	private final @Nullable Filter ifCondition;
 
 	private DeleteOptions(@Nullable ConsistencyLevel consistencyLevel, ExecutionProfileResolver executionProfileResolver,
-			@Nullable CqlIdentifier keyspace, @Nullable Integer pageSize, @Nullable ConsistencyLevel serialConsistencyLevel,
+			@Nullable Boolean idempotent, @Nullable CqlIdentifier keyspace, @Nullable Integer pageSize,
+			@Nullable CqlIdentifier routingKeyspace, @Nullable ByteBuffer routingKey,
+			@Nullable ConsistencyLevel serialConsistencyLevel,
 			Duration timeout, Duration ttl, @Nullable Long timestamp, @Nullable Boolean tracing, boolean ifExists,
-			@Nullable Filter ifCondition, @Nullable Boolean idempotent, @Nullable CqlIdentifier routingKeyspace,
-			@Nullable ByteBuffer routingKey) {
+			@Nullable Filter ifCondition) {
 
-		super(consistencyLevel, executionProfileResolver, keyspace, pageSize, serialConsistencyLevel, timeout, ttl,
-				timestamp, tracing, idempotent, routingKeyspace, routingKey);
+		super(consistencyLevel, executionProfileResolver, idempotent, keyspace, pageSize, routingKeyspace, routingKey,
+				serialConsistencyLevel, timeout, ttl, timestamp, tracing);
 
 		this.ifExists = ifExists;
 		this.ifCondition = ifCondition;
@@ -182,6 +183,13 @@ public class DeleteOptions extends WriteOptions {
 		}
 
 		@Override
+		public DeleteOptionsBuilder idempotent(boolean idempotent) {
+
+			super.idempotent(idempotent);
+			return this;
+		}
+
+		@Override
 		public DeleteOptionsBuilder keyspace(CqlIdentifier keyspace) {
 
 			super.keyspace(keyspace);
@@ -208,6 +216,20 @@ public class DeleteOptions extends WriteOptions {
 		public DeleteOptionsBuilder readTimeout(long readTimeout, TimeUnit timeUnit) {
 
 			super.readTimeout(readTimeout, timeUnit);
+			return this;
+		}
+
+		@Override
+		public DeleteOptionsBuilder routingKeyspace(CqlIdentifier routingKeyspace) {
+
+			super.routingKeyspace(routingKeyspace);
+			return this;
+		}
+
+		@Override
+		public DeleteOptionsBuilder routingKey(ByteBuffer routingKey) {
+
+			super.routingKey(routingKey);
 			return this;
 		}
 
@@ -245,13 +267,6 @@ public class DeleteOptions extends WriteOptions {
 			return this;
 		}
 
-		@Override
-		public DeleteOptionsBuilder idempotent(boolean idempotent) {
-
-			super.idempotent(idempotent);
-			return this;
-		}
-
 		public DeleteOptionsBuilder ttl(int ttl) {
 
 			super.ttl(ttl);
@@ -269,20 +284,6 @@ public class DeleteOptions extends WriteOptions {
 		public DeleteOptionsBuilder timestamp(Instant timestamp) {
 
 			super.timestamp(timestamp);
-			return this;
-		}
-
-		@Override
-		public DeleteOptionsBuilder routingKeyspace(CqlIdentifier routingKeyspace) {
-
-			super.routingKeyspace(routingKeyspace);
-			return this;
-		}
-
-		@Override
-		public DeleteOptionsBuilder routingKey(ByteBuffer routingKey) {
-
-			super.routingKey(routingKey);
 			return this;
 		}
 
@@ -347,9 +348,9 @@ public class DeleteOptions extends WriteOptions {
 		 */
 		public DeleteOptions build() {
 
-			return new DeleteOptions(this.consistencyLevel, this.executionProfileResolver, this.keyspace, this.pageSize,
-					this.serialConsistencyLevel, this.timeout, this.ttl, this.timestamp, this.tracing, this.ifExists,
-					this.ifCondition, this.idempotent, this.routingKeyspace, this.routingKey);
+			return new DeleteOptions(this.consistencyLevel, this.executionProfileResolver, this.idempotent, this.keyspace,
+					this.pageSize, this.routingKeyspace, this.routingKey, this.serialConsistencyLevel, this.timeout, this.ttl,
+					this.timestamp, this.tracing, this.ifExists, this.ifCondition);
 		}
 	}
 }
