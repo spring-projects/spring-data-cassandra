@@ -132,10 +132,20 @@ public class EmbeddedEntityOperations {
 		public PreferredConstructor<T, CassandraPersistentProperty> getPersistenceConstructor() {
 			return delegate.getPersistenceConstructor();
 		}
+		
+		@Override
+		public InstanceCreatorMetadata<CassandraPersistentProperty> getInstanceCreatorMetadata() {
+			return delegate.getInstanceCreatorMetadata();
+		}
 
 		@Override
 		public boolean isConstructorArgument(PersistentProperty<?> property) {
 			return delegate.isConstructorArgument(property);
+		}
+		
+		@Override
+		public boolean isCreatorArgument(PersistentProperty<?> property) {
+			return delegate.isCreatorArgument(property);
 		}
 
 		@Override

@@ -23,6 +23,7 @@ import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.query.CassandraPageRequest;
+import org.springframework.data.convert.DtoInstantiatingConverter;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
