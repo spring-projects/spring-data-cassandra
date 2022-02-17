@@ -31,7 +31,7 @@ import org.springframework.util.StringUtils;
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
- * Update object representing representing a set of update operations. {@link Update} objects can be created in a fluent
+ * Update object representing a set of update operations. {@link Update} objects can be created in a fluent
  * style. Each construction operation creates a new immutable {@link Update} object.
  *
  * <pre class="code">
