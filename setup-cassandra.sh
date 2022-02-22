@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 if [ -z ${CASSANDRA_VERSION+x} ]; then
-    CASSANDRA_VERSION=3.0.7
+    CASSANDRA_VERSION=3.11.12
 fi
 
 if [[ ! -d download ]] ; then
