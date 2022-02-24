@@ -535,7 +535,9 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 
 		return createFlux(session -> {
 
-			logger.debug(String.format("Preparing statement [%s] using %s", toCql(psc), psc));
+			if (logger.isDebugEnabled()) {
+				logger.debug(String.format("Preparing statement [%s] using %s", toCql(psc), psc));
+			}
 
 			return psc.createPreparedStatement(session).flatMapMany(ps -> action.doInPreparedStatement(session, ps));
 		}).onErrorMap(translateException("ReactivePreparedStatementCallback", toCql(psc)));
