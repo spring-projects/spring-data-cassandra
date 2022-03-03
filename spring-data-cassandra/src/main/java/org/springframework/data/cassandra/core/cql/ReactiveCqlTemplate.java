@@ -20,6 +20,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.reactivestreams.Publisher;
 
@@ -29,6 +30,7 @@ import org.springframework.data.cassandra.ReactiveResultSet;
 import org.springframework.data.cassandra.ReactiveSession;
 import org.springframework.data.cassandra.ReactiveSessionFactory;
 import org.springframework.data.cassandra.core.cql.session.DefaultReactiveSessionFactory;
+import org.springframework.data.util.Lazy;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -299,7 +301,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 
 		Assert.notNull(action, "Callback object must not be null");
 
-		return createFlux(action).onErrorMap(translateException("ReactiveSessionCallback", toCql(action)));
+		return createFlux(action).onErrorMap(translateException("ReactiveSessionCallback", () -> toCql(action)));
 	}
 
 	// -------------------------------------------------------------------------
@@ -394,14 +396,16 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 		Assert.notNull(statement, "CQL Statement must not be null");
 		Assert.notNull(rse, "ReactiveResultSetExtractor must not be null");
 
+		Lazy<String> cql = Lazy.of(() -> toCql(statement));
+
 		return createFlux(statement, (session, stmt) -> {
 
 			if (logger.isDebugEnabled()) {
-				logger.debug(String.format("Executing statement [%s]", toCql(statement)));
+				logger.debug(String.format("Executing statement [%s]", cql.get()));
 			}
 
 			return session.execute(applyStatementSettings(statement)).flatMapMany(rse::extractData);
-		}).onErrorMap(translateException("Query", toCql(statement)));
+		}).onErrorMap(translateException("Query", cql));
 	}
 
 	@Override
@@ -440,20 +444,22 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 
 		Assert.notNull(statement, "CQL Statement must not be null");
 
+		Lazy<String> cql = Lazy.of(() -> toCql(statement));
+
 		return createMono(statement, (session, executedStatement) -> {
 
 			if (logger.isDebugEnabled()) {
-				logger.debug(String.format("Executing statement [%s]", toCql(statement)));
+				logger.debug(String.format("Executing statement [%s]", cql.get()));
 			}
 
 			return session.execute(applyStatementSettings(executedStatement));
-		}).onErrorMap(translateException("QueryForResultSet", toCql(statement)));
+		}).onErrorMap(translateException("QueryForResultSet", cql));
 	}
 
 	@Override
 	public Flux<Row> queryForRows(Statement<?> statement) throws DataAccessException {
 		return queryForResultSet(statement).flatMapMany(ReactiveResultSet::rows)
-				.onErrorMap(translateException("QueryForRows", toCql(statement)));
+				.onErrorMap(translateException("QueryForRows", () -> toCql(statement)));
 	}
 
 	// -------------------------------------------------------------------------
@@ -467,14 +473,16 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 		Assert.notNull(psc, "ReactivePreparedStatementCreator must not be null");
 		Assert.notNull(action, "ReactivePreparedStatementCallback object must not be null");
 
+		Lazy<String> cql = Lazy.of(() -> toCql(psc));
+
 		return createFlux(session -> {
 
 			if (logger.isDebugEnabled()) {
-				logger.debug(String.format("Preparing statement [%s] using %s", toCql(psc), psc));
+				logger.debug(String.format("Preparing statement [%s] using %s", cql.get(), psc));
 			}
 
 			return psc.createPreparedStatement(session).flatMapMany(ps -> action.doInPreparedStatement(session, ps));
-		}).onErrorMap(translateException("ReactivePreparedStatementCallback", toCql(psc)));
+		}).onErrorMap(translateException("ReactivePreparedStatementCallback", cql));
 	}
 
 	@Override
@@ -510,7 +518,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 					: preparedStatement.bind());
 
 			return session.execute(applyStatementSettings(boundStatement));
-		}).flatMap(rse::extractData)).onErrorMap(translateException("Query", toCql(psc)));
+		}).flatMap(rse::extractData)).onErrorMap(translateException("Query", () -> toCql(psc)));
 	}
 
 	@Override
@@ -696,7 +704,20 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 * @see CqlProvider
 	 */
 	protected Function<Throwable, Throwable> translateException(String task, @Nullable String cql) {
-		return throwable -> throwable instanceof DriverException ? translate(task, cql, (DriverException) throwable)
+		return translateException(task, () -> cql);
+	}
+
+	/**
+	 * Exception translation {@link Function} intended for {@link Mono#onErrorMap(Function)} usage.
+	 *
+	 * @param task readable text describing the task being attempted
+	 * @param cql supplier of CQL query or update that caused the problem (may be {@literal null})
+	 * @return the exception translation {@link Function}
+	 * @since 3.3.3
+	 * @see CqlProvider
+	 */
+	protected Function<Throwable, Throwable> translateException(String task, Supplier<String> cql) {
+		return throwable -> throwable instanceof DriverException ? translate(task, cql.get(), (DriverException) throwable)
 				: throwable;
 	}
 
