@@ -885,6 +885,19 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	// Implementation hooks and utility methods
 	// -------------------------------------------------------------------------
 
+	/**
+	 * Create a new statement-based {@link PreparedStatementHandler} using the statement passed in.
+	 * <p>
+	 * This method allows for the creation to be overridden by subclasses.
+	 *
+	 * @param statement the statement to be prepared.
+	 * @return the new {@link PreparedStatementHandler} to use.
+	 * @since 3.3.3
+	 */
+	protected PreparedStatementHandler createPreparedStatementHandler(Statement<?> statement) {
+		return new PreparedStatementHandler(statement);
+	}
+
 	private <T> EntityWriteResult<T> executeSave(T entity, CqlIdentifier tableName, SimpleStatement statement) {
 		return executeSave(entity, tableName, statement, ignore -> {});
 	}
@@ -921,7 +934,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 
 		if (PreparedStatementDelegate.canPrepare(isUsePreparedStatements(), statement, logger)) {
 
-			PreparedStatementHandler statementHandler = new PreparedStatementHandler(statement);
+			PreparedStatementHandler statementHandler = createPreparedStatementHandler(statement);
 			return getCqlOperations().query(statementHandler, statementHandler, rowMapper);
 		}
 
@@ -936,7 +949,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 
 		if (PreparedStatementDelegate.canPrepare(isUsePreparedStatements(), statement, logger)) {
 
-			PreparedStatementHandler statementHandler = new PreparedStatementHandler(statement);
+			PreparedStatementHandler statementHandler = createPreparedStatementHandler(statement);
 			return getCqlOperations().queryForStream(statementHandler, statementHandler, rowMapper);
 		}
 
@@ -955,7 +968,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 
 		if (PreparedStatementDelegate.canPrepare(isUsePreparedStatements(), statement, logger)) {
 
-			PreparedStatementHandler statementHandler = new PreparedStatementHandler(statement);
+			PreparedStatementHandler statementHandler = createPreparedStatementHandler(statement);
 			return getCqlOperations().query(statementHandler, statementHandler, mappingFunction::apply);
 		}
 
