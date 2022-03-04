@@ -1081,7 +1081,7 @@ public class AsyncCassandraTemplate
 		 * @return
 		 */
 		protected CompletionStage<PreparedStatement> doPrepare(CqlSession session) {
-			return session.prepareAsync(statement);
+			return session.prepareAsync(statement.getQuery());
 		}
 
 		/*
