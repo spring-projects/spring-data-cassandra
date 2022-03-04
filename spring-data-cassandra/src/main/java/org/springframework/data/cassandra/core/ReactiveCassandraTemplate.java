@@ -15,7 +15,6 @@
  */
 package org.springframework.data.cassandra.core;
 
-import org.springframework.data.projection.EntityProjection;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.SynchronousSink;
@@ -62,6 +61,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.mapping.callback.EntityCallbacks;
 import org.springframework.data.mapping.callback.ReactiveEntityCallbacks;
+import org.springframework.data.projection.EntityProjection;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.lang.Nullable;
@@ -852,6 +852,19 @@ public class ReactiveCassandraTemplate
 	// Implementation hooks and utility methods
 	// -------------------------------------------------------------------------
 
+	/**
+	 * Create a new statement-based {@link ReactivePreparedStatementHandler} using the statement passed in.
+	 * <p>
+	 * This method allows for the creation to be overridden by subclasses.
+	 *
+	 * @param statement the statement to be prepared.
+	 * @return the new {@link PreparedStatementHandler} to use.
+	 * @since 3.3.3
+	 */
+	protected ReactivePreparedStatementHandler createPreparedStatementHandler(Statement<?> statement) {
+		return new PreparedStatementHandler(statement);
+	}
+
 	private <T> Mono<EntityWriteResult<T>> executeSave(T entity, CqlIdentifier tableName, SimpleStatement statement) {
 		return executeSave(entity, tableName, statement, (writeResult, sink) -> sink.next(writeResult));
 	}
@@ -888,7 +901,7 @@ public class ReactiveCassandraTemplate
 
 		if (PreparedStatementDelegate.canPrepare(isUsePreparedStatements(), statement, log)) {
 
-			PreparedStatementHandler statementHandler = new PreparedStatementHandler(statement);
+			ReactivePreparedStatementHandler statementHandler = createPreparedStatementHandler(statement);
 			return getReactiveCqlOperations().query(statementHandler, statementHandler, rowMapper);
 		}
 
@@ -899,7 +912,7 @@ public class ReactiveCassandraTemplate
 
 		if (PreparedStatementDelegate.canPrepare(isUsePreparedStatements(), statement, log)) {
 
-			PreparedStatementHandler statementHandler = new PreparedStatementHandler(statement);
+			ReactivePreparedStatementHandler statementHandler = createPreparedStatementHandler(statement);
 			return getReactiveCqlOperations()
 					.query(statementHandler, statementHandler, rs -> Mono.just(mappingFunction.apply(rs))).next();
 		}
@@ -912,7 +925,7 @@ public class ReactiveCassandraTemplate
 
 		if (PreparedStatementDelegate.canPrepare(isUsePreparedStatements(), statement, log)) {
 
-			PreparedStatementHandler statementHandler = new PreparedStatementHandler(statement);
+			ReactivePreparedStatementHandler statementHandler = createPreparedStatementHandler(statement);
 			return getReactiveCqlOperations().query(statementHandler, statementHandler, mappingFunction::apply).next();
 		}
 
@@ -1015,13 +1028,25 @@ public class ReactiveCassandraTemplate
 	}
 
 	/**
+	 * General callback interface used to create and bind prepared CQL statements.
+	 * <p>
+	 * This interface prepares the CQL statement and sets values on a {@link PreparedStatement} as union-type comprised
+	 * from {@link ReactivePreparedStatementCreator}, {@link PreparedStatementBinder}, and {@link CqlProvider}.
+	 *
+	 * @since 3.3.3
+	 */
+	public interface ReactivePreparedStatementHandler
+			extends ReactivePreparedStatementCreator, PreparedStatementBinder, CqlProvider {
+
+	}
+
+	/**
 	 * Utility class to prepare a {@link SimpleStatement} and bind values associated with the statement to a
 	 * {@link BoundStatement}.
 	 *
 	 * @since 3.2
 	 */
-	private static class PreparedStatementHandler
-			implements ReactivePreparedStatementCreator, PreparedStatementBinder, CqlProvider {
+	public static class PreparedStatementHandler implements ReactivePreparedStatementHandler {
 
 		private final SimpleStatement statement;
 
