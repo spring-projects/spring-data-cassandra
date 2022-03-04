@@ -162,6 +162,23 @@
 			</dependency>
 
 			<dependency>
+				<groupId>org.apache.cassandra</groupId>
+				<artifactId>cassandra-thrift</artifactId>
+				<version>${cassandra.version}</version>
+				<scope>test</scope>
+				<exclusions>
+					<exclusion>
+						<groupId>ch.qos.logback</groupId>
+						<artifactId>logback-core</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>io.netty</groupId>
+						<artifactId>netty-all</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+
+			<dependency>
 				<groupId>org.assertj</groupId>
 				<artifactId>assertj-core</artifactId>
 				<version>${assertj}</version>
