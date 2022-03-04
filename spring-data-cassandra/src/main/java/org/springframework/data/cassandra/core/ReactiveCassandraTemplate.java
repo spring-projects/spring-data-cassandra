@@ -957,7 +957,7 @@ public class ReactiveCassandraTemplate
 
 		@Override
 		public Mono<PreparedStatement> createPreparedStatement(ReactiveSession session) throws DriverException {
-			return session.prepare(statement);
+			return session.prepare(statement.getQuery());
 		}
 
 		@Override

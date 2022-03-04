@@ -972,7 +972,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 
 		@Override
 		public PreparedStatement createPreparedStatement(CqlSession session) throws DriverException {
-			return session.prepare(statement);
+			return session.prepare(statement.getQuery());
 		}
 
 		@Override

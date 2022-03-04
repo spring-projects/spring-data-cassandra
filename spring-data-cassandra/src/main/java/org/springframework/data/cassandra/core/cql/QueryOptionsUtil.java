@@ -181,4 +181,5 @@ public abstract class QueryOptionsUtil {
 	private static boolean hasTtl(Duration ttl) {
 		return !ttl.isZero() && !ttl.isNegative();
 	}
+
 }
