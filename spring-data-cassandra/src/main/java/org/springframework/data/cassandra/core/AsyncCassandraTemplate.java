@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.core;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -51,6 +52,7 @@ import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.dao.support.DataAccessUtils;
+import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.data.cassandra.SessionFactory;
 import org.springframework.data.cassandra.core.EntityOperations.AdaptibleEntity;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
@@ -824,6 +826,19 @@ public class AsyncCassandraTemplate
 	// Implementation hooks and utility methods
 	// -------------------------------------------------------------------------
 
+	/**
+	 * Create a new statement-based {@link AsyncPreparedStatementHandler} using the statement passed in.
+	 * <p>
+	 * This method allows for the creation to be overridden by subclasses.
+	 *
+	 * @param statement the statement to be prepared.
+	 * @return the new {@link PreparedStatementHandler} to use.
+	 * @since 3.2.10
+	 */
+	protected AsyncPreparedStatementHandler createPreparedStatementHandler(Statement<?> statement) {
+		return new PreparedStatementHandler(statement, exceptionTranslator);
+	}
+
 	private <T> ListenableFuture<EntityWriteResult<T>> executeSave(T entity, CqlIdentifier tableName,
 			SimpleStatement statement) {
 
@@ -876,7 +891,7 @@ public class AsyncCassandraTemplate
 
 		if (PreparedStatementDelegate.canPrepare(isUsePreparedStatements(), statement, logger)) {
 
-			PreparedStatementHandler statementHandler = new PreparedStatementHandler(statement);
+			AsyncPreparedStatementHandler statementHandler = createPreparedStatementHandler(statement);
 			return getAsyncCqlOperations().query(statementHandler, statementHandler, rowMapper);
 		}
 
@@ -887,7 +902,7 @@ public class AsyncCassandraTemplate
 
 		if (PreparedStatementDelegate.canPrepare(isUsePreparedStatements(), statement, logger)) {
 
-			PreparedStatementHandler statementHandler = new PreparedStatementHandler(statement);
+			AsyncPreparedStatementHandler statementHandler = createPreparedStatementHandler(statement);
 			return getAsyncCqlOperations().query(statementHandler, statementHandler, callbackHandler);
 		}
 
@@ -902,7 +917,7 @@ public class AsyncCassandraTemplate
 
 		if (PreparedStatementDelegate.canPrepare(isUsePreparedStatements(), statement, logger)) {
 
-			PreparedStatementHandler statementHandler = new PreparedStatementHandler(statement);
+			AsyncPreparedStatementHandler statementHandler = createPreparedStatementHandler(statement);
 			return getAsyncCqlOperations().query(statementHandler, statementHandler,
 					(AsyncResultSetExtractor<T>) resultSet -> new AsyncResult<>(mappingFunction.apply(resultSet)));
 		}
@@ -1030,18 +1045,32 @@ public class AsyncCassandraTemplate
 	}
 
 	/**
+	 * General callback interface used to create and bind prepared CQL statements.
+	 * <p>
+	 * This interface prepares the CQL statement and sets values on a {@link PreparedStatement} as union-type comprised
+	 * from {@link AsyncPreparedStatementCreator}, {@link PreparedStatementBinder}, and {@link CqlProvider}.
+	 *
+	 * @since 3.2.10
+	 */
+	public interface AsyncPreparedStatementHandler
+			extends AsyncPreparedStatementCreator, PreparedStatementBinder, CqlProvider {
+
+	}
+
+	/**
 	 * Utility class to prepare a {@link SimpleStatement} and bind values associated with the statement to a
 	 * {@link BoundStatement}.
 	 *
 	 * @since 3.2
 	 */
-	private class PreparedStatementHandler
-			implements AsyncPreparedStatementCreator, PreparedStatementBinder, CqlProvider {
+	public static class PreparedStatementHandler implements AsyncPreparedStatementHandler {
 
 		private final SimpleStatement statement;
+		private final PersistenceExceptionTranslator exceptionTranslator;
 
-		public PreparedStatementHandler(Statement<?> statement) {
+		public PreparedStatementHandler(Statement<?> statement, PersistenceExceptionTranslator exceptionTranslator) {
 			this.statement = PreparedStatementDelegate.getStatementForPrepare(statement);
+			this.exceptionTranslator = exceptionTranslator;
 		}
 
 		/*
@@ -1050,7 +1079,17 @@ public class AsyncCassandraTemplate
 		 */
 		@Override
 		public ListenableFuture<PreparedStatement> createPreparedStatement(CqlSession session) throws DriverException {
-			return new CassandraFutureAdapter<>(session.prepareAsync(statement), exceptionTranslator);
+			return new CassandraFutureAdapter<>(doPrepare(session), exceptionTranslator);
+		}
+
+		/**
+		 * Invokes the statement preparation.
+		 *
+		 * @param session
+		 * @return
+		 */
+		protected CompletionStage<PreparedStatement> doPrepare(CqlSession session) {
+			return session.prepareAsync(statement);
 		}
 
 		/*

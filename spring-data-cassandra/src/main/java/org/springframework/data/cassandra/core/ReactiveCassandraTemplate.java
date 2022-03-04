@@ -15,33 +15,17 @@
  */
 package org.springframework.data.cassandra.core;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.publisher.SynchronousSink;
+
 import java.util.Collections;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import com.datastax.oss.driver.api.core.CqlIdentifier;
-import com.datastax.oss.driver.api.core.DriverException;
-import com.datastax.oss.driver.api.core.config.DefaultDriverOption;
-import com.datastax.oss.driver.api.core.context.DriverContext;
-import com.datastax.oss.driver.api.core.cql.BatchType;
-import com.datastax.oss.driver.api.core.cql.BoundStatement;
-import com.datastax.oss.driver.api.core.cql.PreparedStatement;
-import com.datastax.oss.driver.api.core.cql.Row;
-import com.datastax.oss.driver.api.core.cql.SimpleStatement;
-import com.datastax.oss.driver.api.core.cql.Statement;
-import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
-import com.datastax.oss.driver.api.querybuilder.delete.Delete;
-import com.datastax.oss.driver.api.querybuilder.insert.Insert;
-import com.datastax.oss.driver.api.querybuilder.insert.RegularInsert;
-import com.datastax.oss.driver.api.querybuilder.select.Select;
-import com.datastax.oss.driver.api.querybuilder.truncate.Truncate;
-import com.datastax.oss.driver.api.querybuilder.update.Update;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-import reactor.core.publisher.SynchronousSink;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -81,6 +65,24 @@ import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.DriverException;
+import com.datastax.oss.driver.api.core.config.DefaultDriverOption;
+import com.datastax.oss.driver.api.core.context.DriverContext;
+import com.datastax.oss.driver.api.core.cql.BatchType;
+import com.datastax.oss.driver.api.core.cql.BoundStatement;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.cql.Statement;
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
+import com.datastax.oss.driver.api.querybuilder.delete.Delete;
+import com.datastax.oss.driver.api.querybuilder.insert.Insert;
+import com.datastax.oss.driver.api.querybuilder.insert.RegularInsert;
+import com.datastax.oss.driver.api.querybuilder.select.Select;
+import com.datastax.oss.driver.api.querybuilder.truncate.Truncate;
+import com.datastax.oss.driver.api.querybuilder.update.Update;
 
 /**
  * Primary implementation of {@link ReactiveCassandraOperations}. It simplifies the use of Reactive Cassandra usage and
@@ -852,6 +854,19 @@ public class ReactiveCassandraTemplate
 	// Implementation hooks and utility methods
 	// -------------------------------------------------------------------------
 
+	/**
+	 * Create a new statement-based {@link ReactivePreparedStatementHandler} using the statement passed in.
+	 * <p>
+	 * This method allows for the creation to be overridden by subclasses.
+	 *
+	 * @param statement the statement to be prepared.
+	 * @return the new {@link PreparedStatementHandler} to use.
+	 * @since 3.2.10
+	 */
+	protected ReactivePreparedStatementHandler createPreparedStatementHandler(Statement<?> statement) {
+		return new PreparedStatementHandler(statement);
+	}
+
 	private <T> Mono<EntityWriteResult<T>> executeSave(T entity, CqlIdentifier tableName, SimpleStatement statement) {
 		return executeSave(entity, tableName, statement, (writeResult, sink) -> sink.next(writeResult));
 	}
@@ -888,7 +903,7 @@ public class ReactiveCassandraTemplate
 
 		if (PreparedStatementDelegate.canPrepare(isUsePreparedStatements(), statement, logger)) {
 
-			PreparedStatementHandler statementHandler = new PreparedStatementHandler(statement);
+			ReactivePreparedStatementHandler statementHandler = createPreparedStatementHandler(statement);
 			return getReactiveCqlOperations().query(statementHandler, statementHandler, rowMapper);
 		}
 
@@ -899,7 +914,7 @@ public class ReactiveCassandraTemplate
 
 		if (PreparedStatementDelegate.canPrepare(isUsePreparedStatements(), statement, logger)) {
 
-			PreparedStatementHandler statementHandler = new PreparedStatementHandler(statement);
+			ReactivePreparedStatementHandler statementHandler = createPreparedStatementHandler(statement);
 			return getReactiveCqlOperations()
 					.query(statementHandler, statementHandler, rs -> Mono.just(mappingFunction.apply(rs))).next();
 		}
@@ -912,7 +927,7 @@ public class ReactiveCassandraTemplate
 
 		if (PreparedStatementDelegate.canPrepare(isUsePreparedStatements(), statement, logger)) {
 
-			PreparedStatementHandler statementHandler = new PreparedStatementHandler(statement);
+			ReactivePreparedStatementHandler statementHandler = createPreparedStatementHandler(statement);
 			return getReactiveCqlOperations().query(statementHandler, statementHandler, mappingFunction::apply).next();
 		}
 
@@ -948,9 +963,7 @@ public class ReactiveCassandraTemplate
 			}
 		}
 
-		return getReactiveCqlOperations()
-				.execute(new GetConfiguredPageSize())
-				.single();
+		return getReactiveCqlOperations().execute(new GetConfiguredPageSize()).single();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -1021,13 +1034,25 @@ public class ReactiveCassandraTemplate
 	}
 
 	/**
+	 * General callback interface used to create and bind prepared CQL statements.
+	 * <p>
+	 * This interface prepares the CQL statement and sets values on a {@link PreparedStatement} as union-type comprised
+	 * from {@link ReactivePreparedStatementCreator}, {@link PreparedStatementBinder}, and {@link CqlProvider}.
+	 *
+	 * @since 3.2.10
+	 */
+	public interface ReactivePreparedStatementHandler
+			extends ReactivePreparedStatementCreator, PreparedStatementBinder, CqlProvider {
+
+	}
+
+	/**
 	 * Utility class to prepare a {@link SimpleStatement} and bind values associated with the statement to a
 	 * {@link BoundStatement}.
 	 *
 	 * @since 3.2
 	 */
-	private static class PreparedStatementHandler
-			implements ReactivePreparedStatementCreator, PreparedStatementBinder, CqlProvider {
+	public static class PreparedStatementHandler implements ReactivePreparedStatementHandler {
 
 		private final SimpleStatement statement;
 
