@@ -60,6 +60,7 @@ import org.springframework.data.cassandra.domain.TypeWithKeyClass;
 import org.springframework.data.cassandra.domain.TypeWithMapId;
 import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.domain.UserToken;
+import org.springframework.data.cassandra.support.UserDefinedTypeBuilder;
 import org.springframework.data.cassandra.test.util.RowMockUtil;
 import org.springframework.data.projection.EntityProjection;
 import org.springframework.data.projection.EntityProjectionIntrospector;
@@ -67,6 +68,7 @@ import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.data.UdtValue;
 import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.datastax.oss.driver.internal.core.data.DefaultTupleValue;
 import com.datastax.oss.driver.internal.core.type.DefaultTupleType;
@@ -1308,9 +1310,8 @@ public class MappingCassandraConverterUnitTests {
 		@CassandraType(type = CassandraType.Name.SET,
 				typeArguments = CassandraType.Name.INT) private Set<Condition> conditionSet;
 
-		@CassandraType(type = CassandraType.Name.MAP,
-				typeArguments = { CassandraType.Name.INT,
-						CassandraType.Name.INT }) private Map<Condition, Condition> conditionMap;
+		@CassandraType(type = CassandraType.Name.MAP, typeArguments = { CassandraType.Name.INT,
+				CassandraType.Name.INT }) private Map<Condition, Condition> conditionMap;
 
 	}
 
@@ -1481,7 +1482,8 @@ public class MappingCassandraConverterUnitTests {
 		Row source = RowMockUtil.newRowMock(column("id", "id-1", DataTypes.TEXT), column("prefixage", 30, DataTypes.INT),
 				column("prefixfirstname", "fn", DataTypes.TEXT));
 
-		WithPrefixedNullableEmbeddedType target = mappingCassandraConverter.read(WithPrefixedNullableEmbeddedType.class, source);
+		WithPrefixedNullableEmbeddedType target = mappingCassandraConverter.read(WithPrefixedNullableEmbeddedType.class,
+				source);
 		assertThat(target.nested).isEqualTo(new EmbeddedWithSimpleTypes("fn", 30, null));
 	}
 
@@ -1514,6 +1516,29 @@ public class MappingCassandraConverterUnitTests {
 		assertThat(target.theJson.get("hello")).isEqualTo("world");
 	}
 
+	@Test // GH-1240
+	void shouldReadOpenProjectionWithNestedObject() {
+
+		com.datastax.oss.driver.api.core.type.UserDefinedType authorType = UserDefinedTypeBuilder.forName("author")
+				.withField("firstName", DataTypes.TEXT).withField("lastName", DataTypes.TEXT).build();
+
+		UdtValue udtValue = authorType.newValue().setString("firstName", "Walter").setString("lastName", "White");
+
+		Row source = RowMockUtil.newRowMock(column("id", "id-1", DataTypes.TEXT), column("name", "my-book", DataTypes.INT),
+				column("author", udtValue, authorType));
+
+		EntityProjectionIntrospector introspector = EntityProjectionIntrospector.create(
+				mappingCassandraConverter.getProjectionFactory(),
+				EntityProjectionIntrospector.ProjectionPredicate.typeHierarchy()
+						.and((target, underlyingType) -> !mappingCassandraConverter.getCustomConversions().isSimpleType(target)),
+				mappingContext);
+
+		BookProjection projection = mappingCassandraConverter
+				.project(introspector.introspect(BookProjection.class, Book.class), source);
+
+		assertThat(projection.getName()).isEqualTo("my-book by Walter White");
+	}
+
 	static class TypeWithJsonObject {
 
 		JSONObject theJson;
@@ -1540,6 +1565,35 @@ public class MappingCassandraConverterUnitTests {
 		public String convert(JSONObject source) {
 			return source.toJSONString();
 		}
+
+	}
+
+	interface BookProjection {
+
+		@Value("#{target.name + ' by ' + target.author.firstName + ' ' + target.author.lastName}")
+		String getName();
+	}
+
+	@Data
+	static class Book {
+
+		@Id String id;
+
+		String name;
+
+		Author author = new Author();
+
+	}
+
+	@Data
+	@UserDefinedType
+	static class Author {
+
+		@Id String id;
+
+		String firstName;
+
+		String lastName;
 
 	}
 }

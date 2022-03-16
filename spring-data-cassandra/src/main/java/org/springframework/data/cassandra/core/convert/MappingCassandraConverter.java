@@ -27,6 +27,7 @@ import java.util.function.Predicate;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.ApplicationContext;
@@ -39,7 +40,16 @@ import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.core.mapping.*;
 import org.springframework.data.cassandra.core.mapping.Embedded.OnEmpty;
 import org.springframework.data.convert.CustomConversions;
-import org.springframework.data.mapping.*;
+import org.springframework.data.mapping.AccessOptions;
+import org.springframework.data.mapping.InstanceCreatorMetadata;
+import org.springframework.data.mapping.MappingException;
+import org.springframework.data.mapping.Parameter;
+import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.PersistentPropertyAccessor;
+import org.springframework.data.mapping.PersistentPropertyPath;
+import org.springframework.data.mapping.PersistentPropertyPathAccessor;
+import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
 import org.springframework.data.mapping.model.DefaultSpELExpressionEvaluator;
@@ -1054,8 +1064,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private Object getPotentiallyConvertedSimpleRead(@Nullable Object value, @Nullable Class<?> target) {
 
-		if (value == null || target == null
-				|| ClassUtils.isAssignableValue(target, value)) {
+		if (value == null || target == null || ClassUtils.isAssignableValue(target, value)) {
 			return value;
 		}
 
@@ -1308,10 +1317,9 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		final ValueConverter<Object> elementConverter;
 
 		public ConversionContext(org.springframework.data.convert.CustomConversions conversions,
-				ContainerValueConverter<Row> rowConverter,
-				ContainerValueConverter<TupleValue> tupleConverter, ContainerValueConverter<UdtValue> udtConverter,
-				ContainerValueConverter<Collection<?>> collectionConverter, ContainerValueConverter<Map<?, ?>> mapConverter,
-				ValueConverter<Object> elementConverter) {
+				ContainerValueConverter<Row> rowConverter, ContainerValueConverter<TupleValue> tupleConverter,
+				ContainerValueConverter<UdtValue> udtConverter, ContainerValueConverter<Collection<?>> collectionConverter,
+				ContainerValueConverter<Map<?, ?>> mapConverter, ValueConverter<Object> elementConverter) {
 			this.conversions = conversions;
 			this.rowConverter = rowConverter;
 			this.tupleConverter = tupleConverter;
@@ -1577,7 +1585,9 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 			EntityProjection<?, ?> property = projection.findProperty(name);
 			if (property == null) {
-				return super.forProperty(name);
+				return new ConversionContext(conversions, MappingCassandraConverter.this::doReadRow,
+						MappingCassandraConverter.this::doReadTupleValue, MappingCassandraConverter.this::doReadUdtValue,
+						collectionConverter, mapConverter, elementConverter);
 			}
 
 			return new ProjectingConversionContext(conversions, rowConverter, tupleConverter, udtConverter,
