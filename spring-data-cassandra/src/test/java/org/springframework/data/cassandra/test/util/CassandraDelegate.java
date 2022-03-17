@@ -24,15 +24,15 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.CassandraContainer;
 
 import org.springframework.data.cassandra.core.cql.SessionCallback;
 import org.springframework.data.cassandra.support.CassandraConnectionProperties;
 import org.springframework.data.cassandra.support.CqlDataSet;
 import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
-import org.springframework.util.SocketUtils;
 import org.springframework.util.StringUtils;
+
+import org.testcontainers.containers.CassandraContainer;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
@@ -85,8 +85,8 @@ class CassandraDelegate {
 	/**
 	 * Create a new {@link CassandraDelegate} allowing the use of a config file.
 	 *
-	 * @param yamlConfigurationResource {@link String name} of the configuration resource;
-	 * must not be {@literal null} or {@literal empty}.
+	 * @param yamlConfigurationResource {@link String name} of the configuration resource; must not be {@literal null} or
+	 *          {@literal empty}.
 	 * @see #CassandraDelegate(String, long)
 	 */
 	public CassandraDelegate(@NonNull String yamlConfigurationResource) {
@@ -258,7 +258,7 @@ class CassandraDelegate {
 	private void configureRemoteJmxPort() {
 
 		if (!System.getProperties().containsKey("com.sun.management.jmxremote.port")) {
-			System.setProperty("com.sun.management.jmxremote.port", String.valueOf(SocketUtils.findAvailableTcpPort(1024)));
+			System.setProperty("com.sun.management.jmxremote.port", "1024");
 		}
 	}
 
@@ -273,9 +273,7 @@ class CassandraDelegate {
 
 		if (container == null) {
 
-			container = getCassandraDockerImageName()
-				.map(CassandraContainer::new)
-				.orElseGet(CassandraContainer::new);
+			container = getCassandraDockerImageName().map(CassandraContainer::new).orElseGet(CassandraContainer::new);
 
 			container.start();
 
@@ -289,14 +287,13 @@ class CassandraDelegate {
 
 	private Optional<String> getCassandraDockerImageName() {
 
-		return resolveCassandraVersion()
-			.map(cassandraVersion -> String.format("cassandra:%s", cassandraVersion));
+		return resolveCassandraVersion().map(cassandraVersion -> String.format("cassandra:%s", cassandraVersion));
 	}
 
 	private Optional<String> resolveCassandraVersion() {
 
 		return Optional.ofNullable(System.getProperty("cassandra.version", System.getenv("CASSANDRA_VERSION")))
-			.filter(StringUtils::hasText);
+				.filter(StringUtils::hasText);
 	}
 
 	private synchronized void initializeConnection() {
