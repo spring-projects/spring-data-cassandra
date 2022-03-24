@@ -22,6 +22,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 
 import org.junit.jupiter.api.Test;
 
@@ -105,5 +106,33 @@ class WriteOptionsUnitTests {
 		assertThat(writeOptions.getRoutingKeyspace()).isEqualTo(
 				CqlIdentifier.fromCql("routing_keyspace"));
 		assertThat(writeOptions.getRoutingKey()).isEqualTo(ByteBuffer.allocate(1));
+	}
+
+	@Test // GH-1248
+	void buildWriteOptionsWithTtlDurationZero() {
+		try {
+			WriteOptions writeOptions = WriteOptions.builder()
+					.ttl(Duration.ZERO)
+					.build();
+			
+			fail("WiteOptionsBuilder must not allow zero TTL");
+		}
+		catch (Exception e) {
+			// expected behavior
+		}
+	}
+
+	@Test // GH-1248
+	void buildWriteOptionsWithTtlNegativeDuration() {
+		try {
+			WriteOptions writeOptions = WriteOptions.builder()
+					.ttl(Duration.of(-1, ChronoUnit.MICROS))
+					.build();
+
+			fail("WiteOptionsBuilder must not allow negative TTL");
+		}
+		catch (Exception e) {
+			// expected behavior
+		}
 	}
 }
