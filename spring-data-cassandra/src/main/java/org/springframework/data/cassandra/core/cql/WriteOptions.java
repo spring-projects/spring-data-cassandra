@@ -151,6 +151,7 @@ public class WriteOptions extends QueryOptions {
 	 *
 	 * @author Mark Paluch
 	 * @author Lukasz Antoniak
+	 * @author Thomas Strau&szlig;
 	 * @since 1.5
 	 */
 	public static class WriteOptionsBuilder extends QueryOptionsBuilder {
@@ -344,7 +345,7 @@ public class WriteOptions extends QueryOptions {
 		public WriteOptionsBuilder ttl(Duration ttl) {
 
 			Assert.notNull(ttl, "TTL must not be null");
-			Assert.isTrue(!ttl.isNegative(), "TTL must be greater than equal to zero");
+			Assert.isTrue(!ttl.isNegative() && !ttl.isZero(), "TTL must be greater than equal to zero");
 
 			this.ttl = ttl;
 
