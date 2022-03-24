@@ -21,6 +21,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 
 import org.junit.jupiter.api.Test;
 
@@ -31,6 +32,7 @@ import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
  * Unit tests for {@link WriteOptions}.
  *
  * @author Mark Paluch
+ * @author Thomas Strau&szlig;
  */
 class WriteOptionsUnitTests {
 
@@ -88,5 +90,33 @@ class WriteOptionsUnitTests {
 		assertThat(mutated.getTimeout()).isEqualTo(Duration.ofMillis(100));
 		assertThat(mutated.getPageSize()).isEqualTo(10);
 		assertThat(mutated.getTracing()).isTrue();
+	}
+
+	@Test // GH-1248
+	void buildWriteOptionsWithTtlDurationZero() {
+		try {
+			WriteOptions writeOptions = WriteOptions.builder()
+					.ttl(Duration.ZERO)
+					.build();
+
+			fail("WiteOptionsBuilder must not allow zero TTL");
+		}
+		catch (Exception e) {
+			// expected behavior
+		}
+	}
+
+	@Test // GH-1248
+	void buildWriteOptionsWithTtlNegativeDuration() {
+		try {
+			WriteOptions writeOptions = WriteOptions.builder()
+					.ttl(Duration.of(-1, ChronoUnit.MICROS))
+					.build();
+
+			fail("WiteOptionsBuilder must not allow negative TTL");
+		}
+		catch (Exception e) {
+			// expected behavior
+		}
 	}
 }
