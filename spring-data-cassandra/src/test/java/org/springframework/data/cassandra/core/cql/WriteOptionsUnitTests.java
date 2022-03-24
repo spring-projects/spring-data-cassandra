@@ -34,6 +34,7 @@ import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
  *
  * @author Mark Paluch
  * @author Sam Lightfoot
+ * @author Thomas Strau&szlig;
  */
 class WriteOptionsUnitTests {
 

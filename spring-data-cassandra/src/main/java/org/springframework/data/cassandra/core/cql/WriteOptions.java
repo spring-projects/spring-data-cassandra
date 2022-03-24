@@ -143,6 +143,7 @@ public class WriteOptions extends QueryOptions {
 	 *
 	 * @author Mark Paluch
 	 * @author Lukasz Antoniak
+	 * @author Thomas Strau&szlig;
 	 * @since 1.5
 	 */
 	public static class WriteOptionsBuilder extends QueryOptionsBuilder {
