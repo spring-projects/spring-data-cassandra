@@ -36,6 +36,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * @author Lukasz Antoniak
  * @author Tomasz Lelek
  * @author Sam Lightfoot
+ * @author Thomas Strau&szlig;
  * @see QueryOptions
  */
 public class WriteOptions extends QueryOptions {
@@ -274,12 +275,7 @@ public class WriteOptions extends QueryOptions {
 		 * @return {@code this} {@link WriteOptionsBuilder}
 		 */
 		public WriteOptionsBuilder ttl(int ttl) {
-
-			Assert.isTrue(ttl >= 0, "TTL must be greater than equal to zero");
-
-			this.ttl = Duration.ofSeconds(ttl);
-
-			return this;
+			return ttl(Duration.ofSeconds(ttl));
 		}
 
 		/**
