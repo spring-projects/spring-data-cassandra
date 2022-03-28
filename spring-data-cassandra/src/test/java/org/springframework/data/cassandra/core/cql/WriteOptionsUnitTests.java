@@ -94,29 +94,14 @@ class WriteOptionsUnitTests {
 
 	@Test // GH-1248
 	void buildWriteOptionsWithTtlDurationZero() {
-		try {
-			WriteOptions writeOptions = WriteOptions.builder()
-					.ttl(Duration.ZERO)
-					.build();
-
-			fail("WiteOptionsBuilder must not allow zero TTL");
-		}
-		catch (Exception e) {
-			// expected behavior
-		}
+		assertThatIllegalArgumentException().isThrownBy(() -> WriteOptions.builder().ttl(0));
+		assertThatIllegalArgumentException().isThrownBy(() -> WriteOptions.builder().ttl(Duration.ZERO));
 	}
 
 	@Test // GH-1248
 	void buildWriteOptionsWithTtlNegativeDuration() {
-		try {
-			WriteOptions writeOptions = WriteOptions.builder()
-					.ttl(Duration.of(-1, ChronoUnit.MICROS))
-					.build();
-
-			fail("WiteOptionsBuilder must not allow negative TTL");
-		}
-		catch (Exception e) {
-			// expected behavior
-		}
+		assertThatIllegalArgumentException().isThrownBy(() -> WriteOptions.builder().ttl(-1));
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> WriteOptions.builder().ttl(Duration.of(-1, ChronoUnit.MICROS)));
 	}
 }

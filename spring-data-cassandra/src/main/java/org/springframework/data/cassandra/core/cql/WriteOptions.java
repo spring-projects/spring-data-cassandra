@@ -34,6 +34,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * @author Mark Paluch
  * @author Lukasz Antoniak
  * @author Tomasz Lelek
+ * @author Thomas Strau&szlig;
  * @see QueryOptions
  */
 public class WriteOptions extends QueryOptions {
@@ -46,8 +47,7 @@ public class WriteOptions extends QueryOptions {
 
 	protected WriteOptions(@Nullable ConsistencyLevel consistencyLevel, ExecutionProfileResolver executionProfileResolver,
 			@Nullable CqlIdentifier keyspace, @Nullable Integer pageSize, @Nullable ConsistencyLevel serialConsistencyLevel,
-			Duration timeout, Duration ttl,
-			@Nullable Long timestamp, @Nullable Boolean tracing) {
+			Duration timeout, Duration ttl, @Nullable Long timestamp, @Nullable Boolean tracing) {
 
 		super(consistencyLevel, executionProfileResolver, keyspace, pageSize, serialConsistencyLevel, timeout, tracing);
 
@@ -293,12 +293,7 @@ public class WriteOptions extends QueryOptions {
 		 * @return {@code this} {@link WriteOptionsBuilder}
 		 */
 		public WriteOptionsBuilder ttl(int ttl) {
-
-			Assert.isTrue(ttl >= 0, "TTL must be greater than equal to zero");
-
-			this.ttl = Duration.ofSeconds(ttl);
-
-			return this;
+			return ttl(Duration.ofSeconds(ttl));
 		}
 
 		/**
