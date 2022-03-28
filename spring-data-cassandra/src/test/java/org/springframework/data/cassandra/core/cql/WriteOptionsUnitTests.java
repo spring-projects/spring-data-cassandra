@@ -62,8 +62,7 @@ class WriteOptionsUnitTests {
 		assertThat(writeOptions.getTracing()).isTrue();
 		assertThat(writeOptions.getKeyspace()).isEqualTo(CqlIdentifier.fromCql("my_keyspace"));
 		assertThat(writeOptions.isIdempotent()).isEqualTo(true);
-		assertThat(writeOptions.getRoutingKeyspace()).isEqualTo(
-				CqlIdentifier.fromCql("routing_keyspace"));
+		assertThat(writeOptions.getRoutingKeyspace()).isEqualTo(CqlIdentifier.fromCql("routing_keyspace"));
 		assertThat(writeOptions.getRoutingKey()).isEqualTo(ByteBuffer.allocate(1));
 	}
 
@@ -104,36 +103,20 @@ class WriteOptionsUnitTests {
 		assertThat(mutated.getPageSize()).isEqualTo(10);
 		assertThat(mutated.getTracing()).isTrue();
 		assertThat(writeOptions.isIdempotent()).isEqualTo(true);
-		assertThat(writeOptions.getRoutingKeyspace()).isEqualTo(
-				CqlIdentifier.fromCql("routing_keyspace"));
+		assertThat(writeOptions.getRoutingKeyspace()).isEqualTo(CqlIdentifier.fromCql("routing_keyspace"));
 		assertThat(writeOptions.getRoutingKey()).isEqualTo(ByteBuffer.allocate(1));
 	}
 
 	@Test // GH-1248
 	void buildWriteOptionsWithTtlDurationZero() {
-		try {
-			WriteOptions writeOptions = WriteOptions.builder()
-					.ttl(Duration.ZERO)
-					.build();
-			
-			fail("WiteOptionsBuilder must not allow zero TTL");
-		}
-		catch (Exception e) {
-			// expected behavior
-		}
+		assertThatIllegalArgumentException().isThrownBy(() -> WriteOptions.builder().ttl(0));
+		assertThatIllegalArgumentException().isThrownBy(() -> WriteOptions.builder().ttl(Duration.ZERO));
 	}
 
 	@Test // GH-1248
 	void buildWriteOptionsWithTtlNegativeDuration() {
-		try {
-			WriteOptions writeOptions = WriteOptions.builder()
-					.ttl(Duration.of(-1, ChronoUnit.MICROS))
-					.build();
-
-			fail("WiteOptionsBuilder must not allow negative TTL");
-		}
-		catch (Exception e) {
-			// expected behavior
-		}
+		assertThatIllegalArgumentException().isThrownBy(() -> WriteOptions.builder().ttl(-1));
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> WriteOptions.builder().ttl(Duration.of(-1, ChronoUnit.MICROS)));
 	}
 }
