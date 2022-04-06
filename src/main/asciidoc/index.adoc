@@ -41,3 +41,4 @@ include::{spring-data-commons-docs}/repository-populator-namespace-reference.ado
 include::{spring-data-commons-docs}/repository-query-keywords-reference.adoc[leveloffset=+1]
 include::{spring-data-commons-docs}/repository-query-return-types-reference.adoc[leveloffset=+1]
 include::reference/migration-guides.adoc[leveloffset=+1]
+include::reference/observability.adoc[leveloffset=+1]
