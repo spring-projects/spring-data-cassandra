@@ -106,13 +106,13 @@ public class ZipkinIntegrationTests extends SampleTestRunner {
 		}
 
 		@Bean
-		CqlSessionTagsProvider tagsProvider() {
-			return new DefaultCassandraTagsProvider();
+		CqlSessionKeyValuesProvider tagsProvider() {
+			return new DefaultCassandraKeyValuesProvider();
 		}
 
 		@Bean
 		CqlSessionTracingBeanPostProcessor traceCqlSessionBeanPostProcessor(ObservationRegistry observationRegistry,
-				CqlSessionTagsProvider tagsProvider) {
+				CqlSessionKeyValuesProvider tagsProvider) {
 			return new CqlSessionTracingBeanPostProcessor(observationRegistry, tagsProvider);
 		}
 	}

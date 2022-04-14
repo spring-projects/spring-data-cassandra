@@ -46,7 +46,7 @@ import com.datastax.oss.driver.api.core.cql.Statement;
  * @since 4.0.0
  */
 final class CqlSessionTracingInterceptor
-		implements MethodInterceptor, Observation.TagsProviderAware<CqlSessionTagsProvider> {
+		implements MethodInterceptor, Observation.KeyValuesProviderAware<CqlSessionKeyValuesProvider> {
 
 	private static final Log log = LogFactory.getLog(CqlSessionTracingInterceptor.class);
 
@@ -54,14 +54,14 @@ final class CqlSessionTracingInterceptor
 
 	private final ObservationRegistry observationRegistry;
 
-	private CqlSessionTagsProvider tagsProvider;
+	private CqlSessionKeyValuesProvider keyValuesProvider;
 
 	CqlSessionTracingInterceptor(CqlSession delegateSession, ObservationRegistry observationRegistry,
-			CqlSessionTagsProvider tagsProvider) {
+			CqlSessionKeyValuesProvider keyValuesProvider) {
 
 		this.delegateSession = delegateSession;
 		this.observationRegistry = observationRegistry;
-		this.tagsProvider = tagsProvider;
+		this.keyValuesProvider = keyValuesProvider;
 	}
 
 	@Nullable
@@ -154,12 +154,12 @@ final class CqlSessionTracingInterceptor
 		return CassandraObservation.CASSANDRA_QUERY_OBSERVATION //
 				.observation(this.observationRegistry, observationContext) //
 				.contextualName(CassandraObservation.CASSANDRA_QUERY_OBSERVATION.getContextualName()) //
-				.tagsProvider(this.tagsProvider) //
+				.keyValuesProvider(this.keyValuesProvider) //
 				.start();
 	}
 
 	@Override
-	public void setTagsProvider(CqlSessionTagsProvider tagsProvider) {
-		this.tagsProvider = tagsProvider;
+	public void setKeyValuesProvider(CqlSessionKeyValuesProvider keyValuesProvider) {
+		this.keyValuesProvider = keyValuesProvider;
 	}
 }

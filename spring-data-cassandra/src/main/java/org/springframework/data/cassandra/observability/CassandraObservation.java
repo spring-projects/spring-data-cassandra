@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.observability;
 
-import io.micrometer.common.docs.TagKey;
+import io.micrometer.common.docs.KeyName;
 import io.micrometer.observation.docs.DocumentedObservation;
 
 /**
@@ -44,13 +44,13 @@ enum CassandraObservation implements DocumentedObservation {
 		}
 
 		@Override
-		public TagKey[] getLowCardinalityTagKeys() {
-			return LowCardinalityTags.values();
+		public KeyName[] getLowCardinalityKeyNames() {
+			return LowCardinalityKeyNames.values();
 		}
 
 		@Override
-		public TagKey[] getHighCardinalityTagKeys() {
-			return HighCardinalityTags.values();
+		public KeyName[] getHighCardinalityKeyNames() {
+			return HighCardinalityKeyNames.values();
 		}
 
 		@Override
@@ -59,14 +59,14 @@ enum CassandraObservation implements DocumentedObservation {
 		}
 	};
 
-	enum LowCardinalityTags implements TagKey {
+	enum LowCardinalityKeyNames implements KeyName {
 
 		/**
 		 * Name of the Cassandra keyspace.
 		 */
 		KEYSPACE_NAME {
 			@Override
-			public String getKey() {
+			public String getKeyName() {
 				return "spring.data.cassandra.keyspace";
 			}
 		},
@@ -76,7 +76,7 @@ enum CassandraObservation implements DocumentedObservation {
 		 */
 		SESSION_NAME {
 			@Override
-			public String getKey() {
+			public String getKeyName() {
 				return "spring.data.cassandra.sessionName";
 			}
 		},
@@ -86,7 +86,7 @@ enum CassandraObservation implements DocumentedObservation {
 		 */
 		METHOD_NAME {
 			@Override
-			public String getKey() {
+			public String getKeyName() {
 				return "spring.data.cassandra.methodName";
 			}
 		},
@@ -96,7 +96,7 @@ enum CassandraObservation implements DocumentedObservation {
 		 */
 		URL {
 			@Override
-			public String getKey() {
+			public String getKeyName() {
 				return "spring.data.cassandra.url";
 			}
 		},
@@ -106,20 +106,20 @@ enum CassandraObservation implements DocumentedObservation {
 		 */
 		NODE_ERROR_TAG {
 			@Override
-			public String getKey() {
+			public String getKeyName() {
 				return "spring.data.cassandra.node[%s].error";
 			}
 		}
 	}
 
-	enum HighCardinalityTags implements TagKey {
+	enum HighCardinalityKeyNames implements KeyName {
 
 		/**
-		 * A tag containing Cassandra CQL.
+		 * A key-value containing Cassandra CQL.
 		 */
 		CQL_TAG {
 			@Override
-			public String getKey() {
+			public String getKeyName() {
 				return "spring.data.cassandra.cql";
 			}
 		}

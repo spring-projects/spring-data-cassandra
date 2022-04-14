@@ -15,10 +15,14 @@
  */
 package org.springframework.data.cassandra.observability;
 
-import io.micrometer.common.Tags;
+import io.micrometer.common.KeyValue;
+import io.micrometer.common.KeyValues;
 
 import java.util.Optional;
 import java.util.StringJoiner;
+
+import org.springframework.data.cassandra.observability.CassandraObservation.HighCardinalityKeyNames;
+import org.springframework.data.cassandra.observability.CassandraObservation.LowCardinalityKeyNames;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.cql.BatchStatement;
@@ -28,34 +32,39 @@ import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.Statement;
 
 /**
- * Default {@link CqlSessionTagsProvider} implementation.
+ * Default {@link CqlSessionKeyValuesProvider} implementation.
  *
  * @author Greg Turnquist
  * @since 4.0.0
  */
-public class DefaultCassandraTagsProvider implements CqlSessionTagsProvider {
+public class DefaultCassandraKeyValuesProvider implements CqlSessionKeyValuesProvider {
 
 	@Override
-	public Tags getLowCardinalityTags(CqlSessionContext context) {
+	public KeyValues getLowCardinalityKeyValues(CqlSessionContext context) {
 
-		Tags tags = Tags.of( //
-				CassandraObservation.LowCardinalityTags.SESSION_NAME
-						.of(Optional.ofNullable(context.getDelegateSession().getName()).orElse("unknown")),
-				CassandraObservation.LowCardinalityTags.KEYSPACE_NAME.of(
+		KeyValues keyValues = KeyValues.of( //
+				KeyValue.of( //
+						LowCardinalityKeyNames.SESSION_NAME.getKeyName(),
+						Optional.ofNullable(context.getDelegateSession().getName()).orElse("unknown")),
+				KeyValue.of( //
+						LowCardinalityKeyNames.KEYSPACE_NAME.getKeyName(),
 						Optional.ofNullable(context.getStatement().getKeyspace()).map(CqlIdentifier::asInternal).orElse("unknown")),
-				CassandraObservation.LowCardinalityTags.METHOD_NAME.of(context.getMethodName()));
+				KeyValue.of( //
+						LowCardinalityKeyNames.METHOD_NAME.getKeyName(), //
+						context.getMethodName()));
 
 		if (context.getStatement().getNode() != null) {
-			tags = tags.and(CassandraObservation.LowCardinalityTags.URL
-					.of(context.getStatement().getNode().getEndPoint().resolve().toString()));
+			keyValues = keyValues.and(KeyValue.of( //
+					LowCardinalityKeyNames.URL.getKeyName(),
+					context.getStatement().getNode().getEndPoint().resolve().toString()));
 		}
 
-		return tags;
+		return keyValues;
 	}
 
 	@Override
-	public Tags getHighCardinalityTags(CqlSessionContext context) {
-		return Tags.of(CassandraObservation.HighCardinalityTags.CQL_TAG.of(getCql(context.getStatement())));
+	public KeyValues getHighCardinalityKeyValues(CqlSessionContext context) {
+		return KeyValues.of(KeyValue.of(HighCardinalityKeyNames.CQL_TAG.getKeyName(), getCql(context.getStatement())));
 	}
 
 	/**

@@ -18,8 +18,8 @@ package org.springframework.data.cassandra.observability;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.cassandra.observability.CassandraObservation.*;
 
-import io.micrometer.common.Tag;
-import io.micrometer.common.Tags;
+import io.micrometer.common.KeyValue;
+import io.micrometer.common.KeyValues;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.observation.TimerObservationHandler;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
@@ -91,7 +91,7 @@ public class CqlSessionTracingTests extends IntegrationTestsSupport {
 		ObservationRegistry observationRegistry = ObservationRegistry.create();
 		observationRegistry.observationConfig().observationHandler(new TimerObservationHandler(meterRegistry));
 
-		CqlSessionTagsProvider tagsProvider = new DefaultCassandraTagsProvider();
+		CqlSessionKeyValuesProvider tagsProvider = new DefaultCassandraKeyValuesProvider();
 
 		SimpleTracer tracer = new SimpleTracer();
 		observationRegistry.observationConfig().observationHandler(new CqlSessionTracingObservationHandler(tracer));
@@ -108,7 +108,7 @@ public class CqlSessionTracingTests extends IntegrationTestsSupport {
 		ObservationRegistry observationRegistry = ObservationRegistry.create();
 		observationRegistry.observationConfig().observationHandler(new TimerObservationHandler(meterRegistry));
 
-		CqlSessionTagsProvider tagsProvider = new DefaultCassandraTagsProvider();
+		CqlSessionKeyValuesProvider tagsProvider = new DefaultCassandraKeyValuesProvider();
 		SimpleTracer tracer = new SimpleTracer();
 		observationRegistry.observationConfig().observationHandler(new CqlSessionTracingObservationHandler(tracer));
 
@@ -122,25 +122,27 @@ public class CqlSessionTracingTests extends IntegrationTestsSupport {
 			traceSession.prepareAsync(CREATE_KEYSPACE);
 		});
 
-		MeterRegistryAssert.then(meterRegistry).hasTimerWithNameAndTags(CASSANDRA_QUERY_OBSERVATION.getName(), Tags.of( //
-				LowCardinalityTags.SESSION_NAME.of("s5"), //
-				LowCardinalityTags.KEYSPACE_NAME.of("unknown"), //
-				Tag.of("error", "none") //
+		MeterRegistryAssert.then(meterRegistry).hasTimerWithNameAndTags(CASSANDRA_QUERY_OBSERVATION.getName(), KeyValues.of( //
+				KeyValue.of(LowCardinalityKeyNames.SESSION_NAME.getKeyName(), "s5"), //
+				KeyValue.of(LowCardinalityKeyNames.KEYSPACE_NAME.getKeyName(), "unknown"), //
+				KeyValue.of("error", "none") //
 		));
 
 		assertThat(tracer.getSpans()).hasSize(4);
 
-		assertThat(findSpan(tracer.getSpans(), LowCardinalityTags.METHOD_NAME.getKey(), "execute")).isNotNull();
-		assertThat(findSpan(tracer.getSpans(), LowCardinalityTags.METHOD_NAME.getKey(), "executeAsync")).isNotNull();
-		assertThat(findSpan(tracer.getSpans(), LowCardinalityTags.METHOD_NAME.getKey(), "prepare")).isNotNull();
-		assertThat(findSpan(tracer.getSpans(), LowCardinalityTags.METHOD_NAME.getKey(), "prepareAsync")).isNotNull();
+		assertThat(findSpan(tracer.getSpans(), LowCardinalityKeyNames.METHOD_NAME.getKeyName(), "execute")).isNotNull();
+		assertThat(findSpan(tracer.getSpans(), LowCardinalityKeyNames.METHOD_NAME.getKeyName(), "executeAsync"))
+				.isNotNull();
+		assertThat(findSpan(tracer.getSpans(), LowCardinalityKeyNames.METHOD_NAME.getKeyName(), "prepare")).isNotNull();
+		assertThat(findSpan(tracer.getSpans(), LowCardinalityKeyNames.METHOD_NAME.getKeyName(), "prepareAsync"))
+				.isNotNull();
 
 		tracer.getSpans().forEach(simpleSpan -> SpanAssert.then(simpleSpan) //
 				.hasRemoteServiceNameEqualTo("cassandra-s5") //
 				.hasNameEqualTo(CASSANDRA_QUERY_OBSERVATION.getContextualName()) //
-				.hasTag(LowCardinalityTags.SESSION_NAME.getKey(), "s5") //
-				.hasTag(LowCardinalityTags.KEYSPACE_NAME.getKey(), "unknown") //
-				.hasTag(HighCardinalityTags.CQL_TAG.getKey(), CREATE_KEYSPACE) //
+				.hasTag(LowCardinalityKeyNames.SESSION_NAME.getKeyName(), "s5") //
+				.hasTag(LowCardinalityKeyNames.KEYSPACE_NAME.getKeyName(), "unknown") //
+				.hasTag(HighCardinalityKeyNames.CQL_TAG.getKeyName(), CREATE_KEYSPACE) //
 				.hasIpThatIsBlank() //
 				.hasPortEqualTo(0) //
 				.hasKindEqualTo(Span.Kind.CLIENT));

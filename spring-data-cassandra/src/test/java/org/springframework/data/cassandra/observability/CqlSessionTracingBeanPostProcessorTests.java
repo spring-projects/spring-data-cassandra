@@ -74,13 +74,13 @@ public class CqlSessionTracingBeanPostProcessorTests {
 		}
 
 		@Bean
-		CqlSessionTagsProvider tagsProvider() {
-			return new DefaultCassandraTagsProvider();
+		CqlSessionKeyValuesProvider keyValuesProvider() {
+			return new DefaultCassandraKeyValuesProvider();
 		}
 
 		@Bean
 		CqlSessionTracingBeanPostProcessor traceCqlSessionBeanPostProcessor(ObservationRegistry observationRegistry,
-				CqlSessionTagsProvider tagsProvider) {
+				CqlSessionKeyValuesProvider tagsProvider) {
 			return new CqlSessionTracingBeanPostProcessor(observationRegistry, tagsProvider);
 		}
 	}

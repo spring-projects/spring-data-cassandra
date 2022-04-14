@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.observability;
 
-import io.micrometer.common.Tag;
+import io.micrometer.common.KeyValue;
 import io.micrometer.observation.Observation;
 import io.micrometer.tracing.Span;
 import io.micrometer.tracing.Tracer;
@@ -61,14 +61,14 @@ public class CqlSessionTracingObservationHandler implements TracingObservationHa
 		String sessionName = null;
 		String url = null;
 
-		for (Tag tag : context.getLowCardinalityTags()) {
+		for (KeyValue keyValue : context.getLowCardinalityKeyValues()) {
 
-			if (tag.getKey().equals(CassandraObservation.LowCardinalityTags.SESSION_NAME.getKey())) {
-				sessionName = tag.getValue();
+			if (keyValue.getKey().equals(CassandraObservation.LowCardinalityKeyNames.SESSION_NAME.getKeyName())) {
+				sessionName = keyValue.getValue();
 			}
 
-			if (tag.getKey().equals(CassandraObservation.LowCardinalityTags.URL.getKey())) {
-				url = tag.getValue();
+			if (keyValue.getKey().equals(CassandraObservation.LowCardinalityKeyNames.URL.getKeyName())) {
+				url = keyValue.getValue();
 			}
 		}
 
