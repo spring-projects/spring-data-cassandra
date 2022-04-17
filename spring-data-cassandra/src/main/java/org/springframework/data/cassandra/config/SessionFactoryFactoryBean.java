@@ -37,6 +37,7 @@ import com.datastax.oss.driver.api.core.CqlSession;
  * keyspace before applying {@link SchemaAction schema actions} such as creating user-defined types and tables.
  *
  * @author Mark Paluch
+ * @author Ammar Khaku
  * @since 3.0
  * @see SessionFactoryInitializer
  */
@@ -128,9 +129,7 @@ public class SessionFactoryFactoryBean extends AbstractFactoryBean<SessionFactor
 			this.keyspacePopulator.populate(getObject().getSession());
 		}
 
-		performSchemaAction();
-
-		this.session.refreshSchema();
+		SchemaRefreshUtils.withDisabledSchema(session, this::performSchemaAction);
 	}
 
 	@Override
