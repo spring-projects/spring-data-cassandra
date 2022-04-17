@@ -67,6 +67,7 @@ import com.datastax.oss.driver.api.core.CqlSessionBuilder;
  * @author John Blum
  * @author Mark Paluch
  * @author Tomasz Lelek
+ * @author Ammar Khaku
  * @since 3.0
  */
 public class CqlSessionFactoryBean
@@ -450,11 +451,20 @@ public class CqlSessionFactoryBean
 
 		this.session = buildSession(sessionBuilder);
 
-		executeCql(getStartupScripts().stream(), this.session);
-		performSchemaAction();
+		try {
+			SchemaRefreshUtils.withDisabledSchema(this.session, () -> {
+				executeCql(getStartupScripts().stream(), this.session);
+				performSchemaAction();
+			});
+		} catch (RuntimeException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new IllegalStateException("Unexpected checked exception thrown", e);
+		}
 
-		this.systemSession.refreshSchema();
-		this.session.refreshSchema();
+		if (this.systemSession.isSchemaMetadataEnabled()) {
+			this.systemSession.refreshSchema();
+		}
 	}
 
 	protected CqlSessionBuilder buildBuilder() {
