@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletionStage;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -57,6 +58,7 @@ import org.springframework.util.StringUtils;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.CqlSessionBuilder;
+import com.datastax.oss.driver.internal.core.util.concurrent.CompletableFutures;
 
 /**
  * Factory for creating and configuring a Cassandra {@link CqlSession}, which is a thread-safe singleton. As such, it is
@@ -107,6 +109,8 @@ public class CqlSessionFactoryBean
 	private Set<KeyspaceActionSpecification> keyspaceSpecifications = new HashSet<>();
 
 	private SchemaAction schemaAction = SchemaAction.NONE;
+
+	private boolean suspendLifecycleSchemaRefresh = false;
 
 	private @Nullable SessionBuilderConfigurer sessionBuilderConfigurer;
 
@@ -348,8 +352,8 @@ public class CqlSessionFactoryBean
 	 * Set the {@link SchemaAction}.
 	 *
 	 * @param schemaAction must not be {@literal null}.
-	 * @deprecated Use {@link CassandraSessionFactoryBean} with
-	 *             {@link CassandraSessionFactoryBean#setSchemaAction(SchemaAction)} instead.
+	 * @deprecated Use {@link SessionFactoryFactoryBean} with
+	 *             {@link SessionFactoryFactoryBean#setSchemaAction(SchemaAction)} instead.
 	 */
 	@Deprecated
 	public void setSchemaAction(SchemaAction schemaAction) {
@@ -364,6 +368,24 @@ public class CqlSessionFactoryBean
 	 */
 	public SchemaAction getSchemaAction() {
 		return this.schemaAction;
+	}
+
+	/**
+	 * Set whether to suspend schema refresh settings during {@link #afterPropertiesSet()} and {@link #destroy()}
+	 * lifecycle callbacks. Disabled by default to use schema metadata settings of the session configuration. When enabled
+	 * (set to {@code true}), then schema refresh during lifecycle methods is suspended until finishing schema actions to
+	 * avoid periodic schema refreshes for each DDL statement.
+	 * <p>
+	 * Suspending schema refresh can be useful to delay schema agreement until the entire schema is created. Note that
+	 * disabling schema refresh may interfere with schema actions. {@link SchemaAction#RECREATE_DROP_UNUSED} and
+	 * mapping-based schema creation rely on schema metadata.
+	 *
+	 * @param suspendLifecycleSchemaRefresh {@code true} to suspend the schema refresh during lifecycle callbacks;
+	 *          {@code false} otherwise to retain the session schema refresh configuration.
+	 * @since 2.7
+	 */
+	public void setSuspendLifecycleSchemaRefresh(boolean suspendLifecycleSchemaRefresh) {
+		this.suspendLifecycleSchemaRefresh = suspendLifecycleSchemaRefresh;
 	}
 
 	/**
@@ -455,20 +477,30 @@ public class CqlSessionFactoryBean
 
 		this.session = buildSession(sessionBuilder);
 
-		try {
-			SchemaRefreshUtils.withDisabledSchema(this.session, () -> {
-				executeCql(getStartupScripts().stream(), this.session);
-				performSchemaAction();
-			});
-		} catch (RuntimeException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new IllegalStateException("Unexpected checked exception thrown", e);
+		initializeSchema(this.systemSession, this.session);
+	}
+
+	private void initializeSchema(CqlSession systemSession, CqlSession session) {
+
+		Runnable schemaActionRunnable = () -> {
+
+			executeCql(getStartupScripts().stream(), session);
+			performSchemaAction();
+		};
+
+		List<CompletionStage<?>> futures = new ArrayList<>(2);
+
+		if (this.suspendLifecycleSchemaRefresh) {
+			futures.add(SchemaUtils.withSuspendedAsyncSchemaRefresh(session, schemaActionRunnable));
+		} else {
+			futures.add(SchemaUtils.withAsyncSchemaRefresh(session, schemaActionRunnable));
 		}
 
-		if (this.systemSession.isSchemaMetadataEnabled()) {
-			this.systemSession.refreshSchema();
+		if (systemSession.isSchemaMetadataEnabled()) {
+			futures.add(systemSession.refreshSchemaAsync());
 		}
+
+		futures.forEach(CompletableFutures::getUninterruptibly);
 	}
 
 	protected CqlSessionBuilder buildBuilder() {
@@ -536,7 +568,15 @@ public class CqlSessionFactoryBean
 		keyspaceStartupSpecifications.addAll(this.keyspaceCreations);
 		keyspaceStartupSpecifications.addAll(this.keyspaceAlterations);
 
-		executeSpecificationsAndScripts(keyspaceStartupSpecifications, this.keyspaceStartupScripts, session);
+		Runnable schemaActionRunnable = () -> {
+			executeSpecificationsAndScripts(keyspaceStartupSpecifications, this.keyspaceStartupScripts, session);
+		};
+
+		if (this.suspendLifecycleSchemaRefresh) {
+			SchemaUtils.withSuspendedAsyncSchemaRefresh(session, schemaActionRunnable);
+		} else {
+			schemaActionRunnable.run();
+		}
 	}
 
 	/**
@@ -564,7 +604,7 @@ public class CqlSessionFactoryBean
 	}
 
 	/**
-	 * Perform the configure {@link SchemaAction} using {@link CassandraMappingContext} metadata.
+	 * Perform the configured {@link SchemaAction} using {@link CassandraMappingContext} metadata.
 	 */
 	protected void performSchemaAction() {
 
@@ -664,8 +704,23 @@ public class CqlSessionFactoryBean
 	public void destroy() {
 
 		if (this.session != null) {
-			executeCql(getShutdownScripts().stream(), this.session);
-			executeSpecificationsAndScripts(this.keyspaceDrops, this.keyspaceShutdownScripts, this.systemSession);
+
+			Runnable schemaActionRunnable = () -> {
+				executeCql(getShutdownScripts().stream(), this.session);
+			};
+
+			Runnable systemSchemaActionRunnable = () -> {
+				executeSpecificationsAndScripts(this.keyspaceDrops, this.keyspaceShutdownScripts, this.systemSession);
+			};
+
+			if (this.suspendLifecycleSchemaRefresh) {
+				SchemaUtils.withSuspendedAsyncSchemaRefresh(this.session, schemaActionRunnable);
+				SchemaUtils.withSuspendedAsyncSchemaRefresh(this.systemSession, systemSchemaActionRunnable);
+			} else {
+				schemaActionRunnable.run();
+				systemSchemaActionRunnable.run();
+			}
+
 			closeSession();
 			closeSystemSession();
 		}
