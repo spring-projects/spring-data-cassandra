@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.cassandra.core.cql.SessionCallback;
@@ -214,6 +215,16 @@ class SchemaActionIntegrationTests extends IntegrationTestsSupport {
 		@Override
 		protected KeyspacePopulator keyspacePopulator() {
 			return new ResourceKeyspacePopulator(new ByteArrayResource(CREATE_PERSON_TABLE_CQL.getBytes()));
+		}
+
+		@Bean
+		@Override
+		public SessionFactoryFactoryBean cassandraSessionFactory(CqlSession cqlSession) {
+
+			SessionFactoryFactoryBean bean = super.cassandraSessionFactory(cqlSession);
+			bean.setSuspendLifecycleSchemaRefresh(true);
+
+			return bean;
 		}
 
 		@Override

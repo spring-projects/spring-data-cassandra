@@ -56,6 +56,8 @@ public class SessionFactoryFactoryBean extends AbstractFactoryBean<SessionFactor
 
 	private SchemaAction schemaAction = SchemaAction.NONE;
 
+	private boolean suspendLifecycleSchemaRefresh = false;
+
 	/**
 	 * Set the {@link CassandraConverter} to use. Schema actions will derive table and user type information from the
 	 * {@link CassandraMappingContext} inside {@code converter}.
@@ -105,6 +107,24 @@ public class SessionFactoryFactoryBean extends AbstractFactoryBean<SessionFactor
 	}
 
 	/**
+	 * Set whether to suspend schema refresh settings during {@link #afterPropertiesSet()} and {@link #destroy()}
+	 * lifecycle callbacks. Disabled by default to use schema metadata settings of the session configuration. When enabled
+	 * (set to {@code true}), then schema refresh during lifecycle methods is suspended until finishing schema actions to
+	 * avoid periodic schema refreshes for each DDL statement.
+	 * <p>
+	 * Suspending schema refresh can be useful to delay schema agreement until the entire schema is created. Note that
+	 * disabling schema refresh may interfere with schema actions. {@link SchemaAction#RECREATE_DROP_UNUSED} and
+	 * mapping-based schema creation rely on schema metadata.
+	 *
+	 * @param suspendLifecycleSchemaRefresh {@code true} to suspend the schema refresh during lifecycle callbacks;
+	 *          {@code false} otherwise to retain the session schema refresh configuration.
+	 * @since 2.7
+	 */
+	public void setSuspendLifecycleSchemaRefresh(boolean suspendLifecycleSchemaRefresh) {
+		this.suspendLifecycleSchemaRefresh = suspendLifecycleSchemaRefresh;
+	}
+
+	/**
 	 * Set the {@link CqlSession} to use.
 	 *
 	 * @param session must not be {@literal null}.
@@ -125,11 +145,19 @@ public class SessionFactoryFactoryBean extends AbstractFactoryBean<SessionFactor
 
 		super.afterPropertiesSet();
 
-		if (this.keyspacePopulator != null) {
-			this.keyspacePopulator.populate(getObject().getSession());
-		}
+		Runnable schemaActionRunnable = () -> {
+			if (this.keyspacePopulator != null) {
+				this.keyspacePopulator.populate(this.session);
+			}
 
-		SchemaRefreshUtils.withDisabledSchema(session, this::performSchemaAction);
+			performSchemaAction();
+		};
+
+		if (this.suspendLifecycleSchemaRefresh) {
+			SchemaUtils.withSuspendedSchemaRefresh(this.session, schemaActionRunnable);
+		} else {
+			SchemaUtils.withSchemaRefresh(this.session, schemaActionRunnable);
+		}
 	}
 
 	@Override
@@ -141,8 +169,16 @@ public class SessionFactoryFactoryBean extends AbstractFactoryBean<SessionFactor
 	@SuppressWarnings("all")
 	public void destroy() throws Exception {
 
-		if (this.keyspaceCleaner != null) {
-			this.keyspaceCleaner.populate(getObject().getSession());
+		Runnable schemaActionRunnable = () -> {
+			if (this.keyspaceCleaner != null) {
+				this.keyspaceCleaner.populate(this.session);
+			}
+		};
+
+		if (suspendLifecycleSchemaRefresh) {
+			SchemaUtils.withSuspendedAsyncSchemaRefresh(this.session, schemaActionRunnable);
+		} else {
+			schemaActionRunnable.run();
 		}
 	}
 
@@ -153,9 +189,9 @@ public class SessionFactoryFactoryBean extends AbstractFactoryBean<SessionFactor
 	}
 
 	/**
-	 * Perform the configure {@link SchemaAction} using {@link CassandraMappingContext} metadata.
+	 * Perform the configured {@link SchemaAction} using {@link CassandraMappingContext} metadata.
 	 */
-	protected void performSchemaAction() throws Exception {
+	protected void performSchemaAction() {
 
 		boolean create = false;
 		boolean drop = DEFAULT_DROP_TABLES;
@@ -190,22 +226,22 @@ public class SessionFactoryFactoryBean extends AbstractFactoryBean<SessionFactor
 	 * @param ifNotExists {@literal true} to perform creations fail-safe by adding {@code IF NOT EXISTS} to each creation
 	 *          statement.
 	 */
-	protected void createTables(boolean drop, boolean dropUnused, boolean ifNotExists) throws Exception {
+	protected void createTables(boolean drop, boolean dropUnused, boolean ifNotExists) {
 		performSchemaActions(drop, dropUnused, ifNotExists);
 	}
 
 	@SuppressWarnings("all")
-	private void performSchemaActions(boolean drop, boolean dropUnused, boolean ifNotExists) throws Exception {
+	private void performSchemaActions(boolean drop, boolean dropUnused, boolean ifNotExists) {
 
-		CassandraAdminOperations adminOperations = new CassandraAdminTemplate(getObject(), this.converter);
+		CassandraAdminOperations adminOperations = new CassandraAdminTemplate(this.session, this.converter);
 
-		CassandraPersistentEntitySchemaCreator schemaCreator =
-				new CassandraPersistentEntitySchemaCreator(this.converter.getMappingContext(), adminOperations);
+		CassandraPersistentEntitySchemaCreator schemaCreator = new CassandraPersistentEntitySchemaCreator(
+				this.converter.getMappingContext(), adminOperations);
 
 		if (drop) {
 
-			CassandraPersistentEntitySchemaDropper schemaDropper =
-					new CassandraPersistentEntitySchemaDropper(this.converter.getMappingContext(), adminOperations);
+			CassandraPersistentEntitySchemaDropper schemaDropper = new CassandraPersistentEntitySchemaDropper(
+					this.converter.getMappingContext(), adminOperations);
 
 			schemaDropper.dropTables(dropUnused);
 			schemaDropper.dropUserTypes(dropUnused);
