@@ -401,7 +401,7 @@ class ReactiveCassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCre
 			batchOperations.insert(Mono.just(Arrays.asList(new Group(new GroupKey("users", "0x1", "walter" + random.longs())),
 					new Group(new GroupKey("users", "0x1", "walter" + random.longs())),
 					new Group(new GroupKey("users", "0x1", "walter" + random.longs())),
-					new Group(new GroupKey("users", "0x1", "walter" + random.longs())))).publishOn(Schedulers.elastic()));
+					new Group(new GroupKey("users", "0x1", "walter" + random.longs())))).publishOn(Schedulers.boundedElastic()));
 		}
 
 		batchOperations.execute()
