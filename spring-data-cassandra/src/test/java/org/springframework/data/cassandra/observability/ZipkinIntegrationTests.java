@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.observability;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.observation.TimerObservationHandler;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import io.micrometer.observation.Observation;
 import io.micrometer.observation.ObservationHandler;
 import io.micrometer.observation.ObservationRegistry;
 import io.micrometer.tracing.test.SampleTestRunner;
@@ -64,11 +65,10 @@ public class ZipkinIntegrationTests extends SampleTestRunner {
 	}
 
 	@Override
-	public BiConsumer<BuildingBlocks, Deque<ObservationHandler>> customizeObservationHandlers() {
+	public BiConsumer<BuildingBlocks, Deque<ObservationHandler<? extends Observation.Context>>> customizeObservationHandlers() {
 
-		return (buildingBlocks, observationHandlers) -> {
-			observationHandlers.addLast(new CqlSessionTracingObservationHandler(buildingBlocks.getTracer()));
-		};
+		return (buildingBlocks, observationHandlers) -> observationHandlers
+				.addLast(new CqlSessionTracingObservationHandler(buildingBlocks.getTracer()));
 	}
 
 	@Override
