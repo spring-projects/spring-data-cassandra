@@ -33,6 +33,7 @@ import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
  *
  * @author Mark Paluch
  * @author Thomas Strau&szlig;
+ * @author Tudor Marc
  */
 class WriteOptionsUnitTests {
 
@@ -93,15 +94,17 @@ class WriteOptionsUnitTests {
 	}
 
 	@Test // GH-1248
-	void buildWriteOptionsWithTtlDurationZero() {
-		assertThatIllegalArgumentException().isThrownBy(() -> WriteOptions.builder().ttl(0));
-		assertThatIllegalArgumentException().isThrownBy(() -> WriteOptions.builder().ttl(Duration.ZERO));
-	}
-
-	@Test // GH-1248
 	void buildWriteOptionsWithTtlNegativeDuration() {
 		assertThatIllegalArgumentException().isThrownBy(() -> WriteOptions.builder().ttl(-1));
 		assertThatIllegalArgumentException()
 				.isThrownBy(() -> WriteOptions.builder().ttl(Duration.of(-1, ChronoUnit.MICROS)));
+	}
+
+	@Test // GH-1262
+	void buildZeroDurationTtlWriterOptions() {
+
+		WriteOptions writeOptions = WriteOptions.builder().ttl(0).build();
+
+		assertThat(writeOptions.getTtl()).isEqualTo(Duration.ZERO);
 	}
 }
