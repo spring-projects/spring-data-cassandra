@@ -630,7 +630,7 @@ public class ReactiveCassandraTemplate
 			if (!result.wasApplied()) {
 
 				sink.error(new OptimisticLockingFailureException(
-						String.format("Cannot save entity %s with version %s to table %s. Has it been modified meanwhile?", toSave,
+						String.format("Cannot save entity %s with version %s to table %s; Has it been modified meanwhile", toSave,
 								source.getVersion(), tableName)));
 
 				return;
@@ -678,7 +678,7 @@ public class ReactiveCassandraTemplate
 			if (!result.wasApplied()) {
 
 				sink.error(new OptimisticLockingFailureException(
-						String.format("Cannot delete entity %s with version %s in table %s. Has it been modified meanwhile?",
+						String.format("Cannot delete entity %s with version %s in table %s; Has it been modified meanwhile",
 								entity, source.getVersion(), tableName)));
 
 				return;

@@ -90,7 +90,7 @@ public class ColumnSpecification {
 	 */
 	public ColumnSpecification type(DataType type) {
 
-		Assert.notNull(type, "DataType must not be null!");
+		Assert.notNull(type, "DataType must not be null");
 
 		this.type = type;
 

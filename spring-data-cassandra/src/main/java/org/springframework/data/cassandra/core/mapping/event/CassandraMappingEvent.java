@@ -43,7 +43,7 @@ public class CassandraMappingEvent<T> extends ApplicationEvent {
 
 		super(source);
 
-		Assert.notNull(tableName, "Table name must not be null!");
+		Assert.notNull(tableName, "Table name must not be null");
 		this.tableName = tableName;
 	}
 

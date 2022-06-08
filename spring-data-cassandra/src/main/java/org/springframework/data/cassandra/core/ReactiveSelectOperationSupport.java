@@ -127,7 +127,7 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 						}
 
 						sink.error(new IncorrectResultSizeDataAccessException(
-								String.format("Query [%s] returned non unique result.", this.query), 1));
+								String.format("Query [%s] returned non unique result", this.query), 1));
 					});
 		}
 

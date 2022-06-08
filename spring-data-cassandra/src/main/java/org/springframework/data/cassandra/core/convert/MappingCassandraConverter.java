@@ -480,7 +480,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 		if (entity == null) {
 			throw new MappingException(
-					String.format("Expected to read %s into type %s but didn't find a PersistentEntity for the latter!",
+					String.format("Expected to read %s into type %s but didn't find a PersistentEntity for the latter",
 							rawSourceType.getSimpleName(), rawType.getName()));
 		}
 
@@ -1327,7 +1327,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 				if (!Object.class.equals(rawType)) {
 					if (!rawType.isArray() && !ClassUtils.isAssignable(Iterable.class, rawType)) {
 						throw new MappingException(String.format(
-								"Cannot convert %1$s of type %2$s into an instance of %3$s! Implement a custom Converter<%2$s, %3$s> and register it with the CustomConversions.",
+								"Cannot convert %1$s of type %2$s into an instance of %3$s; Implement a custom Converter<%2$s, %3$s> and register it with the CustomConversions",
 								source, source.getClass(), rawType));
 					}
 				}
@@ -1415,7 +1415,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			String name = parameter.getName();
 
 			if (name == null) {
-				throw new MappingException(String.format("Parameter %s does not have a name!", parameter));
+				throw new MappingException(String.format("Parameter %s does not have a name", parameter));
 			}
 
 			CassandraPersistentProperty property = getPersistentProperty(name, parameter.getType(),
@@ -1423,7 +1423,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 			if (property == null) {
 
-				throw new MappingException(String.format("No property %s found on entity %s to bind constructor parameter to!",
+				throw new MappingException(String.format("No property %s found on entity %s to bind constructor parameter to",
 						name, entity.getType()));
 			}
 

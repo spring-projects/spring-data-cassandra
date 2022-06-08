@@ -71,6 +71,6 @@ public class CassandraRepositoryFactoryBean<T extends Repository<S, ID>, S, ID>
 
 		super.afterPropertiesSet();
 
-		Assert.notNull(cassandraOperations, "CassandraOperations must not be null!");
+		Assert.notNull(cassandraOperations, "CassandraOperations must not be null");
 	}
 }

@@ -43,7 +43,7 @@ import com.datastax.oss.driver.api.core.cql.SimpleStatement;
  */
 public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandraQuery {
 
-	private static final String COUNT_AND_EXISTS = "Manually defined query for %s cannot be a count and exists query at the same time!";
+	private static final String COUNT_AND_EXISTS = "Manually defined query for %s cannot be a count and exists query at the same time";
 
 	private final StringBasedQuery stringBasedQuery;
 

@@ -124,7 +124,7 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 
 			if (result.size() > 1) {
 				throw new IncorrectResultSizeDataAccessException(
-						String.format("Query [%s] returned non unique result.", this.query), 1);
+						String.format("Query [%s] returned non unique result", this.query), 1);
 			}
 
 			return result.iterator().next();

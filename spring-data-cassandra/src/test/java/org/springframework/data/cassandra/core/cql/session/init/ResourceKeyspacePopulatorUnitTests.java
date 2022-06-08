@@ -116,7 +116,7 @@ class ResourceKeyspacePopulatorUnitTests {
 		keyspacePopulator.setScripts(new ByteArrayResource("drop table;create table;".getBytes()));
 
 		CqlSession sessionMock = mock(CqlSession.class);
-		when(sessionMock.execute("drop table")).thenThrow(new IllegalStateException("Boom!"));
+		when(sessionMock.execute("drop table")).thenThrow(new IllegalStateException("Boom"));
 
 		assertThatExceptionOfType(ScriptStatementFailedException.class)
 				.isThrownBy(() -> keyspacePopulator.populate(sessionMock));
@@ -133,7 +133,7 @@ class ResourceKeyspacePopulatorUnitTests {
 		keyspacePopulator.setScripts(new ByteArrayResource("drop table;create table;".getBytes()));
 
 		CqlSession sessionMock = mock(CqlSession.class);
-		when(sessionMock.execute("drop table")).thenThrow(new IllegalStateException("Boom!"));
+		when(sessionMock.execute("drop table")).thenThrow(new IllegalStateException("Boom"));
 
 		when(sessionMock.execute("create table")).thenReturn(mock(ResultSet.class));
 

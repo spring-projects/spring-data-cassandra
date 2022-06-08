@@ -140,10 +140,10 @@ class PreparedStatementDelegate {
 		String cql = QueryExtractorDelegate.getCql(statement);
 
 		if (StringUtils.hasText(cql)) {
-			return String.format("Cannot prepare statement %s (%s). Statement must be a SimpleStatement.", cql, statement);
+			return String.format("Cannot prepare statement %s (%s); Statement must be a SimpleStatement", cql, statement);
 		}
 
-		return String.format("Cannot prepare statement %s. Statement must be a SimpleStatement.", statement);
+		return String.format("Cannot prepare statement %s; Statement must be a SimpleStatement", statement);
 	}
 
 	enum Mapper {

@@ -31,7 +31,7 @@ import com.datastax.oss.driver.api.core.CqlSession;
 public final class CqlSessionTracingFactory {
 
 	private CqlSessionTracingFactory() {
-		throw new IllegalStateException("Can't instantiate a utility class.");
+		throw new IllegalStateException("Can't instantiate a utility class");
 	}
 
 	/**

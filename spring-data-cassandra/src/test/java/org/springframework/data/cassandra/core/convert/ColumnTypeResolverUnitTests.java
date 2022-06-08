@@ -226,7 +226,7 @@ public class ColumnTypeResolverUnitTests {
 		DataType dataType = resolver.resolve(entity.getRequiredPersistentProperty("frozenListContent")).getDataType();
 
 		assertThat(dataType).isInstanceOf(ListType.class);
-		assertThat(((ListType) dataType).isFrozen()).describedAs("The collection itself should not be frozen.").isFalse();
+		assertThat(((ListType) dataType).isFrozen()).describedAs("The collection itself should not be frozen").isFalse();
 
 		DataType elementType = ((ListType) dataType).getElementType();
 		assertThat(elementType).isInstanceOf(com.datastax.oss.driver.api.core.type.UserDefinedType.class);

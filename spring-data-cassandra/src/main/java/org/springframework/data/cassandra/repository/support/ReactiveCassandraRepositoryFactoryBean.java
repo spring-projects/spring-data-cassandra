@@ -99,7 +99,7 @@ public class ReactiveCassandraRepositoryFactoryBean<T extends Repository<S, ID>,
 
 		super.afterPropertiesSet();
 
-		Assert.notNull(operations, "ReactiveCassandraOperations must not be null!");
+		Assert.notNull(operations, "ReactiveCassandraOperations must not be null");
 
 		if (!mappingContextConfigured) {
 			setMappingContext(operations.getConverter().getMappingContext());

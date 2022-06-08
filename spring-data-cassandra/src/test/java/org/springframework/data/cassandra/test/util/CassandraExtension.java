@@ -94,7 +94,7 @@ public class CassandraExtension implements BeforeAllCallback, AfterAllCallback, 
 		Resources resources = TEST_RESOURCES.get();
 
 		Assert.state(resources != null,
-			"No test in progress. Did you annotate your test class with @ExtendWith(CassandraExtension.class)?");
+			"No test in progress; Did you annotate your test class with @ExtendWith(CassandraExtension.class)");
 
 		return resources;
 	}

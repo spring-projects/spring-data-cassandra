@@ -91,7 +91,7 @@ public class CassandraRepositoryExtension extends CdiRepositoryExtensionSupport 
 
 		Bean<CassandraOperations> cassandraOperationsBean = Optional.ofNullable(this.cassandraOperationsMap.get(qualifiers))
 				.orElseThrow(() -> new UnsatisfiedResolutionException(String.format(
-						"Unable to resolve a bean for '%s' with qualifiers %s.", CassandraOperations.class.getName(), qualifiers)));
+						"Unable to resolve a bean for '%s' with qualifiers %s", CassandraOperations.class.getName(), qualifiers)));
 
 		return new CassandraRepositoryBean<>(cassandraOperationsBean, qualifiers, repositoryType, beanManager,
 				getCustomImplementationDetector());

@@ -558,7 +558,7 @@ public abstract class ScriptUtils {
 
 			long elapsedTime = System.currentTimeMillis() - startTime;
 			if (logger.isDebugEnabled()) {
-				logger.debug("Executed CQL script from " + resource + " in " + elapsedTime + " ms.");
+				logger.debug("Executed CQL script from " + resource + " in " + elapsedTime + " ms");
 			}
 		} catch (Exception ex) {
 			if (ex instanceof ScriptException) {

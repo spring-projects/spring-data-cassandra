@@ -90,7 +90,7 @@ public class CassandraQueryMethod extends QueryMethod {
 	public void verify(Method method, RepositoryMetadata metadata) {
 
 		if (isPageQuery()) {
-			throw new InvalidDataAccessApiUsageException("Page queries are not supported. Use a Slice query.");
+			throw new InvalidDataAccessApiUsageException("Page queries are not supported; Use a Slice query");
 		}
 	}
 

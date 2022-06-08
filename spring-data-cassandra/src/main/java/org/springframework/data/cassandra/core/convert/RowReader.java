@@ -159,7 +159,7 @@ class RowReader {
 			return row.getObject(index);
 		}
 
-		throw new IllegalStateException("Unknown Collection type encountered; valid collections are List, Set and Map.");
+		throw new IllegalStateException("Unknown Collection type encountered; valid collections are List, Set and Map");
 	}
 
 	private int getColumnIndex(String columnName) {

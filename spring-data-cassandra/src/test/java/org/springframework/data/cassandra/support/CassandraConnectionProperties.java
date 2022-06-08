@@ -209,7 +209,7 @@ public class CassandraConnectionProperties extends Properties {
 
 	private <T> T convert(String propertyName, Class<T> type, Converter<String, T> converter) {
 
-		Assert.hasText(propertyName, "PropertyName must not be empty!");
+		Assert.hasText(propertyName, "PropertyName must not be empty");
 
 		String propertyValue = getProperty(propertyName);
 		try {

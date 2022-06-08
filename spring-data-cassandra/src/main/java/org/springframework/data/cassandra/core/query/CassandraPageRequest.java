@@ -61,7 +61,7 @@ public class CassandraPageRequest extends PageRequest {
 	public static CassandraPageRequest of(int page, int size) {
 
 		Assert.isTrue(page == 0,
-				"Cannot create a Cassandra page request for an indexed page other than the first page (0).");
+				"Cannot create a Cassandra page request for an indexed page other than the first page (0)");
 
 		return of(page, size, Sort.unsorted());
 	}
@@ -77,7 +77,7 @@ public class CassandraPageRequest extends PageRequest {
 	public static CassandraPageRequest of(int page, int size, Sort sort) {
 
 		Assert.isTrue(page == 0,
-				"Cannot create a Cassandra page request for an indexed page other than the first page (0).");
+				"Cannot create a Cassandra page request for an indexed page other than the first page (0)");
 
 		return new CassandraPageRequest(page, size, sort, null, false);
 	}
@@ -94,7 +94,7 @@ public class CassandraPageRequest extends PageRequest {
 	public static CassandraPageRequest of(int page, int size, Direction direction, String... properties) {
 
 		Assert.isTrue(page == 0,
-				"Cannot create a Cassandra page request for an indexed page other than the first page (0).");
+				"Cannot create a Cassandra page request for an indexed page other than the first page (0)");
 
 		return of(page, size, Sort.by(direction, properties));
 	}

@@ -197,7 +197,7 @@ public class SchemaFactory {
 		} catch (MappingException e) {
 
 			throw new MappingException(String.format(
-					"Cannot resolve DataType for type [%s] for property [%s] in entity [%s]; Consider registering a Converter or annotating the property with @CassandraType.",
+					"Cannot resolve DataType for type [%s] for property [%s] in entity [%s]; Consider registering a Converter or annotating the property with @CassandraType",
 					property.getType(), property.getName(), property.getOwner().getName()), e);
 		}
 	}

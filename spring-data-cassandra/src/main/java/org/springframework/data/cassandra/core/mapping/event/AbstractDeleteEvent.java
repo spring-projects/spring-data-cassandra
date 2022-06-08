@@ -41,7 +41,7 @@ public class AbstractDeleteEvent<T> extends AbstractStatementAwareMappingEvent<S
 
 		super(source, source, tableName);
 
-		Assert.notNull(type, "Type must not be null!");
+		Assert.notNull(type, "Type must not be null");
 		this.type = type;
 	}
 

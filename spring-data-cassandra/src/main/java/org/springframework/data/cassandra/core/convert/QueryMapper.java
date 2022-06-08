@@ -121,7 +121,7 @@ public class QueryMapper {
 
 			field.getProperty().filter(CassandraPersistentProperty::isCompositePrimaryKey).ifPresent(it -> {
 				throw new IllegalArgumentException(
-						"Cannot use composite primary key directly. Reference a property of the composite primary key");
+						"Cannot use composite primary key directly; Reference a property of the composite primary key");
 			});
 
 			field.getProperty().filter(CassandraPersistentProperty::hasOrdinal).ifPresent(it -> {
@@ -489,7 +489,7 @@ public class QueryMapper {
 		 * @param name must not be {@literal null} or empty.
 		 */
 		Field(ColumnName name) {
-			Assert.notNull(name, "Name must not be null!");
+			Assert.notNull(name, "Name must not be null");
 			this.name = name;
 		}
 

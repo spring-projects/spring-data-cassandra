@@ -84,7 +84,7 @@ class AbstractRoutingSessionFactoryUnitTests {
 			sut.afterPropertiesSet();
 			fail("Missing IllegalArgumentException");
 		} catch (IllegalArgumentException e) {
-			assertThat(e).hasMessageContaining("Illegal session factory value.");
+			assertThat(e).hasMessageContaining("Illegal session factory value");
 		}
 	}
 

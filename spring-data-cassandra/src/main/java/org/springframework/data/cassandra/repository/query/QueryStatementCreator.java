@@ -90,7 +90,7 @@ class QueryStatementCreator {
 			SimpleStatement statement = statementFactory.select(query, getPersistentEntity()).build();
 
 			if (LOG.isDebugEnabled()) {
-				LOG.debug(String.format("Created query [%s].", statement));
+				LOG.debug(String.format("Created query [%s]", statement));
 			}
 
 			return statement;
@@ -116,7 +116,7 @@ class QueryStatementCreator {
 			SimpleStatement statement = statementFactory.count(query, getPersistentEntity()).build();
 
 			if (LOG.isDebugEnabled()) {
-				LOG.debug(String.format("Created query [%s].", QueryExtractorDelegate.getCql(statement)));
+				LOG.debug(String.format("Created query [%s]", QueryExtractorDelegate.getCql(statement)));
 			}
 
 			return statement;
@@ -143,7 +143,7 @@ class QueryStatementCreator {
 			SimpleStatement statement = statementFactory.delete(query, getPersistentEntity()).build();
 
 			if (LOG.isDebugEnabled()) {
-				LOG.debug(String.format("Created query [%s].", QueryExtractorDelegate.getCql(statement)));
+				LOG.debug(String.format("Created query [%s]", QueryExtractorDelegate.getCql(statement)));
 			}
 
 			return statement;
@@ -170,7 +170,7 @@ class QueryStatementCreator {
 			SimpleStatement statement = statementFactory.select(query.limit(1), getPersistentEntity()).build();
 
 			if (LOG.isDebugEnabled()) {
-				LOG.debug(String.format("Created query [%s].", QueryExtractorDelegate.getCql(statement)));
+				LOG.debug(String.format("Created query [%s]", QueryExtractorDelegate.getCql(statement)));
 			}
 
 			return statement;
@@ -255,7 +255,7 @@ class QueryStatementCreator {
 			}
 
 			if (LOG.isDebugEnabled()) {
-				LOG.debug(String.format("Created query [%s].", QueryExtractorDelegate.getCql(queryToUse)));
+				LOG.debug(String.format("Created query [%s]", QueryExtractorDelegate.getCql(queryToUse)));
 			}
 
 			return queryToUse;

@@ -82,7 +82,7 @@ public class CqlSessionTracingObservationHandler implements TracingObservationHa
 				span.remoteIpAndPort(uri.getHost(), uri.getPort());
 			} catch (Exception e) {
 				if (log.isDebugEnabled()) {
-					log.debug("Failed to parse the url [" + url + "]. Won't set this value on the span");
+					log.debug("Failed to parse the url [" + url + "]; Won't set this value on the span");
 				}
 			}
 		}

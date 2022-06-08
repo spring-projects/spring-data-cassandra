@@ -43,7 +43,7 @@ public class AuditingEntityCallback implements BeforeConvertCallback<Object>, Or
 	 */
 	public AuditingEntityCallback(ObjectFactory<IsNewAwareAuditingHandler> auditingHandlerFactory) {
 
-		Assert.notNull(auditingHandlerFactory, "IsNewAwareAuditingHandler must not be null!");
+		Assert.notNull(auditingHandlerFactory, "IsNewAwareAuditingHandler must not be null");
 		this.auditingHandlerFactory = auditingHandlerFactory;
 	}
 

@@ -109,7 +109,7 @@ class IndexSpecificationFactory {
 						|| (keyIndex != null && valueIndex != null)) {
 
 					throw new MappingException("Multiple index declarations for " + property
-							+ " found. A map index must be either declared for entries, keys or values.");
+							+ " found; A map index must be either declared for entries, keys or values");
 				}
 
 				if (keyIndex != null) {

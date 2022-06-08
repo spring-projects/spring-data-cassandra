@@ -75,7 +75,7 @@ public class CqlDataSet {
 	 */
 	public CqlDataSet executeIn(String keyspaceName) {
 
-		Assert.hasText(keyspaceName, "KeyspaceName must not be empty!");
+		Assert.hasText(keyspaceName, "KeyspaceName must not be empty");
 		return new CqlDataSet(location, keyspaceName);
 	}
 

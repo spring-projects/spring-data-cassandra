@@ -53,7 +53,7 @@ public class CassandraRepositoryBean<T> extends CdiRepositoryBean<T> {
 			Class<T> repositoryType, BeanManager beanManager, @Nullable CustomRepositoryImplementationDetector detector) {
 		super(qualifiers, repositoryType, beanManager, Optional.ofNullable(detector));
 
-		Assert.notNull(operations, "Cannot create repository with 'null' for CassandraOperations.");
+		Assert.notNull(operations, "Cannot create repository with 'null' for CassandraOperations");
 		this.cassandraOperationsBean = operations;
 	}
 

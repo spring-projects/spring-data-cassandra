@@ -333,7 +333,7 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 		for (Object entity : entities) {
 			if (entity instanceof QueryOptions) {
 				throw new IllegalArgumentException(
-						String.format("%s must not be used as entity. Please make sure to call the appropriate method accepting %s",
+						String.format("%s must not be used as entity; Please make sure to call the appropriate method accepting %s",
 								ClassUtils.getDescriptiveType(entity), ClassUtils.getShortName(entity.getClass())));
 			}
 		}

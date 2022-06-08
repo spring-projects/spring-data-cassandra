@@ -44,7 +44,7 @@ public class AfterLoadEvent<T> extends CassandraMappingEvent<Row> {
 
 		super(source, tableName);
 
-		Assert.notNull(type, "Type must not be null!");
+		Assert.notNull(type, "Type must not be null");
 		this.type = type;
 	}
 
