@@ -18,7 +18,10 @@ package org.springframework.data.cassandra.core.cql.generator;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
+
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * Unit tests for {@link CreateIndexCqlGenerator}.
@@ -74,5 +77,15 @@ class CreateIndexCqlGeneratorUnitTests {
 
 		assertThat(CreateIndexCqlGenerator.toCql(spec))
 				.isEqualTo("CREATE INDEX ON mytable (column) WITH OPTIONS = {'foo': 'b''a''r', 'type': 'PREFIX'};");
+	}
+
+	@Test // GH-1281
+	void createIndexWithQuotation() {
+
+		CreateIndexSpecification spec = CreateIndexSpecification.createIndex("order_dob").columnName("\"order\"")
+				.tableName(CqlIdentifier.fromInternal("order"));
+
+		assertThat(CreateIndexCqlGenerator.toCql(spec)).isEqualTo("CREATE INDEX order_dob ON \"order\" (\"order\");");
+
 	}
 }
