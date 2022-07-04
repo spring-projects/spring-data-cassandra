@@ -73,7 +73,6 @@ class ReactiveCassandraParameterAccessorUnitTests {
 				getCassandraQueryMethod(method), new Object[] { Flux.just(LocalDateTime.of(2000, 10, 11, 12, 13, 14)) });
 
 		assertThat(accessor.getDataType(0)).isNull();
-
 	}
 
 	@Test // DATACASS-335

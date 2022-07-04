@@ -241,7 +241,7 @@ class CassandraExceptionTranslatorUnitTests {
 		InvalidConfigurationInQueryException cx = new InvalidConfigurationInQueryException(node, "err");
 		DataAccessException dax = sut.translate("Query", "SELECT * FROM person", cx);
 
-		assertThat(dax).hasRootCauseInstanceOf(InvalidConfigurationInQueryException.class).hasMessage(
-				"Query; CQL [SELECT * FROM person]; err; nested exception is com.datastax.oss.driver.api.core.servererrors.InvalidConfigurationInQueryException: err");
+		assertThat(dax).hasRootCauseInstanceOf(InvalidConfigurationInQueryException.class)
+				.hasMessageContaining("Query; CQL [SELECT * FROM person]; err");
 	}
 }

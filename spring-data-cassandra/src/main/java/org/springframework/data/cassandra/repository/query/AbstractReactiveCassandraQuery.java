@@ -15,7 +15,6 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import org.reactivestreams.Publisher;
@@ -72,13 +71,16 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 
 	@Override
 	public Object execute(Object[] parameters) {
-		return Flux.defer(() -> executeLater(parameters));
-	}
-
-	private Publisher<Object> executeLater(Object[] parameters) {
 
 		ReactiveCassandraParameterAccessor parameterAccessor = new ReactiveCassandraParameterAccessor(getQueryMethod(),
 				parameters);
+
+		Mono<ReactiveCassandraParameterAccessor> resolved = parameterAccessor.resolveParameters();
+
+		return resolved.flatMapMany(this::executeLater);
+	}
+
+	private Publisher<Object> executeLater(ReactiveCassandraParameterAccessor parameterAccessor) {
 
 		CassandraParameterAccessor convertingParameterAccessor = new ConvertingParameterAccessor(
 				getRequiredConverter(getReactiveCassandraOperations()), parameterAccessor);
