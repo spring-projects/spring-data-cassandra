@@ -37,7 +37,6 @@ import org.springframework.data.cassandra.core.mapping.SimpleUserTypeResolver;
 import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.convert.CustomConversions;
-import org.springframework.data.domain.ManagedTypes;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.lang.Nullable;
 
@@ -101,7 +100,7 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 	 * Return the {@link MappingContext} instance to map Entities to {@link Object Java Objects}.
 	 *
 	 * @see org.springframework.data.cassandra.core.mapping.CassandraMappingContext
-	 * @deprecated since 4.0, use {@link #cassandraMappingContext(ManagedTypes)} instead.
+	 * @deprecated since 4.0, use {@link #cassandraMappingContext(CassandraManagedTypes)} instead.
 	 */
 	@Deprecated(since = "4.0", forRemoval = true)
 	public CassandraMappingContext cassandraMapping() throws ClassNotFoundException {
