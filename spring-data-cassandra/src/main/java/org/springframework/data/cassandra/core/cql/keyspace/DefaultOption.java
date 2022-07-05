@@ -69,7 +69,7 @@ public class DefaultOption implements Option {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public boolean isCoerceable(Object value) {
 
-		if (getType().equals(Void.class)) {
+		if (getType().equals(Void.class) || getType().equals(String.class)) {
 			return true;
 		}
 
