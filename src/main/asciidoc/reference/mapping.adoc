@@ -138,8 +138,8 @@ The conventions are:
 
 * The simple (short) Java class name is mapped to the table name by being changed to lower case.
 For example, `com.bigbank.SavingsAccount` maps to a table named `savingsaccount`.
-* The converter uses any registered Spring `Converter` instances to override the default mapping of object properties to tables fields.
-* The properties of an object are used to convert to and from properties in the table.
+* The converter uses any registered Spring `Converter` instances to override the default mapping of object properties to tables columns.
+* The properties of an object are used to convert to and from columns in the table.
 
 You can adjust conventions by configuring a `NamingStrategy` on `CassandraMappingContext`.
 Naming strategy objects implement the convention by which a table, column or user-defined type is derived from an entity class and from an actual property.

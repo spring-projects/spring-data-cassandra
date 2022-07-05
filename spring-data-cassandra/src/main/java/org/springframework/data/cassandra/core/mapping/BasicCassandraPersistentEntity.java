@@ -15,15 +15,17 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
+import java.lang.annotation.Annotation;
 import java.util.Comparator;
 import java.util.Optional;
+import java.util.function.BiFunction;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.expression.BeanFactoryAccessor;
 import org.springframework.context.expression.BeanFactoryResolver;
-import org.springframework.data.cassandra.util.SpelUtils;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.AssociationHandler;
 import org.springframework.data.mapping.MappingException;
@@ -32,7 +34,6 @@ import org.springframework.data.util.TypeInformation;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 
@@ -49,13 +50,13 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 
 	private static final CassandraPersistentEntityMetadataVerifier DEFAULT_VERIFIER = new CompositeCassandraPersistentEntityMetadataVerifier();
 
+	private final CqlIdentifierGenerator namingAccessor = new CqlIdentifierGenerator();
+
 	private Boolean forceQuote;
 
 	private CassandraPersistentEntityMetadataVerifier verifier = DEFAULT_VERIFIER;
 
 	private CqlIdentifier tableName;
-
-	private NamingStrategy namingStrategy = NamingStrategy.INSTANCE;
 
 	private @Nullable StandardEvaluationContext spelContext;
 
@@ -101,27 +102,20 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	}
 
 	protected CqlIdentifier determineTableName() {
-
-		Table annotation = findAnnotation(Table.class);
-
-		if (annotation != null) {
-			return determineName(annotation.value(), annotation.forceQuote());
-		}
-
-		return IdentifierFactory.create(getNamingStrategy().getTableName(this), false);
+		return determineTableName(NamingStrategy::getTableName, findAnnotation(Table.class));
 	}
 
-	CqlIdentifier determineName(String value, boolean forceQuote) {
+	CqlIdentifier determineTableName(
+			BiFunction<NamingStrategy, CassandraPersistentEntity<?>, String> defaultNameGenerator,
+			@Nullable Annotation annotation) {
 
-		if (!StringUtils.hasText(value)) {
-			return IdentifierFactory.create(getNamingStrategy().getTableName(this), forceQuote);
+		if (annotation != null) {
+			return this.namingAccessor.generate((String) AnnotationUtils.getValue(annotation),
+					(Boolean) AnnotationUtils.getValue(annotation, "forceQuote"), defaultNameGenerator, this, this.spelContext);
 		}
 
-		String name = Optional.ofNullable(this.spelContext).map(it -> SpelUtils.evaluate(value, it)).orElse(value);
-
-		Assert.state(name != null, () -> String.format("Cannot determine default name for %s", this));
-
-		return IdentifierFactory.create(name, forceQuote);
+		return this.namingAccessor.generate(null, forceQuote != null ? forceQuote : false, defaultNameGenerator, this,
+				this.spelContext);
 	}
 
 	/* (non-Javadoc)
@@ -186,7 +180,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 		this.forceQuote = forceQuote;
 
 		if (changed) {
-			setTableName(IdentifierFactory.create(getTableName().asInternal(), forceQuote));
+			setTableName(CqlIdentifierGenerator.createIdentifier(getTableName().asInternal(), forceQuote));
 		}
 	}
 
@@ -208,14 +202,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	 * @since 3.0
 	 */
 	public void setNamingStrategy(NamingStrategy namingStrategy) {
-
-		Assert.notNull(namingStrategy, "NamingStrategy must not be null");
-
-		this.namingStrategy = namingStrategy;
-	}
-
-	NamingStrategy getNamingStrategy() {
-		return namingStrategy;
+		this.namingAccessor.setNamingStrategy(namingStrategy);
 	}
 
 	/* (non-Javadoc)
