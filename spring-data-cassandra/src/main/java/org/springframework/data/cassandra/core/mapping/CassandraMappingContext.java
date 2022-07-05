@@ -71,7 +71,7 @@ public class CassandraMappingContext
 
 	private Mapping mapping = new Mapping();
 
-	private NamingStrategy namingStrategy = NamingStrategy.INSTANCE;
+	private @Nullable NamingStrategy namingStrategy;
 
 	private @Deprecated @Nullable UserTypeResolver userTypeResolver;
 
@@ -131,7 +131,8 @@ public class CassandraMappingContext
 			String entityTableName = entityMapping.getTableName();
 
 			if (StringUtils.hasText(entityTableName)) {
-				entity.setTableName(IdentifierFactory.create(entityTableName, Boolean.valueOf(entityMapping.getForceQuote())));
+				entity.setTableName(
+						CqlIdentifierGenerator.createIdentifier(entityTableName, Boolean.valueOf(entityMapping.getForceQuote())));
 			}
 
 			processMappingOverrides(entity, entityMapping);
@@ -163,7 +164,7 @@ public class CassandraMappingContext
 		property.setForceQuote(forceQuote);
 
 		if (StringUtils.hasText(mapping.getColumnName())) {
-			property.setColumnName(IdentifierFactory.create(mapping.getColumnName(), forceQuote));
+			property.setColumnName(CqlIdentifierGenerator.createIdentifier(mapping.getColumnName(), forceQuote));
 		}
 	}
 
@@ -200,7 +201,7 @@ public class CassandraMappingContext
 
 	/**
 	 * @deprecated since 3.0. Use custom conversion through
-	 * {@link org.springframework.data.cassandra.core.convert.MappingCassandraConverter}.
+	 *             {@link org.springframework.data.cassandra.core.convert.MappingCassandraConverter}.
 	 */
 	@Deprecated
 	public CustomConversions getCustomConversions() {
@@ -255,7 +256,7 @@ public class CassandraMappingContext
 
 	/**
 	 * @deprecated since 3.0. Retrieve {@link CodecRegistry} directly from
-	 * {@link org.springframework.data.cassandra.core.convert.CassandraConverter}.
+	 *             {@link org.springframework.data.cassandra.core.convert.CassandraConverter}.
 	 */
 	@Deprecated
 	public CodecRegistry getCodecRegistry() {
@@ -304,7 +305,7 @@ public class CassandraMappingContext
 
 	/**
 	 * @deprecated since 3.0. Retrieve {@link UserTypeResolver} directly from
-	 * {@link org.springframework.data.cassandra.core.convert.CassandraConverter}.
+	 *             {@link org.springframework.data.cassandra.core.convert.CassandraConverter}.
 	 */
 	@Nullable
 	@Deprecated
@@ -352,7 +353,6 @@ public class CassandraMappingContext
 			if (!entity.isUserDefinedType() && !entity.isTupleType() && entity.isAnnotationPresent(Table.class)) {
 				this.tableEntities.add(entity);
 			}
-
 		});
 
 		return optional;
@@ -375,11 +375,12 @@ public class CassandraMappingContext
 
 		BasicCassandraPersistentEntity<T> entity = isUserDefinedType(typeInformation)
 				? new CassandraUserTypePersistentEntity<>(typeInformation, getVerifier())
-				: isTuple(typeInformation)
-				? new BasicCassandraPersistentTupleEntity<>(typeInformation)
-				: new BasicCassandraPersistentEntity<>(typeInformation, getVerifier());
+				: isTuple(typeInformation) ? new BasicCassandraPersistentTupleEntity<>(typeInformation)
+						: new BasicCassandraPersistentEntity<>(typeInformation, getVerifier());
 
-		entity.setNamingStrategy(this.namingStrategy);
+		if (this.namingStrategy != null) {
+			entity.setNamingStrategy(this.namingStrategy);
+		}
 		Optional.ofNullable(this.applicationContext).ifPresent(entity::setApplicationContext);
 
 		return entity;
@@ -404,7 +405,10 @@ public class CassandraMappingContext
 				? new BasicCassandraPersistentTupleProperty(property, owner, simpleTypeHolder)
 				: new CachingCassandraPersistentProperty(property, owner, simpleTypeHolder);
 
-		persistentProperty.setNamingStrategy(this.namingStrategy);
+		if (this.namingStrategy != null) {
+			persistentProperty.setNamingStrategy(this.namingStrategy);
+		}
+
 		Optional.ofNullable(this.applicationContext).ifPresent(persistentProperty::setApplicationContext);
 
 		return persistentProperty;
@@ -445,9 +449,7 @@ public class CassandraMappingContext
 
 		return getPersistentEntities().stream().flatMap(entity -> StreamSupport.stream(entity.spliterator(), false))
 				.flatMap(it -> Optionals.toStream(Optional.ofNullable(it.findAnnotation(CassandraType.class))))
-				.map(CassandraType::userTypeName)
-				.filter(StringUtils::hasText)
-				.map(CqlIdentifier::fromCql)
+				.map(CassandraType::userTypeName).filter(StringUtils::hasText).map(CqlIdentifier::fromCql)
 				.anyMatch(identifier::equals);
 	}
 }

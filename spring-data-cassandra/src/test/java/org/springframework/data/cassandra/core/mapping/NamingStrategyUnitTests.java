@@ -21,6 +21,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.util.StringUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 
@@ -38,7 +40,48 @@ class NamingStrategyUnitTests {
 		context.setUserTypeResolver(typeName -> {
 			throw new IllegalStateException("");
 		});
-		context.setNamingStrategy(NamingStrategy.INSTANCE);
+	}
+
+	@Test
+	void getTableNameGeneratesTableName() {
+
+		BasicCassandraPersistentEntity<TableNameHolderThingy> entity = new BasicCassandraPersistentEntity<>(
+				ClassTypeInformation.from(TableNameHolderThingy.class));
+
+		assertThat(entity.getTableName().asCql(true)).isEqualTo("tablenameholderthingy");
+	}
+
+	@Test
+	void getTableNameGeneratesQuotedTableName() {
+
+		BasicCassandraPersistentEntity<TableNameHolderThingy> entity = new BasicCassandraPersistentEntity<>(
+				ClassTypeInformation.from(TableNameHolderThingy.class));
+		entity.setNamingStrategy(NamingStrategy.SNAKE_CASE.transform(it -> "\"" + StringUtils.capitalize(it) + "\""));
+
+		assertThat(entity.getTableName().asCql(true)).isEqualTo("\"Table_name_holder_thingy\"");
+
+		entity = new BasicCassandraPersistentEntity<>(ClassTypeInformation.from(TableNameHolderThingy.class));
+		entity.setNamingStrategy(NamingStrategy.SNAKE_CASE.transform(String::toUpperCase));
+
+		assertThat(entity.getTableName().asCql(true)).isEqualTo("\"TABLE_NAME_HOLDER_THINGY\"");
+	}
+
+	@Test
+	void atTableIsCaseSensitive() {
+
+		BasicCassandraPersistentEntity<ProvidedTableName> entity = new BasicCassandraPersistentEntity<>(
+				ClassTypeInformation.from(ProvidedTableName.class));
+
+		assertThat(entity.getTableName().asCql(true)).isEqualTo("\"iAmProvided\"");
+	}
+
+	@Test
+	void atTableWithQuotedNameShouldRetainQuotes() {
+
+		BasicCassandraPersistentEntity<QuotedTableName> entity = new BasicCassandraPersistentEntity<>(
+				ClassTypeInformation.from(QuotedTableName.class));
+
+		assertThat(entity.getTableName().asCql(true)).isEqualTo("\"IAmQuoted\"");
 	}
 
 	@Test // DATACASS-84
@@ -105,6 +148,17 @@ class NamingStrategyUnitTests {
 		@Id String firstName;
 	}
 
+	@Table("messages")
+	static class Message {}
+
+	static class TableNameHolderThingy {}
+
+	@Table("iAmProvided")
+	private static class ProvidedTableName {}
+
+	@Table("\"IAmQuoted\"")
+	private static class QuotedTableName {}
+
 	@UserDefinedType
 	private static class MyUserType {
 
@@ -122,4 +176,5 @@ class NamingStrategyUnitTests {
 
 		String firstName;
 	}
+
 }

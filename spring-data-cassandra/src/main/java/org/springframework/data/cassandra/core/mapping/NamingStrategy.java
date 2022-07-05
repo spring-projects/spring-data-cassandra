@@ -15,13 +15,15 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
+import java.util.Locale;
 import java.util.function.UnaryOperator;
 
 import org.springframework.util.Assert;
 
 /**
  * Interface and default implementation of a naming strategy. Defaults to table name based on {@link Class} and column
- * name based on property names.
+ * name based on property names. Names are used as-is without quoting. Lower-case, non-keyword names are used without
+ * quoting. Upper-case, keyword or other names requiring quoting are used with quotes.
  * <p>
  * NOTE: Can also be used as an adapter. Create a lambda or an anonymous subclass and override any settings to implement
  * a different strategy on the fly.
@@ -35,8 +37,15 @@ public interface NamingStrategy {
 	 * Empty implementation of the interface utilizing only the default implementation.
 	 * <p>
 	 * Using this avoids creating essentially the same class over and over again.
+	 *
+	 * @since 3.3.6
 	 */
-	NamingStrategy INSTANCE = new NamingStrategy() {};
+	NamingStrategy CASE_SENSITIVE = new NamingStrategy() {};
+
+	/**
+	 * Default implementation converting all names to {@link String#toLowerCase()}.
+	 */
+	NamingStrategy INSTANCE = CASE_SENSITIVE.transform(s -> s.toLowerCase(Locale.ROOT));
 
 	/**
 	 * Naming strategy that renders CamelCase name parts to {@code snake_case}.
@@ -74,10 +83,8 @@ public interface NamingStrategy {
 	}
 
 	/**
-	 * Apply a {@link UnaryOperator transformation function} to create a new {@link NamingStrategy}
-	 * that applies the given transformation to each name component.
-	 *
-	 * Example:
+	 * Apply a {@link UnaryOperator transformation function} to create a new {@link NamingStrategy} that applies the given
+	 * transformation to each name component. Example:
 	 * <p class="code">
 	 * NamingStrategy lower = NamingStrategy.INSTANCE.transform(String::toLowerCase);
 	 * </p>

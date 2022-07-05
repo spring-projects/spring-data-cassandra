@@ -22,7 +22,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -31,7 +30,6 @@ import org.springframework.context.expression.BeanFactoryResolver;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.cassandra.core.cql.Ordering;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
-import org.springframework.data.cassandra.util.SpelUtils;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.model.AnnotationBasedPersistentProperty;
 import org.springframework.data.mapping.model.Property;
@@ -42,7 +40,6 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.StringUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 
@@ -59,12 +56,12 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
 public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentProperty<CassandraPersistentProperty>
 		implements CassandraPersistentProperty, ApplicationContextAware {
 
+	private final CqlIdentifierGenerator namingAccessor = new CqlIdentifierGenerator();
+
 	// Indicates whether this property has been explicitly instructed to force quoted column names.
 	private Boolean forceQuote;
 
 	private @Nullable CqlIdentifier columnName;
-
-	private NamingStrategy namingStrategy = NamingStrategy.INSTANCE;
 
 	private @Nullable StandardEvaluationContext spelContext;
 
@@ -197,8 +194,6 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 			return null;
 		}
 
-		Supplier<String> defaultName = () -> getNamingStrategy().getColumnName(this);
-
 		String overriddenName = null;
 
 		boolean forceQuote = false;
@@ -231,22 +226,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 			}
 		}
 
-		return createColumnName(defaultName, overriddenName, forceQuote);
-	}
-
-	@Nullable
-	private CqlIdentifier createColumnName(Supplier<String> defaultName, @Nullable String overriddenName,
-			boolean forceQuote) {
-
-		String name;
-
-		if (StringUtils.hasText(overriddenName)) {
-			name = this.spelContext != null ? SpelUtils.evaluate(overriddenName, this.spelContext) : overriddenName;
-		} else {
-			name = defaultName.get();
-		}
-
-		return name != null ? IdentifierFactory.create(name, forceQuote) : null;
+		return namingAccessor.generate(overriddenName, forceQuote, NamingStrategy::getColumnName, this, this.spelContext);
 	}
 
 	/* (non-Javadoc)
@@ -267,14 +247,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	 * @since 3.0
 	 */
 	public void setNamingStrategy(NamingStrategy namingStrategy) {
-
-		Assert.notNull(namingStrategy, "NamingStrategy must not be null");
-
-		this.namingStrategy = namingStrategy;
-	}
-
-	NamingStrategy getNamingStrategy() {
-		return this.namingStrategy;
+		this.namingAccessor.setNamingStrategy(namingStrategy);
 	}
 
 	/* (non-Javadoc)
@@ -288,7 +261,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		this.forceQuote = forceQuote;
 
 		if (changed) {
-			setColumnName(IdentifierFactory.create(getRequiredColumnName().asInternal(), forceQuote));
+			setColumnName(CqlIdentifierGenerator.createIdentifier(getRequiredColumnName().asInternal(), forceQuote));
 		}
 	}
 

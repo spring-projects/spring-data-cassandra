@@ -52,12 +52,12 @@ class BasicCassandraPersistentEntityUnitTests {
 	@Mock ApplicationContext context;
 
 	@Test
-	void subclassInheritsAtDocumentAnnotation() {
+	void subclassInheritsAtTableAnnotation() {
 
 		BasicCassandraPersistentEntity<Notification> entity = new BasicCassandraPersistentEntity<>(
 				ClassTypeInformation.from(Notification.class));
 
-		assertThat(entity.getTableName()).hasToString("messages");
+		assertThat(entity.getTableName().asCql(true)).isEqualTo("messages");
 	}
 
 	@Test
