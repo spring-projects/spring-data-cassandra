@@ -20,6 +20,10 @@ import static org.springframework.data.cassandra.core.cql.keyspace.CqlStringUtil
 import java.lang.reflect.Constructor;
 import java.util.Collection;
 import java.util.Map;
+import java.util.function.Consumer;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -31,6 +35,8 @@ import org.springframework.util.Assert;
  * @author Mark Paluch
  */
 public class DefaultOption implements Option {
+
+	protected final Log log = LogFactory.getLog(getClass());
 
 	private final String name;
 
@@ -86,16 +92,49 @@ public class DefaultOption implements Option {
 			}
 		}
 
+		if (type == Long.class) {
+			return tryParse(value, Long::parseLong);
+		}
+		if (type == Integer.class) {
+			return tryParse(value, Integer::parseInt);
+		}
+		if (type == Double.class) {
+			return tryParse(value, Double::parseDouble);
+		}
+		if (type == Float.class) {
+			return tryParse(value, Float::parseFloat);
+		}
+		if (type == Boolean.class) {
+			return tryParse(value, Boolean::valueOf);
+		}
+
 		// check class via String constructor
 		try {
 			Constructor<?> ctor = type.getConstructor(String.class);
-			if (!ctor.isAccessible()) {
+			if (!ctor.canAccess(this)) {
 				ctor.setAccessible(true);
 			}
 			ctor.newInstance(value.toString());
 			return true;
-		} catch (Exception e) {}
+		} catch (Exception e) {
+			if (log.isDebugEnabled()) {
+				log.debug("Cannot parse option %s into %s".formatted(getName(), getType()), e);
+			}
+
+		}
 		return false;
+	}
+
+	private boolean tryParse(Object value, Consumer<String> parseFunction) {
+		try {
+			parseFunction.accept(value.toString());
+			return true;
+		} catch (RuntimeException e) {
+			if (log.isDebugEnabled()) {
+				log.debug("Cannot parse option %s into %s".formatted(getName(), getType()), e);
+			}
+			return false;
+		}
 	}
 
 	public Class<?> getType() {

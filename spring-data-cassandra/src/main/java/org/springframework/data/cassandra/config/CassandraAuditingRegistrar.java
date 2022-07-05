@@ -17,17 +17,19 @@ package org.springframework.data.cassandra.config;
 
 import java.lang.annotation.Annotation;
 
+import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
-import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.auditing.IsNewAwareAuditingHandler;
 import org.springframework.data.auditing.config.AuditingBeanDefinitionRegistrarSupport;
 import org.springframework.data.auditing.config.AuditingConfiguration;
 import org.springframework.data.cassandra.core.mapping.event.AuditingEntityCallback;
 import org.springframework.data.config.ParsingUtils;
+import org.springframework.data.mapping.context.PersistentEntities;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -49,12 +51,10 @@ class CassandraAuditingRegistrar extends AuditingBeanDefinitionRegistrarSupport 
 	}
 
 	@Override
-	public void registerBeanDefinitions(AnnotationMetadata annotationMetadata, BeanDefinitionRegistry registry) {
+	protected void postProcess(BeanDefinitionBuilder builder, AuditingConfiguration configuration,
+			BeanDefinitionRegistry registry) {
 
-		Assert.notNull(annotationMetadata, "AnnotationMetadata must not be null");
-		Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
-
-		super.registerBeanDefinitions(annotationMetadata, registry);
+		potentiallyRegisterCassandraPersistentEntities(builder, registry);
 	}
 
 	@Override
@@ -62,13 +62,8 @@ class CassandraAuditingRegistrar extends AuditingBeanDefinitionRegistrarSupport 
 
 		Assert.notNull(configuration, "AuditingConfiguration must not be null");
 
-		BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(IsNewAwareAuditingHandler.class);
-
-		BeanDefinitionBuilder definition = BeanDefinitionBuilder.genericBeanDefinition(PersistentEntitiesFactoryBean.class);
-		definition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_CONSTRUCTOR);
-
-		builder.addConstructorArgValue(definition.getBeanDefinition());
-		return configureDefaultAuditHandlerAttributes(configuration, builder);
+		return configureDefaultAuditHandlerAttributes(configuration,
+				BeanDefinitionBuilder.rootBeanDefinition(IsNewAwareAuditingHandler.class));
 	}
 
 	@Override
@@ -85,7 +80,40 @@ class CassandraAuditingRegistrar extends AuditingBeanDefinitionRegistrarSupport 
 
 		registerInfrastructureBeanWithId(listenerBeanDefinitionBuilder.getBeanDefinition(),
 				AuditingEntityCallback.class.getName(), registry);
+	}
 
+	static void potentiallyRegisterCassandraPersistentEntities(BeanDefinitionBuilder builder,
+			BeanDefinitionRegistry registry) {
+
+		String persistentEntitiesBeanName = detectPersistentEntitiesBeanName(registry);
+
+		if (persistentEntitiesBeanName == null) {
+
+			persistentEntitiesBeanName = BeanDefinitionReaderUtils.uniqueBeanName("cassandraPersistentEntities", registry);
+
+			// TODO: https://github.com/spring-projects/spring-framework/issues/28728
+			BeanDefinitionBuilder definition = BeanDefinitionBuilder.genericBeanDefinition(PersistentEntities.class) //
+					.setFactoryMethod("of") //
+					.addConstructorArgReference("cassandraMappingContext");
+
+			registry.registerBeanDefinition(persistentEntitiesBeanName, definition.getBeanDefinition());
+		}
+
+		builder.addConstructorArgReference(persistentEntitiesBeanName);
+	}
+
+	@Nullable
+	private static String detectPersistentEntitiesBeanName(BeanDefinitionRegistry registry) {
+
+		if (registry instanceof ListableBeanFactory beanFactory) {
+			for (String bn : beanFactory.getBeanNamesForType(PersistentEntities.class)) {
+				if (bn.startsWith("cassandra")) {
+					return bn;
+				}
+			}
+		}
+
+		return null;
 	}
 
 }

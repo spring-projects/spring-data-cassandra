@@ -17,7 +17,7 @@
 	<context:property-placeholder
 			location="classpath:/config/cassandra-connection.properties"/>
 
-	<cassandra:converter mapping-ref="cassandraMapping"/>
+	<cassandra:converter mapping-ref="cassandraMappingContext"/>
 
 	<cassandra:template cassandra-converter-ref="cassandraConverter"/>
 

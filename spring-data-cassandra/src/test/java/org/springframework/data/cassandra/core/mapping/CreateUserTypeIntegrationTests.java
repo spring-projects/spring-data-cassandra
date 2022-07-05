@@ -21,7 +21,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -30,9 +29,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.cassandra.CassandraManagedTypes;
 import org.springframework.data.cassandra.repository.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.data.cassandra.repository.support.IntegrationTestConfig;
-import org.springframework.data.convert.CustomConversions;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -50,20 +49,10 @@ public class CreateUserTypeIntegrationTests extends AbstractSpringDataEmbeddedCa
 	@Configuration
 	public static class Config extends IntegrationTestConfig {
 
+		@Override
 		@Bean
-		public CassandraMappingContext cassandraMapping() {
-
-			CassandraMappingContext mappingContext = new CassandraMappingContext();
-
-			mappingContext.setInitialEntitySet(new HashSet<>(Arrays.asList(Car.class, Engine.class, Manufacturer.class)));
-
-			CustomConversions customConversions = customConversions();
-
-			mappingContext.setCustomConversions(customConversions);
-			mappingContext.setSimpleTypeHolder(customConversions.getSimpleTypeHolder());
-			mappingContext.setUserTypeResolver(new SimpleUserTypeResolver(getRequiredSession()));
-
-			return mappingContext;
+		public CassandraManagedTypes cassandraManagedTypes() {
+			return CassandraManagedTypes.fromIterable(Arrays.asList(Car.class, Engine.class, Manufacturer.class));
 		}
 	}
 

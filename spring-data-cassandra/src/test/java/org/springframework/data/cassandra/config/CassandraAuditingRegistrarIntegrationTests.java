@@ -25,6 +25,7 @@ import org.springframework.data.auditing.IsNewAwareAuditingHandler;
 import org.springframework.data.auditing.ReactiveIsNewAwareAuditingHandler;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
+import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 
 /**
  * Integration tests for registering both, imperative and reactive auditing handlers.
@@ -53,8 +54,13 @@ class CassandraAuditingRegistrarIntegrationTests {
 	static class MyConfiguration {
 
 		@Bean
-		CassandraConverter cassandraConverter() {
-			return new MappingCassandraConverter();
+		CassandraConverter cassandraConverter(CassandraMappingContext context) {
+			return new MappingCassandraConverter(context);
+		}
+
+		@Bean
+		CassandraMappingContext cassandraMappingContext() {
+			return new CassandraMappingContext();
 		}
 
 	}

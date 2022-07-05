@@ -18,11 +18,9 @@ package org.springframework.data.cassandra.config;
 import java.lang.annotation.Annotation;
 
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
-import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.auditing.ReactiveIsNewAwareAuditingHandler;
 import org.springframework.data.auditing.config.AuditingBeanDefinitionRegistrarSupport;
 import org.springframework.data.auditing.config.AuditingConfiguration;
@@ -49,12 +47,9 @@ class ReactiveCassandraAuditingRegistrar extends AuditingBeanDefinitionRegistrar
 	}
 
 	@Override
-	public void registerBeanDefinitions(AnnotationMetadata annotationMetadata, BeanDefinitionRegistry registry) {
-
-		Assert.notNull(annotationMetadata, "AnnotationMetadata must not be null");
-		Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
-
-		super.registerBeanDefinitions(annotationMetadata, registry);
+	protected void postProcess(BeanDefinitionBuilder builder, AuditingConfiguration configuration,
+			BeanDefinitionRegistry registry) {
+		CassandraAuditingRegistrar.potentiallyRegisterCassandraPersistentEntities(builder, registry);
 	}
 
 	@Override
@@ -62,13 +57,8 @@ class ReactiveCassandraAuditingRegistrar extends AuditingBeanDefinitionRegistrar
 
 		Assert.notNull(configuration, "AuditingConfiguration must not be null");
 
-		BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(ReactiveIsNewAwareAuditingHandler.class);
-
-		BeanDefinitionBuilder definition = BeanDefinitionBuilder.genericBeanDefinition(PersistentEntitiesFactoryBean.class);
-		definition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_CONSTRUCTOR);
-
-		builder.addConstructorArgValue(definition.getBeanDefinition());
-		return configureDefaultAuditHandlerAttributes(configuration, builder);
+		return configureDefaultAuditHandlerAttributes(configuration,
+				BeanDefinitionBuilder.rootBeanDefinition(ReactiveIsNewAwareAuditingHandler.class));
 	}
 
 	@Override

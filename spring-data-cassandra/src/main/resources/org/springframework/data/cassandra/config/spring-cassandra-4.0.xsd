@@ -1,0 +1,814 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="http://www.springframework.org/schema/data/cassandra"
+            xmlns:repository="http://www.springframework.org/schema/data/repository"
+            xmlns:tool="http://www.springframework.org/schema/tool"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://www.springframework.org/schema/data/cassandra"
+            elementFormDefault="qualified" attributeFormDefault="unqualified">
+
+	<xsd:import namespace="http://www.springframework.org/schema/beans"
+	            schemaLocation="https://www.springframework.org/schema/beans/spring-beans.xsd"/>
+	<xsd:import namespace="http://www.springframework.org/schema/tool"
+	            schemaLocation="https://www.springframework.org/schema/tool/spring-tool.xsd"/>
+	<xsd:import namespace="http://www.springframework.org/schema/context"
+	            schemaLocation="https://www.springframework.org/schema/context/spring-context.xsd"/>
+	<xsd:import namespace="http://www.springframework.org/schema/data/repository"
+	            schemaLocation="https://www.springframework.org/schema/data/repository/spring-repository.xsd"/>
+
+	<xsd:annotation>
+		<xsd:documentation><![CDATA[
+Defines configuration elements in the XML namespace for Spring Data for Apache Cassandra.
+		]]></xsd:documentation>
+	</xsd:annotation>
+
+	<xsd:element name="auditing">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<tool:annotation>
+					<tool:exports
+							type="org.springframework.data.mongodb.core.mapping.event.AuditingEntityCallback"/>
+					<tool:exports
+							type="org.springframework.data.auditing.IsNewAwareAuditingHandler"/>
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:attributeGroup ref="repository:auditing-attributes"/>
+			<xsd:attribute name="mapping-context-ref" type="mappingContextRef"/>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="converter" type="converterType">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[
+Defines a CassandraConverter for getting rich mapping functionality.
+			]]></xsd:documentation>
+			<xsd:appinfo>
+				<tool:exports
+						type="org.springframework.data.cassandra.core.convert.CassandraConverter"/>
+			</xsd:appinfo>
+		</xsd:annotation>
+	</xsd:element>
+
+	<xsd:element name="cql-template" type="cqlTemplateType">
+		<xsd:annotation>
+			<xsd:documentation
+					source="org.springframework.data.cql.config.CassandraCqlTemplateFactoryBean">
+				<![CDATA[
+Defines a CassandraTemplate.
+			]]></xsd:documentation>
+			<xsd:appinfo>
+				<tool:annotation>
+					<tool:exports
+							type="org.springframework.data.cassandra.core.cql.CqlTemplate"/>
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+	</xsd:element>
+
+	<xsd:element name="initialize-keyspace" type="initializeKeyspaceType">
+		<xsd:annotation>
+			<xsd:documentation
+					source="org.springframework.data.cassandra.core.cql.session.init.SessionFactoryInitializer">
+				<![CDATA[
+	Initializes a keyspace with CQL scripts provided in nested <script/> elements.
+			]]></xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+
+	<xsd:element name="mapping">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[
+Defines a CassandraMappingContext for holding rich entity mapping information.
+			]]></xsd:documentation>
+			<xsd:appinfo>
+				<tool:exports
+						type="org.springframework.data.cassandra.core.mapping.CassandraMappingContext"/>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="entity" type="entityType" minOccurs="0"
+				             maxOccurs="unbounded"/>
+				<xsd:element name="user-type-resolver" type="userTypeResolverType"
+				             minOccurs="0" maxOccurs="1"/>
+			</xsd:sequence>
+			<xsd:attribute name="id" type="xsd:ID">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+	The name of the mapping context; default is "cassandraMappingContext".
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="entity-base-packages" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+The comma-delimited base packages in which to scan for entities and their mapping information.
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="user-type-resolver-ref" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+The reference to a UserTypeResolver. UserTypeResolver is required when working with User-defined types.
+					]]></xsd:documentation>
+					<xsd:appinfo>
+						<tool:exports
+								type="org.springframework.data.cassandra.core.mapping.UserTypeResolver"/>
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:attribute>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="repositories">
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:extension base="repository:repositories">
+					<xsd:attributeGroup ref="cassandra-repository-attributes"/>
+					<xsd:attributeGroup ref="repository:repository-attributes"/>
+				</xsd:extension>
+			</xsd:complexContent>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="session" type="sessionType">
+		<xsd:annotation>
+			<xsd:documentation
+					source="org.springframework.data.cassandra.config.CqlSessionFactoryBean">
+				<![CDATA[
+Defines a Cassandra session.
+			]]></xsd:documentation>
+			<xsd:appinfo>
+				<tool:annotation>
+					<tool:exports type="com.datastax.driver.core.Session"/>
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+	</xsd:element>
+
+	<xsd:element name="session-factory" type="sessionFactoryType">
+		<xsd:annotation>
+			<xsd:documentation
+					source="org.springframework.data.cassandra.config.SessionFactoryFactoryBean">
+				<![CDATA[
+Defines a Cassandra SessionFactory.
+			]]></xsd:documentation>
+			<xsd:appinfo>
+				<tool:annotation>
+					<tool:exports
+							type="org.springframework.data.cassandra.SessionFactory"/>
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+	</xsd:element>
+
+	<xsd:element name="template" type="templateType">
+		<xsd:annotation>
+			<xsd:documentation
+					source="org.springframework.data.cassandra.config.CassandraTemplateFactoryBean">
+				<![CDATA[
+Defines a CassandraTemplate.
+			]]></xsd:documentation>
+			<xsd:appinfo>
+				<tool:annotation>
+					<tool:exports
+							type="org.springframework.data.cassandra.CassandraTemplate"/>
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+	</xsd:element>
+
+	<xsd:attributeGroup name="cassandra-repository-attributes">
+		<xsd:attribute name="cassandra-template-ref" type="cassandraTemplateRef">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The reference to a CassandraTemplate. Will default to 'cqlTemplate'.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:attributeGroup>
+
+	<xsd:simpleType name="cassandraConverterRef" final="union">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<tool:annotation kind="ref">
+					<tool:assignable-to
+							type="org.springframework.data.cassandra.core.convert.CassandraConverter"/>
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:union memberTypes="xsd:string"/>
+	</xsd:simpleType>
+
+	<xsd:simpleType name="cassandraTemplateRef" final="union">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<tool:annotation kind="ref">
+					<tool:assignable-to
+							type="org.springframework.data.cassandra.core.CassandraTemplate"/>
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:union memberTypes="xsd:string"/>
+	</xsd:simpleType>
+
+	<xsd:simpleType name="cqlTemplateRef" final="union">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<tool:annotation kind="ref">
+					<tool:assignable-to
+							type="org.springframework.data.cassandra.core.cql.CqlTemplate"/>
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:union memberTypes="xsd:string"/>
+	</xsd:simpleType>
+
+	<xsd:simpleType name="sessionRef" final="union">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<tool:annotation kind="ref">
+					<tool:assignable-to type="com.datastax.driver.core.Session"/>
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:union memberTypes="xsd:string"/>
+	</xsd:simpleType>
+
+	<xsd:simpleType name="sessionFactoryRef" final="union">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<tool:annotation kind="ref">
+					<tool:assignable-to
+							type="org.springframework.data.cassandra.SessionFactory"/>
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:union memberTypes="xsd:string"/>
+	</xsd:simpleType>
+
+	<xsd:complexType name="converterType">
+		<xsd:attribute name="id" type="xsd:ID">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+	The name of the converter ; default is "cassandraConverter".
+					]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="mapping-ref" type="mappingContextRef">
+			<xsd:annotation>
+				<xsd:documentation
+						source="org.springframework.data.cassandra.core.mapping.CassandraMappingContext">
+					<![CDATA[
+The reference to a CassandraMappingContext. Will default to 'cassandraMapping'.
+					]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+
+	<xsd:complexType name="datacenterType">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[
+Provides the ability to specify replication factors by data center.
+					]]></xsd:documentation>
+		</xsd:annotation>
+		<xsd:attribute name="name" type="xsd:string" use="required">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The name of the data center.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="replication-factor" type="xsd:string" use="required">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The replication factor for the data center.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+
+	<xsd:complexType name="initializeKeyspaceType">
+		<xsd:sequence>
+			<xsd:element name="script" type="scriptType" minOccurs="1"
+			             maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+			An CQL script to execute to populate, initialize, or clean up a keyspace.
+						]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="session-factory-ref" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+			A reference to a session factory that should be initialized. Deprecated, use "session-factory".
+					]]></xsd:documentation>
+				<xsd:appinfo>
+					<tool:annotation kind="ref"/>
+					<tool:expected-type
+							type="org.springframework.data.cassandra.SessionFactory"/>
+				</xsd:appinfo>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="enabled" type="xsd:string" default="true">
+			<xsd:annotation>
+				<xsd:documentation>
+					Is this bean "enabled", meaning the scripts will be executed?
+					Defaults to true but can be used to switch on and off script execution
+					depending on the environment.
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="ignore-failures" default="NONE">
+			<xsd:annotation>
+				<xsd:documentation>
+					Should failed CQL statements be ignored during execution?
+				</xsd:documentation>
+			</xsd:annotation>
+			<xsd:simpleType>
+				<xsd:restriction base="xsd:string">
+					<xsd:enumeration value="NONE">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+						Do not ignore failures (the default)
+								]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:enumeration>
+					<xsd:enumeration value="DROPS">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+						Ignore failed DROP statements
+								]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:enumeration>
+					<xsd:enumeration value="ALL">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+						Ignore all failures
+								]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:enumeration>
+				</xsd:restriction>
+			</xsd:simpleType>
+		</xsd:attribute>
+		<xsd:attribute name="separator" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+	The default statement separator to use (the default is to use ';' if it is present
+	in the script, or '\n' otherwise).
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+
+	<xsd:complexType name="keyspaceType">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[
+Provides the ability to define keyspaces.
+					]]></xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="replication" type="replicationType" minOccurs="0"
+			             maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+Provides the ability to configure the keyspace's replication settings.
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="action" use="required" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The keyspace action to take at startup and possibly shutdown.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="durable-writes" type="xsd:string" use="optional"
+		               default="false">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Whether or not the keyspace supports durable writes.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="name" type="xsd:string" use="required">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The name of this keyspace.  Required.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+
+	<xsd:complexType name="replicationType">
+		<xsd:annotation>
+			<xsd:documentation><![CDATA[
+Provides the ability to configure the keyspace's replication settings.
+					]]></xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="data-center" type="datacenterType" minOccurs="0"
+			             maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+Provides the ability to specify replication factors by data center.
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="class" type="xsd:string"
+		               default="SimpleStrategy">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The name of the replication class; default is "SIMPLE_STRATEGY".
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="replication-factor" type="xsd:string"
+		               default="1">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The replication factor; default is 1.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+
+	<xsd:complexType name="sessionType">
+		<xsd:sequence>
+			<xsd:element name="keyspace" type="keyspaceType" minOccurs="0"
+			             maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+Provides the ability to define a keyspace.
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="keyspace-startup-cql" type="xsd:string" minOccurs="0"
+			             maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+Arbitrary CQL script to be executed against the system keyspace during bean initialization.  Multiple elements will be executed in document order.
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="keyspace-shutdown-cql" type="xsd:string" minOccurs="0"
+			             maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+Arbitrary CQL script to be executed against the system keyspace during bean destruction.  Multiple elements will be executed in document order.
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="startup-cql" type="xsd:string" minOccurs="0"
+			             maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+Arbitrary CQL script to be executed against the session's keyspace during bean initialization.  Multiple elements will be executed in document order.
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="shutdown-cql" type="xsd:string" minOccurs="0"
+			             maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+Arbitrary CQL script to be executed against the session's keyspace during bean destruction.  Multiple elements will be executed in document order.
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="id" type="xsd:ID">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The name of the session definition; default is "cassandraSession".
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="cassandra-converter-ref" type="cassandraConverterRef"
+		>
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The reference to a CassandraConverter; default is "cassandraConverter".
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="contact-points" type="xsd:string" default="localhost"
+		>
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The comma separated list of Cassandra servers.  Default is "localhost".
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="keyspace-name" type="xsd:string" use="required">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The name of a Cassandra Keyspace.  No default; for the system keyspace, use the empty string.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="local-datacenter" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The name of the local data center.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="password" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+When Authentication is enabled, the password to use when connecting to the Cluster.
+				]]>
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="port" type="xsd:string" default="9042">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The native CQL port to connect to.  Default is 9042.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="schema-action" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The schema action to perform; default is NONE.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="username" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+When Authentication is enabled, the username to use when connecting to the Cluster.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+
+	<xsd:complexType name="sessionFactoryType">
+		<xsd:sequence>
+			<xsd:element name="script" type="scriptType" minOccurs="1"
+			             maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+			An CQL script to execute to populate, initialize, or clean up a keyspace.
+						]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="id" type="xsd:ID">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The name of the session definition; default is "cassandraSessionFactory".
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="cassandra-converter-ref" type="cassandraConverterRef"
+		>
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The reference to a CassandraConverter; default is "cassandraConverter".
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="ignore-failures" default="NONE">
+			<xsd:annotation>
+				<xsd:documentation>
+					Should failed CQL statements be ignored during execution?
+				</xsd:documentation>
+			</xsd:annotation>
+			<xsd:simpleType>
+				<xsd:restriction base="xsd:string">
+					<xsd:enumeration value="NONE">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+						Do not ignore failures (the default)
+								]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:enumeration>
+					<xsd:enumeration value="DROPS">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+						Ignore failed DROP statements
+								]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:enumeration>
+					<xsd:enumeration value="ALL">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+						Ignore all failures
+								]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:enumeration>
+				</xsd:restriction>
+			</xsd:simpleType>
+		</xsd:attribute>
+		<xsd:attribute name="separator" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+	The default statement separator to use (the default is to use ';' if it is present
+	in the script, or '\n' otherwise).
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="schema-action" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The schema action to perform; default is NONE.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="session-ref" type="sessionRef">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The reference to a Cassandra session; default is "cassandraSession".
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+
+	<xsd:complexType name="cqlTemplateType">
+		<xsd:attribute name="id" type="xsd:ID">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The name of the template; default is "cqlTemplate".
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="session-ref" type="sessionRef">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The reference to a Cassandra session; default is "cassandraSession".
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="session-factory-ref" type="sessionFactoryRef">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The reference to a Cassandra SessionFactory. This attribute has precedence over "session-ref".
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+
+	<xsd:complexType name="templateType">
+		<xsd:attribute name="id" type="xsd:ID">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The name of the template; default is "cassandraTemplate".
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="cassandra-converter-ref" type="cassandraConverterRef"
+		>
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The reference to a CassandraConverter; default is "cassandraConverter".
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="cql-template-ref" type="cqlTemplateRef">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The reference to a CqlTemplate; default is none. Providing a CqlTemplate reference overrides session references.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="session-ref" type="sessionRef">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The reference to a Cassandra session; default is "cassandraSession". Session reference is omitted if a CqlTemplate reference is provided.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="session-factory-ref" type="sessionFactoryRef">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The reference to a Cassandra SessionFactory. This attribute has precedence over "session-ref".
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+
+	<xsd:simpleType name="mappingContextRef">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<tool:annotation kind="ref">
+					<tool:assignable-to
+							type="org.springframework.data.cassandra.core.mapping.CassandraMappingContext"/>
+				</tool:annotation>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:union memberTypes="xsd:string"/>
+	</xsd:simpleType>
+
+	<xsd:complexType name="entityType">
+		<xsd:sequence>
+			<xsd:element name="table" type="tableType" minOccurs="0" maxOccurs="1"/>
+			<xsd:element name="property" type="propertyType" minOccurs="0"
+			             maxOccurs="unbounded"/>
+		</xsd:sequence>
+		<xsd:attribute name="class" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Entity class name.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+
+	<xsd:complexType name="propertyType">
+		<xsd:attribute name="column-name" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The column-name that the property should be mapped to.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="force-quote" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Whether the column name should be force-quoted.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="name" type="xsd:string" use="required">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The name of the property.  Required.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+
+	<xsd:complexType name="scriptType">
+		<xsd:attribute name="location" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+	The resource location of an CQL script to execute. Can be a single script location
+	or a pattern (e.g. classpath:/com/foo/cql/*-data.cql).
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="encoding" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+	The encoding for CQL scripts, if different from the platform encoding.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="separator" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+	The statement separator in the script (the default is to use ';' if it is present
+	in the script, or '\n' otherwise).
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="execution">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+	Indicate the execution phase of this script. Use INIT to execute on startup (as a
+	bean initialization) or DESTROY to execute on shutdown (as a bean destruction callback).
+				]]></xsd:documentation>
+			</xsd:annotation>
+			<xsd:simpleType>
+				<xsd:restriction base="xsd:string">
+					<xsd:enumeration value="INIT"/>
+					<xsd:enumeration value="DESTROY"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+		</xsd:attribute>
+	</xsd:complexType>
+
+	<xsd:complexType name="tableType">
+		<xsd:attribute name="force-quote" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Whether to force-quote the table name.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="name" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+Table name override.
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+
+	<xsd:complexType name="userTypeResolverType">
+		<xsd:attribute name="session-ref" type="sessionRef">
+			<xsd:annotation>
+				<xsd:documentation><![CDATA[
+The reference to a Cassandra Session; default is "cassandraSession".
+				]]></xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+
+</xsd:schema>

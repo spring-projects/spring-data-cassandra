@@ -24,6 +24,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.data.cassandra.CassandraManagedTypes;
 import org.springframework.data.cassandra.SessionFactory;
 import org.springframework.data.cassandra.core.CassandraAdminTemplate;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
@@ -36,6 +37,7 @@ import org.springframework.data.cassandra.core.mapping.SimpleUserTypeResolver;
 import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.convert.CustomConversions;
+import org.springframework.data.domain.ManagedTypes;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.lang.Nullable;
 
@@ -58,9 +60,8 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 	private @Nullable ClassLoader beanClassLoader;
 
 	/**
-	 * Creates a {@link CassandraConverter} using the configured {@link #cassandraMapping()}.
-	 *
-	 * Will apply all specified {@link #customConversions()}.
+	 * Creates a {@link CassandraConverter} using the configured {@link #cassandraMapping()}. Will apply all specified
+	 * {@link #customConversions()}.
 	 *
 	 * @return {@link CassandraConverter} used to convert Java and Cassandra value types during the mapping process.
 	 * @see #cassandraMapping()
@@ -71,11 +72,11 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 
 		CqlSession cqlSession = getRequiredSession();
 
-		UserTypeResolver userTypeResolver =
-				new SimpleUserTypeResolver(cqlSession, CqlIdentifier.fromCql(getKeyspaceName()));
+		UserTypeResolver userTypeResolver = new SimpleUserTypeResolver(cqlSession,
+				CqlIdentifier.fromCql(getKeyspaceName()));
 
-		MappingCassandraConverter converter =
-			new MappingCassandraConverter(requireBeanOfType(CassandraMappingContext.class));
+		MappingCassandraConverter converter = new MappingCassandraConverter(
+				requireBeanOfType(CassandraMappingContext.class));
 
 		converter.setCodecRegistry(cqlSession.getContext().getCodecRegistry());
 		converter.setUserTypeResolver(userTypeResolver);
@@ -85,22 +86,43 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 	}
 
 	/**
+	 * Returns the a {@link CassandraManagedTypes} object holding the initial entity set.
+	 *
+	 * @return new instance of {@link CassandraManagedTypes}.
+	 * @throws ClassNotFoundException
+	 * @since 4.0
+	 */
+	@Bean
+	public CassandraManagedTypes cassandraManagedTypes() throws ClassNotFoundException {
+		return CassandraManagedTypes.fromIterable(getInitialEntitySet());
+	}
+
+	/**
 	 * Return the {@link MappingContext} instance to map Entities to {@link Object Java Objects}.
 	 *
-	 * @throws ClassNotFoundException if the Cassandra Entity class type identified by name
-	 * cannot be found during the scan.
+	 * @see org.springframework.data.cassandra.core.mapping.CassandraMappingContext
+	 * @deprecated since 4.0, use {@link #cassandraMappingContext(ManagedTypes)} instead.
+	 */
+	@Deprecated(since = "4.0", forRemoval = true)
+	public CassandraMappingContext cassandraMapping() throws ClassNotFoundException {
+		return cassandraMappingContext(cassandraManagedTypes());
+	}
+
+	/**
+	 * Return the {@link MappingContext} instance to map Entities to {@link Object Java Objects}.
+	 *
 	 * @see org.springframework.data.cassandra.core.mapping.CassandraMappingContext
 	 */
 	@Bean
-	public CassandraMappingContext cassandraMapping() throws ClassNotFoundException {
+	public CassandraMappingContext cassandraMappingContext(CassandraManagedTypes cassandraManagedTypes) {
 
 		CqlSession cqlSession = getRequiredSession();
 
-		UserTypeResolver userTypeResolver =
-				new SimpleUserTypeResolver(cqlSession, CqlIdentifier.fromCql(getKeyspaceName()));
+		UserTypeResolver userTypeResolver = new SimpleUserTypeResolver(cqlSession,
+				CqlIdentifier.fromCql(getKeyspaceName()));
 
-		CassandraMappingContext mappingContext =
-			new CassandraMappingContext(userTypeResolver, SimpleTupleTypeFactory.DEFAULT);
+		CassandraMappingContext mappingContext = new CassandraMappingContext(userTypeResolver,
+				SimpleTupleTypeFactory.DEFAULT);
 
 		CustomConversions customConversions = requireBeanOfType(CassandraCustomConversions.class);
 
@@ -108,7 +130,7 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 
 		mappingContext.setCodecRegistry(cqlSession.getContext().getCodecRegistry());
 		mappingContext.setCustomConversions(customConversions);
-		mappingContext.setInitialEntitySet(getInitialEntitySet());
+		mappingContext.setManagedTypes(cassandraManagedTypes);
 		mappingContext.setSimpleTypeHolder(customConversions.getSimpleTypeHolder());
 
 		return mappingContext;

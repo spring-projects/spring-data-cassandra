@@ -13,7 +13,7 @@
 	<cassandra:mapping/>
 
 	<bean class="org.springframework.data.cassandra.core.convert.MappingCassandraConverter">
-		<constructor-arg index="0" ref="cassandraMapping"/>
+		<constructor-arg index="0" ref="cassandraMappingContext"/>
 	</bean>
 
 </beans>
