@@ -1,1 +1,5 @@
-org.springframework.aot.hint.RuntimeHintsRegistrar=org.springframework.data.cassandra.aot.CassandraRuntimeHintsRegistrar
+org.springframework.aot.hint.RuntimeHintsRegistrar=\
+	org.springframework.data.cassandra.aot.CassandraRuntimeHintsRegistrar
+
+org.springframework.beans.factory.aot.BeanRegistrationAotProcessor=\
+	org.springframework.data.aot.ManagedTypesBeanRegistrationAotProcessor
