@@ -17,10 +17,8 @@ package org.springframework.data.cassandra.config;
 
 import java.lang.annotation.Annotation;
 
-import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
-import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.data.auditing.IsNewAwareAuditingHandler;
@@ -28,14 +26,13 @@ import org.springframework.data.auditing.config.AuditingBeanDefinitionRegistrarS
 import org.springframework.data.auditing.config.AuditingConfiguration;
 import org.springframework.data.cassandra.core.mapping.event.AuditingEntityCallback;
 import org.springframework.data.config.ParsingUtils;
-import org.springframework.data.mapping.context.PersistentEntities;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
  * {@link ImportBeanDefinitionRegistrar} to enable {@link EnableCassandraAuditing} annotation.
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  * @since 2.2
  */
 class CassandraAuditingRegistrar extends AuditingBeanDefinitionRegistrarSupport {
@@ -54,7 +51,7 @@ class CassandraAuditingRegistrar extends AuditingBeanDefinitionRegistrarSupport 
 	protected void postProcess(BeanDefinitionBuilder builder, AuditingConfiguration configuration,
 			BeanDefinitionRegistry registry) {
 
-		potentiallyRegisterCassandraPersistentEntities(builder, registry);
+		builder.setFactoryMethod("from").addConstructorArgReference("cassandraMappingContext");
 	}
 
 	@Override
@@ -81,39 +78,4 @@ class CassandraAuditingRegistrar extends AuditingBeanDefinitionRegistrarSupport 
 		registerInfrastructureBeanWithId(listenerBeanDefinitionBuilder.getBeanDefinition(),
 				AuditingEntityCallback.class.getName(), registry);
 	}
-
-	static void potentiallyRegisterCassandraPersistentEntities(BeanDefinitionBuilder builder,
-			BeanDefinitionRegistry registry) {
-
-		String persistentEntitiesBeanName = detectPersistentEntitiesBeanName(registry);
-
-		if (persistentEntitiesBeanName == null) {
-
-			persistentEntitiesBeanName = BeanDefinitionReaderUtils.uniqueBeanName("cassandraPersistentEntities", registry);
-
-			// TODO: https://github.com/spring-projects/spring-framework/issues/28728
-			BeanDefinitionBuilder definition = BeanDefinitionBuilder.genericBeanDefinition(PersistentEntities.class) //
-					.setFactoryMethod("of") //
-					.addConstructorArgReference("cassandraMappingContext");
-
-			registry.registerBeanDefinition(persistentEntitiesBeanName, definition.getBeanDefinition());
-		}
-
-		builder.addConstructorArgReference(persistentEntitiesBeanName);
-	}
-
-	@Nullable
-	private static String detectPersistentEntitiesBeanName(BeanDefinitionRegistry registry) {
-
-		if (registry instanceof ListableBeanFactory beanFactory) {
-			for (String bn : beanFactory.getBeanNamesForType(PersistentEntities.class)) {
-				if (bn.startsWith("cassandra")) {
-					return bn;
-				}
-			}
-		}
-
-		return null;
-	}
-
 }

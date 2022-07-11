@@ -32,6 +32,7 @@ import org.springframework.util.Assert;
  * {@link ImportBeanDefinitionRegistrar} to enable {@link EnableReactiveCassandraAuditing} annotation.
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  * @since 3.1
  */
 class ReactiveCassandraAuditingRegistrar extends AuditingBeanDefinitionRegistrarSupport {
@@ -49,7 +50,8 @@ class ReactiveCassandraAuditingRegistrar extends AuditingBeanDefinitionRegistrar
 	@Override
 	protected void postProcess(BeanDefinitionBuilder builder, AuditingConfiguration configuration,
 			BeanDefinitionRegistry registry) {
-		CassandraAuditingRegistrar.potentiallyRegisterCassandraPersistentEntities(builder, registry);
+
+		builder.setFactoryMethod("from").addConstructorArgReference("cassandraMappingContext");
 	}
 
 	@Override
