@@ -28,16 +28,16 @@ import org.springframework.data.cassandra.repository.support.SimpleCassandraRepo
 import org.springframework.data.cassandra.repository.support.SimpleReactiveCassandraRepository;
 
 /**
- * Unit tests for {@link CassandraRuntimeHintsRegistrar}.
+ * Unit tests for {@link CassandraRuntimeHints}.
  *
  * @author Mark Paluch
  */
-class CassandraRuntimeHintsRegistrarUnitTests {
+class CassandraRuntimeHintsUnitTests {
 
 	@Test // GH-1280
 	void shouldRegisterCassandraHints() {
 
-		CassandraRuntimeHintsRegistrar registrar = new CassandraRuntimeHintsRegistrar();
+		CassandraRuntimeHints registrar = new CassandraRuntimeHints();
 
 		DefaultGenerationContext context = new DefaultGenerationContext(new ClassNameGenerator(Object.class),
 				new InMemoryGeneratedFiles());

@@ -35,7 +35,7 @@ import org.springframework.lang.Nullable;
  * @author Mark Paluch
  * @since 4.0
  */
-class CassandraRuntimeHintsRegistrar implements RuntimeHintsRegistrar {
+class CassandraRuntimeHints implements RuntimeHintsRegistrar {
 
 	private static final boolean PROJECT_REACTOR_PRESENT = ReactiveWrappers
 			.isAvailable(ReactiveWrappers.ReactiveLibrary.PROJECT_REACTOR);
