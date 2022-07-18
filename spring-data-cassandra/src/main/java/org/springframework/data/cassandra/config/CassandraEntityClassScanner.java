@@ -21,13 +21,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
-import org.springframework.core.type.filter.AnnotationTypeFilter;
-import org.springframework.data.annotation.Persistent;
 import org.springframework.data.cassandra.core.mapping.PrimaryKeyClass;
 import org.springframework.data.cassandra.core.mapping.Table;
+import org.springframework.data.util.TypeScanner;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
@@ -145,7 +143,12 @@ public class CassandraEntityClassScanner {
 	 * @return base package names used for the entity scan.
 	 */
 	public Set<String> getEntityBasePackages() {
-		return Collections.unmodifiableSet(entityBasePackages);
+
+		if (ObjectUtils.isEmpty(entityBasePackageClasses)) {
+			return Collections.unmodifiableSet(entityBasePackages);
+		}
+
+		return entityBasePackageClasses.stream().map(ClassUtils::getPackageName).collect(Collectors.toSet());
 	}
 
 	/**
@@ -176,57 +179,30 @@ public class CassandraEntityClassScanner {
 	/**
 	 * Set the bean {@link ClassLoader} to load class candidates discovered by the class path scan.
 	 *
-	 * @param beanClassLoader must not be {@literal null}.
+	 * @param beanClassLoader
 	 */
-	public void setBeanClassLoader(ClassLoader beanClassLoader) {
+	public void setBeanClassLoader(@Nullable ClassLoader beanClassLoader) {
 		this.beanClassLoader = beanClassLoader;
 	}
 
 	/**
-	 * Scans the mapping base package for entity classes annotated with {@link Table} or {@link Persistent}.
+	 * Scans the mapping base package for entity classes annotated with {@link Table} or {@link PrimaryKeyClass}.
 	 *
 	 * @see #getEntityBasePackages()
-	 * @return {@code Set<Class<?>>} representing the annotated entity classes found.
-	 * @throws ClassNotFoundException if a discovered class could not be loaded via.
+	 * @see #getEntityAnnotations()
+	 * @return {@code Set} representing the annotated entity classes found.
 	 */
-	public Set<Class<?>> scanForEntityClasses() throws ClassNotFoundException {
+	public Set<Class<?>> scanForEntityClasses() {
 
-		Set<Class<?>> classes = new HashSet<>();
+		TypeScanner scanner;
 
-		for (String basePackage : getEntityBasePackages()) {
-			classes.addAll(scanBasePackageForEntities(basePackage));
+		if (this.beanClassLoader != null) {
+			scanner = TypeScanner.typeScanner(this.beanClassLoader);
+		} else {
+			scanner = TypeScanner.typeScanner(ClassUtils.getDefaultClassLoader());
 		}
 
-		for (Class<?> basePackageClass : getEntityBasePackageClasses()) {
-			classes.addAll(scanBasePackageForEntities(basePackageClass.getPackage().getName()));
-		}
-
-		return classes;
-	}
-
-	protected Set<Class<?>> scanBasePackageForEntities(String basePackage) throws ClassNotFoundException {
-
-		HashSet<Class<?>> classes = new HashSet<>();
-
-		if (ObjectUtils.isEmpty(basePackage)) {
-			return classes;
-		}
-
-		ClassPathScanningCandidateComponentProvider componentProvider = new ClassPathScanningCandidateComponentProvider(
-				false);
-
-		for (Class<? extends Annotation> annotation : getEntityAnnotations()) {
-			componentProvider.addIncludeFilter(new AnnotationTypeFilter(annotation));
-		}
-
-		for (BeanDefinition candidate : componentProvider.findCandidateComponents(basePackage)) {
-
-			if (candidate.getBeanClassName() != null) {
-				classes.add(ClassUtils.forName(candidate.getBeanClassName(), beanClassLoader));
-			}
-		}
-
-		return classes;
+		return scanner.forTypesAnnotatedWith(getEntityAnnotations()).scanPackages(getEntityBasePackages()).collectAsSet();
 	}
 
 	/**

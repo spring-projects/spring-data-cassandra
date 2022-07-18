@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.config;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
@@ -227,7 +228,12 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 	 * @since 2.0
 	 */
 	protected Set<Class<?>> getInitialEntitySet() throws ClassNotFoundException {
-		return CassandraEntityClassScanner.scan(getEntityBasePackages());
+
+		CassandraEntityClassScanner scanner = new CassandraEntityClassScanner();
+		scanner.setBeanClassLoader(this.beanClassLoader);
+		scanner.setEntityBasePackages(Arrays.asList(getEntityBasePackages()));
+
+		return scanner.scanForEntityClasses();
 	}
 
 	/**

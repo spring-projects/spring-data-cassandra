@@ -61,18 +61,21 @@ class CassandraMappingContextParser extends AbstractSingleBeanDefinitionParser {
 
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
-		parseMapping(element, builder);
+		parseMapping(element, builder, parserContext.getReaderContext().getBeanClassLoader());
 		builder.getRawBeanDefinition().setSource(element);
 	}
 
-	private void parseMapping(Element element, BeanDefinitionBuilder builder) {
+	private void parseMapping(Element element, BeanDefinitionBuilder builder, ClassLoader classLoader) {
 
 		String packages = element.getAttribute("entity-base-packages");
 
 		if (StringUtils.hasText(packages)) {
 			try {
-				Set<Class<?>> entityClasses = CassandraEntityClassScanner
-						.scan(StringUtils.commaDelimitedListToStringArray(packages));
+				CassandraEntityClassScanner scanner = new CassandraEntityClassScanner();
+				scanner.setBeanClassLoader(classLoader);
+				scanner.setEntityBasePackages(StringUtils.commaDelimitedListToSet(packages));
+
+				Set<Class<?>> entityClasses = scanner.scanForEntityClasses();
 
 				builder.addPropertyValue("initialEntitySet", entityClasses);
 			} catch (Exception x) {
