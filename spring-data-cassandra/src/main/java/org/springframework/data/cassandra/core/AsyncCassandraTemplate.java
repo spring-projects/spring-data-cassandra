@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -124,7 +125,7 @@ public class AsyncCassandraTemplate
 
 	private final StatementFactory statementFactory;
 
-	private @Nullable ApplicationEventPublisher eventPublisher;
+	private final EntityLifecycleEventDelegate eventDelegate;
 
 	private @Nullable EntityCallbacks entityCallbacks;
 
@@ -190,11 +191,12 @@ public class AsyncCassandraTemplate
 		this.entityOperations = new EntityOperations(converter);
 		this.exceptionTranslator = asyncCqlTemplate.getExceptionTranslator();
 		this.statementFactory = new StatementFactory(converter);
+		this.eventDelegate = new EntityLifecycleEventDelegate();
 	}
 
 	@Override
 	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
-		this.eventPublisher = applicationEventPublisher;
+		this.eventDelegate.setPublisher(applicationEventPublisher);
 	}
 
 	@Override
@@ -212,6 +214,18 @@ public class AsyncCassandraTemplate
 	 */
 	public void setEntityCallbacks(@Nullable EntityCallbacks entityCallbacks) {
 		this.entityCallbacks = entityCallbacks;
+	}
+
+	/**
+	 * Configure whether lifecycle events such as {@link AfterLoadEvent}, {@link BeforeSaveEvent}, etc. should be
+	 * published or whether emission should be suppressed. Enabled by default.
+	 *
+	 * @param enabled {@code true} to enable entity lifecycle events; {@code false} to disable entity lifecycle events.
+	 * @since 4.0
+	 * @see CassandraMappingEvent
+	 */
+	public void setEntityLifecycleEventsEnabled(boolean enabled) {
+		this.eventDelegate.setEventsEnabled(enabled);
 	}
 
 	@Override
@@ -456,11 +470,12 @@ public class AsyncCassandraTemplate
 				tableName);
 		SimpleStatement delete = builder.build();
 
-		maybeEmitEvent(new BeforeDeleteEvent<>(delete, entityClass, tableName));
+		maybeEmitEvent(() -> new BeforeDeleteEvent<>(delete, entityClass, tableName));
 
 		ListenableFuture<Boolean> future = doExecute(delete, AsyncResultSet::wasApplied);
 
-		future.addCallback(success -> maybeEmitEvent(new AfterDeleteEvent<>(delete, entityClass, tableName)), e -> {});
+		future.addCallback(success -> maybeEmitEvent(() -> new AfterDeleteEvent<>(delete, entityClass, tableName)),
+				e -> {});
 
 		return future;
 	}
@@ -677,8 +692,8 @@ public class AsyncCassandraTemplate
 
 			if (!result.wasApplied()) {
 				throw new OptimisticLockingFailureException(
-						String.format("Cannot delete entity %s with version %s in table %s; Has it been modified meanwhile",
-								entity, source.getVersion(), tableName));
+						String.format("Cannot delete entity %s with version %s in table %s; Has it been modified meanwhile", entity,
+								source.getVersion(), tableName));
 			}
 		});
 	}
@@ -702,10 +717,11 @@ public class AsyncCassandraTemplate
 		StatementBuilder<Delete> builder = getStatementFactory().deleteById(id, entity, tableName);
 		SimpleStatement delete = builder.build();
 
-		maybeEmitEvent(new BeforeDeleteEvent<>(delete, entityClass, tableName));
+		maybeEmitEvent(() -> new BeforeDeleteEvent<>(delete, entityClass, tableName));
 
 		ListenableFuture<Boolean> future = doExecute(delete, AsyncResultSet::wasApplied);
-		future.addCallback(success -> maybeEmitEvent(new AfterDeleteEvent<>(delete, entityClass, tableName)), e -> {});
+		future.addCallback(success -> maybeEmitEvent(() -> new AfterDeleteEvent<>(delete, entityClass, tableName)),
+				e -> {});
 
 		return future;
 	}
@@ -719,10 +735,11 @@ public class AsyncCassandraTemplate
 		Truncate truncate = QueryBuilder.truncate(tableName);
 		SimpleStatement statement = truncate.build();
 
-		maybeEmitEvent(new BeforeDeleteEvent<>(statement, entityClass, tableName));
+		maybeEmitEvent(() -> new BeforeDeleteEvent<>(statement, entityClass, tableName));
 
 		ListenableFuture<Boolean> future = doExecute(statement, AsyncResultSet::wasApplied);
-		future.addCallback(success -> maybeEmitEvent(new AfterDeleteEvent<>(statement, entityClass, tableName)), e -> {});
+		future.addCallback(success -> maybeEmitEvent(() -> new AfterDeleteEvent<>(statement, entityClass, tableName)),
+				e -> {});
 
 		return new MappingListenableFutureAdapter<>(future, aBoolean -> null);
 	}
@@ -753,7 +770,7 @@ public class AsyncCassandraTemplate
 	private <T> ListenableFuture<EntityWriteResult<T>> executeSave(T entity, CqlIdentifier tableName,
 			SimpleStatement statement, Consumer<WriteResult> beforeAfterSaveEvent) {
 
-		maybeEmitEvent(new BeforeSaveEvent<>(entity, tableName, statement));
+		maybeEmitEvent(() -> new BeforeSaveEvent<>(entity, tableName, statement));
 		T entityToSave = maybeCallBeforeSave(entity, tableName, statement);
 
 		ListenableFuture<AsyncResultSet> result = doQueryForResultSet(statement);
@@ -766,7 +783,7 @@ public class AsyncCassandraTemplate
 
 			beforeAfterSaveEvent.accept(writeResult);
 
-			maybeEmitEvent(new AfterSaveEvent<>(entityToSave, tableName));
+			maybeEmitEvent(() -> new AfterSaveEvent<>(entityToSave, tableName));
 
 			return writeResult;
 		});
@@ -775,7 +792,7 @@ public class AsyncCassandraTemplate
 	private ListenableFuture<WriteResult> executeDelete(Object entity, CqlIdentifier tableName, SimpleStatement statement,
 			Consumer<WriteResult> resultConsumer) {
 
-		maybeEmitEvent(new BeforeDeleteEvent<>(statement, entity.getClass(), tableName));
+		maybeEmitEvent(() -> new BeforeDeleteEvent<>(statement, entity.getClass(), tableName));
 
 		ListenableFuture<AsyncResultSet> result = doQueryForResultSet(statement);
 
@@ -786,7 +803,7 @@ public class AsyncCassandraTemplate
 
 			resultConsumer.accept(writeResult);
 
-			maybeEmitEvent(new AfterDeleteEvent<>(statement, entity.getClass(), tableName));
+			maybeEmitEvent(() -> new AfterDeleteEvent<>(statement, entity.getClass(), tableName));
 
 			return writeResult;
 		});
@@ -864,9 +881,7 @@ public class AsyncCassandraTemplate
 			}
 		}
 
-		return getAsyncCqlOperations()
-				.execute(new GetConfiguredPageSize())
-				.completable().join();
+		return getAsyncCqlOperations().execute(new GetConfiguredPageSize()).completable().join();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -876,12 +891,12 @@ public class AsyncCassandraTemplate
 
 		return row -> {
 
-			maybeEmitEvent(new AfterLoadEvent<>(row, targetType, tableName));
+			maybeEmitEvent(() -> new AfterLoadEvent<>(row, targetType, tableName));
 
 			T result = getConverter().project(projection, row);
 
 			if (result != null) {
-				maybeEmitEvent(new AfterConvertEvent<>(row, result, tableName));
+				maybeEmitEvent(() -> new AfterConvertEvent<>(row, result, tableName));
 			}
 
 			return result;
@@ -899,11 +914,8 @@ public class AsyncCassandraTemplate
 		return converter;
 	}
 
-	protected <E extends CassandraMappingEvent<T>, T> void maybeEmitEvent(E event) {
-
-		if (this.eventPublisher != null) {
-			this.eventPublisher.publishEvent(event);
-		}
+	protected <E extends CassandraMappingEvent<T>, T> void maybeEmitEvent(Supplier<E> event) {
+		this.eventDelegate.publishEvent(event);
 	}
 
 	protected <T> T maybeCallBeforeConvert(T object, CqlIdentifier tableName) {

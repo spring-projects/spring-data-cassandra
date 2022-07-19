@@ -520,7 +520,10 @@ include::./converters.adoc[]
 
 include::../{spring-data-commons-docs}/is-new-state-detection.adoc[leveloffset=+1]
 
-NOTE: Cassandra provides no means to generate identifiers upon inserting data. As consequence, entities must be associated with identifier values. Spring Data defaults to identifier inspection to determine whether an entity is new. If you want to use <<cassandra.auditing,auditing>> make sure to either use <<cassandra.template.optimistic-locking>> or implement `Persistable` for proper entity state detection.
+NOTE: Cassandra provides no means to generate identifiers upon inserting data.
+As consequence, entities must be associated with identifier values.
+Spring Data defaults to identifier inspection to determine whether an entity is new.
+If you want to use <<cassandra.auditing,auditing>> make sure to either use <<cassandra.template.optimistic-locking>> or implement `Persistable` for proper entity state detection.
 
 [[cassandra.mapping-usage.events]]
 == Lifecycle Events
@@ -530,6 +533,8 @@ Being based on Spring's application context event infrastructure lets other prod
 
 To intercept an object before it goes into the database, you can register a subclass of `org.springframework.data.cassandra.core.mapping.event.AbstractCassandraEventListener` that overrides the `onBeforeSave(…)` method.
 When the event is dispatched, your listener is called and passed the domain object (which is a Java entity).
+Entity lifecycle events can be costly and you may notice a change in the performance profile when loading large result sets.
+You can disable lifecycle events on the link:https://docs.spring.io/spring-data/cassandra/docs/{version}/api/org/springframework/data/cassandra/core/CassandraTemplate.html#setEntityLifecycleEventsEnabled(boolean)[Template API].
 The following example uses the `onBeforeSave` method:
 
 ====
