@@ -964,6 +964,33 @@ public class MappingCassandraConverterUnitTests {
 		assertThat(result.getTuple().getOne()).isEqualTo("One");
 	}
 
+	@Test // GH-1202
+	void shouldCreateDtoProjectionsThroughConstructor() {
+
+		DefaultTupleValue value = new DefaultTupleValue(
+				new DefaultTupleType(Arrays.asList(DataTypes.ASCII, DataTypes.ASCII, DataTypes.ASCII)));
+
+		value.setString(0, "Zero");
+		value.setString(1, "One");
+		value.setString(2, "Two");
+
+		EntityProjectionIntrospector introspector = EntityProjectionIntrospector.create(
+				new SpelAwareProxyProjectionFactory(), EntityProjectionIntrospector.ProjectionPredicate.typeHierarchy(),
+				this.mappingContext);
+
+		rowMock = RowMockUtil.newRowMock(RowMockUtil.column("firstname", "Heisenberg", DataTypes.ASCII),
+				RowMockUtil.column("tuple", value, value.getType()));
+
+		EntityProjection<TupleAndNameProjection, WithMappedTuple> projection = introspector
+				.introspect(TupleAndNameProjection.class, WithMappedTuple.class);
+
+		TupleAndNameProjection result = this.mappingCassandraConverter.project(projection, rowMock);
+
+		assertThat(result.getName().getFirstname()).isEqualTo("Heisenberg");
+		assertThat(result.getTuple().zero).isEqualTo("Zero");
+		assertThat(result.getTuple().one).isEqualTo("One");
+	}
+
 	private static List<Object> getValues(Map<CqlIdentifier, Object> statement) {
 		return new ArrayList<>(statement.values());
 	}
@@ -1204,7 +1231,13 @@ public class MappingCassandraConverterUnitTests {
 	private static class WithMappedTuple {
 
 		String firstname;
+		@Embedded.Nullable Name name;
 		TupleWithElementAnnotationInConstructor tuple;
+	}
+
+	@lombok.Value
+	private static class Name {
+		String firstname;
 	}
 
 	@Data
@@ -1212,6 +1245,14 @@ public class MappingCassandraConverterUnitTests {
 
 		String firstname;
 		TupleProjection tuple;
+	}
+
+	@lombok.Value
+	private static class TupleAndNameProjection {
+
+		@Embedded.Nullable Name name;
+
+		TupleWithElementAnnotationInConstructor tuple;
 	}
 
 	private static interface TupleProjection {

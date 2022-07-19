@@ -1427,11 +1427,11 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 						name, entity.getType()));
 			}
 
-			return (T) getReadValue(context, provider, property);
+			return (T) getReadValue(context.forProperty(property.getName()), provider, property);
 		}
 
 		@Nullable
-		private <T> CassandraPersistentProperty getPersistentProperty(String name, TypeInformation<?> typeInformation,
+		private CassandraPersistentProperty getPersistentProperty(String name, TypeInformation<?> typeInformation,
 				MergedAnnotations annotations) {
 
 			CassandraPersistentProperty property = entity.getPersistentProperty(name);
