@@ -58,6 +58,16 @@ class CassandraTemplateEventIntegrationTests extends EventListenerIntegrationTes
 		assertThat(getListener().getAfterConvert()).extracting(CassandraMappingEvent::getSource).containsOnly(firstUser);
 	}
 
+	@Test // GH-1286
+	void disablingEventsShouldSuppressEvents() {
+
+		template.setEntityLifecycleEventsEnabled(false);
+		template.stream("SELECT * FROM users;", User.class).collect(Collectors.toList()); // Just load entire stream.
+
+		assertThat(getListener().getAfterLoad()).isEmpty();
+		assertThat(getListener().getAfterConvert()).isEmpty();
+	}
+
 	@Test // DATACASS-106
 	void sliceShouldEmitEvents() {
 

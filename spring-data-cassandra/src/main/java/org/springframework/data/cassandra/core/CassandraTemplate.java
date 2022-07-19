@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.core;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.apache.commons.logging.Log;
@@ -118,7 +119,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 
 	private final StatementFactory statementFactory;
 
-	private @Nullable ApplicationEventPublisher eventPublisher;
+	private final EntityLifecycleEventDelegate eventDelegate;
 
 	private @Nullable EntityCallbacks entityCallbacks;
 
@@ -183,6 +184,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		this.cqlOperations = cqlOperations;
 		this.entityOperations = new EntityOperations(converter);
 		this.statementFactory = new StatementFactory(new QueryMapper(converter), new UpdateMapper(converter));
+		this.eventDelegate = new EntityLifecycleEventDelegate();
 	}
 
 	@Override
@@ -192,7 +194,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 
 	@Override
 	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
-		this.eventPublisher = applicationEventPublisher;
+		this.eventDelegate.setPublisher(applicationEventPublisher);
 	}
 
 	@Override
@@ -210,6 +212,18 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	 */
 	public void setEntityCallbacks(@Nullable EntityCallbacks entityCallbacks) {
 		this.entityCallbacks = entityCallbacks;
+	}
+
+	/**
+	 * Configure whether lifecycle events such as {@link AfterLoadEvent}, {@link BeforeSaveEvent}, etc. should be
+	 * published or whether emission should be suppressed. Enabled by default.
+	 *
+	 * @param enabled {@code true} to enable entity lifecycle events; {@code false} to disable entity lifecycle events.
+	 * @since 4.0
+	 * @see CassandraMappingEvent
+	 */
+	public void setEntityLifecycleEventsEnabled(boolean enabled) {
+		this.eventDelegate.setEventsEnabled(enabled);
 	}
 
 	@Override
@@ -488,11 +502,11 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 				tableName);
 		SimpleStatement statement = delete.build();
 
-		maybeEmitEvent(new BeforeDeleteEvent<>(statement, entityClass, tableName));
+		maybeEmitEvent(() -> new BeforeDeleteEvent<>(statement, entityClass, tableName));
 
 		WriteResult writeResult = doExecute(statement);
 
-		maybeEmitEvent(new AfterDeleteEvent<>(statement, entityClass, tableName));
+		maybeEmitEvent(() -> new AfterDeleteEvent<>(statement, entityClass, tableName));
 
 		return writeResult;
 	}
@@ -700,8 +714,8 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 
 			if (!result.wasApplied()) {
 				throw new OptimisticLockingFailureException(
-						String.format("Cannot delete entity %s with version %s in table %s; Has it been modified meanwhile",
-								entity, source.getVersion(), tableName));
+						String.format("Cannot delete entity %s with version %s in table %s; Has it been modified meanwhile", entity,
+								source.getVersion(), tableName));
 			}
 		});
 	}
@@ -722,11 +736,11 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		StatementBuilder<Delete> delete = getStatementFactory().deleteById(id, entity, tableName);
 		SimpleStatement statement = delete.build();
 
-		maybeEmitEvent(new BeforeDeleteEvent<>(statement, entityClass, tableName));
+		maybeEmitEvent(() -> new BeforeDeleteEvent<>(statement, entityClass, tableName));
 
 		boolean result = doExecute(statement).wasApplied();
 
-		maybeEmitEvent(new AfterDeleteEvent<>(statement, entityClass, tableName));
+		maybeEmitEvent(() -> new AfterDeleteEvent<>(statement, entityClass, tableName));
 
 		return result;
 	}
@@ -740,11 +754,11 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		Truncate truncate = QueryBuilder.truncate(tableName);
 		SimpleStatement statement = truncate.build();
 
-		maybeEmitEvent(new BeforeDeleteEvent<>(statement, entityClass, tableName));
+		maybeEmitEvent(() -> new BeforeDeleteEvent<>(statement, entityClass, tableName));
 
 		doExecute(statement);
 
-		maybeEmitEvent(new AfterDeleteEvent<>(statement, entityClass, tableName));
+		maybeEmitEvent(() -> new AfterDeleteEvent<>(statement, entityClass, tableName));
 	}
 
 	// -------------------------------------------------------------------------
@@ -795,13 +809,13 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	private <T> EntityWriteResult<T> executeSave(T entity, CqlIdentifier tableName, SimpleStatement statement,
 			Consumer<WriteResult> resultConsumer) {
 
-		maybeEmitEvent(new BeforeSaveEvent<>(entity, tableName, statement));
+		maybeEmitEvent(() -> new BeforeSaveEvent<>(entity, tableName, statement));
 		T entityToSave = maybeCallBeforeSave(entity, tableName, statement);
 
 		WriteResult result = doExecute(statement);
 		resultConsumer.accept(result);
 
-		maybeEmitEvent(new AfterSaveEvent<>(entityToSave, tableName));
+		maybeEmitEvent(() -> new AfterSaveEvent<>(entityToSave, tableName));
 
 		return EntityWriteResult.of(result, entityToSave);
 	}
@@ -809,13 +823,13 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	private WriteResult executeDelete(Object entity, CqlIdentifier tableName, SimpleStatement statement,
 			Consumer<WriteResult> resultConsumer) {
 
-		maybeEmitEvent(new BeforeDeleteEvent<>(statement, entity.getClass(), tableName));
+		maybeEmitEvent(() -> new BeforeDeleteEvent<>(statement, entity.getClass(), tableName));
 
 		WriteResult result = doExecute(statement);
 
 		resultConsumer.accept(result);
 
-		maybeEmitEvent(new AfterDeleteEvent<>(statement, entity.getClass(), tableName));
+		maybeEmitEvent(() -> new AfterDeleteEvent<>(statement, entity.getClass(), tableName));
 
 		return result;
 	}
@@ -907,12 +921,12 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 
 		return row -> {
 
-			maybeEmitEvent(new AfterLoadEvent<>(row, targetType, tableName));
+			maybeEmitEvent(() -> new AfterLoadEvent<>(row, targetType, tableName));
 
 			T result = getConverter().project(projection, row);
 
 			if (result != null) {
-				maybeEmitEvent(new AfterConvertEvent<>(row, result, tableName));
+				maybeEmitEvent(() -> new AfterConvertEvent<>(row, result, tableName));
 			}
 
 			return result;
@@ -930,11 +944,8 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		return converter;
 	}
 
-	protected <E extends CassandraMappingEvent<T>, T> void maybeEmitEvent(E event) {
-
-		if (this.eventPublisher != null) {
-			this.eventPublisher.publishEvent(event);
-		}
+	protected <E extends CassandraMappingEvent<T>, T> void maybeEmitEvent(Supplier<E> event) {
+		this.eventDelegate.publishEvent(event);
 	}
 
 	protected <T> T maybeCallBeforeConvert(T object, CqlIdentifier tableName) {

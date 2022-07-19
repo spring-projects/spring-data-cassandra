@@ -22,6 +22,7 @@ import reactor.core.publisher.SynchronousSink;
 import java.util.Collections;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -124,7 +125,7 @@ public class ReactiveCassandraTemplate
 
 	private final StatementFactory statementFactory;
 
-	private @Nullable ApplicationEventPublisher eventPublisher;
+	private final EntityLifecycleEventDelegate eventDelegate;
 
 	private @Nullable ReactiveEntityCallbacks entityCallbacks;
 
@@ -190,6 +191,7 @@ public class ReactiveCassandraTemplate
 		this.cqlOperations = reactiveCqlOperations;
 		this.entityOperations = new EntityOperations(converter);
 		this.statementFactory = new StatementFactory(converter);
+		this.eventDelegate = new EntityLifecycleEventDelegate();
 	}
 
 	@Override
@@ -199,7 +201,7 @@ public class ReactiveCassandraTemplate
 
 	@Override
 	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
-		this.eventPublisher = applicationEventPublisher;
+		this.eventDelegate.setPublisher(applicationEventPublisher);
 	}
 
 	@Override
@@ -217,6 +219,18 @@ public class ReactiveCassandraTemplate
 	 */
 	public void setEntityCallbacks(@Nullable ReactiveEntityCallbacks entityCallbacks) {
 		this.entityCallbacks = entityCallbacks;
+	}
+
+	/**
+	 * Configure whether lifecycle events such as {@link AfterLoadEvent}, {@link BeforeSaveEvent}, etc. should be
+	 * published or whether emission should be suppressed. Enabled by default.
+	 *
+	 * @param enabled {@code true} to enable entity lifecycle events; {@code false} to disable entity lifecycle events.
+	 * @since 4.0
+	 * @see CassandraMappingEvent
+	 */
+	public void setEntityLifecycleEventsEnabled(boolean enabled) {
+		this.eventDelegate.setEventsEnabled(enabled);
 	}
 
 	@Override
@@ -385,8 +399,7 @@ public class ReactiveCassandraTemplate
 		CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entityClass);
 		EntityProjection<T, ?> projection = entityOperations.introspectProjection(returnType, entityClass);
 		Columns columns = getStatementFactory().computeColumnsForProjection(projection, query.getColumns(),
-				persistentEntity,
-				returnType);
+				persistentEntity, returnType);
 
 		Query queryToUse = query.columns(columns);
 
@@ -453,9 +466,9 @@ public class ReactiveCassandraTemplate
 		SimpleStatement delete = builder.build();
 
 		Mono<WriteResult> writeResult = doExecuteAndFlatMap(delete, ReactiveCassandraTemplate::toWriteResult)
-				.doOnSubscribe(it -> maybeEmitEvent(new BeforeDeleteEvent<>(delete, entityClass, tableName)));
+				.doOnSubscribe(it -> maybeEmitEvent(() -> new BeforeDeleteEvent<>(delete, entityClass, tableName)));
 
-		return writeResult.doOnNext(it -> maybeEmitEvent(new AfterDeleteEvent<>(delete, entityClass, tableName)));
+		return writeResult.doOnNext(it -> maybeEmitEvent(() -> new AfterDeleteEvent<>(delete, entityClass, tableName)));
 	}
 
 	// -------------------------------------------------------------------------
@@ -678,8 +691,8 @@ public class ReactiveCassandraTemplate
 			if (!result.wasApplied()) {
 
 				sink.error(new OptimisticLockingFailureException(
-						String.format("Cannot delete entity %s with version %s in table %s; Has it been modified meanwhile",
-								entity, source.getVersion(), tableName)));
+						String.format("Cannot delete entity %s with version %s in table %s; Has it been modified meanwhile", entity,
+								source.getVersion(), tableName)));
 
 				return;
 			}
@@ -705,9 +718,9 @@ public class ReactiveCassandraTemplate
 		SimpleStatement delete = builder.build();
 
 		Mono<Boolean> result = doExecute(delete, ReactiveResultSet::wasApplied)
-				.doOnSubscribe(it -> maybeEmitEvent(new BeforeDeleteEvent<>(delete, entityClass, tableName)));
+				.doOnSubscribe(it -> maybeEmitEvent(() -> new BeforeDeleteEvent<>(delete, entityClass, tableName)));
 
-		return result.doOnNext(it -> maybeEmitEvent(new AfterDeleteEvent<>(delete, entityClass, tableName)));
+		return result.doOnNext(it -> maybeEmitEvent(() -> new AfterDeleteEvent<>(delete, entityClass, tableName)));
 	}
 
 	@Override
@@ -720,9 +733,10 @@ public class ReactiveCassandraTemplate
 		SimpleStatement statement = truncate.build();
 
 		Mono<Boolean> result = doExecute(statement, ReactiveResultSet::wasApplied)
-				.doOnSubscribe(it -> maybeEmitEvent(new BeforeDeleteEvent<>(statement, entityClass, tableName)));
+				.doOnSubscribe(it -> maybeEmitEvent(() -> new BeforeDeleteEvent<>(statement, entityClass, tableName)));
 
-		return result.doOnNext(it -> maybeEmitEvent(new AfterDeleteEvent<>(statement, entityClass, tableName))).then();
+		return result.doOnNext(it -> maybeEmitEvent(() -> new AfterDeleteEvent<>(statement, entityClass, tableName)))
+				.then();
 	}
 
 	// -------------------------------------------------------------------------
@@ -775,13 +789,13 @@ public class ReactiveCassandraTemplate
 
 		return Mono.defer(() -> {
 
-			maybeEmitEvent(new BeforeSaveEvent<>(entity, tableName, statement));
+			maybeEmitEvent(() -> new BeforeSaveEvent<>(entity, tableName, statement));
 
 			return maybeCallBeforeSave(entity, tableName, statement).flatMapMany(entityToSave -> {
 				Mono<WriteResult> execute = doExecuteAndFlatMap(statement, ReactiveCassandraTemplate::toWriteResult);
 
 				return execute.map(it -> EntityWriteResult.of(it, entityToSave)).handle(handler) //
-						.doOnNext(it -> maybeEmitEvent(new AfterSaveEvent<>(entityToSave, tableName)));
+						.doOnNext(it -> maybeEmitEvent(() -> new AfterSaveEvent<>(entityToSave, tableName)));
 			}).next();
 		});
 	}
@@ -789,13 +803,13 @@ public class ReactiveCassandraTemplate
 	private Mono<WriteResult> executeDelete(Object entity, CqlIdentifier tableName, SimpleStatement statement,
 			BiConsumer<WriteResult, SynchronousSink<WriteResult>> handler) {
 
-		maybeEmitEvent(new BeforeDeleteEvent<>(statement, entity.getClass(), tableName));
+		maybeEmitEvent(() -> new BeforeDeleteEvent<>(statement, entity.getClass(), tableName));
 
 		Mono<WriteResult> execute = doExecuteAndFlatMap(statement, ReactiveCassandraTemplate::toWriteResult);
 
 		return execute.map(it -> EntityWriteResult.of(it, entity)).handle(handler) //
-				.doOnSubscribe(it -> maybeEmitEvent(new BeforeSaveEvent<>(entity, tableName, statement))) //
-				.doOnNext(it -> maybeEmitEvent(new AfterDeleteEvent<>(statement, entity.getClass(), tableName)));
+				.doOnSubscribe(it -> maybeEmitEvent(() -> new BeforeSaveEvent<>(entity, tableName, statement))) //
+				.doOnNext(it -> maybeEmitEvent(() -> new AfterDeleteEvent<>(statement, entity.getClass(), tableName)));
 	}
 
 	private <T> Flux<T> doQuery(Statement<?> statement, RowMapper<T> rowMapper) {
@@ -862,9 +876,7 @@ public class ReactiveCassandraTemplate
 			}
 		}
 
-		return getReactiveCqlOperations()
-				.execute(new GetConfiguredPageSize())
-				.single();
+		return getReactiveCqlOperations().execute(new GetConfiguredPageSize()).single();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -874,12 +886,12 @@ public class ReactiveCassandraTemplate
 
 		return row -> {
 
-			maybeEmitEvent(new AfterLoadEvent<>(row, targetType, tableName));
+			maybeEmitEvent(() -> new AfterLoadEvent<>(row, targetType, tableName));
 
 			T result = getConverter().project(projection, row);
 
 			if (result != null) {
-				maybeEmitEvent(new AfterConvertEvent<>(row, result, tableName));
+				maybeEmitEvent(() -> new AfterConvertEvent<>(row, result, tableName));
 			}
 
 			return result;
@@ -903,11 +915,8 @@ public class ReactiveCassandraTemplate
 		return converter;
 	}
 
-	protected <E extends CassandraMappingEvent<T>, T> void maybeEmitEvent(E event) {
-
-		if (this.eventPublisher != null) {
-			this.eventPublisher.publishEvent(event);
-		}
+	protected <E extends CassandraMappingEvent<T>, T> void maybeEmitEvent(Supplier<E> event) {
+		this.eventDelegate.publishEvent(event);
 	}
 
 	protected <T> Mono<T> maybeCallBeforeConvert(T object, CqlIdentifier tableName) {
