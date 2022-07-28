@@ -154,7 +154,7 @@ public interface ReactiveCassandraOperations extends ReactiveFluentCassandraOper
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Execute the a Cassandra {@link Statement}. Any errors that result from executing this command will be converted
+	 * Execute the given Cassandra {@link Statement}. Any errors that result from executing this command will be converted
 	 * into Spring's DAO exception hierarchy.
 	 *
 	 * @param statement a Cassandra {@link Statement}, must not be {@literal null}.
@@ -318,7 +318,7 @@ public interface ReactiveCassandraOperations extends ReactiveFluentCassandraOper
 	<T> Mono<EntityWriteResult<T>> update(T entity, UpdateOptions options) throws DataAccessException;
 
 	/**
-	 * Delete the given entity and emit the entity if the delete was applied.
+	 * Delete the given entity and emit the entity if the delete statement was applied.
 	 *
 	 * @param entity must not be {@literal null}.
 	 * @return the deleted entity.
@@ -327,7 +327,7 @@ public interface ReactiveCassandraOperations extends ReactiveFluentCassandraOper
 	<T> Mono<T> delete(T entity) throws DataAccessException;
 
 	/**
-	 * Delete the given entity applying {@link QueryOptions} and emit the entity if the delete was applied.
+	 * Delete the given entity applying {@link QueryOptions} and emit the entity if the delete statement was applied.
 	 *
 	 * @param entity must not be {@literal null}.
 	 * @param options must not be {@literal null}.
@@ -338,7 +338,7 @@ public interface ReactiveCassandraOperations extends ReactiveFluentCassandraOper
 	Mono<WriteResult> delete(Object entity, QueryOptions options) throws DataAccessException;
 
 	/**
-	 * Delete the given entity applying {@link QueryOptions} and emit the entity if the delete was applied.
+	 * Delete the given entity applying {@link QueryOptions} and emit the entity if the delete statement was applied.
 	 *
 	 * @param entity must not be {@literal null}.
 	 * @param options must not be {@literal null}.

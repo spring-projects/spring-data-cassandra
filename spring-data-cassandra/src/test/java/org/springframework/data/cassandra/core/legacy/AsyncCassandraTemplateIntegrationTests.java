@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2022 the original author or authors.
+ * Copyright 2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.core;
+package org.springframework.data.cassandra.core.legacy;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.cassandra.core.query.Criteria.*;
@@ -26,8 +26,12 @@ import java.util.concurrent.Future;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.springframework.data.cassandra.core.CassandraTemplate;
+import org.springframework.data.cassandra.core.DeleteOptions;
+import org.springframework.data.cassandra.core.InsertOptions;
+import org.springframework.data.cassandra.core.UpdateOptions;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
-import org.springframework.data.cassandra.core.cql.AsyncCqlTemplate;
+import org.springframework.data.cassandra.core.cql.legacy.AsyncCqlTemplate;
 import org.springframework.data.cassandra.core.query.CassandraPageRequest;
 import org.springframework.data.cassandra.core.query.Columns;
 import org.springframework.data.cassandra.core.query.Query;
@@ -38,6 +42,7 @@ import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
+import org.springframework.util.concurrent.ListenableFuture;
 
 import com.datastax.oss.driver.api.core.uuid.Uuids;
 
@@ -116,7 +121,7 @@ class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 
 		assertThat(getUser(user.getId())).isNull();
 
-		Future<User> insert = template.insert(user);
+		ListenableFuture<User> insert = template.insert(user);
 
 		assertThat(getUninterruptibly(insert)).isEqualTo(user);
 		assertThat(getUser(user.getId())).isEqualTo(user);
@@ -129,7 +134,8 @@ class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 
 		User user = new User("heisenberg", "Walter", "White");
 
-		Future<EntityWriteResult<User>> inserted = template.insert(user, lwtOptions);
+		ListenableFuture<org.springframework.data.cassandra.core.EntityWriteResult<User>> inserted = template.insert(user,
+				lwtOptions);
 
 		assertThat(getUninterruptibly(inserted).wasApplied()).isTrue();
 	}
@@ -145,7 +151,8 @@ class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 
 		user.setFirstname("Walter Hartwell");
 
-		Future<EntityWriteResult<User>> lwt = template.insert(user, lwtOptions);
+		ListenableFuture<org.springframework.data.cassandra.core.EntityWriteResult<User>> lwt = template.insert(user,
+				lwtOptions);
 
 		assertThat(getUninterruptibly(lwt).wasApplied()).isFalse();
 		assertThat(getUser(user.getId()).getFirstname()).isEqualTo("Walter");
@@ -158,7 +165,7 @@ class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 
 		User result = getUninterruptibly(template.insert(user));
 
-		Future<Long> count = template.count(User.class);
+		ListenableFuture<Long> count = template.count(User.class);
 		assertThat(result).isSameAs(user);
 		assertThat(getUninterruptibly(count)).isEqualTo(1L);
 	}
@@ -206,7 +213,8 @@ class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 
 		User user = new User("heisenberg", "Walter", "White");
 
-		Future<EntityWriteResult<User>> lwt = template.update(user, lwtOptions);
+		ListenableFuture<org.springframework.data.cassandra.core.EntityWriteResult<User>> lwt = template.update(user,
+				lwtOptions);
 
 		assertThat(getUninterruptibly(lwt).wasApplied()).isFalse();
 		assertThat(getUser(user.getId())).isNull();
@@ -222,7 +230,8 @@ class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 
 		user.setFirstname("Walter Hartwell");
 
-		Future<EntityWriteResult<User>> updated = template.update(user, lwtOptions);
+		ListenableFuture<org.springframework.data.cassandra.core.EntityWriteResult<User>> updated = template.update(user,
+				lwtOptions);
 
 		assertThat(getUninterruptibly(updated).wasApplied()).isTrue();
 		assertThat(getUninterruptibly(updated).getEntity()).isSameAs(user);

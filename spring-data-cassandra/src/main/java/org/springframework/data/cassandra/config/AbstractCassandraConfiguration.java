@@ -86,7 +86,7 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 	}
 
 	/**
-	 * Returns the a {@link CassandraManagedTypes} object holding the initial entity set.
+	 * Returns the given {@link CassandraManagedTypes} object holding the initial entity set.
 	 *
 	 * @return new instance of {@link CassandraManagedTypes}.
 	 * @throws ClassNotFoundException

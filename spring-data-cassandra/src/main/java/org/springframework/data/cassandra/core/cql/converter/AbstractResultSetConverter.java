@@ -25,7 +25,7 @@ import com.datastax.oss.driver.api.core.cql.ResultSet;
 
 /**
  * Convenient converter that can be used to convert a single-row-single-column, single-row-multi-column, or multi-row
- * {@link ResultSet} into the a value of a given type. The majority of the expected usage is to convert a
+ * {@link ResultSet} into the given value of a given type. The majority of the expected usage is to convert a
  * single-row-single-column result set into the target type.
  * <p>
  * The algorithm is:

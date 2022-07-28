@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2022 the original author or authors.
+ * Copyright 2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.core;
+package org.springframework.data.cassandra.core.legacy;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -38,6 +38,8 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
 import org.springframework.data.cassandra.CassandraConnectionFailureException;
+import org.springframework.data.cassandra.core.DeleteOptions;
+import org.springframework.data.cassandra.core.UpdateOptions;
 import org.springframework.data.cassandra.core.mapping.event.BeforeConvertCallback;
 import org.springframework.data.cassandra.core.mapping.event.BeforeSaveCallback;
 import org.springframework.data.cassandra.core.query.Filter;
@@ -46,6 +48,7 @@ import org.springframework.data.cassandra.core.query.Update;
 import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.domain.VersionedUser;
 import org.springframework.data.mapping.callback.EntityCallbacks;
+import org.springframework.util.concurrent.ListenableFuture;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
@@ -139,7 +142,7 @@ class AsyncCassandraTemplateUnitTests {
 		when(row.getObject(1)).thenReturn("Walter");
 		when(row.getObject(2)).thenReturn("White");
 
-		CompletableFuture<List<User>> list = template.select("SELECT * FROM users", User.class);
+		ListenableFuture<List<User>> list = template.select("SELECT * FROM users", User.class);
 
 		assertThat(getUninterruptibly(list)).hasSize(1).contains(new User("myid", "Walter", "White"));
 		verify(session).executeAsync(statementCaptor.capture());
@@ -164,7 +167,7 @@ class AsyncCassandraTemplateUnitTests {
 
 		List<User> list = new ArrayList<>();
 
-		CompletableFuture<Void> result = template.select("SELECT * FROM users", list::add, User.class);
+		ListenableFuture<Void> result = template.select("SELECT * FROM users", list::add, User.class);
 
 		assertThat(getUninterruptibly(result)).isNull();
 		assertThat(list).hasSize(1).contains(new User("myid", "Walter", "White"));
@@ -177,7 +180,7 @@ class AsyncCassandraTemplateUnitTests {
 
 		when(resultSet.currentPage()).thenThrow(new NoNodeAvailableException());
 
-		CompletableFuture<List<User>> list = template.select("SELECT * FROM users", User.class);
+		ListenableFuture<List<User>> list = template.select("SELECT * FROM users", User.class);
 
 		try {
 			list.get();
@@ -206,7 +209,7 @@ class AsyncCassandraTemplateUnitTests {
 		when(row.getObject(1)).thenReturn("Walter");
 		when(row.getObject(2)).thenReturn("White");
 
-		CompletableFuture<User> future = template.selectOne("SELECT * FROM users WHERE id='myid'", User.class);
+		ListenableFuture<User> future = template.selectOne("SELECT * FROM users WHERE id='myid'", User.class);
 
 		assertThat(getUninterruptibly(future)).isEqualTo(new User("myid", "Walter", "White"));
 		verify(session).executeAsync(statementCaptor.capture());
@@ -229,7 +232,7 @@ class AsyncCassandraTemplateUnitTests {
 		when(row.getObject(1)).thenReturn("Walter");
 		when(row.getObject(2)).thenReturn("White");
 
-		CompletableFuture<User> future = template.selectOneById("myid", User.class);
+		ListenableFuture<User> future = template.selectOneById("myid", User.class);
 
 		assertThat(getUninterruptibly(future)).isEqualTo(new User("myid", "Walter", "White"));
 		verify(session).executeAsync(statementCaptor.capture());
@@ -241,7 +244,7 @@ class AsyncCassandraTemplateUnitTests {
 
 		when(resultSet.currentPage()).thenReturn(Collections.singleton(row));
 
-		CompletableFuture<String> future = template.selectOne("SELECT id FROM users WHERE id='myid'", String.class);
+		ListenableFuture<String> future = template.selectOne("SELECT id FROM users WHERE id='myid'", String.class);
 
 		assertThat(getUninterruptibly(future)).isNull();
 	}
@@ -251,7 +254,7 @@ class AsyncCassandraTemplateUnitTests {
 
 		when(resultSet.one()).thenReturn(row);
 
-		CompletableFuture<Boolean> future = template.exists("myid", User.class);
+		ListenableFuture<Boolean> future = template.exists("myid", User.class);
 
 		assertThat(getUninterruptibly(future)).isTrue();
 		verify(session).executeAsync(statementCaptor.capture());
@@ -261,7 +264,7 @@ class AsyncCassandraTemplateUnitTests {
 	@Test // DATACASS-292
 	void existsShouldReturnNonExistingElement() {
 
-		CompletableFuture<Boolean> future = template.exists("myid", User.class);
+		ListenableFuture<Boolean> future = template.exists("myid", User.class);
 
 		assertThat(getUninterruptibly(future)).isFalse();
 		verify(session).executeAsync(statementCaptor.capture());
@@ -273,7 +276,7 @@ class AsyncCassandraTemplateUnitTests {
 
 		when(resultSet.one()).thenReturn(row);
 
-		CompletableFuture<Boolean> future = template.exists(Query.empty(), User.class);
+		ListenableFuture<Boolean> future = template.exists(Query.empty(), User.class);
 
 		assertThat(getUninterruptibly(future)).isTrue();
 		verify(session).executeAsync(statementCaptor.capture());
@@ -287,7 +290,7 @@ class AsyncCassandraTemplateUnitTests {
 		when(row.getLong(0)).thenReturn(42L);
 		when(columnDefinitions.size()).thenReturn(1);
 
-		CompletableFuture<Long> future = template.count(User.class);
+		ListenableFuture<Long> future = template.count(User.class);
 
 		assertThat(getUninterruptibly(future)).isEqualTo(42L);
 		verify(session).executeAsync(statementCaptor.capture());
@@ -301,7 +304,7 @@ class AsyncCassandraTemplateUnitTests {
 		when(row.getLong(0)).thenReturn(42L);
 		when(columnDefinitions.size()).thenReturn(1);
 
-		CompletableFuture<Long> future = template.count(Query.empty(), User.class);
+		ListenableFuture<Long> future = template.count(Query.empty(), User.class);
 
 		assertThat(getUninterruptibly(future)).isEqualTo(42L);
 		verify(session).executeAsync(statementCaptor.capture());
@@ -315,7 +318,7 @@ class AsyncCassandraTemplateUnitTests {
 
 		User user = new User("heisenberg", "Walter", "White");
 
-		CompletableFuture<User> future = template.insert(user);
+		ListenableFuture<User> future = template.insert(user);
 
 		assertThat(getUninterruptibly(future)).isEqualTo(user);
 		verify(session).executeAsync(statementCaptor.capture());
@@ -332,7 +335,7 @@ class AsyncCassandraTemplateUnitTests {
 
 		VersionedUser user = new VersionedUser("heisenberg", "Walter", "White");
 
-		CompletableFuture<VersionedUser> future = template.insert(user);
+		ListenableFuture<VersionedUser> future = template.insert(user);
 
 		assertThat(getUninterruptibly(future)).isEqualTo(user);
 		verify(session).executeAsync(statementCaptor.capture());
@@ -349,7 +352,7 @@ class AsyncCassandraTemplateUnitTests {
 		when(session.executeAsync(any(Statement.class)))
 				.thenReturn(TestResultSetFuture.failed(new NoNodeAvailableException()));
 
-		CompletableFuture<User> future = template.insert(new User("heisenberg", "Walter", "White"));
+		ListenableFuture<User> future = template.insert(new User("heisenberg", "Walter", "White"));
 
 		try {
 			future.get();
@@ -368,7 +371,7 @@ class AsyncCassandraTemplateUnitTests {
 
 		User user = new User("heisenberg", "Walter", "White");
 
-		CompletableFuture<User> future = template.update(user);
+		ListenableFuture<User> future = template.update(user);
 
 		assertThat(getUninterruptibly(future)).isEqualTo(user);
 		verify(session).executeAsync(statementCaptor.capture());
@@ -386,7 +389,7 @@ class AsyncCassandraTemplateUnitTests {
 		VersionedUser user = new VersionedUser("heisenberg", "Walter", "White");
 		user.setVersion(0L);
 
-		CompletableFuture<VersionedUser> future = template.update(user);
+		ListenableFuture<VersionedUser> future = template.update(user);
 
 		assertThat(getUninterruptibly(future)).isEqualTo(user);
 		verify(session).executeAsync(statementCaptor.capture());
@@ -460,7 +463,7 @@ class AsyncCassandraTemplateUnitTests {
 		when(session.executeAsync(any(Statement.class)))
 				.thenReturn(TestResultSetFuture.failed(new NoNodeAvailableException()));
 
-		CompletableFuture<User> future = template.update(new User("heisenberg", "Walter", "White"));
+		ListenableFuture<User> future = template.update(new User("heisenberg", "Walter", "White"));
 
 		try {
 			future.get();
@@ -479,7 +482,7 @@ class AsyncCassandraTemplateUnitTests {
 
 		User user = new User("heisenberg", "Walter", "White");
 
-		CompletableFuture<Boolean> future = template.deleteById(user.getId(), User.class);
+		ListenableFuture<Boolean> future = template.deleteById(user.getId(), User.class);
 
 		assertThat(getUninterruptibly(future)).isTrue();
 		verify(session).executeAsync(statementCaptor.capture());
@@ -493,7 +496,7 @@ class AsyncCassandraTemplateUnitTests {
 
 		User user = new User("heisenberg", "Walter", "White");
 
-		CompletableFuture<User> future = template.delete(user);
+		ListenableFuture<User> future = template.delete(user);
 
 		assertThat(getUninterruptibly(future)).isEqualTo(user);
 		verify(session).executeAsync(statementCaptor.capture());
@@ -533,7 +536,7 @@ class AsyncCassandraTemplateUnitTests {
 		when(session.executeAsync(any(Statement.class)))
 				.thenReturn(TestResultSetFuture.failed(new NoNodeAvailableException()));
 
-		CompletableFuture<User> future = template.delete(new User("heisenberg", "Walter", "White"));
+		ListenableFuture<User> future = template.delete(new User("heisenberg", "Walter", "White"));
 
 		try {
 			future.get();

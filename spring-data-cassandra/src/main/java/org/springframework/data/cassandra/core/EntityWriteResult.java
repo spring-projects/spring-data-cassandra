@@ -32,12 +32,12 @@ public class EntityWriteResult<T> extends WriteResult {
 
 	private final T entity;
 
-	EntityWriteResult(List<ExecutionInfo> executionInfo, boolean wasApplied, List<Row> rows, T entity) {
+	protected EntityWriteResult(List<ExecutionInfo> executionInfo, boolean wasApplied, List<Row> rows, T entity) {
 		super(executionInfo, wasApplied, rows);
 		this.entity = entity;
 	}
 
-	EntityWriteResult(ResultSet resultSet, T entity) {
+	protected EntityWriteResult(ResultSet resultSet, T entity) {
 		super(resultSet);
 		this.entity = entity;
 	}

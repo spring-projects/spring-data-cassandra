@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.core.cql;
-
-import java.util.concurrent.CompletableFuture;
+package org.springframework.data.cassandra.core.cql.legacy;
 
 import org.springframework.dao.DataAccessException;
+import org.springframework.util.concurrent.ListenableFuture;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.DriverException;
@@ -32,11 +31,13 @@ import com.datastax.oss.driver.api.core.DriverException;
  *
  * @author David Webb
  * @author Mark Paluch
- * @since 2.0
+ * @since 4.0
  * @see AsyncCqlTemplate#execute(AsyncSessionCallback)
  * @see AsyncCqlTemplate#query
  * @see AsyncCqlTemplate#execute(String)
+ * @deprecated since 4.0, use the {@link java.util.concurrent.CompletableFuture}-based variant.
  */
+@Deprecated(since = "4.0", forRemoval = true)
 @FunctionalInterface
 public interface AsyncSessionCallback<T> {
 
@@ -50,11 +51,11 @@ public interface AsyncSessionCallback<T> {
 	 * template.
 	 *
 	 * @param session active Cassandra Session, must not be {@literal null}.
-	 * @return a result object, or {@code CompletableFuture<Void>} if none.
+	 * @return a result object, or {@code ListenableFuture<Void>} if none.
 	 * @throws DriverException if thrown by a Session method, to be auto-converted to a {@link DataAccessException}.
 	 * @throws DataAccessException in case of custom exceptions.
 	 * @see AsyncCqlTemplate#queryForObject(String, Class)
 	 * @see AsyncCqlTemplate#queryForResultSet(String)
 	 */
-	CompletableFuture<T> doInSession(CqlSession session) throws DriverException, DataAccessException;
+	ListenableFuture<T> doInSession(CqlSession session) throws DriverException, DataAccessException;
 }

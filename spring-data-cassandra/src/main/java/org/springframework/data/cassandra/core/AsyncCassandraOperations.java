@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.core;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 import org.springframework.dao.DataAccessException;
@@ -27,7 +28,6 @@ import org.springframework.data.cassandra.core.query.CassandraPageRequest;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.core.query.Update;
 import org.springframework.data.domain.Slice;
-import org.springframework.util.concurrent.ListenableFuture;
 
 import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
 import com.datastax.oss.driver.api.core.cql.Statement;
@@ -74,7 +74,7 @@ public interface AsyncCassandraOperations {
 	 * @return the converted results
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> ListenableFuture<List<T>> select(String cql, Class<T> entityClass) throws DataAccessException;
+	<T> CompletableFuture<List<T>> select(String cql, Class<T> entityClass) throws DataAccessException;
 
 	/**
 	 * Execute a {@code SELECT} query and convert the resulting items notifying {@link Consumer} for each entity.
@@ -86,7 +86,7 @@ public interface AsyncCassandraOperations {
 	 * @return the completion handle
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> ListenableFuture<Void> select(String cql, Consumer<T> entityConsumer, Class<T> entityClass)
+	<T> CompletableFuture<Void> select(String cql, Consumer<T> entityConsumer, Class<T> entityClass)
 			throws DataAccessException;
 
 	/**
@@ -97,14 +97,14 @@ public interface AsyncCassandraOperations {
 	 * @return the converted object or {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> ListenableFuture<T> selectOne(String cql, Class<T> entityClass) throws DataAccessException;
+	<T> CompletableFuture<T> selectOne(String cql, Class<T> entityClass) throws DataAccessException;
 
 	// -------------------------------------------------------------------------
 	// Methods dealing with com.datastax.oss.driver.api.core.cql.Statement
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Execute the a Cassandra {@link Statement}. Any errors that result from executing this command will be converted
+	 * Execute the given Cassandra {@link Statement}. Any errors that result from executing this command will be converted
 	 * into Spring's DAO exception hierarchy.
 	 *
 	 * @param statement a Cassandra {@link Statement}, must not be {@literal null}.
@@ -112,7 +112,7 @@ public interface AsyncCassandraOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @since 3.2
 	 */
-	ListenableFuture<AsyncResultSet> execute(Statement<?> statement) throws DataAccessException;
+	CompletableFuture<AsyncResultSet> execute(Statement<?> statement) throws DataAccessException;
 
 	/**
 	 * Execute a {@code SELECT} query and convert the resulting items to a {@link List} of entities.
@@ -122,7 +122,7 @@ public interface AsyncCassandraOperations {
 	 * @return the converted results
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> ListenableFuture<List<T>> select(Statement<?> statement, Class<T> entityClass) throws DataAccessException;
+	<T> CompletableFuture<List<T>> select(Statement<?> statement, Class<T> entityClass) throws DataAccessException;
 
 	/**
 	 * Execute a {@code SELECT} query with paging and convert the result set to a {@link Slice} of entities. A sliced
@@ -134,7 +134,7 @@ public interface AsyncCassandraOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see CassandraPageRequest
 	 */
-	<T> ListenableFuture<Slice<T>> slice(Statement<?> statement, Class<T> entityClass) throws DataAccessException;
+	<T> CompletableFuture<Slice<T>> slice(Statement<?> statement, Class<T> entityClass) throws DataAccessException;
 
 	/**
 	 * Execute a {@code SELECT} query and convert the resulting items notifying {@link Consumer} for each entity.
@@ -146,7 +146,7 @@ public interface AsyncCassandraOperations {
 	 * @return the completion handle
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> ListenableFuture<Void> select(Statement<?> statement, Consumer<T> entityConsumer, Class<T> entityClass)
+	<T> CompletableFuture<Void> select(Statement<?> statement, Consumer<T> entityConsumer, Class<T> entityClass)
 			throws DataAccessException;
 
 	/**
@@ -157,7 +157,7 @@ public interface AsyncCassandraOperations {
 	 * @return the converted object or {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> ListenableFuture<T> selectOne(Statement<?> statement, Class<T> entityClass) throws DataAccessException;
+	<T> CompletableFuture<T> selectOne(Statement<?> statement, Class<T> entityClass) throws DataAccessException;
 
 	// -------------------------------------------------------------------------
 	// Methods dealing with org.springframework.data.cassandra.core.query.Query
@@ -171,7 +171,7 @@ public interface AsyncCassandraOperations {
 	 * @return the converted results
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> ListenableFuture<List<T>> select(Query query, Class<T> entityClass) throws DataAccessException;
+	<T> CompletableFuture<List<T>> select(Query query, Class<T> entityClass) throws DataAccessException;
 
 	/**
 	 * Execute a {@code SELECT} query with paging and convert the result set to a {@link Slice} of entities.
@@ -182,7 +182,7 @@ public interface AsyncCassandraOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see CassandraPageRequest
 	 */
-	<T> ListenableFuture<Slice<T>> slice(Query query, Class<T> entityClass) throws DataAccessException;
+	<T> CompletableFuture<Slice<T>> slice(Query query, Class<T> entityClass) throws DataAccessException;
 
 	/**
 	 * Execute a {@code SELECT} query and convert the resulting items notifying {@link Consumer} for each entity.
@@ -194,7 +194,7 @@ public interface AsyncCassandraOperations {
 	 * @return the completion handle
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> ListenableFuture<Void> select(Query query, Consumer<T> entityConsumer, Class<T> entityClass)
+	<T> CompletableFuture<Void> select(Query query, Consumer<T> entityConsumer, Class<T> entityClass)
 			throws DataAccessException;
 
 	/**
@@ -205,7 +205,7 @@ public interface AsyncCassandraOperations {
 	 * @return the converted object or {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> ListenableFuture<T> selectOne(Query query, Class<T> entityClass) throws DataAccessException;
+	<T> CompletableFuture<T> selectOne(Query query, Class<T> entityClass) throws DataAccessException;
 
 	/**
 	 * Update the queried entities and return {@literal true} if the update was applied.
@@ -215,7 +215,7 @@ public interface AsyncCassandraOperations {
 	 * @param entityClass The entity type must not be {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	ListenableFuture<Boolean> update(Query query, Update update, Class<?> entityClass) throws DataAccessException;
+	CompletableFuture<Boolean> update(Query query, Update update, Class<?> entityClass) throws DataAccessException;
 
 	/**
 	 * Remove entities (rows)/columns from the table by {@link Query}.
@@ -225,7 +225,7 @@ public interface AsyncCassandraOperations {
 	 * @return {@literal true} if the deletion was applied.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	ListenableFuture<Boolean> delete(Query query, Class<?> entityClass) throws DataAccessException;
+	CompletableFuture<Boolean> delete(Query query, Class<?> entityClass) throws DataAccessException;
 
 	// -------------------------------------------------------------------------
 	// Methods dealing with entities
@@ -238,7 +238,7 @@ public interface AsyncCassandraOperations {
 	 * @return the number of existing entities.
 	 * @throws DataAccessException if any problem occurs while executing the query.
 	 */
-	ListenableFuture<Long> count(Class<?> entityClass) throws DataAccessException;
+	CompletableFuture<Long> count(Class<?> entityClass) throws DataAccessException;
 
 	/**
 	 * Returns the number of rows for the given entity class applying {@link Query}. This overridden method allows users
@@ -251,7 +251,7 @@ public interface AsyncCassandraOperations {
 	 * @throws DataAccessException if any problem occurs while executing the query.
 	 * @since 2.1
 	 */
-	ListenableFuture<Long> count(Query query, Class<?> entityClass) throws DataAccessException;
+	CompletableFuture<Long> count(Query query, Class<?> entityClass) throws DataAccessException;
 
 	/**
 	 * Determine whether a row of {@code entityClass} with the given {@code id} exists.
@@ -263,7 +263,7 @@ public interface AsyncCassandraOperations {
 	 * @return {@literal true} if the object exists.
 	 * @throws DataAccessException if any problem occurs while executing the query.
 	 */
-	ListenableFuture<Boolean> exists(Object id, Class<?> entityClass) throws DataAccessException;
+	CompletableFuture<Boolean> exists(Object id, Class<?> entityClass) throws DataAccessException;
 
 	/**
 	 * Determine whether the result for {@code entityClass} {@link Query} yields at least one row.
@@ -274,7 +274,7 @@ public interface AsyncCassandraOperations {
 	 * @throws DataAccessException if any problem occurs while executing the query.
 	 * @since 2.1
 	 */
-	ListenableFuture<Boolean> exists(Query query, Class<?> entityClass) throws DataAccessException;
+	CompletableFuture<Boolean> exists(Query query, Class<?> entityClass) throws DataAccessException;
 
 	/**
 	 * Execute the Select by {@code id} for the given {@code entityClass}.
@@ -286,7 +286,7 @@ public interface AsyncCassandraOperations {
 	 * @return the converted object or {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> ListenableFuture<T> selectOneById(Object id, Class<T> entityClass) throws DataAccessException;
+	<T> CompletableFuture<T> selectOneById(Object id, Class<T> entityClass) throws DataAccessException;
 
 	/**
 	 * Insert the given entity and return the entity if the insert was applied.
@@ -295,7 +295,7 @@ public interface AsyncCassandraOperations {
 	 * @return the inserted entity.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> ListenableFuture<T> insert(T entity) throws DataAccessException;
+	<T> CompletableFuture<T> insert(T entity) throws DataAccessException;
 
 	/**
 	 * Insert the given entity applying {@link WriteOptions} and return the entity if the insert was applied.
@@ -306,7 +306,7 @@ public interface AsyncCassandraOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see InsertOptions#empty()
 	 */
-	<T> ListenableFuture<EntityWriteResult<T>> insert(T entity, InsertOptions options) throws DataAccessException;
+	<T> CompletableFuture<EntityWriteResult<T>> insert(T entity, InsertOptions options) throws DataAccessException;
 
 	/**
 	 * Update the given entity and return the entity if the update was applied.
@@ -315,7 +315,7 @@ public interface AsyncCassandraOperations {
 	 * @return the updated entity.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> ListenableFuture<T> update(T entity) throws DataAccessException;
+	<T> CompletableFuture<T> update(T entity) throws DataAccessException;
 
 	/**
 	 * Update the given entity applying {@link WriteOptions} and return the entity if the update was applied.
@@ -326,19 +326,19 @@ public interface AsyncCassandraOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see UpdateOptions#empty()
 	 */
-	<T> ListenableFuture<EntityWriteResult<T>> update(T entity, UpdateOptions options) throws DataAccessException;
+	<T> CompletableFuture<EntityWriteResult<T>> update(T entity, UpdateOptions options) throws DataAccessException;
 
 	/**
-	 * Delete the given entity and return the entity if the delete was applied.
+	 * Delete the given entity and return the entity if the delete statement was applied.
 	 *
 	 * @param entity must not be {@literal null}.
 	 * @return the deleted entity.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> ListenableFuture<T> delete(T entity) throws DataAccessException;
+	<T> CompletableFuture<T> delete(T entity) throws DataAccessException;
 
 	/**
-	 * Delete the given entity applying {@link QueryOptions} and return the entity if the delete was applied.
+	 * Delete the given entity applying {@link QueryOptions} and return the entity if the delete statement was applied.
 	 *
 	 * @param entity must not be {@literal null}.
 	 * @param options must not be {@literal null}.
@@ -346,10 +346,10 @@ public interface AsyncCassandraOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see QueryOptions#empty()
 	 */
-	ListenableFuture<WriteResult> delete(Object entity, QueryOptions options) throws DataAccessException;
+	CompletableFuture<WriteResult> delete(Object entity, QueryOptions options) throws DataAccessException;
 
 	/**
-	 * Delete the given entity applying {@link DeleteOptions} and return the entity if the delete was applied.
+	 * Delete the given entity applying {@link DeleteOptions} and return the entity if the delete statement was applied.
 	 *
 	 * @param entity must not be {@literal null}.
 	 * @param options must not be {@literal null}.
@@ -358,7 +358,7 @@ public interface AsyncCassandraOperations {
 	 * @see DeleteOptions#empty()
 	 * @since 2.2
 	 */
-	default ListenableFuture<WriteResult> delete(Object entity, DeleteOptions options) throws DataAccessException {
+	default CompletableFuture<WriteResult> delete(Object entity, DeleteOptions options) throws DataAccessException {
 		return delete(entity, (QueryOptions) options);
 	}
 
@@ -372,7 +372,7 @@ public interface AsyncCassandraOperations {
 	 * @return {@literal true} if the deletion was applied.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	ListenableFuture<Boolean> deleteById(Object id, Class<?> entityClass) throws DataAccessException;
+	CompletableFuture<Boolean> deleteById(Object id, Class<?> entityClass) throws DataAccessException;
 
 	/**
 	 * Execute a {@code TRUNCATE} query to remove all entities of a given class.
@@ -380,6 +380,6 @@ public interface AsyncCassandraOperations {
 	 * @param entityClass The entity type must not be {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	ListenableFuture<Void> truncate(Class<?> entityClass) throws DataAccessException;
+	CompletableFuture<Void> truncate(Class<?> entityClass) throws DataAccessException;
 
 }

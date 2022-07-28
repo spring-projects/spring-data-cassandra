@@ -21,14 +21,14 @@ import io.mockk.mockk
 import io.mockk.verify
 import org.junit.jupiter.api.Test
 import org.springframework.data.cassandra.domain.Person
-import org.springframework.scheduling.annotation.AsyncResult
+import java.util.concurrent.CompletableFuture
 
 /**
  * Unit tests for [AsyncCqlOperationsExtensions].
  *
  * @author Mark Paluch
  */
-class AsyncCqlOperationsExtensionsUnitTests {
+class LegacyAsyncCqlOperationsExtensionsUnitTests {
 
 	val operations = mockk<AsyncCqlOperations>(relaxed = true)
 
@@ -120,7 +120,14 @@ class AsyncCqlOperationsExtensionsUnitTests {
 	@Test // DATACASS-484
 	fun `query(String, ResultSetExtractor, array) extension should call its Java counterpart`() {
 
-		operations.query("", 3) { rs -> AsyncResult(Person("Walter", rs.one()!!.getString(0))) }
+		operations.query("", 3) { rs ->
+			CompletableFuture.completedFuture(
+				Person(
+					"Walter",
+					rs.one()!!.getString(0)
+				)
+			)
+		}
 		verify { operations.query(eq(""), any<AsyncResultSetExtractor<Person>>(), eq(3)) }
 	}
 

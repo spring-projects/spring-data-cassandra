@@ -13,32 +13,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.core.cql;
+package org.springframework.data.cassandra.core.cql.legacy;
 
-import java.util.concurrent.CompletionStage;
+import org.springframework.data.cassandra.core.cql.AsyncCqlTemplate;
+import org.springframework.data.cassandra.core.cql.CqlProvider;
+import org.springframework.data.cassandra.core.cql.CqlTemplate;
+import org.springframework.data.cassandra.core.cql.PreparedStatementCallback;
+import org.springframework.util.concurrent.ListenableFuture;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.DriverException;
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 
 /**
- * One of the two central callback interfaces used by the {@link AsyncCqlTemplate} class. This interface prepares a CQL
- * statement returning a {@link CompletionStage} given a {@link CqlSession}, provided by the {@link AsyncCqlTemplate}
- * class.
+ * One of the two central callback interfaces used by the
+ * {@link org.springframework.data.cassandra.core.cql.legacy.AsyncCqlTemplate} class. This interface prepares a CQL
+ * statement returning a {@link ListenableFuture} given a {@link CqlSession}, provided by the {@link CqlTemplate} class.
  * <p>
  * Implementations may either create new prepared statements or reuse cached instances. Implementations do not need to
  * concern themselves with {@link DriverException}s that may be thrown from operations they attempt. The
- * {@link AsyncCqlTemplate} class will catch and handle {@link DriverException}s appropriately.
+ * {@link org.springframework.data.cassandra.core.cql.AsyncCqlTemplate} class will catch and handle
+ * {@link DriverException}s appropriately.
  * <p>
  * Classes implementing this interface should also implement the {@link CqlProvider} interface if it is able to provide
  * the CQL it uses for {@link PreparedStatement} creation. This allows for better contextual information in case of
  * exceptions.
  *
  * @author Mark Paluch
- * @since 2.0
- * @see AsyncCqlTemplate#execute(AsyncPreparedStatementCreator, PreparedStatementCallback)
+ * @since 4.0
+ * @see org.springframework.data.cassandra.core.cql.legacy.AsyncCqlTemplate#execute(AsyncPreparedStatementCreator,
+ *      PreparedStatementCallback)
  * @see CqlProvider
+ * @deprecated since 4.0, use the {@link java.util.concurrent.CompletableFuture}-based variant.
  */
+@Deprecated(since = "4.0", forRemoval = true)
 @FunctionalInterface
 public interface AsyncPreparedStatementCreator {
 
@@ -52,5 +60,5 @@ public interface AsyncPreparedStatementCreator {
 	 * @throws DriverException there is no need to catch DriverException that may be thrown in the implementation of this
 	 *           method. The {@link AsyncCqlTemplate} class will handle them.
 	 */
-	CompletionStage<PreparedStatement> createPreparedStatement(CqlSession session) throws DriverException;
+	ListenableFuture<PreparedStatement> createPreparedStatement(CqlSession session) throws DriverException;
 }

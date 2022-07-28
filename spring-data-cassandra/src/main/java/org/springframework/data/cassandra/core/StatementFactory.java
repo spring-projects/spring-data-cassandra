@@ -211,7 +211,7 @@ public class StatementFactory {
 	 * @param tableName must not be {@literal null}.
 	 * @return the select builder.
 	 */
-	StatementBuilder<Select> selectOneById(Object id, CassandraPersistentEntity<?> persistentEntity,
+	public StatementBuilder<Select> selectOneById(Object id, CassandraPersistentEntity<?> persistentEntity,
 			CqlIdentifier tableName) {
 
 		Where where = new Where();
@@ -287,7 +287,7 @@ public class StatementFactory {
 	 * @param persistentEntity the {@link CassandraPersistentEntity} to write insert values.
 	 * @return the select builder.
 	 */
-	StatementBuilder<RegularInsert> insert(Object objectToInsert, WriteOptions options,
+	public StatementBuilder<RegularInsert> insert(Object objectToInsert, WriteOptions options,
 			CassandraPersistentEntity<?> persistentEntity, CqlIdentifier tableName) {
 
 		Assert.notNull(tableName, "TableName must not be null");
@@ -420,7 +420,7 @@ public class StatementFactory {
 	 * @param tableName must not be {@literal null}.
 	 * @return the update builder.
 	 */
-	StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update(Object objectToUpdate,
+	public StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update(Object objectToUpdate,
 			WriteOptions options, CassandraPersistentEntity<?> entity, CqlIdentifier tableName) {
 
 		Assert.notNull(tableName, "TableName must not be null");
@@ -459,7 +459,7 @@ public class StatementFactory {
 	 * @param tableName must not be {@literal null}.
 	 * @return the delete builder.
 	 */
-	StatementBuilder<Delete> deleteById(Object id, CassandraPersistentEntity<?> persistentEntity,
+	public StatementBuilder<Delete> deleteById(Object id, CassandraPersistentEntity<?> persistentEntity,
 			CqlIdentifier tableName) {
 
 		Where where = new Where();
@@ -529,7 +529,7 @@ public class StatementFactory {
 	 * @param tableName must not be {@literal null}.
 	 * @return the delete builder.
 	 */
-	StatementBuilder<Delete> delete(Object entity, QueryOptions options, EntityWriter<Object, Object> entityWriter,
+	public StatementBuilder<Delete> delete(Object entity, QueryOptions options, EntityWriter<Object, Object> entityWriter,
 			CqlIdentifier tableName) {
 
 		Assert.notNull(tableName, "TableName must not be null");

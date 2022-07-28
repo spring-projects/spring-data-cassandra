@@ -40,14 +40,14 @@ public class WriteResult {
 
 	private final List<Row> rows;
 
-	WriteResult(List<ExecutionInfo> executionInfo, boolean wasApplied, List<Row> rows) {
+	protected WriteResult(List<ExecutionInfo> executionInfo, boolean wasApplied, List<Row> rows) {
 
 		this.executionInfo = executionInfo;
 		this.wasApplied = wasApplied;
 		this.rows = rows;
 	}
 
-	WriteResult(ResultSet resultSet) {
+	protected WriteResult(ResultSet resultSet) {
 
 		this.executionInfo = resultSet.getExecutionInfos();
 		this.wasApplied = resultSet.wasApplied();

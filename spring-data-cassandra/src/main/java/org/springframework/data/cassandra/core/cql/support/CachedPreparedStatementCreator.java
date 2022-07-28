@@ -61,8 +61,8 @@ public class CachedPreparedStatementCreator implements PreparedStatementCreator 
 
 	/**
 	 * Create a new {@link CachedPreparedStatementCreator} given {@link PreparedStatementCache} and
-	 * {@link SimpleStatement} to prepare. Subsequent calls require the a {@link SimpleStatement} object with the same CQL
-	 * test for a cache hit. Otherwise, the statement is likely to be re-prepared.
+	 * {@link SimpleStatement} to prepare. Subsequent calls require the given {@link SimpleStatement} object with the same
+	 * CQL test for a cache hit. Otherwise, the statement is likely to be re-prepared.
 	 *
 	 * @param cache must not be {@literal null}.
 	 * @param statement must not be {@literal null}.
@@ -78,7 +78,7 @@ public class CachedPreparedStatementCreator implements PreparedStatementCreator 
 
 	/**
 	 * Create a new {@link CachedPreparedStatementCreator} given {@link PreparedStatementCache} and {@code cql} to
-	 * prepare. Subsequent calls require the a CQL statement that {@link String#equals(Object) are equal} to the
+	 * prepare. Subsequent calls require the given CQL statement that {@link String#equals(Object) are equal} to the
 	 * previously used CQL string for a cache hit. Otherwise, the statement is likely to be re-prepared.
 	 *
 	 * @param cache must not be {@literal null}.
@@ -96,8 +96,8 @@ public class CachedPreparedStatementCreator implements PreparedStatementCreator 
 	/**
 	 * Create a new {@link CachedPreparedStatementCreator} given {@link PreparedStatementCache} and {@code cql} to
 	 * prepare. This method applies {@link QueryOptions} to the {@link SimpleStatement} before preparing it. Subsequent
-	 * calls require the a CQL statement that {@link String#equals(Object) are equal} to the previously used CQL string
-	 * for a cache hit. Otherwise, the statement is likely to be re-prepared.
+	 * calls require the given CQL statement that {@link String#equals(Object) are equal} to the previously used CQL
+	 * string for a cache hit. Otherwise, the statement is likely to be re-prepared.
 	 *
 	 * @param cache must not be {@literal null}.
 	 * @param cql must not be {@literal null} or empty.

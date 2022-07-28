@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.core.cql;
+package org.springframework.data.cassandra.core.cql.legacy;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -26,6 +26,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
+
+import org.springframework.util.concurrent.ListenableFuture;
 
 import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
@@ -93,7 +95,7 @@ class AsyncResultStreamUnitTests {
 
 		List<String> rows = new ArrayList<>();
 
-		CompletableFuture<Void> completion = AsyncResultStream.from(first).map((row, rowNum) -> "row-" + rowNum)
+		ListenableFuture<Void> completion = AsyncResultStream.from(first).map((row, rowNum) -> "row-" + rowNum)
 				.forEach(rows::add);
 
 		assertThatThrownBy(completion::get).hasRootCauseInstanceOf(RuntimeException.class);
@@ -104,7 +106,7 @@ class AsyncResultStreamUnitTests {
 
 		when(first.currentPage()).thenReturn(Collections.singletonList(row1));
 
-		CompletableFuture<List<Row>> collect = AsyncResultStream.from(first).collect(Collectors.toList());
+		ListenableFuture<List<Row>> collect = AsyncResultStream.from(first).collect(Collectors.toList());
 
 		assertThat(collect.get()).containsOnly(row1);
 	}
@@ -117,7 +119,7 @@ class AsyncResultStreamUnitTests {
 		when(first.fetchNextPage()).thenReturn(CompletableFuture.completedFuture(last));
 		when(first.hasMorePages()).thenReturn(true);
 
-		CompletableFuture<List<String>> rows = AsyncResultStream.from(first).map((row, rowNum) -> "row-" + rowNum)
+		ListenableFuture<List<String>> rows = AsyncResultStream.from(first).map((row, rowNum) -> "row-" + rowNum)
 				.collect(Collectors.toList());
 
 		assertThat(rows.get()).containsOnly("row-1", "row-2");
@@ -133,7 +135,7 @@ class AsyncResultStreamUnitTests {
 		when(first.fetchNextPage()).thenReturn(failed);
 		when(first.hasMorePages()).thenReturn(true);
 
-		CompletableFuture<List<Row>> collect = AsyncResultStream.from(first).collect(Collectors.toList());
+		ListenableFuture<List<Row>> collect = AsyncResultStream.from(first).collect(Collectors.toList());
 
 		assertThatThrownBy(collect::get).hasRootCauseInstanceOf(RuntimeException.class);
 	}

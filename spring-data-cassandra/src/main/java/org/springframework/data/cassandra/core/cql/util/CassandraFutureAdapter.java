@@ -35,7 +35,9 @@ import org.springframework.util.concurrent.SuccessCallback;
  *
  * @since 3.0
  * @param <T> the result type returned by this Future's {@code get} method
+ * @deprecated since 3.0, use {@link CompletableFuture} directly.
  */
+@Deprecated
 public class CassandraFutureAdapter<T> implements ListenableFuture<T> {
 
 	private final CompletableFuture<T> completableFuture;

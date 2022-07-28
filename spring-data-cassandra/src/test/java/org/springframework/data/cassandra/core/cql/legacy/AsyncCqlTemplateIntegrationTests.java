@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.core.cql;
+package org.springframework.data.cassandra.core.cql.legacy;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -27,6 +27,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
+import org.springframework.util.concurrent.CompletableToListenableFutureAdapter;
 
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 
@@ -149,8 +150,8 @@ class AsyncCqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrati
 	void queryPreparedStatementCreatorShouldInvokeCallback() {
 
 		List<String> result = new ArrayList<>();
-		getUninterruptibly(template.query(session -> session.prepareAsync("SELECT id FROM user WHERE id = ?;"),
-				ps -> ps.bind("WHITE"), row -> {
+		getUninterruptibly(template.query(session -> new CompletableToListenableFutureAdapter<>(
+				session.prepareAsync("SELECT id FROM user WHERE id = ?;")), ps -> ps.bind("WHITE"), row -> {
 					result.add(row.getString(0));
 				}));
 

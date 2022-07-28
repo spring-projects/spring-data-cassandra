@@ -13,19 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.core.cql;
-
-import java.util.concurrent.CompletableFuture;
+package org.springframework.data.cassandra.core.cql.legacy;
 
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.cassandra.core.cql.AsyncCqlTemplate;
+import org.springframework.data.cassandra.core.cql.RowCallbackHandler;
+import org.springframework.data.cassandra.core.cql.RowMapper;
+import org.springframework.lang.Nullable;
+import org.springframework.util.concurrent.ListenableFuture;
 
 import com.datastax.oss.driver.api.core.DriverException;
 import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
 
 /**
- * Callback interface used by {@link AsyncCqlTemplate}'s query methods. Implementations of this interface perform the
- * actual work of extracting results from a {@link AsyncResultSet}, but don't need to worry about exception handling.
- * {@link DriverException}s will be caught and handled by the calling {@link AsyncCqlTemplate}.
+ * Callback interface used by {@link org.springframework.data.cassandra.core.cql.legacy.AsyncCqlTemplate}'s query
+ * methods. Implementations of this interface perform the actual work of extracting results from a
+ * {@link AsyncResultSet}, but don't need to worry about exception handling. {@link DriverException}s will be caught and
+ * handled by the calling {@link org.springframework.data.cassandra.core.cql.legacy.AsyncCqlTemplate}.
  * <p>
  * This interface is mainly used within the CQL framework itself. A {@link RowMapper} is usually a simpler choice for
  * {@link AsyncResultSet} processing, mapping one result object per row instead of one result object for the entire
@@ -35,10 +39,12 @@ import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
  * and thus reusable, as long as it doesn't access stateful resources or keep result state within the object.
  *
  * @author Mark Paluch
- * @since 3.0
+ * @since 4.0
  * @see AsyncCqlTemplate
  * @see RowMapper
+ * @deprecated since 4.0, use the {@link java.util.concurrent.CompletableFuture}-based variant.
  */
+@Deprecated(since = "4.0", forRemoval = true)
 @FunctionalInterface
 public interface AsyncResultSetExtractor<T> {
 
@@ -52,5 +58,6 @@ public interface AsyncResultSetExtractor<T> {
 	 *           there's no need to catch {@link DriverException})
 	 * @throws DataAccessException in case of custom exceptions
 	 */
-	CompletableFuture<T> extractData(AsyncResultSet resultSet) throws DriverException, DataAccessException;
+	@Nullable
+	ListenableFuture<T> extractData(AsyncResultSet resultSet) throws DriverException, DataAccessException;
 }

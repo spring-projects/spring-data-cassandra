@@ -13,14 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.core.cql;
+package org.springframework.data.cassandra.core.cql.legacy;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.cassandra.core.cql.AsyncCqlTemplate;
+import org.springframework.data.cassandra.core.cql.ResultSetExtractor;
+import org.springframework.data.cassandra.core.cql.RowMapper;
 import org.springframework.util.Assert;
+import org.springframework.util.concurrent.ListenableFuture;
 
 import com.datastax.oss.driver.api.core.DriverException;
 import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
@@ -36,10 +39,12 @@ import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
  * Note that a {@link RowMapper} object is typically stateless and thus reusable.
  *
  * @author Mark Paluch
- * @since 3.0
+ * @since 4.0
  * @see RowMapper
  * @see AsyncCqlTemplate
+ * @deprecated since 4.0, use the {@link java.util.concurrent.CompletableFuture}-based variant.
  */
+@Deprecated(since = "4.0", forRemoval = true)
 public class AsyncRowMapperResultSetExtractor<T> implements AsyncResultSetExtractor<List<T>> {
 
 	private final RowMapper<T> rowMapper;
@@ -57,7 +62,7 @@ public class AsyncRowMapperResultSetExtractor<T> implements AsyncResultSetExtrac
 	}
 
 	@Override
-	public CompletableFuture<List<T>> extractData(AsyncResultSet resultSet) throws DriverException, DataAccessException {
+	public ListenableFuture<List<T>> extractData(AsyncResultSet resultSet) throws DriverException, DataAccessException {
 		return AsyncResultStream.from(resultSet).map(rowMapper).collect(Collectors.toList());
 	}
 }

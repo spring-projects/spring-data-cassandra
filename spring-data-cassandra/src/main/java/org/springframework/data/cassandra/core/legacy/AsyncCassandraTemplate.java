@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.core;
+package org.springframework.data.cassandra.core.legacy;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -36,13 +35,34 @@ import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.dao.support.DataAccessUtils;
+import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.data.cassandra.SessionFactory;
-import org.springframework.data.cassandra.core.EntityOperations.AdaptibleEntity;
+import org.springframework.data.cassandra.core.EntityWriteResult;
+import org.springframework.data.cassandra.core.InsertOptions;
+import org.springframework.data.cassandra.core.StatementFactory;
+import org.springframework.data.cassandra.core.UpdateOptions;
+import org.springframework.data.cassandra.core.WriteResult;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
-import org.springframework.data.cassandra.core.cql.*;
+import org.springframework.data.cassandra.core.cql.CassandraAccessor;
+import org.springframework.data.cassandra.core.cql.CqlExceptionTranslator;
+import org.springframework.data.cassandra.core.cql.CqlProvider;
+import org.springframework.data.cassandra.core.cql.PreparedStatementBinder;
+import org.springframework.data.cassandra.core.cql.QueryExtractorDelegate;
+import org.springframework.data.cassandra.core.cql.QueryOptions;
+import org.springframework.data.cassandra.core.cql.RowCallbackHandler;
+import org.springframework.data.cassandra.core.cql.RowMapper;
+import org.springframework.data.cassandra.core.cql.SingleColumnRowMapper;
+import org.springframework.data.cassandra.core.cql.WriteOptions;
+import org.springframework.data.cassandra.core.cql.legacy.AsyncCqlOperations;
+import org.springframework.data.cassandra.core.cql.legacy.AsyncCqlTemplate;
+import org.springframework.data.cassandra.core.cql.legacy.AsyncPreparedStatementCreator;
+import org.springframework.data.cassandra.core.cql.legacy.AsyncResultSetExtractor;
+import org.springframework.data.cassandra.core.cql.legacy.AsyncSessionCallback;
 import org.springframework.data.cassandra.core.cql.session.DefaultSessionFactory;
+import org.springframework.data.cassandra.core.cql.util.CassandraFutureAdapter;
 import org.springframework.data.cassandra.core.cql.util.StatementBuilder;
+import org.springframework.data.cassandra.core.legacy.EntityOperations.AdaptibleEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.SimpleUserTypeResolver;
 import org.springframework.data.cassandra.core.mapping.event.AfterConvertEvent;
@@ -62,7 +82,9 @@ import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.util.Streamable;
 import org.springframework.lang.Nullable;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.util.Assert;
+import org.springframework.util.concurrent.ListenableFuture;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
@@ -105,8 +127,11 @@ import com.datastax.oss.driver.api.querybuilder.update.Update;
  * @author Mark Paluch
  * @author John Blum
  * @see org.springframework.data.cassandra.core.AsyncCassandraOperations
- * @since 2.0
+ * @since 4.0
+ * @deprecated since 4.0, use the {@link java.util.concurrent.CompletableFuture}-based variant
+ *             {@link org.springframework.data.cassandra.core.AsyncCassandraTemplate}.
  */
+@Deprecated(since = "4.0", forRemoval = true)
 public class AsyncCassandraTemplate
 		implements AsyncCassandraOperations, ApplicationEventPublisherAware, ApplicationContextAware {
 
@@ -115,6 +140,8 @@ public class AsyncCassandraTemplate
 	private final AsyncCqlOperations cqlOperations;
 
 	private final CassandraConverter converter;
+
+	private final CqlExceptionTranslator exceptionTranslator;
 
 	private final EntityOperations entityOperations;
 
@@ -184,6 +211,7 @@ public class AsyncCassandraTemplate
 		this.converter = converter;
 		this.cqlOperations = asyncCqlTemplate;
 		this.entityOperations = new EntityOperations(converter);
+		this.exceptionTranslator = asyncCqlTemplate.getExceptionTranslator();
 		this.statementFactory = new StatementFactory(converter);
 		this.eventDelegate = new EntityLifecycleEventDelegate();
 	}
@@ -308,7 +336,7 @@ public class AsyncCassandraTemplate
 	// -------------------------------------------------------------------------
 
 	@Override
-	public <T> CompletableFuture<List<T>> select(String cql, Class<T> entityClass) {
+	public <T> ListenableFuture<List<T>> select(String cql, Class<T> entityClass) {
 
 		Assert.hasText(cql, "CQL must not be empty");
 
@@ -316,7 +344,7 @@ public class AsyncCassandraTemplate
 	}
 
 	@Override
-	public <T> CompletableFuture<Void> select(String cql, Consumer<T> entityConsumer, Class<T> entityClass)
+	public <T> ListenableFuture<Void> select(String cql, Consumer<T> entityConsumer, Class<T> entityClass)
 			throws DataAccessException {
 
 		Assert.hasText(cql, "CQL must not be empty");
@@ -327,7 +355,7 @@ public class AsyncCassandraTemplate
 	}
 
 	@Override
-	public <T> CompletableFuture<T> selectOne(String cql, Class<T> entityClass) {
+	public <T> ListenableFuture<T> selectOne(String cql, Class<T> entityClass) {
 
 		Assert.hasText(cql, "CQL must not be empty");
 		Assert.notNull(entityClass, "Entity type must not be null");
@@ -340,7 +368,7 @@ public class AsyncCassandraTemplate
 	// -------------------------------------------------------------------------
 
 	@Override
-	public CompletableFuture<AsyncResultSet> execute(Statement<?> statement) throws DataAccessException {
+	public ListenableFuture<AsyncResultSet> execute(Statement<?> statement) throws DataAccessException {
 
 		Assert.notNull(statement, "Statement must not be null");
 
@@ -348,7 +376,7 @@ public class AsyncCassandraTemplate
 	}
 
 	@Override
-	public <T> CompletableFuture<List<T>> select(Statement<?> statement, Class<T> entityClass) {
+	public <T> ListenableFuture<List<T>> select(Statement<?> statement, Class<T> entityClass) {
 
 		Assert.notNull(statement, "Statement must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
@@ -359,7 +387,7 @@ public class AsyncCassandraTemplate
 	}
 
 	@Override
-	public <T> CompletableFuture<Void> select(Statement<?> statement, Consumer<T> entityConsumer, Class<T> entityClass)
+	public <T> ListenableFuture<Void> select(Statement<?> statement, Consumer<T> entityConsumer, Class<T> entityClass)
 			throws DataAccessException {
 
 		Assert.notNull(statement, "Statement must not be null");
@@ -374,21 +402,22 @@ public class AsyncCassandraTemplate
 	}
 
 	@Override
-	public <T> CompletableFuture<T> selectOne(Statement<?> statement, Class<T> entityClass) {
-		return select(statement, entityClass).thenApply(list -> list.isEmpty() ? null : list.get(0));
+	public <T> ListenableFuture<T> selectOne(Statement<?> statement, Class<T> entityClass) {
+		return new MappingListenableFutureAdapter<>(select(statement, entityClass),
+				list -> list.isEmpty() ? null : list.get(0));
 	}
 
 	@Override
-	public <T> CompletableFuture<Slice<T>> slice(Statement<?> statement, Class<T> entityClass) {
+	public <T> ListenableFuture<Slice<T>> slice(Statement<?> statement, Class<T> entityClass) {
 
 		Assert.notNull(statement, "Statement must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		CompletableFuture<AsyncResultSet> resultSet = doQueryForResultSet(statement);
+		ListenableFuture<AsyncResultSet> resultSet = doQueryForResultSet(statement);
 
 		Function<Row, T> mapper = getMapper(entityClass, entityClass, EntityQueryUtils.getTableName(statement));
 
-		return resultSet.thenApply(
+		return new MappingListenableFutureAdapter<>(resultSet,
 				rs -> EntityQueryUtils.readSlice(rs, (row, rowNum) -> mapper.apply(row), 0, getEffectivePageSize(statement)));
 	}
 
@@ -397,7 +426,7 @@ public class AsyncCassandraTemplate
 	// -------------------------------------------------------------------------
 
 	@Override
-	public <T> CompletableFuture<List<T>> select(Query query, Class<T> entityClass) throws DataAccessException {
+	public <T> ListenableFuture<List<T>> select(Query query, Class<T> entityClass) throws DataAccessException {
 
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
@@ -406,7 +435,7 @@ public class AsyncCassandraTemplate
 	}
 
 	@Override
-	public <T> CompletableFuture<Void> select(Query query, Consumer<T> entityConsumer, Class<T> entityClass)
+	public <T> ListenableFuture<Void> select(Query query, Consumer<T> entityConsumer, Class<T> entityClass)
 			throws DataAccessException {
 
 		Assert.notNull(query, "Query must not be null");
@@ -418,7 +447,7 @@ public class AsyncCassandraTemplate
 	}
 
 	@Override
-	public <T> CompletableFuture<T> selectOne(Query query, Class<T> entityClass) throws DataAccessException {
+	public <T> ListenableFuture<T> selectOne(Query query, Class<T> entityClass) throws DataAccessException {
 
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
@@ -428,7 +457,7 @@ public class AsyncCassandraTemplate
 	}
 
 	@Override
-	public <T> CompletableFuture<Slice<T>> slice(Query query, Class<T> entityClass) throws DataAccessException {
+	public <T> ListenableFuture<Slice<T>> slice(Query query, Class<T> entityClass) throws DataAccessException {
 
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
@@ -437,7 +466,7 @@ public class AsyncCassandraTemplate
 	}
 
 	@Override
-	public CompletableFuture<Boolean> update(Query query, org.springframework.data.cassandra.core.query.Update update,
+	public ListenableFuture<Boolean> update(Query query, org.springframework.data.cassandra.core.query.Update update,
 			Class<?> entityClass) throws DataAccessException {
 
 		Assert.notNull(query, "Query must not be null");
@@ -449,7 +478,7 @@ public class AsyncCassandraTemplate
 	}
 
 	@Override
-	public CompletableFuture<Boolean> delete(Query query, Class<?> entityClass) throws DataAccessException {
+	public ListenableFuture<Boolean> delete(Query query, Class<?> entityClass) throws DataAccessException {
 
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
@@ -457,7 +486,7 @@ public class AsyncCassandraTemplate
 		return doDelete(query, entityClass, getTableName(entityClass));
 	}
 
-	private CompletableFuture<Boolean> doDelete(Query query, Class<?> entityClass, CqlIdentifier tableName) {
+	private ListenableFuture<Boolean> doDelete(Query query, Class<?> entityClass, CqlIdentifier tableName) {
 
 		StatementBuilder<Delete> builder = getStatementFactory().delete(query, getRequiredPersistentEntity(entityClass),
 				tableName);
@@ -465,9 +494,10 @@ public class AsyncCassandraTemplate
 
 		maybeEmitEvent(() -> new BeforeDeleteEvent<>(delete, entityClass, tableName));
 
-		CompletableFuture<Boolean> future = doExecute(delete, AsyncResultSet::wasApplied);
+		ListenableFuture<Boolean> future = doExecute(delete, AsyncResultSet::wasApplied);
 
-		future.thenAccept(success -> maybeEmitEvent(() -> new AfterDeleteEvent<>(delete, entityClass, tableName)));
+		future.addCallback(success -> maybeEmitEvent(() -> new AfterDeleteEvent<>(delete, entityClass, tableName)),
+				e -> {});
 
 		return future;
 	}
@@ -477,7 +507,7 @@ public class AsyncCassandraTemplate
 	// -------------------------------------------------------------------------
 
 	@Override
-	public CompletableFuture<Long> count(Class<?> entityClass) {
+	public ListenableFuture<Long> count(Class<?> entityClass) {
 
 		Assert.notNull(entityClass, "Entity type must not be null");
 
@@ -485,7 +515,7 @@ public class AsyncCassandraTemplate
 	}
 
 	@Override
-	public CompletableFuture<Long> count(Query query, Class<?> entityClass) throws DataAccessException {
+	public ListenableFuture<Long> count(Query query, Class<?> entityClass) throws DataAccessException {
 
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
@@ -493,14 +523,14 @@ public class AsyncCassandraTemplate
 		return doCount(query, entityClass, getTableName(entityClass));
 	}
 
-	CompletableFuture<Long> doCount(Query query, Class<?> entityClass, CqlIdentifier tableName) {
+	ListenableFuture<Long> doCount(Query query, Class<?> entityClass, CqlIdentifier tableName) {
 
 		StatementBuilder<com.datastax.oss.driver.api.querybuilder.select.Select> countStatement = getStatementFactory()
 				.count(query, getRequiredPersistentEntity(entityClass), tableName);
 
 		SimpleStatement statement = countStatement.build();
 
-		CompletableFuture<Long> result = doExecute(statement, it -> {
+		ListenableFuture<Long> result = doExecute(statement, it -> {
 
 			SingleColumnRowMapper<Long> mapper = SingleColumnRowMapper.newInstance(Long.class);
 
@@ -508,11 +538,11 @@ public class AsyncCassandraTemplate
 			return mapper.mapRow(row, 0);
 		});
 
-		return result.thenApply(it -> it != null ? it : 0L);
+		return new MappingListenableFutureAdapter<>(result, it -> it != null ? it : 0L);
 	}
 
 	@Override
-	public CompletableFuture<Boolean> exists(Object id, Class<?> entityClass) {
+	public ListenableFuture<Boolean> exists(Object id, Class<?> entityClass) {
 
 		Assert.notNull(id, "Id must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
@@ -526,7 +556,7 @@ public class AsyncCassandraTemplate
 	}
 
 	@Override
-	public CompletableFuture<Boolean> exists(Query query, Class<?> entityClass) throws DataAccessException {
+	public ListenableFuture<Boolean> exists(Query query, Class<?> entityClass) throws DataAccessException {
 
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
@@ -538,7 +568,7 @@ public class AsyncCassandraTemplate
 	}
 
 	@Override
-	public <T> CompletableFuture<T> selectOneById(Object id, Class<T> entityClass) {
+	public <T> ListenableFuture<T> selectOneById(Object id, Class<T> entityClass) {
 
 		Assert.notNull(id, "Id must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
@@ -548,16 +578,17 @@ public class AsyncCassandraTemplate
 		StatementBuilder<Select> select = getStatementFactory().selectOneById(id, entity, tableName);
 		Function<Row, T> mapper = getMapper(entityClass, entityClass, tableName);
 
-		return doQuery(select.build(), (row, rowNum) -> mapper.apply(row)).thenApply(it -> it.isEmpty() ? null : it.get(0));
+		return new MappingListenableFutureAdapter<>(doQuery(select.build(), (row, rowNum) -> mapper.apply(row)),
+				it -> it.isEmpty() ? null : it.get(0));
 	}
 
 	@Override
-	public <T> CompletableFuture<T> insert(T entity) {
-		return insert(entity, InsertOptions.empty()).thenApply(EntityWriteResult::getEntity);
+	public <T> ListenableFuture<T> insert(T entity) {
+		return new MappingListenableFutureAdapter<>(insert(entity, InsertOptions.empty()), EntityWriteResult::getEntity);
 	}
 
 	@Override
-	public <T> CompletableFuture<EntityWriteResult<T>> insert(T entity, InsertOptions options) {
+	public <T> ListenableFuture<EntityWriteResult<T>> insert(T entity, InsertOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
 		Assert.notNull(options, "InsertOptions must not be null");
@@ -565,8 +596,7 @@ public class AsyncCassandraTemplate
 		return doInsert(entity, options, getTableName(entity.getClass()));
 	}
 
-	private <T> CompletableFuture<EntityWriteResult<T>> doInsert(T entity, WriteOptions options,
-			CqlIdentifier tableName) {
+	private <T> ListenableFuture<EntityWriteResult<T>> doInsert(T entity, WriteOptions options, CqlIdentifier tableName) {
 
 		AdaptibleEntity<T> source = getEntityOperations().forEntity(maybeCallBeforeConvert(entity, tableName),
 				getConverter().getConversionService());
@@ -586,7 +616,7 @@ public class AsyncCassandraTemplate
 		return doInsert(builder.build(), entityToUse, source, tableName);
 	}
 
-	private <T> CompletableFuture<EntityWriteResult<T>> doInsertVersioned(SimpleStatement insert, T entity,
+	private <T> ListenableFuture<EntityWriteResult<T>> doInsertVersioned(SimpleStatement insert, T entity,
 			AdaptibleEntity<T> source, CqlIdentifier tableName) {
 
 		return executeSave(entity, tableName, insert, result -> {
@@ -600,19 +630,19 @@ public class AsyncCassandraTemplate
 	}
 
 	@SuppressWarnings("unused")
-	private <T> CompletableFuture<EntityWriteResult<T>> doInsert(SimpleStatement insert, T entity,
+	private <T> ListenableFuture<EntityWriteResult<T>> doInsert(SimpleStatement insert, T entity,
 			AdaptibleEntity<T> source, CqlIdentifier tableName) {
 
 		return executeSave(entity, tableName, insert);
 	}
 
 	@Override
-	public <T> CompletableFuture<T> update(T entity) {
-		return update(entity, UpdateOptions.empty()).thenApply(EntityWriteResult::getEntity);
+	public <T> ListenableFuture<T> update(T entity) {
+		return new MappingListenableFutureAdapter<>(update(entity, UpdateOptions.empty()), EntityWriteResult::getEntity);
 	}
 
 	@Override
-	public <T> CompletableFuture<EntityWriteResult<T>> update(T entity, UpdateOptions options) {
+	public <T> ListenableFuture<EntityWriteResult<T>> update(T entity, UpdateOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
 		Assert.notNull(options, "UpdateOptions must not be null");
@@ -627,7 +657,7 @@ public class AsyncCassandraTemplate
 				: doUpdate(entityToUpdate, options, tableName, persistentEntity);
 	}
 
-	private <T> CompletableFuture<EntityWriteResult<T>> doUpdateVersioned(T entity, UpdateOptions options,
+	private <T> ListenableFuture<EntityWriteResult<T>> doUpdateVersioned(T entity, UpdateOptions options,
 			CqlIdentifier tableName, CassandraPersistentEntity<?> persistentEntity) {
 
 		AdaptibleEntity<T> source = getEntityOperations().forEntity(entity, getConverter().getConversionService());
@@ -647,7 +677,7 @@ public class AsyncCassandraTemplate
 		});
 	}
 
-	private <T> CompletableFuture<EntityWriteResult<T>> doUpdate(T entity, UpdateOptions options, CqlIdentifier tableName,
+	private <T> ListenableFuture<EntityWriteResult<T>> doUpdate(T entity, UpdateOptions options, CqlIdentifier tableName,
 			CassandraPersistentEntity<?> persistentEntity) {
 
 		StatementBuilder<Update> update = getStatementFactory().update(entity, options, persistentEntity, tableName);
@@ -656,12 +686,12 @@ public class AsyncCassandraTemplate
 	}
 
 	@Override
-	public <T> CompletableFuture<T> delete(T entity) {
-		return delete(entity, QueryOptions.empty()).thenApply(writeResult -> entity);
+	public <T> ListenableFuture<T> delete(T entity) {
+		return new MappingListenableFutureAdapter<>(delete(entity, QueryOptions.empty()), writeResult -> entity);
 	}
 
 	@Override
-	public CompletableFuture<WriteResult> delete(Object entity, QueryOptions options) {
+	public ListenableFuture<WriteResult> delete(Object entity, QueryOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
 		Assert.notNull(options, "QueryOptions must not be null");
@@ -674,11 +704,10 @@ public class AsyncCassandraTemplate
 				: doDelete(entity, options, tableName);
 	}
 
-	private CompletableFuture<WriteResult> doDeleteVersioned(Object entity, QueryOptions options,
+	private ListenableFuture<WriteResult> doDeleteVersioned(Object entity, QueryOptions options,
 			AdaptibleEntity<Object> source, CqlIdentifier tableName) {
 
 		StatementBuilder<Delete> delete = getStatementFactory().delete(entity, options, getConverter(), tableName);
-		;
 
 		return executeDelete(entity, tableName, source.appendVersionCondition(delete).build(), result -> {
 
@@ -690,7 +719,7 @@ public class AsyncCassandraTemplate
 		});
 	}
 
-	private CompletableFuture<WriteResult> doDelete(Object entity, QueryOptions options, CqlIdentifier tableName) {
+	private ListenableFuture<WriteResult> doDelete(Object entity, QueryOptions options, CqlIdentifier tableName) {
 
 		StatementBuilder<Delete> delete = getStatementFactory().delete(entity, options, getConverter(), tableName);
 
@@ -698,7 +727,7 @@ public class AsyncCassandraTemplate
 	}
 
 	@Override
-	public CompletableFuture<Boolean> deleteById(Object id, Class<?> entityClass) {
+	public ListenableFuture<Boolean> deleteById(Object id, Class<?> entityClass) {
 
 		Assert.notNull(id, "Id must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
@@ -711,14 +740,15 @@ public class AsyncCassandraTemplate
 
 		maybeEmitEvent(() -> new BeforeDeleteEvent<>(delete, entityClass, tableName));
 
-		CompletableFuture<Boolean> future = doExecute(delete, AsyncResultSet::wasApplied);
-		future.thenAccept(success -> maybeEmitEvent(() -> new AfterDeleteEvent<>(delete, entityClass, tableName)));
+		ListenableFuture<Boolean> future = doExecute(delete, AsyncResultSet::wasApplied);
+		future.addCallback(success -> maybeEmitEvent(() -> new AfterDeleteEvent<>(delete, entityClass, tableName)),
+				e -> {});
 
 		return future;
 	}
 
 	@Override
-	public CompletableFuture<Void> truncate(Class<?> entityClass) {
+	public ListenableFuture<Void> truncate(Class<?> entityClass) {
 
 		Assert.notNull(entityClass, "Entity type must not be null");
 
@@ -728,10 +758,11 @@ public class AsyncCassandraTemplate
 
 		maybeEmitEvent(() -> new BeforeDeleteEvent<>(statement, entityClass, tableName));
 
-		CompletableFuture<Boolean> future = doExecute(statement, AsyncResultSet::wasApplied);
-		future.thenAccept(success -> maybeEmitEvent(() -> new AfterDeleteEvent<>(statement, entityClass, tableName)));
+		ListenableFuture<Boolean> future = doExecute(statement, AsyncResultSet::wasApplied);
+		future.addCallback(success -> maybeEmitEvent(() -> new AfterDeleteEvent<>(statement, entityClass, tableName)),
+				e -> {});
 
-		return future.thenApply(aBoolean -> null);
+		return new MappingListenableFutureAdapter<>(future, aBoolean -> null);
 	}
 
 	// -------------------------------------------------------------------------
@@ -748,26 +779,26 @@ public class AsyncCassandraTemplate
 	 * @since 3.3.3
 	 */
 	protected AsyncPreparedStatementHandler createPreparedStatementHandler(Statement<?> statement) {
-		return new PreparedStatementHandler(statement);
+		return new PreparedStatementHandler(statement, exceptionTranslator);
 	}
 
-	private <T> CompletableFuture<EntityWriteResult<T>> executeSave(T entity, CqlIdentifier tableName,
+	private <T> ListenableFuture<EntityWriteResult<T>> executeSave(T entity, CqlIdentifier tableName,
 			SimpleStatement statement) {
 
 		return executeSave(entity, tableName, statement, ignore -> {});
 	}
 
-	private <T> CompletableFuture<EntityWriteResult<T>> executeSave(T entity, CqlIdentifier tableName,
+	private <T> ListenableFuture<EntityWriteResult<T>> executeSave(T entity, CqlIdentifier tableName,
 			SimpleStatement statement, Consumer<WriteResult> beforeAfterSaveEvent) {
 
 		maybeEmitEvent(() -> new BeforeSaveEvent<>(entity, tableName, statement));
 		T entityToSave = maybeCallBeforeSave(entity, tableName, statement);
 
-		CompletableFuture<AsyncResultSet> result = doQueryForResultSet(statement);
+		ListenableFuture<AsyncResultSet> result = doQueryForResultSet(statement);
 
-		return result.thenApply(resultSet -> {
+		return new MappingListenableFutureAdapter<>(result, resultSet -> {
 
-			EntityWriteResult<T> writeResult = new EntityWriteResult<>(
+			EntityWriteResult<T> writeResult = new org.springframework.data.cassandra.core.legacy.EntityWriteResult<>(
 					Collections.singletonList(resultSet.getExecutionInfo()), resultSet.wasApplied(), getFirstPage(resultSet),
 					entityToSave);
 
@@ -779,17 +810,17 @@ public class AsyncCassandraTemplate
 		});
 	}
 
-	private CompletableFuture<WriteResult> executeDelete(Object entity, CqlIdentifier tableName,
-			SimpleStatement statement, Consumer<WriteResult> resultConsumer) {
+	private ListenableFuture<WriteResult> executeDelete(Object entity, CqlIdentifier tableName, SimpleStatement statement,
+			Consumer<WriteResult> resultConsumer) {
 
 		maybeEmitEvent(() -> new BeforeDeleteEvent<>(statement, entity.getClass(), tableName));
 
-		CompletableFuture<AsyncResultSet> result = doQueryForResultSet(statement);
+		ListenableFuture<AsyncResultSet> result = doQueryForResultSet(statement);
 
-		return result.thenApply(resultSet -> {
+		return new MappingListenableFutureAdapter<>(result, resultSet -> {
 
-			WriteResult writeResult = new WriteResult(Collections.singletonList(resultSet.getExecutionInfo()),
-					resultSet.wasApplied(), getFirstPage(resultSet));
+			WriteResult writeResult = new org.springframework.data.cassandra.core.legacy.WriteResult(
+					Collections.singletonList(resultSet.getExecutionInfo()), resultSet.wasApplied(), getFirstPage(resultSet));
 
 			resultConsumer.accept(writeResult);
 
@@ -799,7 +830,7 @@ public class AsyncCassandraTemplate
 		});
 	}
 
-	private <T> CompletableFuture<List<T>> doQuery(Statement<?> statement, RowMapper<T> rowMapper) {
+	private <T> ListenableFuture<List<T>> doQuery(Statement<?> statement, RowMapper<T> rowMapper) {
 
 		if (PreparedStatementDelegate.canPrepare(isUsePreparedStatements(), statement, log)) {
 
@@ -810,7 +841,7 @@ public class AsyncCassandraTemplate
 		return getAsyncCqlOperations().query(statement, rowMapper);
 	}
 
-	private CompletableFuture<Void> doQuery(Statement<?> statement, RowCallbackHandler callbackHandler) {
+	private ListenableFuture<Void> doQuery(Statement<?> statement, RowCallbackHandler callbackHandler) {
 
 		if (PreparedStatementDelegate.canPrepare(isUsePreparedStatements(), statement, log)) {
 
@@ -821,22 +852,20 @@ public class AsyncCassandraTemplate
 		return getAsyncCqlOperations().query(statement, callbackHandler);
 	}
 
-	private CompletableFuture<AsyncResultSet> doQueryForResultSet(Statement<?> statement) {
+	private ListenableFuture<AsyncResultSet> doQueryForResultSet(Statement<?> statement) {
 		return doExecute(statement, Function.identity());
 	}
 
-	private <T> CompletableFuture<T> doExecute(Statement<?> statement, Function<AsyncResultSet, T> mappingFunction) {
+	private <T> ListenableFuture<T> doExecute(Statement<?> statement, Function<AsyncResultSet, T> mappingFunction) {
 
 		if (PreparedStatementDelegate.canPrepare(isUsePreparedStatements(), statement, log)) {
 
 			AsyncPreparedStatementHandler statementHandler = createPreparedStatementHandler(statement);
-
 			return getAsyncCqlOperations().query(statementHandler, statementHandler,
-					(AsyncResultSetExtractor<T>) resultSet -> CompletableFuture
-							.completedFuture(mappingFunction.apply(resultSet)));
+					(AsyncResultSetExtractor<T>) resultSet -> new AsyncResult<>(mappingFunction.apply(resultSet)));
 		}
 
-		return getAsyncCqlOperations().queryForResultSet(statement).thenApply(mappingFunction);
+		return new MappingListenableFutureAdapter<>(getAsyncCqlOperations().queryForResultSet(statement), mappingFunction);
 	}
 
 	private static List<Row> getFirstPage(AsyncResultSet resultSet) {
@@ -863,8 +892,8 @@ public class AsyncCassandraTemplate
 		}
 		class GetConfiguredPageSize implements AsyncSessionCallback<Integer>, CqlProvider {
 			@Override
-			public CompletableFuture<Integer> doInSession(CqlSession session) {
-				return CompletableFuture.completedFuture(getConfiguredPageSize(session));
+			public ListenableFuture<Integer> doInSession(CqlSession session) {
+				return AsyncResult.forValue(getConfiguredPageSize(session));
 			}
 
 			@Override
@@ -873,7 +902,7 @@ public class AsyncCassandraTemplate
 			}
 		}
 
-		return getAsyncCqlOperations().execute(new GetConfiguredPageSize()).join();
+		return getAsyncCqlOperations().execute(new GetConfiguredPageSize()).completable().join();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -928,6 +957,22 @@ public class AsyncCassandraTemplate
 		return object;
 	}
 
+	static class MappingListenableFutureAdapter<T, S>
+			extends org.springframework.util.concurrent.ListenableFutureAdapter<T, S> {
+
+		private final Function<S, T> mapper;
+
+		MappingListenableFutureAdapter(ListenableFuture<S> adaptee, Function<S, T> mapper) {
+			super(adaptee);
+			this.mapper = mapper;
+		}
+
+		@Override
+		protected T adapt(@Nullable S adapteeResult) {
+			return this.mapper.apply(adapteeResult);
+		}
+	}
+
 	/**
 	 * General callback interface used to create and bind prepared CQL statements.
 	 * <p>
@@ -947,17 +992,19 @@ public class AsyncCassandraTemplate
 	 *
 	 * @since 3.2
 	 */
-	static class PreparedStatementHandler implements AsyncPreparedStatementHandler {
+	public static class PreparedStatementHandler implements AsyncPreparedStatementHandler {
 
 		private final SimpleStatement statement;
+		private final PersistenceExceptionTranslator exceptionTranslator;
 
-		public PreparedStatementHandler(Statement<?> statement) {
+		public PreparedStatementHandler(Statement<?> statement, PersistenceExceptionTranslator exceptionTranslator) {
 			this.statement = PreparedStatementDelegate.getStatementForPrepare(statement);
+			this.exceptionTranslator = exceptionTranslator;
 		}
 
 		@Override
-		public CompletableFuture<PreparedStatement> createPreparedStatement(CqlSession session) throws DriverException {
-			return doPrepare(session).toCompletableFuture();
+		public ListenableFuture<PreparedStatement> createPreparedStatement(CqlSession session) throws DriverException {
+			return new CassandraFutureAdapter<>(doPrepare(session), exceptionTranslator);
 		}
 
 		/**

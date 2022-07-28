@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.core.cql;
+package org.springframework.data.cassandra.core.cql.legacy;
 
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collector;
 
+import org.springframework.data.cassandra.core.cql.RowMapper;
 import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
+import org.springframework.util.concurrent.SettableListenableFuture;
 
 import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
@@ -32,8 +33,9 @@ import com.datastax.oss.driver.api.core.cql.Row;
  * set}. An asynchronous stream represents a pipeline of operations to process a {@link AsyncResultSet}.
  *
  * @author Mark Paluch
- * @since 3.0
+ * @since 4.0
  */
+@Deprecated(since = "4.0", forRemoval = true)
 class AsyncResultStream<T> {
 
 	private final AsyncResultSet resultSet;
@@ -84,11 +86,11 @@ class AsyncResultStream<T> {
 	 * @param collector the {@link Collector} describing the reduction
 	 * @return the result of the reduction
 	 */
-	<R, A> CompletableFuture<R> collect(Collector<? super T, A, R> collector) {
+	<R, A> ListenableFuture<R> collect(Collector<? super T, A, R> collector) {
 
 		Assert.notNull(collector, "Collector must not be null");
 
-		CompletableFuture<R> future = new CompletableFuture<>();
+		SettableListenableFuture<R> future = new SettableListenableFuture<>();
 		CollectState<A, R> collectState = new CollectState<>(collector);
 
 		collectState.collectAsync(future, this.resultSet);
@@ -106,11 +108,11 @@ class AsyncResultStream<T> {
 	 *
 	 * @param action a non-interfering action to perform on the elements.
 	 */
-	CompletableFuture<Void> forEach(Consumer<T> action) {
+	ListenableFuture<Void> forEach(Consumer<T> action) {
 
 		Assert.notNull(action, "Action must not be null");
 
-		CompletableFuture<Void> future = new CompletableFuture<>();
+		SettableListenableFuture<Void> future = new SettableListenableFuture<>();
 		ForwardLoopState loopState = new ForwardLoopState(action);
 
 		loopState.forEachAsync(future, this.resultSet);
@@ -140,7 +142,7 @@ class AsyncResultStream<T> {
 		 * @param target
 		 * @param resultSet
 		 */
-		void forEachAsync(CompletableFuture<Void> target, AsyncResultSet resultSet) {
+		void forEachAsync(SettableListenableFuture<Void> target, AsyncResultSet resultSet) {
 
 			if (target.isCancelled()) {
 				return;
@@ -149,12 +151,12 @@ class AsyncResultStream<T> {
 			try {
 				peekRow(resultSet.currentPage());
 			} catch (RuntimeException e) {
-				target.completeExceptionally(e);
+				target.setException(e);
 				return;
 			}
 
 			if (!resultSet.hasMorePages()) {
-				target.complete(null);
+				target.set(null);
 			} else {
 
 				CompletionStage<AsyncResultSet> nextPage = resultSet.fetchNextPage();
@@ -162,7 +164,7 @@ class AsyncResultStream<T> {
 				nextPage.whenComplete((nextResultSet, throwable) -> {
 
 					if (throwable != null) {
-						target.completeExceptionally(throwable);
+						target.setException(throwable);
 					} else {
 						forEachAsync(target, nextResultSet);
 					}
@@ -202,7 +204,7 @@ class AsyncResultStream<T> {
 		 * @param target
 		 * @param resultSet
 		 */
-		void collectAsync(CompletableFuture<R> target, AsyncResultSet resultSet) {
+		void collectAsync(SettableListenableFuture<R> target, AsyncResultSet resultSet) {
 
 			if (target.isCancelled()) {
 				return;
@@ -211,12 +213,12 @@ class AsyncResultStream<T> {
 			try {
 				collectPage(resultSet.currentPage());
 			} catch (RuntimeException e) {
-				target.completeExceptionally(e);
+				target.setException(e);
 				return;
 			}
 
 			if (!resultSet.hasMorePages()) {
-				target.complete(finish());
+				target.set(finish());
 			} else {
 
 				CompletionStage<AsyncResultSet> nextPage = resultSet.fetchNextPage();
@@ -224,7 +226,7 @@ class AsyncResultStream<T> {
 				nextPage.whenComplete((nextResultSet, throwable) -> {
 
 					if (throwable != null) {
-						target.completeExceptionally(throwable);
+						target.setException(throwable);
 					} else {
 						collectAsync(target, nextResultSet);
 					}
