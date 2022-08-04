@@ -15,11 +15,6 @@
  */
 package org.springframework.data.cassandra.core;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-import static org.springframework.data.cassandra.core.query.Criteria.*;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -27,6 +22,19 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.NoNodeAvailableException;
+import com.datastax.oss.driver.api.core.context.DriverContext;
+import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
+import com.datastax.oss.driver.api.core.cql.ColumnDefinition;
+import com.datastax.oss.driver.api.core.cql.ColumnDefinitions;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.cql.Statement;
+import com.datastax.oss.driver.api.core.type.DataTypes;
+import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
+import com.datastax.oss.driver.internal.core.type.codec.registry.DefaultCodecRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,19 +55,10 @@ import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.domain.VersionedUser;
 import org.springframework.data.mapping.callback.EntityCallbacks;
 
-import com.datastax.oss.driver.api.core.CqlIdentifier;
-import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.NoNodeAvailableException;
-import com.datastax.oss.driver.api.core.context.DriverContext;
-import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
-import com.datastax.oss.driver.api.core.cql.ColumnDefinition;
-import com.datastax.oss.driver.api.core.cql.ColumnDefinitions;
-import com.datastax.oss.driver.api.core.cql.Row;
-import com.datastax.oss.driver.api.core.cql.SimpleStatement;
-import com.datastax.oss.driver.api.core.cql.Statement;
-import com.datastax.oss.driver.api.core.type.DataTypes;
-import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
-import com.datastax.oss.driver.internal.core.type.codec.registry.DefaultCodecRegistry;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.data.cassandra.core.query.Criteria.*;
 
 /**
  * Unit tests for {@link AsyncCassandraTemplate}.
@@ -325,7 +324,28 @@ class AsyncCassandraTemplateUnitTests {
 		assertThat(beforeSave).isSameAs(user);
 	}
 
-	@Test // DATACASS-618
+	@Test
+		// GH-1295
+	void insertShouldConsiderEntityAfterCallback() {
+
+		when(resultSet.wasApplied()).thenReturn(true);
+
+		User user = new User("heisenberg", "Walter", "White");
+
+		EntityCallbacks callbacks = EntityCallbacks.create();
+		callbacks.addEntityCallback((BeforeConvertCallback<Object>) (entity, tableName) -> new User("ww", "Walter", "White"));
+		template.setEntityCallbacks(callbacks);
+
+		CompletableFuture<User> future = template.insert(user);
+
+		assertThat(getUninterruptibly(future)).isNotSameAs(user);
+		verify(session).executeAsync(statementCaptor.capture());
+		assertThat(render(statementCaptor.getValue()))
+				.isEqualTo("INSERT INTO users (firstname,id,lastname) VALUES ('Walter','ww','White')");
+	}
+
+	@Test
+		// DATACASS-618
 	void insertShouldInsertVersionedEntity() {
 
 		when(resultSet.wasApplied()).thenReturn(true);
