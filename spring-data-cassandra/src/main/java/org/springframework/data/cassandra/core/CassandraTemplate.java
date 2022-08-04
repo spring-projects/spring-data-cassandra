@@ -20,6 +20,24 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.DriverException;
+import com.datastax.oss.driver.api.core.config.DefaultDriverOption;
+import com.datastax.oss.driver.api.core.cql.BatchType;
+import com.datastax.oss.driver.api.core.cql.BoundStatement;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.cql.Statement;
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
+import com.datastax.oss.driver.api.querybuilder.delete.Delete;
+import com.datastax.oss.driver.api.querybuilder.insert.Insert;
+import com.datastax.oss.driver.api.querybuilder.insert.RegularInsert;
+import com.datastax.oss.driver.api.querybuilder.select.Select;
+import com.datastax.oss.driver.api.querybuilder.truncate.Truncate;
+import com.datastax.oss.driver.api.querybuilder.update.Update;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -60,25 +78,6 @@ import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
-
-import com.datastax.oss.driver.api.core.CqlIdentifier;
-import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.DriverException;
-import com.datastax.oss.driver.api.core.config.DefaultDriverOption;
-import com.datastax.oss.driver.api.core.cql.BatchType;
-import com.datastax.oss.driver.api.core.cql.BoundStatement;
-import com.datastax.oss.driver.api.core.cql.PreparedStatement;
-import com.datastax.oss.driver.api.core.cql.ResultSet;
-import com.datastax.oss.driver.api.core.cql.Row;
-import com.datastax.oss.driver.api.core.cql.SimpleStatement;
-import com.datastax.oss.driver.api.core.cql.Statement;
-import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
-import com.datastax.oss.driver.api.querybuilder.delete.Delete;
-import com.datastax.oss.driver.api.querybuilder.insert.Insert;
-import com.datastax.oss.driver.api.querybuilder.insert.RegularInsert;
-import com.datastax.oss.driver.api.querybuilder.select.Select;
-import com.datastax.oss.driver.api.querybuilder.truncate.Truncate;
-import com.datastax.oss.driver.api.querybuilder.update.Update;
 
 /**
  * Primary implementation of {@link CassandraOperations}. It simplifies the use of Cassandra usage and helps to avoid
@@ -670,7 +669,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		AdaptibleEntity<T> source = getEntityOperations().forEntity(maybeCallBeforeConvert(entity, tableName),
 				getConverter().getConversionService());
 
-		T entityToUse = source.isVersionedEntity() ? source.initializeVersionProperty() : entity;
+		T entityToUse = source.isVersionedEntity() ? source.initializeVersionProperty() : source.getBean();
 
 		StatementBuilder<RegularInsert> builder = getStatementFactory().insert(entityToUse, options,
 				source.getPersistentEntity(), tableName);
@@ -737,7 +736,8 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		T toSave = source.incrementVersion();
 
 		StatementBuilder<Update> builder = getStatementFactory().update(toSave, options, persistentEntity, tableName);
-		SimpleStatement update = source.appendVersionCondition(builder, previousVersion).build();
+		SimpleStatement update = source.appendVersionCondition(builder, previousVersion)
+				.build();
 
 		return executeSave(toSave, tableName, update, result -> {
 
@@ -781,7 +781,8 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		StatementBuilder<Delete> builder = getStatementFactory().delete(entity, options, getConverter(), tableName);
 
 		return source.isVersionedEntity()
-				? doDeleteVersioned(source.appendVersionCondition(builder).build(), entity, source, tableName)
+				? doDeleteVersioned(source.appendVersionCondition(builder)
+				.build(), entity, source, tableName)
 				: doDelete(builder.build(), entity, tableName);
 
 	}
@@ -800,7 +801,8 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	}
 
 	private WriteResult doDelete(SimpleStatement delete, Object entity, CqlIdentifier tableName) {
-		return executeDelete(entity, tableName, delete, result -> {});
+		return executeDelete(entity, tableName, delete, result -> {
+		});
 	}
 
 	/* (non-Javadoc)
@@ -900,7 +902,8 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	}
 
 	private <T> EntityWriteResult<T> executeSave(T entity, CqlIdentifier tableName, SimpleStatement statement) {
-		return executeSave(entity, tableName, statement, ignore -> {});
+		return executeSave(entity, tableName, statement, ignore -> {
+		});
 	}
 
 	private <T> EntityWriteResult<T> executeSave(T entity, CqlIdentifier tableName, SimpleStatement statement,
@@ -977,7 +980,8 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	}
 
 	private int getConfiguredPageSize(CqlSession session) {
-		return session.getContext().getConfig().getDefaultProfile().getInt(DefaultDriverOption.REQUEST_PAGE_SIZE, 5000);
+		return session.getContext().getConfig().getDefaultProfile()
+				.getInt(DefaultDriverOption.REQUEST_PAGE_SIZE, 5000);
 	}
 
 	@SuppressWarnings("ConstantConditions")
