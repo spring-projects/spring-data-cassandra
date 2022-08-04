@@ -436,7 +436,8 @@ public class AsyncCassandraTemplate
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return select(getStatementFactory().select(query, getRequiredPersistentEntity(entityClass)).build(), entityClass);
+		return select(getStatementFactory().select(query, getRequiredPersistentEntity(entityClass))
+				.build(), entityClass);
 	}
 
 	/* (non-Javadoc)
@@ -450,7 +451,8 @@ public class AsyncCassandraTemplate
 		Assert.notNull(entityConsumer, "Entity Consumer must not be empty");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return select(getStatementFactory().select(query, getRequiredPersistentEntity(entityClass)).build(), entityConsumer,
+		return select(getStatementFactory().select(query, getRequiredPersistentEntity(entityClass))
+						.build(), entityConsumer,
 				entityClass);
 	}
 
@@ -463,7 +465,8 @@ public class AsyncCassandraTemplate
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return selectOne(getStatementFactory().select(query, getRequiredPersistentEntity(entityClass)).build(),
+		return selectOne(getStatementFactory().select(query, getRequiredPersistentEntity(entityClass))
+						.build(),
 				entityClass);
 	}
 
@@ -476,7 +479,8 @@ public class AsyncCassandraTemplate
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return slice(getStatementFactory().select(query, getRequiredPersistentEntity(entityClass)).build(), entityClass);
+		return slice(getStatementFactory().select(query, getRequiredPersistentEntity(entityClass))
+				.build(), entityClass);
 	}
 
 	/* (non-Javadoc)
@@ -490,7 +494,8 @@ public class AsyncCassandraTemplate
 		Assert.notNull(update, "Update must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return doExecute(getStatementFactory().update(query, update, getRequiredPersistentEntity(entityClass)).build(),
+		return doExecute(getStatementFactory().update(query, update, getRequiredPersistentEntity(entityClass))
+						.build(),
 				AsyncResultSet::wasApplied);
 	}
 
@@ -516,7 +521,8 @@ public class AsyncCassandraTemplate
 
 		ListenableFuture<Boolean> future = doExecute(delete, AsyncResultSet::wasApplied);
 
-		future.addCallback(success -> maybeEmitEvent(new AfterDeleteEvent<>(delete, entityClass, tableName)), e -> {});
+		future.addCallback(success -> maybeEmitEvent(new AfterDeleteEvent<>(delete, entityClass, tableName)), e -> {
+		});
 
 		return future;
 	}
@@ -559,7 +565,8 @@ public class AsyncCassandraTemplate
 
 			SingleColumnRowMapper<Long> mapper = SingleColumnRowMapper.newInstance(Long.class);
 
-			Row row = DataAccessUtils.requiredSingleResult(Streamable.of(it.currentPage()).toList());
+			Row row = DataAccessUtils.requiredSingleResult(Streamable.of(it.currentPage())
+					.toList());
 			return mapper.mapRow(row, 0);
 		});
 
@@ -642,7 +649,7 @@ public class AsyncCassandraTemplate
 				getConverter().getConversionService());
 		CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
 
-		T entityToUse = source.isVersionedEntity() ? source.initializeVersionProperty() : entity;
+		T entityToUse = source.isVersionedEntity() ? source.initializeVersionProperty() : source.getBean();
 
 		StatementBuilder<RegularInsert> builder = getStatementFactory().insert(entityToUse, options, persistentEntity,
 				tableName);
@@ -762,7 +769,8 @@ public class AsyncCassandraTemplate
 		StatementBuilder<Delete> delete = getStatementFactory().delete(entity, options, getConverter(), tableName);
 		;
 
-		return executeDelete(entity, tableName, source.appendVersionCondition(delete).build(), result -> {
+		return executeDelete(entity, tableName, source.appendVersionCondition(delete)
+				.build(), result -> {
 
 			if (!result.wasApplied()) {
 				throw new OptimisticLockingFailureException(
@@ -776,7 +784,8 @@ public class AsyncCassandraTemplate
 
 		StatementBuilder<Delete> delete = getStatementFactory().delete(entity, options, getConverter(), tableName);
 
-		return executeDelete(entity, tableName, delete.build(), result -> {});
+		return executeDelete(entity, tableName, delete.build(), result -> {
+		});
 	}
 
 	/* (non-Javadoc)
@@ -797,7 +806,8 @@ public class AsyncCassandraTemplate
 		maybeEmitEvent(new BeforeDeleteEvent<>(delete, entityClass, tableName));
 
 		ListenableFuture<Boolean> future = doExecute(delete, AsyncResultSet::wasApplied);
-		future.addCallback(success -> maybeEmitEvent(new AfterDeleteEvent<>(delete, entityClass, tableName)), e -> {});
+		future.addCallback(success -> maybeEmitEvent(new AfterDeleteEvent<>(delete, entityClass, tableName)), e -> {
+		});
 
 		return future;
 	}
@@ -817,7 +827,8 @@ public class AsyncCassandraTemplate
 		maybeEmitEvent(new BeforeDeleteEvent<>(statement, entityClass, tableName));
 
 		ListenableFuture<Boolean> future = doExecute(statement, AsyncResultSet::wasApplied);
-		future.addCallback(success -> maybeEmitEvent(new AfterDeleteEvent<>(statement, entityClass, tableName)), e -> {});
+		future.addCallback(success -> maybeEmitEvent(new AfterDeleteEvent<>(statement, entityClass, tableName)), e -> {
+		});
 
 		return new MappingListenableFutureAdapter<>(future, aBoolean -> null);
 	}
@@ -842,7 +853,8 @@ public class AsyncCassandraTemplate
 	private <T> ListenableFuture<EntityWriteResult<T>> executeSave(T entity, CqlIdentifier tableName,
 			SimpleStatement statement) {
 
-		return executeSave(entity, tableName, statement, ignore -> {});
+		return executeSave(entity, tableName, statement, ignore -> {
+		});
 	}
 
 	private <T> ListenableFuture<EntityWriteResult<T>> executeSave(T entity, CqlIdentifier tableName,
@@ -926,11 +938,13 @@ public class AsyncCassandraTemplate
 	}
 
 	private static List<Row> getFirstPage(AsyncResultSet resultSet) {
-		return StreamSupport.stream(resultSet.currentPage().spliterator(), false).collect(Collectors.toList());
+		return StreamSupport.stream(resultSet.currentPage().spliterator(), false)
+				.collect(Collectors.toList());
 	}
 
 	private static int getConfiguredPageSize(CqlSession session) {
-		return session.getContext().getConfig().getDefaultProfile().getInt(DefaultDriverOption.REQUEST_PAGE_SIZE, 5000);
+		return session.getContext().getConfig().getDefaultProfile()
+				.getInt(DefaultDriverOption.REQUEST_PAGE_SIZE, 5000);
 	}
 
 	private int getEffectivePageSize(Statement<?> statement) {

@@ -669,7 +669,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		AdaptibleEntity<T> source = getEntityOperations().forEntity(maybeCallBeforeConvert(entity, tableName),
 				getConverter().getConversionService());
 
-		T entityToUse = source.isVersionedEntity() ? source.initializeVersionProperty() : entity;
+		T entityToUse = source.isVersionedEntity() ? source.initializeVersionProperty() : source.getBean();
 
 		StatementBuilder<RegularInsert> builder = getStatementFactory().insert(entityToUse, options,
 				source.getPersistentEntity(), tableName);
@@ -736,7 +736,8 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		T toSave = source.incrementVersion();
 
 		StatementBuilder<Update> builder = getStatementFactory().update(toSave, options, persistentEntity, tableName);
-		SimpleStatement update = source.appendVersionCondition(builder, previousVersion).build();
+		SimpleStatement update = source.appendVersionCondition(builder, previousVersion)
+				.build();
 
 		return executeSave(toSave, tableName, update, result -> {
 
@@ -780,7 +781,8 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		StatementBuilder<Delete> builder = getStatementFactory().delete(entity, options, getConverter(), tableName);
 
 		return source.isVersionedEntity()
-				? doDeleteVersioned(source.appendVersionCondition(builder).build(), entity, source, tableName)
+				? doDeleteVersioned(source.appendVersionCondition(builder)
+				.build(), entity, source, tableName)
 				: doDelete(builder.build(), entity, tableName);
 
 	}
@@ -799,7 +801,8 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	}
 
 	private WriteResult doDelete(SimpleStatement delete, Object entity, CqlIdentifier tableName) {
-		return executeDelete(entity, tableName, delete, result -> {});
+		return executeDelete(entity, tableName, delete, result -> {
+		});
 	}
 
 	/* (non-Javadoc)
@@ -899,7 +902,8 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	}
 
 	private <T> EntityWriteResult<T> executeSave(T entity, CqlIdentifier tableName, SimpleStatement statement) {
-		return executeSave(entity, tableName, statement, ignore -> {});
+		return executeSave(entity, tableName, statement, ignore -> {
+		});
 	}
 
 	private <T> EntityWriteResult<T> executeSave(T entity, CqlIdentifier tableName, SimpleStatement statement,
@@ -976,7 +980,8 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	}
 
 	private int getConfiguredPageSize(CqlSession session) {
-		return session.getContext().getConfig().getDefaultProfile().getInt(DefaultDriverOption.REQUEST_PAGE_SIZE, 5000);
+		return session.getContext().getConfig().getDefaultProfile()
+				.getInt(DefaultDriverOption.REQUEST_PAGE_SIZE, 5000);
 	}
 
 	@SuppressWarnings("ConstantConditions")
