@@ -49,6 +49,7 @@ import com.datastax.oss.driver.api.core.CqlSession;
  * @author Matthew T. Adams
  * @author John Blum
  * @author Mark Paluch
+ * @author Ammar Khaku
  */
 @Configuration
 @SuppressWarnings("unused")
@@ -71,14 +72,11 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 
 		CqlSession cqlSession = getRequiredSession();
 
-		UserTypeResolver userTypeResolver =
-				new SimpleUserTypeResolver(cqlSession, CqlIdentifier.fromCql(getKeyspaceName()));
-
 		MappingCassandraConverter converter =
 			new MappingCassandraConverter(requireBeanOfType(CassandraMappingContext.class));
 
 		converter.setCodecRegistry(cqlSession.getContext().getCodecRegistry());
-		converter.setUserTypeResolver(userTypeResolver);
+		converter.setUserTypeResolver(userTypeResolver(cqlSession));
 		converter.setCustomConversions(requireBeanOfType(CassandraCustomConversions.class));
 
 		return converter;
@@ -96,11 +94,8 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 
 		CqlSession cqlSession = getRequiredSession();
 
-		UserTypeResolver userTypeResolver =
-				new SimpleUserTypeResolver(cqlSession, CqlIdentifier.fromCql(getKeyspaceName()));
-
 		CassandraMappingContext mappingContext =
-			new CassandraMappingContext(userTypeResolver, SimpleTupleTypeFactory.DEFAULT);
+			new CassandraMappingContext(userTypeResolver(cqlSession), SimpleTupleTypeFactory.DEFAULT);
 
 		CustomConversions customConversions = requireBeanOfType(CassandraCustomConversions.class);
 
@@ -259,5 +254,9 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 	 */
 	protected ByteArrayResource scriptOf(String content) {
 		return new ByteArrayResource(content.getBytes());
+	}
+
+	protected UserTypeResolver userTypeResolver(CqlSession cqlSession) {
+		return new SimpleUserTypeResolver(cqlSession, CqlIdentifier.fromCql(getKeyspaceName()));
 	}
 }
