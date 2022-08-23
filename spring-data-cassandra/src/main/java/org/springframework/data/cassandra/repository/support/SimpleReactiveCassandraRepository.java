@@ -150,7 +150,7 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 
 		Assert.notNull(ids, "The given Iterable of ids must not be null");
 
-		if (FindByIdQuery.hasCompositeKeys(ids)) {
+		if (FindByIdQuery.hasCompositeKeys(ids, this.mappingContext)) {
 			return findAllById(Flux.fromIterable(ids));
 		}
 
@@ -203,8 +203,8 @@ public class SimpleReactiveCassandraRepository<T, ID> implements ReactiveCassand
 
 		Assert.notNull(ids, "The given Iterable of ids must not be null");
 
-		if (FindByIdQuery.hasCompositeKeys(ids)) {
-			return deleteById(Flux.fromIterable(ids));
+		if (FindByIdQuery.hasCompositeKeys(ids, this.mappingContext)) {
+			return Flux.fromIterable(ids).flatMap(this::deleteById).then();
 		}
 
 		if (!ids.iterator().hasNext()) {
