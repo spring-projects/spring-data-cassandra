@@ -200,7 +200,11 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 
 		Assert.notNull(ids, "The given Iterable of ids must not be null");
 
-		if (!ids.iterator().hasNext()) {
+		if (FindByIdQuery.hasCompositeKeys(ids, this.mappingContext)) {
+
+			for (ID id : ids) {
+				deleteById(id);
+			}
 			return;
 		}
 

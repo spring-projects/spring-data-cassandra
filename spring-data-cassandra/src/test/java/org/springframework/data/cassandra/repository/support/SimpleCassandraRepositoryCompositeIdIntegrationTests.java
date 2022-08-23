@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.repository.support;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -26,20 +27,24 @@ import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.core.mapping.BasicMapId;
 import org.springframework.data.cassandra.core.mapping.MapId;
+import org.springframework.data.cassandra.domain.CompositeKey;
+import org.springframework.data.cassandra.domain.TypeWithKeyClass;
 import org.springframework.data.cassandra.domain.TypeWithMapId;
 import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
 
 /**
- * Integration tests for {@link SimpleCassandraRepository} using MapId.
+ * Integration tests for {@link SimpleCassandraRepository} using MapId and primary key classes.
  *
  * @author Mark Paluch
  */
-class SimpleCassandraRepositoryMapIdIntegrationTests extends AbstractKeyspaceCreatingIntegrationTests {
+class SimpleCassandraRepositoryCompositeIdIntegrationTests extends AbstractKeyspaceCreatingIntegrationTests {
 
 	private SimpleCassandraRepository<User, MapId> simple;
 
-	private SimpleCassandraRepository<TypeWithMapId, MapId> composite;
+	private SimpleCassandraRepository<TypeWithMapId, MapId> mapId;
+
+	private SimpleCassandraRepository<TypeWithKeyClass, CompositeKey> primaryKeyClass;
 
 	@BeforeEach
 	@SuppressWarnings("unchecked")
@@ -48,16 +53,21 @@ class SimpleCassandraRepositoryMapIdIntegrationTests extends AbstractKeyspaceCre
 		CassandraTemplate template = new CassandraTemplate(this.session);
 		SchemaTestUtils.potentiallyCreateTableFor(User.class, template);
 		SchemaTestUtils.potentiallyCreateTableFor(TypeWithMapId.class, template);
+		SchemaTestUtils.potentiallyCreateTableFor(TypeWithKeyClass.class, template);
 
 		SchemaTestUtils.truncate(TypeWithMapId.class, template);
-		SchemaTestUtils.truncate(TypeWithMapId.class, template);
+		SchemaTestUtils.truncate(TypeWithKeyClass.class, template);
 
 		simple = new SimpleCassandraRepository<>(new MappingCassandraEntityInformation(
 				template.getConverter().getMappingContext().getRequiredPersistentEntity(User.class), template.getConverter()),
 				template);
 
-		composite = new SimpleCassandraRepository<>(new MappingCassandraEntityInformation(
+		mapId = new SimpleCassandraRepository<>(new MappingCassandraEntityInformation(
 				template.getConverter().getMappingContext().getRequiredPersistentEntity(TypeWithMapId.class),
+				template.getConverter()), template);
+
+		primaryKeyClass = new SimpleCassandraRepository<>(new MappingCassandraEntityInformation(
+				template.getConverter().getMappingContext().getRequiredPersistentEntity(TypeWithKeyClass.class),
 				template.getConverter()), template);
 	}
 
@@ -81,9 +91,43 @@ class SimpleCassandraRepositoryMapIdIntegrationTests extends AbstractKeyspaceCre
 		withMapId.setFirstname("Walter");
 		withMapId.setLastname("White");
 
-		composite.save(withMapId);
+		mapId.save(withMapId);
 
-		assertThatThrownBy(() -> composite.findAllById(Collections.singletonList(withMapId.getMapId())))
+		assertThatThrownBy(() -> mapId.findAllById(Collections.singletonList(withMapId.getMapId())))
 				.isInstanceOf(InvalidDataAccessApiUsageException.class);
+	}
+
+	@Test // GH-1298
+	void shouldDeleteAllByMapId() {
+
+		TypeWithMapId withMapId1 = new TypeWithMapId();
+		withMapId1.setFirstname("Walter");
+		withMapId1.setLastname("White");
+
+		TypeWithMapId withMapId2 = new TypeWithMapId();
+		withMapId2.setFirstname("Skyler");
+		withMapId2.setLastname("White");
+
+		mapId.saveAll(Arrays.asList(withMapId1, withMapId2));
+
+		mapId.deleteAllById(Arrays.asList(withMapId1.getMapId(), withMapId2.getMapId()));
+
+		assertThat(mapId.findAll()).isEmpty();
+	}
+
+	@Test // GH-1298
+	void shouldDeleteAllByCompositeId() {
+
+		TypeWithKeyClass composite1 = new TypeWithKeyClass();
+		composite1.setKey(new CompositeKey("Walter", "White"));
+
+		TypeWithKeyClass composite2 = new TypeWithKeyClass();
+		composite2.setKey(new CompositeKey("Skyler", "White"));
+
+		primaryKeyClass.saveAll(Arrays.asList(composite1, composite2));
+
+		primaryKeyClass.deleteAllById(Arrays.asList(composite1.getKey(), composite2.getKey()));
+
+		assertThat(primaryKeyClass.findAll()).isEmpty();
 	}
 }
