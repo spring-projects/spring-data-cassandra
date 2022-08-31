@@ -15,13 +15,14 @@
  */
 package org.springframework.data.cassandra.observability;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.data.cassandra.observability.CassandraObservation.*;
 
 import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
+import io.micrometer.common.docs.KeyName;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.observation.TimerObservationHandler;
+import io.micrometer.core.instrument.observation.DefaultMeterObservationHandler;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.micrometer.core.tck.MeterRegistryAssert;
 import io.micrometer.observation.Observation;
@@ -79,7 +80,7 @@ public class CqlSessionTracingTests extends IntegrationTestsSupport {
 
 		MeterRegistry meterRegistry = new SimpleMeterRegistry();
 		ObservationRegistry observationRegistry = ObservationRegistry.create();
-		observationRegistry.observationConfig().observationHandler(new TimerObservationHandler(meterRegistry));
+		observationRegistry.observationConfig().observationHandler(new DefaultMeterObservationHandler(meterRegistry));
 
 		MeterRegistryAssert.then(meterRegistry).hasNoMetrics();
 	}
@@ -89,14 +90,14 @@ public class CqlSessionTracingTests extends IntegrationTestsSupport {
 
 		MeterRegistry meterRegistry = new SimpleMeterRegistry();
 		ObservationRegistry observationRegistry = ObservationRegistry.create();
-		observationRegistry.observationConfig().observationHandler(new TimerObservationHandler(meterRegistry));
+		observationRegistry.observationConfig().observationHandler(new DefaultMeterObservationHandler(meterRegistry));
 
-		CqlSessionKeyValuesProvider tagsProvider = new DefaultCassandraKeyValuesProvider();
+		CqlSessionObservationConvention observationContention = new DefaultCassandraObservationContention();
 
 		SimpleTracer tracer = new SimpleTracer();
 		observationRegistry.observationConfig().observationHandler(new CqlSessionTracingObservationHandler(tracer));
 
-		CqlSessionTracingFactory.wrap(session, observationRegistry, tagsProvider);
+		CqlSessionTracingFactory.wrap(session, observationRegistry, observationContention);
 
 		MeterRegistryAssert.then(meterRegistry).hasNoMetrics();
 	}
@@ -106,15 +107,15 @@ public class CqlSessionTracingTests extends IntegrationTestsSupport {
 
 		MeterRegistry meterRegistry = new SimpleMeterRegistry();
 		ObservationRegistry observationRegistry = ObservationRegistry.create();
-		observationRegistry.observationConfig().observationHandler(new TimerObservationHandler(meterRegistry));
+		observationRegistry.observationConfig().observationHandler(new DefaultMeterObservationHandler(meterRegistry));
 
-		CqlSessionKeyValuesProvider tagsProvider = new DefaultCassandraKeyValuesProvider();
+		CqlSessionObservationConvention observationContention = new DefaultCassandraObservationContention();
 		SimpleTracer tracer = new SimpleTracer();
 		observationRegistry.observationConfig().observationHandler(new CqlSessionTracingObservationHandler(tracer));
 
 		Observation.start("test", observationRegistry).scoped(() -> {
 
-			CqlSession traceSession = CqlSessionTracingFactory.wrap(session, observationRegistry, tagsProvider);
+			CqlSession traceSession = CqlSessionTracingFactory.wrap(session, observationRegistry, observationContention);
 
 			traceSession.execute(CREATE_KEYSPACE);
 			traceSession.executeAsync(CREATE_KEYSPACE);
@@ -123,26 +124,24 @@ public class CqlSessionTracingTests extends IntegrationTestsSupport {
 		});
 
 		MeterRegistryAssert.then(meterRegistry).hasTimerWithNameAndTags(CASSANDRA_QUERY_OBSERVATION.getName(), KeyValues.of( //
-				KeyValue.of(LowCardinalityKeyNames.SESSION_NAME.getKeyName(), "s5"), //
-				KeyValue.of(LowCardinalityKeyNames.KEYSPACE_NAME.getKeyName(), "unknown"), //
+				LowCardinalityKeyNames.SESSION_NAME.withValue("s5"), //
+				LowCardinalityKeyNames.KEYSPACE_NAME.withValue("unknown"), //
 				KeyValue.of("error", "none") //
 		));
 
 		assertThat(tracer.getSpans()).hasSize(4);
 
-		assertThat(findSpan(tracer.getSpans(), LowCardinalityKeyNames.METHOD_NAME.getKeyName(), "execute")).isNotNull();
-		assertThat(findSpan(tracer.getSpans(), LowCardinalityKeyNames.METHOD_NAME.getKeyName(), "executeAsync"))
-				.isNotNull();
-		assertThat(findSpan(tracer.getSpans(), LowCardinalityKeyNames.METHOD_NAME.getKeyName(), "prepare")).isNotNull();
-		assertThat(findSpan(tracer.getSpans(), LowCardinalityKeyNames.METHOD_NAME.getKeyName(), "prepareAsync"))
-				.isNotNull();
+		assertThat(findSpan(tracer.getSpans(), LowCardinalityKeyNames.METHOD_NAME, "execute")).isNotNull();
+		assertThat(findSpan(tracer.getSpans(), LowCardinalityKeyNames.METHOD_NAME, "executeAsync")).isNotNull();
+		assertThat(findSpan(tracer.getSpans(), LowCardinalityKeyNames.METHOD_NAME, "prepare")).isNotNull();
+		assertThat(findSpan(tracer.getSpans(), LowCardinalityKeyNames.METHOD_NAME, "prepareAsync")).isNotNull();
 
 		tracer.getSpans().forEach(simpleSpan -> SpanAssert.then(simpleSpan) //
 				.hasRemoteServiceNameEqualTo("cassandra-s5") //
 				.hasNameEqualTo(CASSANDRA_QUERY_OBSERVATION.getContextualName()) //
-				.hasTag(LowCardinalityKeyNames.SESSION_NAME.getKeyName(), "s5") //
-				.hasTag(LowCardinalityKeyNames.KEYSPACE_NAME.getKeyName(), "unknown") //
-				.hasTag(HighCardinalityKeyNames.CQL_TAG.getKeyName(), CREATE_KEYSPACE) //
+				.hasTag(LowCardinalityKeyNames.SESSION_NAME, "s5") //
+				.hasTag(LowCardinalityKeyNames.KEYSPACE_NAME, "unknown") //
+				.hasTag(HighCardinalityKeyNames.CQL_TAG, CREATE_KEYSPACE) //
 				.hasIpThatIsBlank() //
 				.hasPortEqualTo(0) //
 				.hasKindEqualTo(Span.Kind.CLIENT));
@@ -156,12 +155,12 @@ public class CqlSessionTracingTests extends IntegrationTestsSupport {
 	 * @param value
 	 * @return
 	 */
-	private SimpleSpan findSpan(Deque<SimpleSpan> spans, String key, String value) {
+	private SimpleSpan findSpan(Deque<SimpleSpan> spans, KeyName key, String value) {
 
 		return spans.stream() //
 				.filter(simpleSpan -> {
 					Map<String, String> tags = simpleSpan.getTags();
-					return tags.containsKey(key) && tags.get(key).equals(value);
+					return tags.containsKey(key.asString()) && tags.get(key.asString()).equals(value);
 				}) //
 				.findAny() //
 				.orElse(null);

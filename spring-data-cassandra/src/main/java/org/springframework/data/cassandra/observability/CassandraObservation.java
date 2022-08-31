@@ -66,7 +66,7 @@ enum CassandraObservation implements DocumentedObservation {
 		 */
 		KEYSPACE_NAME {
 			@Override
-			public String getKeyName() {
+			public String asString() {
 				return "spring.data.cassandra.keyspace";
 			}
 		},
@@ -76,7 +76,7 @@ enum CassandraObservation implements DocumentedObservation {
 		 */
 		SESSION_NAME {
 			@Override
-			public String getKeyName() {
+			public String asString() {
 				return "spring.data.cassandra.sessionName";
 			}
 		},
@@ -86,7 +86,7 @@ enum CassandraObservation implements DocumentedObservation {
 		 */
 		METHOD_NAME {
 			@Override
-			public String getKeyName() {
+			public String asString() {
 				return "spring.data.cassandra.methodName";
 			}
 		},
@@ -96,7 +96,7 @@ enum CassandraObservation implements DocumentedObservation {
 		 */
 		URL {
 			@Override
-			public String getKeyName() {
+			public String asString() {
 				return "spring.data.cassandra.url";
 			}
 		},
@@ -106,7 +106,7 @@ enum CassandraObservation implements DocumentedObservation {
 		 */
 		NODE_ERROR_TAG {
 			@Override
-			public String getKeyName() {
+			public String asString() {
 				return "spring.data.cassandra.node[%s].error";
 			}
 		}
@@ -119,7 +119,7 @@ enum CassandraObservation implements DocumentedObservation {
 		 */
 		CQL_TAG {
 			@Override
-			public String getKeyName() {
+			public String asString() {
 				return "spring.data.cassandra.cql";
 			}
 		}

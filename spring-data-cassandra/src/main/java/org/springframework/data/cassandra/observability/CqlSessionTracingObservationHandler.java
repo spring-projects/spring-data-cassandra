@@ -63,11 +63,11 @@ public class CqlSessionTracingObservationHandler implements TracingObservationHa
 
 		for (KeyValue keyValue : context.getLowCardinalityKeyValues()) {
 
-			if (keyValue.getKey().equals(CassandraObservation.LowCardinalityKeyNames.SESSION_NAME.getKeyName())) {
+			if (keyValue.getKey().equals(CassandraObservation.LowCardinalityKeyNames.SESSION_NAME.asString())) {
 				sessionName = keyValue.getValue();
 			}
 
-			if (keyValue.getKey().equals(CassandraObservation.LowCardinalityKeyNames.URL.getKeyName())) {
+			if (keyValue.getKey().equals(CassandraObservation.LowCardinalityKeyNames.URL.asString())) {
 				url = keyValue.getValue();
 			}
 		}

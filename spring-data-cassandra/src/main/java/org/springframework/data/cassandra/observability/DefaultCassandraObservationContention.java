@@ -15,7 +15,6 @@
  */
 package org.springframework.data.cassandra.observability;
 
-import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
 
 import java.util.Optional;
@@ -25,38 +24,29 @@ import org.springframework.data.cassandra.observability.CassandraObservation.Hig
 import org.springframework.data.cassandra.observability.CassandraObservation.LowCardinalityKeyNames;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
-import com.datastax.oss.driver.api.core.cql.BatchStatement;
-import com.datastax.oss.driver.api.core.cql.BatchableStatement;
-import com.datastax.oss.driver.api.core.cql.BoundStatement;
-import com.datastax.oss.driver.api.core.cql.SimpleStatement;
-import com.datastax.oss.driver.api.core.cql.Statement;
+import com.datastax.oss.driver.api.core.cql.*;
 
 /**
- * Default {@link CqlSessionKeyValuesProvider} implementation.
+ * Default {@link CqlSessionObservationConvention} implementation.
  *
  * @author Greg Turnquist
  * @since 4.0.0
  */
-public class DefaultCassandraKeyValuesProvider implements CqlSessionKeyValuesProvider {
+public class DefaultCassandraObservationContention implements CqlSessionObservationConvention {
 
 	@Override
 	public KeyValues getLowCardinalityKeyValues(CqlSessionContext context) {
 
-		KeyValues keyValues = KeyValues.of( //
-				KeyValue.of( //
-						LowCardinalityKeyNames.SESSION_NAME.getKeyName(),
-						Optional.ofNullable(context.getDelegateSession().getName()).orElse("unknown")),
-				KeyValue.of( //
-						LowCardinalityKeyNames.KEYSPACE_NAME.getKeyName(),
+		KeyValues keyValues = KeyValues.of(
+				LowCardinalityKeyNames.SESSION_NAME
+						.withValue(Optional.ofNullable(context.getDelegateSession().getName()).orElse("unknown")),
+				LowCardinalityKeyNames.KEYSPACE_NAME.withValue(
 						Optional.ofNullable(context.getStatement().getKeyspace()).map(CqlIdentifier::asInternal).orElse("unknown")),
-				KeyValue.of( //
-						LowCardinalityKeyNames.METHOD_NAME.getKeyName(), //
-						context.getMethodName()));
+				LowCardinalityKeyNames.METHOD_NAME.withValue(context.getMethodName()));
 
 		if (context.getStatement().getNode() != null) {
-			keyValues = keyValues.and(KeyValue.of( //
-					LowCardinalityKeyNames.URL.getKeyName(),
-					context.getStatement().getNode().getEndPoint().resolve().toString()));
+			keyValues = keyValues.and(
+					LowCardinalityKeyNames.URL.withValue(context.getStatement().getNode().getEndPoint().resolve().toString()));
 		}
 
 		return keyValues;
@@ -64,7 +54,7 @@ public class DefaultCassandraKeyValuesProvider implements CqlSessionKeyValuesPro
 
 	@Override
 	public KeyValues getHighCardinalityKeyValues(CqlSessionContext context) {
-		return KeyValues.of(KeyValue.of(HighCardinalityKeyNames.CQL_TAG.getKeyName(), getCql(context.getStatement())));
+		return KeyValues.of(HighCardinalityKeyNames.CQL_TAG.withValue(getCql(context.getStatement())));
 	}
 
 	/**

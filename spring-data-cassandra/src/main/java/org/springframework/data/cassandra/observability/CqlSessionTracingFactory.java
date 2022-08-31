@@ -39,16 +39,16 @@ public final class CqlSessionTracingFactory {
 	 *
 	 * @param session
 	 * @param observationRegistry
-	 * @param keyValuesProvider
+	 * @param observationConvention
 	 * @return
 	 */
 	public static CqlSession wrap(CqlSession session, ObservationRegistry observationRegistry,
-			CqlSessionKeyValuesProvider keyValuesProvider) {
+			CqlSessionObservationConvention observationConvention) {
 
 		ProxyFactory proxyFactory = new ProxyFactory();
 
 		proxyFactory.setTarget(session);
-		proxyFactory.addAdvice(new CqlSessionTracingInterceptor(session, observationRegistry, keyValuesProvider));
+		proxyFactory.addAdvice(new CqlSessionTracingInterceptor(session, observationRegistry, observationConvention));
 		proxyFactory.addInterface(CqlSession.class);
 
 		return (CqlSession) proxyFactory.getProxy();

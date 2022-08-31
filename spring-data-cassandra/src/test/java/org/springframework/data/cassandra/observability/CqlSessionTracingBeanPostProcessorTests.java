@@ -15,8 +15,8 @@
  */
 package org.springframework.data.cassandra.observability;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import io.micrometer.observation.ObservationRegistry;
 
@@ -74,13 +74,13 @@ public class CqlSessionTracingBeanPostProcessorTests {
 		}
 
 		@Bean
-		CqlSessionKeyValuesProvider keyValuesProvider() {
-			return new DefaultCassandraKeyValuesProvider();
+		CqlSessionObservationConvention observationConvention() {
+			return new DefaultCassandraObservationContention();
 		}
 
 		@Bean
 		CqlSessionTracingBeanPostProcessor traceCqlSessionBeanPostProcessor(ObservationRegistry observationRegistry,
-				CqlSessionKeyValuesProvider tagsProvider) {
+				CqlSessionObservationConvention tagsProvider) {
 			return new CqlSessionTracingBeanPostProcessor(observationRegistry, tagsProvider);
 		}
 	}

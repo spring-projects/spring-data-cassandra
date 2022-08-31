@@ -16,7 +16,7 @@
 package org.springframework.data.cassandra.observability;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.observation.TimerObservationHandler;
+import io.micrometer.core.instrument.observation.DefaultMeterObservationHandler;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.micrometer.observation.Observation;
 import io.micrometer.observation.ObservationHandler;
@@ -55,7 +55,7 @@ public class ZipkinIntegrationTests extends SampleTestRunner {
 	private static final ObservationRegistry OBSERVATION_REGISTRY = ObservationRegistry.create();
 
 	static {
-		OBSERVATION_REGISTRY.observationConfig().observationHandler(new TimerObservationHandler(METER_REGISTRY));
+		OBSERVATION_REGISTRY.observationConfig().observationHandler(new DefaultMeterObservationHandler(METER_REGISTRY));
 	}
 
 	@Autowired CqlSession session;
@@ -106,13 +106,13 @@ public class ZipkinIntegrationTests extends SampleTestRunner {
 		}
 
 		@Bean
-		CqlSessionKeyValuesProvider tagsProvider() {
-			return new DefaultCassandraKeyValuesProvider();
+		CqlSessionObservationConvention observationContention() {
+			return new DefaultCassandraObservationContention();
 		}
 
 		@Bean
 		CqlSessionTracingBeanPostProcessor traceCqlSessionBeanPostProcessor(ObservationRegistry observationRegistry,
-				CqlSessionKeyValuesProvider tagsProvider) {
+				CqlSessionObservationConvention tagsProvider) {
 			return new CqlSessionTracingBeanPostProcessor(observationRegistry, tagsProvider);
 		}
 	}

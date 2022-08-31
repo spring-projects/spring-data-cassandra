@@ -45,8 +45,7 @@ import com.datastax.oss.driver.api.core.cql.Statement;
  * @author Greg Turnquist
  * @since 4.0.0
  */
-final class CqlSessionTracingInterceptor
-		implements MethodInterceptor, Observation.KeyValuesProviderAware<CqlSessionKeyValuesProvider> {
+final class CqlSessionTracingInterceptor implements MethodInterceptor {
 
 	private static final Log log = LogFactory.getLog(CqlSessionTracingInterceptor.class);
 
@@ -54,14 +53,14 @@ final class CqlSessionTracingInterceptor
 
 	private final ObservationRegistry observationRegistry;
 
-	private CqlSessionKeyValuesProvider keyValuesProvider;
+	private CqlSessionObservationConvention observationConvention;
 
 	CqlSessionTracingInterceptor(CqlSession delegateSession, ObservationRegistry observationRegistry,
-			CqlSessionKeyValuesProvider keyValuesProvider) {
+			CqlSessionObservationConvention observationConvention) {
 
 		this.delegateSession = delegateSession;
 		this.observationRegistry = observationRegistry;
-		this.keyValuesProvider = keyValuesProvider;
+		this.observationConvention = observationConvention;
 	}
 
 	@Nullable
@@ -154,12 +153,8 @@ final class CqlSessionTracingInterceptor
 		return CassandraObservation.CASSANDRA_QUERY_OBSERVATION //
 				.observation(this.observationRegistry, observationContext) //
 				.contextualName(CassandraObservation.CASSANDRA_QUERY_OBSERVATION.getContextualName()) //
-				.keyValuesProvider(this.keyValuesProvider) //
+				.highCardinalityKeyValues(this.observationConvention.getHighCardinalityKeyValues(observationContext)) //
+				.lowCardinalityKeyValues(this.observationConvention.getLowCardinalityKeyValues(observationContext)) //
 				.start();
-	}
-
-	@Override
-	public void setKeyValuesProvider(CqlSessionKeyValuesProvider keyValuesProvider) {
-		this.keyValuesProvider = keyValuesProvider;
 	}
 }

@@ -34,20 +34,20 @@ public class CqlSessionTracingBeanPostProcessor implements BeanPostProcessor {
 
 	private final ObservationRegistry observationRegistry;
 
-	private final CqlSessionKeyValuesProvider keyValuesProvider;
+	private final CqlSessionObservationConvention observationConvention;
 
 	public CqlSessionTracingBeanPostProcessor(ObservationRegistry observationRegistry,
-			CqlSessionKeyValuesProvider keyValuesProvider) {
+			CqlSessionObservationConvention observationConvention) {
 
 		this.observationRegistry = observationRegistry;
-		this.keyValuesProvider = keyValuesProvider;
+		this.observationConvention = observationConvention;
 	}
 
 	@Override
 	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
 
 		if (bean instanceof CqlSession) {
-			return CqlSessionTracingFactory.wrap((CqlSession) bean, this.observationRegistry, this.keyValuesProvider);
+			return CqlSessionTracingFactory.wrap((CqlSession) bean, this.observationRegistry, this.observationConvention);
 		}
 
 		return bean;
