@@ -287,6 +287,14 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 		return new ByteArrayResource(content.getBytes());
 	}
 
+	/**
+	 * Creates a new {@link UserTypeResolver} from the given {@link CqlSession}. Uses by default the configured
+	 * {@link #getKeyspaceName() keyspace name}.
+	 *
+	 * @param cqlSession the Cassandra {@link CqlSession} to use.
+	 * @return a new {@link SimpleUserTypeResolver}.
+	 * @since 3.4.3
+	 */
 	protected UserTypeResolver userTypeResolver(CqlSession cqlSession) {
 		return new SimpleUserTypeResolver(cqlSession, CqlIdentifier.fromCql(getKeyspaceName()));
 	}
