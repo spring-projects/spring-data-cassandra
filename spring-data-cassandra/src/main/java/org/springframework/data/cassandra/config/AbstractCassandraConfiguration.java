@@ -59,9 +59,8 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 	private @Nullable ClassLoader beanClassLoader;
 
 	/**
-	 * Creates a {@link CassandraConverter} using the configured {@link #cassandraMapping()}.
-	 *
-	 * Will apply all specified {@link #customConversions()}.
+	 * Creates a {@link CassandraConverter} using the configured {@link #cassandraMapping()}. Will apply all specified
+	 * {@link #customConversions()}.
 	 *
 	 * @return {@link CassandraConverter} used to convert Java and Cassandra value types during the mapping process.
 	 * @see #cassandraMapping()
@@ -72,8 +71,8 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 
 		CqlSession cqlSession = getRequiredSession();
 
-		MappingCassandraConverter converter =
-			new MappingCassandraConverter(requireBeanOfType(CassandraMappingContext.class));
+		MappingCassandraConverter converter = new MappingCassandraConverter(
+				requireBeanOfType(CassandraMappingContext.class));
 
 		converter.setCodecRegistry(cqlSession.getContext().getCodecRegistry());
 		converter.setUserTypeResolver(userTypeResolver(cqlSession));
@@ -85,8 +84,8 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 	/**
 	 * Return the {@link MappingContext} instance to map Entities to {@link Object Java Objects}.
 	 *
-	 * @throws ClassNotFoundException if the Cassandra Entity class type identified by name
-	 * cannot be found during the scan.
+	 * @throws ClassNotFoundException if the Cassandra Entity class type identified by name cannot be found during the
+	 *           scan.
 	 * @see org.springframework.data.cassandra.core.mapping.CassandraMappingContext
 	 */
 	@Bean
@@ -94,8 +93,8 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 
 		CqlSession cqlSession = getRequiredSession();
 
-		CassandraMappingContext mappingContext =
-			new CassandraMappingContext(userTypeResolver(cqlSession), SimpleTupleTypeFactory.DEFAULT);
+		CassandraMappingContext mappingContext = new CassandraMappingContext(userTypeResolver(cqlSession),
+				SimpleTupleTypeFactory.DEFAULT);
 
 		CustomConversions customConversions = requireBeanOfType(CassandraCustomConversions.class);
 
@@ -256,6 +255,14 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 		return new ByteArrayResource(content.getBytes());
 	}
 
+	/**
+	 * Creates a new {@link UserTypeResolver} from the given {@link CqlSession}. Uses by default the configured
+	 * {@link #getKeyspaceName() keyspace name}.
+	 *
+	 * @param cqlSession the Cassandra {@link CqlSession} to use.
+	 * @return a new {@link SimpleUserTypeResolver}.
+	 * @since 3.4.3
+	 */
 	protected UserTypeResolver userTypeResolver(CqlSession cqlSession) {
 		return new SimpleUserTypeResolver(cqlSession, CqlIdentifier.fromCql(getKeyspaceName()));
 	}
