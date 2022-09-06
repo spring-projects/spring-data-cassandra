@@ -58,17 +58,16 @@ public class CassandraConfig {
 	}
 
 	@Bean
-	public CassandraMappingContext mappingContext(CqlSession cqlSession) {
-
-		CassandraMappingContext mappingContext = new CassandraMappingContext();
-		mappingContext.setUserTypeResolver(new SimpleUserTypeResolver(cqlSession));
-
-		return mappingContext;
+	public CassandraMappingContext mappingContext() {
+		return new CassandraMappingContext();
 	}
 
 	@Bean
-	public CassandraConverter converter(CassandraMappingContext mappingContext) {
-		return new MappingCassandraConverter(mappingContext);
+	public CassandraConverter converter(CqlSession cqlSession, CassandraMappingContext mappingContext) {
+		MappingCassandraConverter cassandraConverter = new MappingCassandraConverter(mappingContext);
+		cassandraConverter.setUserTypeResolver(new SimpleUserTypeResolver(cqlSession));
+		
+		return cassandraConverter;
 	}
 
 	@Bean
