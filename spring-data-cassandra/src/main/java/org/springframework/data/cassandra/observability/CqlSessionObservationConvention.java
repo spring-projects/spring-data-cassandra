@@ -16,14 +16,15 @@
 package org.springframework.data.cassandra.observability;
 
 import io.micrometer.observation.Observation;
+import io.micrometer.observation.ObservationConvention;
 
 /**
- * {@link Observation.ObservationConvention} for Cassandra.
+ * {@link ObservationConvention} for Cassandra.
  *
  * @author Greg Turnquist
  * @since 4.0.0
  */
-public interface CqlSessionObservationConvention extends Observation.ObservationConvention<CqlSessionContext> {
+public interface CqlSessionObservationConvention extends ObservationConvention<CqlSessionContext> {
 
 	@Override
 	default boolean supportsContext(Observation.Context context) {
