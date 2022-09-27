@@ -54,9 +54,10 @@ The annotation carries the same attributes as the namespace element.
 If no base package is configured, the infrastructure scans the package of the annotated configuration class.
 The following example shows how to use the `@EnableCassandraRepositories` annotation:
 
-.Java configuration for repositories
+.Configuration for repositories
 ====
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Configuration
 @EnableCassandraRepositories
@@ -72,13 +73,9 @@ class ApplicationConfig extends AbstractCassandraConfiguration {
   }
 }
 ----
-====
 
-If you want to use XML configuration, then the following example shows a minimal configuration snippet:
-
-.Cassandra repository Spring XML configuration
-====
-[source,xml]
+.XML
+[source,xml,role="secondary"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"

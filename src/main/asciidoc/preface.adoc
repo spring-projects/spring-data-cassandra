@@ -78,7 +78,7 @@ The two key tags to search for related answers to this project are https://stack
 [[get-started:help:professional]]
 Professional Support::
 Professional, from-the-source support, with guaranteed response time, is available from
-https://pivotal.io/[Pivotal Sofware, Inc.], the company behind Spring Data and Spring.
+https://pivotal.io/[Pivotal Software, Inc.], the company behind Spring Data and Spring.
 
 [[get-started:up-to-date]]
 === Following Development

@@ -24,19 +24,18 @@ import org.springframework.lang.Nullable;
 
 // tag::class[]
 @Configuration
-public class KeyspacePopulatorConfiguration extends AbstractCassandraConfiguration {
+public class KeyspacePopulatorFailureConfiguration extends AbstractCassandraConfiguration {
 
 	@Nullable
 	@Override
 	protected KeyspacePopulator keyspacePopulator() {
-		return new ResourceKeyspacePopulator(new ClassPathResource("com/foo/cql/db-schema.cql"),
-				new ClassPathResource("com/foo/cql/db-test-data.cql"));
-	}
 
-	@Nullable
-	@Override
-	protected KeyspacePopulator keyspaceCleaner() {
-		return new ResourceKeyspacePopulator(scriptOf("DROP TABLE my_table;"));
+		ResourceKeyspacePopulator populator = new ResourceKeyspacePopulator(
+				new ClassPathResource("com/foo/cql/db-schema.cql"));
+
+		populator.setIgnoreFailedDrops(true);
+
+		return populator;
 	}
 
 	// ...

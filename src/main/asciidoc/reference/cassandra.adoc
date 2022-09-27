@@ -291,30 +291,38 @@ Declaring a keyspace with a specification allows creating and dropping of the Ke
 It derives CQL from the specification so that you need not write CQL yourself.
 The following example specifies a Cassadra keyspace by using XML:
 
-.Specifying a Cassandra keyspace by using XML
+.Specifying a Cassandra keyspace
 ====
-[source,xml]
-----
-<cassandra:session>
-
-    <cassandra:keyspace action="CREATE_DROP" durable-writes="true" name="my_keyspace">
-        <cassandra:replication class="NETWORK_TOPOLOGY_STRATEGY">
-          <cassandra:data-center name="foo" replication-factor="1" />
-          <cassandra:data-center name="bar" replication-factor="2" />
-        </cassandra:replication>
-  </cassandra:keyspace>
-
-</cassandra:session>
-----
-====
-
-You can also specify a Cassandra keyspace by using Java configuration, as the following example shows:
-
-.Specifying a Cassandra keyspace by using Java configuration
-====
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 include::../{example-root}/CreateKeyspaceConfiguration.java[tags=class]
+----
+
+.XML
+[source,xml,role="secondary"]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:cassandra="http://www.springframework.org/schema/data/cassandra"
+  xsi:schemaLocation="
+    http://www.springframework.org/schema/data/cassandra
+    https://www.springframework.org/schema/data/cassandra/spring-cassandra.xsd
+    http://www.springframework.org/schema/beans
+    https://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <cassandra:session>
+
+        <cassandra:keyspace action="CREATE_DROP" durable-writes="true" name="my_keyspace">
+            <cassandra:replication class="NETWORK_TOPOLOGY_STRATEGY">
+              <cassandra:data-center name="foo" replication-factor="1" />
+              <cassandra:data-center name="bar" replication-factor="2" />
+            </cassandra:replication>
+      </cassandra:keyspace>
+
+    </cassandra:session>
+</beans>
 ----
 ====
 
@@ -334,16 +342,14 @@ You may sometimes need to initialize a keyspace that runs on a server somewhere.
 You can provide arbitrary CQL that is executed on `CqlSession` initialization and shutdown in the configured keyspace, as the following Java configuration example shows:
 
 ====
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 include::../{example-root}/KeyspacePopulatorConfiguration.java[tags=class]
 ----
-====
 
-If you want to initialize a database using XML configuration and you can provide a reference to a `SessionFactory` bean, you can use the `initialize-keyspace` tag in the `cassandra` namespace:
-
-====
-[source,xml,indent=0,subs="verbatim,quotes"]
+.XML
+[source,xml,indent=0,subs="verbatim,quotes",role="secondary"]
 ----
 <cassandra:initialize-keyspace session-factory-ref="cassandraSessionFactory">
     <cassandra:script location="classpath:com/foo/cql/db-schema.cql"/>
@@ -382,7 +388,14 @@ The second option to control what happens with existing data is to be more toler
 To this end, you can control the ability of the initializer to ignore certain errors in the CQL it executes from the scripts, as the following example shows:
 
 ====
-[source,xml,indent=0,subs="verbatim,quotes"]
+.Java
+[source,java,role="primary"]
+----
+include::../{example-root}/KeyspacePopulatorFailureConfiguration.java[tags=class]
+----
+
+.XML
+[source,xml,indent=0,subs="verbatim,quotes",role="secondary"]
 ----
 <cassandra:initialize-keyspace session-factory-ref="cassandraSessionFactory" ignore-failures="DROPS">
     <cassandra:script location="..."/>
@@ -401,26 +414,23 @@ Each statement should be separated by `;` or a new line if the `;` character is 
 You can control that globally or script by script, as the following example shows:
 
 ====
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 include::../{example-root}/SessionFactoryInitializerConfiguration.java[tags=class]
 ----
-====
 
-Alternatively, you can use XML to configure the `SessionFactoryInitializer`:
-
-====
-[source,xml,indent=0,subs="verbatim,quotes"]
+.XML
+[source,xml,indent=0,subs="verbatim,quotes",role="secondary"]
 ----
-<cassandra:initialize-keyspace session-factory-ref="cassandraSessionFactory" separator="@@">        <1>
-    <cassandra:script location="classpath:com/myapp/cql/db-schema.cql" separator=";"/>     <2>
+<cassandra:initialize-keyspace session-factory-ref="cassandraSessionFactory" separator="@@">
+    <cassandra:script location="classpath:com/myapp/cql/db-schema.cql" separator=";"/>
     <cassandra:script location="classpath:com/myapp/cql/db-test-data-1.cql"/>
     <cassandra:script location="classpath:com/myapp/cql/db-test-data-2.cql"/>
 </cassandra:initialize-keyspace>
 ----
-<1> Set the separator scripts to `@@`.
-<2> Set the separator for `db-schema.cql` to `;`.
 ====
+
 
 In this example, the two `test-data` scripts use `@@` as statement separator and only the `db-schema.cql` uses `;`.
 This configuration specifies that the default separator is `@@` and overrides that default for the `db-schema` script.
@@ -490,23 +500,29 @@ to specify the desired column type.
 
 The following example shows how to specify entity base packages in XML configuration:
 
-.Specifying entity base packages with XML configuration
+.Specifying entity base packages
 ====
-[source,xml]
-----
-
-<cassandra:mapping entity-base-packages="com.foo,com.bar"/>
-
-----
-====
-
-The following example shows how to specify entity base packages in Java configuration:
-
-.Specifying entity base packages with Java configuration
-====
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 include::../{example-root}/EntityBasePackagesConfiguration.java[tags=class]
+----
+
+.XML
+[source,xml,role="secondary"]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:cassandra="http://www.springframework.org/schema/data/cassandra"
+  xsi:schemaLocation="
+    http://www.springframework.org/schema/data/cassandra
+    https://www.springframework.org/schema/data/cassandra/spring-cassandra.xsd
+    http://www.springframework.org/schema/beans
+    https://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <cassandra:mapping entity-base-packages="com.foo,com.bar"/>
+</beans>
 ----
 ====
 
