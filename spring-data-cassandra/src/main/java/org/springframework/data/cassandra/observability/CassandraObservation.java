@@ -16,7 +16,7 @@
 package org.springframework.data.cassandra.observability;
 
 import io.micrometer.common.docs.KeyName;
-import io.micrometer.observation.docs.DocumentedObservation;
+import io.micrometer.observation.docs.ObservationDocumentation;
 
 /**
  * Cassandra-based implementation of {@link DocumentedObservation}.
@@ -26,7 +26,7 @@ import io.micrometer.observation.docs.DocumentedObservation;
  * @author Greg Turnquist
  * @since 4.0.0
  */
-enum CassandraObservation implements DocumentedObservation {
+enum CassandraObservation implements ObservationDocumentation {
 
 	/**
 	 * Create an {@link io.micrometer.observation.Observation} for Cassandra-based queries.

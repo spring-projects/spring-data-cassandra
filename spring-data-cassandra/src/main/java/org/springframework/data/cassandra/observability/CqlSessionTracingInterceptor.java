@@ -151,7 +151,7 @@ final class CqlSessionTracingInterceptor implements MethodInterceptor {
 		CqlSessionContext observationContext = new CqlSessionContext(statement, methodName, delegateSession);
 
 		return CassandraObservation.CASSANDRA_QUERY_OBSERVATION //
-				.observation(this.observationRegistry, observationContext) //
+				.observation(this.observationRegistry, () -> observationContext) //
 				.contextualName(CassandraObservation.CASSANDRA_QUERY_OBSERVATION.getContextualName()) //
 				.highCardinalityKeyValues(this.observationConvention.getHighCardinalityKeyValues(observationContext)) //
 				.lowCardinalityKeyValues(this.observationConvention.getLowCardinalityKeyValues(observationContext)) //
