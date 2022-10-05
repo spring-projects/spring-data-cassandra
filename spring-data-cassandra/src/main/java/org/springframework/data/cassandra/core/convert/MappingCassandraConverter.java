@@ -49,7 +49,6 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.PersistentPropertyPath;
 import org.springframework.data.mapping.PersistentPropertyPathAccessor;
-import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
 import org.springframework.data.mapping.model.DefaultSpELExpressionEvaluator;
@@ -338,11 +337,11 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		CassandraValueProvider valueProviderToUse = new TranslatingCassandraValueProvider(propertyTranslator,
 				valueProvider);
 
-		PreferredConstructor<?, CassandraPersistentProperty> persistenceConstructor = mappedEntity
-				.getPersistenceConstructor();
+		InstanceCreatorMetadata<CassandraPersistentProperty> persistenceCreator = mappedEntity
+				.getInstanceCreatorMetadata();
 
 		ParameterValueProvider<CassandraPersistentProperty> provider;
-		if (persistenceConstructor != null && persistenceConstructor.hasParameters()) {
+		if (persistenceCreator != null && persistenceCreator.hasParameters()) {
 			SpELExpressionEvaluator evaluator = new DefaultSpELExpressionEvaluator(valueProviderToUse.getSource(),
 					spELContext);
 			ParameterValueProvider<CassandraPersistentProperty> parameterValueProvider = newParameterValueProvider(context,
@@ -508,10 +507,10 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	private <S> S doReadEntity(ConversionContext context, CassandraValueProvider valueProvider,
 			CassandraPersistentEntity<S> entity) {
 
-		PreferredConstructor<S, CassandraPersistentProperty> persistenceConstructor = entity.getPersistenceConstructor();
+		InstanceCreatorMetadata<CassandraPersistentProperty> persistenceCreator = entity.getInstanceCreatorMetadata();
 		ParameterValueProvider<CassandraPersistentProperty> provider;
 
-		if (persistenceConstructor != null && persistenceConstructor.hasParameters()) {
+		if (persistenceCreator != null && persistenceCreator.hasParameters()) {
 			SpELExpressionEvaluator evaluator = new DefaultSpELExpressionEvaluator(valueProvider.getSource(), spELContext);
 			ParameterValueProvider<CassandraPersistentProperty> parameterValueProvider = newParameterValueProvider(context,
 					entity, valueProvider);
