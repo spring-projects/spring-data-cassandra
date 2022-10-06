@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test;
 
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.data.mapping.model.Property;
-import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.util.ReflectionUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -162,12 +162,12 @@ class BasicCassandraPersistentPropertyUnitTests {
 
 		Field field = ReflectionUtils.findField(type, fieldName);
 
-		return new BasicCassandraPersistentProperty(Property.of(ClassTypeInformation.from(type), field), getEntity(type),
+		return new BasicCassandraPersistentProperty(Property.of(TypeInformation.of(type), field), getEntity(type),
 				CassandraSimpleTypeHolder.HOLDER);
 	}
 
 	private <T> BasicCassandraPersistentEntity<T> getEntity(Class<T> type) {
-		return new BasicCassandraPersistentEntity<>(ClassTypeInformation.from(type));
+		return new BasicCassandraPersistentEntity<>(TypeInformation.of(type));
 	}
 
 	private static class Timeline {

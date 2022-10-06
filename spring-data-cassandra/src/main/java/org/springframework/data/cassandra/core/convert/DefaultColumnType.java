@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 
@@ -32,7 +31,7 @@ import org.springframework.lang.Nullable;
  */
 class DefaultColumnType implements ColumnType {
 
-	public static final DefaultColumnType OBJECT = new DefaultColumnType(ClassTypeInformation.OBJECT);
+	public static final DefaultColumnType OBJECT = new DefaultColumnType(TypeInformation.OBJECT);
 
 	private final TypeInformation<?> typeInformation;
 	private final List<ColumnType> parameters;

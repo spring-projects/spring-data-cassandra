@@ -21,7 +21,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.util.StringUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -46,7 +46,7 @@ class NamingStrategyUnitTests {
 	void getTableNameGeneratesTableName() {
 
 		BasicCassandraPersistentEntity<TableNameHolderThingy> entity = new BasicCassandraPersistentEntity<>(
-				ClassTypeInformation.from(TableNameHolderThingy.class));
+				TypeInformation.of(TableNameHolderThingy.class));
 
 		assertThat(entity.getTableName().asCql(true)).isEqualTo("tablenameholderthingy");
 	}
@@ -55,12 +55,12 @@ class NamingStrategyUnitTests {
 	void getTableNameGeneratesQuotedTableName() {
 
 		BasicCassandraPersistentEntity<TableNameHolderThingy> entity = new BasicCassandraPersistentEntity<>(
-				ClassTypeInformation.from(TableNameHolderThingy.class));
+				TypeInformation.of(TableNameHolderThingy.class));
 		entity.setNamingStrategy(NamingStrategy.SNAKE_CASE.transform(it -> "\"" + StringUtils.capitalize(it) + "\""));
 
 		assertThat(entity.getTableName().asCql(true)).isEqualTo("\"Table_name_holder_thingy\"");
 
-		entity = new BasicCassandraPersistentEntity<>(ClassTypeInformation.from(TableNameHolderThingy.class));
+		entity = new BasicCassandraPersistentEntity<>(TypeInformation.of(TableNameHolderThingy.class));
 		entity.setNamingStrategy(NamingStrategy.SNAKE_CASE.transform(String::toUpperCase));
 
 		assertThat(entity.getTableName().asCql(true)).isEqualTo("\"TABLE_NAME_HOLDER_THINGY\"");
@@ -70,7 +70,7 @@ class NamingStrategyUnitTests {
 	void atTableIsCaseSensitive() {
 
 		BasicCassandraPersistentEntity<ProvidedTableName> entity = new BasicCassandraPersistentEntity<>(
-				ClassTypeInformation.from(ProvidedTableName.class));
+				TypeInformation.of(ProvidedTableName.class));
 
 		assertThat(entity.getTableName().asCql(true)).isEqualTo("\"iAmProvided\"");
 	}
@@ -79,7 +79,7 @@ class NamingStrategyUnitTests {
 	void atTableWithQuotedNameShouldRetainQuotes() {
 
 		BasicCassandraPersistentEntity<QuotedTableName> entity = new BasicCassandraPersistentEntity<>(
-				ClassTypeInformation.from(QuotedTableName.class));
+				TypeInformation.of(QuotedTableName.class));
 
 		assertThat(entity.getTableName().asCql(true)).isEqualTo("\"IAmQuoted\"");
 	}

@@ -30,7 +30,6 @@ import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.query.QueryMethod;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -201,7 +200,7 @@ public class CassandraQueryMethod extends QueryMethod {
 	 * @return the return type for this {@link QueryMethod}.
 	 */
 	public TypeInformation<?> getReturnType() {
-		return ClassTypeInformation.fromReturnTypeOf(this.method);
+		return TypeInformation.fromReturnTypeOf(this.method);
 	}
 
 	/**

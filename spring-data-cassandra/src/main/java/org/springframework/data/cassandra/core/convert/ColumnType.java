@@ -15,7 +15,6 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 
@@ -42,7 +41,7 @@ public interface ColumnType {
 	 * @return
 	 */
 	static ColumnType create(Class<?> type) {
-		return create(ClassTypeInformation.from(type));
+		return create(TypeInformation.of(type));
 	}
 
 	/**
@@ -63,7 +62,7 @@ public interface ColumnType {
 	 * @return
 	 */
 	static CassandraColumnType create(Class<?> type, DataType dataType) {
-		return new DefaultCassandraColumnType(ClassTypeInformation.from(type), dataType);
+		return new DefaultCassandraColumnType(TypeInformation.of(type), dataType);
 	}
 
 	/**
@@ -78,7 +77,7 @@ public interface ColumnType {
 			return listOf((CassandraColumnType) componentType);
 		}
 
-		return new DefaultColumnType(ClassTypeInformation.LIST, componentType);
+		return new DefaultColumnType(TypeInformation.LIST, componentType);
 	}
 
 	/**
@@ -99,7 +98,7 @@ public interface ColumnType {
 	 * @return
 	 */
 	static CassandraColumnType listOf(CassandraColumnType componentType, boolean frozen) {
-		return new DefaultCassandraColumnType(ClassTypeInformation.LIST,
+		return new DefaultCassandraColumnType(TypeInformation.LIST,
 				() -> DataTypes.listOf(componentType.getDataType(), frozen), componentType);
 	}
 
@@ -115,7 +114,7 @@ public interface ColumnType {
 			return setOf((CassandraColumnType) componentType);
 		}
 
-		return new DefaultColumnType(ClassTypeInformation.SET, componentType);
+		return new DefaultColumnType(TypeInformation.SET, componentType);
 	}
 
 	/**
@@ -136,7 +135,7 @@ public interface ColumnType {
 	 * @return
 	 */
 	static CassandraColumnType setOf(CassandraColumnType componentType, boolean frozen) {
-		return new DefaultCassandraColumnType(ClassTypeInformation.SET,
+		return new DefaultCassandraColumnType(TypeInformation.SET,
 				() -> DataTypes.setOf(componentType.getDataType(), frozen), componentType);
 	}
 
@@ -148,7 +147,7 @@ public interface ColumnType {
 	 * @return
 	 */
 	static ColumnType mapOf(ColumnType keyType, ColumnType valueType) {
-		return new DefaultColumnType(ClassTypeInformation.MAP, keyType, valueType);
+		return new DefaultColumnType(TypeInformation.MAP, keyType, valueType);
 	}
 
 	/**
@@ -172,7 +171,7 @@ public interface ColumnType {
 	 * @since 3.2.4
 	 */
 	static CassandraColumnType mapOf(CassandraColumnType keyType, CassandraColumnType valueType, boolean frozen) {
-		return new DefaultCassandraColumnType(ClassTypeInformation.MAP,
+		return new DefaultCassandraColumnType(TypeInformation.MAP,
 				() -> DataTypes.mapOf(keyType.getDataType(), valueType.getDataType(), frozen), keyType, valueType);
 	}
 

@@ -25,6 +25,7 @@ import java.util.UUID;
 
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
@@ -32,7 +33,7 @@ import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.core.mapping.Frozen;
 import org.springframework.data.cassandra.core.mapping.UserDefinedType;
 import org.springframework.data.mapping.MappingException;
-import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 
 import com.datastax.oss.driver.api.core.data.TupleValue;
 import com.datastax.oss.driver.api.core.type.DataType;
@@ -59,8 +60,8 @@ public class ColumnTypeResolverUnitTests {
 	void shouldResolveSimpleType() {
 
 		assertThat(resolver.resolve("foo").getType()).isEqualTo(String.class);
-		assertThat(resolver.resolve(ClassTypeInformation.from(String.class)).getType()).isEqualTo(String.class);
-		assertThat(resolver.resolve(ClassTypeInformation.from(String.class)).getDataType()).isEqualTo(DataTypes.TEXT);
+		assertThat(resolver.resolve(TypeInformation.of(String.class)).getType()).isEqualTo(String.class);
+		assertThat(resolver.resolve(TypeInformation.of(String.class)).getDataType()).isEqualTo(DataTypes.TEXT);
 
 		BasicCassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(Person.class);
 
@@ -72,8 +73,8 @@ public class ColumnTypeResolverUnitTests {
 	void shouldResolveEnumType() {
 
 		assertThat(resolver.resolve(MyEnum.INSTANCE).getType()).isEqualTo(String.class);
-		assertThat(resolver.resolve(ClassTypeInformation.from(MyEnum.class)).getType()).isEqualTo(String.class);
-		assertThat(resolver.resolve(ClassTypeInformation.from(MyEnum.class)).getDataType()).isEqualTo(DataTypes.TEXT);
+		assertThat(resolver.resolve(TypeInformation.of(MyEnum.class)).getType()).isEqualTo(String.class);
+		assertThat(resolver.resolve(TypeInformation.of(MyEnum.class)).getDataType()).isEqualTo(DataTypes.TEXT);
 
 		BasicCassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(Person.class);
 

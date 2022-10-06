@@ -22,9 +22,10 @@ import java.util.Date;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.mapping.model.Property;
-import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -56,14 +57,14 @@ class CompoundPrimaryKeyUnitTests {
 
 	@BeforeEach
 	void setup() {
-		cpk = new BasicCassandraPersistentEntity<>(ClassTypeInformation.from(TimelineKey.class));
-		entity = new BasicCassandraPersistentEntity<>(ClassTypeInformation.from(Timeline.class));
+		cpk = new BasicCassandraPersistentEntity<>(TypeInformation.of(TimelineKey.class));
+		entity = new BasicCassandraPersistentEntity<>(TypeInformation.of(Timeline.class));
 	}
 
 	@Test // DATACASS-507
 	void checkIdProperty() {
 		Field id = ReflectionUtils.findField(Timeline.class, "id");
-		CassandraPersistentProperty property = getPropertyFor(Property.of(ClassTypeInformation.from(Timeline.class), id));
+		CassandraPersistentProperty property = getPropertyFor(Property.of(TypeInformation.of(Timeline.class), id));
 		assertThat(property.isIdProperty()).isTrue();
 		assertThat(property.isCompositePrimaryKey()).isTrue();
 	}

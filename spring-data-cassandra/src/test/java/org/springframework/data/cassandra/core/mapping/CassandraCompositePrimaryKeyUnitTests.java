@@ -32,7 +32,7 @@ import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.cassandra.core.cql.keyspace.ColumnSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
 import org.springframework.data.mapping.model.Property;
-import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.util.ReflectionUtils;
 
 import com.datastax.oss.driver.api.core.type.DataTypes;
@@ -58,8 +58,8 @@ class CassandraCompositePrimaryKeyUnitTests {
 
 		context = new CassandraMappingContext();
 		schemaFactory = new SchemaFactory(context, context.getCustomConversions(), context.getCodecRegistry());
-		entity = context.getRequiredPersistentEntity(ClassTypeInformation.from(TypeWithCompositeKey.class));
-		key = context.getRequiredPersistentEntity(ClassTypeInformation.from(CompositeKey.class));
+		entity = context.getRequiredPersistentEntity(TypeInformation.of(TypeWithCompositeKey.class));
+		key = context.getRequiredPersistentEntity(TypeInformation.of(CompositeKey.class));
 	}
 
 	@Test // DATACASS-507
@@ -67,7 +67,7 @@ class CassandraCompositePrimaryKeyUnitTests {
 
 		Field field = ReflectionUtils.findField(TypeWithCompositeKey.class, "id");
 		CassandraPersistentProperty property = new BasicCassandraPersistentProperty(
-				Property.of(ClassTypeInformation.from(TypeWithCompositeKey.class), field), entity,
+				Property.of(TypeInformation.of(TypeWithCompositeKey.class), field), entity,
 				CassandraSimpleTypeHolder.HOLDER);
 		assertThat(property.isIdProperty()).isTrue();
 		assertThat(property.isCompositePrimaryKey()).isTrue();

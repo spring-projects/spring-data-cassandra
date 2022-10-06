@@ -35,7 +35,7 @@ import org.springframework.data.cassandra.core.cql.Ordering;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
 import org.springframework.data.mapping.MappingException;
-import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.data.UdtValue;
@@ -283,7 +283,7 @@ public class CassandraMappingContextUnitTests {
 	void shouldCreatePersistentEntityIfNoConversionRegistered() {
 
 		mappingContext.setCustomConversions(new CassandraCustomConversions(Collections.emptyList()));
-		assertThat(mappingContext.shouldCreatePersistentEntityFor(ClassTypeInformation.from(Human.class))).isTrue();
+		assertThat(mappingContext.shouldCreatePersistentEntityFor(TypeInformation.of(Human.class))).isTrue();
 	}
 
 	@Test // DATACASS-296
@@ -292,7 +292,7 @@ public class CassandraMappingContextUnitTests {
 		mappingContext.setCustomConversions(
 				new CassandraCustomConversions(Collections.singletonList(HumanToStringConverter.INSTANCE)));
 
-		assertThat(mappingContext.shouldCreatePersistentEntityFor(ClassTypeInformation.from(Human.class))).isFalse();
+		assertThat(mappingContext.shouldCreatePersistentEntityFor(TypeInformation.of(Human.class))).isFalse();
 	}
 
 	@Test // DATACASS-172, DATACASS-455

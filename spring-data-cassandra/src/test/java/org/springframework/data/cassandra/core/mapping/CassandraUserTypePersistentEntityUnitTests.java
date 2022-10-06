@@ -27,7 +27,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.core.annotation.AliasFor;
-import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 
@@ -80,7 +80,7 @@ class CassandraUserTypePersistentEntityUnitTests {
 	}
 
 	private <T> CassandraUserTypePersistentEntity<T> getEntity(Class<T> entityClass) {
-		return new CassandraUserTypePersistentEntity<>(ClassTypeInformation.from(entityClass), null);
+		return new CassandraUserTypePersistentEntity<>(TypeInformation.of(entityClass), null);
 	}
 
 	@UserDefinedType

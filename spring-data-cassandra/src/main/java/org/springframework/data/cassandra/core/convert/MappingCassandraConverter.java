@@ -60,7 +60,6 @@ import org.springframework.data.mapping.model.SpELExpressionParameterValueProvid
 import org.springframework.data.projection.EntityProjection;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.Predicates;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
@@ -420,7 +419,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	public <R> R readRow(Class<R> type, Row row) {
 
 		Class<R> beanClassLoaderClass = transformClassToBeanClassLoaderClass(type);
-		TypeInformation<? extends R> typeInfo = ClassTypeInformation.from(beanClassLoaderClass);
+		TypeInformation<? extends R> typeInfo = TypeInformation.of(beanClassLoaderClass);
 
 		return doReadRow(getConversionContext(), row, typeInfo);
 	}
@@ -553,7 +552,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 	@Override
 	public Object convertToColumnType(Object obj) {
-		return convertToColumnType(obj, ClassTypeInformation.from(obj.getClass()));
+		return convertToColumnType(obj, TypeInformation.of(obj.getClass()));
 	}
 
 	@Override
@@ -924,7 +923,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			return writeMapInternal((Map<Object, Object>) value, columnType);
 		}
 
-		TypeInformation<?> type = ClassTypeInformation.from((Class) value.getClass());
+		TypeInformation<?> type = TypeInformation.of((Class) value.getClass());
 		TypeInformation<?> actualType = type.getRequiredActualType();
 		BasicCassandraPersistentEntity<?> entity = getMappingContext().getPersistentEntity(actualType.getType());
 
@@ -1144,7 +1143,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		}
 
 		TypeInformation<?> componentType = targetType.getComponentType();
-		componentType = componentType == null ? ClassTypeInformation.from(elementType) : componentType;
+		componentType = componentType == null ? TypeInformation.of(elementType) : componentType;
 
 		for (Object element : source) {
 			collection.add(context.convert(element, componentType));
@@ -1200,7 +1199,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 			Object value = entry.getValue();
 
-			map.put(key, context.convert(value, valueType == null ? ClassTypeInformation.OBJECT : valueType));
+			map.put(key, context.convert(value, valueType == null ? TypeInformation.OBJECT : valueType));
 		}
 
 		return map;

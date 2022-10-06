@@ -19,7 +19,8 @@ package org.springframework.data.cassandra.core.mapping;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.data.util.ClassTypeInformation;
+
+import org.springframework.data.util.TypeInformation;
 
 /**
  * Unit tests for {@link BasicCassandraPersistentEntity}.
@@ -31,7 +32,7 @@ class ForceQuotedEntitiesSimpleUnitTests {
 	@Test
 	void testImplicitTableNameForceQuoted() {
 		BasicCassandraPersistentEntity<ImplicitTableNameForceQuoted> entity = new BasicCassandraPersistentEntity<>(
-				ClassTypeInformation.from(ImplicitTableNameForceQuoted.class));
+				TypeInformation.of(ImplicitTableNameForceQuoted.class));
 
 		assertThat(entity.getTableName().asCql(false))
 				.isEqualTo("\"" + ImplicitTableNameForceQuoted.class.getSimpleName() + "\"");
@@ -46,7 +47,7 @@ class ForceQuotedEntitiesSimpleUnitTests {
 	@Test
 	void testExplicitTableNameForceQuoted() {
 		BasicCassandraPersistentEntity<ExplicitTableNameForceQuoted> entity = new BasicCassandraPersistentEntity<>(
-				ClassTypeInformation.from(ExplicitTableNameForceQuoted.class));
+				TypeInformation.of(ExplicitTableNameForceQuoted.class));
 
 		assertThat(entity.getTableName().asCql(true)).isEqualTo("\"" + EXPLICIT_TABLE_NAME + "\"");
 		assertThat(entity.getTableName().asInternal()).isEqualTo(EXPLICIT_TABLE_NAME);
@@ -58,7 +59,7 @@ class ForceQuotedEntitiesSimpleUnitTests {
 	@Test
 	void testDefaultTableNameForceQuoted() {
 		BasicCassandraPersistentEntity<DefaultTableNameForceQuoted> entity = new BasicCassandraPersistentEntity<>(
-				ClassTypeInformation.from(DefaultTableNameForceQuoted.class));
+				TypeInformation.of(DefaultTableNameForceQuoted.class));
 
 		assertThat(entity.getTableName().asCql(true))
 				.isEqualTo(DefaultTableNameForceQuoted.class.getSimpleName().toLowerCase());

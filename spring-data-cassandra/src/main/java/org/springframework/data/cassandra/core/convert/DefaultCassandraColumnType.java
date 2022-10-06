@@ -18,7 +18,6 @@ package org.springframework.data.cassandra.core.convert;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.TypeInformation;
 
@@ -36,7 +35,7 @@ class DefaultCassandraColumnType extends DefaultColumnType implements CassandraC
 	private final Lazy<DataType> dataType;
 
 	DefaultCassandraColumnType(Class<?> type, DataType dataType, ColumnType... parameters) {
-		this(ClassTypeInformation.from(type), dataType, parameters);
+		this(TypeInformation.of(type), dataType, parameters);
 	}
 
 	DefaultCassandraColumnType(TypeInformation<?> typeInformation, Supplier<DataType> dataType,

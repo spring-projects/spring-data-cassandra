@@ -41,7 +41,6 @@ import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.context.MappingContext;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
@@ -196,7 +195,7 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 	private CassandraColumnType resolve(TypeInformation<?> typeInformation, FrozenIndicator frozen) {
 
 		return getCustomWriteTarget(typeInformation)
-			.map(it -> createCassandraTypeDescriptor(tryResolve(it), ClassTypeInformation.from(it)))
+				.map(it -> createCassandraTypeDescriptor(tryResolve(it), TypeInformation.of(it)))
 			.orElseGet(() -> typeInformation.getType().isEnum()
 				? ColumnType.create(String.class, DataTypes.TEXT)
 				: createCassandraTypeDescriptor(typeInformation, frozen));
@@ -279,7 +278,7 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 
 		if (value != null) {
 
-			ClassTypeInformation<?> typeInformation = ClassTypeInformation.from(value.getClass());
+			TypeInformation<?> typeInformation = TypeInformation.of(value.getClass());
 
 			return getCustomWriteTarget(typeInformation).map(it -> {
 				return (ColumnType) createCassandraTypeDescriptor(tryResolve(it), typeInformation);

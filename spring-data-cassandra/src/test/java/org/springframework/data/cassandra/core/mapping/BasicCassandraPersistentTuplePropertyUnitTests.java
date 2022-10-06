@@ -25,7 +25,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.data.mapping.model.Property;
-import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -56,12 +56,12 @@ class BasicCassandraPersistentTuplePropertyUnitTests {
 
 		Field field = ReflectionUtils.findField(type, fieldName);
 
-		return new BasicCassandraPersistentTupleProperty(Property.of(ClassTypeInformation.from(type), field),
+		return new BasicCassandraPersistentTupleProperty(Property.of(TypeInformation.of(type), field),
 				getEntity(type), CassandraSimpleTypeHolder.HOLDER);
 	}
 
 	private <T> BasicCassandraPersistentEntity<T> getEntity(Class<T> type) {
-		return new BasicCassandraPersistentTupleEntity<>(ClassTypeInformation.from(type));
+		return new BasicCassandraPersistentTupleEntity<>(TypeInformation.of(type));
 	}
 
 	@Tuple

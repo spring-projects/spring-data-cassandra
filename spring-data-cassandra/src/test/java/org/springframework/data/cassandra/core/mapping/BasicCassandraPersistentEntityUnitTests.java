@@ -34,7 +34,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.AssociationHandler;
-import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 
@@ -55,7 +55,7 @@ class BasicCassandraPersistentEntityUnitTests {
 	void subclassInheritsAtTableAnnotation() {
 
 		BasicCassandraPersistentEntity<Notification> entity = new BasicCassandraPersistentEntity<>(
-				ClassTypeInformation.from(Notification.class));
+				TypeInformation.of(Notification.class));
 
 		assertThat(entity.getTableName().asCql(true)).isEqualTo("messages");
 	}
@@ -64,7 +64,7 @@ class BasicCassandraPersistentEntityUnitTests {
 	void evaluatesSpELExpression() {
 
 		BasicCassandraPersistentEntity<Area> entity = new BasicCassandraPersistentEntity<>(
-				ClassTypeInformation.from(Area.class));
+				TypeInformation.of(Area.class));
 
 		entity.setApplicationContext(this.context);
 
@@ -81,7 +81,7 @@ class BasicCassandraPersistentEntityUnitTests {
 		when(this.context.containsBean("tableNameHolderThingy")).thenReturn(true);
 
 		BasicCassandraPersistentEntity<UserLine> entity = new BasicCassandraPersistentEntity<>(
-				ClassTypeInformation.from(UserLine.class));
+				TypeInformation.of(UserLine.class));
 		entity.setApplicationContext(context);
 
 		assertThat(entity.getTableName()).hasToString(bean.tableName);
@@ -91,7 +91,7 @@ class BasicCassandraPersistentEntityUnitTests {
 	void setForceQuoteCallsSetTableName() {
 
 		BasicCassandraPersistentEntity<Message> entitySpy = spy(
-				new BasicCassandraPersistentEntity<>(ClassTypeInformation.from(Message.class)));
+				new BasicCassandraPersistentEntity<>(TypeInformation.of(Message.class)));
 
 		DirectFieldAccessor directFieldAccessor = new DirectFieldAccessor(entitySpy);
 
@@ -110,7 +110,7 @@ class BasicCassandraPersistentEntityUnitTests {
 	void setForceQuoteDoesNothing() {
 
 		BasicCassandraPersistentEntity<Message> entitySpy = spy(
-				new BasicCassandraPersistentEntity<>(ClassTypeInformation.from(Message.class)));
+				new BasicCassandraPersistentEntity<>(TypeInformation.of(Message.class)));
 
 		DirectFieldAccessor directFieldAccessor = new DirectFieldAccessor(entitySpy);
 
@@ -126,7 +126,7 @@ class BasicCassandraPersistentEntityUnitTests {
 	void isUserDefinedTypeShouldReturnFalse() {
 
 		BasicCassandraPersistentEntity<UserLine> entity = new BasicCassandraPersistentEntity<>(
-				ClassTypeInformation.from(UserLine.class));
+				TypeInformation.of(UserLine.class));
 
 		assertThat(entity.isUserDefinedType()).isFalse();
 	}
@@ -135,7 +135,7 @@ class BasicCassandraPersistentEntityUnitTests {
 	void shouldConsiderComposedTableAnnotation() {
 
 		BasicCassandraPersistentEntity<TableWithComposedAnnotation> entity = new BasicCassandraPersistentEntity<>(
-				ClassTypeInformation.from(TableWithComposedAnnotation.class));
+				TypeInformation.of(TableWithComposedAnnotation.class));
 
 		assertThat(entity.getTableName()).isEqualTo(CqlIdentifier.fromCql("mytable"));
 	}
@@ -144,7 +144,7 @@ class BasicCassandraPersistentEntityUnitTests {
 	void shouldConsiderComposedPrimaryKeyClassAnnotation() {
 
 		BasicCassandraPersistentEntity<PrimaryKeyClassWithComposedAnnotation> entity = new BasicCassandraPersistentEntity<>(
-				ClassTypeInformation.from(PrimaryKeyClassWithComposedAnnotation.class));
+				TypeInformation.of(PrimaryKeyClassWithComposedAnnotation.class));
 
 		assertThat(entity.isCompositePrimaryKey()).isTrue();
 	}
@@ -154,7 +154,7 @@ class BasicCassandraPersistentEntityUnitTests {
 	void shouldRejectAssociationCreation() {
 
 		BasicCassandraPersistentEntity<PrimaryKeyClassWithComposedAnnotation> entity = new BasicCassandraPersistentEntity<>(
-				ClassTypeInformation.from(PrimaryKeyClassWithComposedAnnotation.class));
+				TypeInformation.of(PrimaryKeyClassWithComposedAnnotation.class));
 
 		assertThatThrownBy(() -> entity.addAssociation(mock(Association.class)))
 				.isInstanceOf(UnsupportedCassandraOperationException.class);
@@ -165,7 +165,7 @@ class BasicCassandraPersistentEntityUnitTests {
 	void shouldNoOpOnDoWithAssociations() {
 
 		BasicCassandraPersistentEntity<PrimaryKeyClassWithComposedAnnotation> entity = new BasicCassandraPersistentEntity<>(
-				ClassTypeInformation.from(PrimaryKeyClassWithComposedAnnotation.class));
+				TypeInformation.of(PrimaryKeyClassWithComposedAnnotation.class));
 
 		AssociationHandler<CassandraPersistentProperty> handlerMock = mock(AssociationHandler.class);
 		entity.doWithAssociations(handlerMock);
