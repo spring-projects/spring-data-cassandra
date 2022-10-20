@@ -92,7 +92,7 @@ public class CqlSessionTracingTests extends IntegrationTestsSupport {
 		ObservationRegistry observationRegistry = ObservationRegistry.create();
 		observationRegistry.observationConfig().observationHandler(new DefaultMeterObservationHandler(meterRegistry));
 
-		CqlSessionObservationConvention observationContention = new DefaultCassandraObservationContention();
+		CqlSessionObservationConvention observationContention = new DefaultCassandraObservationConvention();
 
 		SimpleTracer tracer = new SimpleTracer();
 		observationRegistry.observationConfig().observationHandler(new CqlSessionTracingObservationHandler(tracer));
@@ -109,7 +109,7 @@ public class CqlSessionTracingTests extends IntegrationTestsSupport {
 		ObservationRegistry observationRegistry = ObservationRegistry.create();
 		observationRegistry.observationConfig().observationHandler(new DefaultMeterObservationHandler(meterRegistry));
 
-		CqlSessionObservationConvention observationContention = new DefaultCassandraObservationContention();
+		CqlSessionObservationConvention observationContention = new DefaultCassandraObservationConvention();
 		SimpleTracer tracer = new SimpleTracer();
 		observationRegistry.observationConfig().observationHandler(new CqlSessionTracingObservationHandler(tracer));
 
@@ -125,7 +125,7 @@ public class CqlSessionTracingTests extends IntegrationTestsSupport {
 
 		MeterRegistryAssert.then(meterRegistry).hasTimerWithNameAndTags(CASSANDRA_QUERY_OBSERVATION.getName(), KeyValues.of( //
 				LowCardinalityKeyNames.SESSION_NAME.withValue("s5"), //
-				LowCardinalityKeyNames.KEYSPACE_NAME.withValue("unknown"), //
+				LowCardinalityKeyNames.KEYSPACE_NAME.withValue("system"), //
 				KeyValue.of("error", "none") //
 		));
 
@@ -140,7 +140,7 @@ public class CqlSessionTracingTests extends IntegrationTestsSupport {
 				.hasRemoteServiceNameEqualTo("cassandra-s5") //
 				.hasNameEqualTo(CASSANDRA_QUERY_OBSERVATION.getContextualName()) //
 				.hasTag(LowCardinalityKeyNames.SESSION_NAME, "s5") //
-				.hasTag(LowCardinalityKeyNames.KEYSPACE_NAME, "unknown") //
+				.hasTag(LowCardinalityKeyNames.KEYSPACE_NAME, "system") //
 				.hasTag(HighCardinalityKeyNames.CQL_TAG, CREATE_KEYSPACE) //
 				.hasIpThatIsBlank() //
 				.hasPortEqualTo(0) //

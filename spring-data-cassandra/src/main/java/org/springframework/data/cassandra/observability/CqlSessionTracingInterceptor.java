@@ -102,7 +102,7 @@ final class CqlSessionTracingInterceptor implements MethodInterceptor {
 			Function<Statement<?>, Object> statementExecutor) {
 
 		if (this.observationRegistry.getCurrentObservation() == null) {
-			return null;
+			return statementExecutor.apply(statement);
 		}
 
 		Observation observation = childObservation(statement, methodName, this.delegateSession);
@@ -111,14 +111,7 @@ final class CqlSessionTracingInterceptor implements MethodInterceptor {
 			log.debug("Created a new child observation before query [" + observation + "]");
 		}
 
-		try (Observation.Scope scope = observation.openScope()) {
-			return statementExecutor.apply(statement);
-		} catch (Exception e) {
-			observation.error(e);
-			throw e;
-		} finally {
-			observation.stop();
-		}
+		return observation.observe(() -> statementExecutor.apply(statement));
 	}
 
 	/**
@@ -154,7 +147,7 @@ final class CqlSessionTracingInterceptor implements MethodInterceptor {
 				.observation(this.observationRegistry, () -> observationContext) //
 				.contextualName(CassandraObservation.CASSANDRA_QUERY_OBSERVATION.getContextualName()) //
 				.highCardinalityKeyValues(this.observationConvention.getHighCardinalityKeyValues(observationContext)) //
-				.lowCardinalityKeyValues(this.observationConvention.getLowCardinalityKeyValues(observationContext)) //
-				.start();
+				.lowCardinalityKeyValues(this.observationConvention.getLowCardinalityKeyValues(observationContext));
+		// .start();
 	}
 }

@@ -8,3 +8,77 @@ include::{root-target}_conventions.adoc[]
 include::{root-target}_metrics.adoc[]
 
 include::{root-target}_spans.adoc[]
+
+[[observability.registration]]
+== Observability Registration
+
+Spring Data Cassandra is not yet supported in Spring Boot to automatically enable observability.
+Don't worry, we've got you covered!
+Simply add the `@EnableCassandraObservability` annotation to your Spring Boot application, and you'll be all set.
+
+.Activating observability for your Spring Boot application
+====
+[source,java]
+----
+@SpringBootApplication
+@EnableCassandraObservability // <1>
+public class SpringDataCassandraObservabilityApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(SpringDataCassandraObservabilityApplication.class, args);
+	}
+}
+----
+<1> This annotation will activate the bits needed start wrapping CQL calls and register them with your tracer of choice.
+====
+
+By the way, Spring Boot DOES have autoconfigured hooks into various parts of the system.
+For example, there is an observation filter that Spring Boot will apply to Spring MVC ensuring all your calls are wrapped properly.
+And if anywhere in the midst of that web call, you invoke Spring Data Cassandra (either through `CqlTemplate` or a custom repository), it will get captured properly.
+
+Something that is NOT covered are situations where your code runs independently.
+For example, if you have some block that is run during startup inside a `CommandLineRunner`, there is no way for Spring Boot to know that this should observed.
+Check out the code block below:
+
+.Loading data for a sample application
+====
+[source,java]
+----
+@Bean
+CommandLineRunner initData(EmployeeRepository repository) {
+    return args -> {
+        repository.save(new Employee("1", "Frodo", "ring bearer"));
+        repository.save(new Employee("2", "Bilbo", "burglar"));
+    };
+}
+----
+This tactic is used all the time in demos. These calls to a Spring Data Cassandra repository will NOT be observed.
+====
+
+If you DO want to observe such a code block, you must wrap it yourself, as shown below:
+
+.Observing the loading of data in a sample application
+====
+[source,java]
+----
+@Bean
+CommandLineRunner initData(EmployeeRepository repository, ObservationRegistry registry) { // <1>
+    return args -> {
+        Observation.createNotStarted("init-database", registry).observe(() -> { // <2>
+            repository.save(new Employee("1", "Frodo", "ring bearer"));
+            repository.save(new Employee("2", "Bilbo", "burglar"));
+        });
+    };
+}
+----
+<1> Your `CommandLineRunner` requires access to the app context's `ObservationRegistry`
+<2> You need to create your own `Observation` using the `createNotStarted()` method. Give it any contextual name you like, but be sure to include the `registry`.
+====
+
+The `observe()` method takes a Java 8 lambda function which is invoked inside a common Micrometer pattern of:
+
+* Starting the observation.
+* Invoking your callback.
+* Properly ending the observation by either reporting an error if it fails or stopping the observation if it succeeds.
+
+This will allow you to observe chunks of code that may fall outside of currently autoconfigured operations.

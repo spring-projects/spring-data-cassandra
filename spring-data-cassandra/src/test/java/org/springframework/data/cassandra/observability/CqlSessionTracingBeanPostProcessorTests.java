@@ -18,7 +18,13 @@ package org.springframework.data.cassandra.observability;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
+import io.micrometer.observation.ObservationHandler;
 import io.micrometer.observation.ObservationRegistry;
+import io.micrometer.tracing.Tracer;
+import io.micrometer.tracing.test.simple.SimpleTracer;
+
+import java.lang.reflect.Method;
+import java.util.Collection;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,6 +35,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.util.ReflectionUtils;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 
@@ -44,6 +51,8 @@ import com.datastax.oss.driver.api.core.CqlSession;
 public class CqlSessionTracingBeanPostProcessorTests {
 
 	@Autowired CqlSession session;
+	@Autowired ObservationRegistry registry;
+	@Autowired CqlSessionTracingObservationHandler handler;
 
 	@Test
 	void injectedCqlSessionShouldBeWrapped() throws Exception {
@@ -58,7 +67,22 @@ public class CqlSessionTracingBeanPostProcessorTests {
 		assertThat(advised.getTargetSource().getTarget()).isEqualTo(TestConfig.originalSession);
 	}
 
+	@Test
+	void injectedObservationHandlerIsRegisteredWithRegistry() {
+
+		ObservationRegistry.ObservationConfig config = registry.observationConfig();
+
+		Method getObservationHandlers = ReflectionUtils.findMethod(ObservationRegistry.ObservationConfig.class,
+				"getObservationHandlers");
+		ReflectionUtils.makeAccessible(getObservationHandlers);
+		Collection<ObservationHandler<?>> handlers = (Collection<ObservationHandler<?>>) ReflectionUtils
+				.invokeMethod(getObservationHandlers, config);
+
+		assertThat(handlers).contains(handler);
+	}
+
 	@Configuration
+	@EnableCassandraObservability
 	static class TestConfig {
 
 		static CqlSession originalSession = mock(CqlSession.class);
@@ -74,14 +98,8 @@ public class CqlSessionTracingBeanPostProcessorTests {
 		}
 
 		@Bean
-		CqlSessionObservationConvention observationConvention() {
-			return new DefaultCassandraObservationContention();
-		}
-
-		@Bean
-		CqlSessionTracingBeanPostProcessor traceCqlSessionBeanPostProcessor(ObservationRegistry observationRegistry,
-				CqlSessionObservationConvention tagsProvider) {
-			return new CqlSessionTracingBeanPostProcessor(observationRegistry, tagsProvider);
+		Tracer tracer() {
+			return new SimpleTracer();
 		}
 	}
 }

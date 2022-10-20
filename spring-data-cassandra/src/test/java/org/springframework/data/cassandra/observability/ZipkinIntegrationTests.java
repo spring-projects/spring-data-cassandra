@@ -27,7 +27,6 @@ import io.micrometer.tracing.test.reporter.BuildingBlocks;
 import java.util.Deque;
 import java.util.function.BiConsumer;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -46,7 +45,6 @@ import com.datastax.oss.driver.api.core.CqlSession;
  * @author Greg Turnquist
  * @since 4.0.0
  */
-@Disabled("Run this manually to visually test spans in Zipkin")
 @ExtendWith({ SpringExtension.class, CassandraExtension.class })
 @TestKeyspaceName
 public class ZipkinIntegrationTests extends SampleTestRunner {
@@ -91,6 +89,9 @@ public class ZipkinIntegrationTests extends SampleTestRunner {
 
 		return (tracer, meterRegistry) -> {
 
+			OBSERVATION_REGISTRY.observationConfig()
+					.observationHandler(new CqlSessionTracingObservationHandler(tracer.getTracer()));
+
 			session.execute("DROP KEYSPACE IF EXISTS ConfigTest");
 			session.execute("CREATE KEYSPACE ConfigTest " + "WITH "
 					+ "REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };");
@@ -117,13 +118,13 @@ public class ZipkinIntegrationTests extends SampleTestRunner {
 
 		@Bean
 		CqlSessionObservationConvention observationContention() {
-			return new DefaultCassandraObservationContention();
+			return new DefaultCassandraObservationConvention();
 		}
 
 		@Bean
 		CqlSessionTracingBeanPostProcessor traceCqlSessionBeanPostProcessor(ObservationRegistry observationRegistry,
-				CqlSessionObservationConvention tagsProvider) {
-			return new CqlSessionTracingBeanPostProcessor(observationRegistry, tagsProvider);
+				CqlSessionObservationConvention observationConvention) {
+			return new CqlSessionTracingBeanPostProcessor(observationRegistry, observationConvention);
 		}
 	}
 }
