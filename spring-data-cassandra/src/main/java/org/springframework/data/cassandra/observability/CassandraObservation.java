@@ -19,7 +19,7 @@ import io.micrometer.common.docs.KeyName;
 import io.micrometer.observation.docs.ObservationDocumentation;
 
 /**
- * Cassandra-based implementation of {@link DocumentedObservation}.
+ * Cassandra-based implementation of {@link ObservationDocumentation}.
  *
  * @author Mark Paluch
  * @author Marcin Grzejszczak

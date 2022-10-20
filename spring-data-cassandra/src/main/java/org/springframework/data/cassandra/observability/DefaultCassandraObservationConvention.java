@@ -32,7 +32,7 @@ import com.datastax.oss.driver.api.core.cql.*;
  * @author Greg Turnquist
  * @since 4.0.0
  */
-public class DefaultCassandraObservationContention implements CqlSessionObservationConvention {
+public class DefaultCassandraObservationConvention implements CqlSessionObservationConvention {
 
 	@Override
 	public KeyValues getLowCardinalityKeyValues(CqlSessionContext context) {
@@ -40,8 +40,8 @@ public class DefaultCassandraObservationContention implements CqlSessionObservat
 		KeyValues keyValues = KeyValues.of(
 				LowCardinalityKeyNames.SESSION_NAME
 						.withValue(Optional.ofNullable(context.getDelegateSession().getName()).orElse("unknown")),
-				LowCardinalityKeyNames.KEYSPACE_NAME.withValue(
-						Optional.ofNullable(context.getStatement().getKeyspace()).map(CqlIdentifier::asInternal).orElse("unknown")),
+				LowCardinalityKeyNames.KEYSPACE_NAME
+						.withValue(context.getDelegateSession().getKeyspace().map(CqlIdentifier::asInternal).orElse("unknown")),
 				LowCardinalityKeyNames.METHOD_NAME.withValue(context.getMethodName()));
 
 		if (context.getStatement().getNode() != null) {
