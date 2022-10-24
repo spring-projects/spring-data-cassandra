@@ -15,8 +15,11 @@
  */
 package org.springframework.data.cassandra.observability;
 
+import org.springframework.lang.Nullable;
+
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.Statement;
+import com.datastax.oss.driver.api.core.metadata.Node;
 
 import io.micrometer.observation.Observation;
 import io.micrometer.observation.transport.Kind;
@@ -37,6 +40,8 @@ public class CassandraObservationContext extends SenderContext<Object> {
 	private final String methodName;
 	private final String sessionName;
 	private final String keyspaceName;
+
+	private volatile @Nullable Node node;
 
 	public CassandraObservationContext(Statement<?> statement, String remoteServiceName, boolean prepare,
 			String methodName, String sessionName, String keyspaceName) {
@@ -70,5 +75,14 @@ public class CassandraObservationContext extends SenderContext<Object> {
 
 	public String getKeyspaceName() {
 		return keyspaceName;
+	}
+
+	public void setNode(Node node) {
+		this.node = node;
+	}
+
+	@Nullable
+	public Node getNode() {
+		return node;
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,22 @@
  */
 package org.springframework.data.cassandra.observability;
 
+import java.net.InetSocketAddress;
 import java.util.StringJoiner;
 
 import org.springframework.data.cassandra.observability.CassandraObservation.HighCardinalityKeyNames;
 import org.springframework.data.cassandra.observability.CassandraObservation.LowCardinalityKeyNames;
+import org.springframework.lang.Nullable;
 import org.springframework.util.StringUtils;
 
+import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.cql.BatchStatement;
 import com.datastax.oss.driver.api.core.cql.BatchableStatement;
 import com.datastax.oss.driver.api.core.cql.BoundStatement;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.Statement;
+import com.datastax.oss.driver.api.core.metadata.EndPoint;
+import com.datastax.oss.driver.api.core.metadata.Node;
 
 import io.micrometer.common.KeyValues;
 
@@ -41,13 +46,36 @@ class DefaultCassandraObservationConvention implements CassandraObservationConve
 	@Override
 	public KeyValues getLowCardinalityKeyValues(CassandraObservationContext context) {
 
-		KeyValues keyValues = KeyValues.of(LowCardinalityKeyNames.SESSION_NAME.withValue(context.getSessionName()),
-				LowCardinalityKeyNames.KEYSPACE_NAME.withValue(context.getKeyspaceName()),
-				LowCardinalityKeyNames.METHOD_NAME.withValue(context.getMethodName()));
+		String dbOperation = context.isPrepare() ? "PREPARE" : getOperationName(getCql(context.getStatement()), "");
 
-		if (context.getStatement().getNode() != null) {
-			keyValues = keyValues.and(
-					LowCardinalityKeyNames.URL.withValue(context.getStatement().getNode().getEndPoint().resolve().toString()));
+		KeyValues keyValues = KeyValues.of(LowCardinalityKeyNames.DATABASE_SYSTEM.withValue("cassandra"),
+				LowCardinalityKeyNames.KEYSPACE_NAME.withValue(context.getKeyspaceName()),
+				LowCardinalityKeyNames.SESSION_NAME.withValue(context.getSessionName()),
+				LowCardinalityKeyNames.METHOD_NAME.withValue(context.getMethodName()),
+				LowCardinalityKeyNames.DB_OPERATION.withValue(dbOperation));
+
+		Node node = context.getNode();
+
+		if (node == null) {
+			node = context.getStatement().getNode();
+		}
+
+		if (node != null) {
+
+			EndPoint endPoint = node.getEndPoint();
+
+			keyValues = keyValues.and(LowCardinalityKeyNames.COORDINATOR.withValue("" + node.getHostId()),
+					LowCardinalityKeyNames.COORDINATOR_DC.withValue("" + node.getDatacenter()));
+
+			keyValues.and(LowCardinalityKeyNames.NET_PEER_NAME.withValue(endPoint.toString()));
+			InetSocketAddress socketAddress = tryGetSocketAddress(endPoint);
+
+			if (socketAddress != null) {
+
+				keyValues = keyValues.and(LowCardinalityKeyNames.NET_TRANSPORT.withValue("IP.TCP"),
+						LowCardinalityKeyNames.NET_SOCK_PEER_ADDR.withValue(socketAddress.getHostString()),
+						LowCardinalityKeyNames.NET_SOCK_PEER_PORT.withValue("" + socketAddress.getPort()));
+			}
 		}
 
 		return keyValues;
@@ -55,12 +83,42 @@ class DefaultCassandraObservationConvention implements CassandraObservationConve
 
 	@Override
 	public KeyValues getHighCardinalityKeyValues(CassandraObservationContext context) {
-		return KeyValues.of(HighCardinalityKeyNames.CQL_TAG.withValue(getCql(context.getStatement())));
+
+		Statement<?> statement = context.getStatement();
+
+		KeyValues keyValues = KeyValues.of(HighCardinalityKeyNames.DB_STATEMENT.withValue(getCql(statement)),
+				HighCardinalityKeyNames.PAGE_SIZE.withValue("" + statement.getPageSize()));
+
+		Boolean idempotent = statement.isIdempotent();
+		if (idempotent != null) {
+			keyValues = keyValues
+					.and(HighCardinalityKeyNames.IDEMPOTENCE.withValue(idempotent ? "idempotent" : "non-idempotent"));
+		}
+
+		ConsistencyLevel consistencyLevel = statement.getConsistencyLevel();
+		if (consistencyLevel != null) {
+			keyValues = keyValues.and(HighCardinalityKeyNames.CONSISTENCY_LEVEL.withValue("" + consistencyLevel.name()));
+		}
+
+		return keyValues;
+	}
+
+	@Nullable
+	private InetSocketAddress tryGetSocketAddress(EndPoint endPoint) {
+
+		try {
+			if (endPoint.resolve()instanceof InetSocketAddress inet) {
+				return inet;
+			}
+
+		} catch (RuntimeException e) {}
+
+		return null;
 	}
 
 	@Override
 	public String getContextualName(CassandraObservationContext context) {
-		return (context.isPrepare() ? "PREPARE: " : "") + getSpanName(getCql(context.getStatement()), "");
+		return (context.isPrepare() ? "PREPARE: " : "") + getOperationName(getCql(context.getStatement()), "");
 	}
 
 	/**
@@ -116,7 +174,7 @@ class DefaultCassandraObservationConvention implements CassandraObservationConve
 	 * @param defaultName if there's no query
 	 * @return span name
 	 */
-	public String getSpanName(String cql, String defaultName) {
+	public String getOperationName(String cql, String defaultName) {
 
 		if (StringUtils.hasText(cql) && cql.indexOf(' ') > -1) {
 			return cql.substring(0, cql.indexOf(' '));

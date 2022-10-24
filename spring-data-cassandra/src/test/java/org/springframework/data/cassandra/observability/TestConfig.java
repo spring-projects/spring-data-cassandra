@@ -16,6 +16,8 @@
 package org.springframework.data.cassandra.observability;
 
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.cassandra.ReactiveSession;
 import org.springframework.data.cassandra.config.SessionBuilderConfigurer;
 import org.springframework.data.cassandra.core.cql.session.DefaultBridgedReactiveSession;
@@ -60,6 +62,12 @@ class TestConfig extends AbstractTestJavaConfig {
 	@Override
 	protected SessionBuilderConfigurer getSessionBuilderConfigurer() {
 		return sessionBuilder -> sessionBuilder.addRequestTracker(ObservationRequestTracker.INSTANCE);
+	}
+
+	@Nullable
+	@Override
+	protected Resource getDriverConfigurationResource() {
+		return new ClassPathResource("application.conf");
 	}
 
 	@Bean

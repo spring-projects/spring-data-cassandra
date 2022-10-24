@@ -40,11 +40,6 @@ enum CassandraObservation implements ObservationDocumentation {
 		}
 
 		@Override
-		public String getContextualName() {
-			return "query";
-		}
-
-		@Override
 		public KeyName[] getLowCardinalityKeyNames() {
 			return LowCardinalityKeyNames.values();
 		}
@@ -54,13 +49,69 @@ enum CassandraObservation implements ObservationDocumentation {
 			return HighCardinalityKeyNames.values();
 		}
 
-		@Override
-		public String getPrefix() {
-			return "spring.data.cassandra.";
-		}
 	};
 
 	enum LowCardinalityKeyNames implements KeyName {
+
+		/**
+		 * Database system.
+		 */
+		DATABASE_SYSTEM {
+			@Override
+			public String asString() {
+				return "db.system";
+			}
+		},
+
+		/**
+		 * Network transport.
+		 */
+		NET_TRANSPORT {
+			@Override
+			public String asString() {
+				return "net.transport";
+			}
+		},
+
+		/**
+		 * Name of the database host.
+		 */
+		NET_PEER_NAME {
+			@Override
+			public String asString() {
+				return "net.peer.name";
+			}
+		},
+
+		/**
+		 * Logical remote port number.
+		 */
+		NET_PEER_PORT {
+			@Override
+			public String asString() {
+				return "net.peer.port";
+			}
+		},
+
+		/**
+		 * Cassandra peer address.
+		 */
+		NET_SOCK_PEER_ADDR {
+			@Override
+			public String asString() {
+				return "net.sock.peer.addr";
+			}
+		},
+
+		/**
+		 * Cassandra peer port.
+		 */
+		NET_SOCK_PEER_PORT {
+			@Override
+			public String asString() {
+				return "net.sock.peer.port";
+			}
+		},
 
 		/**
 		 * Name of the Cassandra keyspace.
@@ -68,7 +119,7 @@ enum CassandraObservation implements ObservationDocumentation {
 		KEYSPACE_NAME {
 			@Override
 			public String asString() {
-				return "spring.data.cassandra.keyspace";
+				return "db.name";
 			}
 		},
 
@@ -93,15 +144,27 @@ enum CassandraObservation implements ObservationDocumentation {
 		},
 
 		/**
-		 * Cassandra URL
+		 * The database operation.
 		 */
-		URL {
+		DB_OPERATION {
 			@Override
 			public String asString() {
-				return "spring.data.cassandra.url";
+				return "db.operation";
 			}
 		},
 
+		COORDINATOR {
+			@Override
+			public String asString() {
+				return "db.cassandra.coordinator.id";
+			}
+		},
+		COORDINATOR_DC {
+			@Override
+			public String asString() {
+				return "db.cassandra.coordinator.dc";
+			}
+		}
 	}
 
 	enum HighCardinalityKeyNames implements KeyName {
@@ -109,10 +172,29 @@ enum CassandraObservation implements ObservationDocumentation {
 		/**
 		 * A key-value containing Cassandra CQL.
 		 */
-		CQL_TAG {
+		DB_STATEMENT {
 			@Override
 			public String asString() {
-				return "spring.data.cassandra.cql";
+				return "db.statement";
+			}
+		},
+
+		PAGE_SIZE {
+			@Override
+			public String asString() {
+				return "db.cassandra.page_size";
+			}
+		},
+		CONSISTENCY_LEVEL {
+			@Override
+			public String asString() {
+				return "db.cassandra.consistency_level";
+			}
+		},
+		IDEMPOTENCE {
+			@Override
+			public String asString() {
+				return "db.cassandra.idempotence";
 			}
 		},
 

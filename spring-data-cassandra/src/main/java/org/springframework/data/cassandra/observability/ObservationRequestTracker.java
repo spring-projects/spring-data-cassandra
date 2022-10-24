@@ -15,9 +15,6 @@
  */
 package org.springframework.data.cassandra.observability;
 
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.data.cassandra.observability.CassandraObservation.Events;
@@ -89,11 +86,12 @@ public enum ObservationRequestTracker implements RequestTracker {
 
 			Observation observation = ((CassandraObservationSupplier) request).getObservation();
 
-			observation.event(Event.of(Events.NODE_SUCCESS.getValue()));
+			((CassandraObservationContext) observation.getContext()).setNode(node);
+
 			observation.highCardinalityKeyValue(
 					String.format(HighCardinalityKeyNames.NODE_ERROR_TAG.asString(), node.getEndPoint()), error.toString());
+			observation.event(Event.of(Events.NODE_ERROR.getValue()));
 
-			tryAddingRemoteIpAndPort(node, observation);
 			if (log.isDebugEnabled()) {
 				log.debug("Marking node error for [" + observation + "]");
 			}
@@ -108,8 +106,9 @@ public enum ObservationRequestTracker implements RequestTracker {
 
 			Observation observation = ((CassandraObservationSupplier) request).getObservation();
 
+			((CassandraObservationContext) observation.getContext()).setNode(node);
+
 			observation.event(Event.of(Events.NODE_SUCCESS.getValue()));
-			tryAddingRemoteIpAndPort(node, observation);
 
 			if (log.isDebugEnabled()) {
 				log.debug("Marking node success for [" + observation + "]");
@@ -120,26 +119,6 @@ public enum ObservationRequestTracker implements RequestTracker {
 	@Override
 	public void close() throws Exception {
 
-	}
-
-	private void tryAddingRemoteIpAndPort(Node node, Observation observation) {
-		try {
-			SocketAddress socketAddress = node.getEndPoint().resolve();
-			String host;
-			int port;
-			if (socketAddress instanceof InetSocketAddress) {
-				InetSocketAddress inetSocketAddress = (InetSocketAddress) socketAddress;
-				host = inetSocketAddress.getHostString();
-				port = inetSocketAddress.getPort();
-			} else {
-				host = socketAddress.toString();
-				port = 0;
-			}
-
-			// TODO observation.remoteIpAndPort(host, port);
-		} catch (Exception e) {
-			log.debug("Exception occurred while trying to set ip and port", e);
-		}
 	}
 
 }

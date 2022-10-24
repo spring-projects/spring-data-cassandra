@@ -29,6 +29,7 @@ import com.datastax.oss.driver.api.core.CqlSession;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.micrometer.observation.ObservationRegistry;
+import io.micrometer.tracing.exporter.FinishedSpan;
 import io.micrometer.tracing.test.SampleTestRunner;
 
 /**
@@ -78,6 +79,13 @@ public class ImperativeIntegrationTests extends SampleTestRunner {
 			System.out.println(((SimpleMeterRegistry) meterRegistry).getMetersAsString());
 
 			assertThat(tracer.getFinishedSpans()).hasSize(6);
+
+			for (FinishedSpan finishedSpan : tracer.getFinishedSpans()) {
+
+				assertThat(finishedSpan.getTags()).containsEntry("db.system", "cassandra");
+				assertThat(finishedSpan.getTags()).containsKeys("db.operation", "db.statement",
+						"spring.data.cassandra.methodName", "spring.data.cassandra.sessionName");
+			}
 		};
 	}
 }
