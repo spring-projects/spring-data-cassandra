@@ -1,84 +1,60 @@
-:root-target: ../../../../../target/
+[[cassandra.observability]]
+== Observability
 
-[[observability]]
-= Observability metadata
+Getting insights from an application component about its operations, timing and relation to application code is crucial to understand latency.
+Spring Data Cassandra ships with a Micrometer instrumentation through the Cassandra driver to collect observations during Cassandra interaction.
+Once the integration is set up, Micrometer will create meters and spans (for distributed tracing) for each Cassandra statement.
 
-include::{root-target}_conventions.adoc[]
+To enable the instrumentation, apply the following configuration to your application:
 
-include::{root-target}_metrics.adoc[]
-
-include::{root-target}_spans.adoc[]
-
-[[observability.registration]]
-== Observability Registration
-
-Spring Data Cassandra is not yet supported in Spring Boot to automatically enable observability.
-Don't worry, we've got you covered!
-Simply add the `@EnableCassandraObservability` annotation to your Spring Boot application, and you'll be all set.
-
-.Activating observability for your Spring Boot application
 ====
 [source,java]
 ----
-@SpringBootApplication
-@EnableCassandraObservability // <1>
-public class SpringDataCassandraObservabilityApplication {
+@Configuration
+class ObservabilityConfiguration {
 
-	public static void main(String[] args) {
-		SpringApplication.run(SpringDataCassandraObservabilityApplication.class, args);
-	}
+  @Bean
+  public ObservationBeanPostProcessor observationBeanPostProcessor(ObservationRegistry observationRegistry) {
+    return new ObservationBeanPostProcessor(observationRegistry);                                           <1>
+  }
+
+  @Bean
+  public SessionBuilderConfigurer getSessionBuilderConfigurer() {
+    return sessionBuilder -> sessionBuilder.addRequestTracker(ObservationRequestTracker.INSTANCE);          <2>
+  }
+
+  class ObservationBeanPostProcessor implements BeanPostProcessor {
+
+    public final ObservationRegistry observationRegistry;
+
+    public ObservationBeanPostProcessor(ObservationRegistry observationRegistry) {
+      this.observationRegistry = observationRegistry;
+    }
+
+    @Override
+    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+
+      if (bean instanceof CqlSession) {
+        return ObservableCqlSessionFactory.wrap((CqlSession) bean, observationRegistry);
+      }
+
+      if (bean instanceof ReactiveSession) {
+        return ObservableReactiveSessionFactory.wrap((ReactiveSession) bean, observationRegistry);
+      }
+
+      return BeanPostProcessor.super.postProcessAfterInitialization(bean, beanName);
+    }
+  }
 }
 ----
-<1> This annotation will activate the bits needed start wrapping CQL calls and register them with your tracer of choice.
+<1> Wraps all CQL session objects (imperative/reactive Session API) to observe Cassandra statement execution.
+<2> Integrate with the Cassandra driver to obtain success/error callbacks.
 ====
 
-By the way, Spring Boot DOES have autoconfigured hooks into various parts of the system.
-For example, there is an observation filter that Spring Boot will apply to Spring MVC ensuring all your calls are wrapped properly.
-And if anywhere in the midst of that web call, you invoke Spring Data Cassandra (either through `CqlTemplate` or a custom repository), it will get captured properly.
+include::../../../../target/_conventions.adoc[]
 
-Something that is NOT covered are situations where your code runs independently.
-For example, if you have some block that is run during startup inside a `CommandLineRunner`, there is no way for Spring Boot to know that this should observed.
-Check out the code block below:
+include::../../../../target/_metrics.adoc[]
 
-.Loading data for a sample application
-====
-[source,java]
-----
-@Bean
-CommandLineRunner initData(EmployeeRepository repository) {
-    return args -> {
-        repository.save(new Employee("1", "Frodo", "ring bearer"));
-        repository.save(new Employee("2", "Bilbo", "burglar"));
-    };
-}
-----
-This tactic is used all the time in demos. These calls to a Spring Data Cassandra repository will NOT be observed.
-====
+include::../../../../target/_spans.adoc[]
 
-If you DO want to observe such a code block, you must wrap it yourself, as shown below:
-
-.Observing the loading of data in a sample application
-====
-[source,java]
-----
-@Bean
-CommandLineRunner initData(EmployeeRepository repository, ObservationRegistry registry) { // <1>
-    return args -> {
-        Observation.createNotStarted("init-database", registry).observe(() -> { // <2>
-            repository.save(new Employee("1", "Frodo", "ring bearer"));
-            repository.save(new Employee("2", "Bilbo", "burglar"));
-        });
-    };
-}
-----
-<1> Your `CommandLineRunner` requires access to the app context's `ObservationRegistry`
-<2> You need to create your own `Observation` using the `createNotStarted()` method. Give it any contextual name you like, but be sure to include the `registry`.
-====
-
-The `observe()` method takes a Java 8 lambda function which is invoked inside a common Micrometer pattern of:
-
-* Starting the observation.
-* Invoking your callback.
-* Properly ending the observation by either reporting an error if it fails or stopping the observation if it succeeds.
-
-This will allow you to observe chunks of code that may fall outside of currently autoconfigured operations.
+See also https://opentelemetry.io/docs/reference/specification/trace/semantic_conventions/database/#Cassandra[OpenTelemetry Semantic Conventions] for further reference.

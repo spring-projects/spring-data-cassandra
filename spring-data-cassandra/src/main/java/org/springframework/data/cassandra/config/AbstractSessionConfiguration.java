@@ -256,13 +256,14 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 	}
 
 	/**
-	 * Returns the list of CQL scripts to be run on startup after {@link #getKeyspaceCreations() Keyspace creations}
-	 * and after initialization of the {@literal System} Keyspace.
+	 * Returns the list of CQL scripts to be run on startup after {@link #getKeyspaceCreations() Keyspace creations} and
+	 * after initialization of the {@literal System} Keyspace. return super.getSessionBuilderConfigurer();
 	 *
-	 * @return the list of CQL scripts to be run on startup; may be {@link Collections#emptyList() empty}
-	 * but never {@literal null}.
+	 * @return the list of CQL scripts to be run on startup; may be {@link Collections#emptyList() empty} but never
+	 *         {@literal null}.
 	 * @deprecated since 3.0; Declare a
-	 * {@link org.springframework.data.cassandra.core.cql.session.init.SessionFactoryInitializer} bean instead.
+	 *             {@link org.springframework.data.cassandra.core.cql.session.init.SessionFactoryInitializer} bean
+	 *             instead.
 	 */
 	@Deprecated
 	protected List<String> getStartupScripts() {

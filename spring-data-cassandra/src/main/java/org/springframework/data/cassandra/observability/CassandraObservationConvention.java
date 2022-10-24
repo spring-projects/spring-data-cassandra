@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,12 +22,12 @@ import io.micrometer.observation.ObservationConvention;
  * {@link ObservationConvention} for Cassandra.
  *
  * @author Greg Turnquist
- * @since 4.0.0
+ * @since 4.0
  */
-public interface CqlSessionObservationConvention extends ObservationConvention<CqlSessionContext> {
+public interface CassandraObservationConvention extends ObservationConvention<CassandraObservationContext> {
 
 	@Override
 	default boolean supportsContext(Observation.Context context) {
-		return context instanceof CqlSessionContext;
+		return context instanceof CassandraObservationContext;
 	}
 }

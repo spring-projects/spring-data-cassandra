@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,43 +15,60 @@
  */
 package org.springframework.data.cassandra.observability;
 
-import io.micrometer.observation.Observation;
-
-import org.springframework.lang.Nullable;
-
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.Statement;
+
+import io.micrometer.observation.Observation;
+import io.micrometer.observation.transport.Kind;
+import io.micrometer.observation.transport.SenderContext;
 
 /**
  * A {@link Observation.Context} for {@link CqlSession}.
  *
  * @author Greg Turnquist
- * @since 4.0.0
+ * @author Mark Paluch
+ * @since 4.0
  */
-public class CqlSessionContext extends Observation.Context {
+public class CassandraObservationContext extends SenderContext<Object> {
 
-	private final @Nullable Statement<?> statement;
+	private final Statement<?> statement;
+
+	private final boolean prepare;
 	private final String methodName;
-	private final @Nullable CqlSession delegateSession;
+	private final String sessionName;
+	private final String keyspaceName;
 
-	public CqlSessionContext(@Nullable Statement<?> statement, String methodName, @Nullable CqlSession delegateSession) {
+	public CassandraObservationContext(Statement<?> statement, String remoteServiceName, boolean prepare,
+			String methodName, String sessionName, String keyspaceName) {
+
+		super((carrier, key, value) -> {}, Kind.CLIENT);
 
 		this.statement = statement;
+		this.prepare = prepare;
 		this.methodName = methodName;
-		this.delegateSession = delegateSession;
+		this.sessionName = sessionName;
+		this.keyspaceName = keyspaceName;
+
+		setRemoteServiceName(remoteServiceName);
 	}
 
-	@Nullable
 	public Statement<?> getStatement() {
 		return statement;
+	}
+
+	public boolean isPrepare() {
+		return prepare;
 	}
 
 	public String getMethodName() {
 		return methodName;
 	}
 
-	@Nullable
-	public CqlSession getDelegateSession() {
-		return delegateSession;
+	public String getSessionName() {
+		return sessionName;
+	}
+
+	public String getKeyspaceName() {
+		return keyspaceName;
 	}
 }

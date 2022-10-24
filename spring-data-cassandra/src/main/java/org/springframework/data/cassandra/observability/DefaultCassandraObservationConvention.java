@@ -15,33 +15,34 @@
  */
 package org.springframework.data.cassandra.observability;
 
-import io.micrometer.common.KeyValues;
-
-import java.util.Optional;
 import java.util.StringJoiner;
 
 import org.springframework.data.cassandra.observability.CassandraObservation.HighCardinalityKeyNames;
 import org.springframework.data.cassandra.observability.CassandraObservation.LowCardinalityKeyNames;
+import org.springframework.util.StringUtils;
 
-import com.datastax.oss.driver.api.core.CqlIdentifier;
-import com.datastax.oss.driver.api.core.cql.*;
+import com.datastax.oss.driver.api.core.cql.BatchStatement;
+import com.datastax.oss.driver.api.core.cql.BatchableStatement;
+import com.datastax.oss.driver.api.core.cql.BoundStatement;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.cql.Statement;
+
+import io.micrometer.common.KeyValues;
 
 /**
- * Default {@link CqlSessionObservationConvention} implementation.
+ * Default {@link CassandraObservationConvention} implementation.
  *
  * @author Greg Turnquist
- * @since 4.0.0
+ * @author Mark Paluch
+ * @since 4.0
  */
-public class DefaultCassandraObservationConvention implements CqlSessionObservationConvention {
+class DefaultCassandraObservationConvention implements CassandraObservationConvention {
 
 	@Override
-	public KeyValues getLowCardinalityKeyValues(CqlSessionContext context) {
+	public KeyValues getLowCardinalityKeyValues(CassandraObservationContext context) {
 
-		KeyValues keyValues = KeyValues.of(
-				LowCardinalityKeyNames.SESSION_NAME
-						.withValue(Optional.ofNullable(context.getDelegateSession().getName()).orElse("unknown")),
-				LowCardinalityKeyNames.KEYSPACE_NAME
-						.withValue(context.getDelegateSession().getKeyspace().map(CqlIdentifier::asInternal).orElse("unknown")),
+		KeyValues keyValues = KeyValues.of(LowCardinalityKeyNames.SESSION_NAME.withValue(context.getSessionName()),
+				LowCardinalityKeyNames.KEYSPACE_NAME.withValue(context.getKeyspaceName()),
 				LowCardinalityKeyNames.METHOD_NAME.withValue(context.getMethodName()));
 
 		if (context.getStatement().getNode() != null) {
@@ -53,8 +54,13 @@ public class DefaultCassandraObservationConvention implements CqlSessionObservat
 	}
 
 	@Override
-	public KeyValues getHighCardinalityKeyValues(CqlSessionContext context) {
+	public KeyValues getHighCardinalityKeyValues(CassandraObservationContext context) {
 		return KeyValues.of(HighCardinalityKeyNames.CQL_TAG.withValue(getCql(context.getStatement())));
+	}
+
+	@Override
+	public String getContextualName(CassandraObservationContext context) {
+		return (context.isPrepare() ? "PREPARE: " : "") + getSpanName(getCql(context.getStatement()), "");
 	}
 
 	/**
@@ -67,7 +73,7 @@ public class DefaultCassandraObservationConvention implements CqlSessionObservat
 
 		String query = "";
 
-		if (statement instanceof SimpleStatement) {
+		if (statement instanceof SimpleStatement || statement instanceof BoundStatement) {
 			query = getQuery(statement);
 		}
 
@@ -102,5 +108,20 @@ public class DefaultCassandraObservationConvention implements CqlSessionObservat
 		}
 
 		return "";
+	}
+
+	/**
+	 * Tries to parse the CQL query or provides the default name.
+	 *
+	 * @param defaultName if there's no query
+	 * @return span name
+	 */
+	public String getSpanName(String cql, String defaultName) {
+
+		if (StringUtils.hasText(cql) && cql.indexOf(' ') > -1) {
+			return cql.substring(0, cql.indexOf(' '));
+		}
+
+		return defaultName;
 	}
 }

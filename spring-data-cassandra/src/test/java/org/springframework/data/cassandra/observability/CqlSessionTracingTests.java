@@ -15,8 +15,26 @@
  */
 package org.springframework.data.cassandra.observability;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.cassandra.observability.CassandraObservation.*;
+
+import java.util.Deque;
+import java.util.Map;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.cassandra.config.AbstractSessionConfiguration;
+import org.springframework.data.cassandra.test.util.CassandraExtension;
+import org.springframework.data.cassandra.test.util.IntegrationTestsSupport;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.Statement;
 
 import io.micrometer.common.KeyValue;
 import io.micrometer.common.KeyValues;
@@ -32,32 +50,23 @@ import io.micrometer.tracing.test.simple.SimpleSpan;
 import io.micrometer.tracing.test.simple.SimpleTracer;
 import io.micrometer.tracing.test.simple.SpanAssert;
 
-import java.util.Deque;
-import java.util.Map;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.data.cassandra.config.AbstractSessionConfiguration;
-import org.springframework.data.cassandra.test.util.CassandraExtension;
-import org.springframework.data.cassandra.test.util.IntegrationTestsSupport;
-
-import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.cql.Statement;
-
 /**
- * Verify that {@link CqlSessionTracingInterceptor} properly wraps {@link Statement} object with tracing.
+ * Verify that {@link CqlSessionObservationInterceptor} properly wraps {@link Statement} object with tracing.
  *
  * @author Greg Turnquist
  * @since 4.0.0
  */
+@ExtendWith({ SpringExtension.class, CassandraExtension.class })
 public class CqlSessionTracingTests extends IntegrationTestsSupport {
 
 	private static final String CREATE_KEYSPACE = "CREATE KEYSPACE ConfigTest " + "WITH "
 			+ "REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };";
+
+	private final ObservationRegistry observationRegistry = ObservationRegistry.create();
+
+	private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
+
+	private final SimpleTracer tracer = new SimpleTracer();
 
 	private ConfigurableApplicationContext context;
 
@@ -67,7 +76,9 @@ public class CqlSessionTracingTests extends IntegrationTestsSupport {
 	void setUp() {
 
 		this.context = new AnnotationConfigApplicationContext(Config.class);
-		this.session = context.getBean(CqlSession.class);
+		this.session = ObservableCqlSessionFactory.wrap(context.getBean(CqlSession.class), "my-cassandra",
+				observationRegistry);
+		this.observationRegistry.observationConfig().observationHandler(new DefaultMeterObservationHandler(meterRegistry));
 	}
 
 	@AfterEach
@@ -76,51 +87,14 @@ public class CqlSessionTracingTests extends IntegrationTestsSupport {
 	}
 
 	@Test
-	void shouldNotCreateAnyMetricsWhenThereIsNoObservation() {
-
-		MeterRegistry meterRegistry = new SimpleMeterRegistry();
-		ObservationRegistry observationRegistry = ObservationRegistry.create();
-		observationRegistry.observationConfig().observationHandler(new DefaultMeterObservationHandler(meterRegistry));
-
-		MeterRegistryAssert.then(meterRegistry).hasNoMetrics();
-	}
-
-	@Test
-	void tracingNoStatementsShouldProduceNoMetrics() {
-
-		MeterRegistry meterRegistry = new SimpleMeterRegistry();
-		ObservationRegistry observationRegistry = ObservationRegistry.create();
-		observationRegistry.observationConfig().observationHandler(new DefaultMeterObservationHandler(meterRegistry));
-
-		CqlSessionObservationConvention observationContention = new DefaultCassandraObservationConvention();
-
-		SimpleTracer tracer = new SimpleTracer();
-		observationRegistry.observationConfig().observationHandler(new CqlSessionTracingObservationHandler(tracer));
-
-		CqlSessionTracingFactory.wrap(session, observationRegistry, observationContention);
-
-		MeterRegistryAssert.then(meterRegistry).hasNoMetrics();
-	}
-
-	@Test
 	void shouldCreateObservationForCqlSessionOperations() {
-
-		MeterRegistry meterRegistry = new SimpleMeterRegistry();
-		ObservationRegistry observationRegistry = ObservationRegistry.create();
-		observationRegistry.observationConfig().observationHandler(new DefaultMeterObservationHandler(meterRegistry));
-
-		CqlSessionObservationConvention observationContention = new DefaultCassandraObservationConvention();
-		SimpleTracer tracer = new SimpleTracer();
-		observationRegistry.observationConfig().observationHandler(new CqlSessionTracingObservationHandler(tracer));
 
 		Observation.start("test", observationRegistry).scoped(() -> {
 
-			CqlSession traceSession = CqlSessionTracingFactory.wrap(session, observationRegistry, observationContention);
-
-			traceSession.execute(CREATE_KEYSPACE);
-			traceSession.executeAsync(CREATE_KEYSPACE);
-			traceSession.prepare(CREATE_KEYSPACE);
-			traceSession.prepareAsync(CREATE_KEYSPACE);
+			session.execute(CREATE_KEYSPACE);
+			session.executeAsync(CREATE_KEYSPACE);
+			session.prepare(CREATE_KEYSPACE);
+			session.prepareAsync(CREATE_KEYSPACE);
 		});
 
 		MeterRegistryAssert.then(meterRegistry).hasTimerWithNameAndTags(CASSANDRA_QUERY_OBSERVATION.getName(), KeyValues.of( //

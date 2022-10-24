@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,20 +15,20 @@
  */
 package org.springframework.data.cassandra.observability;
 
-import java.lang.annotation.*;
-
-import org.springframework.context.annotation.Import;
+import io.micrometer.observation.Observation;
 
 /**
- * Annotation to enable Cassandra observability.
+ * Returns the Cassandra Observation. Used internally - do not implement.
  *
- * @author Greg Turnquist
- * @since 4.0.0
+ * @author Mark Paluch
+ * @author Marcin Grzejszczak
+ * @since 4.0
  */
-@Inherited
-@Documented
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-@Import(CassandraObservationConfiguration.class)
-public @interface EnableCassandraObservability {
+interface CassandraObservationSupplier {
+
+	/**
+	 * @return the observation
+	 */
+	Observation getObservation();
+
 }

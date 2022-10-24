@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,41 +15,33 @@
  */
 package org.springframework.data.cassandra.observability;
 
-import io.micrometer.observation.ObservationRegistry;
-
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.data.cassandra.ReactiveSession;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 
-/**
- * {@link BeanPostProcessor} to automatically wrap all {@link CqlSession}s with a {@link CqlSessionTracingInterceptor}.
- *
- * @author Marcin Grzejszczak
- * @author Mark Paluch
- * @author Greg Turnquist
- * @since 4.0.0
- */
-public class CqlSessionTracingBeanPostProcessor implements BeanPostProcessor {
+import io.micrometer.observation.ObservationRegistry;
 
-	private final ObservationRegistry observationRegistry;
+class ObservationBeanPostProcessor implements BeanPostProcessor {
 
-	private final CqlSessionObservationConvention observationConvention;
+	public final ObservationRegistry observationRegistry;
 
-	public CqlSessionTracingBeanPostProcessor(ObservationRegistry observationRegistry,
-			CqlSessionObservationConvention observationConvention) {
-
+	public ObservationBeanPostProcessor(ObservationRegistry observationRegistry) {
 		this.observationRegistry = observationRegistry;
-		this.observationConvention = observationConvention;
 	}
 
 	@Override
 	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
 
 		if (bean instanceof CqlSession) {
-			return CqlSessionTracingFactory.wrap((CqlSession) bean, this.observationRegistry, this.observationConvention);
+			return ObservableCqlSessionFactory.wrap((CqlSession) bean, observationRegistry);
 		}
 
-		return bean;
+		if (bean instanceof ReactiveSession) {
+			return ObservableReactiveSessionFactory.wrap((ReactiveSession) bean, observationRegistry);
+		}
+
+		return BeanPostProcessor.super.postProcessAfterInitialization(bean, beanName);
 	}
 }

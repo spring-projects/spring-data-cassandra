@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.observability;
 
 import io.micrometer.common.docs.KeyName;
 import io.micrometer.observation.docs.ObservationDocumentation;
+import io.micrometer.tracing.docs.EventValue;
 
 /**
  * Cassandra-based implementation of {@link ObservationDocumentation}.
@@ -24,7 +25,7 @@ import io.micrometer.observation.docs.ObservationDocumentation;
  * @author Mark Paluch
  * @author Marcin Grzejszczak
  * @author Greg Turnquist
- * @since 4.0.0
+ * @since 4.0
  */
 enum CassandraObservation implements ObservationDocumentation {
 
@@ -101,15 +102,6 @@ enum CassandraObservation implements ObservationDocumentation {
 			}
 		},
 
-		/**
-		 * A tag containing error that occurred for the given node.
-		 */
-		NODE_ERROR_TAG {
-			@Override
-			public String asString() {
-				return "spring.data.cassandra.node[%s].error";
-			}
-		}
 	}
 
 	enum HighCardinalityKeyNames implements KeyName {
@@ -122,6 +114,41 @@ enum CassandraObservation implements ObservationDocumentation {
 			public String asString() {
 				return "spring.data.cassandra.cql";
 			}
+		},
+
+		/**
+		 * A tag containing error that occurred for the given node.
+		 */
+		NODE_ERROR_TAG {
+			@Override
+			public String asString() {
+				return "spring.data.cassandra.node[%s].error";
+			}
 		}
+
+	}
+
+	enum Events implements EventValue {
+
+		/**
+		 * Set whenever an error occurred for the given node.
+		 */
+		NODE_ERROR {
+			@Override
+			public String getValue() {
+				return "cassandra.node.error";
+			}
+		},
+
+		/**
+		 * Set when a success occurred for the session processing.
+		 */
+		NODE_SUCCESS {
+			@Override
+			public String getValue() {
+				return "cassandra.node.success";
+			}
+		}
+
 	}
 }
