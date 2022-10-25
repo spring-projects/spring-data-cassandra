@@ -14,41 +14,22 @@ To enable the instrumentation, apply the following configuration to your applica
 class ObservabilityConfiguration {
 
   @Bean
-  public ObservationBeanPostProcessor observationBeanPostProcessor(ObservationRegistry observationRegistry) {
-    return new ObservationBeanPostProcessor(observationRegistry);                                           <1>
+  public ObservableCqlSessionFactoryBean observableCqlSession(CqlSessionBuilder builder,
+                                                              ObservationRegistry registry) {
+    return new ObservableCqlSessionFactoryBean(builder, registry);                        <1>
   }
 
   @Bean
-  public SessionBuilderConfigurer getSessionBuilderConfigurer() {
-    return sessionBuilder -> sessionBuilder.addRequestTracker(ObservationRequestTracker.INSTANCE);          <2>
-  }
-
-  class ObservationBeanPostProcessor implements BeanPostProcessor {
-
-    public final ObservationRegistry observationRegistry;
-
-    public ObservationBeanPostProcessor(ObservationRegistry observationRegistry) {
-      this.observationRegistry = observationRegistry;
-    }
-
-    @Override
-    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-
-      if (bean instanceof CqlSession) {
-        return ObservableCqlSessionFactory.wrap((CqlSession) bean, observationRegistry);
-      }
-
-      if (bean instanceof ReactiveSession) {
-        return ObservableReactiveSessionFactory.wrap((ReactiveSession) bean, observationRegistry);
-      }
-
-      return BeanPostProcessor.super.postProcessAfterInitialization(bean, beanName);
-    }
+  public ObservableReactiveSessionFactoryBean observableReactiveSession(CqlSession session,
+                                                              ObservationRegistry registry) {
+    return new ObservableReactiveSessionFactoryBean(session, registry);                   <2>
   }
 }
 ----
-<1> Wraps all CQL session objects (imperative/reactive Session API) to observe Cassandra statement execution.
-<2> Integrate with the Cassandra driver to obtain success/error callbacks.
+
+<1> Wraps the CQL session object to observe Cassandra statement execution.
+Also, registers `ObservationRequestTracker.INSTANCE` with the `CqlSessionBuilder`.
+<1> Wraps a CQL session object to observe reactive Cassandra statement execution.
 ====
 
 include::../../../../target/_conventions.adoc[]

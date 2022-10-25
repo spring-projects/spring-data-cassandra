@@ -18,9 +18,7 @@ package org.springframework.data.cassandra.observability;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
-import org.springframework.data.cassandra.ReactiveSession;
 import org.springframework.data.cassandra.config.SessionBuilderConfigurer;
-import org.springframework.data.cassandra.core.cql.session.DefaultBridgedReactiveSession;
 import org.springframework.data.cassandra.support.AbstractTestJavaConfig;
 import org.springframework.lang.Nullable;
 
@@ -71,7 +69,7 @@ class TestConfig extends AbstractTestJavaConfig {
 	}
 
 	@Bean
-	ReactiveSession reactiveSession(CqlSession session) {
-		return new DefaultBridgedReactiveSession(session);
+	ObservableReactiveSessionFactoryBean reactiveSession(CqlSession session, ObservationRegistry observationRegistry) {
+		return new ObservableReactiveSessionFactoryBean(session, observationRegistry);
 	}
 }

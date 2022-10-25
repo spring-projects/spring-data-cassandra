@@ -45,7 +45,7 @@ import reactor.util.context.Context;
 @ContextConfiguration(classes = TestConfig.class)
 public class ReactiveIntegrationTests extends SampleTestRunner {
 
-	@Autowired ReactiveSession session;
+	@Autowired ReactiveSession observableSession;
 
 	ReactiveIntegrationTests() {
 		super(SampleRunnerConfig.builder().build());
@@ -68,7 +68,6 @@ public class ReactiveIntegrationTests extends SampleTestRunner {
 
 			Observation intermediate = Observation.start("intermediate", createObservationRegistry());
 
-			ReactiveSession observableSession = ObservableReactiveSessionFactory.wrap(session, createObservationRegistry());
 
 			Mono<ReactiveResultSet> drop = observableSession.execute("DROP KEYSPACE IF EXISTS ObservationTest");
 			Mono<ReactiveResultSet> create = observableSession.execute("CREATE KEYSPACE ObservationTest " + "WITH "
