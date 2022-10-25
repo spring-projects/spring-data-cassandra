@@ -16,20 +16,20 @@ class ObservabilityConfiguration {
   @Bean
   public ObservableCqlSessionFactoryBean observableCqlSession(CqlSessionBuilder builder,
                                                               ObservationRegistry registry) {
-    return new ObservableCqlSessionFactoryBean(builder, registry);                        <1>
+    return new ObservableCqlSessionFactoryBean(builder, registry); // <1>
   }
 
   @Bean
   public ObservableReactiveSessionFactoryBean observableReactiveSession(CqlSession session,
                                                               ObservationRegistry registry) {
-    return new ObservableReactiveSessionFactoryBean(session, registry);                   <2>
+    return new ObservableReactiveSessionFactoryBean(session, registry); // <2>
   }
 }
 ----
 
 <1> Wraps the CQL session object to observe Cassandra statement execution.
 Also, registers `ObservationRequestTracker.INSTANCE` with the `CqlSessionBuilder`.
-<1> Wraps a CQL session object to observe reactive Cassandra statement execution.
+<2> Wraps a CQL session object to observe reactive Cassandra statement execution.
 ====
 
 include::../../../../target/_conventions.adoc[]

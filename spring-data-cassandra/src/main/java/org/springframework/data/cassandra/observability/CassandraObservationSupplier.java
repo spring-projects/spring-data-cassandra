@@ -22,9 +22,10 @@ import io.micrometer.observation.Observation;
  *
  * @author Mark Paluch
  * @author Marcin Grzejszczak
+ * @author Greg Turnquist
  * @since 4.0
  */
-interface CassandraObservationSupplier {
+public interface CassandraObservationSupplier {
 
 	/**
 	 * @return the observation
