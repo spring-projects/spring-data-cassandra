@@ -18,13 +18,17 @@ package org.springframework.data.cassandra.aot;
 import java.util.Arrays;
 import java.util.List;
 
+import org.springframework.aop.SpringProxy;
+import org.springframework.aop.framework.Advised;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
 import org.springframework.aot.hint.TypeReference;
+import org.springframework.core.DecoratingProxy;
 import org.springframework.data.cassandra.core.mapping.event.BeforeConvertCallback;
 import org.springframework.data.cassandra.core.mapping.event.BeforeSaveCallback;
 import org.springframework.data.cassandra.core.mapping.event.ReactiveBeforeConvertCallback;
 import org.springframework.data.cassandra.core.mapping.event.ReactiveBeforeSaveCallback;
+import org.springframework.data.cassandra.observability.CassandraObservationSupplier;
 import org.springframework.data.cassandra.repository.support.SimpleCassandraRepository;
 import org.springframework.data.cassandra.repository.support.SimpleReactiveCassandraRepository;
 import org.springframework.data.repository.util.ReactiveWrappers;
@@ -37,7 +41,6 @@ import com.datastax.oss.driver.api.core.cql.BoundStatement;
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.Statement;
-import com.datastax.oss.driver.api.core.session.Request;
 
 /**
  * {@link RuntimeHintsRegistrar} for repository types and entity callbacks.
@@ -79,18 +82,15 @@ class CassandraRuntimeHints implements RuntimeHintsRegistrar {
 			hints.reflection().registerTypes(statementInterfaces.stream().map(TypeReference::of).toList(), builder -> builder
 					.withMembers(MemberCategory.INTROSPECT_DECLARED_METHODS, MemberCategory.INVOKE_PUBLIC_METHODS));
 
-			TypeReference obsSupplier = TypeReference
-					.of("org.springframework.data.cassandra.observability.CassandraObservationSupplier");
-			hints.reflection().registerTypes(List.of(obsSupplier), builder -> builder
+			hints.reflection().registerTypes(List.of(TypeReference.of(CassandraObservationSupplier.class)), builder -> builder
 					.withMembers(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS));
 
 			for (Class<?> statementInterface : statementInterfaces) {
-				hints.proxies().registerJdkProxy(TypeReference.of(statementInterface), TypeReference.of(Request.class),
-						obsSupplier);
+				hints.proxies().registerJdkProxy(statementInterface, CassandraObservationSupplier.class, SpringProxy.class,
+						Advised.class, DecoratingProxy.class);
 			}
 
-			hints.proxies().registerJdkProxy(CqlSession.class);
+			hints.proxies().registerJdkProxy(CqlSession.class, SpringProxy.class, Advised.class, DecoratingProxy.class);
 		}
-
 	}
 }
