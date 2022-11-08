@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
@@ -49,7 +50,7 @@ public abstract class KeyspaceActionSpecification {
 	}
 
 	@Override
-	public boolean equals(Object o) {
+	public boolean equals(@Nullable Object o) {
 
 		if (this == o) {
 			return true;

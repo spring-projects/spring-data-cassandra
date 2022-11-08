@@ -31,6 +31,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -296,7 +297,7 @@ public class Query implements Filter {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(@Nullable Object obj) {
 
 		if (this == obj) {
 			return true;

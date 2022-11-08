@@ -108,7 +108,7 @@ public class BasicMapId implements MapId {
 	}
 
 	@Override
-	public boolean equals(Object that) {
+	public boolean equals(@Nullable Object that) {
 		if (this == that) {
 			return true;
 		}
