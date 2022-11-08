@@ -159,7 +159,7 @@ public class MapBuilder<K, V> implements Map<K, V> {
 	}
 
 	@Override
-	public boolean equals(Object o) {
+	public boolean equals(@Nullable Object o) {
 		return map.equals(o);
 	}
 

@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.core.query;
 
 import java.util.Optional;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -82,7 +83,7 @@ public abstract class ColumnName {
 	public abstract String toCql();
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(@Nullable Object obj) {
 
 		if (this == obj) {
 			return true;

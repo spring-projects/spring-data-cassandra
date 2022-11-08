@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.core.cql;
 import java.io.Serializable;
 import java.util.regex.Pattern;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -237,7 +238,7 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
-	public boolean equals(Object o) {
+	public boolean equals(@Nullable Object o) {
 
 		if (this == o)
 			return true;
