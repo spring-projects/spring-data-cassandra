@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.core.cql;
 
 import java.util.regex.Pattern;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -122,7 +123,7 @@ public final class KeyspaceIdentifier implements Comparable<KeyspaceIdentifier> 
 	 * equal to a {@link KeyspaceIdentifier}.
 	 */
 	@Override
-	public boolean equals(Object that) {
+	public boolean equals(@Nullable Object that) {
 		if (this == that) {
 			return true;
 		}

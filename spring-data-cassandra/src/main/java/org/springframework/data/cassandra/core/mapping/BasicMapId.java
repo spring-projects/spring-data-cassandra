@@ -126,7 +126,7 @@ public class BasicMapId implements MapId {
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
-	public boolean equals(Object that) {
+	public boolean equals(@Nullable Object that) {
 		if (this == that) {
 			return true;
 		}

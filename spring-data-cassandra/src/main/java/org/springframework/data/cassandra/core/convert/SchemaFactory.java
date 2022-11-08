@@ -32,6 +32,7 @@ import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.context.MappingContext;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -402,7 +403,7 @@ public class SchemaFactory {
 		}
 
 		@Override
-		public boolean equals(Object o) {
+		public boolean equals(@Nullable Object o) {
 			if (this == o)
 				return true;
 			if (!(o instanceof com.datastax.oss.driver.api.core.type.UserDefinedType))

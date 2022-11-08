@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.mapping.PropertyHandler;
+import org.springframework.lang.Nullable;
 
 /**
  * Unit tests for {@link CassandraMappingContext}.
@@ -110,7 +111,7 @@ class CassandraPersistentEntityOrderPropertiesUnitTests {
 		}
 
 		@Override
-		public boolean equals(Object obj) {
+		public boolean equals(@Nullable Object obj) {
 			if (this == obj)
 				return true;
 			if (obj == null)

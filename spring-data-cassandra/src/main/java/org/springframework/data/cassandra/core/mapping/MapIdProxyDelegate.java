@@ -139,7 +139,7 @@ class MapIdProxyDelegate implements InvocationHandler {
 		}
 
 		@Override
-		public boolean equals(Object that) {
+		public boolean equals(@Nullable Object that) {
 			if (that == null) {
 				return false;
 			}
