@@ -22,13 +22,6 @@
 	<properties>
 		<project.root>${basedir}/..</project.root>
 		<dist.key>SDCASS</dist.key>
-
-		<!-- Observability -->
-		<micrometer-docs-generator.inputPath>${maven.multiModuleProjectDirectory}/spring-data-cassandra/
-		</micrometer-docs-generator.inputPath>
-		<micrometer-docs-generator.inclusionPattern>.*</micrometer-docs-generator.inclusionPattern>
-		<micrometer-docs-generator.outputPath>${maven.multiModuleProjectDirectory}/target/
-		</micrometer-docs-generator.outputPath>
 	</properties>
 
 	<build>
@@ -38,100 +31,17 @@
 				<artifactId>maven-assembly-plugin</artifactId>
 			</plugin>
 			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>generate-docs</id>
-						<phase>generate-resources</phase>
-						<goals>
-							<goal>java</goal>
-						</goals>
-						<configuration>
-							<mainClass>io.micrometer.docs.DocsGeneratorCommand</mainClass>
-							<includePluginDependencies>true</includePluginDependencies>
-							<arguments>
-								<argument>${micrometer-docs-generator.inputPath}</argument>
-								<argument>${micrometer-docs-generator.inclusionPattern}</argument>
-								<argument>${micrometer-docs-generator.outputPath}</argument>
-							</arguments>
-						</configuration>
-					</execution>
-				</executions>
-				<dependencies>
-					<dependency>
-						<groupId>io.micrometer</groupId>
-						<artifactId>micrometer-docs-generator</artifactId>
-						<version>${micrometer-docs-generator}</version>
-						<type>jar</type>
-					</dependency>
-				</dependencies>
-			</plugin>
-			<plugin>
 				<groupId>org.asciidoctor</groupId>
 				<artifactId>asciidoctor-maven-plugin</artifactId>
 			</plugin>
 		</plugins>
 	</build>
 
-	<repositories>
-		<repository>
-			<id>spring-snapshots</id>
-			<name>Spring Snapshots</name>
-			<url>https://repo.spring.io/snapshot</url> <!-- For Snapshots -->
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-		</repository>
-		<repository>
-			<id>spring-milestones</id>
-			<name>Spring Milestones</name>
-			<url>https://repo.spring.io/milestone</url>  <!-- For Milestones -->
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>spring-release</id>
-			<name>Spring Release</name>
-			<url>https://repo.spring.io/release</url>  <!-- For Releases -->
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
-
 	<pluginRepositories>
 		<pluginRepository>
-			<id>spring-snapshots</id>
-			<name>Spring Snapshots</name>
-			<url>https://repo.spring.io/snapshot</url> <!-- For Snapshots -->
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-		</pluginRepository>
-		<pluginRepository>
-			<id>spring-milestones</id>
-			<name>Spring Milestones</name>
-			<url>https://repo.spring.io/milestone</url>  <!-- For Milestones -->
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</pluginRepository>
-		<pluginRepository>
 			<id>spring-release</id>
 			<name>Spring Release</name>
 			<url>https://repo.spring.io/release</url>  <!-- For Releases -->
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
 		</pluginRepository>
 	</pluginRepositories>
-
 </project>

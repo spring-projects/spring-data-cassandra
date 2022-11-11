@@ -22,6 +22,7 @@ include::{spring-data-commons-docs}/repositories.adoc[leveloffset=+1]
 = Reference Documentation
 
 include::reference/introduction.adoc[leveloffset=+1]
+include::reference/upgrade.adoc[leveloffset=+1]
 include::reference/cassandra.adoc[leveloffset=+1]
 include::reference/observability.adoc[leveloffset=+1]
 include::reference/reactive-cassandra.adoc[leveloffset=+1]
