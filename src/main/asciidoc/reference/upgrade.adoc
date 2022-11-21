@@ -7,4 +7,3 @@ You can find <<cassandra.migration,migration guides>> specific to major version 
 
 Spring Data's documentation is specific to that version, so any information that you find in here will contain the most up-to-date changes that are in that version.
 
-
