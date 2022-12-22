@@ -35,7 +35,7 @@ import org.springframework.data.cassandra.core.mapping.Table;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Person {
+public class Person implements AccountInfo {
 
 	@PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, ordinal = 0) private String lastname;
 

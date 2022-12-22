@@ -43,6 +43,7 @@ import com.datastax.oss.driver.api.core.cql.SimpleStatement;
  *
  * @author Mark Paluch
  * @author Hleb Albau
+ * @author George Bisiarin
  * @see org.springframework.data.cassandra.repository.query.CassandraRepositoryQuerySupport
  * @since 2.0
  */
@@ -103,7 +104,8 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 		CassandraReturnedType returnedType = new CassandraReturnedType(resultProcessor.getReturnedType(),
 				getRequiredConverter(getReactiveCassandraOperations()).getCustomConversions());
 
-		return (returnedType.isProjecting() ? returnedType.getDomainType() : returnedType.getReturnedType());
+		return returnedType.isProjecting() || returnedType.getReturnedType().isInterface()
+				? returnedType.getDomainType() : returnedType.getReturnedType();
 	}
 
 	/**

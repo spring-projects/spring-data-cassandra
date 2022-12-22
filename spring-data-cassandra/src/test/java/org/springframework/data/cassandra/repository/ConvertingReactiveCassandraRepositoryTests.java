@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.repository;
 import static org.assertj.core.api.Assertions.*;
 
 import io.reactivex.rxjava3.core.Single;
+import org.springframework.data.cassandra.domain.AccountInfo;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -49,6 +50,7 @@ import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
  *
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author George Bisiarin
  */
 @SpringJUnitConfig(classes = ConvertingReactiveCassandraRepositoryTests.Config.class)
 class ConvertingReactiveCassandraRepositoryTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
@@ -104,6 +106,11 @@ class ConvertingReactiveCassandraRepositoryTests extends AbstractSpringDataEmbed
 	@Test // DATACASS-335
 	void reactiveStreamsQueryMethodsShouldWork() {
 		StepVerifier.create(reactiveUserRepostitory.findByLastname(boyd.getLastname())).expectNext(boyd).verifyComplete();
+	}
+
+	@Test // DATACASS-335
+	void reactiveStreamsQueryMethodsShouldWorkWithInterfaceReturnType() {
+		StepVerifier.create(reactiveUserRepostitory.findOneByLastname(boyd.getLastname())).expectNext(boyd).verifyComplete();
 	}
 
 	@Test // DATACASS-360
@@ -177,9 +184,31 @@ class ConvertingReactiveCassandraRepositoryTests extends AbstractSpringDataEmbed
 	}
 
 	@Test // DATACASS-335
+	void observableRxJava3QueryMethodShouldWorkWithInterfaceReturnType() throws InterruptedException {
+
+		rxJava3UserRepository.findOneByLastname(boyd.getLastname()) //
+				.test() //
+				.await() //
+				.assertValue(boyd) //
+				.assertNoErrors() //
+				.assertComplete();
+	}
+
+	@Test // DATACASS-335
 	void mixedRepositoryShouldWork() throws InterruptedException {
 
 		reactiveRepository.findByLastname(boyd.getLastname()) //
+				.test() //
+				.await() //
+				.assertValue(boyd) //
+				.assertComplete() //
+				.assertNoErrors();
+	}
+
+	@Test // DATACASS-335
+	void mixedRepositoryShouldWorkWithInterfaceReturnType() throws InterruptedException {
+
+		reactiveRepository.findOneByLastname(boyd.getLastname()) //
 				.test() //
 				.await() //
 				.assertValue(boyd) //
@@ -198,18 +227,29 @@ class ConvertingReactiveCassandraRepositoryTests extends AbstractSpringDataEmbed
 	@Repository
 	interface UserRepostitory extends ReactiveCrudRepository<User, String> {
 
+		@AllowFiltering
 		Publisher<User> findByLastname(String lastname);
 
+		@AllowFiltering
+		Publisher<AccountInfo> findOneByLastname(String lastname);
+
+		@AllowFiltering
 		Flux<UserDto> findProjectedByLastname(String lastname);
 	}
 
 	@Repository
 	interface RxJava3UserRepository extends org.springframework.data.repository.Repository<User, String> {
 
+		@AllowFiltering
 		io.reactivex.rxjava3.core.Observable<User> findManyByLastname(String lastname);
 
+		@AllowFiltering
 		io.reactivex.rxjava3.core.Single<User> findByLastname(String lastname);
 
+		@AllowFiltering
+		io.reactivex.rxjava3.core.Single<AccountInfo> findOneByLastname(String lastname);
+
+		@AllowFiltering
 		io.reactivex.rxjava3.core.Single<ProjectedUser> findProjectedByLastname(String lastname);
 
 		io.reactivex.rxjava3.core.Single<Boolean> existsById(String id);
@@ -220,8 +260,13 @@ class ConvertingReactiveCassandraRepositoryTests extends AbstractSpringDataEmbed
 	@Repository
 	interface MixedUserRepository extends ReactiveCassandraRepository<User, String> {
 
+		@AllowFiltering
 		Single<User> findByLastname(String lastname);
 
+		@AllowFiltering
+		Single<AccountInfo> findOneByLastname(String lastname);
+
+		@AllowFiltering
 		Mono<User> findByLastname(Single<String> lastname);
 	}
 

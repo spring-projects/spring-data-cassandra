@@ -46,6 +46,7 @@ import org.springframework.data.cassandra.core.mapping.Embedded;
 import org.springframework.data.cassandra.core.mapping.Indexed;
 import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.core.query.CassandraPageRequest;
+import org.springframework.data.cassandra.domain.AccountInfo;
 import org.springframework.data.cassandra.domain.AddressType;
 import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.cassandra.repository.QueryDerivationIntegrationTests.PersonRepository.NumberOfChildren;
@@ -69,6 +70,7 @@ import com.datastax.oss.driver.api.core.CqlSession;
  *
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author George Bisiarin
  */
 @SpringJUnitConfig
 @SuppressWarnings("all")
@@ -124,6 +126,14 @@ class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedCassandr
 	public void shouldFindByLastname() {
 
 		List<Person> result = personRepository.findByLastname("White");
+
+		assertThat(result).contains(walter, skyler, flynn);
+	}
+
+	@Test // DATACASS-7
+	public void shouldFindByLastnameWithInterfaceReturnType() {
+
+		List<AccountInfo> result = personRepository.findOneByLastname("White");
 
 		assertThat(result).contains(walter, skyler, flynn);
 	}
@@ -394,6 +404,8 @@ class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedCassandr
 	static interface PersonRepository extends MapIdCassandraRepository<Person> {
 
 		List<Person> findByLastname(String lastname);
+
+		List<AccountInfo> findOneByLastname(String lastname);
 
 		@Nullable
 		Person findSomeByLastname(String lastname);

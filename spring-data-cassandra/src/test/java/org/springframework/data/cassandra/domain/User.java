@@ -31,7 +31,7 @@ import org.springframework.data.cassandra.core.mapping.Table;
 @Data
 @NoArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class User {
+public class User implements AccountInfo {
 
 	/*
 	 * Primary Row ID
