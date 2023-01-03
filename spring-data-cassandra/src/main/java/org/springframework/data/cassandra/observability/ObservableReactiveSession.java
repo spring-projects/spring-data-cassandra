@@ -15,6 +15,12 @@
  */
 package org.springframework.data.cassandra.observability;
 
+import io.micrometer.observation.Observation;
+import io.micrometer.observation.ObservationRegistry;
+import io.micrometer.observation.contextpropagation.ObservationThreadLocalAccessor;
+import reactor.core.publisher.Mono;
+import reactor.util.context.ContextView;
+
 import java.util.Map;
 import java.util.Optional;
 
@@ -28,12 +34,6 @@ import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.Statement;
 import com.datastax.oss.driver.api.core.metadata.Metadata;
-
-import io.micrometer.observation.Observation;
-import io.micrometer.observation.ObservationRegistry;
-import io.micrometer.observation.contextpropagation.ObservationThreadLocalAccessor;
-import reactor.core.publisher.Mono;
-import reactor.util.context.ContextView;
 
 /**
  * Instrumented {@link ReactiveSession} for observability.

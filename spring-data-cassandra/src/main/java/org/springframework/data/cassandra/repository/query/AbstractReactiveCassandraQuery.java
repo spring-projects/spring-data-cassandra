@@ -18,7 +18,6 @@ package org.springframework.data.cassandra.repository.query;
 import reactor.core.publisher.Mono;
 
 import org.reactivestreams.Publisher;
-
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.ReactiveResultSet;
 import org.springframework.data.cassandra.core.CassandraOperations;

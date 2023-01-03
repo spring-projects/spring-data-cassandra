@@ -21,7 +21,6 @@ import static org.springframework.data.domain.Sort.Order.*;
 import java.nio.ByteBuffer;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;

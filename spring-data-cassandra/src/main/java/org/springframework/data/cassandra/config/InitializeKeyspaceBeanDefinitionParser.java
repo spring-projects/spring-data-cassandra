@@ -33,7 +33,6 @@ import org.springframework.data.cassandra.core.cql.session.init.SessionFactoryIn
 import org.springframework.lang.Nullable;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
-
 import org.w3c.dom.Element;
 
 /**

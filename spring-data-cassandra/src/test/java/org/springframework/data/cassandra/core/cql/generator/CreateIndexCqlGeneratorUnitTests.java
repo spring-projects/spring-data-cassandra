@@ -18,7 +18,6 @@ package org.springframework.data.cassandra.core.cql.generator;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;

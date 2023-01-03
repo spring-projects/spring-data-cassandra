@@ -21,7 +21,6 @@ import java.time.Duration;
 import java.time.Instant;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.cassandra.core.query.Query;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;

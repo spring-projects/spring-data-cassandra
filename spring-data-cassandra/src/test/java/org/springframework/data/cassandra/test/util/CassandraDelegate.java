@@ -24,14 +24,12 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.data.cassandra.core.cql.SessionCallback;
 import org.springframework.data.cassandra.support.CassandraConnectionProperties;
 import org.springframework.data.cassandra.support.CqlDataSet;
 import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-
 import org.testcontainers.containers.CassandraContainer;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;

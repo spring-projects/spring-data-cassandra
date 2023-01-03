@@ -15,6 +15,9 @@
  */
 package org.springframework.data.cassandra.observability;
 
+import io.micrometer.observation.Observation;
+import io.micrometer.observation.Observation.Event;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.data.cassandra.observability.CassandraObservation.Events;
@@ -25,9 +28,6 @@ import com.datastax.oss.driver.api.core.config.DriverExecutionProfile;
 import com.datastax.oss.driver.api.core.metadata.Node;
 import com.datastax.oss.driver.api.core.session.Request;
 import com.datastax.oss.driver.api.core.tracker.RequestTracker;
-
-import io.micrometer.observation.Observation;
-import io.micrometer.observation.Observation.Event;
 
 /**
  * Trace implementation of the {@link RequestTracker}.

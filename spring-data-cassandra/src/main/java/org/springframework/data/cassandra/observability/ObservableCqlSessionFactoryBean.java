@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.observability;
 
+import io.micrometer.observation.ObservationRegistry;
+
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -22,8 +24,6 @@ import org.springframework.util.ObjectUtils;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.CqlSessionBuilder;
-
-import io.micrometer.observation.ObservationRegistry;
 
 /**
  * Factory bean to construct a {@link CqlSession} integrated with given {@link ObservationRegistry}. This factory bean

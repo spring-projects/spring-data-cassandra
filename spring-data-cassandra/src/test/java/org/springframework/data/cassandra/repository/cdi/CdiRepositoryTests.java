@@ -26,7 +26,6 @@ import org.junit.AfterClass;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.test.util.IntegrationTestsSupport;
 

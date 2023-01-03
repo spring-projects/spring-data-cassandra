@@ -15,12 +15,12 @@
  */
 package org.springframework.data.cassandra.observability;
 
+import io.micrometer.observation.ObservationRegistry;
+
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlSession;
-
-import io.micrometer.observation.ObservationRegistry;
 
 /**
  * Factory to wrap a {@link CqlSession} with a {@link CqlSessionObservationInterceptor}.

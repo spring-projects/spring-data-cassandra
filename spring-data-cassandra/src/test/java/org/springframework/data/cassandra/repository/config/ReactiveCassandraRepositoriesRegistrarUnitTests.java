@@ -18,7 +18,6 @@ package org.springframework.data.cassandra.repository.config;
 import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;

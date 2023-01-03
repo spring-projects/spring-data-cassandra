@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.observability;
 
+import io.micrometer.observation.ObservationRegistry;
+
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.data.cassandra.ReactiveSession;
 import org.springframework.data.cassandra.core.cql.session.DefaultBridgedReactiveSession;
@@ -23,8 +25,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
 import com.datastax.oss.driver.api.core.CqlSession;
-
-import io.micrometer.observation.ObservationRegistry;
 
 /**
  * Factory bean to construct a {@link ReactiveSession} integrated with given {@link ObservationRegistry}. The required

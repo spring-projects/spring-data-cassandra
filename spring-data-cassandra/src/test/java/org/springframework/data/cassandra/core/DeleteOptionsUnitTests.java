@@ -20,11 +20,10 @@ import static org.assertj.core.api.Assertions.*;
 import java.time.Duration;
 import java.time.Instant;
 
-import com.datastax.oss.driver.api.core.CqlIdentifier;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.cassandra.core.query.Query;
 
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
 
 /**

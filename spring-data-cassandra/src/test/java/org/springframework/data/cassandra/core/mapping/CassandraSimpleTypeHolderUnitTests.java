@@ -22,7 +22,6 @@ import java.util.EnumSet;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.cassandra.core.mapping.CassandraType.Name;
 
 import com.datastax.oss.driver.api.core.type.DataTypes;

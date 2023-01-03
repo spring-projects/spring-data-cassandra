@@ -24,7 +24,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.jetbrains.annotations.NotNull;
-
 import org.springframework.data.cassandra.core.cql.generator.CreateIndexCqlGenerator;
 import org.springframework.data.cassandra.core.cql.generator.CreateTableCqlGenerator;
 import org.springframework.data.cassandra.core.cql.generator.CreateUserTypeCqlGenerator;

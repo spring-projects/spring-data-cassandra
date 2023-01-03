@@ -15,7 +15,12 @@
  */
 package org.springframework.data.cassandra.domain;
 
-import static org.springframework.data.cassandra.core.mapping.CassandraType.Name;
+import static org.springframework.data.cassandra.core.mapping.CassandraType.*;
+
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -33,11 +38,6 @@ import org.springframework.data.cassandra.core.mapping.PrimaryKey;
 import org.springframework.data.cassandra.core.mapping.Table;
 
 import com.datastax.oss.driver.api.core.data.TupleValue;
-
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 
 /**
  * @author Mark Paluch

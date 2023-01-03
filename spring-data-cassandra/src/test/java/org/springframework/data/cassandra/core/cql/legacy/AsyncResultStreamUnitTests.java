@@ -26,7 +26,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.util.concurrent.ListenableFuture;
 
 import com.datastax.oss.driver.api.core.cql.AsyncResultSet;

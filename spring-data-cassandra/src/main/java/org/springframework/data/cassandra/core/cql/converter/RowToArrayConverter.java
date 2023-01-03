@@ -17,9 +17,9 @@ package org.springframework.data.cassandra.core.cql.converter;
 
 import java.util.List;
 
-import com.datastax.oss.driver.api.core.cql.Row;
-
 import org.springframework.core.convert.converter.Converter;
+
+import com.datastax.oss.driver.api.core.cql.Row;
 
 /**
  * Converter to convert {@link Row} to {@link Object} array.

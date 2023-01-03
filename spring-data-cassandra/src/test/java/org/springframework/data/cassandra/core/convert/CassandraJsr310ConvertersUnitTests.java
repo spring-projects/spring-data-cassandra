@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.*;
 import java.time.LocalTime;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.cassandra.core.convert.CassandraJsr310Converters.LocalTimeToMillisOfDayConverter;
 import org.springframework.data.cassandra.core.convert.CassandraJsr310Converters.MillisOfDayToLocalTimeConverter;
 
