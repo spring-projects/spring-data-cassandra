@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.data.mapping.model.Property;
 import org.springframework.data.util.TypeInformation;

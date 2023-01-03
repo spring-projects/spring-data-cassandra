@@ -21,7 +21,6 @@ import static org.springframework.data.cassandra.core.cql.generator.AlterUserTyp
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.cassandra.core.cql.keyspace.AlterUserTypeSpecification;
 import org.springframework.data.cassandra.support.CassandraVersion;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;

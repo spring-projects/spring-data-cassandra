@@ -21,7 +21,6 @@ import java.util.function.Function;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.data.cassandra.core.StatementFactory;
 import org.springframework.data.cassandra.core.cql.QueryExtractorDelegate;
 import org.springframework.data.cassandra.core.cql.QueryOptions;

@@ -30,7 +30,6 @@ import java.util.Set;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.query.Filter;
 import org.springframework.data.cassandra.core.query.Update;
-import org.springframework.data.cassandra.core.query.Update.*;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;

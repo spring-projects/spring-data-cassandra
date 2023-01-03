@@ -15,6 +15,11 @@
  */
 package org.springframework.data.cassandra.observability;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.observation.DefaultMeterObservationHandler;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import io.micrometer.observation.ObservationRegistry;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -23,11 +28,6 @@ import org.springframework.data.cassandra.support.AbstractTestJavaConfig;
 import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.core.CqlSession;
-
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.observation.DefaultMeterObservationHandler;
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import io.micrometer.observation.ObservationRegistry;
 
 /**
  * @author Mark Paluch

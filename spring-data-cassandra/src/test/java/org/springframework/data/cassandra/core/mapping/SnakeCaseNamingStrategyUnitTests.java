@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.annotation.Id;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;

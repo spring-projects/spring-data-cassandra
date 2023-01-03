@@ -16,7 +16,6 @@
 package org.springframework.data.cassandra.core.mapping.event;
 
 import org.reactivestreams.Publisher;
-
 import org.springframework.data.mapping.callback.EntityCallback;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;

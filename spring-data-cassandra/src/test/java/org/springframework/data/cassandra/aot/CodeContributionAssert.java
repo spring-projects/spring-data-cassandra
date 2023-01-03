@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.*;
 import java.util.stream.Stream;
 
 import org.assertj.core.api.AbstractAssert;
-
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.JdkProxyHint;
 import org.springframework.aot.hint.predicate.RuntimeHintsPredicates;

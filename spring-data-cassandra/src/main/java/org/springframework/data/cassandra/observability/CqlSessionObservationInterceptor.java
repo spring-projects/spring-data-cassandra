@@ -15,6 +15,9 @@
  */
 package org.springframework.data.cassandra.observability;
 
+import io.micrometer.observation.Observation;
+import io.micrometer.observation.ObservationRegistry;
+
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Map;
@@ -27,9 +30,6 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.Statement;
-
-import io.micrometer.observation.Observation;
-import io.micrometer.observation.ObservationRegistry;
 
 /**
  * A {@link MethodInterceptor} that wraps calls around {@link CqlSession} in a trace representation. This interceptor

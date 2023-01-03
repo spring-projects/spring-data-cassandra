@@ -29,7 +29,19 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.cassandra.core.cql.Ordering;
-import org.springframework.data.mapping.*;
+import org.springframework.data.mapping.Alias;
+import org.springframework.data.mapping.Association;
+import org.springframework.data.mapping.AssociationHandler;
+import org.springframework.data.mapping.IdentifierAccessor;
+import org.springframework.data.mapping.InstanceCreatorMetadata;
+import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.PersistentPropertyAccessor;
+import org.springframework.data.mapping.PersistentPropertyPathAccessor;
+import org.springframework.data.mapping.PreferredConstructor;
+import org.springframework.data.mapping.PropertyHandler;
+import org.springframework.data.mapping.SimpleAssociationHandler;
+import org.springframework.data.mapping.SimplePropertyHandler;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
@@ -132,7 +144,7 @@ public class EmbeddedEntityOperations {
 		public PreferredConstructor<T, CassandraPersistentProperty> getPersistenceConstructor() {
 			return delegate.getPersistenceConstructor();
 		}
-		
+
 		@Override
 		public InstanceCreatorMetadata<CassandraPersistentProperty> getInstanceCreatorMetadata() {
 			return delegate.getInstanceCreatorMetadata();
@@ -142,7 +154,7 @@ public class EmbeddedEntityOperations {
 		public boolean isConstructorArgument(PersistentProperty<?> property) {
 			return delegate.isConstructorArgument(property);
 		}
-		
+
 		@Override
 		public boolean isCreatorArgument(PersistentProperty<?> property) {
 			return delegate.isCreatorArgument(property);

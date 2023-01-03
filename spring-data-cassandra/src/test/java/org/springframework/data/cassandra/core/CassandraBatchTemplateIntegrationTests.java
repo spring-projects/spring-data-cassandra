@@ -22,7 +22,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.data.cassandra.domain.FlatGroup;
 import org.springframework.data.cassandra.domain.Group;

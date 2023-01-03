@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.*;
 import java.io.Serializable;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;

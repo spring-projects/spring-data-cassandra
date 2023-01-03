@@ -17,7 +17,6 @@ package org.springframework.data.cassandra.core.cql;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.cassandra.ReactiveSession;

@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.observability;
 
+import io.micrometer.common.KeyValues;
+
 import java.net.InetSocketAddress;
 import java.util.StringJoiner;
 
@@ -31,8 +33,6 @@ import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.Statement;
 import com.datastax.oss.driver.api.core.metadata.EndPoint;
 import com.datastax.oss.driver.api.core.metadata.Node;
-
-import io.micrometer.common.KeyValues;
 
 /**
  * Default {@link CassandraObservationConvention} implementation.

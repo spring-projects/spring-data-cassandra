@@ -19,7 +19,6 @@ package org.springframework.data.cassandra.core.mapping;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.util.TypeInformation;
 
 /**

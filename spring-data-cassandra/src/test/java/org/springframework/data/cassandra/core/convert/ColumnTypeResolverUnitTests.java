@@ -25,7 +25,6 @@ import java.util.UUID;
 
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;

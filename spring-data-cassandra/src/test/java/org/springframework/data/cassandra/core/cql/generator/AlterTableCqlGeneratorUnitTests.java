@@ -21,7 +21,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.cassandra.core.cql.keyspace.AlterTableSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.TableOption;
 import org.springframework.data.cassandra.core.cql.keyspace.TableOption.CachingOption;

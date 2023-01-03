@@ -31,7 +31,6 @@ import org.springframework.data.cassandra.core.mapping.event.ReactiveAuditingEnt
 import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
-
 import org.w3c.dom.Element;
 
 /**

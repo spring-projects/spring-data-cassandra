@@ -16,9 +16,9 @@
 package org.springframework.data.cassandra.core.cql.keyspace;
 
 import org.springframework.data.cassandra.core.cql.KeyspaceIdentifier;
+import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
-import org.springframework.lang.Nullable;
 
 /**
  * Object to configure a {@code DROP KEYSPACE} specification.

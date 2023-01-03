@@ -25,7 +25,6 @@ import java.util.concurrent.Future;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.AsyncCqlTemplate;
 import org.springframework.data.cassandra.core.query.CassandraPageRequest;

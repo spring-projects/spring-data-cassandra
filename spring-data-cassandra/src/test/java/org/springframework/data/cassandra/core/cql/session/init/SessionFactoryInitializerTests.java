@@ -18,7 +18,6 @@ package org.springframework.data.cassandra.core.cql.session.init;
 import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;

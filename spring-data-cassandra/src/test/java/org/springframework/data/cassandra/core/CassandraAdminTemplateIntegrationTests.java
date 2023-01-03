@@ -21,7 +21,6 @@ import java.util.Collection;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.generator.DropTableCqlGenerator;
 import org.springframework.data.cassandra.core.cql.keyspace.DropTableSpecification;

@@ -40,7 +40,6 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.CassandraInvalidQueryException;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;

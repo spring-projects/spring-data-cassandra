@@ -18,7 +18,6 @@ package org.springframework.data.cassandra.config;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.auditing.IsNewAwareAuditingHandler;

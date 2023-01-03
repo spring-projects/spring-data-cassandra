@@ -37,7 +37,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
@@ -45,7 +44,17 @@ import org.springframework.data.cassandra.core.StatementFactory;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.data.cassandra.core.cql.util.StatementBuilder;
-import org.springframework.data.cassandra.core.mapping.*;
+import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
+import org.springframework.data.cassandra.core.mapping.CassandraType;
+import org.springframework.data.cassandra.core.mapping.Embedded;
+import org.springframework.data.cassandra.core.mapping.Frozen;
+import org.springframework.data.cassandra.core.mapping.PrimaryKey;
+import org.springframework.data.cassandra.core.mapping.PrimaryKeyClass;
+import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
+import org.springframework.data.cassandra.core.mapping.Table;
+import org.springframework.data.cassandra.core.mapping.UserDefinedType;
+import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.support.UserDefinedTypeBuilder;
 import org.springframework.data.cassandra.test.util.RowMockUtil;
 

@@ -25,7 +25,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.cassandra.CassandraInvalidQueryException;
 import org.springframework.data.cassandra.support.CassandraVersion;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;

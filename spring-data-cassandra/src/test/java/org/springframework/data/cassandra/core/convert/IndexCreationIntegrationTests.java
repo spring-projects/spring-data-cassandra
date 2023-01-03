@@ -23,7 +23,6 @@ import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.cql.generator.CreateIndexCqlGenerator;
 import org.springframework.data.cassandra.core.cql.generator.CreateTableCqlGenerator;

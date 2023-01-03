@@ -16,7 +16,6 @@
 package org.springframework.data.cassandra.config;
 
 import org.junit.jupiter.api.extension.ExtendWith;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.cassandra.test.util.CassandraExtension;

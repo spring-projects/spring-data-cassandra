@@ -15,8 +15,8 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.data.cassandra.core.mapping.CassandraType.Name;
+import static org.assertj.core.api.Assertions.*;
+import static org.springframework.data.cassandra.core.mapping.CassandraType.*;
 
 import java.lang.reflect.Method;
 import java.time.LocalDateTime;
@@ -26,7 +26,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraType;

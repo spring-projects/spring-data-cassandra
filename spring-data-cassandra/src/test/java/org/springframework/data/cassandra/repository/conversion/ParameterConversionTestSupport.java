@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.Collections;
 
 import org.junit.jupiter.api.BeforeEach;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;

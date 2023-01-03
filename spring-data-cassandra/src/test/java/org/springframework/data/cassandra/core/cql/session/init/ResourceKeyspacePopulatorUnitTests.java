@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 

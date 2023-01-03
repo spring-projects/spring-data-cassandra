@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.cassandra.support.BeanDefinitionTestUtils.*;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;

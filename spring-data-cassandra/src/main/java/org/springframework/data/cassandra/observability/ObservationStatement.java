@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.observability;
 
+import io.micrometer.observation.Observation;
+
 import javax.annotation.Nonnull;
 
 import org.aopalliance.intercept.MethodInterceptor;
@@ -24,8 +26,6 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 
 import com.datastax.oss.driver.api.core.cql.Statement;
-
-import io.micrometer.observation.Observation;
 
 /**
  * Trace implementation of a {@link Statement}.

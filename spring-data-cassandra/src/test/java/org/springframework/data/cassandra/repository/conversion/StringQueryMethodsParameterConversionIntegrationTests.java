@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.*;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.cassandra.repository.MapIdCassandraRepository;
 import org.springframework.data.cassandra.repository.Query;

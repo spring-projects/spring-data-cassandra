@@ -28,7 +28,6 @@ import java.util.stream.StreamSupport;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;

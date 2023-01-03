@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.cassandra.core.cql.generator.CreateUserTypeCqlGenerator.*;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.cassandra.core.cql.keyspace.CreateUserTypeSpecification;
 
 import com.datastax.oss.driver.api.core.type.DataTypes;

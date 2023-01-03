@@ -15,15 +15,15 @@
  */
 package org.springframework.data.cassandra.observability;
 
+import io.micrometer.observation.Observation;
+import io.micrometer.observation.transport.Kind;
+import io.micrometer.observation.transport.SenderContext;
+
 import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.Statement;
 import com.datastax.oss.driver.api.core.metadata.Node;
-
-import io.micrometer.observation.Observation;
-import io.micrometer.observation.transport.Kind;
-import io.micrometer.observation.transport.SenderContext;
 
 /**
  * A {@link Observation.Context} for {@link CqlSession}.

@@ -20,7 +20,6 @@ import static org.springframework.data.cassandra.core.cql.generator.CreateUserTy
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.cassandra.core.cql.keyspace.CreateUserTypeSpecification;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
 

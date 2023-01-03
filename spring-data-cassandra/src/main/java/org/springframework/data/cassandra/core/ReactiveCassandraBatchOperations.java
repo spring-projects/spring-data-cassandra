@@ -20,7 +20,6 @@ import reactor.core.publisher.Mono;
 import java.util.Collections;
 
 import org.reactivestreams.Subscriber;
-
 import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.util.Assert;
 

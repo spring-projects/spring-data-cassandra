@@ -18,7 +18,6 @@ package org.springframework.data.cassandra.example;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.cassandra.core.cql.CqlTemplate;
 import org.springframework.data.cassandra.core.cql.RowMapper;
 import org.springframework.data.cassandra.core.cql.generator.DropTableCqlGenerator;

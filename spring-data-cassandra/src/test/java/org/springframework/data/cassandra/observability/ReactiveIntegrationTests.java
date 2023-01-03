@@ -15,17 +15,6 @@
  */
 package org.springframework.data.cassandra.observability;
 
-import static org.assertj.core.api.Assertions.*;
-
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.cassandra.ReactiveResultSet;
-import org.springframework.data.cassandra.ReactiveSession;
-import org.springframework.data.cassandra.core.cql.ReactiveCqlTemplate;
-import org.springframework.data.cassandra.test.util.CassandraExtension;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.micrometer.observation.Observation;
@@ -35,6 +24,15 @@ import io.micrometer.tracing.test.SampleTestRunner;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import reactor.util.context.Context;
+
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.cassandra.ReactiveResultSet;
+import org.springframework.data.cassandra.ReactiveSession;
+import org.springframework.data.cassandra.core.cql.ReactiveCqlTemplate;
+import org.springframework.data.cassandra.test.util.CassandraExtension;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 /**
  * Collection of tests that log metrics and tracing.
