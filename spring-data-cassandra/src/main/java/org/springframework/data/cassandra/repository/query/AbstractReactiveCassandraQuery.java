@@ -103,7 +103,7 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 		CassandraReturnedType returnedType = new CassandraReturnedType(resultProcessor.getReturnedType(),
 				getRequiredConverter(getReactiveCassandraOperations()).getCustomConversions());
 
-		return (returnedType.isProjecting() ? returnedType.getDomainType() : returnedType.getReturnedType());
+		return returnedType.getResultType();
 	}
 
 	/**
