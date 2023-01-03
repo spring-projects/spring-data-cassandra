@@ -19,7 +19,6 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
@@ -107,7 +106,22 @@ public abstract class CassandraRepositoryQuerySupport implements RepositoryQuery
 			this.customConversions = customConversions;
 		}
 
-		boolean isProjecting() {
+		public Class<?> getResultType() {
+
+			if (isProjecting()) {
+				return returnedType.getDomainType();
+			}
+
+			Class<?> typeToRead = returnedType.getTypeToRead();
+
+			if (typeToRead == null) {
+				return returnedType.getReturnedType();
+			}
+
+			return typeToRead;
+		}
+
+		private boolean isProjecting() {
 
 			if (!this.returnedType.isProjecting()) {
 				return false;
@@ -126,14 +140,6 @@ public abstract class CassandraRepositoryQuerySupport implements RepositoryQuery
 
 			// Don't apply projection on Cassandra simple types
 			return !this.customConversions.isSimpleType(this.returnedType.getReturnedType());
-		}
-
-		Class<?> getDomainType() {
-			return this.returnedType.getDomainType();
-		}
-
-		Class<?> getReturnedType() {
-			return this.returnedType.getReturnedType();
 		}
 	}
 }
