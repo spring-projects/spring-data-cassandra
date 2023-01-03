@@ -107,7 +107,7 @@ public abstract class AbstractCassandraQuery extends CassandraRepositoryQuerySup
 		CassandraReturnedType returnedType = new CassandraReturnedType(resultProcessor.getReturnedType(),
 				getOperations().getConverter().getCustomConversions());
 
-		return returnedType.isProjecting() ? returnedType.getDomainType() : returnedType.getReturnedType();
+		return returnedType.getResultType();
 	}
 
 	/**
