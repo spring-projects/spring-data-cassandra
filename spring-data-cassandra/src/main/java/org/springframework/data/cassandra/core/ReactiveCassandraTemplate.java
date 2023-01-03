@@ -966,6 +966,9 @@ public class ReactiveCassandraTemplate
 
 		@Override
 		public Mono<PreparedStatement> createPreparedStatement(ReactiveSession session) throws DriverException {
+
+			// Note that prepared statement settings like the keyspace are gone because using the prepare method with a
+			// statement object causes cache pollution
 			return session.prepare(statement.getQuery());
 		}
 

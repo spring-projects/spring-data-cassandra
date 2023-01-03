@@ -492,11 +492,14 @@ class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrat
 
 		User user = new User("heisenberg", "Walter", "White");
 		template.insert(user);
+		template.setUsePreparedStatements(false);
 
 		Query query = Query.query(where("id").is("heisenberg")).queryOptions(queryOptions);
 		assertThatThrownBy(() -> assertThat(template.select(query, User.class)).isEmpty())
 				.isInstanceOf(CassandraInvalidQueryException.class)
 				.hasMessageContaining("Keyspace 'non_existing' does not exist");
+
+		template.setUsePreparedStatements(true);
 	}
 
 	@Test // DATACASS-182
