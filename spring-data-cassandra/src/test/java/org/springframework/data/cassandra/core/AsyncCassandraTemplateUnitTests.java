@@ -15,12 +15,37 @@
  */
 package org.springframework.data.cassandra.core;
 
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.data.cassandra.core.query.Criteria.*;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+import org.springframework.data.cassandra.CassandraConnectionFailureException;
+import org.springframework.data.cassandra.core.mapping.event.BeforeConvertCallback;
+import org.springframework.data.cassandra.core.mapping.event.BeforeSaveCallback;
+import org.springframework.data.cassandra.core.query.Filter;
+import org.springframework.data.cassandra.core.query.Query;
+import org.springframework.data.cassandra.core.query.Update;
+import org.springframework.data.cassandra.domain.User;
+import org.springframework.data.cassandra.domain.VersionedUser;
+import org.springframework.data.mapping.callback.EntityCallbacks;
+import org.springframework.util.concurrent.ListenableFuture;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
@@ -35,31 +60,6 @@ import com.datastax.oss.driver.api.core.cql.Statement;
 import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
 import com.datastax.oss.driver.internal.core.type.codec.registry.DefaultCodecRegistry;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
-
-import org.springframework.data.cassandra.CassandraConnectionFailureException;
-import org.springframework.data.cassandra.core.mapping.event.BeforeConvertCallback;
-import org.springframework.data.cassandra.core.mapping.event.BeforeSaveCallback;
-import org.springframework.data.cassandra.core.query.Filter;
-import org.springframework.data.cassandra.core.query.Query;
-import org.springframework.data.cassandra.core.query.Update;
-import org.springframework.data.cassandra.domain.User;
-import org.springframework.data.cassandra.domain.VersionedUser;
-import org.springframework.data.mapping.callback.EntityCallbacks;
-import org.springframework.util.concurrent.ListenableFuture;
-
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-import static org.springframework.data.cassandra.core.query.Criteria.*;
 
 /**
  * Unit tests for {@link AsyncCassandraTemplate}.

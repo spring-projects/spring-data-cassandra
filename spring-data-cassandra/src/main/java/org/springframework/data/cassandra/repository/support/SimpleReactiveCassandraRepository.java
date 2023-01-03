@@ -23,7 +23,6 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 
 import org.reactivestreams.Publisher;
-
 import org.springframework.data.cassandra.core.EntityWriteResult;
 import org.springframework.data.cassandra.core.InsertOptions;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;

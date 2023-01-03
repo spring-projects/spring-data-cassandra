@@ -17,7 +17,6 @@ package org.springframework.data.cassandra.core.mapping.event;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.context.ApplicationListener;
 import org.springframework.core.GenericTypeResolver;
 

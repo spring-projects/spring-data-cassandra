@@ -18,10 +18,8 @@ package org.springframework.data.cassandra.core.convert;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.data.cassandra.core.convert.CassandraThreeTenBackPortConverters.LocalTimeToMillisOfDayConverter;
 import org.springframework.data.cassandra.core.convert.CassandraThreeTenBackPortConverters.MillisOfDayToLocalTimeConverter;
-
 import org.threeten.bp.LocalTime;
 
 /**

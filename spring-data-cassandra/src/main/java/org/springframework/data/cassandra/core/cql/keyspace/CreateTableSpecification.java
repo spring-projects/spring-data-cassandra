@@ -15,9 +15,9 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
-import com.datastax.oss.driver.api.core.CqlIdentifier;
-
 import org.springframework.lang.Nullable;
+
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * Object to configure a {@code CREATE TABLE} specification.

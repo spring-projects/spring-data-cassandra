@@ -453,7 +453,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 		try {
 			if (logger.isDebugEnabled()) {
-				logger.debug(String.format("Preparing statement [%s] using %s", toCql(preparedStatementCreator), preparedStatementCreator));
+				logger.debug(String.format("Preparing statement [%s] using %s", toCql(preparedStatementCreator),
+						preparedStatementCreator));
 			}
 
 			CqlSession session = getCurrentSession();
@@ -523,7 +524,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 		try {
 			if (logger.isDebugEnabled()) {
-				logger.debug(String.format("Preparing statement [%s] using %s", toCql(preparedStatementCreator), preparedStatementCreator));
+				logger.debug(String.format("Preparing statement [%s] using %s", toCql(preparedStatementCreator),
+						preparedStatementCreator));
 			}
 
 			CqlSession session = getCurrentSession();
@@ -531,7 +533,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 			PreparedStatement preparedStatement = preparedStatementCreator.createPreparedStatement(session);
 
 			if (logger.isDebugEnabled()) {
-				logger.debug(String.format("Executing prepared statement [%s]", QueryExtractorDelegate.getCql(preparedStatement)));
+				logger.debug(
+						String.format("Executing prepared statement [%s]", QueryExtractorDelegate.getCql(preparedStatement)));
 			}
 
 			Statement<?> boundStatement = applyStatementSettings(

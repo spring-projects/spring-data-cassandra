@@ -15,15 +15,15 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
+import org.springframework.lang.Nullable;
+import org.springframework.util.ObjectUtils;
+
 import com.datastax.oss.driver.api.core.cql.BatchStatement;
 import com.datastax.oss.driver.api.core.cql.BatchableStatement;
 import com.datastax.oss.driver.api.core.cql.BoundStatement;
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.Statement;
-
-import org.springframework.lang.Nullable;
-import org.springframework.util.ObjectUtils;
 
 /**
  * Utility to extract CQL queries from a {@link Statement}.

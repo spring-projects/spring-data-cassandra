@@ -16,7 +16,6 @@
 package org.springframework.data.cassandra.core.cql;
 
 import org.reactivestreams.Publisher;
-
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.cassandra.ReactiveSession;
 

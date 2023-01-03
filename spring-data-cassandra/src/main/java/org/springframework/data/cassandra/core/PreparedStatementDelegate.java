@@ -22,7 +22,6 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import org.apache.commons.logging.Log;
-
 import org.springframework.data.cassandra.core.cql.QueryExtractorDelegate;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;

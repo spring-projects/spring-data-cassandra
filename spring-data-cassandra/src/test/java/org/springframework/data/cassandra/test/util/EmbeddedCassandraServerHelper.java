@@ -35,7 +35,6 @@ import org.apache.cassandra.db.commitlog.CommitLog;
 import org.apache.cassandra.service.CassandraDaemon;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.util.FileCopyUtils;
 import org.springframework.util.FileSystemUtils;
 
