@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.observability;
 
+import static org.assertj.core.api.Assertions.*;
+
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.micrometer.observation.ObservationRegistry;
