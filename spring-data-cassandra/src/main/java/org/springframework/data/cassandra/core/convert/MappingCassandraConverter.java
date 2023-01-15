@@ -29,8 +29,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.core.convert.ConversionService;
@@ -99,6 +101,7 @@ import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
  * @author John Blum
  * @author Christoph Strobl
  * @author Frank Spitulski
+ * @author neshkeev
  */
 public class MappingCassandraConverter extends AbstractCassandraConverter
 		implements ApplicationContextAware, BeanClassLoaderAware {
@@ -133,7 +136,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 */
 	public MappingCassandraConverter(CassandraMappingContext mappingContext) {
 
-		super(newConversionService());
+		super(newConversionService(mappingContext));
 
 		Assert.notNull(mappingContext, "CassandraMappingContext must not be null");
 
@@ -161,8 +164,22 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 				this::readCollectionOrArray, this::readMap, this::getPotentiallyConvertedSimpleRead);
 	}
 
-	private static ConversionService newConversionService() {
-		return new DefaultConversionService();
+	private static ConversionService newConversionService(CassandraMappingContext mappingContext) {
+		ApplicationContext applicationContext = mappingContext.getApplicationContext();
+		if (applicationContext == null) return new DefaultConversionService();
+
+		if (!applicationContext.containsBean(ConfigurableApplicationContext.CONVERSION_SERVICE_BEAN_NAME))
+			return new DefaultConversionService();
+
+		AutowireCapableBeanFactory factory = applicationContext.getAutowireCapableBeanFactory();
+		if (!factory.isTypeMatch(ConfigurableApplicationContext.CONVERSION_SERVICE_BEAN_NAME, ConversionService.class))
+			return new DefaultConversionService();
+
+		final Object conversionService = applicationContext.getBean(ConfigurableApplicationContext.CONVERSION_SERVICE_BEAN_NAME);
+
+		return conversionService instanceof ConversionService
+				? (ConversionService) conversionService
+				: new DefaultConversionService();
 	}
 
 	/**

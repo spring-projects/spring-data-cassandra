@@ -56,6 +56,7 @@ import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
  * @author John Blum
  * @author Jens Schauder
  * @author Vagif Zeynalov
+ * @author neshkeev
  */
 public class CassandraMappingContext
 		extends AbstractMappingContext<BasicCassandraPersistentEntity<?>, CassandraPersistentProperty>
@@ -168,6 +169,11 @@ public class CassandraMappingContext
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
+	}
+
+	@Nullable
+	public ApplicationContext getApplicationContext() {
+		return applicationContext;
 	}
 
 	public void setBeanClassLoader(ClassLoader beanClassLoader) {
