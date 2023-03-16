@@ -24,6 +24,7 @@ import org.springframework.data.cassandra.core.mapping.CassandraPersistentProper
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Range;
+import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Sort;
 import org.springframework.lang.Nullable;
 
@@ -47,6 +48,12 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 
 		this.converter = converter;
 		this.delegate = delegate;
+	}
+
+	@Nullable
+	@Override
+	public ScrollPosition getScrollPosition() {
+		return delegate.getScrollPosition();
 	}
 
 	@Override

@@ -22,6 +22,7 @@ import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.lang.Nullable;
@@ -67,6 +68,12 @@ class StubParameterAccessor implements CassandraParameterAccessor {
 	@Nullable
 	@Override
 	public QueryOptions getQueryOptions() {
+		return null;
+	}
+
+	@Nullable
+	@Override
+	public ScrollPosition getScrollPosition() {
 		return null;
 	}
 
