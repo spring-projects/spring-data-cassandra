@@ -10,7 +10,7 @@ Reactive usage is broken up into two phases: Composition and Execution.
 
 Calling repository methods lets you compose a reactive sequence by obtaining `Publisher` instances and applying operators.
 No I/O happens until you subscribe.
-Passing the reactive sequence to a reactive execution infrastructure, such as {spring-framework-docs}web.html#web-reactive[Spring WebFlux]
+Passing the reactive sequence to a reactive execution infrastructure, such as {springDocsUrl}web.html#web-reactive[Spring WebFlux]
 or https://vertx.io/docs/vertx-reactive-streams/java/[Vert.x]), subscribes to the publisher and initiate the actual execution.
 See https://projectreactor.io/docs/core/release/reference/#reactive.subscribe[the Project reactor documentation] for more detail.
 
