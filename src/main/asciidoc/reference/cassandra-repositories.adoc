@@ -328,7 +328,7 @@ public interface PersonRepository extends CrudRepository<Person, String> {
 ----
 ====
 
-The DataStax Cassandra documentation includes https://docs.datastax.com/en/cassandra/3.0/cassandra/dml/dmlConfigConsistency.html[a good discussion of the available consistency levels].
+The DataStax Cassandra documentation includes https://docs.datastax.com/en/cassandra-oss/3.0/cassandra/dml/dmlConfigConsistency.html[a good discussion of the available consistency levels].
 
 NOTE: You can control fetch size, consistency level, and retry policy defaults by configuring the following parameters on the CQL API instances: `CqlTemplate`, `AsyncCqlTemplate`, and `ReactiveCqlTemplate`.
 Defaults apply if the particular query option is not set.
@@ -338,7 +338,7 @@ Defaults apply if the particular query option is not set.
 
 Instances of the repository interfaces are usually created by a container, and the Spring container is the most natural choice when working with Spring Data.
 Spring Data for Apache Cassandra ships with a custom CDI extension that allows using the repository abstraction in CDI environments.
-The extension is part of the JAR. To activate it, drop the Spring Data for Apache Cassandra JAR into your classpath.
+The extension is part of the JAR.To activate it, drop the Spring Data for Apache Cassandra JAR into your classpath.
 You can now set up the infrastructure by implementing a CDI Producer for the
 `CassandraTemplate`, as the following examlpe shows:
 

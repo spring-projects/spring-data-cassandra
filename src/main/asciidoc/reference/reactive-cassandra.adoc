@@ -7,8 +7,8 @@ The reactive Cassandra support contains a wide range of features:
 * `ReactiveCqlTemplate` helper class that increases productivity by properly handling common Cassandra data access operations.
 * `ReactiveCassandraTemplate` helper class that increases productivity by using `ReactiveCassandraOperations` in a reactive manner.
 It includes integrated object mapping between tables and POJOs.
-* Exception translation into Spring's portable {spring-framework-docs}data-access.html#dao-exceptions[Data Access Exception Hierarchy].
-* Feature rich object mapping integrated with Spring's {spring-framework-docs}core.html#core-convert[Conversion Service].
+* Exception translation into Spring's portable {springDocsUrl}data-access.html#dao-exceptions[Data Access Exception Hierarchy].
+* Feature rich object mapping integrated with Spring's {springDocsUrl}core.html#core-convert[Conversion Service].
 * Java-based Query, Criteria, and Update DSLs.
 * Automatic implementation of `Repository` interfaces, including support for custom finder methods.
 
@@ -19,7 +19,7 @@ Spring Data for Apache Cassandra uses consistent naming conventions on objects i
 == Getting Started
 
 Spring Data for Apache Cassandra requires Apache Cassandra 2.1 or later and Datastax Java Driver 4.0 or later.
-An easy way to quickly set up and bootstrap a working environment is to create a Spring-based project in https://spring.io/tools/sts[STS] or use https://start.spring.io/[Spring Initializer].
+An easy way to quickly set up and bootstrap a working environment is to create a Spring-based project in https://spring.io/tools[Spring Tools] or use https://start.spring.io/[Spring Initializer].
 
 First, you need to set up a running Apache Cassandra server.
 See the
@@ -64,7 +64,7 @@ If using a milestone release instead of a GA release, you also need to add the l
   <repository>
     <id>spring-milestone</id>
     <name>Spring Maven MILESTONE Repository</name>
-    <url>https://repo.spring.io/libs-milestone</url>
+    <url>https://repo.spring.io/milestone</url>
   </repository>
 </repositories>
 ----
@@ -114,8 +114,8 @@ You can do so either by using Java-based bean metadata or by using XML-based bea
 These are discussed in the following sections.
 
 NOTE: For those not familiar with how to configure the Spring container using Java-based bean metadata instead of XML-based metadata, see the high-level introduction in the reference docs
-https://docs.spring.io/spring/docs/3.2.x/spring-framework-reference/html/new-in-3.0.html#new-java-configuration[here]
-as well as the detailed documentation {spring-framework-docs}core.html#beans-java-instantiating-container[here].
+https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#beans-java[here]
+as well as the detailed documentation {springDocsUrl}core.html#beans-java-instantiating-container[here].
 
 [[reactive.cassandra.java-config]]
 === Registering a Session instance using Java-based metadata
