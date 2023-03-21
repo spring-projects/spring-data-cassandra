@@ -19,7 +19,7 @@ This section explains how types are mapped to and from an Apache Cassandra repre
 Spring Data for Apache Cassandra supports several types that are provided by Apache Cassandra.
 In addition to these types, Spring Data for Apache Cassandra provides a set of built-in converters to map additional types.
 You can provide your own custom converters to adjust type conversion.
-See "`<<cassandra.mapping.explicit-converters>>`" for further details.
+See "`<<cassandra.custom-converters>>`" for further details.
 The following table maps Spring Data types to Cassandra types:
 
 [cols="3,2",options="header"]
@@ -224,6 +224,7 @@ In this context, "`composite primary key`" means one or more partition columns o
 Primary keys can make use of any singular simple Cassandra type or mapped user-defined Type.
 Collection-typed primary keys are not supported.
 
+[[cassandra-template.id-handling.simple]]
 ==== Simple Primary Keys
 
 A simple primary key consists of one partition key field within an entity class.
@@ -264,6 +265,7 @@ public class LoginEvent {
 ----
 ====
 
+[[cassandra-template.id-handling.composite]]
 ==== Composite Keys
 
 Composite primary keys (or compound keys) consist of more than one primary key field.
@@ -293,6 +295,7 @@ CREATE TABLE login_event(
 ----
 ====
 
+[[cassandra-template.id-handling.flat]]
 ==== Flat Composite Primary Keys
 
 Flat composite primary keys are embedded inside the entity as flat fields.
@@ -309,6 +312,7 @@ include::../{example-root}/LoginEvent.java[tags=class]
 ----
 ====
 
+[[cassandra-template.id-handling.pk-class]]
 ==== Primary Key Class
 
 A primary key class is a composite primary key class that is mapped to multiple fields or properties of the entity.
