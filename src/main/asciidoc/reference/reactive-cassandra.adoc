@@ -258,6 +258,7 @@ include::../{example-root}/ReactiveCqlTemplateExamples.java[tags=delete]
 ----
 ====
 
+[[cassandra.reactive.exception]]
 include::exception-translation.adoc[]
 
 `ReactiveCqlTemplate` and `ReactiveCassandraTemplate` propagate exceptions as early as possible.
