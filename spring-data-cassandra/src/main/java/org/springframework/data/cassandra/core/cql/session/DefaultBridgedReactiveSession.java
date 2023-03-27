@@ -27,6 +27,8 @@ import java.util.concurrent.CompletionStage;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.aop.TargetSource;
+import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.data.cassandra.ReactiveResultSet;
 import org.springframework.data.cassandra.ReactiveSession;
 import org.springframework.util.Assert;
@@ -54,7 +56,7 @@ import com.datastax.oss.driver.api.core.metadata.Metadata;
  * Calls are deferred until a subscriber subscribes to the resulting {@link org.reactivestreams.Publisher}. The calls
  * are executed by subscribing to {@link CompletionStage} and returning the result as calls complete.
  * <p>
- * Elements are emitted on netty EventLoop threads. {@link AsyncResultSet} allows {@link AsyncResultSet#fetchNextPage()}
+ * Elements are emitted on netty EventLoop threads. {@link AsyncResultSet} allows {@link AsyncResultSet#fetchNextPage()
  * asynchronous requesting} of subsequent pages. The next page is requested after emitting all elements of the previous
  * page. However, this is an intermediate solution until Datastax can provide a fully reactive driver.
  * <p>
@@ -84,6 +86,18 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 	public DefaultBridgedReactiveSession(CqlSession session) {
 
 		Assert.notNull(session, "Session must not be null");
+
+		// potentially unwrap a ObservationDecoratedProxy as reactive observability
+		// requires its own approach to span creation. We do not want to participate in
+		// async API spans but rather drive our own spans.
+		if (session instanceof TargetSource) {
+			Class<?>[] interfaces = session.getClass().getInterfaces();
+			for (Class<?> anInterface : interfaces) {
+				if (anInterface.getName().endsWith("ObservationDecoratedProxy")) {
+					session = (CqlSession) AopProxyUtils.getSingletonTarget(session);
+				}
+			}
+		}
 
 		this.session = session;
 	}
@@ -238,7 +252,6 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 		public Flux<Row> availableRows() {
 			return Flux.fromIterable(resultSet.currentPage());
 		}
-
 
 		@Override
 		public ColumnDefinitions getColumnDefinitions() {

@@ -17,6 +17,8 @@ package org.springframework.data.cassandra.observability;
 
 import io.micrometer.observation.ObservationRegistry;
 
+import org.springframework.aop.TargetSource;
+import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.data.cassandra.ReactiveSession;
 import org.springframework.data.cassandra.core.cql.session.DefaultBridgedReactiveSession;
@@ -25,6 +27,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
 import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.CqlSessionBuilder;
 
 /**
  * Factory bean to construct a {@link ReactiveSession} integrated with given {@link ObservationRegistry}. The required
@@ -41,9 +44,29 @@ public class ObservableReactiveSessionFactoryBean extends AbstractFactoryBean<Re
 
 	private final CqlSession cqlSession;
 
+	private final boolean requiresDestroy;
+
 	private final ObservationRegistry observationRegistry;
 
 	private @Nullable String remoteServiceName;
+
+	/**
+	 * Construct a new {@link ObservableReactiveSessionFactoryBean}.
+	 *
+	 * @param cqlSessionBuilder must not be {@literal null}.
+	 * @param observationRegistry must not be {@literal null}.
+	 * @since 4.0.5
+	 */
+	public ObservableReactiveSessionFactoryBean(CqlSessionBuilder cqlSessionBuilder,
+			ObservationRegistry observationRegistry) {
+
+		Assert.notNull(cqlSessionBuilder, "CqlSessionBuilder must not be null");
+		Assert.notNull(observationRegistry, "ObservationRegistry must not be null");
+
+		this.cqlSession = cqlSessionBuilder.build();
+		this.requiresDestroy = true;
+		this.observationRegistry = observationRegistry;
+	}
 
 	/**
 	 * Construct a new {@link ObservableReactiveSessionFactoryBean}.
@@ -56,7 +79,9 @@ public class ObservableReactiveSessionFactoryBean extends AbstractFactoryBean<Re
 		Assert.notNull(cqlSession, "CqlSession must not be null");
 		Assert.notNull(observationRegistry, "ObservationRegistry must not be null");
 
-		this.cqlSession = cqlSession;
+		this.cqlSession = cqlSession instanceof TargetSource c ? (CqlSession) AopProxyUtils.getSingletonTarget(c)
+				: cqlSession;
+		this.requiresDestroy = false;
 		this.observationRegistry = observationRegistry;
 	}
 
@@ -79,6 +104,14 @@ public class ObservableReactiveSessionFactoryBean extends AbstractFactoryBean<Re
 	@Nullable
 	public String getRemoteServiceName() {
 		return remoteServiceName;
+	}
+
+	@Override
+	public void destroy() {
+
+		if (requiresDestroy) {
+			cqlSession.close();
+		}
 	}
 
 	/**

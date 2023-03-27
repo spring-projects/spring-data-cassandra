@@ -25,6 +25,7 @@ import java.util.function.Function;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.springframework.aop.TargetSource;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
@@ -183,4 +184,11 @@ final class CqlSessionObservationInterceptor implements MethodInterceptor {
 		return observation.start();
 	}
 
+	/**
+	 * Marker interface for components that want to participate in observation but do not want to work with a
+	 * {@code CqlSession} that is already decorated for observation.
+	 */
+	public interface ObservationDecoratedProxy extends TargetSource {
+
+	}
 }

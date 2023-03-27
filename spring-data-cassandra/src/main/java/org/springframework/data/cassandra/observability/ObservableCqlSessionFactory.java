@@ -17,7 +17,10 @@ package org.springframework.data.cassandra.observability;
 
 import io.micrometer.observation.ObservationRegistry;
 
+import org.springframework.aop.RawTargetAccess;
+import org.springframework.aop.TargetSource;
 import org.springframework.aop.framework.ProxyFactory;
+import org.springframework.data.cassandra.observability.CqlSessionObservationInterceptor.ObservationDecoratedProxy;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlSession;
@@ -65,7 +68,10 @@ public final class ObservableCqlSessionFactory {
 		proxyFactory.setTarget(session);
 		proxyFactory.addAdvice(new CqlSessionObservationInterceptor(session, remoteServiceName, observationRegistry));
 		proxyFactory.addInterface(CqlSession.class);
+		proxyFactory.addInterface(ObservationDecoratedProxy.class);
 
 		return (CqlSession) proxyFactory.getProxy();
 	}
+
+
 }
