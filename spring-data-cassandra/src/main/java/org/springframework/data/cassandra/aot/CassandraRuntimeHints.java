@@ -31,7 +31,7 @@ import org.springframework.data.cassandra.core.mapping.event.ReactiveBeforeSaveC
 import org.springframework.data.cassandra.observability.CassandraObservationSupplier;
 import org.springframework.data.cassandra.repository.support.SimpleCassandraRepository;
 import org.springframework.data.cassandra.repository.support.SimpleReactiveCassandraRepository;
-import org.springframework.data.repository.util.ReactiveWrappers;
+import org.springframework.data.util.ReactiveWrappers;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 
@@ -91,6 +91,19 @@ class CassandraRuntimeHints implements RuntimeHintsRegistrar {
 			}
 
 			hints.proxies().registerJdkProxy(CqlSession.class, SpringProxy.class, Advised.class, DecoratingProxy.class);
+			Class<?> observationDecorated;
+			try {
+				observationDecorated = Class.forName(
+						"org.springframework.data.cassandra.observability.CqlSessionObservationInterceptor.ObservationDecoratedProxy",
+						false, classLoader);
+			} catch (Exception e) {
+				observationDecorated = null;
+			}
+
+			if (observationDecorated != null) {
+				hints.proxies().registerJdkProxy(CqlSession.class, SpringProxy.class, Advised.class, DecoratingProxy.class,
+						observationDecorated);
+			}
 		}
 	}
 }

@@ -180,4 +180,5 @@ public class ObservableReactiveSession implements ReactiveSession {
 	private static Observation getParentObservation(ContextView contextView) {
 		return contextView.getOrDefault(ObservationThreadLocalAccessor.KEY, null);
 	}
+
 }
