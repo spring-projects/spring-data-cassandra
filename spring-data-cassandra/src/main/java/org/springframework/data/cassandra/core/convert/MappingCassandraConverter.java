@@ -1454,7 +1454,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		}
 	}
 
-	private static class PropertyTranslatingPropertyAccessor<T> implements PersistentPropertyPathAccessor<T> {
+	private static class PropertyTranslatingPropertyAccessor<T> implements PersistentPropertyAccessor<T> {
 
 		private final PersistentPropertyAccessor<T> delegate;
 		private final PersistentPropertyTranslator propertyTranslator;
@@ -1483,23 +1483,6 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		@Override
 		public T getBean() {
 			return delegate.getBean();
-		}
-
-		@Override
-		public void setProperty(PersistentPropertyPath<? extends PersistentProperty<?>> path, Object value,
-				AccessOptions.SetOptions options) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public Object getProperty(PersistentPropertyPath<? extends PersistentProperty<?>> path,
-				AccessOptions.GetOptions context) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public void setProperty(PersistentPropertyPath<? extends PersistentProperty<?>> path, Object value) {
-			throw new UnsupportedOperationException();
 		}
 
 		private CassandraPersistentProperty translate(PersistentProperty<?> property) {
