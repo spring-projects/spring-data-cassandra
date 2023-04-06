@@ -61,18 +61,19 @@ class CassandraAdminTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 
 	@Test // DATACASS-173
 	void testCreateTables() {
-
 		assertThat(getKeyspaceMetadata().getTables()).hasSize(0);
-
-		cassandraAdminTemplate.createTable(true, CqlIdentifier.fromCql("users"), User.class, null);
+		createTable("users", User.class);
 		assertThat(getKeyspaceMetadata().getTables()).hasSize(1);
-
-		cassandraAdminTemplate.createTable(true, CqlIdentifier.fromCql("users"), User.class, null);
+		createTable("users", User.class);
 		assertThat(getKeyspaceMetadata().getTables()).hasSize(1);
 	}
 
+	private void createTable(String tableName, Class<?> entityClass) {
+		cassandraAdminTemplate.createTable(true, CqlIdentifier.fromCql(tableName), entityClass, null);
+	}
+
 	@Test
-	void testDropTable() {
+	void testTableManagement() {
 
 		cassandraAdminTemplate.createTable(true, CqlIdentifier.fromCql("users"), User.class, null);
 		assertThat(getKeyspaceMetadata().getTables()).hasSize(1);

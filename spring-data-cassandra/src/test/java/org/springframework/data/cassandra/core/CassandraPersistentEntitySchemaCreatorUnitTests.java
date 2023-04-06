@@ -182,20 +182,29 @@ class CassandraPersistentEntitySchemaCreatorUnitTests extends CassandraPersisten
 		verify(operations).execute("CREATE INDEX ON indexedentity (firstname);");
 	}
 
+	@Test // DATACASS-214
+	//decompose conditional
 	private void verifyTypesGetCreatedInOrderFor(String... typenames) {
 
 		ArgumentCaptor<String> cql = ArgumentCaptor.forClass(String.class);
-
 		verify(operations, atLeast(typenames.length)).execute(cql.capture());
 
 		List<String> allValues = cql.getAllValues();
+		List<String> createTypeCqls = new ArrayList<>();
+
+		for (String value : allValues) {
+			if (value.contains("CREATE TYPE")) {
+				createTypeCqls.add(value);
+			}
+		}
+
+		assertThat(createTypeCqls).hasSize(typenames.length);
 
 		for (int i = 0; i < typenames.length; i++) {
-			assertThat(allValues.get(i)).describedAs("Actual: " + allValues + ", expected: " + Arrays.toString(typenames))
+			assertThat(createTypeCqls.get(i)).describedAs("Actual: " + createTypeCqls + ", expected: " + Arrays.toString(typenames))
 					.contains("CREATE TYPE " + typenames[i]);
 		}
 	}
-
 	abstract static class AbstractModel {
 		private RequiredByAll attachments;
 	}

@@ -104,18 +104,22 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 		return schemaFactory;
 	}
 
+	// Extract Method
 	@Override
 	public void createTable(boolean ifNotExists, CqlIdentifier tableName, Class<?> entityClass,
-			Map<String, Object> optionsByName) {
+							Map<String, Object> optionsByName) {
 
 		CassandraPersistentEntity<?> entity = getConverter().getMappingContext().getRequiredPersistentEntity(entityClass);
 
-		CreateTableSpecification createTableSpecification = this.schemaFactory
-				.getCreateTableSpecificationFor(entity, tableName).ifNotExists(ifNotExists);
+		CreateTableSpecification createTableSpecification = createTableSpecificationFor(entity, tableName)
+				.ifNotExists(ifNotExists);
 
 		getCqlOperations().execute(CreateTableCqlGenerator.toCql(createTableSpecification));
 	}
 
+	private CreateTableSpecification createTableSpecificationFor(CassandraPersistentEntity<?> entity, CqlIdentifier tableName) {
+		return this.schemaFactory.getCreateTableSpecificationFor(entity, tableName);
+	}
 	@Override
 	public void dropTable(Class<?> entityClass) {
 		dropTable(getTableName(entityClass));
@@ -126,10 +130,11 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 		dropTable(DEFAULT_DROP_TABLE_IF_EXISTS, tableName);
 	}
 
+//Rename method/variable
 	@Override
-	public void dropTable(boolean ifExists, CqlIdentifier tableName) {
+	public void dropTable(boolean ifExists, CqlIdentifier tableIdentifier) {
 
-		String dropTableCql = DropTableCqlGenerator.toCql(DropTableSpecification.dropTable(tableName).ifExists(ifExists));
+		String dropTableCql = DropTableCqlGenerator.toCql(DropTableSpecification.dropTable(tableIdentifier).ifExists(ifExists));
 
 		getCqlOperations().execute(dropTableCql);
 	}

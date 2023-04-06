@@ -104,28 +104,33 @@ public class DeleteOptions extends WriteOptions {
 		return ifCondition;
 	}
 
+	//Push-down variable/method
 	@Override
 	public boolean equals(@Nullable Object o) {
-
 		if (this == o) {
 			return true;
 		}
-
 		if (!(o instanceof DeleteOptions)) {
 			return false;
 		}
-
 		if (!super.equals(o)) {
 			return false;
 		}
-
 		DeleteOptions that = (DeleteOptions) o;
-		if (ifExists != that.ifExists) {
+		return ifExists == that.ifExists && ObjectUtils.nullSafeEquals(ifCondition, that.ifCondition);
+	}
+
+	public boolean equalsIgnoreSuper(@Nullable Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (!(o instanceof DeleteOptions)) {
 			return false;
 		}
-
-		return ObjectUtils.nullSafeEquals(ifCondition, that.ifCondition);
+		DeleteOptions that = (DeleteOptions) o;
+		return ifExists == that.ifExists && ObjectUtils.nullSafeEquals(ifCondition, that.ifCondition);
 	}
+
 
 	@Override
 	public int hashCode() {

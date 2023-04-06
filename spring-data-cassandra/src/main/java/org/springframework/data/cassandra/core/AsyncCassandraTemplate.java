@@ -568,13 +568,15 @@ public class AsyncCassandraTemplate
 		return insert(entity, InsertOptions.empty()).thenApply(EntityWriteResult::getEntity);
 	}
 
+	//Pull-up variable/method
 	@Override
 	public <T> CompletableFuture<EntityWriteResult<T>> insert(T entity, InsertOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
 		Assert.notNull(options, "InsertOptions must not be null");
 
-		return doInsert(entity, options, getTableName(entity.getClass()));
+		CqlIdentifier tableName = getTableName(entity.getClass());
+		return doInsert(entity, options, tableName);
 	}
 
 	private <T> CompletableFuture<EntityWriteResult<T>> doInsert(T entity, WriteOptions options,

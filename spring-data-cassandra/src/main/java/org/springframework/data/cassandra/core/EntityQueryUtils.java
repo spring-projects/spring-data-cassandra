@@ -95,11 +95,27 @@ class EntityQueryUtils {
 	 * @return the resulting {@link Slice}.
 	 * @since 2.1
 	 */
+//	static <T> Slice<T> readSlice(Iterable<Row> rows, @Nullable ByteBuffer pagingState, RowMapper<T> mapper, int page,
+//			int pageSize) {
+//
+//		List<T> result = new ArrayList<>(pageSize);
+//
+//		Iterator<Row> iterator = rows.iterator();
+//		int index = 0;
+//
+//		while (iterator.hasNext()) {
+//			T element = mapper.mapRow(iterator.next(), index++);
+//			result.add(element);
+//		}
+//
+//		CassandraPageRequest pageRequest = CassandraPageRequest.of(PageRequest.of(page, pageSize), pagingState);
+//
+//		return new SliceImpl<>(result, pageRequest, pagingState != null);
+//	}
+	// move method/field
 	static <T> Slice<T> readSlice(Iterable<Row> rows, @Nullable ByteBuffer pagingState, RowMapper<T> mapper, int page,
-			int pageSize) {
-
+								  int pageSize) {
 		List<T> result = new ArrayList<>(pageSize);
-
 		Iterator<Row> iterator = rows.iterator();
 		int index = 0;
 
@@ -108,10 +124,15 @@ class EntityQueryUtils {
 			result.add(element);
 		}
 
-		CassandraPageRequest pageRequest = CassandraPageRequest.of(PageRequest.of(page, pageSize), pagingState);
+		CassandraPageRequest pageRequest = createPageRequest(pagingState, page, pageSize);
 
 		return new SliceImpl<>(result, pageRequest, pagingState != null);
 	}
+
+	private static CassandraPageRequest createPageRequest(ByteBuffer pagingState, int page, int pageSize) {
+		return CassandraPageRequest.of(PageRequest.of(page, pageSize), pagingState);
+	}
+
 
 	/**
 	 * Extract the table name from a {@link Statement}.

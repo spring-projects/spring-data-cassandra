@@ -184,17 +184,14 @@ public class CassandraPersistentEntitySchemaCreator {
 		return specifications;
 	}
 
+	//Decompose Conditional
 	private void visitUserTypes(CassandraPersistentEntity<?> entity, UserDefinedTypeSet udts) {
 
 		for (CassandraPersistentProperty property : entity) {
 
 			BasicCassandraPersistentEntity<?> propertyType = this.mappingContext.getPersistentEntity(property);
 
-			if (propertyType == null) {
-				continue;
-			}
-
-			if (propertyType.isUserDefinedType()) {
+			if (propertyType != null && propertyType.isUserDefinedType()) {
 				if (udts.add(propertyType.getTableName())) {
 					visitUserTypes(propertyType, udts);
 				}
