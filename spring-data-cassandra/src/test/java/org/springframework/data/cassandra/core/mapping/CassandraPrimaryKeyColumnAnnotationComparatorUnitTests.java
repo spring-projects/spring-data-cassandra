@@ -25,6 +25,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.cassandra.core.cql.Ordering;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
+import org.springframework.data.mapping.PersistentProperty;
 
 /**
  * The CassandraPrimaryKeyColumnAnnotationComparatorUnitTests class is a test suite of test cases testing the contract
@@ -44,7 +45,7 @@ class CassandraPrimaryKeyColumnAnnotationComparatorUnitTests {
 	@BeforeAll
 	static void setup() throws Exception {
 
-		entityOne = EntityOne.class.getDeclaredField("id").getAnnotation(PrimaryKeyColumn.class);
+		entityOne = EntityOne.class.getDeclaredField("a").getAnnotation(PrimaryKeyColumn.class);
 		entityTwo = EntityTwo.class.getDeclaredField("id").getAnnotation(PrimaryKeyColumn.class);
 		entityThree = EntityThree.class.getDeclaredField("id").getAnnotation(PrimaryKeyColumn.class);
 		entityFour = EntityFour.class.getDeclaredField("id").getAnnotation(PrimaryKeyColumn.class);
@@ -67,12 +68,12 @@ class CassandraPrimaryKeyColumnAnnotationComparatorUnitTests {
 		assertThat(INSTANCE.compare(entityThree, entityOne)).isEqualTo(1);
 	}
 
-	@Test // DATACASS-248
+	@Test // DATACASS-248, GH-1369
 	void compareName() {
 
-		assertThat(INSTANCE.compare(entityOne, entityFour)).isEqualTo(-1);
-		assertThat(INSTANCE.compare(entityFour, entityFour)).isEqualTo(0);
-		assertThat(INSTANCE.compare(entityFour, entityOne)).isEqualTo(1);
+		assertThat(INSTANCE.compare(entityOne, entityFour)).isZero();
+		assertThat(INSTANCE.compare(entityFour, entityFour)).isZero();
+		assertThat(INSTANCE.compare(entityFour, entityOne)).isZero();
 	}
 
 	@Test // DATACASS-248
@@ -83,9 +84,53 @@ class CassandraPrimaryKeyColumnAnnotationComparatorUnitTests {
 		assertThat(INSTANCE.compare(entityFive, entityOne)).isEqualTo(1);
 	}
 
+	@Test // GH-1369
+	void compareNatural() {
+
+		CassandraMappingContext context = new CassandraMappingContext();
+		BasicCassandraPersistentEntity<?> entity = context.getRequiredPersistentEntity(NaturalOrder.class);
+
+		assertThat(entity).extracting(PersistentProperty::getName).containsSequence("partOne", "partTwo", "clustered",
+				"regular");
+	}
+
+	@Test // GH-1369
+	void compareOrdinal() {
+
+		CassandraMappingContext context = new CassandraMappingContext();
+		BasicCassandraPersistentEntity<?> entity = context.getRequiredPersistentEntity(WithOrdinals.class);
+
+		assertThat(entity).extracting(PersistentProperty::getName).containsSequence("partOne", "partTwo", "clustered");
+	}
+
 	private static class EntityOne {
 		@PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, ordinal = 1, name = "A",
-				ordering = Ordering.ASCENDING) private Integer id;
+				ordering = Ordering.ASCENDING) private Integer a;
+
+		@PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, ordinal = 2, name = "B",
+				ordering = Ordering.ASCENDING) private Integer b;
+	}
+
+	private static class NaturalOrder {
+
+		private Integer regular;
+
+		@PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED) private Integer clustered;
+
+		@PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED) private Integer partOne;
+
+		@PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED) private Integer partTwo;
+
+	}
+
+	private static class WithOrdinals {
+
+		@PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, ordinal = 0) private Integer partOne;
+
+		@PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, ordinal = 2) private Integer partTwo;
+
+		@PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, ordinal = 1) private Integer clustered;
+
 	}
 
 	private static class EntityTwo {
@@ -104,7 +149,7 @@ class CassandraPrimaryKeyColumnAnnotationComparatorUnitTests {
 	}
 
 	private static class EntityFive {
-		@PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, ordinal = 1, name = "A",
+		@PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED, ordinal = 5, name = "A",
 				ordering = Ordering.DESCENDING) private UUID id;
 	}
 }

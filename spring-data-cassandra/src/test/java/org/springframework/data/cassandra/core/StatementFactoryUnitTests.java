@@ -317,7 +317,7 @@ class StatementFactoryUnitTests {
 		StatementBuilder<RegularInsert> insert = statementFactory.insert(person, options);
 
 		assertThat(insert.build(ParameterHandling.INLINE).getQuery()).isEqualTo(
-				"INSERT INTO person (first_name,id,list,map,number,set_col) VALUES (NULL,'foo',NULL,NULL,NULL,NULL)");
+				"INSERT INTO person (id,number,list,map,set_col,first_name) VALUES ('foo',NULL,NULL,NULL,NULL,NULL)");
 	}
 
 	@Test // DATACASS-656
@@ -596,7 +596,7 @@ class StatementFactoryUnitTests {
 				WriteOptions.empty());
 
 		assertThat(update.build(ParameterHandling.INLINE).getQuery())
-				.isEqualTo("UPDATE person SET first_name='bar', list=NULL, map=NULL, number=NULL, set_col=NULL WHERE id='foo'");
+				.isEqualTo("UPDATE person SET number=NULL, list=NULL, map=NULL, set_col=NULL, first_name='bar' WHERE id='foo'");
 	}
 
 	@Test // DATACASS-656
@@ -665,7 +665,7 @@ class StatementFactoryUnitTests {
 				WriteOptions.empty());
 
 		assertThat(update.build(ParameterHandling.INLINE).getQuery())
-				.isEqualTo("UPDATE person SET first_name=NULL, list=[], map=NULL, number=NULL, set_col={} WHERE id='foo'");
+				.isEqualTo("UPDATE person SET number=NULL, list=[], map=NULL, set_col={}, first_name=NULL WHERE id='foo'");
 	}
 
 	@Test // DATACASS-708

@@ -45,16 +45,6 @@ public enum CassandraPersistentPropertyComparator implements Comparator<Cassandr
 	@Override
 	public int compare(CassandraPersistentProperty left, CassandraPersistentProperty right) {
 
-		if (left == null && right == null) {
-			return 0;
-		} else if (left != null && right == null) {
-			return 1;
-		} else if (left == null) {
-			return -1;
-		} else if (left.equals(right)) {
-			return 0;
-		}
-
 		boolean leftIsCompositePrimaryKey = left.isCompositePrimaryKey();
 		boolean rightIsCompositePrimaryKey = right.isCompositePrimaryKey();
 
@@ -86,7 +76,15 @@ public enum CassandraPersistentPropertyComparator implements Comparator<Cassandr
 			return 1;
 		}
 
-		// else, neither property is a composite primary key nor a primary key; compare @Column annotations
-		return left.getRequiredColumnName().toString().compareTo(right.getRequiredColumnName().toString());
+		Element leftAnnotation = left.findAnnotation(Element.class);
+		Element rightAnnotation = right.findAnnotation(Element.class);
+
+		if (leftAnnotation != null && rightAnnotation != null) {
+			return Integer.compare(leftAnnotation.value(), rightAnnotation.value());
+		}
+
+		// else, neither property is a composite primary key nor a primary key; there is nothing more so from that
+		// perspective, columns are equal.
+		return 0;
 	}
 }

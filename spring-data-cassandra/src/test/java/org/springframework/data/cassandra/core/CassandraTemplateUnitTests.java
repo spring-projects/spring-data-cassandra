@@ -301,7 +301,7 @@ class CassandraTemplateUnitTests {
 
 		verify(session).execute(statementCaptor.capture());
 		assertThat(render(statementCaptor.getValue()))
-				.isEqualTo("INSERT INTO users (firstname,id,lastname) VALUES ('Walter','heisenberg','White')");
+				.isEqualTo("INSERT INTO users (id,firstname,lastname) VALUES ('heisenberg','Walter','White')");
 		assertThat(beforeConvert).isSameAs(user);
 		assertThat(beforeSave).isSameAs(user);
 	}
@@ -322,7 +322,7 @@ class CassandraTemplateUnitTests {
 
 		verify(session).execute(statementCaptor.capture());
 		assertThat(render(statementCaptor.getValue()))
-				.isEqualTo("INSERT INTO users (firstname,id,lastname) VALUES ('Walter','ww','White')");
+				.isEqualTo("INSERT INTO users (id,firstname,lastname) VALUES ('ww','Walter','White')");
 	}
 
 	@Test
@@ -337,7 +337,7 @@ class CassandraTemplateUnitTests {
 
 		verify(session).execute(statementCaptor.capture());
 		assertThat(render(statementCaptor.getValue())).isEqualTo(
-				"INSERT INTO vusers (firstname,id,lastname,version) VALUES ('Walter','heisenberg','White',0) IF NOT EXISTS");
+				"INSERT INTO vusers (id,version,firstname,lastname) VALUES ('heisenberg',0,'Walter','White') IF NOT EXISTS");
 		assertThat(beforeConvert).isSameAs(user);
 		assertThat(beforeSave).isSameAs(user);
 	}
@@ -358,7 +358,7 @@ class CassandraTemplateUnitTests {
 
 		verify(session).execute(statementCaptor.capture());
 		assertThat(render(statementCaptor.getValue())).isEqualTo(
-				"INSERT INTO vusers (firstname,id,lastname,version) VALUES ('Walter','ww','White',0) IF NOT EXISTS");
+				"INSERT INTO vusers (id,version,firstname,lastname) VALUES ('ww',0,'Walter','White') IF NOT EXISTS");
 	}
 
 	@Test
@@ -375,7 +375,7 @@ class CassandraTemplateUnitTests {
 
 		verify(session).execute(statementCaptor.capture());
 		assertThat(render(statementCaptor.getValue()))
-				.isEqualTo("INSERT INTO users (firstname,id,lastname) VALUES ('Walter','heisenberg','White') IF NOT EXISTS");
+				.isEqualTo("INSERT INTO users (id,firstname,lastname) VALUES ('heisenberg','Walter','White') IF NOT EXISTS");
 	}
 
 	@Test // DATACASS-560
@@ -391,7 +391,7 @@ class CassandraTemplateUnitTests {
 
 		verify(session).execute(statementCaptor.capture());
 		assertThat(render(statementCaptor.getValue()))
-				.isEqualTo("INSERT INTO users (firstname,id,lastname) VALUES (NULL,'heisenberg',NULL)");
+				.isEqualTo("INSERT INTO users (id,firstname,lastname) VALUES ('heisenberg',NULL,NULL)");
 	}
 
 	@Test // DATACASS-292
@@ -449,7 +449,7 @@ class CassandraTemplateUnitTests {
 
 		verify(session).execute(statementCaptor.capture());
 		assertThat(render(statementCaptor.getValue())).isEqualTo(
-				"UPDATE vusers SET firstname='Walter', lastname='White', version=1 WHERE id='heisenberg' IF version=0");
+				"UPDATE vusers SET version=1, firstname='Walter', lastname='White' WHERE id='heisenberg' IF version=0");
 		assertThat(beforeConvert).isSameAs(user);
 		assertThat(beforeSave).isSameAs(user);
 	}

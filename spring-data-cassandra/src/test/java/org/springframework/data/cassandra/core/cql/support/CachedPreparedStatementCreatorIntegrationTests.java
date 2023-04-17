@@ -32,7 +32,7 @@ import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
  *
  * @author Mark Paluch
  */
-class CachedPreparedStatementCreatorIntegrationTest extends AbstractKeyspaceCreatingIntegrationTests {
+class CachedPreparedStatementCreatorIntegrationTests extends AbstractKeyspaceCreatingIntegrationTests {
 
 	private static final AtomicBoolean initialized = new AtomicBoolean();
 
@@ -59,6 +59,6 @@ class CachedPreparedStatementCreatorIntegrationTest extends AbstractKeyspaceCrea
 		PreparedStatement preparedStatement = CachedPreparedStatementCreator.of(cache, insert)
 				.createPreparedStatement(session);
 
-		assertThat(preparedStatement.bind(1, 2).isIdempotent()).isTrue();
+		assertThat(preparedStatement.bind("id", "foo").isIdempotent()).isTrue();
 	}
 }

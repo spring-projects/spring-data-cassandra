@@ -44,8 +44,6 @@ public enum CassandraPrimaryKeyColumnAnnotationComparator implements Comparator<
 		int comparison = left.type().compareTo(right.type());
 
 		comparison = (comparison != 0 ? comparison : Integer.compare(left.ordinal(), right.ordinal()));
-		comparison = (comparison != 0 ? comparison : left.name().compareTo(right.name()));
-		comparison = (comparison != 0 ? comparison : left.ordering().compareTo(right.ordering()));
 
 		return comparison;
 	}

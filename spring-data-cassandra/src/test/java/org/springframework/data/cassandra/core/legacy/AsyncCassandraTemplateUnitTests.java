@@ -322,7 +322,7 @@ class AsyncCassandraTemplateUnitTests {
 		assertThat(getUninterruptibly(future)).isEqualTo(user);
 		verify(session).executeAsync(statementCaptor.capture());
 		assertThat(render(statementCaptor.getValue()))
-				.isEqualTo("INSERT INTO users (firstname,id,lastname) VALUES ('Walter','heisenberg','White')");
+				.isEqualTo("INSERT INTO users (id,firstname,lastname) VALUES ('heisenberg','Walter','White')");
 		assertThat(beforeConvert).isSameAs(user);
 		assertThat(beforeSave).isSameAs(user);
 	}
@@ -339,7 +339,7 @@ class AsyncCassandraTemplateUnitTests {
 		assertThat(getUninterruptibly(future)).isEqualTo(user);
 		verify(session).executeAsync(statementCaptor.capture());
 		assertThat(render(statementCaptor.getValue())).isEqualTo(
-				"INSERT INTO vusers (firstname,id,lastname,version) VALUES ('Walter','heisenberg','White',0) IF NOT EXISTS");
+				"INSERT INTO vusers (id,version,firstname,lastname) VALUES ('heisenberg',0,'Walter','White') IF NOT EXISTS");
 		assertThat(beforeConvert).isSameAs(user);
 		assertThat(beforeSave).isSameAs(user);
 	}
@@ -394,7 +394,7 @@ class AsyncCassandraTemplateUnitTests {
 		verify(session).executeAsync(statementCaptor.capture());
 		SimpleStatement value = statementCaptor.getValue();
 		assertThat(render(value)).isEqualTo(
-				"UPDATE vusers SET firstname='Walter', lastname='White', version=1 WHERE id='heisenberg' IF version=0");
+				"UPDATE vusers SET version=1, firstname='Walter', lastname='White' WHERE id='heisenberg' IF version=0");
 		assertThat(beforeConvert).isSameAs(user);
 		assertThat(beforeSave).isSameAs(user);
 	}

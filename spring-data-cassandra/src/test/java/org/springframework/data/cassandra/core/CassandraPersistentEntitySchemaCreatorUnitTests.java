@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -36,10 +37,15 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.data.cassandra.core.convert.SchemaFactory;
 import org.springframework.data.cassandra.core.cql.CqlOperations;
+import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateUserTypeSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.UserTypeNameSpecification;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
+import org.springframework.data.cassandra.core.mapping.PrimaryKey;
+import org.springframework.data.cassandra.core.mapping.PrimaryKeyClass;
+import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
+import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.core.mapping.UserDefinedType;
 import org.springframework.data.convert.CustomConversions;
 
@@ -182,6 +188,19 @@ class CassandraPersistentEntitySchemaCreatorUnitTests extends CassandraPersisten
 		verify(operations).execute("CREATE INDEX ON indexedentity (firstname);");
 	}
 
+	@Test // DATACASS-213
+	void foo() {
+
+		context.getPersistentEntity(Person.class);
+
+		CassandraPersistentEntitySchemaCreator schemaCreator = new CassandraPersistentEntitySchemaCreator(context,
+				adminOperations);
+
+		schemaCreator.createTables(false);
+
+		// verify(operations).execute("CREATE INDEX ON indexedentity (firstname);");
+	}
+
 	private void verifyTypesGetCreatedInOrderFor(String... typenames) {
 
 		ArgumentCaptor<String> cql = ArgumentCaptor.forClass(String.class);
@@ -215,5 +234,23 @@ class CassandraPersistentEntitySchemaCreatorUnitTests extends CassandraPersisten
 	private static class Udt2 extends AbstractModel {
 
 		private Udt1 u1;
+	}
+
+	@PrimaryKeyClass
+	public static class PersonKey implements Serializable {
+		@PrimaryKeyColumn(name = "firstname", type = PrimaryKeyType.PARTITIONED) private String firstName;
+
+		@PrimaryKeyColumn(name = "aname", type = PrimaryKeyType.PARTITIONED) private String aName;
+
+		@PrimaryKeyColumn(name = "lastname", type = PrimaryKeyType.CLUSTERED) private String lastName;
+
+		@PrimaryKeyColumn(name = "bname", type = PrimaryKeyType.CLUSTERED) private String bName;
+	}
+
+	@Table
+	public static class Person {
+		@PrimaryKey PersonKey key;
+
+		int age;
 	}
 }

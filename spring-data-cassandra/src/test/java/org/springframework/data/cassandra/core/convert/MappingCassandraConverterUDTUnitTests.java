@@ -44,17 +44,7 @@ import org.springframework.data.cassandra.core.StatementFactory;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.data.cassandra.core.cql.util.StatementBuilder;
-import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
-import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
-import org.springframework.data.cassandra.core.mapping.CassandraType;
-import org.springframework.data.cassandra.core.mapping.Embedded;
-import org.springframework.data.cassandra.core.mapping.Frozen;
-import org.springframework.data.cassandra.core.mapping.PrimaryKey;
-import org.springframework.data.cassandra.core.mapping.PrimaryKeyClass;
-import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
-import org.springframework.data.cassandra.core.mapping.Table;
-import org.springframework.data.cassandra.core.mapping.UserDefinedType;
-import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
+import org.springframework.data.cassandra.core.mapping.*;
 import org.springframework.data.cassandra.support.UserDefinedTypeBuilder;
 import org.springframework.data.cassandra.test.util.RowMockUtil;
 
@@ -139,8 +129,8 @@ class MappingCassandraConverterUDTUnitTests {
 		SimpleStatement statement = new StatementFactory(converter).insert(addressBook, WriteOptions.empty())
 				.build(StatementBuilder.ParameterHandling.INLINE);
 
-		assertThat(statement.getQuery()).isEqualTo("INSERT INTO addressbook (currentaddress,id) "
-				+ "VALUES ({zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']},'1')");
+		assertThat(statement.getQuery()).isEqualTo("INSERT INTO addressbook (id,currentaddress) "
+				+ "VALUES ('1',{zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']})");
 	}
 
 	@Test // DATACASS-172
@@ -178,8 +168,8 @@ class MappingCassandraConverterUDTUnitTests {
 		SimpleStatement statement = new StatementFactory(converter).insert(addressBook, WriteOptions.empty())
 				.build(StatementBuilder.ParameterHandling.INLINE);
 
-		assertThat(statement.getQuery()).isEqualTo("INSERT INTO addressbook (alternate,id) "
-				+ "VALUES ({zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']},'1')");
+		assertThat(statement.getQuery()).isEqualTo("INSERT INTO addressbook (id,alternate) "
+				+ "VALUES ('1',{zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']})");
 	}
 
 	@Test // DATACASS-172
@@ -484,7 +474,7 @@ class MappingCassandraConverterUDTUnitTests {
 				.build(StatementBuilder.ParameterHandling.INLINE);
 
 		assertThat(statement.getQuery())
-				.isEqualTo("INSERT INTO car (engine,id) VALUES ({manufacturer:{name:'a good one',displayname:NULL}},'1')");
+				.isEqualTo("INSERT INTO car (id,engine) VALUES ('1',{manufacturer:{name:'a good one',displayname:NULL}})");
 	}
 
 	@Test // #1098

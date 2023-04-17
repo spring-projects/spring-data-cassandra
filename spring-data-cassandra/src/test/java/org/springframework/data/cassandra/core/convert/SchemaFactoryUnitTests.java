@@ -43,18 +43,7 @@ import org.springframework.data.cassandra.core.cql.keyspace.ColumnSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification.ColumnFunction;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
-import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
-import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
-import org.springframework.data.cassandra.core.mapping.CassandraType;
-import org.springframework.data.cassandra.core.mapping.Column;
-import org.springframework.data.cassandra.core.mapping.Element;
-import org.springframework.data.cassandra.core.mapping.Embedded;
-import org.springframework.data.cassandra.core.mapping.Indexed;
-import org.springframework.data.cassandra.core.mapping.PrimaryKey;
-import org.springframework.data.cassandra.core.mapping.PrimaryKeyClass;
-import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
-import org.springframework.data.cassandra.core.mapping.Table;
-import org.springframework.data.cassandra.core.mapping.Tuple;
+import org.springframework.data.cassandra.core.mapping.*;
 import org.springframework.data.cassandra.domain.AllPossibleTypes;
 import org.springframework.data.cassandra.support.UserDefinedTypeBuilder;
 import org.springframework.data.mapping.MappingException;
@@ -909,5 +898,33 @@ public class SchemaFactoryUnitTests {
 		ColumnSpecification name = tableSpecification.getStaticColumns().get(0);
 		assertThat(name.getName().toString()).isEqualTo("address");
 		assertThat(name.isStatic()).isTrue();
+	}
+
+	@Test // GH-978
+	void aaa() {
+
+		CassandraPersistentEntity<?> persistentEntity = mappingContext.getRequiredPersistentEntity(Person.class);
+
+		CreateTableSpecification tableSpecification = schemaFactory.getCreateTableSpecificationFor(persistentEntity);
+
+		System.out.println(tableSpecification);
+	}
+
+	@PrimaryKeyClass
+	public static class PersonKey implements Serializable {
+		@PrimaryKeyColumn(name = "firstname", type = PrimaryKeyType.PARTITIONED, ordinal = 1) private String firstName;
+
+		@PrimaryKeyColumn(name = "aname", type = PrimaryKeyType.PARTITIONED, ordinal = 0) private String aName;
+
+		@PrimaryKeyColumn(name = "lastname", type = PrimaryKeyType.CLUSTERED, ordinal = 3) private String lastName;
+
+		@PrimaryKeyColumn(name = "bname", type = PrimaryKeyType.CLUSTERED, ordinal = 4) private String bName;
+	}
+
+	@Table
+	public static class Person {
+		@PrimaryKey PersonKey key;
+
+		int age;
 	}
 }
