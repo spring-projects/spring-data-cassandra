@@ -39,13 +39,13 @@ class CassandraTemplateProducer {
 
 	@Produces
 	@ApplicationScoped
-	public CassandraOperations createCassandraOperations(CqlSession session) throws Exception {
+	public CassandraOperations createCassandraOperations(CqlSession session) {
 
 		CassandraMappingContext mappingContext = new CassandraMappingContext();
-		mappingContext.setUserTypeResolver(new SimpleUserTypeResolver(session));
 		mappingContext.afterPropertiesSet();
 
 		MappingCassandraConverter cassandraConverter = new MappingCassandraConverter(mappingContext);
+		cassandraConverter.setUserTypeResolver(new SimpleUserTypeResolver(session));
 		cassandraConverter.afterPropertiesSet();
 
 		return new CassandraAdminTemplate(session, cassandraConverter);

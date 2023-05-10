@@ -64,9 +64,10 @@ public class CassandraConfig {
 
 	@Bean
 	public CassandraConverter converter(CqlSession cqlSession, CassandraMappingContext mappingContext) {
+
 		MappingCassandraConverter cassandraConverter = new MappingCassandraConverter(mappingContext);
 		cassandraConverter.setUserTypeResolver(new SimpleUserTypeResolver(cqlSession));
-		
+
 		return cassandraConverter;
 	}
 
