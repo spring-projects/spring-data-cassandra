@@ -49,6 +49,8 @@ public abstract class CassandraRepositoryQuerySupport implements RepositoryQuery
 
 	private final QueryStatementCreator queryStatementCreator;
 
+	private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
+
 	/**
 	 * Create a new {@link AbstractCassandraQuery} from the given {@link CassandraQueryMethod} and
 	 * {@link CassandraOperations}.
@@ -78,6 +80,7 @@ public abstract class CassandraRepositoryQuerySupport implements RepositoryQuery
 		this.queryMethod = queryMethod;
 		this.instantiators = new EntityInstantiators();
 		this.queryStatementCreator = new QueryStatementCreator(queryMethod, mappingContext);
+		this.mappingContext = mappingContext;
 	}
 
 	@Override
@@ -91,6 +94,10 @@ public abstract class CassandraRepositoryQuerySupport implements RepositoryQuery
 
 	protected QueryStatementCreator getQueryStatementCreator() {
 		return this.queryStatementCreator;
+	}
+
+	protected MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> getMappingContext() {
+		return mappingContext;
 	}
 
 	class CassandraReturnedType {
