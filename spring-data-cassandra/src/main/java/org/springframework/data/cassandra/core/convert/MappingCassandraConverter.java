@@ -39,12 +39,15 @@ import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.core.mapping.*;
 import org.springframework.data.cassandra.core.mapping.Embedded.OnEmpty;
 import org.springframework.data.convert.CustomConversions;
+import org.springframework.data.mapping.AccessOptions;
 import org.springframework.data.mapping.InstanceCreatorMetadata;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
+import org.springframework.data.mapping.PersistentPropertyPath;
+import org.springframework.data.mapping.PersistentPropertyPathAccessor;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
 import org.springframework.data.mapping.model.DefaultSpELExpressionEvaluator;
@@ -283,6 +286,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public <R> R project(EntityProjection<R, ?> projection, Row row) {
 
 		if (!projection.isProjection()) {
@@ -665,7 +669,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 					? getMappingContext().getRequiredPersistentEntity(compositeIdProperty)
 					: entity;
 
-			writeWhere(MapId.class.cast(id), sink, whereEntity);
+			writeWhere((MapId) id, sink, whereEntity);
 			return;
 		}
 
@@ -722,18 +726,6 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			Object writeValue = getWriteValue(entry.getValue(), cassandraTypeResolver.resolve(persistentProperty));
 
 			sink.put(persistentProperty.getRequiredColumnName(), writeValue);
-		}
-	}
-
-	private void writeWhere(ConvertingPropertyAccessor<?> accessor, Where sink, CassandraPersistentEntity<?> entity) {
-
-		Assert.isTrue(entity.isCompositePrimaryKey(),
-				() -> String.format("Entity [%s] is not a composite primary key", entity.getName()));
-
-		for (CassandraPersistentProperty property : entity) {
-			TypeCodec<Object> codec = getCodec(property);
-			Object value = accessor.getProperty(property, codec.getJavaType().getRawType());
-			sink.put(property.getRequiredColumnName(), value);
 		}
 	}
 
@@ -863,7 +855,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 */
 	@Nullable
 	@SuppressWarnings("unchecked")
-	private <T> T getWriteValue(CassandraPersistentProperty property, ConvertingPropertyAccessor propertyAccessor) {
+	private <T> T getWriteValue(CassandraPersistentProperty property, ConvertingPropertyAccessor<?> propertyAccessor) {
 
 		ColumnType cassandraTypeDescriptor = cassandraTypeResolver.resolve(property);
 
@@ -914,7 +906,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			return writeMapInternal((Map<Object, Object>) value, columnType);
 		}
 
-		TypeInformation<?> type = TypeInformation.of((Class) value.getClass());
+		TypeInformation<?> type = TypeInformation.of((Class<?>) value.getClass());
 		TypeInformation<?> actualType = type.getRequiredActualType();
 		BasicCassandraPersistentEntity<?> entity = getMappingContext().getPersistentEntity(actualType.getType());
 
@@ -989,7 +981,6 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 * @param requestedTargetType must not be {@literal null}.
 	 * @see org.springframework.data.cassandra.core.mapping.CassandraType
 	 */
-	@SuppressWarnings("unchecked")
 	@Nullable
 	private Object getPotentiallyConvertedSimpleValue(@Nullable Object value, @Nullable Class<?> requestedTargetType) {
 
@@ -1237,7 +1228,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 * Extension of {@link SpELExpressionParameterValueProvider} to recursively trigger value conversion on the raw
 	 * resolved SpEL value.
 	 */
-	private class ConverterAwareSpELExpressionParameterValueProvider
+	private static class ConverterAwareSpELExpressionParameterValueProvider
 			extends SpELExpressionParameterValueProvider<CassandraPersistentProperty> {
 
 		private final ConversionContext context;
@@ -1450,16 +1441,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		}
 	}
 
-	private static class PropertyTranslatingPropertyAccessor<T> implements PersistentPropertyPathAccessor<T> {
-
-		private final PersistentPropertyAccessor<T> delegate;
-		private final PersistentPropertyTranslator propertyTranslator;
-
-		private PropertyTranslatingPropertyAccessor(PersistentPropertyAccessor<T> delegate,
-				PersistentPropertyTranslator propertyTranslator) {
-			this.delegate = delegate;
-			this.propertyTranslator = propertyTranslator;
-		}
+	private record PropertyTranslatingPropertyAccessor<T> (PersistentPropertyAccessor<T> delegate,
+			PersistentPropertyTranslator propertyTranslator) implements PersistentPropertyPathAccessor<T> {
 
 		static <T> PersistentPropertyAccessor<T> create(PersistentPropertyAccessor<T> delegate,
 				PersistentPropertyTranslator propertyTranslator) {
@@ -1566,7 +1549,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		Map<String, Object> map = new LinkedHashMap<>();
 
 		@Override
-		public void setProperty(PersistentProperty<?> persistentProperty, Object o) {
+		public void setProperty(PersistentProperty<?> persistentProperty, @Nullable Object o) {
 			map.put(persistentProperty.getName(), o);
 		}
 

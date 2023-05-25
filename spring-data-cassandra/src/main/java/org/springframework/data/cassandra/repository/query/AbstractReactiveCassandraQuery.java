@@ -22,8 +22,6 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.ReactiveResultSet;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
-import org.springframework.data.cassandra.core.convert.CassandraConverter;
-import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution.CollectionExecution;
 import org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution.ExistsExecution;
 import org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution.ResultProcessingConverter;
@@ -33,7 +31,6 @@ import org.springframework.data.cassandra.repository.query.ReactiveCassandraQuer
 import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.query.ResultProcessor;
-import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 
@@ -58,7 +55,7 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 	 */
 	public AbstractReactiveCassandraQuery(ReactiveCassandraQueryMethod method, ReactiveCassandraOperations operations) {
 
-		super(method, getRequiredMappingContext(operations));
+		super(method, operations.getConverter().getMappingContext());
 
 		this.operations = operations;
 	}
@@ -83,8 +80,8 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 
 		Mono<SimpleStatement> statement = createQuery(parameterAccessor);
 		ResultProcessor resultProcessor = getQueryMethod().getResultProcessor().withDynamicProjection(parameterAccessor);
-		ReactiveCassandraQueryExecution queryExecution = getExecution(parameterAccessor, new ResultProcessingConverter(
-				resultProcessor, getRequiredMappingContext(getReactiveCassandraOperations()), getEntityInstantiators()));
+		ReactiveCassandraQueryExecution queryExecution = getExecution(parameterAccessor,
+				new ResultProcessingConverter(resultProcessor, getMappingContext(), getEntityInstantiators()));
 
 		Class<?> resultType = resolveResultType(resultProcessor);
 
@@ -94,7 +91,7 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 	private Class<?> resolveResultType(ResultProcessor resultProcessor) {
 
 		CassandraReturnedType returnedType = new CassandraReturnedType(resultProcessor.getReturnedType(),
-				getRequiredConverter(getReactiveCassandraOperations()).getCustomConversions());
+				getReactiveCassandraOperations().getConverter().getCustomConversions());
 
 		return returnedType.getResultType();
 	}
@@ -173,14 +170,4 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 	 */
 	protected abstract boolean isModifyingQuery();
 
-	private static CassandraConverter getRequiredConverter(ReactiveCassandraOperations operations) {
-
-		Assert.notNull(operations, "ReactiveCassandraOperations must not be null");
-
-		return operations.getConverter();
-	}
-
-	private static CassandraMappingContext getRequiredMappingContext(ReactiveCassandraOperations operations) {
-		return getRequiredConverter(operations).getMappingContext();
-	}
 }

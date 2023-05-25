@@ -17,8 +17,6 @@ package org.springframework.data.cassandra.repository.query;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.core.CassandraOperations;
-import org.springframework.data.cassandra.core.convert.CassandraConverter;
-import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.CollectionExecution;
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.ExistsExecution;
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.ResultProcessingConverter;
@@ -31,7 +29,6 @@ import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.query.ResultProcessor;
 import org.springframework.lang.Nullable;
-import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.Statement;
@@ -56,7 +53,7 @@ public abstract class AbstractCassandraQuery extends CassandraRepositoryQuerySup
 	 */
 	public AbstractCassandraQuery(CassandraQueryMethod queryMethod, CassandraOperations operations) {
 
-		super(queryMethod, toMappingContext(operations));
+		super(queryMethod, operations.getConverter().getMappingContext());
 
 		this.operations = operations;
 	}
@@ -81,7 +78,7 @@ public abstract class AbstractCassandraQuery extends CassandraRepositoryQuerySup
 		Statement<?> statement = createQuery(parameterAccessor);
 
 		CassandraQueryExecution queryExecution = getExecution(parameterAccessor,
-				new ResultProcessingConverter(resultProcessor, toMappingContext(getOperations()), getEntityInstantiators()));
+				new ResultProcessingConverter(resultProcessor, getMappingContext(), getEntityInstantiators()));
 
 		Class<?> resultType = resolveResultType(resultProcessor);
 
@@ -170,14 +167,4 @@ public abstract class AbstractCassandraQuery extends CassandraRepositoryQuerySup
 	 */
 	protected abstract boolean isModifyingQuery();
 
-	private static CassandraConverter toConverter(CassandraOperations operations) {
-
-		Assert.notNull(operations, "CassandraOperations must not be null");
-
-		return operations.getConverter();
-	}
-
-	private static CassandraMappingContext toMappingContext(CassandraOperations operations) {
-		return toConverter(operations).getMappingContext();
-	}
 }
