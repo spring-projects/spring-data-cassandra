@@ -124,11 +124,12 @@ public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandra
 	public Mono<SimpleStatement> createQuery(CassandraParameterAccessor parameterAccessor) {
 
 		StringBasedQuery query = getStringBasedQuery();
-
+		ConvertingParameterAccessor parameterAccessorToUse = new ConvertingParameterAccessor(
+				getReactiveCassandraOperations().getConverter(), parameterAccessor);
 		Mono<SpELExpressionEvaluator> spelEvaluator = getSpelEvaluatorFor(query.getExpressionDependencies(),
-				parameterAccessor);
+				parameterAccessorToUse);
 
-		return spelEvaluator.map(it -> getQueryStatementCreator().select(query, parameterAccessor, it));
+		return spelEvaluator.map(it -> getQueryStatementCreator().select(query, parameterAccessorToUse, it));
 	}
 
 	@Override

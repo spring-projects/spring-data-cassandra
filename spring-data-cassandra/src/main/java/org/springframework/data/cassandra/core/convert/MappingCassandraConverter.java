@@ -36,30 +36,15 @@ import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
-import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity;
-import org.springframework.data.cassandra.core.mapping.BasicMapId;
-import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
-import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
-import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
-import org.springframework.data.cassandra.core.mapping.Column;
-import org.springframework.data.cassandra.core.mapping.Element;
-import org.springframework.data.cassandra.core.mapping.Embedded;
+import org.springframework.data.cassandra.core.mapping.*;
 import org.springframework.data.cassandra.core.mapping.Embedded.OnEmpty;
-import org.springframework.data.cassandra.core.mapping.EmbeddedEntityOperations;
-import org.springframework.data.cassandra.core.mapping.MapId;
-import org.springframework.data.cassandra.core.mapping.MapIdentifiable;
-import org.springframework.data.cassandra.core.mapping.PersistentPropertyTranslator;
-import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.convert.CustomConversions;
-import org.springframework.data.mapping.AccessOptions;
 import org.springframework.data.mapping.InstanceCreatorMetadata;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
-import org.springframework.data.mapping.PersistentPropertyPath;
-import org.springframework.data.mapping.PersistentPropertyPathAccessor;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
 import org.springframework.data.mapping.model.DefaultSpELExpressionEvaluator;
@@ -347,8 +332,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		CassandraValueProvider valueProviderToUse = new TranslatingCassandraValueProvider(propertyTranslator,
 				valueProvider);
 
-		InstanceCreatorMetadata<CassandraPersistentProperty> persistenceCreator = mappedEntity
-				.getInstanceCreatorMetadata();
+		InstanceCreatorMetadata<CassandraPersistentProperty> persistenceCreator = mappedEntity.getInstanceCreatorMetadata();
 
 		ParameterValueProvider<CassandraPersistentProperty> provider;
 		if (persistenceCreator != null && persistenceCreator.hasParameters()) {
@@ -922,10 +906,6 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			return getConversionService().convert(value, resolvedTargetType);
 		}
 
-		if (getCustomConversions().isSimpleType(value.getClass())) {
-			return getPotentiallyConvertedSimpleValue(value, requestedTargetType);
-		}
-
 		if (value instanceof Collection) {
 			return writeCollectionInternal((Collection<Object>) value, columnType);
 		}
@@ -938,27 +918,39 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		TypeInformation<?> actualType = type.getRequiredActualType();
 		BasicCassandraPersistentEntity<?> entity = getMappingContext().getPersistentEntity(actualType.getType());
 
-		if (entity != null && columnType instanceof CassandraColumnType) {
+		if (columnType instanceof CassandraColumnType cassandraType) {
 
-			CassandraColumnType cassandraType = (CassandraColumnType) columnType;
+			if (cassandraType.isTupleType()) {
 
-			if (entity.isTupleType() && cassandraType.isTupleType()) {
+				if (entity != null && entity.isTupleType()) {
 
-				TupleValue tupleValue = ((TupleType) cassandraType.getDataType()).newValue();
+					TupleValue tupleValue = ((TupleType) cassandraType.getDataType()).newValue();
+					write(value, tupleValue, entity);
+					return tupleValue;
+				}
 
-				write(value, tupleValue, entity);
-
-				return tupleValue;
+				if (value instanceof TupleValue) {
+					return value;
+				}
 			}
 
-			if (entity.isUserDefinedType() && cassandraType.isUserDefinedType()) {
+			if (cassandraType.isUserDefinedType()) {
 
-				UdtValue udtValue = ((UserDefinedType) cassandraType.getDataType()).newValue();
+				if (entity != null && entity.isUserDefinedType()) {
 
-				write(value, udtValue, entity);
+					UdtValue udtValue = ((UserDefinedType) cassandraType.getDataType()).newValue();
+					write(value, udtValue, entity);
+					return udtValue;
+				}
 
-				return udtValue;
+				if (value instanceof UdtValue) {
+					return value;
+				}
 			}
+		}
+
+		if (getCustomConversions().isSimpleType(value.getClass())) {
+			return getPotentiallyConvertedSimpleValue(value, requestedTargetType);
 		}
 
 		return value;
@@ -1015,6 +1007,10 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			}
 
 			return ((Enum<?>) value).name();
+		}
+
+		if (requestedTargetType != null && !ClassUtils.isAssignableValue(requestedTargetType, value)) {
+			return getConversionService().convert(value, requestedTargetType);
 		}
 
 		return value;

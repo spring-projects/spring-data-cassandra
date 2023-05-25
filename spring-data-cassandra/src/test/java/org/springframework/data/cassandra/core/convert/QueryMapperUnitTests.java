@@ -44,6 +44,7 @@ import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity
 import org.springframework.data.cassandra.core.mapping.Column;
 import org.springframework.data.cassandra.core.mapping.Element;
 import org.springframework.data.cassandra.core.mapping.Embedded;
+import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
 import org.springframework.data.cassandra.core.mapping.Tuple;
 import org.springframework.data.cassandra.core.mapping.UserDefinedType;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
@@ -378,14 +379,6 @@ public class QueryMapperUnitTests {
 
 		Filter mappedFilter = this.queryMapper. getMappedObject(filter, this.personPersistentEntity);
 
-		/*
-		mappedFilter.get().findFirst()
-			.map(CriteriaDefinition::getPredicate)
-			.map(CriteriaDefinition.Predicate::getValue)
-			.map(Object::getClass)
-			.ifPresent(System.out::println);
-		*/
-
 		assertThat(mappedFilter).contains(Criteria.where("localtime").gt(time));
 	}
 
@@ -418,6 +411,18 @@ public class QueryMapperUnitTests {
 		assertThat(mappedObject.iterator().next().getColumnName()).isEqualTo(ColumnName.from("prefixfirstname"));
 	}
 
+	@Test // GH-1383
+	void shouldConvertPrimaryKeyValues() {
+
+		Filter filter = Filter.from(Criteria.where("id.foo").is(42));
+
+		Filter mappedObject = this.queryMapper.getMappedObject(filter,
+				this.mappingContext.getRequiredPersistentEntity(WithPrimaryKeyClass.class));
+
+		assertThat(mappedObject.iterator().next().getColumnName()).isEqualTo(ColumnName.from("foo"));
+		assertThat(mappedObject.iterator().next().getPredicate().getValue()).isEqualTo(42L);
+	}
+
 	@SuppressWarnings("unused")
 	static class Person {
 
@@ -437,6 +442,20 @@ public class QueryMapperUnitTests {
 		MappedTuple tuple;
 
 		@Column("first_name") String firstName;
+
+	}
+
+	static class WithPrimaryKeyClass {
+
+		@Id MyPrimaryKeyClass id;
+
+	}
+
+	static class MyPrimaryKeyClass {
+
+		@PrimaryKeyColumn long foo;
+
+		@PrimaryKeyColumn long bar;
 
 	}
 

@@ -88,8 +88,7 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 		this.expressionParser = expressionParser;
 		this.evaluationContextProvider = evaluationContextProvider;
 
-		this.stringBasedQuery = new StringBasedQuery(query,
-				method.getParameters(), expressionParser);
+		this.stringBasedQuery = new StringBasedQuery(query, method.getParameters(), expressionParser);
 
 		if (method.hasAnnotatedQuery()) {
 
@@ -115,11 +114,12 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 	public SimpleStatement createQuery(CassandraParameterAccessor parameterAccessor) {
 
 		StringBasedQuery query = getStringBasedQuery();
-
+		ConvertingParameterAccessor parameterAccessorToUse = new ConvertingParameterAccessor(getOperations().getConverter(),
+				parameterAccessor);
 		EvaluationContext evaluationContext = evaluationContextProvider.getEvaluationContext(
-				getQueryMethod().getParameters(), parameterAccessor.getValues(), query.getExpressionDependencies());
+				getQueryMethod().getParameters(), parameterAccessorToUse.getValues(), query.getExpressionDependencies());
 
-		return getQueryStatementCreator().select(query, parameterAccessor,
+		return getQueryStatementCreator().select(query, parameterAccessorToUse,
 				new DefaultSpELExpressionEvaluator(expressionParser, evaluationContext));
 	}
 

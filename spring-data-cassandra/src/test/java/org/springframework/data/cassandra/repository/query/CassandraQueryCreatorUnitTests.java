@@ -140,18 +140,18 @@ class CassandraQueryCreatorUnitTests {
 	@Test // DATACASS-627
 	void createsBetweenQueryCorrectly() {
 
-		String query = createQuery("findByFirstnameBetween", Person.class, 1, 2);
+		String query = createQuery("findByNumberOfChildrenBetween", Person.class, 1, 2);
 
-		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname>1 AND firstname<2");
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE numberofchildren>1 AND numberofchildren<2");
 	}
 
 	@Test // DATACASS-627
 	void createsBetweenQueryWithRangeCorrectly() {
 
-		String query = createQuery("findByFirstnameBetween", Person.class,
+		String query = createQuery("findByNumberOfChildrenBetween", Person.class,
 				Range.from(Range.Bound.inclusive(1)).to(Range.Bound.exclusive(2)));
 
-		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname>=1 AND firstname<2");
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE numberofchildren>=1 AND numberofchildren<2");
 	}
 
 	@Test // DATACASS-7
@@ -239,25 +239,25 @@ class CassandraQueryCreatorUnitTests {
 	@Test // DATACASS-7
 	void createsIsTrueQueryCorrectly() {
 
-		String query = createQuery("findByFirstnameIsTrue", Person.class, "Walter");
+		String query = createQuery("findByCoolIsTrue", Person.class, "Walter");
 
-		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname=true");
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE cool=true");
 	}
 
 	@Test // DATACASS-7
 	void createsIsFalseQueryCorrectly() {
 
-		String query = createQuery("findByFirstnameIsFalse", Person.class, "Walter");
+		String query = createQuery("findByCoolIsFalse", Person.class, "Walter");
 
-		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname=false");
+		assertThat(query).isEqualTo("SELECT * FROM person WHERE cool=false");
 	}
 
 	@Test // DATACASS-7
 	void createsQueryUsingQuotingCorrectly() {
 
-		String query = createQuery("findByIdAndSet", QuotedType.class, "Walter", "White");
+		String query = createQuery("findByIdAndSet", QuotedType.class, "Walter", Arrays.asList("White"));
 
-		assertThat(query).isEqualTo("SELECT * FROM \"myTable\" WHERE my_id='Walter' AND \"set\"='White'");
+		assertThat(query).isEqualTo("SELECT * FROM \"myTable\" WHERE my_id='Walter' AND \"set\"={'White'}");
 	}
 
 	@Test // DATACASS-7
