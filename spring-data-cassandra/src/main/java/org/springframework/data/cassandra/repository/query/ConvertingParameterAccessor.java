@@ -15,12 +15,10 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import java.util.Collection;
 import java.util.Iterator;
 
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
-import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Range;
@@ -74,7 +72,7 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 
 	@Override
 	public Object getBindableValue(int index) {
-		return potentiallyConvert(index, this.delegate.getBindableValue(index), null);
+		return potentiallyConvert(index, this.delegate.getBindableValue(index));
 	}
 
 	@Override
@@ -114,7 +112,7 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 
 	@SuppressWarnings("unchecked")
 	@Nullable
-	Object potentiallyConvert(int index, @Nullable Object bindableValue, @Nullable CassandraPersistentProperty property) {
+	Object potentiallyConvert(int index, @Nullable Object bindableValue) {
 
 		if (bindableValue == null) {
 			return null;
@@ -130,11 +128,6 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 			this.converter.convertToColumnType(bindableValue, converter.getColumnTypeResolver().resolve(cassandraType));
 		}
 
-		if (property != null && ((property.isCollectionLike() && bindableValue instanceof Collection)
-				|| (!property.isCollectionLike() && !(bindableValue instanceof Collection)))) {
-			return this.converter.convertToColumnType(bindableValue, converter.getColumnTypeResolver().resolve(property));
-		}
-
 		return this.converter.convertToColumnType(bindableValue, converter.getColumnTypeResolver().resolve(bindableValue));
 	}
 
@@ -143,7 +136,7 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 	 *
 	 * @author Mark Paluch
 	 */
-	private class ConvertingIterator implements PotentiallyConvertingIterator {
+	private class ConvertingIterator implements Iterator<Object> {
 
 		private final Iterator<Object> delegate;
 
@@ -164,34 +157,12 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 
 		@Nullable
 		public Object next() {
-			return potentiallyConvert(this.index++, this.delegate.next(), null);
+			return potentiallyConvert(this.index++, this.delegate.next());
 		}
 
 		public void remove() {
 			this.delegate.remove();
 		}
-
-		@Nullable
-		@Override
-		public Object nextConverted(CassandraPersistentProperty property) {
-			return potentiallyConvert(this.index++, this.delegate.next(), property);
-		}
-	}
-
-	/**
-	 * Custom {@link Iterator} that adds a method to access elements in a converted manner.
-	 *
-	 * @author Mark Paluch
-	 */
-	interface PotentiallyConvertingIterator extends Iterator<Object> {
-
-		/**
-		 * Returns the next element and pass in type information for potential conversion.
-		 *
-		 * @return the converted object, may be {@literal null}.
-		 */
-		@Nullable
-		Object nextConverted(CassandraPersistentProperty property);
 
 	}
 }

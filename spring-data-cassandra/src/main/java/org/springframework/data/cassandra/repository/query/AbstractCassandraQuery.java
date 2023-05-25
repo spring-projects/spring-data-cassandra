@@ -47,18 +47,6 @@ public abstract class AbstractCassandraQuery extends CassandraRepositoryQuerySup
 
 	private final CassandraOperations operations;
 
-
-	private static CassandraConverter toConverter(CassandraOperations operations) {
-
-		Assert.notNull(operations, "CassandraOperations must not be null");
-
-		return operations.getConverter();
-	}
-
-	private static CassandraMappingContext toMappingContext(CassandraOperations operations) {
-		return toConverter(operations).getMappingContext();
-	}
-
 	/**
 	 * Create a new {@link AbstractCassandraQuery} from the given {@link CassandraQueryMethod} and
 	 * {@link CassandraOperations}.
@@ -87,11 +75,9 @@ public abstract class AbstractCassandraQuery extends CassandraRepositoryQuerySup
 	@Override
 	public Object execute(Object[] parameters) {
 
-		CassandraParameterAccessor parameterAccessor = new ConvertingParameterAccessor(toConverter(getOperations()),
-				new CassandraParametersParameterAccessor(getQueryMethod(), parameters));
-
+		CassandraParameterAccessor parameterAccessor = new CassandraParametersParameterAccessor(getQueryMethod(),
+				parameters);
 		ResultProcessor resultProcessor = getQueryMethod().getResultProcessor().withDynamicProjection(parameterAccessor);
-
 		Statement<?> statement = createQuery(parameterAccessor);
 
 		CassandraQueryExecution queryExecution = getExecution(parameterAccessor,
@@ -183,4 +169,15 @@ public abstract class AbstractCassandraQuery extends CassandraRepositoryQuerySup
 	 * @since 2.2
 	 */
 	protected abstract boolean isModifyingQuery();
+
+	private static CassandraConverter toConverter(CassandraOperations operations) {
+
+		Assert.notNull(operations, "CassandraOperations must not be null");
+
+		return operations.getConverter();
+	}
+
+	private static CassandraMappingContext toMappingContext(CassandraOperations operations) {
+		return toConverter(operations).getMappingContext();
+	}
 }
