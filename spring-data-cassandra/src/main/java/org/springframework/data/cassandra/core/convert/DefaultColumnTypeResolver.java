@@ -500,6 +500,16 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 		public DataType getDataType() {
 			throw new MappingException(String.format("Cannot resolve DataType for %s", getType().getName()));
 		}
+
+		@Override
+		public boolean isTupleType() {
+			return false;
+		}
+
+		@Override
+		public boolean isUserDefinedType() {
+			return false;
+		}
 	}
 
 }

@@ -335,7 +335,7 @@ class StringBasedCassandraQueryUnitTests {
 	}
 
 	@Test // DATACASS-172
-	void bindsMappedUdtPropertyCorrectly() throws Exception {
+	void bindsMappedUdtPropertyCorrectly() {
 
 		UserDefinedType addressType = UserDefinedTypeBuilder.forName("address").withField("city", DataTypes.TEXT)
 				.withField("country", DataTypes.TEXT).build();
@@ -353,7 +353,7 @@ class StringBasedCassandraQueryUnitTests {
 	}
 
 	@Test // DATACASS-172
-	void bindsUdtValuePropertyCorrectly() throws Exception {
+	void bindsUdtValuePropertyCorrectly() {
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByMainAddress", UdtValue.class);
 

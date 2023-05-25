@@ -81,14 +81,8 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 
 	private Publisher<Object> executeLater(ReactiveCassandraParameterAccessor parameterAccessor) {
 
-		CassandraParameterAccessor convertingParameterAccessor = new ConvertingParameterAccessor(
-				getRequiredConverter(getReactiveCassandraOperations()), parameterAccessor);
-
-		Mono<SimpleStatement> statement = createQuery(convertingParameterAccessor);
-
-		ResultProcessor resultProcessor = getQueryMethod().getResultProcessor()
-				.withDynamicProjection(convertingParameterAccessor);
-
+		Mono<SimpleStatement> statement = createQuery(parameterAccessor);
+		ResultProcessor resultProcessor = getQueryMethod().getResultProcessor().withDynamicProjection(parameterAccessor);
 		ReactiveCassandraQueryExecution queryExecution = getExecution(parameterAccessor, new ResultProcessingConverter(
 				resultProcessor, getRequiredMappingContext(getReactiveCassandraOperations()), getEntityInstantiators()));
 

@@ -30,7 +30,6 @@ import org.springframework.data.cassandra.core.query.Criteria;
 import org.springframework.data.cassandra.core.query.CriteriaDefinition;
 import org.springframework.data.cassandra.core.query.Filter;
 import org.springframework.data.cassandra.core.query.Query;
-import org.springframework.data.cassandra.repository.query.ConvertingParameterAccessor.PotentiallyConvertingIterator;
 import org.springframework.data.domain.Range;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.PersistentPropertyPath;
@@ -104,8 +103,7 @@ class CassandraQueryCreator extends AbstractQueryCreator<Query, Filter> {
 
 		Assert.state(property != null && path.toDotPath() != null, "Leaf property must not be null");
 
-		Object filterOrCriteria = from(part, property, Criteria.where(path.toDotPath()),
-				(PotentiallyConvertingIterator) iterator);
+		Object filterOrCriteria = from(part, property, Criteria.where(path.toDotPath()), iterator);
 
 		if (filterOrCriteria instanceof CriteriaDefinition) {
 			return Filter.from((CriteriaDefinition) filterOrCriteria);
@@ -151,38 +149,37 @@ class CassandraQueryCreator extends AbstractQueryCreator<Query, Filter> {
 	/**
 	 * Returns a {@link Filter} or {@link CriteriaDefinition} object representing the criterion for a {@link Part}.
 	 */
-	private Object from(Part part, CassandraPersistentProperty property, Criteria where,
-			PotentiallyConvertingIterator parameters) {
+	private Object from(Part part, CassandraPersistentProperty property, Criteria where, Iterator<Object> parameters) {
 
 		Type type = part.getType();
 
 		switch (type) {
 			case AFTER:
 			case GREATER_THAN:
-				return where.gt(parameters.nextConverted(property));
+				return where.gt(parameters.next());
 			case GREATER_THAN_EQUAL:
-				return where.gte(parameters.nextConverted(property));
+				return where.gte(parameters.next());
 			case BEFORE:
 			case LESS_THAN:
-				return where.lt(parameters.nextConverted(property));
+				return where.lt(parameters.next());
 			case LESS_THAN_EQUAL:
-				return where.lte(parameters.nextConverted(property));
+				return where.lte(parameters.next());
 			case BETWEEN:
 				return computeBetweenPart(where, parameters);
 			case IN:
-				return where.in(nextAsArray(property, parameters));
+				return where.in(nextAsArray(parameters));
 			case LIKE:
 			case STARTING_WITH:
 			case ENDING_WITH:
-				return where.like(like(type, parameters.nextConverted(property)));
+				return where.like(like(type, parameters.next()));
 			case CONTAINING:
-				return containing(where, property, parameters.nextConverted(property));
+				return containing(where, property, parameters.next());
 			case TRUE:
 				return where.is(true);
 			case FALSE:
 				return where.is(false);
 			case SIMPLE_PROPERTY:
-				return where.is(parameters.nextConverted(property));
+				return where.is(parameters.next());
 			default:
 				throw new InvalidDataAccessApiUsageException(
 						String.format("Unsupported keyword [%s] in part [%s]", type, part));
@@ -193,7 +190,7 @@ class CassandraQueryCreator extends AbstractQueryCreator<Query, Filter> {
 	 * Compute a {@link Type#BETWEEN} {@link Part}.
 	 * <p>
 	 * In case the first {@literal value} is actually a {@link Range} the lower and upper bounds of the {@link Range} are
-	 * used according to their {@link Range.Bound#isInclusive() inclusion} definition. Otherwise the {@literal value} is
+	 * used according to their {@link Range.Bound#isInclusive() inclusion} definition. Otherwise, the {@literal value} is
 	 * used for greater than and {@link Iterator#next() parameters.next()} as less than criterions.
 	 *
 	 * @param where must not be {@literal null}.
@@ -260,9 +257,9 @@ class CassandraQueryCreator extends AbstractQueryCreator<Query, Filter> {
 		throw new IllegalArgumentException(String.format("Part Type [%s] not supported with like queries", type));
 	}
 
-	private Object[] nextAsArray(CassandraPersistentProperty property, PotentiallyConvertingIterator iterator) {
+	private Object[] nextAsArray(Iterator<Object> iterator) {
 
-		Object next = iterator.nextConverted(property);
+		Object next = iterator.next();
 
 		if (next instanceof Collection) {
 			return ((Collection<?>) next).toArray();

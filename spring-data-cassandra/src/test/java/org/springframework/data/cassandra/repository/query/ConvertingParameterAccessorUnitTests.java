@@ -19,9 +19,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,7 +27,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
-import org.springframework.data.cassandra.repository.query.ConvertingParameterAccessor.PotentiallyConvertingIterator;
 
 import com.datastax.oss.driver.api.core.type.DataTypes;
 
@@ -83,8 +79,7 @@ class ConvertingParameterAccessorUnitTests {
 
 		when(mockParameterAccessor.getBindableValue(0)).thenReturn(localDate);
 
-		assertThat(convertingParameterAccessor.getBindableValue(0))
-				.isEqualTo(LocalDate.of(2010, 7, 4));
+		assertThat(convertingParameterAccessor.getBindableValue(0)).isEqualTo(LocalDate.of(2010, 7, 4));
 	}
 
 	@Test // DATACASS-296, DATACASS-7
@@ -95,22 +90,4 @@ class ConvertingParameterAccessorUnitTests {
 		assertThat(convertingParameterAccessor.getDataType(0)).isEqualTo(DataTypes.TEXT);
 	}
 
-	@Test // DATACASS-296, DATACASS-7
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	void shouldConvertCollections() {
-
-		LocalDate localDate = LocalDate.of(2010, 7, 4);
-
-		when(mockParameterAccessor.iterator())
-				.thenReturn((Iterator) Collections.singletonList(Collections.singletonList(localDate)).iterator());
-
-		PotentiallyConvertingIterator iterator = (PotentiallyConvertingIterator) convertingParameterAccessor.iterator();
-		Object converted = iterator.nextConverted(mockProperty);
-
-		assertThat(converted).isInstanceOf(List.class);
-
-		List<?> list = (List<?>) converted;
-
-		assertThat(list.get(0)).isInstanceOf(LocalDate.class);
-	}
 }
