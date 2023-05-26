@@ -147,7 +147,7 @@ public class SchemaFactory {
 			if (property.isCompositePrimaryKey()) {
 
 				CassandraPersistentEntity<?> primaryKeyEntity = mappingContext
-						.getRequiredPersistentEntity(property.getRawType());
+								.getRequiredPersistentEntity(property.getRawType());
 
 				for (CassandraPersistentProperty primaryKeyProperty : primaryKeyEntity) {
 

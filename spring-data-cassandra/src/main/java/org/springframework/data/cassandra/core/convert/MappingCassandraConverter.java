@@ -298,12 +298,12 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	@SuppressWarnings("unchecked")
 	private <S> ConvertingPropertyAccessor<S> newConvertingPropertyAccessor(S source,
 			CassandraPersistentEntity<?> entity) {
-
 		PersistentPropertyAccessor<S> propertyAccessor = source instanceof PersistentPropertyAccessor
-				? (PersistentPropertyAccessor<S>) source
-				: entity.getPropertyAccessor(source);
+						? (PersistentPropertyAccessor<S>) source
+						: entity.getPropertyAccessor(source);
 
 		return new ConvertingPropertyAccessor<>(propertyAccessor, getConversionService());
+
 	}
 
 	private <S> CassandraPersistentEntityParameterValueProvider newParameterValueProvider(ConversionContext context,
