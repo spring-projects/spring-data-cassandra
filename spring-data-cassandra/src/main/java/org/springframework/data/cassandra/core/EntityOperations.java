@@ -196,7 +196,7 @@ class EntityOperations {
 		StatementBuilder<Delete> appendVersionCondition(StatementBuilder<Delete> delete);
 
 		/**
-		 * Initializes the version property of the of the current entity if available.
+		 * Initializes the version property of the current entity if available.
 		 *
 		 * @return the entity with the version property updated if available.
 		 */

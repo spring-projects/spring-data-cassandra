@@ -29,8 +29,10 @@ import org.springframework.data.cassandra.core.cql.generator.DropUserTypeCqlGene
 import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.DropTableSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.DropUserTypeSpecification;
+import org.springframework.data.cassandra.core.cql.keyspace.TableOption;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
@@ -44,6 +46,7 @@ import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
  * @author Fabio J. Mendes
  * @author John Blum
  * @author Vagif Zeynalov
+ * @author Mikhail Polivakha
  */
 public class CassandraAdminTemplate extends CassandraTemplate implements CassandraAdminOperations {
 
@@ -105,13 +108,23 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 	}
 
 	@Override
-	public void createTable(boolean ifNotExists, CqlIdentifier tableName, Class<?> entityClass,
-			Map<String, Object> optionsByName) {
-
+	public void createTable(boolean ifNotExists, CqlIdentifier tableName, Class<?> entityClass, Map<String, Object> optionsByName) {
 		CassandraPersistentEntity<?> entity = getConverter().getMappingContext().getRequiredPersistentEntity(entityClass);
 
 		CreateTableSpecification createTableSpecification = this.schemaFactory
-				.getCreateTableSpecificationFor(entity, tableName).ifNotExists(ifNotExists);
+				.getCreateTableSpecificationFor(entity, tableName)
+				.ifNotExists(ifNotExists);
+
+		if (!CollectionUtils.isEmpty(optionsByName)) {
+			optionsByName.forEach((key, value) -> {
+				TableOption tableOption = TableOption.valueOfIgnoreCase(key);
+				if (tableOption.requiresValue()) {
+					createTableSpecification.with(tableOption, value);
+				} else {
+					createTableSpecification.with(tableOption);
+				}
+			});
+		}
 
 		getCqlOperations().execute(CreateTableCqlGenerator.toCql(createTableSpecification));
 	}

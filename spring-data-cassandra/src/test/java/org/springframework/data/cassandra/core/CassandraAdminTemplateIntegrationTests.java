@@ -17,13 +17,19 @@ package org.springframework.data.cassandra.core;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.time.LocalDate;
 import java.util.Collection;
+import java.util.Map;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.generator.DropTableCqlGenerator;
 import org.springframework.data.cassandra.core.cql.keyspace.DropTableSpecification;
+import org.springframework.data.cassandra.core.cql.keyspace.TableOption;
+import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
 
@@ -36,6 +42,7 @@ import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
  * Integration tests for {@link CassandraAdminTemplate}.
  *
  * @author Mark Paluch
+ * @author Mikhail Polivakha
  */
 class CassandraAdminTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrationTests {
 
@@ -57,6 +64,27 @@ class CassandraAdminTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 	private KeyspaceMetadata getKeyspaceMetadata() {
 		Metadata metadata = getSession().getMetadata();
 		return getSession().getKeyspace().flatMap(metadata::getKeyspace).get();
+	}
+
+	@Test
+	void givenAdminTemplate_whenCreateTableWithOptions_ThenCreatedTableContainsTheseOptions() {
+		cassandraAdminTemplate.createTable(
+				true,
+				CqlIdentifier.fromCql("someTable"),
+				SomeTable.class,
+				Map.of(
+					TableOption.COMMENT.getName(), "This is comment for table",
+					TableOption.BLOOM_FILTER_FP_CHANCE.getName(), "0.3"
+				)
+		);
+
+		TableMetadata someTable = getKeyspaceMetadata().getTables().values().stream().findFirst().orElse(null);
+
+		Assertions.assertThat(someTable).isNotNull();
+		Assertions.assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.COMMENT.getName())))
+				.isEqualTo("This is comment for table");
+		Assertions.assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.BLOOM_FILTER_FP_CHANCE.getName())))
+				.isEqualTo(0.3);
 	}
 
 	@Test // DATACASS-173
@@ -84,5 +112,14 @@ class CassandraAdminTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 		cassandraAdminTemplate.dropTable(CqlIdentifier.fromCql("users"));
 
 		assertThat(getKeyspaceMetadata().getTables()).hasSize(0);
+	}
+
+	@Table("someTable")
+	private static class SomeTable {
+
+		@Id
+		private String name;
+		private Integer number;
+		private LocalDate createdAt;
 	}
 }
