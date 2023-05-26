@@ -43,9 +43,8 @@ class UserTypeUtil {
 
 		Assert.notNull(dataType, "DataType must not be null");
 
-		if (dataType instanceof ListType) {
+		if (dataType instanceof ListType collectionType) {
 
-			ListType collectionType = (ListType) dataType;
 			DataType elementType = collectionType.getElementType();
 
 			if (isCollectionType(elementType) || isNonFrozenUdt(elementType)) {
@@ -53,9 +52,8 @@ class UserTypeUtil {
 			}
 		}
 
-		if (dataType instanceof SetType) {
+		if (dataType instanceof SetType collectionType) {
 
-			SetType collectionType = (SetType) dataType;
 			DataType elementType = collectionType.getElementType();
 
 			if (isCollectionType(elementType) || isNonFrozenUdt(elementType)) {
@@ -63,9 +61,7 @@ class UserTypeUtil {
 			}
 		}
 
-		if (dataType instanceof MapType) {
-
-			MapType collectionType = (MapType) dataType;
+		if (dataType instanceof MapType collectionType) {
 
 			DataType keyType = collectionType.getKeyType();
 			DataType valueType = collectionType.getValueType();

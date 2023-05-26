@@ -55,6 +55,7 @@ public interface CassandraAdminOperations extends CassandraOperations {
 	void createTable(boolean ifNotExists, CqlIdentifier tableName, Class<?> entityClass,
 			Map<String, Object> optionsByName);
 
+
 	/**
 	 * Drops a table based on the given {@link Class entity type}. The name of the table is derived from either the simple
 	 * name of the {@link Class entity class} or name of the table specified with the {@link Table} mapping annotation.
