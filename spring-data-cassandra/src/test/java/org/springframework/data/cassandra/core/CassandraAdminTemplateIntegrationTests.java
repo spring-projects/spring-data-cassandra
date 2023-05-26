@@ -21,6 +21,7 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Map;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.annotation.Id;
@@ -83,28 +84,49 @@ class CassandraAdminTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 				.isEqualTo(0.3);
 	}
 
+	@Test
+	void shouldCreateTableWithNameDerivedFromEntityClass() {
+		cassandraAdminTemplate.createTable(
+			true,
+			SomeTable.class,
+			Map.of(
+				TableOption.COMMENT.getName(), "This is comment for table", TableOption.BLOOM_FILTER_FP_CHANCE.getName(), "0.3"
+			)
+		);
+
+		TableMetadata someTable = getKeyspaceMetadata().getTables()
+			.values()
+			.stream()
+			.findFirst()
+			.orElse(null);
+
+		Assertions.assertThat(someTable).isNotNull();
+		Assertions.assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.COMMENT.getName()))).isEqualTo("This is comment for table");
+		Assertions.assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.BLOOM_FILTER_FP_CHANCE.getName()))).isEqualTo(3);
+	}
+
 	@Test // DATACASS-173
 	void testCreateTables() {
 
 		assertThat(getKeyspaceMetadata().getTables()).hasSize(0);
 
-		cassandraAdminTemplate.createTable(true, CqlIdentifier.fromCql("users"), User.class, null);
+		cassandraAdminTemplate.createTable(true, User.class, null);
 		assertThat(getKeyspaceMetadata().getTables()).hasSize(1);
 
-		cassandraAdminTemplate.createTable(true, CqlIdentifier.fromCql("users"), User.class, null);
+		cassandraAdminTemplate.createTable(true, User.class, null);
 		assertThat(getKeyspaceMetadata().getTables()).hasSize(1);
 	}
 
 	@Test
 	void testDropTable() {
 
-		cassandraAdminTemplate.createTable(true, CqlIdentifier.fromCql("users"), User.class, null);
+		cassandraAdminTemplate.createTable(true, User.class, null);
 		assertThat(getKeyspaceMetadata().getTables()).hasSize(1);
 
 		cassandraAdminTemplate.dropTable(User.class);
 		assertThat(getKeyspaceMetadata().getTables()).hasSize(0);
 
-		cassandraAdminTemplate.createTable(true, CqlIdentifier.fromCql("users"), User.class, null);
+		cassandraAdminTemplate.createTable(true, User.class, null);
 		cassandraAdminTemplate.dropTable(CqlIdentifier.fromCql("users"));
 
 		assertThat(getKeyspaceMetadata().getTables()).hasSize(0);

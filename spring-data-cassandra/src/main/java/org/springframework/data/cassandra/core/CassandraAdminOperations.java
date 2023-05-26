@@ -32,6 +32,7 @@ import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
  * @author Matthew T. Adams
  * @author Mark Paluch
  * @author Fabio J. Mendes
+ * @author Mikhail Polivakha
  */
 public interface CassandraAdminOperations extends CassandraOperations {
 
@@ -54,6 +55,20 @@ public interface CassandraAdminOperations extends CassandraOperations {
 	 */
 	void createTable(boolean ifNotExists, CqlIdentifier tableName, Class<?> entityClass,
 			Map<String, Object> optionsByName);
+
+	/**
+	 * Create a table with the name, that is derived from the given {@code entityClass} and also fields corresponding to the
+	 * same class. If the table already exists and parameter {@code ifNotExists} is {@literal true}, this is a no-op and
+	 * {@literal false} is returned. If the table doesn't exist, parameter {@code ifNotExists} is ignored, the table is created
+	 * and {@literal true} is returned.
+	 *
+	 * @param ifNotExists If true, will only create the table if it doesn't exist, else the create operation will be
+	 *          ignored.
+	 * @param entityClass The class whose fields determine the columns created.
+	 * @param optionsByName Table options, given by the string option name and the appropriate option value.
+	 */
+	void createTable(boolean ifNotExists, Class<?> entityClass, Map<String, Object> optionsByName);
+
 
 	/**
 	 * Drops a table based on the given {@link Class entity type}. The name of the table is derived from either the simple

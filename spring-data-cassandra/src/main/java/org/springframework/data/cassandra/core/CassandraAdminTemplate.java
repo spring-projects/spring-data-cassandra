@@ -108,12 +108,13 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 	}
 
 	@Override
-	public void createTable(boolean ifNotExists, CqlIdentifier tableName, Class<?> entityClass, Map<String, Object> optionsByName) {
+	public void createTable(boolean ifNotExists, CqlIdentifier tableName, Class<?> entityClass,
+			Map<String, Object> optionsByName) {
 		CassandraPersistentEntity<?> entity = getConverter().getMappingContext().getRequiredPersistentEntity(entityClass);
 
 		CreateTableSpecification createTableSpecification = this.schemaFactory
-				.getCreateTableSpecificationFor(entity, tableName)
-				.ifNotExists(ifNotExists);
+		.getCreateTableSpecificationFor(entity, tableName)
+		.ifNotExists(ifNotExists);
 
 		if (!CollectionUtils.isEmpty(optionsByName)) {
 			optionsByName.forEach((key, value) -> {
@@ -127,6 +128,12 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 		}
 
 		getCqlOperations().execute(CreateTableCqlGenerator.toCql(createTableSpecification));
+	}
+
+	@Override
+	public void createTable(boolean ifNotExists, Class<?> entityClass, Map<String, Object> optionsByName) {
+		CassandraPersistentEntity<?> entity = getConverter().getMappingContext().getRequiredPersistentEntity(entityClass);
+		this.createTable(ifNotExists, entity.getTableName(), entityClass, optionsByName);
 	}
 
 	@Override
