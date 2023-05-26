@@ -295,6 +295,7 @@ public class StatementFactory {
 		Assert.notNull(persistentEntity, "CassandraPersistentEntity must not be null");
 
 		boolean insertNulls;
+
 		if (options instanceof InsertOptions) {
 
 			InsertOptions insertOptions = (InsertOptions) options;
