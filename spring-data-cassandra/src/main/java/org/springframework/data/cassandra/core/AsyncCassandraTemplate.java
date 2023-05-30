@@ -865,12 +865,10 @@ public class AsyncCassandraTemplate
 			return statement.getPageSize();
 		}
 
-		if (getAsyncCqlOperations() instanceof CassandraAccessor) {
+		if (getAsyncCqlOperations() instanceof CassandraAccessor accessor) {
 
-			CassandraAccessor accessor = (CassandraAccessor) getAsyncCqlOperations();
-
-			if (accessor.getFetchSize() != -1) {
-				return accessor.getFetchSize();
+			if (accessor.getPageSize() != -1) {
+				return accessor.getPageSize();
 			}
 		}
 		class GetConfiguredPageSize implements AsyncSessionCallback<Integer>, CqlProvider {

@@ -961,7 +961,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	protected <T> T maybeCallBeforeConvert(T object, CqlIdentifier tableName) {
 
 		if (null != entityCallbacks) {
-			return (T) entityCallbacks.callback(BeforeConvertCallback.class, object, tableName);
+			return entityCallbacks.callback(BeforeConvertCallback.class, object, tableName);
 		}
 
 		return object;
@@ -970,7 +970,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	protected <T> T maybeCallBeforeSave(T object, CqlIdentifier tableName, Statement<?> statement) {
 
 		if (null != entityCallbacks) {
-			return (T) entityCallbacks.callback(BeforeSaveCallback.class, object, tableName, statement);
+			return entityCallbacks.callback(BeforeSaveCallback.class, object, tableName, statement);
 		}
 
 		return object;

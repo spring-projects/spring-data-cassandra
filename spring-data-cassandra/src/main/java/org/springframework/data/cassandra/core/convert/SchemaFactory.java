@@ -146,8 +146,7 @@ public class SchemaFactory {
 
 			if (property.isCompositePrimaryKey()) {
 
-				CassandraPersistentEntity<?> primaryKeyEntity = mappingContext
-								.getRequiredPersistentEntity(property.getRawType());
+				CassandraPersistentEntity<?> primaryKeyEntity = mappingContext.getRequiredPersistentEntity(property.getRawType());
 
 				for (CassandraPersistentProperty primaryKeyProperty : primaryKeyEntity) {
 
@@ -406,9 +405,8 @@ public class SchemaFactory {
 		public boolean equals(@Nullable Object o) {
 			if (this == o)
 				return true;
-			if (!(o instanceof com.datastax.oss.driver.api.core.type.UserDefinedType))
+			if (!(o instanceof UserDefinedType that))
 				return false;
-			com.datastax.oss.driver.api.core.type.UserDefinedType that = (com.datastax.oss.driver.api.core.type.UserDefinedType) o;
 			return isFrozen() == that.isFrozen() && Objects.equals(getName(), that.getName());
 		}
 
