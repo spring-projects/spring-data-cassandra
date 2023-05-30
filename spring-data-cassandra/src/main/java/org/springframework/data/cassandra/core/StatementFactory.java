@@ -296,9 +296,7 @@ public class StatementFactory {
 
 		boolean insertNulls;
 
-		if (options instanceof InsertOptions) {
-
-			InsertOptions insertOptions = (InsertOptions) options;
+		if (options instanceof InsertOptions insertOptions) {
 			insertNulls = insertOptions.isInsertNulls();
 		} else {
 			insertNulls = false;
@@ -879,9 +877,7 @@ public class StatementFactory {
 
 		Assert.notNull(insert, "Insert must not be null");
 
-		if (writeOptions instanceof InsertOptions) {
-
-			InsertOptions insertOptions = (InsertOptions) writeOptions;
+		if (writeOptions instanceof InsertOptions insertOptions) {
 
 			if (insertOptions.isIfNotExists()) {
 				insert = insert.ifNotExists();
@@ -910,9 +906,7 @@ public class StatementFactory {
 		com.datastax.oss.driver.api.querybuilder.update.Update updateToUse = QueryOptionsUtil.addWriteOptions(update,
 				writeOptions);
 
-		if (writeOptions instanceof UpdateOptions) {
-
-			UpdateOptions updateOptions = (UpdateOptions) writeOptions;
+		if (writeOptions instanceof UpdateOptions updateOptions) {
 
 			if (updateOptions.isIfExists()) {
 				updateToUse = updateToUse.ifExists();
@@ -936,9 +930,7 @@ public class StatementFactory {
 
 		Delete deleteToUse = QueryOptionsUtil.addWriteOptions(delete, writeOptions);
 
-		if (writeOptions instanceof DeleteOptions) {
-
-			DeleteOptions deleteOptions = (DeleteOptions) writeOptions;
+		if (writeOptions instanceof DeleteOptions deleteOptions) {
 
 			if (deleteOptions.isIfExists()) {
 				deleteToUse = deleteToUse.where().ifExists();

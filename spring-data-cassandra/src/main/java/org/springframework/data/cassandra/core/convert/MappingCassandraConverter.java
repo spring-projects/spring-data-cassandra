@@ -235,6 +235,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 * @since 3.0
 	 */
 	public UserTypeResolver getUserTypeResolver() {
+
 		return this.userTypeResolver != null ? this.userTypeResolver : getMappingContext().getUserTypeResolver();
 	}
 
@@ -259,14 +260,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity
 	 */
 	@SuppressWarnings("unchecked")
-	private <S> ConvertingPropertyAccessor<S> newConvertingPropertyAccessor(S source,
-			CassandraPersistentEntity<?> entity) {
-		PersistentPropertyAccessor<S> propertyAccessor = source instanceof PersistentPropertyAccessor
-						? (PersistentPropertyAccessor<S>) source
-						: entity.getPropertyAccessor(source);
-
-		return new ConvertingPropertyAccessor<>(propertyAccessor, getConversionService());
-
+	private <S> ConvertingPropertyAccessor<S> newConvertingPropertyAccessor(S source, CassandraPersistentEntity<?> entity) {
+		return new ConvertingPropertyAccessor<>(entity.getPropertyAccessor(source), getConversionService());
 	}
 
 	private <S> CassandraPersistentEntityParameterValueProvider newParameterValueProvider(ConversionContext context,
