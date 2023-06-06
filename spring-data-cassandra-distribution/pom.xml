@@ -37,11 +37,4 @@
 		</plugins>
 	</build>
 
-	<pluginRepositories>
-		<pluginRepository>
-			<id>spring-release</id>
-			<name>Spring Release</name>
-			<url>https://repo.spring.io/release</url>  <!-- For Releases -->
-		</pluginRepository>
-	</pluginRepositories>
 </project>
