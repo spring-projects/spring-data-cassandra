@@ -96,6 +96,6 @@ Finally, you can follow the Spring  https://spring.io/blog[blog] or the project 
 
 * Version Control: https://github.com/spring-projects/spring-data-cassandra
 * Bugtracker: https://github.com/spring-projects/spring-data-cassandra/issues
-* Release repository: https://repo.spring.io/libs-release
-* Milestone repository: https://repo.spring.io/libs-milestone
-* Snapshot repository: https://repo.spring.io/libs-snapshot
+* Release repository: https://repo1.maven.org/maven2/
+* Milestone repository: https://repo.spring.io/milestone/
+* Snapshot repository: https://repo.spring.io/snapshot/
