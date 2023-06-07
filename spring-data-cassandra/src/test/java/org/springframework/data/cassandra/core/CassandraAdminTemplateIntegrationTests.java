@@ -21,7 +21,6 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Map;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.annotation.Id;
@@ -66,24 +65,21 @@ class CassandraAdminTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 		return getSession().getKeyspace().flatMap(metadata::getKeyspace).get();
 	}
 
-	@Test
-	void givenAdminTemplate_whenCreateTableWithOptions_ThenCreatedTableContainsTheseOptions() {
-		cassandraAdminTemplate.createTable(
-				true,
-				CqlIdentifier.fromCql("someTable"),
-				SomeTable.class,
-				Map.of(
-					TableOption.COMMENT.getName(), "This is comment for table",
-					TableOption.BLOOM_FILTER_FP_CHANCE.getName(), "0.3"
-				)
-		);
+	@Test // GH-359
+	void shouldApplyTableOptions() {
 
-		TableMetadata someTable = getKeyspaceMetadata().getTables().values().stream().findFirst().orElse(null);
+		Map<String, Object> options = Map.of(TableOption.COMMENT.getName(), "This is comment for table", //
+				TableOption.BLOOM_FILTER_FP_CHANCE.getName(), "0.3");
 
-		Assertions.assertThat(someTable).isNotNull();
-		Assertions.assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.COMMENT.getName())))
+		CqlIdentifier tableName = CqlIdentifier.fromCql("someTable");
+		cassandraAdminTemplate.createTable(true, tableName, SomeTable.class, options);
+
+		TableMetadata someTable = getKeyspaceMetadata().getTables().get(tableName);
+
+		assertThat(someTable).isNotNull();
+		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.COMMENT.getName())))
 				.isEqualTo("This is comment for table");
-		Assertions.assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.BLOOM_FILTER_FP_CHANCE.getName())))
+		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.BLOOM_FILTER_FP_CHANCE.getName())))
 				.isEqualTo(0.3);
 	}
 
@@ -117,8 +113,7 @@ class CassandraAdminTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 	@Table("someTable")
 	private static class SomeTable {
 
-		@Id
-		private String name;
+		@Id private String name;
 		private Integer number;
 		private LocalDate createdAt;
 	}
