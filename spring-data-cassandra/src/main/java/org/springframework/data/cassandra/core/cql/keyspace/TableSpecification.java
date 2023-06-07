@@ -296,7 +296,7 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 
 		this.columns.add(column);
 
-		if (optionalKeyType.isEmpty()) {
+		if (!optionalKeyType.isPresent()) {
 			this.nonKeyColumns.add(column);
 		}
 

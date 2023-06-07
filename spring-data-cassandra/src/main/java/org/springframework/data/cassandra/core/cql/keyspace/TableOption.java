@@ -18,7 +18,6 @@ package org.springframework.data.cassandra.core.cql.keyspace;
 import java.util.Map;
 
 import org.springframework.lang.Nullable;
-import org.springframework.util.StringUtils;
 
 /**
  * Enumeration that represents all known table options. If a table option is not listed here, but is supported by
@@ -86,12 +85,22 @@ public enum TableOption implements Option {
 		this.delegate = new DefaultOption(name, type, requiresValue, escapesValue, quotesValue);
 	}
 
+	/**
+	 * Look up {@link TableOption} by name using case-insensitive lookups.
+	 *
+	 * @param optionName name of the option.
+	 * @return the option.
+	 * @throws IllegalArgumentException if the option cannot be determined.
+	 * @since 3.4.13
+	 */
 	public static TableOption valueOfIgnoreCase(String optionName) {
+
 		for (TableOption value : values()) {
 			if (value.getName().equalsIgnoreCase(optionName)) {
 				return value;
 			}
 		}
+
 		throw new IllegalArgumentException(String.format("Unable to recognize specified Table option '%s'", optionName));
 	}
 
