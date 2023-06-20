@@ -19,11 +19,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.Value;
-import lombok.With;
-
 import java.util.Collections;
 import java.util.Date;
 
@@ -106,9 +101,9 @@ class AuditingEntityCallbackUnitTests {
 	@Test // DATACASS-4
 	void propagatesChangedInstanceToEvent() {
 
-		ImmutableSample sample = new ImmutableSample();
+		ImmutableSample sample = new ImmutableSample("a", null, null);
 
-		ImmutableSample newSample = new ImmutableSample();
+		ImmutableSample newSample = new ImmutableSample("a", null, null);
 		IsNewAwareAuditingHandler handler = mock(IsNewAwareAuditingHandler.class);
 		doReturn(newSample).when(handler).markAudited(eq(sample));
 
@@ -125,14 +120,8 @@ class AuditingEntityCallbackUnitTests {
 		@LastModifiedDate Date modified;
 	}
 
-	@Value
-	@With
-	@AllArgsConstructor
-	@NoArgsConstructor(force = true)
-	static class ImmutableSample {
+	record ImmutableSample(
 
-		@Id String id;
-		@CreatedDate Date created;
-		@LastModifiedDate Date modified;
+			@Id String id, @CreatedDate Date created, @LastModifiedDate Date modified) {
 	}
 }

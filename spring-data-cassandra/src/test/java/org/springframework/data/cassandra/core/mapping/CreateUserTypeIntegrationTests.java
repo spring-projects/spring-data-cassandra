@@ -17,9 +17,6 @@ package org.springframework.data.cassandra.core.mapping;
 
 import static org.assertj.core.api.Assertions.*;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -67,27 +64,55 @@ public class CreateUserTypeIntegrationTests extends AbstractSpringDataEmbeddedCa
 	}
 
 	@Table
-	@Getter
-	@AllArgsConstructor
 	private static class Car {
 
 		@Id String id;
 		Engine engine;
+
+		public Car(String id, Engine engine) {
+			this.id = id;
+			this.engine = engine;
+		}
+
+		public String getId() {
+			return this.id;
+		}
+
+		public Engine getEngine() {
+			return this.engine;
+		}
 	}
 
 	@UserDefinedType
-	@Getter
-	@AllArgsConstructor
 	private static class Engine {
 		Manufacturer manufacturer;
 		List<Manufacturer> alternative;
+
+		public Engine(Manufacturer manufacturer, List<Manufacturer> alternative) {
+			this.manufacturer = manufacturer;
+			this.alternative = alternative;
+		}
+
+		public Manufacturer getManufacturer() {
+			return this.manufacturer;
+		}
+
+		public List<Manufacturer> getAlternative() {
+			return this.alternative;
+		}
 	}
 
 	@UserDefinedType
-	@Getter
-	@AllArgsConstructor
 	private static class Manufacturer {
 		String name;
+
+		public Manufacturer(String name) {
+			this.name = name;
+		}
+
+		public String getName() {
+			return this.name;
+		}
 	}
 
 }

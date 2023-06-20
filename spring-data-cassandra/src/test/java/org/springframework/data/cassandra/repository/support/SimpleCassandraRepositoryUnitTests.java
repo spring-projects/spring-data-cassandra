@@ -17,8 +17,6 @@ package org.springframework.data.cassandra.repository.support;
 
 import static org.mockito.Mockito.*;
 
-import lombok.Data;
-
 import java.io.Serializable;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -79,7 +77,7 @@ class SimpleCassandraRepositoryUnitTests {
 		repository = new SimpleCassandraRepository<Object, String>(new MappingCassandraEntityInformation(entity, converter),
 				cassandraOperations);
 
-		SimplePerson person = new SimplePerson();
+		SimplePerson person = new SimplePerson(null);
 
 		when(cassandraOperations.insert(eq(person), any())).thenReturn(writeResult);
 		when(writeResult.getEntity()).thenReturn(person);
@@ -196,16 +194,29 @@ class SimpleCassandraRepositoryUnitTests {
 				SimplePerson.class);
 	}
 
-	@Data
-	static class SimplePerson {
+	record SimplePerson(@Id String id) {
 
-		@Id String id;
 	}
 
-	@Data
 	static class VersionedPerson {
 
 		@Id String id;
 		@Version long version;
+
+		public String getId() {
+			return id;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
+
+		public long getVersion() {
+			return version;
+		}
+
+		public void setVersion(long version) {
+			this.version = version;
+		}
 	}
 }

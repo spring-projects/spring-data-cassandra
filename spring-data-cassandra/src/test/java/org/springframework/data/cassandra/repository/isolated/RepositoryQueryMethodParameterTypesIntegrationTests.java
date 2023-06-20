@@ -57,9 +57,7 @@ import com.datastax.oss.driver.api.core.CqlSession;
  * @author Mark Paluch
  */
 @SpringJUnitConfig
-@SuppressWarnings("Since15")
-class RepositoryQueryMethodParameterTypesIntegrationTests
-		extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
+class RepositoryQueryMethodParameterTypesIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
 
 	@Configuration
 	@EnableCassandraRepositories(basePackageClasses = RepositoryQueryMethodParameterTypesIntegrationTests.class,

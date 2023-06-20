@@ -15,18 +15,68 @@
  */
 package org.springframework.data.cassandra.repository.conversion;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import org.springframework.util.ObjectUtils;
 
 /**
  * @author Mark Paluch
  */
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
 class Address {
 
 	String city;
 	String country;
+
+	public Address(String city, String country) {
+		this.city = city;
+		this.country = country;
+	}
+
+	public Address() {}
+
+	public String getCity() {
+		return this.city;
+	}
+
+	public String getCountry() {
+		return this.country;
+	}
+
+	public void setCity(String city) {
+		this.city = city;
+	}
+
+	public void setCountry(String country) {
+		this.country = country;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
+
+		Address address = (Address) o;
+
+		if (!ObjectUtils.nullSafeEquals(city, address.city)) {
+			return false;
+		}
+		return ObjectUtils.nullSafeEquals(country, address.country);
+	}
+
+	@Override
+	public int hashCode() {
+		int result = ObjectUtils.nullSafeHashCode(city);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(country);
+		return result;
+	}
+
+	@Override
+	public String toString() {
+		final StringBuffer sb = new StringBuffer();
+		sb.append(getClass().getSimpleName());
+		sb.append(" [city='").append(city).append('\'');
+		sb.append(", country='").append(country).append('\'');
+		sb.append(']');
+		return sb.toString();
+	}
 }

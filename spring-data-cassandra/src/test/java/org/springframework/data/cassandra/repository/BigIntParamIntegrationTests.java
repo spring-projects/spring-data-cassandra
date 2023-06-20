@@ -18,10 +18,6 @@ package org.springframework.data.cassandra.repository;
 
 import static org.assertj.core.api.Assertions.*;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.math.BigInteger;
 import java.util.Collections;
 import java.util.Set;
@@ -81,12 +77,23 @@ class BigIntParamIntegrationTests extends AbstractSpringDataEmbeddedCassandraInt
 	 * @author Pete Cable
 	 */
 	@Table
-	@Data
-	@AllArgsConstructor
-	@NoArgsConstructor
 	static class BigThing {
 
 		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) private BigInteger number;
+
+		public BigThing(BigInteger number) {
+			this.number = number;
+		}
+
+		public BigThing() {}
+
+		public BigInteger getNumber() {
+			return this.number;
+		}
+
+		public void setNumber(BigInteger number) {
+			this.number = number;
+		}
 	}
 
 	/**

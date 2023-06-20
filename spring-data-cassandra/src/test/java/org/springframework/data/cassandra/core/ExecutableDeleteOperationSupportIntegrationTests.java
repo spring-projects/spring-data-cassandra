@@ -19,8 +19,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.cassandra.core.query.Criteria.*;
 import static org.springframework.data.cassandra.core.query.Query.*;
 
-import lombok.Data;
-
 import java.util.Collections;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -87,15 +85,31 @@ class ExecutableDeleteOperationSupportIntegrationTests extends AbstractKeyspaceC
 		assertThat(this.template.select(Query.empty(), Person.class)).isEmpty();
 	}
 
-	@Data
 	@Table
 	static class Person {
 		@Id String id;
 		@Indexed String firstname;
+
+		public Person() {}
+
+		public String getId() {
+			return this.id;
+		}
+
+		public String getFirstname() {
+			return this.firstname;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
+
+		public void setFirstname(String firstname) {
+			this.firstname = firstname;
+		}
+
 	}
 
-	@Data
-	static class Jedi {
-		@Column("firstname") String name;
+	record Jedi(@Column("firstname") String name) {
 	}
 }

@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.mapping.PropertyHandler;
-import org.springframework.lang.Nullable;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Unit tests for {@link CassandraMappingContext}.
@@ -101,42 +101,30 @@ class CassandraPersistentEntityOrderPropertiesUnitTests {
 		@PrimaryKeyColumn(ordinal = 1) private String key2;
 
 		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + ((key0 == null) ? 0 : key0.hashCode());
-			result = prime * result + ((key1 == null) ? 0 : key1.hashCode());
-			result = prime * result + ((key2 == null) ? 0 : key2.hashCode());
-			return result;
+		public boolean equals(Object o) {
+			if (this == o)
+				return true;
+			if (o == null || getClass() != o.getClass())
+				return false;
+
+			CompositePK that = (CompositePK) o;
+
+			if (!ObjectUtils.nullSafeEquals(key0, that.key0)) {
+				return false;
+			}
+			if (!ObjectUtils.nullSafeEquals(key1, that.key1)) {
+				return false;
+			}
+			return ObjectUtils.nullSafeEquals(key2, that.key2);
 		}
 
 		@Override
-		public boolean equals(@Nullable Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			CompositePK other = (CompositePK) obj;
-			if (key0 == null) {
-				if (other.key0 != null)
-					return false;
-			} else if (!key0.equals(other.key0))
-				return false;
-			if (key1 == null) {
-				if (other.key1 != null)
-					return false;
-			} else if (!key1.equals(other.key1))
-				return false;
-			if (key2 == null) {
-				if (other.key2 != null)
-					return false;
-			} else if (!key2.equals(other.key2))
-				return false;
-			return true;
+		public int hashCode() {
+			int result = ObjectUtils.nullSafeHashCode(key0);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(key1);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(key2);
+			return result;
 		}
-
 	}
 
 	@Table

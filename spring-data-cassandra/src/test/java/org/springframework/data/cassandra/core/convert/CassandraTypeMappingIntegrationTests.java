@@ -18,10 +18,6 @@ package org.springframework.data.cassandra.core.convert;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assume.*;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -512,7 +508,7 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 
 		TimeEntity loaded = operations.selectOneById(id, TimeEntity.class);
 
-		assertThat(loaded.getTime()).isEqualTo(time);
+		assertThat(loaded.time()).isEqualTo(time);
 	}
 
 	@Test // DATACASS-296
@@ -640,20 +636,64 @@ public class CassandraTypeMappingIntegrationTests extends AbstractKeyspaceCreati
 		MINT
 	}
 
-	@Data
-	@AllArgsConstructor
 	static class WithDuration {
 
 		@Id String id;
 		Duration duration;
 		CqlDuration cqlDuration;
+
+		public WithDuration(String id, Duration duration, CqlDuration cqlDuration) {
+			this.id = id;
+			this.duration = duration;
+			this.cqlDuration = cqlDuration;
+		}
+
+		public String getId() {
+			return this.id;
+		}
+
+		public Duration getDuration() {
+			return this.duration;
+		}
+
+		public CqlDuration getCqlDuration() {
+			return this.cqlDuration;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
+
+		public void setDuration(Duration duration) {
+			this.duration = duration;
+		}
+
+		public void setCqlDuration(CqlDuration cqlDuration) {
+			this.cqlDuration = cqlDuration;
+		}
+
 	}
 
-	@Data
-	@NoArgsConstructor
 	static class ListOfTuples {
 
 		@Id String id;
 		List<TupleValue> tuples;
+
+		public String getId() {
+			return this.id;
+		}
+
+		public List<TupleValue> getTuples() {
+			return this.tuples;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
+
+		public void setTuples(List<TupleValue> tuples) {
+			this.tuples = tuples;
+		}
+
 	}
 }

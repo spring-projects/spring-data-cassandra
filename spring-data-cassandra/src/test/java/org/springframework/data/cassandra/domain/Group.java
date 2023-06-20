@@ -15,11 +15,10 @@
  */
 package org.springframework.data.cassandra.domain;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import org.springframework.data.cassandra.core.mapping.PrimaryKey;
 import org.springframework.data.cassandra.core.mapping.Table;
+import org.springframework.util.ObjectUtils;
 
 /**
  * @author Mark Paluch
@@ -27,8 +26,6 @@ import org.springframework.data.cassandra.core.mapping.Table;
  *      "https://www.datastax.com/dev/blog/basic-rules-of-cassandra-data-modeling">https://www.datastax.com/dev/blog/basic-rules-of-cassandra-data-modeling</a>
  */
 @Table
-@Data
-@NoArgsConstructor
 public class Group {
 
 	@PrimaryKey private GroupKey id;
@@ -38,5 +35,56 @@ public class Group {
 
 	public Group(GroupKey id) {
 		this.id = id;
+	}
+
+	public Group() {}
+
+	public GroupKey getId() {
+		return this.id;
+	}
+
+	public String getEmail() {
+		return this.email;
+	}
+
+	public int getAge() {
+		return this.age;
+	}
+
+	public void setId(GroupKey id) {
+		this.id = id;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public void setAge(int age) {
+		this.age = age;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
+
+		Group group = (Group) o;
+
+		if (age != group.age)
+			return false;
+		if (!ObjectUtils.nullSafeEquals(id, group.id)) {
+			return false;
+		}
+		return ObjectUtils.nullSafeEquals(email, group.email);
+	}
+
+	@Override
+	public int hashCode() {
+		int result = ObjectUtils.nullSafeHashCode(id);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(email);
+		result = 31 * result + age;
+		return result;
 	}
 }

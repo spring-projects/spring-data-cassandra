@@ -17,10 +17,6 @@ package org.springframework.data.cassandra.repository;
 
 import static org.assertj.core.api.Assertions.*;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.util.Collections;
 import java.util.Set;
 
@@ -78,12 +74,23 @@ class IntParamIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegr
 	}
 
 	@Table
-	@Data
-	@AllArgsConstructor
-	@NoArgsConstructor
 	static class IntThing {
 
 		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) private int number;
+
+		public IntThing(int number) {
+			this.number = number;
+		}
+
+		public IntThing() {}
+
+		public int getNumber() {
+			return this.number;
+		}
+
+		public void setNumber(int number) {
+			this.number = number;
+		}
 	}
 
 	interface IntThingRepo extends MapIdCassandraRepository<IntThing> {

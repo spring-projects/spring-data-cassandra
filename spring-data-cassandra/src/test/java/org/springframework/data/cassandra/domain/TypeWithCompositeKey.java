@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.domain;
 
-import lombok.Data;
-
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
 import org.springframework.data.cassandra.core.mapping.Table;
@@ -25,9 +23,24 @@ import org.springframework.data.cassandra.core.mapping.Table;
  * @author Mark Paluch
  */
 @Table
-@Data
 public class TypeWithCompositeKey {
 
 	@PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, ordinal = 1) private String firstname;
 	@PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, ordinal = 2) private String lastname;
+
+	public String getFirstname() {
+		return firstname;
+	}
+
+	public void setFirstname(String firstname) {
+		this.firstname = firstname;
+	}
+
+	public String getLastname() {
+		return lastname;
+	}
+
+	public void setLastname(String lastname) {
+		this.lastname = lastname;
+	}
 }

@@ -17,21 +17,17 @@ package org.springframework.data.cassandra.repository.conversion;
 
 import static org.springframework.data.cassandra.core.mapping.CassandraType.*;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.core.mapping.Table;
+import org.springframework.util.ObjectUtils;
 
 /**
  * @author Mark Paluch
  */
 @Table
-@Data
-@NoArgsConstructor
 class Contact {
 
 	@Id String id;
@@ -47,4 +43,81 @@ class Contact {
 	public Contact(String id) {
 		this.id = id;
 	}
+
+	public Contact() {}
+
+	public String getId() {
+		return this.id;
+	}
+
+	public Address getAddress() {
+		return this.address;
+	}
+
+	public List<Address> getAddresses() {
+		return this.addresses;
+	}
+
+	public Phone getMainPhone() {
+		return this.mainPhone;
+	}
+
+	public List<Phone> getAlternativePhones() {
+		return this.alternativePhones;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public void setAddress(Address address) {
+		this.address = address;
+	}
+
+	public void setAddresses(List<Address> addresses) {
+		this.addresses = addresses;
+	}
+
+	public void setMainPhone(Phone mainPhone) {
+		this.mainPhone = mainPhone;
+	}
+
+	public void setAlternativePhones(List<Phone> alternativePhones) {
+		this.alternativePhones = alternativePhones;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
+
+		Contact contact = (Contact) o;
+
+		if (!ObjectUtils.nullSafeEquals(id, contact.id)) {
+			return false;
+		}
+		if (!ObjectUtils.nullSafeEquals(address, contact.address)) {
+			return false;
+		}
+		if (!ObjectUtils.nullSafeEquals(addresses, contact.addresses)) {
+			return false;
+		}
+		if (!ObjectUtils.nullSafeEquals(mainPhone, contact.mainPhone)) {
+			return false;
+		}
+		return ObjectUtils.nullSafeEquals(alternativePhones, contact.alternativePhones);
+	}
+
+	@Override
+	public int hashCode() {
+		int result = ObjectUtils.nullSafeHashCode(id);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(address);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(addresses);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(mainPhone);
+		result = 31 * result + ObjectUtils.nullSafeHashCode(alternativePhones);
+		return result;
+	}
+
 }

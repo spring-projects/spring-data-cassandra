@@ -17,7 +17,6 @@ package org.springframework.data.cassandra.repository.support;
 
 import static org.mockito.Mockito.*;
 
-import lombok.Data;
 import reactor.core.publisher.Mono;
 
 import java.io.Serializable;
@@ -100,10 +99,25 @@ class SimpleReactiveCassandraRepositoryUnitTests {
 		verify(cassandraOperations).update(versionedPerson);
 	}
 
-	@Data
 	static class VersionedPerson {
 
 		@Id String id;
 		@Version long version;
+
+		public String getId() {
+			return id;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
+
+		public long getVersion() {
+			return version;
+		}
+
+		public void setVersion(long version) {
+			this.version = version;
+		}
 	}
 }

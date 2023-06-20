@@ -19,10 +19,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.cassandra.test.util.RowMockUtil.*;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -47,6 +43,7 @@ import org.springframework.data.cassandra.core.cql.util.StatementBuilder;
 import org.springframework.data.cassandra.core.mapping.*;
 import org.springframework.data.cassandra.support.UserDefinedTypeBuilder;
 import org.springframework.data.cassandra.test.util.RowMockUtil;
+import org.springframework.util.ObjectUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.cql.Row;
@@ -67,8 +64,7 @@ class MappingCassandraConverterUDTUnitTests {
 	@Mock UserTypeResolver userTypeResolver;
 
 	private com.datastax.oss.driver.api.core.type.UserDefinedType manufacturer = UserDefinedTypeBuilder
-			.forName("manufacturer")
-			.withField("name", DataTypes.TEXT).withField("displayname", DataTypes.TEXT).build();
+			.forName("manufacturer").withField("name", DataTypes.TEXT).withField("displayname", DataTypes.TEXT).build();
 
 	private com.datastax.oss.driver.api.core.type.UserDefinedType engine = UserDefinedTypeBuilder.forName("engine")
 			.withField("manufacturer", manufacturer).build();
@@ -323,6 +319,7 @@ class MappingCassandraConverterUDTUnitTests {
 
 		assertThat(statement.getQuery()).isEqualTo("INSERT INTO bank (othercurrencies) VALUES ([{currency:'EUR'}])");
 	}
+
 	@Test // DATACASS-487, DATACASS-623
 	void shouldReadMappedUdtInMap() {
 
@@ -454,8 +451,7 @@ class MappingCassandraConverterUDTUnitTests {
 		rowMock = RowMockUtil.newRowMock(column("id", "id-1", DataTypes.TEXT),
 				column("udtvalue", udtValue, withprefixednullableembeddedtype));
 
-		OuterWithPrefixedNullableEmbeddedType target = converter
-				.read(OuterWithPrefixedNullableEmbeddedType.class, rowMock);
+		OuterWithPrefixedNullableEmbeddedType target = converter.read(OuterWithPrefixedNullableEmbeddedType.class, rowMock);
 		assertThat(target.getId()).isEqualTo("id-1");
 		assertThat(target.udtValue).isNotNull();
 		assertThat(target.udtValue.value).isEqualTo("value-string");
@@ -493,85 +489,254 @@ class MappingCassandraConverterUDTUnitTests {
 	}
 
 	@Table
-	@Getter
-	@AllArgsConstructor
 	private static class Car {
 
 		@Id String id;
 		Engine engine;
+
+		public Car(String id, Engine engine) {
+			this.id = id;
+			this.engine = engine;
+		}
+
+		public String getId() {
+			return this.id;
+		}
+
+		public Engine getEngine() {
+			return this.engine;
+		}
 	}
 
 	@UserDefinedType
-	@Getter
-	@AllArgsConstructor
 	private static class Engine {
 		Manufacturer manufacturer;
+
+		public Engine(Manufacturer manufacturer) {
+			this.manufacturer = manufacturer;
+		}
+
+		public Manufacturer getManufacturer() {
+			return this.manufacturer;
+		}
 	}
 
 	@UserDefinedType
-	@Data
-	@AllArgsConstructor
 	private static class Manufacturer {
 		String name;
 		@ReadOnlyProperty String displayName;
+
+		public Manufacturer(String name, String displayName) {
+			this.name = name;
+			this.displayName = displayName;
+		}
+
+		public String getName() {
+			return this.name;
+		}
+
+		public String getDisplayName() {
+			return this.displayName;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		public void setDisplayName(String displayName) {
+			this.displayName = displayName;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o)
+				return true;
+			if (o == null || getClass() != o.getClass())
+				return false;
+
+			Manufacturer that = (Manufacturer) o;
+
+			if (!ObjectUtils.nullSafeEquals(name, that.name)) {
+				return false;
+			}
+			return ObjectUtils.nullSafeEquals(displayName, that.displayName);
+		}
+
+		@Override
+		public int hashCode() {
+			int result = ObjectUtils.nullSafeHashCode(name);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(displayName);
+			return result;
+		}
 	}
 
-	@Data
-	@AllArgsConstructor
 	private static class Currency {
 		String currency;
+
+		public Currency(String currency) {
+			this.currency = currency;
+		}
+
+		public String getCurrency() {
+			return this.currency;
+		}
+
+		public void setCurrency(String currency) {
+			this.currency = currency;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o)
+				return true;
+			if (o == null || getClass() != o.getClass())
+				return false;
+
+			Currency currency1 = (Currency) o;
+
+			return ObjectUtils.nullSafeEquals(currency, currency1.currency);
+		}
+
+		@Override
+		public int hashCode() {
+			return ObjectUtils.nullSafeHashCode(currency);
+		}
 	}
 
-	@Data
-	@AllArgsConstructor
 	private static class Supplier {
 		Map<Manufacturer, List<Currency>> acceptedCurrencies;
+
+		public Supplier(Map<Manufacturer, List<Currency>> acceptedCurrencies) {
+			this.acceptedCurrencies = acceptedCurrencies;
+		}
+
+		public Map<Manufacturer, List<Currency>> getAcceptedCurrencies() {
+			return this.acceptedCurrencies;
+		}
+
+		public void setAcceptedCurrencies(Map<Manufacturer, List<Currency>> acceptedCurrencies) {
+			this.acceptedCurrencies = acceptedCurrencies;
+		}
 	}
 
-	@Data
 	static class OuterWithNullableEmbeddedType {
 
 		@Id String id;
 
 		WithNullableEmbeddedType udtValue;
+
+		public String getId() {
+			return this.id;
+		}
+
+		public WithNullableEmbeddedType getUdtValue() {
+			return this.udtValue;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
+
+		public void setUdtValue(WithNullableEmbeddedType udtValue) {
+			this.udtValue = udtValue;
+		}
 	}
 
-	@Data
 	static class OuterWithPrefixedNullableEmbeddedType {
 
 		@Id String id;
 
 		WithPrefixedNullableEmbeddedType udtValue;
+
+		public String getId() {
+			return this.id;
+		}
+
+		public WithPrefixedNullableEmbeddedType getUdtValue() {
+			return this.udtValue;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
+
+		public void setUdtValue(WithPrefixedNullableEmbeddedType udtValue) {
+			this.udtValue = udtValue;
+		}
 	}
 
 	@UserDefinedType
-	@Data
 	static class WithNullableEmbeddedType {
 
 		String value;
 
 		@Embedded.Nullable EmbeddedWithSimpleTypes nested;
+
+		public String getValue() {
+			return this.value;
+		}
+
+		public EmbeddedWithSimpleTypes getNested() {
+			return this.nested;
+		}
+
+		public void setValue(String value) {
+			this.value = value;
+		}
+
+		public void setNested(EmbeddedWithSimpleTypes nested) {
+			this.nested = nested;
+		}
 	}
 
 	@UserDefinedType
-	@Data
 	static class WithPrefixedNullableEmbeddedType {
 
 		String value;
 
 		@Embedded.Nullable(prefix = "prefix") EmbeddedWithSimpleTypes nested;
+
+		public String getValue() {
+			return this.value;
+		}
+
+		public EmbeddedWithSimpleTypes getNested() {
+			return this.nested;
+		}
+
+		public void setValue(String value) {
+			this.value = value;
+		}
+
+		public void setNested(EmbeddedWithSimpleTypes nested) {
+			this.nested = nested;
+		}
 	}
 
 	@UserDefinedType
-	@Data
 	static class WithEmptyEmbeddedType {
 
 		String value;
 
 		@Embedded.Empty EmbeddedWithSimpleTypes nested;
+
+		public String getValue() {
+			return this.value;
+		}
+
+		public EmbeddedWithSimpleTypes getNested() {
+			return this.nested;
+		}
+
+		public void setValue(String value) {
+			this.value = value;
+		}
+
+		public void setNested(EmbeddedWithSimpleTypes nested) {
+			this.nested = nested;
+		}
 	}
 
-	@Data
 	static class EmbeddedWithSimpleTypes {
 
 		String firstname;
@@ -584,9 +749,16 @@ class MappingCassandraConverterUDTUnitTests {
 		public Integer getAge() {
 			return age;
 		}
+
+		public void setFirstname(String firstname) {
+			this.firstname = firstname;
+		}
+
+		public void setAge(Integer age) {
+			this.age = age;
+		}
 	}
 
-	@Data
 	@Table
 	public static class AddressBook {
 
@@ -595,75 +767,223 @@ class MappingCassandraConverterUDTUnitTests {
 		private AddressUserType currentaddress;
 		private List<AddressUserType> previousaddresses;
 		private UdtValue alternate;
+
+		public String getId() {
+			return this.id;
+		}
+
+		public AddressUserType getCurrentaddress() {
+			return this.currentaddress;
+		}
+
+		public List<AddressUserType> getPreviousaddresses() {
+			return this.previousaddresses;
+		}
+
+		public UdtValue getAlternate() {
+			return this.alternate;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
+
+		public void setCurrentaddress(AddressUserType currentaddress) {
+			this.currentaddress = currentaddress;
+		}
+
+		public void setPreviousaddresses(List<AddressUserType> previousaddresses) {
+			this.previousaddresses = previousaddresses;
+		}
+
+		public void setAlternate(UdtValue alternate) {
+			this.alternate = alternate;
+		}
 	}
 
-	@Data
 	@Table
 	public static class WithUdtId {
 		@Id private UdtValue id;
+
+		public UdtValue getId() {
+			return this.id;
+		}
+
+		public void setId(UdtValue id) {
+			this.id = id;
+		}
 	}
 
-	@Data
 	@Table
 	public static class WithMappedUdtId {
 		@Id private AddressUserType id;
+
+		public AddressUserType getId() {
+			return this.id;
+		}
+
+		public void setId(AddressUserType id) {
+			this.id = id;
+		}
 	}
 
 	@UserDefinedType("address")
-	@Data
 	public static class AddressUserType {
 
 		String zip;
 		String city;
 
 		List<String> streetLines;
+
+		public String getZip() {
+			return this.zip;
+		}
+
+		public String getCity() {
+			return this.city;
+		}
+
+		public List<String> getStreetLines() {
+			return this.streetLines;
+		}
+
+		public void setZip(String zip) {
+			this.zip = zip;
+		}
+
+		public void setCity(String city) {
+			this.city = city;
+		}
+
+		public void setStreetLines(List<String> streetLines) {
+			this.streetLines = streetLines;
+		}
 	}
 
 	@Table
-	@Getter
-	@AllArgsConstructor
 	private static class Bank {
 
 		@Id String id;
 		Currency currency;
 		List<Currency> otherCurrencies;
+
+		public Bank(String id, Currency currency, List<Currency> otherCurrencies) {
+			this.id = id;
+			this.currency = currency;
+			this.otherCurrencies = otherCurrencies;
+		}
+
+		public String getId() {
+			return this.id;
+		}
+
+		public Currency getCurrency() {
+			return this.currency;
+		}
+
+		public List<Currency> getOtherCurrencies() {
+			return this.otherCurrencies;
+		}
 	}
 
-	@Data
 	@Table
 	public static class Money {
 		@Id private Currency currency;
+
+		public Currency getCurrency() {
+			return this.currency;
+		}
+
+		public void setCurrency(Currency currency) {
+			this.currency = currency;
+		}
 	}
 
-	@Data
 	@Table
 	public static class WithCompositePrimaryKey {
 		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) String id;
 		@PrimaryKeyColumn(ordinal = 1) AddressUserType addressUserType;
+
+		public String getId() {
+			return this.id;
+		}
+
+		public AddressUserType getAddressUserType() {
+			return this.addressUserType;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
+
+		public void setAddressUserType(AddressUserType addressUserType) {
+			this.addressUserType = addressUserType;
+		}
 	}
 
-	@Data
 	@Table
 	public static class WithCompositePrimaryKeyClassWithUdt {
 		@PrimaryKey CompositePrimaryKeyClassWithUdt id;
+
+		public CompositePrimaryKeyClassWithUdt getId() {
+			return this.id;
+		}
+
+		public void setId(CompositePrimaryKeyClassWithUdt id) {
+			this.id = id;
+		}
 	}
 
-	@Data
 	@PrimaryKeyClass
 	public static class CompositePrimaryKeyClassWithUdt {
 		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) String id;
 		@PrimaryKeyColumn(ordinal = 1) AddressUserType addressUserType;
 		@PrimaryKeyColumn(ordinal = 2) Currency currency;
+
+		public String getId() {
+			return this.id;
+		}
+
+		public AddressUserType getAddressUserType() {
+			return this.addressUserType;
+		}
+
+		public Currency getCurrency() {
+			return this.currency;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
+
+		public void setAddressUserType(AddressUserType addressUserType) {
+			this.addressUserType = addressUserType;
+		}
+
+		public void setCurrency(Currency currency) {
+			this.currency = currency;
+		}
 	}
 
 	@Table
-	@AllArgsConstructor
-	@Getter
 	public static class MoneyTransfer {
 
 		@Id String id;
 
 		private Currency currency;
+
+		public MoneyTransfer(String id, Currency currency) {
+			this.id = id;
+			this.currency = currency;
+		}
+
+		public String getId() {
+			return this.id;
+		}
+
+		public Currency getCurrency() {
+			return this.currency;
+		}
 	}
 
 	private static class UDTToCurrencyConverter implements Converter<UdtValue, Currency> {

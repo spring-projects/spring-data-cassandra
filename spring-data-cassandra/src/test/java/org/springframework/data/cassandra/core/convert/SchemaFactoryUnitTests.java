@@ -20,10 +20,6 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.cassandra.core.mapping.CassandraType.*;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -143,7 +139,8 @@ public class SchemaFactoryUnitTests {
 
 		this.mappingContext.setUserTypeResolver(typeName -> mappedudt);
 
-		CassandraPersistentEntity<?> persistentEntity = this.mappingContext.getRequiredPersistentEntity(WithMapOfMixedTypes.class);
+		CassandraPersistentEntity<?> persistentEntity = this.mappingContext
+				.getRequiredPersistentEntity(WithMapOfMixedTypes.class);
 
 		CreateTableSpecification tableSpecification = schemaFactory.getCreateTableSpecificationFor(persistentEntity);
 
@@ -286,7 +283,8 @@ public class SchemaFactoryUnitTests {
 
 	private static class IndexedType {
 
-		@PrimaryKeyColumn("first_name") @Indexed("my_index") String firstname;
+		@PrimaryKeyColumn("first_name")
+		@Indexed("my_index") String firstname;
 
 		@Indexed List<String> phoneNumbers;
 	}
@@ -295,7 +293,8 @@ public class SchemaFactoryUnitTests {
 	static class CompositeKeyWithIndex {
 
 		@PrimaryKeyColumn(value = "first_name", type = PrimaryKeyType.PARTITIONED) String firstname;
-		@PrimaryKeyColumn("last_name") @Indexed("my_index") String lastname;
+		@PrimaryKeyColumn("last_name")
+		@Indexed("my_index") String lastname;
 	}
 
 	private static class CompositeKeyEntity {
@@ -311,18 +310,20 @@ public class SchemaFactoryUnitTests {
 	@Test // DATACASS-506
 	void shouldCreatedUserTypeSpecificationsWithAnnotatedTypeName() {
 
-		assertThat(schemaFactory.getCreateUserTypeSpecificationFor(mappingContext.getRequiredPersistentEntity(WithUdt.class)))
-				.isNotNull();
-		assertThat(schemaFactory.getCreateUserTypeSpecificationFor(mappingContext.getRequiredPersistentEntity(Nested.class)))
-				.isNotNull();
+		assertThat(
+				schemaFactory.getCreateUserTypeSpecificationFor(mappingContext.getRequiredPersistentEntity(WithUdt.class)))
+						.isNotNull();
+		assertThat(
+				schemaFactory.getCreateUserTypeSpecificationFor(mappingContext.getRequiredPersistentEntity(Nested.class)))
+						.isNotNull();
 	}
 
 	@Test // DATACASS-172
 	void createTableForComplexPrimaryKeyShouldFail() {
 
 		try {
-			schemaFactory
-					.getCreateTableSpecificationFor(mappingContext.getRequiredPersistentEntity(EntityWithComplexPrimaryKeyColumn.class));
+			schemaFactory.getCreateTableSpecificationFor(
+					mappingContext.getRequiredPersistentEntity(EntityWithComplexPrimaryKeyColumn.class));
 			fail("Missing MappingException");
 		} catch (MappingException e) {
 			assertThat(e).hasMessageContaining(
@@ -330,7 +331,8 @@ public class SchemaFactoryUnitTests {
 		}
 
 		try {
-			schemaFactory.getCreateTableSpecificationFor(mappingContext.getRequiredPersistentEntity(EntityWithComplexId.class));
+			schemaFactory
+					.getCreateTableSpecificationFor(mappingContext.getRequiredPersistentEntity(EntityWithComplexId.class));
 			fail("Missing MappingException");
 		} catch (MappingException e) {
 			assertThat(e).hasMessageContaining(
@@ -606,7 +608,6 @@ public class SchemaFactoryUnitTests {
 				String.format("Cannot find column '%s' amongst '%s'", columnName, specification.getColumns()));
 	}
 
-	@Data
 	@Table
 	private static class Employee {
 
@@ -620,7 +621,6 @@ public class SchemaFactoryUnitTests {
 		@CassandraType(type = Name.SET, typeArguments = Name.BIGINT) List<Human> enemies;
 	}
 
-	@Data
 	@Table
 	private static class WithMappedTuple {
 
@@ -633,11 +633,11 @@ public class SchemaFactoryUnitTests {
 	private static class MappedTuple {
 
 		@Element(0) MappedUdt mappedUdt;
-		@Element(1) @CassandraType(type = Name.UDT, userTypeName = "human_udt") UdtValue human;
+		@Element(1)
+		@CassandraType(type = Name.UDT, userTypeName = "human_udt") UdtValue human;
 		@Element(2) String text;
 	}
 
-	@Data
 	@Table
 	private static class WithUdtFields {
 
@@ -648,7 +648,6 @@ public class SchemaFactoryUnitTests {
 		@CassandraType(type = Name.SET, typeArguments = Name.UDT, userTypeName = "peeps_udt") Set<UdtValue> people;
 	}
 
-	@Data
 	@Table
 	private static class WithMappedUdtFields {
 
@@ -664,9 +663,6 @@ public class SchemaFactoryUnitTests {
 	@org.springframework.data.cassandra.core.mapping.UserDefinedType
 	private static class MappedUdt {}
 
-	@Data
-	@AllArgsConstructor
-	@NoArgsConstructor
 	static class Human {
 
 		String firstname;
@@ -796,16 +792,15 @@ public class SchemaFactoryUnitTests {
 	}
 
 	@Table
-	@Data
 	static class TypeWithEmbedded {
 
 		@Id String id;
 		@Embedded.Nullable EmbeddedTpe name;
 		@Embedded.Nullable(prefix = "a") EmbeddedTpe alias;
-		@Indexed @Embedded.Nullable(prefix = "aego") EmbeddedTpe alterEgo;
+		@Indexed
+		@Embedded.Nullable(prefix = "aego") EmbeddedTpe alterEgo;
 	}
 
-	@Data
 	static class EmbeddedTpe {
 
 		@Indexed String firstname;
@@ -852,7 +847,6 @@ public class SchemaFactoryUnitTests {
 	}
 
 	@Table
-	@Data
 	static class TypeWithStatic {
 
 		@Id String id;
@@ -860,7 +854,6 @@ public class SchemaFactoryUnitTests {
 	}
 
 	@Table
-	@Data
 	static class TypeWithStaticTuple {
 
 		@Id String id;
@@ -877,8 +870,7 @@ public class SchemaFactoryUnitTests {
 	@Test // GH-978
 	void createdTableSpecificationShouldConsiderStaticColumns() {
 
-		CassandraPersistentEntity<?> persistentEntity = mappingContext
-				.getRequiredPersistentEntity(TypeWithStatic.class);
+		CassandraPersistentEntity<?> persistentEntity = mappingContext.getRequiredPersistentEntity(TypeWithStatic.class);
 
 		CreateTableSpecification tableSpecification = schemaFactory.getCreateTableSpecificationFor(persistentEntity);
 

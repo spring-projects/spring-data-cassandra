@@ -17,10 +17,6 @@ package org.springframework.data.cassandra.core.convert;
 
 import static org.assertj.core.api.Assertions.*;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -210,7 +206,6 @@ class CustomConversionIntegrationTests extends AbstractKeyspaceCreatingIntegrati
 		return converter;
 	}
 
-	@Data
 	@Table
 	static class Employee {
 
@@ -219,15 +214,71 @@ class CustomConversionIntegrationTests extends AbstractKeyspaceCreatingIntegrati
 		Person person;
 		List<Person> friends;
 		Set<Person> people;
+
+		public Employee() {}
+
+		public String getId() {
+			return this.id;
+		}
+
+		public Person getPerson() {
+			return this.person;
+		}
+
+		public List<Person> getFriends() {
+			return this.friends;
+		}
+
+		public Set<Person> getPeople() {
+			return this.people;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
+
+		public void setPerson(Person person) {
+			this.person = person;
+		}
+
+		public void setFriends(List<Person> friends) {
+			this.friends = friends;
+		}
+
+		public void setPeople(Set<Person> people) {
+			this.people = people;
+		}
+
 	}
 
-	@Data
-	@AllArgsConstructor
-	@NoArgsConstructor
 	static class Person {
 
 		String firstname;
 		String lastname;
+
+		public Person(String firstname, String lastname) {
+			this.firstname = firstname;
+			this.lastname = lastname;
+		}
+
+		public Person() {}
+
+		public String getFirstname() {
+			return this.firstname;
+		}
+
+		public String getLastname() {
+			return this.lastname;
+		}
+
+		public void setFirstname(String firstname) {
+			this.firstname = firstname;
+		}
+
+		public void setLastname(String lastname) {
+			this.lastname = lastname;
+		}
+
 	}
 
 	/**

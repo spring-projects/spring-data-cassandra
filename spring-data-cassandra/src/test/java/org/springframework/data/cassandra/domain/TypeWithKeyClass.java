@@ -15,7 +15,6 @@
  */
 package org.springframework.data.cassandra.domain;
 
-import lombok.Data;
 
 import org.springframework.data.cassandra.core.mapping.PrimaryKey;
 import org.springframework.data.cassandra.core.mapping.Table;
@@ -24,8 +23,15 @@ import org.springframework.data.cassandra.core.mapping.Table;
  * @author Mark Paluch
  */
 @Table
-@Data
 public class TypeWithKeyClass {
 
 	@PrimaryKey CompositeKey key;
+
+	public CompositeKey getKey() {
+		return this.key;
+	}
+
+	public void setKey(CompositeKey key) {
+		this.key = key;
+	}
 }

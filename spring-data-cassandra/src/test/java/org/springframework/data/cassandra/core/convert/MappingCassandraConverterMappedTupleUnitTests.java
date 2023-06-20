@@ -18,9 +18,6 @@ package org.springframework.data.cassandra.core.convert;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.cassandra.test.util.RowMockUtil.*;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -80,12 +77,12 @@ class MappingCassandraConverterMappedTupleUnitTests {
 		Person person = this.mappingCassandraConverter.read(Person.class, rowMock);
 
 		assertThat(person).isNotNull();
-		assertThat(person.getName()).isEqualTo("Jon Doe");
+		assertThat(person.name()).isEqualTo("Jon Doe");
 
-		MappedTuple tuple = person.getTuple();
+		MappedTuple tuple = person.tuple();
 
-		assertThat(tuple.getName()).isEqualTo("hello");
-		assertThat(tuple.getPosition()).isEqualTo(1);
+		assertThat(tuple.name()).isEqualTo("hello");
+		assertThat(tuple.position()).isEqualTo(1);
 	}
 
 	@Test // DATACASS-523
@@ -102,18 +99,12 @@ class MappingCassandraConverterMappedTupleUnitTests {
 		assertThat(tupleValue.getFormattedContents()).contains("('hello',1)");
 	}
 
-	@Data
-	@AllArgsConstructor
-	private static class Person {
-		String name;
-		MappedTuple tuple;
+	record Person(String name, MappedTuple tuple) {
+
 	}
 
 	@Tuple
-	@Data
-	@AllArgsConstructor
-	private static class MappedTuple {
-		@Element(0) String name;
-		@Element(1) int position;
+	record MappedTuple(@Element(0) String name, @Element(1) int position) {
+
 	}
 }

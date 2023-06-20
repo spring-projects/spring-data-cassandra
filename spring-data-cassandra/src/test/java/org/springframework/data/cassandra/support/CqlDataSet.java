@@ -15,8 +15,7 @@
  */
 package org.springframework.data.cassandra.support;
 
-import lombok.SneakyThrows;
-
+import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.List;
@@ -52,9 +51,12 @@ public class CqlDataSet {
 		return getLines();
 	}
 
-	@SneakyThrows
 	private List<String> getLines() {
-		return Resources.readLines(location, Charset.defaultCharset());
+		try {
+			return Resources.readLines(location, Charset.defaultCharset());
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	/**

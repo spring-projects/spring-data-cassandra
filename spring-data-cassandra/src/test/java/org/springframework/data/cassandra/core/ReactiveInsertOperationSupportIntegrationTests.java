@@ -17,7 +17,6 @@ package org.springframework.data.cassandra.core;
 
 import static org.assertj.core.api.Assertions.*;
 
-import lombok.Data;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -31,6 +30,7 @@ import org.springframework.data.cassandra.core.cql.session.DefaultBridgedReactiv
 import org.springframework.data.cassandra.core.mapping.Indexed;
 import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
+import org.springframework.util.ObjectUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 
@@ -114,11 +114,62 @@ class ReactiveInsertOperationSupportIntegrationTests extends AbstractKeyspaceCre
 		template.selectOneById(han.id, Person.class).as(StepVerifier::create).expectNext(han).verifyComplete();
 	}
 
-	@Data
 	@Table
 	static class Person {
 		@Id String id;
 		@Indexed String firstname;
 		@Indexed String lastname;
+
+		public Person() {}
+
+		public String getId() {
+			return this.id;
+		}
+
+		public String getFirstname() {
+			return this.firstname;
+		}
+
+		public String getLastname() {
+			return this.lastname;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
+
+		public void setFirstname(String firstname) {
+			this.firstname = firstname;
+		}
+
+		public void setLastname(String lastname) {
+			this.lastname = lastname;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o)
+				return true;
+			if (o == null || getClass() != o.getClass())
+				return false;
+
+			Person person = (Person) o;
+
+			if (!ObjectUtils.nullSafeEquals(id, person.id)) {
+				return false;
+			}
+			if (!ObjectUtils.nullSafeEquals(firstname, person.firstname)) {
+				return false;
+			}
+			return ObjectUtils.nullSafeEquals(lastname, person.lastname);
+		}
+
+		@Override
+		public int hashCode() {
+			int result = ObjectUtils.nullSafeHashCode(id);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(firstname);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(lastname);
+			return result;
+		}
 	}
 }

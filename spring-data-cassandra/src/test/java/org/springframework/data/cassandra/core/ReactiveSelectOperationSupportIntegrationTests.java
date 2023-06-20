@@ -19,9 +19,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.cassandra.core.query.Criteria.*;
 import static org.springframework.data.cassandra.core.query.Query.*;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -39,6 +36,7 @@ import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Integration tests for {@link ExecutableSelectOperationSupport}.
@@ -105,9 +103,7 @@ class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeyspaceCre
 		Flux<Person> result = this.template.query(Person.class).all();
 
 		result.collectList().as(StepVerifier::create)
-				.assertNext(actual ->
-			assertThat(actual).containsExactlyInAnyOrder(han, luke)
-		).verifyComplete();
+				.assertNext(actual -> assertThat(actual).containsExactlyInAnyOrder(han, luke)).verifyComplete();
 	}
 
 	@Test // DATACASS-485
@@ -124,9 +120,7 @@ class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeyspaceCre
 		Flux<Jedi> result = this.template.query(Person.class).as(Jedi.class).all();
 
 		result.collectList().as(StepVerifier::create)
-				.assertNext(actual ->
-			assertThat(actual).hasOnlyElementsOfType(Jedi.class).hasSize(2)
-		).verifyComplete();
+				.assertNext(actual -> assertThat(actual).hasOnlyElementsOfType(Jedi.class).hasSize(2)).verifyComplete();
 	}
 
 	@Test // DATACASS-485
@@ -135,9 +129,8 @@ class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeyspaceCre
 		Flux<PersonProjection> result = this.template.query(Person.class).as(PersonProjection.class).all();
 
 		result.collectList().as(StepVerifier::create)
-				.assertNext(actual ->
-			assertThat(actual).hasOnlyElementsOfType(PersonProjection.class).hasSize(2)
-		).verifyComplete();
+				.assertNext(actual -> assertThat(actual).hasOnlyElementsOfType(PersonProjection.class).hasSize(2))
+				.verifyComplete();
 	}
 
 	@Test // DATACASS-485
@@ -154,9 +147,7 @@ class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeyspaceCre
 		Flux<Jedi> result = this.template.query(Jedi.class).inTable("person").all();
 
 		result.collectList().as(StepVerifier::create)
-				.assertNext(actual ->
-			assertThat(actual).isNotEmpty().hasOnlyElementsOfType(Jedi.class)
-		).verifyComplete();
+				.assertNext(actual -> assertThat(actual).isNotEmpty().hasOnlyElementsOfType(Jedi.class)).verifyComplete();
 	}
 
 	@Test // DATACASS-485
@@ -173,9 +164,7 @@ class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeyspaceCre
 		Flux<Jedi> result = this.template.query(Person.class).as(Jedi.class).all();
 
 		result.collectList().as(StepVerifier::create)
-				.assertNext(actual ->
-			assertThat(actual).isNotEmpty().hasOnlyElementsOfType(Jedi.class)
-		).verifyComplete();
+				.assertNext(actual -> assertThat(actual).isNotEmpty().hasOnlyElementsOfType(Jedi.class)).verifyComplete();
 	}
 
 	@Test // DATACASS-485
@@ -215,19 +204,14 @@ class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeyspaceCre
 
 		Mono<Person> result = this.template.query(Person.class).first();
 
-		result.as(StepVerifier::create).assertNext(actual ->
-			assertThat(actual).isIn(han, luke)
-		).verifyComplete();
+		result.as(StepVerifier::create).assertNext(actual -> assertThat(actual).isIn(han, luke)).verifyComplete();
 	}
 
 	@Test // DATACASS-485
 	void findByReturningFirstAsClosedInterfaceProjection() {
 
-		Mono<PersonProjection> result = this.template
-				.query(Person.class)
-				.as(PersonProjection.class)
-				.matching(query(where("firstname").is("han")).withAllowFiltering())
-				.first();
+		Mono<PersonProjection> result = this.template.query(Person.class).as(PersonProjection.class)
+				.matching(query(where("firstname").is("han")).withAllowFiltering()).first();
 
 		result.as(StepVerifier::create).assertNext(actual -> {
 			assertThat(actual).isInstanceOf(PersonProjection.class);
@@ -238,11 +222,8 @@ class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeyspaceCre
 	@Test // DATACASS-485
 	void findByReturningFirstAsOpenInterfaceProjection() {
 
-		Mono<PersonSpELProjection> result = this.template
-				.query(Person.class)
-				.as(PersonSpELProjection.class)
-				.matching(query(where("firstname").is("han")).withAllowFiltering())
-				.first();
+		Mono<PersonSpELProjection> result = this.template.query(Person.class).as(PersonSpELProjection.class)
+				.matching(query(where("firstname").is("han")).withAllowFiltering()).first();
 
 		result.as(StepVerifier::create).assertNext(actual -> {
 			assertThat(actual).isInstanceOf(PersonSpELProjection.class);
@@ -261,10 +242,8 @@ class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeyspaceCre
 	@Test // DATACASS-485
 	void countShouldReturnNrOfElementsMatchingQuery() {
 
-		Mono<Long> count = this.template
-				.query(Person.class)
-				.matching(query(where("firstname").is(luke.getFirstname())).withAllowFiltering())
-				.count();
+		Mono<Long> count = this.template.query(Person.class)
+				.matching(query(where("firstname").is(luke.getFirstname())).withAllowFiltering()).count();
 
 		count.as(StepVerifier::create).expectNext(1L).verifyComplete();
 	}
@@ -309,9 +288,7 @@ class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeyspaceCre
 		Flux<Contact> result = this.template.query(Person.class).as(Contact.class).all();
 
 		result.collectList().as(StepVerifier::create)
-				.assertNext(actual ->
-			assertThat(actual).allMatch(it -> it instanceof Person)
-		).verifyComplete();
+				.assertNext(actual -> assertThat(actual).allMatch(it -> it instanceof Person)).verifyComplete();
 	}
 
 	private static Query queryLuke() {
@@ -324,12 +301,63 @@ class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeyspaceCre
 
 	private interface Contact {}
 
-	@Data
 	@Table
 	static class Person implements Contact {
 		@Id String id;
 		@Indexed String firstname;
 		@Indexed String lastname;
+
+		public Person() {}
+
+		public String getId() {
+			return this.id;
+		}
+
+		public String getFirstname() {
+			return this.firstname;
+		}
+
+		public String getLastname() {
+			return this.lastname;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
+
+		public void setFirstname(String firstname) {
+			this.firstname = firstname;
+		}
+
+		public void setLastname(String lastname) {
+			this.lastname = lastname;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o)
+				return true;
+			if (o == null || getClass() != o.getClass())
+				return false;
+
+			Person person = (Person) o;
+
+			if (!ObjectUtils.nullSafeEquals(id, person.id)) {
+				return false;
+			}
+			if (!ObjectUtils.nullSafeEquals(firstname, person.firstname)) {
+				return false;
+			}
+			return ObjectUtils.nullSafeEquals(lastname, person.lastname);
+		}
+
+		@Override
+		public int hashCode() {
+			int result = ObjectUtils.nullSafeHashCode(id);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(firstname);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(lastname);
+			return result;
+		}
 	}
 
 	private interface PersonProjection {
@@ -341,21 +369,27 @@ class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeyspaceCre
 		String getName();
 	}
 
-	@Data
 	static class Human {
 		@Id String id;
+
+		public Human() {}
+
+		public String getId() {
+			return this.id;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
 	}
 
-	@Data
-	@AllArgsConstructor
-	@NoArgsConstructor
-	static class Jedi {
-		@Column("firstname") String name;
+	record Jedi(@Column("firstname") String name) {
+
 	}
 
-	@Data
 	static class Sith {
 		String rank;
+
 	}
 
 	interface PlanetProjection {

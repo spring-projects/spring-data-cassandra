@@ -19,9 +19,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.domain.Sort.Order.*;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Collection;
@@ -82,18 +79,16 @@ public class QueryMapperUnitTests {
 
 	private QueryMapper queryMapper;
 
-	private final com.datastax.oss.driver.api.core.type.UserDefinedType userType =
-		UserDefinedTypeBuilder.forName("address")
-			.withField("street", DataTypes.TEXT)
-			.build();
+	private final com.datastax.oss.driver.api.core.type.UserDefinedType userType = UserDefinedTypeBuilder
+			.forName("address").withField("street", DataTypes.TEXT).build();
 
 	@Mock UserTypeResolver userTypeResolver;
 
 	@BeforeEach
 	void before() {
 
-		CassandraCustomConversions customConversions =
-			new CassandraCustomConversions(Collections.singletonList(CurrencyConverter.INSTANCE));
+		CassandraCustomConversions customConversions = new CassandraCustomConversions(
+				Collections.singletonList(CurrencyConverter.INSTANCE));
 
 		when(userTypeResolver.resolveType(any(CqlIdentifier.class))).thenReturn(userType);
 
@@ -291,8 +286,8 @@ public class QueryMapperUnitTests {
 	void shouldCreateSelectExpressionWithTTL() {
 
 		List<String> selectors = queryMapper
-				.getMappedSelectors(Columns.from("number", "foo").ttl("firstName"), personPersistentEntity)
-				.stream().map(Selector::toString).collect(Collectors.toList());
+				.getMappedSelectors(Columns.from("number", "foo").ttl("firstName"), personPersistentEntity).stream()
+				.map(Selector::toString).collect(Collectors.toList());
 
 		assertThat(selectors).contains("number").contains("foo").contains("TTL(first_name)");
 	}
@@ -300,8 +295,8 @@ public class QueryMapperUnitTests {
 	@Test // DATACASS-343
 	void shouldIncludeColumnsSelectExpressionWithTTL() {
 
-		List<CqlIdentifier> selectors =
-			queryMapper.getMappedColumnNames(Columns.from("number", "foo").ttl("firstName"), personPersistentEntity);
+		List<CqlIdentifier> selectors = queryMapper.getMappedColumnNames(Columns.from("number", "foo").ttl("firstName"),
+				personPersistentEntity);
 
 		assertThat(selectors).contains(CqlIdentifier.fromCql("number"), CqlIdentifier.fromCql("foo")).hasSize(2);
 	}
@@ -377,16 +372,15 @@ public class QueryMapperUnitTests {
 
 		Filter filter = Filter.from(Criteria.where("localTime").gt(time));
 
-		Filter mappedFilter = this.queryMapper. getMappedObject(filter, this.personPersistentEntity);
+		Filter mappedFilter = this.queryMapper.getMappedObject(filter, this.personPersistentEntity);
 
 		assertThat(mappedFilter).contains(Criteria.where("localtime").gt(time));
 	}
 
 	@Test // DATACASS-523
 	void referencingTupleElementsInQueryShouldFail() {
-		assertThatIllegalArgumentException()
-				.isThrownBy(() -> this.queryMapper.getMappedObject(Filter.from(Criteria.where("tuple.zip").is("123")),
-						this.personPersistentEntity));
+		assertThatIllegalArgumentException().isThrownBy(() -> this.queryMapper
+				.getMappedObject(Filter.from(Criteria.where("tuple.zip").is("123")), this.personPersistentEntity));
 	}
 
 	@Test // DATACASS-167
@@ -456,26 +450,21 @@ public class QueryMapperUnitTests {
 		@PrimaryKeyColumn long foo;
 
 		@PrimaryKeyColumn long bar;
-
 	}
 
 	@Tuple
-	@AllArgsConstructor
-	static class MappedTuple {
-		@Element(0) String zip;
+	record MappedTuple(@Element(0) String zip) {
 	}
 
 	@UserDefinedType
-	@AllArgsConstructor
-	static class Address {
-		String street;
+	record Address(String street) {
+
 	}
 
 	enum State {
 		Active, Inactive
 	}
 
-	@Data
 	static class WithNullableEmbeddedType {
 
 		@Id String id;
@@ -483,7 +472,6 @@ public class QueryMapperUnitTests {
 		@Embedded.Nullable EmbeddedWithSimpleTypes nested;
 	}
 
-	@Data
 	static class WithPrefixedNullableEmbeddedType {
 
 		@Id String id;
@@ -491,10 +479,25 @@ public class QueryMapperUnitTests {
 		@Embedded.Nullable(prefix = "prefix") EmbeddedWithSimpleTypes nested;
 	}
 
-	@Data
 	static class EmbeddedWithSimpleTypes {
 
 		String firstname;
 		Integer age;
+
+		public String getFirstname() {
+			return this.firstname;
+		}
+
+		public Integer getAge() {
+			return this.age;
+		}
+
+		public void setFirstname(String firstname) {
+			this.firstname = firstname;
+		}
+
+		public void setAge(Integer age) {
+			this.age = age;
+		}
 	}
 }

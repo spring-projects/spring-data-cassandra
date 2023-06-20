@@ -17,15 +17,9 @@ package org.springframework.data.cassandra.support;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
-
 import com.datastax.oss.driver.api.core.CqlIdentifier;
-import com.datastax.oss.driver.api.core.data.UdtValue;
-import com.datastax.oss.driver.api.core.detach.AttachmentPoint;
 import com.datastax.oss.driver.api.core.type.DataType;
 import com.datastax.oss.driver.api.core.type.UserDefinedType;
 import com.datastax.oss.driver.internal.core.type.DefaultUserDefinedType;
@@ -64,103 +58,4 @@ public class UserDefinedTypeBuilder {
 		return type;
 	}
 
-	private static class UserDefinedTypeWrapper implements UserDefinedType {
-		private final UserDefinedType delegate;
-
-		private UserDefinedTypeWrapper(UserDefinedType delegate) {
-			this.delegate = delegate;
-		}
-
-		@Override
-		public void attach(@NonNull AttachmentPoint attachmentPoint) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		@Nullable
-		public CqlIdentifier getKeyspace() {
-			return null;
-		}
-
-		@Override
-		@NonNull
-		public CqlIdentifier getName() {
-			return delegate.getName();
-		}
-
-		@Override
-		public boolean isFrozen() {
-			return delegate.isFrozen();
-		}
-
-		@Override
-		public boolean isDetached() {
-			return delegate.isDetached();
-		}
-
-		@Override
-		@NonNull
-		public List<CqlIdentifier> getFieldNames() {
-			return delegate.getFieldNames();
-		}
-
-		@Override
-		public int firstIndexOf(CqlIdentifier id) {
-			return delegate.firstIndexOf(id);
-		}
-
-		@Override
-		public int firstIndexOf(String name) {
-			return delegate.firstIndexOf(name);
-		}
-
-		@Override
-		@NonNull
-		public List<DataType> getFieldTypes() {
-			return delegate.getFieldTypes();
-		}
-
-		@Override
-		@NonNull
-		public UserDefinedType copy(boolean newFrozen) {
-			return new UserDefinedTypeWrapper(delegate.copy(newFrozen));
-		}
-
-		@Override
-		@NonNull
-		public UdtValue newValue() {
-			return delegate.newValue();
-		}
-
-		@Override
-		@NonNull
-		public UdtValue newValue(@NonNull Object... fields) {
-			return delegate.newValue(fields);
-		}
-
-		@Override
-		public int hashCode() {
-			return delegate.hashCode();
-		}
-
-		@Override
-		public boolean equals(@Nullable Object obj) {
-			return super.equals(obj) || delegate.equals(obj);
-		}
-
-		@Override
-		@NonNull
-		public AttachmentPoint getAttachmentPoint() {
-			return delegate.getAttachmentPoint();
-		}
-
-		@Override
-		public String toString() {
-			final StringBuffer sb = new StringBuffer();
-			sb.append(getClass().getSimpleName());
-			sb.append(" [delegate=").append(delegate);
-			sb.append(']');
-			return sb.toString();
-		}
-	}
 }

@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.support;
 
-import lombok.experimental.UtilityClass;
-
 import org.springframework.data.util.Version;
 import org.springframework.util.Assert;
 
@@ -29,8 +27,7 @@ import com.datastax.oss.driver.api.core.cql.Row;
  *
  * @author Mark Paluch
  */
-@UtilityClass
-public class CassandraVersion {
+public final class CassandraVersion {
 
 	/**
 	 * Retrieve the Cassandra release version.

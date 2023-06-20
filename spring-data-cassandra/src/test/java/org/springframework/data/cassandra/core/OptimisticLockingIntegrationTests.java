@@ -17,9 +17,6 @@ package org.springframework.data.cassandra.core;
 
 import static org.assertj.core.api.Assertions.*;
 
-import lombok.Data;
-import lombok.experimental.Wither;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -127,8 +124,6 @@ class OptimisticLockingIntegrationTests extends AbstractKeyspaceCreatingIntegrat
 		assertThat(loaded).isNotNull();
 	}
 
-	@Data
-	@Wither
 	static class VersionedEntity {
 
 		@Id final long id;
@@ -146,6 +141,30 @@ class OptimisticLockingIntegrationTests extends AbstractKeyspaceCreatingIntegrat
 			this.id = id;
 			this.version = version;
 			this.name = name;
+		}
+
+		public long getId() {
+			return this.id;
+		}
+
+		public long getVersion() {
+			return this.version;
+		}
+
+		public String getName() {
+			return this.name;
+		}
+
+		public VersionedEntity withId(long id) {
+			return new VersionedEntity(id, this.version, this.name);
+		}
+
+		public VersionedEntity withVersion(long version) {
+			return new VersionedEntity(this.id, version, this.name);
+		}
+
+		public VersionedEntity withName(String name) {
+			return new VersionedEntity(this.id, this.version, name);
 		}
 	}
 }

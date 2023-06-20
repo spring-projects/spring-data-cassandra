@@ -20,9 +20,6 @@ import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.junit.Assume.*;
 import static org.springframework.data.cassandra.core.query.Criteria.*;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -67,6 +64,7 @@ import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingInte
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.util.Version;
+import org.springframework.util.ObjectUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.uuid.Uuids;
@@ -208,8 +206,8 @@ class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrat
 		TypeWithCompositeKey loadedEntity = loaded.get(0);
 
 		assertThat(loadedEntity.getKey()).isNotNull();
-		assertThat(loadedEntity.getKey().getFirstname()).isNotNull();
-		assertThat(loadedEntity.getKey().getLastname()).isNull();
+		assertThat(loadedEntity.getKey().firstname()).isNotNull();
+		assertThat(loadedEntity.getKey().lastname()).isNull();
 		assertThat(loadedEntity.getComment()).isNotNull();
 	}
 
@@ -799,37 +797,87 @@ class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrat
 		template.update(Query.query(where("id").is("id-1")), update, WithMappedUdtList.class);
 
 		WithMappedUdtList updated = template.selectOne(Query.query(where("id").is("id-1")), WithMappedUdtList.class);
-		assertThat(updated.getMappedUdts()).extracting(MappedUdt::getName).containsExactly("one", "replacement", "three");
+		assertThat(updated.getMappedUdts()).extracting(MappedUdt::name).containsExactly("one", "replacement", "three");
 	}
 
-	@Data
 	@UserDefinedType
-	static class MappedUdt {
-
-		final String name;
+	record MappedUdt(String name) {
 	}
 
-	@Data
 	@Table
 	static class WithMappedUdtList {
 
 		@Id String id;
 
 		List<MappedUdt> mappedUdts;
+
+		public WithMappedUdtList() {}
+
+		public String getId() {
+			return this.id;
+		}
+
+		public List<MappedUdt> getMappedUdts() {
+			return this.mappedUdts;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
+
+		public void setMappedUdts(List<MappedUdt> mappedUdts) {
+			this.mappedUdts = mappedUdts;
+		}
 	}
 
-	@Data
 	static class TimeClass {
 
 		@Id LocalTime id;
 		LocalTime bar;
+
+		public TimeClass() {}
+
+		public LocalTime getId() {
+			return this.id;
+		}
+
+		public LocalTime getBar() {
+			return this.bar;
+		}
+
+		public void setId(LocalTime id) {
+			this.id = id;
+		}
+
+		public void setBar(LocalTime bar) {
+			this.bar = bar;
+		}
 	}
 
-	@Data
-	@AllArgsConstructor
 	static class TypeWithCompositeKey {
 		@PrimaryKey CompositeKey key;
 		String comment;
+
+		public TypeWithCompositeKey(CompositeKey key, String comment) {
+			this.key = key;
+			this.comment = comment;
+		}
+
+		public CompositeKey getKey() {
+			return this.key;
+		}
+
+		public String getComment() {
+			return this.comment;
+		}
+
+		public void setKey(CompositeKey key) {
+			this.key = key;
+		}
+
+		public void setComment(String comment) {
+			this.comment = comment;
+		}
 	}
 
 	interface WithCompositeKeyProjection {
@@ -837,78 +885,349 @@ class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrat
 		CompositeKey getKey();
 	}
 
-	@Data
 	@PrimaryKeyClass
-	@AllArgsConstructor
-	static class CompositeKey {
+	record CompositeKey(
 
-		@PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED) String firstname;
-		@PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED) String lastname;
+			@PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED) String firstname,
+			@PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED) String lastname) {
+
 	}
 
-	@Data
 	static class WithNullableEmbeddedType {
 
 		@Id String id;
 
 		@Embedded.Nullable EmbeddedWithSimpleTypes nested;
+
+		public WithNullableEmbeddedType() {}
+
+		public String getId() {
+			return this.id;
+		}
+
+		public EmbeddedWithSimpleTypes getNested() {
+			return this.nested;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
+
+		public void setNested(EmbeddedWithSimpleTypes nested) {
+			this.nested = nested;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o)
+				return true;
+			if (o == null || getClass() != o.getClass())
+				return false;
+
+			WithNullableEmbeddedType that = (WithNullableEmbeddedType) o;
+
+			if (!ObjectUtils.nullSafeEquals(id, that.id)) {
+				return false;
+			}
+			return ObjectUtils.nullSafeEquals(nested, that.nested);
+		}
+
+		@Override
+		public int hashCode() {
+			int result = ObjectUtils.nullSafeHashCode(id);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(nested);
+			return result;
+		}
 	}
 
-	@Data
 	static class WithPrefixedNullableEmbeddedType {
 
 		@Id String id;
 
 		@Embedded.Nullable(prefix = "prefix") EmbeddedWithSimpleTypes nested;
+
+		public WithPrefixedNullableEmbeddedType() {}
+
+		public String getId() {
+			return this.id;
+		}
+
+		public EmbeddedWithSimpleTypes getNested() {
+			return this.nested;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
+
+		public void setNested(EmbeddedWithSimpleTypes nested) {
+			this.nested = nested;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o)
+				return true;
+			if (o == null || getClass() != o.getClass())
+				return false;
+
+			WithPrefixedNullableEmbeddedType that = (WithPrefixedNullableEmbeddedType) o;
+
+			if (!ObjectUtils.nullSafeEquals(id, that.id)) {
+				return false;
+			}
+			return ObjectUtils.nullSafeEquals(nested, that.nested);
+		}
+
+		@Override
+		public int hashCode() {
+			int result = ObjectUtils.nullSafeHashCode(id);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(nested);
+			return result;
+		}
 	}
 
-	@Data
 	static class WithEmptyEmbeddedType {
 
 		@Id String id;
 
 		@Embedded.Empty EmbeddedWithSimpleTypes nested;
+
+		public WithEmptyEmbeddedType() {}
+
+		public String getId() {
+			return this.id;
+		}
+
+		public EmbeddedWithSimpleTypes getNested() {
+			return this.nested;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
+
+		public void setNested(EmbeddedWithSimpleTypes nested) {
+			this.nested = nested;
+		}
 	}
 
-	@Data
 	static class EmbeddedWithSimpleTypes {
 
 		String firstname;
 		Integer age;
+
+		public EmbeddedWithSimpleTypes() {}
+
+		public String getFirstname() {
+			return this.firstname;
+		}
+
+		public Integer getAge() {
+			return this.age;
+		}
+
+		public void setFirstname(String firstname) {
+			this.firstname = firstname;
+		}
+
+		public void setAge(Integer age) {
+			this.age = age;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o)
+				return true;
+			if (o == null || getClass() != o.getClass())
+				return false;
+
+			EmbeddedWithSimpleTypes that = (EmbeddedWithSimpleTypes) o;
+
+			if (!ObjectUtils.nullSafeEquals(firstname, that.firstname)) {
+				return false;
+			}
+			return ObjectUtils.nullSafeEquals(age, that.age);
+		}
+
+		@Override
+		public int hashCode() {
+			int result = ObjectUtils.nullSafeHashCode(firstname);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(age);
+			return result;
+		}
 	}
 
-	@Data
 	static class OuterWithNullableEmbeddedType {
 
 		@Id String id;
 
 		UDTWithNullableEmbeddedType udtValue;
+
+		public OuterWithNullableEmbeddedType() {}
+
+		public String getId() {
+			return this.id;
+		}
+
+		public UDTWithNullableEmbeddedType getUdtValue() {
+			return this.udtValue;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
+
+		public void setUdtValue(UDTWithNullableEmbeddedType udtValue) {
+			this.udtValue = udtValue;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o)
+				return true;
+			if (o == null || getClass() != o.getClass())
+				return false;
+
+			OuterWithNullableEmbeddedType that = (OuterWithNullableEmbeddedType) o;
+
+			if (!ObjectUtils.nullSafeEquals(id, that.id)) {
+				return false;
+			}
+			return ObjectUtils.nullSafeEquals(udtValue, that.udtValue);
+		}
+
+		@Override
+		public int hashCode() {
+			int result = ObjectUtils.nullSafeHashCode(id);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(udtValue);
+			return result;
+		}
 	}
 
-	@Data
 	static class OuterWithPrefixedNullableEmbeddedType {
 
 		@Id String id;
 
 		UDTWithPrefixedNullableEmbeddedType udtValue;
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o)
+				return true;
+			if (o == null || getClass() != o.getClass())
+				return false;
+
+			OuterWithPrefixedNullableEmbeddedType that = (OuterWithPrefixedNullableEmbeddedType) o;
+
+			if (!ObjectUtils.nullSafeEquals(id, that.id)) {
+				return false;
+			}
+			return ObjectUtils.nullSafeEquals(udtValue, that.udtValue);
+		}
+
+		@Override
+		public int hashCode() {
+			int result = ObjectUtils.nullSafeHashCode(id);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(udtValue);
+			return result;
+		}
 	}
 
 	@UserDefinedType
-	@Data
 	static class UDTWithNullableEmbeddedType {
 
 		String value;
 
 		@Embedded.Nullable EmbeddedWithSimpleTypes nested;
+
+		public UDTWithNullableEmbeddedType() {}
+
+		public String getValue() {
+			return this.value;
+		}
+
+		public EmbeddedWithSimpleTypes getNested() {
+			return this.nested;
+		}
+
+		public void setValue(String value) {
+			this.value = value;
+		}
+
+		public void setNested(EmbeddedWithSimpleTypes nested) {
+			this.nested = nested;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o)
+				return true;
+			if (o == null || getClass() != o.getClass())
+				return false;
+
+			UDTWithNullableEmbeddedType that = (UDTWithNullableEmbeddedType) o;
+
+			if (!ObjectUtils.nullSafeEquals(value, that.value)) {
+				return false;
+			}
+			return ObjectUtils.nullSafeEquals(nested, that.nested);
+		}
+
+		@Override
+		public int hashCode() {
+			int result = ObjectUtils.nullSafeHashCode(value);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(nested);
+			return result;
+		}
 	}
 
 	@UserDefinedType
-	@Data
 	static class UDTWithPrefixedNullableEmbeddedType {
 
 		String value;
 
 		@Embedded.Nullable(prefix = "prefix") EmbeddedWithSimpleTypes nested;
+
+		public UDTWithPrefixedNullableEmbeddedType() {}
+
+		public String getValue() {
+			return this.value;
+		}
+
+		public EmbeddedWithSimpleTypes getNested() {
+			return this.nested;
+		}
+
+		public void setValue(String value) {
+			this.value = value;
+		}
+
+		public void setNested(EmbeddedWithSimpleTypes nested) {
+			this.nested = nested;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o)
+				return true;
+			if (o == null || getClass() != o.getClass())
+				return false;
+
+			UDTWithPrefixedNullableEmbeddedType that = (UDTWithPrefixedNullableEmbeddedType) o;
+
+			if (!ObjectUtils.nullSafeEquals(value, that.value)) {
+				return false;
+			}
+			return ObjectUtils.nullSafeEquals(nested, that.nested);
+		}
+
+		@Override
+		public int hashCode() {
+			int result = ObjectUtils.nullSafeHashCode(value);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(nested);
+			return result;
+		}
 	}
 
 }

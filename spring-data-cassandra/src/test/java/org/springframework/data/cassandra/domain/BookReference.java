@@ -15,7 +15,6 @@
  */
 package org.springframework.data.cassandra.domain;
 
-import lombok.Data;
 
 import java.util.List;
 import java.util.Map;
@@ -31,7 +30,6 @@ import org.springframework.data.cassandra.core.mapping.Table;
  * @author Mark Paluch
  */
 @Table("bookReference")
-@Data
 public class BookReference {
 
 	@PrimaryKey private String isbn;
@@ -40,4 +38,44 @@ public class BookReference {
 	private Set<String> references;
 	private List<Integer> bookmarks;
 	private Map<String, String> credits;
+
+	public String getIsbn() {
+		return this.isbn;
+	}
+
+	public String getTitle() {
+		return this.title;
+	}
+
+	public Set<String> getReferences() {
+		return this.references;
+	}
+
+	public List<Integer> getBookmarks() {
+		return this.bookmarks;
+	}
+
+	public Map<String, String> getCredits() {
+		return this.credits;
+	}
+
+	public void setIsbn(String isbn) {
+		this.isbn = isbn;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+	public void setReferences(Set<String> references) {
+		this.references = references;
+	}
+
+	public void setBookmarks(List<Integer> bookmarks) {
+		this.bookmarks = bookmarks;
+	}
+
+	public void setCredits(Map<String, String> credits) {
+		this.credits = credits;
+	}
 }

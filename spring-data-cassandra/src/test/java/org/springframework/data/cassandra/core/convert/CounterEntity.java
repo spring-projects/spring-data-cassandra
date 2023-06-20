@@ -15,11 +15,6 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.core.mapping.PrimaryKey;
 import org.springframework.data.cassandra.core.mapping.Table;
@@ -28,11 +23,31 @@ import org.springframework.data.cassandra.core.mapping.Table;
  * @author Mark Paluch
  */
 @Table
-@Data
-@NoArgsConstructor
-@RequiredArgsConstructor
 public class CounterEntity {
 
-	@PrimaryKey @NonNull private String id;
+	@PrimaryKey private String id;
 	@CassandraType(type = CassandraType.Name.COUNTER) private long count;
+
+	public CounterEntity(String id) {
+		this.id = id;
+	}
+
+	public CounterEntity() {}
+
+	public String getId() {
+		return this.id;
+	}
+
+	public long getCount() {
+		return this.count;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public void setCount(long count) {
+		this.count = count;
+	}
+
 }

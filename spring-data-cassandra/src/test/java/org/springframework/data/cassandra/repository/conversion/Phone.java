@@ -15,13 +15,37 @@
  */
 package org.springframework.data.cassandra.repository.conversion;
 
-import lombok.Data;
+import org.springframework.util.ObjectUtils;
 
 /**
  * @author Mark Paluch
  */
-@Data
 class Phone {
 
 	String number;
+
+	public String getNumber() {
+		return number;
+	}
+
+	public void setNumber(String number) {
+		this.number = number;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
+
+		Phone phone = (Phone) o;
+
+		return ObjectUtils.nullSafeEquals(number, phone.number);
+	}
+
+	@Override
+	public int hashCode() {
+		return ObjectUtils.nullSafeHashCode(number);
+	}
 }

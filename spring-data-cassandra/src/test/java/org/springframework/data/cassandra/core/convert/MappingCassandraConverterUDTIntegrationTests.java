@@ -17,10 +17,6 @@ package org.springframework.data.cassandra.core.convert;
 
 import static org.assertj.core.api.Assertions.*;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-
 import java.util.Arrays;
 import java.util.Currency;
 import java.util.List;
@@ -42,6 +38,7 @@ import org.springframework.data.cassandra.domain.AllPossibleTypes;
 import org.springframework.data.cassandra.repository.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.data.cassandra.repository.support.IntegrationTestConfig;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.springframework.util.ObjectUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
@@ -221,64 +218,163 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 	}
 
 	@Table
-	@Getter
-	@AllArgsConstructor
 	private static class Bank {
 
 		@Id String id;
 		Currency currency;
 		List<Currency> otherCurrencies;
+
+		public Bank(String id, Currency currency, List<Currency> otherCurrencies) {
+			this.id = id;
+			this.currency = currency;
+			this.otherCurrencies = otherCurrencies;
+		}
+
+		public String getId() {
+			return this.id;
+		}
+
+		public Currency getCurrency() {
+			return this.currency;
+		}
+
+		public List<Currency> getOtherCurrencies() {
+			return this.otherCurrencies;
+		}
 	}
 
-	@Data
 	@Table
 	public static class Money {
 		@Id private Currency currency;
+
+		public Money() {}
+
+		public Currency getCurrency() {
+			return this.currency;
+		}
+
+		public void setCurrency(Currency currency) {
+			this.currency = currency;
+		}
+
 	}
 
 	@Table
-	@AllArgsConstructor
-	@Getter
 	public static class MoneyTransfer {
 
 		@Id String id;
 
 		private Currency currency;
+
+		public MoneyTransfer(String id, Currency currency) {
+			this.id = id;
+			this.currency = currency;
+		}
+
+		public String getId() {
+			return this.id;
+		}
+
+		public Currency getCurrency() {
+			return this.currency;
+		}
 	}
 
 	@Table
-	@Getter
-	@AllArgsConstructor
 	private static class Car {
 
 		@Id String id;
 		Engine engine;
+
+		public Car(String id, Engine engine) {
+			this.id = id;
+			this.engine = engine;
+		}
+
+		public String getId() {
+			return this.id;
+		}
+
+		public Engine getEngine() {
+			return this.engine;
+		}
 	}
 
 	@UserDefinedType
-	@Getter
-	@AllArgsConstructor
 	private static class Engine {
 		Manufacturer manufacturer;
+
+		public Engine(Manufacturer manufacturer) {
+			this.manufacturer = manufacturer;
+		}
+
+		public Manufacturer getManufacturer() {
+			return this.manufacturer;
+		}
 	}
 
 	@UserDefinedType
-	@Data
-	@AllArgsConstructor
 	private static class Manufacturer {
 		String name;
+
+		public Manufacturer(String name) {
+			this.name = name;
+		}
+
+		public String getName() {
+			return this.name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o)
+				return true;
+			if (o == null || getClass() != o.getClass())
+				return false;
+
+			Manufacturer that = (Manufacturer) o;
+
+			return ObjectUtils.nullSafeEquals(name, that.name);
+		}
+
+		@Override
+		public int hashCode() {
+			return ObjectUtils.nullSafeHashCode(name);
+		}
 	}
 
 	@Table
-	@Data
-	@AllArgsConstructor
 	private static class Supplier {
 
 		@Id String id;
 		Map<Manufacturer, List<Currency>> acceptedCurrencies;
+
+		public Supplier(String id, Map<Manufacturer, List<Currency>> acceptedCurrencies) {
+			this.id = id;
+			this.acceptedCurrencies = acceptedCurrencies;
+		}
+
+		public String getId() {
+			return this.id;
+		}
+
+		public Map<Manufacturer, List<Currency>> getAcceptedCurrencies() {
+			return this.acceptedCurrencies;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
+
+		public void setAcceptedCurrencies(Map<Manufacturer, List<Currency>> acceptedCurrencies) {
+			this.acceptedCurrencies = acceptedCurrencies;
+		}
 	}
 
-	@Data
 	@Table
 	public static class AddressBook {
 
@@ -287,28 +383,99 @@ public class MappingCassandraConverterUDTIntegrationTests extends AbstractSpring
 		private AddressUserType currentaddress;
 		private List<AddressUserType> previousaddresses;
 		private UdtValue alternate;
+
+		public String getId() {
+			return this.id;
+		}
+
+		public AddressUserType getCurrentaddress() {
+			return this.currentaddress;
+		}
+
+		public List<AddressUserType> getPreviousaddresses() {
+			return this.previousaddresses;
+		}
+
+		public UdtValue getAlternate() {
+			return this.alternate;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
+
+		public void setCurrentaddress(AddressUserType currentaddress) {
+			this.currentaddress = currentaddress;
+		}
+
+		public void setPreviousaddresses(List<AddressUserType> previousaddresses) {
+			this.previousaddresses = previousaddresses;
+		}
+
 	}
 
-	@Data
 	@Table
 	public static class WithUdtId {
 		@Id private UdtValue id;
+
+		public WithUdtId() {}
+
+		public UdtValue getId() {
+			return this.id;
+		}
+
+		public void setId(UdtValue id) {
+			this.id = id;
+		}
+
 	}
 
-	@Data
 	@Table
 	public static class WithMappedUdtId {
 		@Id private AddressUserType id;
+
+		public AddressUserType getId() {
+			return this.id;
+		}
+
+		public void setId(AddressUserType id) {
+			this.id = id;
+		}
+
 	}
 
 	@UserDefinedType("address")
-	@Data
 	public static class AddressUserType {
 
 		String zip;
 		String city;
 
 		List<String> streetLines;
+
+		public String getZip() {
+			return this.zip;
+		}
+
+		public String getCity() {
+			return this.city;
+		}
+
+		public List<String> getStreetLines() {
+			return this.streetLines;
+		}
+
+		public void setZip(String zip) {
+			this.zip = zip;
+		}
+
+		public void setCity(String city) {
+			this.city = city;
+		}
+
+		public void setStreetLines(List<String> streetLines) {
+			this.streetLines = streetLines;
+		}
+
 	}
 
 	private static class UDTToCurrencyConverter implements Converter<UdtValue, Currency> {

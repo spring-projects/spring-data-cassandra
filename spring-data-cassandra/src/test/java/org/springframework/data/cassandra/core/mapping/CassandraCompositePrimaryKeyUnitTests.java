@@ -17,8 +17,6 @@ package org.springframework.data.cassandra.core.mapping;
 
 import static org.assertj.core.api.Assertions.*;
 
-import lombok.EqualsAndHashCode;
-
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.Date;
@@ -32,6 +30,7 @@ import org.springframework.data.cassandra.core.cql.keyspace.ColumnSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
 import org.springframework.data.mapping.model.Property;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 
 import com.datastax.oss.driver.api.core.type.DataTypes;
@@ -66,8 +65,7 @@ class CassandraCompositePrimaryKeyUnitTests {
 
 		Field field = ReflectionUtils.findField(TypeWithCompositeKey.class, "id");
 		CassandraPersistentProperty property = new BasicCassandraPersistentProperty(
-				Property.of(TypeInformation.of(TypeWithCompositeKey.class), field), entity,
-				CassandraSimpleTypeHolder.HOLDER);
+				Property.of(TypeInformation.of(TypeWithCompositeKey.class), field), entity, CassandraSimpleTypeHolder.HOLDER);
 		assertThat(property.isIdProperty()).isTrue();
 		assertThat(property.isCompositePrimaryKey()).isTrue();
 
@@ -89,7 +87,6 @@ class CassandraCompositePrimaryKeyUnitTests {
 	}
 
 	@PrimaryKeyClass
-	@EqualsAndHashCode
 	static class CompositeKey implements Serializable {
 
 		private static final long serialVersionUID = 1L;
@@ -97,6 +94,28 @@ class CassandraCompositePrimaryKeyUnitTests {
 		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) String z;
 
 		@PrimaryKeyColumn(ordinal = 1, type = PrimaryKeyType.CLUSTERED) String a;
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o)
+				return true;
+			if (o == null || getClass() != o.getClass())
+				return false;
+
+			CompositeKey that = (CompositeKey) o;
+
+			if (!ObjectUtils.nullSafeEquals(z, that.z)) {
+				return false;
+			}
+			return ObjectUtils.nullSafeEquals(a, that.a);
+		}
+
+		@Override
+		public int hashCode() {
+			int result = ObjectUtils.nullSafeHashCode(z);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(a);
+			return result;
+		}
 	}
 
 	@Table

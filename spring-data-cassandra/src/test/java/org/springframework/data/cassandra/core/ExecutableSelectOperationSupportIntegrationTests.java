@@ -19,10 +19,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.cassandra.core.query.Criteria.*;
 import static org.springframework.data.cassandra.core.query.Query.*;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -38,6 +34,7 @@ import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Integration tests for {@link ExecutableSelectOperationSupport}.
@@ -126,8 +123,7 @@ class ExecutableSelectOperationSupportIntegrationTests extends AbstractKeyspaceC
 	@Test // DATACASS-485
 	void findAllByWithCollectionUsingMappingInformation() {
 
-		assertThat(this.template.query(Jedi.class).inTable("person").all())
-				.isNotEmpty().hasOnlyElementsOfType(Jedi.class);
+		assertThat(this.template.query(Jedi.class).inTable("person").all()).isNotEmpty().hasOnlyElementsOfType(Jedi.class);
 	}
 
 	@Test // DATACASS-485
@@ -138,8 +134,7 @@ class ExecutableSelectOperationSupportIntegrationTests extends AbstractKeyspaceC
 	@Test // DATACASS-485
 	void findAllByWithProjection() {
 
-		assertThat(this.template.query(Person.class).as(Jedi.class).all())
-				.hasOnlyElementsOfType(Jedi.class).isNotEmpty();
+		assertThat(this.template.query(Person.class).as(Jedi.class).all()).hasOnlyElementsOfType(Jedi.class).isNotEmpty();
 	}
 
 	@Test // DATACASS-485
@@ -182,11 +177,8 @@ class ExecutableSelectOperationSupportIntegrationTests extends AbstractKeyspaceC
 	@Test // DATACASS-485
 	void findByReturningFirstValueAsClosedInterfaceProjection() {
 
-		PersonProjection result = this.template
-				.query(Person.class)
-				.as(PersonProjection.class)
-				.matching(query(where("firstname").is("han")).withAllowFiltering())
-				.firstValue();
+		PersonProjection result = this.template.query(Person.class).as(PersonProjection.class)
+				.matching(query(where("firstname").is("han")).withAllowFiltering()).firstValue();
 
 		assertThat(result).isInstanceOf(PersonProjection.class);
 		assertThat(result.getFirstname()).isEqualTo("han");
@@ -195,11 +187,8 @@ class ExecutableSelectOperationSupportIntegrationTests extends AbstractKeyspaceC
 	@Test // DATACASS-485
 	void findByReturningFirstValueAsOpenInterfaceProjection() {
 
-		PersonSpELProjection result = this.template
-				.query(Person.class)
-				.as(PersonSpELProjection.class)
-				.matching(query(where("firstname").is("han")).withAllowFiltering())
-				.firstValue();
+		PersonSpELProjection result = this.template.query(Person.class).as(PersonSpELProjection.class)
+				.matching(query(where("firstname").is("han")).withAllowFiltering()).firstValue();
 
 		assertThat(result).isInstanceOf(PersonSpELProjection.class);
 		assertThat(result.getName()).isEqualTo("han");
@@ -232,8 +221,7 @@ class ExecutableSelectOperationSupportIntegrationTests extends AbstractKeyspaceC
 	@Test // DATACASS-485
 	void streamAllReturningResultsAsClosedInterfaceProjection() {
 
-		TerminatingSelect<PersonProjection> operation =
-				this.template.query(Person.class).as(PersonProjection.class);
+		TerminatingSelect<PersonProjection> operation = this.template.query(Person.class).as(PersonProjection.class);
 
 		assertThat(operation.stream()) //
 				.hasSize(2) //
@@ -246,8 +234,8 @@ class ExecutableSelectOperationSupportIntegrationTests extends AbstractKeyspaceC
 	@Test // DATACASS-485
 	void streamAllReturningResultsAsOpenInterfaceProjection() {
 
-		TerminatingSelect<PersonSpELProjection> operation =
-				this.template.query(Person.class).as(PersonSpELProjection.class);
+		TerminatingSelect<PersonSpELProjection> operation = this.template.query(Person.class)
+				.as(PersonSpELProjection.class);
 
 		assertThat(operation.stream()) //
 				.hasSize(2) //
@@ -277,8 +265,8 @@ class ExecutableSelectOperationSupportIntegrationTests extends AbstractKeyspaceC
 
 	@Test // DATACASS-485
 	void countShouldReturnNrOfElementsMatchingQuery() {
-		assertThat(this.template.query(Person.class).matching(query(where("firstname").is(luke.getFirstname()))
-				.withAllowFiltering()).count()).isEqualTo(1);
+		assertThat(this.template.query(Person.class)
+				.matching(query(where("firstname").is(luke.getFirstname())).withAllowFiltering()).count()).isEqualTo(1);
 	}
 
 	@Test // DATACASS-485
@@ -319,12 +307,63 @@ class ExecutableSelectOperationSupportIntegrationTests extends AbstractKeyspaceC
 
 	private interface Contact {}
 
-	@Data
 	@Table
 	static class Person implements Contact {
 		@Id String id;
 		@Indexed String firstname;
 		@Indexed String lastname;
+
+		public Person() {}
+
+		public String getId() {
+			return this.id;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
+
+		public String getFirstname() {
+			return firstname;
+		}
+
+		public void setFirstname(String firstname) {
+			this.firstname = firstname;
+		}
+
+		public String getLastname() {
+			return lastname;
+		}
+
+		public void setLastname(String lastname) {
+			this.lastname = lastname;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o)
+				return true;
+			if (o == null || getClass() != o.getClass())
+				return false;
+
+			Person person = (Person) o;
+
+			if (!ObjectUtils.nullSafeEquals(id, person.id)) {
+				return false;
+			}
+			if (!ObjectUtils.nullSafeEquals(firstname, person.firstname)) {
+				return false;
+			}
+			return ObjectUtils.nullSafeEquals(lastname, person.lastname);
+		}
+
+		@Override
+		public int hashCode() {
+			int result = ObjectUtils.nullSafeHashCode(id);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(firstname);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(lastname);
+			return result;
+		}
 	}
 
 	private interface PersonProjection {
@@ -332,18 +371,24 @@ class ExecutableSelectOperationSupportIntegrationTests extends AbstractKeyspaceC
 	}
 
 	public interface PersonSpELProjection {
-		@Value("#{target.firstname}") String getName();
+		@Value("#{target.firstname}")
+		String getName();
 	}
 
-	@Data
 	static class Human {
 		@Id String id;
+
+		public Human() {}
+
+		public String getId() {
+			return this.id;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
 	}
 
-	@Data
-	@AllArgsConstructor
-	@NoArgsConstructor
-	static class Jedi {
-		@Column("firstname") String name;
+	record Jedi(@Column("firstname") String name) {
 	}
 }

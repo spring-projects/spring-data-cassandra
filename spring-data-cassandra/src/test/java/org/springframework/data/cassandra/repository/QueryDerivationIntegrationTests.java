@@ -18,8 +18,6 @@ package org.springframework.data.cassandra.repository;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assume.*;
 
-import lombok.Data;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,6 +58,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.util.Version;
 import org.springframework.lang.Nullable;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.springframework.util.ObjectUtils;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 
@@ -469,17 +468,99 @@ class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedCassandr
 	}
 
 	@Table
-	@Data
 	static class PersonWithEmbedded {
 
 		@Id String id;
 		@Embedded.Nullable Name name;
+
+		public String getId() {
+			return id;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
+
+		public Name getName() {
+			return name;
+		}
+
+		public void setName(Name name) {
+			this.name = name;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o)
+				return true;
+			if (o == null || getClass() != o.getClass())
+				return false;
+
+			PersonWithEmbedded that = (PersonWithEmbedded) o;
+
+			if (!ObjectUtils.nullSafeEquals(id, that.id)) {
+				return false;
+			}
+			if (!ObjectUtils.nullSafeEquals(name, that.name)) {
+				return false;
+			}
+
+			return true;
+		}
+
+		@Override
+		public int hashCode() {
+			int result = ObjectUtils.nullSafeHashCode(id);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(name);
+			return result;
+		}
 	}
 
-	@Data
 	static class Name {
 
 		@Indexed String firstname;
 		String lastname;
+
+		public String getFirstname() {
+			return firstname;
+		}
+
+		public void setFirstname(String firstname) {
+			this.firstname = firstname;
+		}
+
+		public String getLastname() {
+			return lastname;
+		}
+
+		public void setLastname(String lastname) {
+			this.lastname = lastname;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o)
+				return true;
+			if (o == null || getClass() != o.getClass())
+				return false;
+
+			Name name = (Name) o;
+
+			if (!ObjectUtils.nullSafeEquals(firstname, name.firstname)) {
+				return false;
+			}
+			if (!ObjectUtils.nullSafeEquals(lastname, name.lastname)) {
+				return false;
+			}
+
+			return true;
+		}
+
+		@Override
+		public int hashCode() {
+			int result = ObjectUtils.nullSafeHashCode(firstname);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(lastname);
+			return result;
+		}
 	}
 }

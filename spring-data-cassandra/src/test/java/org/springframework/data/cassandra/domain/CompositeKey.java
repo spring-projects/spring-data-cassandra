@@ -15,10 +15,6 @@
  */
 package org.springframework.data.cassandra.domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.io.Serializable;
 
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
@@ -29,11 +25,31 @@ import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
  * @author Mark Paluch
  */
 @PrimaryKeyClass
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
 public class CompositeKey implements Serializable {
 
 	@PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, ordinal = 1, name = "first_name") private String firstname;
 	@PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED, ordinal = 2) private String lastname;
+
+	public CompositeKey(String firstname, String lastname) {
+		this.firstname = firstname;
+		this.lastname = lastname;
+	}
+
+	public CompositeKey() {}
+
+	public String getFirstname() {
+		return this.firstname;
+	}
+
+	public String getLastname() {
+		return this.lastname;
+	}
+
+	public void setFirstname(String firstname) {
+		this.firstname = firstname;
+	}
+
+	public void setLastname(String lastname) {
+		this.lastname = lastname;
+	}
 }

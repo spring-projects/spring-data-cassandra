@@ -17,10 +17,6 @@ package org.springframework.data.cassandra.repository;
 
 import static org.assertj.core.api.Assertions.*;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.util.Collections;
 import java.util.Date;
 import java.util.Set;
@@ -80,12 +76,23 @@ class DateKeyIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegra
 	 * @author Matthew T. Adams
 	 */
 	@Table
-	@Data
-	@AllArgsConstructor
-	@NoArgsConstructor
 	static class DateThing {
 
 		@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.PARTITIONED) private Date date;
+
+		public DateThing(Date date) {
+			this.date = date;
+		}
+
+		public DateThing() {}
+
+		public Date getDate() {
+			return this.date;
+		}
+
+		public void setDate(Date date) {
+			this.date = date;
+		}
 	}
 
 	/**

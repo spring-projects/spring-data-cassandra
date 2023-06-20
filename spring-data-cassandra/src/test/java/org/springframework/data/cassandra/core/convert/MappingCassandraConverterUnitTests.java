@@ -19,13 +19,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.cassandra.core.mapping.BasicMapId.*;
 import static org.springframework.data.cassandra.test.util.RowMockUtil.*;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
-
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -36,18 +29,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -60,19 +42,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
-import org.springframework.data.cassandra.core.mapping.BasicMapId;
-import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
-import org.springframework.data.cassandra.core.mapping.CassandraType;
+import org.springframework.data.cassandra.core.mapping.*;
 import org.springframework.data.cassandra.core.mapping.Column;
-import org.springframework.data.cassandra.core.mapping.Element;
-import org.springframework.data.cassandra.core.mapping.Embedded;
-import org.springframework.data.cassandra.core.mapping.MapId;
-import org.springframework.data.cassandra.core.mapping.PrimaryKey;
-import org.springframework.data.cassandra.core.mapping.PrimaryKeyClass;
-import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
-import org.springframework.data.cassandra.core.mapping.Table;
-import org.springframework.data.cassandra.core.mapping.Tuple;
-import org.springframework.data.cassandra.core.mapping.UserDefinedType;
 import org.springframework.data.cassandra.domain.AllPossibleTypes;
 import org.springframework.data.cassandra.domain.CompositeKey;
 import org.springframework.data.cassandra.domain.TypeWithCompositeKey;
@@ -85,6 +56,7 @@ import org.springframework.data.cassandra.test.util.RowMockUtil;
 import org.springframework.data.projection.EntityProjection;
 import org.springframework.data.projection.EntityProjectionIntrospector;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
+import org.springframework.util.ObjectUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.cql.Row;
@@ -981,8 +953,8 @@ public class MappingCassandraConverterUnitTests {
 
 		WithMappedTupleDtoProjection result = this.mappingCassandraConverter.project(projection, rowMock);
 
-		assertThat(result.getFirstname()).isEqualTo("Heisenberg");
-		assertThat(result.getTuple().getOne()).isEqualTo("One");
+		assertThat(result.firstname()).isEqualTo("Heisenberg");
+		assertThat(result.tuple().getOne()).isEqualTo("One");
 	}
 
 	@Test // GH-1202
@@ -1007,9 +979,9 @@ public class MappingCassandraConverterUnitTests {
 
 		TupleAndNameProjection result = this.mappingCassandraConverter.project(projection, rowMock);
 
-		assertThat(result.getName().getFirstname()).isEqualTo("Heisenberg");
-		assertThat(result.getTuple().zero).isEqualTo("Zero");
-		assertThat(result.getTuple().one).isEqualTo("One");
+		assertThat(result.name().firstname()).isEqualTo("Heisenberg");
+		assertThat(result.tuple().zero).isEqualTo("Zero");
+		assertThat(result.tuple().one).isEqualTo("One");
 	}
 
 	private static List<Object> getValues(Map<CqlIdentifier, Object> statement) {
@@ -1089,19 +1061,16 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@PrimaryKeyClass
-	@RequiredArgsConstructor
-	@lombok.Value
-	public static class EnumAndDateCompositePrimaryKey implements Serializable {
+	record EnumAndDateCompositePrimaryKey(
+			@PrimaryKeyColumn(ordinal = 1, type = PrimaryKeyType.PARTITIONED) Condition condition,
+			@PrimaryKeyColumn(ordinal = 2, type = PrimaryKeyType.PARTITIONED) java.time.LocalDate localDate)
+			implements
+				Serializable {
 
-		@PrimaryKeyColumn(ordinal = 1, type = PrimaryKeyType.PARTITIONED) private final Condition condition;
-
-		@PrimaryKeyColumn(ordinal = 2, type = PrimaryKeyType.PARTITIONED) private final java.time.LocalDate localDate;
 	}
 
-	@RequiredArgsConstructor
-	public static class TypeWithEnumAndLocalDateKey {
+	record TypeWithEnumAndLocalDateKey(@PrimaryKey EnumAndDateCompositePrimaryKey id) {
 
-		@PrimaryKey private final EnumAndDateCompositePrimaryKey id;
 	}
 
 	@Table
@@ -1150,10 +1119,13 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	@Table
-	@RequiredArgsConstructor
 	public static class TableWithCompositeKeyViaConstructor {
 
 		@PrimaryKey private final CompositeKeyWithPropertyAccessors key;
+
+		public TableWithCompositeKeyViaConstructor(CompositeKeyWithPropertyAccessors key) {
+			this.key = key;
+		}
 	}
 
 	@Table
@@ -1169,15 +1141,19 @@ public class MappingCassandraConverterUnitTests {
 	}
 
 	/**
-	 * Uses Cassandra's {@link Name#DATE} which maps by default to {@link LocalDate}
+	 * Uses Cassandra's {@link CassandraType.Name#DATE} which maps by default to {@link LocalDate}
 	 */
 	@Table
-	@AllArgsConstructor
 	public static class TypeWithLocalDateMappedToDate {
 
 		@PrimaryKey private String id;
 
 		@CassandraType(type = CassandraType.Name.DATE) java.time.LocalDate localDate;
+
+		public TypeWithLocalDateMappedToDate(String id, LocalDate localDate) {
+			this.id = id;
+			this.localDate = localDate;
+		}
 	}
 
 	@Table
@@ -1256,27 +1232,18 @@ public class MappingCassandraConverterUnitTests {
 		TupleWithElementAnnotationInConstructor tuple;
 	}
 
-	@lombok.Value
-	private static class Name {
-		String firstname;
+	private record Name(String firstname) {
+
 	}
 
-	@Data
-	private static class WithMappedTupleDtoProjection {
-
-		String firstname;
-		TupleProjection tuple;
+	record WithMappedTupleDtoProjection(String firstname, TupleProjection tuple) {
 	}
 
-	@lombok.Value
-	private static class TupleAndNameProjection {
+	private record TupleAndNameProjection(@Embedded.Nullable Name name, TupleWithElementAnnotationInConstructor tuple) {
 
-		@Embedded.Nullable Name name;
-
-		TupleWithElementAnnotationInConstructor tuple;
 	}
 
-	private static interface TupleProjection {
+	private interface TupleProjection {
 
 		String getZero();
 
@@ -1297,39 +1264,96 @@ public class MappingCassandraConverterUnitTests {
 		}
 	}
 
-	@ToString
 	static class WithNullableEmbeddedType {
 
 		String id;
 
 		@Embedded.Nullable EmbeddedWithSimpleTypes nested;
+
+		@Override
+		public String toString() {
+			StringBuffer sb = new StringBuffer();
+			sb.append(getClass().getSimpleName());
+			sb.append(" [id='").append(id).append('\'');
+			sb.append(", nested=").append(nested);
+			sb.append(']');
+			return sb.toString();
+		}
 	}
 
-	@ToString
 	static class WithPrefixedNullableEmbeddedType {
 
 		String id;
 
 		@Embedded.Nullable("prefix") EmbeddedWithSimpleTypes nested;
+
+		@Override
+		public String toString() {
+			StringBuffer sb = new StringBuffer();
+			sb.append(getClass().getSimpleName());
+			sb.append(" [id='").append(id).append('\'');
+			sb.append(", nested=").append(nested);
+			sb.append(']');
+			return sb.toString();
+		}
 	}
 
-	@ToString
 	static class WithEmptyEmbeddedType {
 
 		String id;
 
 		@Embedded.Empty EmbeddedWithSimpleTypes nested;
+
+		@Override
+		public String toString() {
+			StringBuffer sb = new StringBuffer();
+			sb.append(getClass().getSimpleName());
+			sb.append(" [id='").append(id).append('\'');
+			sb.append(", nested=").append(nested);
+			sb.append(']');
+			return sb.toString();
+		}
 	}
 
-	@ToString
-	@EqualsAndHashCode
-	@NoArgsConstructor
-	@AllArgsConstructor
 	static class EmbeddedWithSimpleTypes {
 
 		String firstname;
 		Integer age;
 		@Transient String displayName;
+
+		public EmbeddedWithSimpleTypes() {}
+
+		public EmbeddedWithSimpleTypes(String firstname, Integer age, String displayName) {
+			this.firstname = firstname;
+			this.age = age;
+			this.displayName = displayName;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o)
+				return true;
+			if (o == null || getClass() != o.getClass())
+				return false;
+
+			EmbeddedWithSimpleTypes that = (EmbeddedWithSimpleTypes) o;
+
+			if (!ObjectUtils.nullSafeEquals(firstname, that.firstname)) {
+				return false;
+			}
+			if (!ObjectUtils.nullSafeEquals(age, that.age)) {
+				return false;
+			}
+			return ObjectUtils.nullSafeEquals(displayName, that.displayName);
+		}
+
+		@Override
+		public int hashCode() {
+			int result = ObjectUtils.nullSafeHashCode(firstname);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(age);
+			result = 31 * result + ObjectUtils.nullSafeHashCode(displayName);
+			return result;
+		}
 	}
 
 	@Test // DATACASS-167
@@ -1500,7 +1524,6 @@ public class MappingCassandraConverterUnitTests {
 		String getName();
 	}
 
-	@Data
 	static class Book {
 
 		@Id String id;
@@ -1509,9 +1532,31 @@ public class MappingCassandraConverterUnitTests {
 
 		Author author = new Author();
 
+		public String getId() {
+			return id;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		public Author getAuthor() {
+			return author;
+		}
+
+		public void setAuthor(Author author) {
+			this.author = author;
+		}
 	}
 
-	@Data
 	@UserDefinedType
 	static class Author {
 
@@ -1521,5 +1566,28 @@ public class MappingCassandraConverterUnitTests {
 
 		String lastName;
 
+		public String getId() {
+			return id;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
+
+		public String getFirstName() {
+			return firstName;
+		}
+
+		public void setFirstName(String firstName) {
+			this.firstName = firstName;
+		}
+
+		public String getLastName() {
+			return lastName;
+		}
+
+		public void setLastName(String lastName) {
+			this.lastName = lastName;
+		}
 	}
 }

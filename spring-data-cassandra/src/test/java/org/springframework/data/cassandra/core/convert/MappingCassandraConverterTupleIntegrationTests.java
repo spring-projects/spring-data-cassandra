@@ -17,8 +17,6 @@ package org.springframework.data.cassandra.core.convert;
 
 import static org.assertj.core.api.Assertions.*;
 
-import lombok.Data;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Currency;
@@ -149,9 +147,7 @@ public class MappingCassandraConverterTupleIntegrationTests extends AbstractSpri
 
 		person.setId("foo");
 
-		AddressUserType userType = new AddressUserType();
-
-		userType.setZip("myzip");
+		AddressUserType userType = new AddressUserType("myzip");
 
 		MappedTuple tuple = new MappedTuple();
 
@@ -251,7 +247,6 @@ public class MappingCassandraConverterTupleIntegrationTests extends AbstractSpri
 		assertThat(mappedTuple.myName).isEqualTo("bar");
 	}
 
-	@Data
 	@Table
 	static class Person {
 
@@ -263,15 +258,94 @@ public class MappingCassandraConverterTupleIntegrationTests extends AbstractSpri
 		List<MappedTuple> mappedTuples;
 		Map<String, MappedTuple> mapOfTuples;
 		Map<String, TupleValue> mapOfTupleValues;
+
+		public String getId() {
+			return this.id;
+		}
+
+		public TupleValue getTupleValue() {
+			return this.tupleValue;
+		}
+
+		public MappedTuple getMappedTuple() {
+			return this.mappedTuple;
+		}
+
+		public MappedTupleWithValue getMappedTupleWithValue() {
+			return this.mappedTupleWithValue;
+		}
+
+		public List<MappedTuple> getMappedTuples() {
+			return this.mappedTuples;
+		}
+
+		public Map<String, MappedTuple> getMapOfTuples() {
+			return this.mapOfTuples;
+		}
+
+		public Map<String, TupleValue> getMapOfTupleValues() {
+			return this.mapOfTupleValues;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
+
+		public void setTupleValue(TupleValue tupleValue) {
+			this.tupleValue = tupleValue;
+		}
+
+		public void setMappedTuple(MappedTuple mappedTuple) {
+			this.mappedTuple = mappedTuple;
+		}
+
+		public void setMappedTupleWithValue(MappedTupleWithValue mappedTupleWithValue) {
+			this.mappedTupleWithValue = mappedTupleWithValue;
+		}
+
+		public void setMappedTuples(List<MappedTuple> mappedTuples) {
+			this.mappedTuples = mappedTuples;
+		}
+
+		public void setMapOfTuples(Map<String, MappedTuple> mapOfTuples) {
+			this.mapOfTuples = mapOfTuples;
+		}
+
+		public void setMapOfTupleValues(Map<String, TupleValue> mapOfTupleValues) {
+			this.mapOfTupleValues = mapOfTupleValues;
+		}
 	}
 
-	@Data
 	@Tuple
 	static class MappedTuple {
 
 		@Element(0) AddressUserType addressUserType;
 		@Element(1) List<Currency> currency;
 		@Element(2) String name;
+
+		public AddressUserType getAddressUserType() {
+			return addressUserType;
+		}
+
+		public void setAddressUserType(AddressUserType addressUserType) {
+			this.addressUserType = addressUserType;
+		}
+
+		public List<Currency> getCurrency() {
+			return currency;
+		}
+
+		public void setCurrency(List<Currency> currency) {
+			this.currency = currency;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
 	}
 
 	@Tuple
@@ -290,9 +364,20 @@ public class MappingCassandraConverterTupleIntegrationTests extends AbstractSpri
 	}
 
 	@UserDefinedType("address")
-	@Data
 	static class AddressUserType {
 		String zip;
+
+		public AddressUserType(String zip) {
+			this.zip = zip;
+		}
+
+		public String getZip() {
+			return zip;
+		}
+
+		public void setZip(String zip) {
+			this.zip = zip;
+		}
 	}
 
 	private static class StringToCurrencyConverter implements Converter<String, Currency> {

@@ -18,9 +18,6 @@ package org.springframework.data.cassandra.core.convert;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-
 import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Collections;
@@ -409,40 +406,98 @@ class UpdateMapperUnitTests {
 	}
 
 	@Tuple
-	@AllArgsConstructor
 	static class MappedTuple {
 		@Element(0) String zip;
+
+		public MappedTuple(String zip) {
+			this.zip = zip;
+		}
 	}
 
-	@Data
 	@UserDefinedType
-	@AllArgsConstructor
 	static class Manufacturer {
 		String name;
+
+		public Manufacturer(String name) {
+			this.name = name;
+		}
+
+		public String getName() {
+			return this.name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
 	}
 
-	@Data
 	static class WithNullableEmbeddedType {
 
 		@Id String id;
 
 		@Embedded.Nullable EmbeddedWithSimpleTypes nested;
+
+		public String getId() {
+			return this.id;
+		}
+
+		public EmbeddedWithSimpleTypes getNested() {
+			return this.nested;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
+
+		public void setNested(EmbeddedWithSimpleTypes nested) {
+			this.nested = nested;
+		}
 	}
 
-	@Data
 	static class WithPrefixedNullableEmbeddedType {
 
 		@Id String id;
 
 		// @Indexed -> index for all properties of nested
 		@Embedded.Nullable(prefix = "prefix") EmbeddedWithSimpleTypes nested;
+
+		public String getId() {
+			return this.id;
+		}
+
+		public EmbeddedWithSimpleTypes getNested() {
+			return this.nested;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
+
+		public void setNested(EmbeddedWithSimpleTypes nested) {
+			this.nested = nested;
+		}
 	}
 
-	@Data
 	static class EmbeddedWithSimpleTypes {
 
 		@Indexed String firstname;
 		Integer age;
+
+		public @Indexed String getFirstname() {
+			return this.firstname;
+		}
+
+		public Integer getAge() {
+			return this.age;
+		}
+
+		public void setFirstname(@Indexed String firstname) {
+			this.firstname = firstname;
+		}
+
+		public void setAge(Integer age) {
+			this.age = age;
+		}
 	}
 
 }
