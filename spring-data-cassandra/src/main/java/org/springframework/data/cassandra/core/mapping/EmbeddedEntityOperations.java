@@ -114,9 +114,8 @@ public class EmbeddedEntityOperations {
 		}
 
 		@Override
-		@Deprecated
-		public void setTableName(org.springframework.data.cassandra.core.cql.CqlIdentifier tableName) {
-			delegate.setTableName(tableName);
+		public CqlIdentifier getCustomKeyspace() {
+			return this.delegate.getCustomKeyspace();
 		}
 
 		@Override

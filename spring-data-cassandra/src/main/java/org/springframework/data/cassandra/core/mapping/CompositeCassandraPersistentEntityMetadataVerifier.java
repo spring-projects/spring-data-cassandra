@@ -31,7 +31,7 @@ import org.springframework.util.Assert;
  */
 public class CompositeCassandraPersistentEntityMetadataVerifier implements CassandraPersistentEntityMetadataVerifier {
 
-	private Collection<CassandraPersistentEntityMetadataVerifier> verifiers;
+	private final Collection<CassandraPersistentEntityMetadataVerifier> verifiers;
 
 	/**
 	 * Create a new {@link CompositeCassandraPersistentEntityMetadataVerifier} using default entity and primary key

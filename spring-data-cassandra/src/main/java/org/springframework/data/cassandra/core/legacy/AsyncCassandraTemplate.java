@@ -904,7 +904,6 @@ public class AsyncCassandraTemplate
 		return getAsyncCqlOperations().execute(new GetConfiguredPageSize()).completable().join();
 	}
 
-	@SuppressWarnings("unchecked")
 	private <T> Function<Row, T> getMapper(Class<?> entityType, Class<T> targetType, CqlIdentifier tableName) {
 
 		EntityProjection<T, ?> projection = entityOperations.introspectProjection(targetType, entityType);

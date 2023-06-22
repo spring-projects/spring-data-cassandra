@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.core.mapping;
 
 import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -49,6 +50,12 @@ public interface CassandraPersistentEntity<T> extends PersistentEntity<T, Cassan
 	 * Returns the table name to which the entity shall be persisted.
 	 */
 	CqlIdentifier getTableName();
+
+	/**
+	 * Returns the custom keyspace (if any) name that is defined for this table
+	 */
+	@Nullable
+	CqlIdentifier getCustomKeyspace();
 
 	/**
 	 * Sets the CQL table name.

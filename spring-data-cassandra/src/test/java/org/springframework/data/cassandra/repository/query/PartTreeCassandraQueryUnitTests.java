@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -39,9 +40,11 @@ import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.domain.AddressType;
+import org.springframework.data.cassandra.domain.EntityWithKeyspace;
 import org.springframework.data.cassandra.domain.Group;
 import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.cassandra.repository.AllowFiltering;
+import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.cassandra.repository.Consistency;
 import org.springframework.data.cassandra.repository.MapIdCassandraRepository;
 import org.springframework.data.cassandra.repository.Query;
@@ -225,6 +228,13 @@ class PartTreeCassandraQueryUnitTests {
 		assertThat(statement.getConsistencyLevel()).isEqualTo(DefaultConsistencyLevel.LOCAL_ONE);
 	}
 
+	@Test
+	void shouldCreateSelectQueryWithKeyspaceApplied() {
+		String query = deriveQueryFromMethod("findByName", EntityWithKeyspaceRepository.class, "Mark");
+
+		assertThat(query).isEqualTo("SELECT * FROM custom.entity_with_keyspace WHERE name='Mark'");
+	}
+
 	@Test // DATACASS-512
 	void shouldCreateCountQuery() {
 
@@ -251,6 +261,10 @@ class PartTreeCassandraQueryUnitTests {
 	}
 
 	private String deriveQueryFromMethod(String method, Object... args) {
+		return this.deriveQueryFromMethod(method, Repo.class, args);
+	}
+
+	private String deriveQueryFromMethod(String method, Class<? extends CassandraRepository<?, ?>> cassandraRepositoryClass, Object... args) {
 
 		Class<?>[] types = new Class<?>[args.length];
 
@@ -258,20 +272,21 @@ class PartTreeCassandraQueryUnitTests {
 			types[i] = ClassUtils.getUserClass(args[i].getClass());
 		}
 
-		SimpleStatement statement = deriveQueryFromMethod(Repo.class, method, types, args);
+		SimpleStatement statement = deriveQueryFromMethod(cassandraRepositoryClass, method, types, args);
 
 		String query = statement.getQuery();
 		List<Object> positionalValues = statement.getPositionalValues();
 		for (Object positionalValue : positionalValues) {
 
 			query = query.replaceFirst("\\?",
-					positionalValue != null
-							? CodecRegistry.DEFAULT.codecFor((Class) positionalValue.getClass()).format(positionalValue)
-							: "null");
+			positionalValue != null
+			? CodecRegistry.DEFAULT.codecFor((Class) positionalValue.getClass()).format(positionalValue)
+			: "null");
 		}
 
 		return query;
 	}
+
 
 	private SimpleStatement deriveQueryFromMethod(Class<?> repositoryInterface, String method, Class<?>[] types,
 			Object... args) {
@@ -306,6 +321,11 @@ class PartTreeCassandraQueryUnitTests {
 	interface GroupRepository extends MapIdCassandraRepository<Group> {
 
 		Group findByIdHashPrefix(String hashPrefix);
+	}
+
+	interface EntityWithKeyspaceRepository extends CassandraRepository<EntityWithKeyspace, String> {
+
+		Optional<EntityWithKeyspace> findByName(String name);
 	}
 
 	@SuppressWarnings("unused")

@@ -194,12 +194,26 @@ public class StatementFactory {
 	 * @since 2.1
 	 */
 	public StatementBuilder<Select> count(Query query, CassandraPersistentEntity<?> entity, CqlIdentifier tableName) {
+		return this.count(query, entity, tableName,  null);
+	}
+
+	/**
+	 * Create a {@literal COUNT} statement by mapping {@link Query} to {@link Select}.
+	 *
+	 * @param query user-defined count {@link Query} to execute; must not be {@literal null}.
+	 * @param entity {@link CassandraPersistentEntity entity} to count; must not be {@literal null}.
+	 * @param tableName must not be {@literal null}.
+	 * @param keyspace - keyspace in which table is located. Might be null, in which case the default keyspace is assumed
+	 * @return the select builder.
+	 * @since 2.1
+	 */
+	public StatementBuilder<Select> count(Query query, CassandraPersistentEntity<?> entity, CqlIdentifier tableName, @Nullable CqlIdentifier keyspace) {
 
 		Filter filter = getQueryMapper().getMappedObject(query, entity);
 
 		List<Selector> selectors = Collections.singletonList(FunctionCall.from("COUNT", 1L));
 
-		return createSelect(query, entity, filter, selectors, tableName);
+		return createSelect(query, entity, filter, selectors, tableName, keyspace);
 	}
 
 	/**
@@ -213,13 +227,27 @@ public class StatementFactory {
 	 */
 	public StatementBuilder<Select> selectOneById(Object id, CassandraPersistentEntity<?> persistentEntity,
 			CqlIdentifier tableName) {
+		return this.selectOneById(id, persistentEntity, tableName, null);
+	}
+
+	/**
+	 * Create an {@literal SELECT} statement by mapping {@code id} to {@literal SELECT … WHERE} considering
+	 * {@link UpdateOptions}.
+	 *
+	 * @param id must not be {@literal null}.
+	 * @param persistentEntity must not be {@literal null}.
+	 * @param tableName must not be {@literal null}.
+	 * @return the select builder.
+	 */
+	public StatementBuilder<Select> selectOneById(Object id, CassandraPersistentEntity<?> persistentEntity,
+		CqlIdentifier tableName, @Nullable CqlIdentifier keyspace) {
 
 		Where where = new Where();
 
 		cassandraConverter.write(id, where, persistentEntity);
 
-		return StatementBuilder.of(QueryBuilder.selectFrom(tableName).all().limit(1))
-				.bind((statement, factory) -> statement.where(toRelations(where, factory)));
+		return StatementBuilder.of(QueryBuilder.selectFrom(keyspace, tableName).all().limit(1))
+		.bind((statement, factory) -> statement.where(toRelations(where, factory)));
 	}
 
 	/**
@@ -234,7 +262,7 @@ public class StatementFactory {
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(persistentEntity, "CassandraPersistentEntity must not be null");
 
-		return select(query, persistentEntity, persistentEntity.getTableName());
+		return select(query, persistentEntity, persistentEntity.getTableName(), persistentEntity.getCustomKeyspace());
 	}
 
 	/**
@@ -248,6 +276,20 @@ public class StatementFactory {
 	 */
 	public StatementBuilder<Select> select(Query query, CassandraPersistentEntity<?> persistentEntity,
 			CqlIdentifier tableName) {
+		return this.select(query, persistentEntity, tableName, null);
+	}
+
+	/**
+	 * Create a {@literal SELECT} statement by mapping {@link Query} to {@link Select}.
+	 *
+	 * @param query must not be {@literal null}.
+	 * @param persistentEntity must not be {@literal null}.
+	 * @param tableName must not be {@literal null}.
+	 * @param keyspace - keyspace in which table is located. Might be null, in which case the default keyspace is assumed
+	 * @return the select builder.
+	 * @since 2.1
+	 */
+	public StatementBuilder<Select> select(Query query, CassandraPersistentEntity<?> persistentEntity, CqlIdentifier tableName, @Nullable CqlIdentifier keyspace) {
 
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(persistentEntity, "CassandraPersistentEntity must not be null");
@@ -257,7 +299,7 @@ public class StatementFactory {
 
 		List<Selector> selectors = getQueryMapper().getMappedSelectors(query.getColumns(), persistentEntity);
 
-		return createSelect(query, persistentEntity, filter, selectors, tableName);
+		return createSelect(query, persistentEntity, filter, selectors, tableName, keyspace);
 	}
 
 	/**
@@ -289,6 +331,21 @@ public class StatementFactory {
 	 */
 	public StatementBuilder<RegularInsert> insert(Object objectToInsert, WriteOptions options,
 			CassandraPersistentEntity<?> persistentEntity, CqlIdentifier tableName) {
+		return this.insert(objectToInsert, options, persistentEntity, tableName, null);
+	}
+
+	/**
+	 * Creates a Query Object for an insert.
+	 *
+	 * @param tableName the table name, must not be empty and not {@literal null}.
+	 * @param objectToInsert the object to save, must not be {@literal null}.
+	 * @param options optional {@link WriteOptions} to apply to the {@link Insert} statement, may be {@literal null}.
+	 * @param persistentEntity the {@link CassandraPersistentEntity} to write insert values.
+	 * @param keyspace where the table is located. Might be null in which case the defualt keyspace assumed
+	 * @return the select builder.
+	 */
+	public StatementBuilder<RegularInsert> insert(Object objectToInsert, WriteOptions options,
+		CassandraPersistentEntity<?> persistentEntity, CqlIdentifier tableName, @Nullable CqlIdentifier keyspace) {
 
 		Assert.notNull(tableName, "TableName must not be null");
 		Assert.notNull(objectToInsert, "Object to insert must not be null");
@@ -306,12 +363,12 @@ public class StatementFactory {
 		cassandraConverter.write(objectToInsert, object, persistentEntity);
 
 		StatementBuilder<RegularInsert> builder = StatementBuilder
-				.of(QueryBuilder.insertInto(tableName).valuesByIds(Collections.emptyMap())).bind((statement, factory) -> {
+		.of(QueryBuilder.insertInto(keyspace, tableName).valuesByIds(Collections.emptyMap())).bind((statement, factory) -> {
 
-					Map<CqlIdentifier, Term> values = createTerms(insertNulls, object, factory);
+			Map<CqlIdentifier, Term> values = createTerms(insertNulls, object, factory);
 
-					return statement.valuesByIds(values);
-				}).apply(statement -> (RegularInsert) addWriteOptions(statement, options));
+			return statement.valuesByIds(values);
+		}).apply(statement -> (RegularInsert) addWriteOptions(statement, options));
 
 		builder.transform(statement -> QueryOptionsUtil.addQueryOptions(statement, options));
 
@@ -460,13 +517,27 @@ public class StatementFactory {
 	 */
 	public StatementBuilder<Delete> deleteById(Object id, CassandraPersistentEntity<?> persistentEntity,
 			CqlIdentifier tableName) {
+		return this.deleteById(id, persistentEntity, tableName, null);
+	}
+
+	/**
+	 * Create an {@literal DELETE} statement by mapping {@code id} to {@literal SELECT … WHERE} considering
+	 * {@link UpdateOptions}.
+	 *
+	 * @param id must not be {@literal null}.
+	 * @param persistentEntity must not be {@literal null}.
+	 * @param tableName must not be {@literal null}.
+	 * @return the delete builder.
+	 */
+	public StatementBuilder<Delete> deleteById(Object id, CassandraPersistentEntity<?> persistentEntity,
+		CqlIdentifier tableName, @Nullable CqlIdentifier keyspace) {
 
 		Where where = new Where();
 
 		cassandraConverter.write(id, where, persistentEntity);
 
-		return StatementBuilder.of(QueryBuilder.deleteFrom(tableName).where())
-				.bind((statement, factory) -> statement.where(toRelations(where, factory)));
+		return StatementBuilder.of(QueryBuilder.deleteFrom(keyspace, tableName).where())
+		.bind((statement, factory) -> statement.where(toRelations(where, factory)));
 	}
 
 	/**
@@ -495,6 +566,10 @@ public class StatementFactory {
 	 */
 	public StatementBuilder<Delete> delete(Query query, CassandraPersistentEntity<?> persistentEntity,
 			CqlIdentifier tableName) {
+		return this.delete(query, persistentEntity, tableName, null);
+	}
+
+	public StatementBuilder<Delete> delete(Query query, CassandraPersistentEntity<?> persistentEntity, CqlIdentifier tableName, @Nullable CqlIdentifier keyspace) {
 
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(persistentEntity, "CassandraPersistentEntity must not be null");
@@ -506,17 +581,18 @@ public class StatementFactory {
 		StatementBuilder<Delete> builder = delete(columnNames, tableName, filter);
 
 		query.getQueryOptions().filter(DeleteOptions.class::isInstance).map(DeleteOptions.class::cast)
-				.map(DeleteOptions::getIfCondition)
-				.ifPresent(criteriaDefinitions -> applyDeleteIfCondition(builder, criteriaDefinitions));
+		.map(DeleteOptions::getIfCondition)
+		.ifPresent(criteriaDefinitions -> applyDeleteIfCondition(builder, criteriaDefinitions));
 
 		query.getQueryOptions().filter(WriteOptions.class::isInstance).map(WriteOptions.class::cast)
-				.ifPresent(writeOptions -> builder.apply(statement -> addWriteOptions(statement, writeOptions)));
+		.ifPresent(writeOptions -> builder.apply(statement -> addWriteOptions(statement, writeOptions)));
 
 		query.getQueryOptions()
-				.ifPresent(options -> builder.transform(statement -> QueryOptionsUtil.addQueryOptions(statement, options)));
+		.ifPresent(options -> builder.transform(statement -> QueryOptionsUtil.addQueryOptions(statement, options)));
 
 		return builder;
 	}
+
 
 	/**
 	 * Create an {@literal DELETE} statement by mapping {@code entity} to {@link Delete DELETE … WHERE} considering
@@ -530,6 +606,11 @@ public class StatementFactory {
 	 */
 	public StatementBuilder<Delete> delete(Object entity, QueryOptions options, EntityWriter<Object, Object> entityWriter,
 			CqlIdentifier tableName) {
+		return this.delete(entity, options, entityWriter, tableName, null);
+	}
+
+	public StatementBuilder<Delete> delete(Object entity, QueryOptions options, EntityWriter<Object, Object> entityWriter,
+		CqlIdentifier tableName, @Nullable CqlIdentifier keyspace) {
 
 		Assert.notNull(tableName, "TableName must not be null");
 		Assert.notNull(entity, "Object to builder must not be null");
@@ -538,15 +619,15 @@ public class StatementFactory {
 		Where where = new Where();
 		entityWriter.write(entity, where);
 
-		StatementBuilder<Delete> builder = StatementBuilder.of(QueryBuilder.deleteFrom(tableName).where())
-				.bind((statement, factory) -> statement.where(toRelations(where, factory)));
+		StatementBuilder<Delete> builder = StatementBuilder.of(QueryBuilder.deleteFrom(keyspace, tableName).where())
+		.bind((statement, factory) -> statement.where(toRelations(where, factory)));
 
 		Optional.of(options).filter(WriteOptions.class::isInstance).map(WriteOptions.class::cast)
-				.ifPresent(it -> builder.apply(statement -> addWriteOptions(statement, it)));
+		.ifPresent(it -> builder.apply(statement -> addWriteOptions(statement, it)));
 
 		Optional.of(options).filter(DeleteOptions.class::isInstance).map(DeleteOptions.class::cast)
-				.map(DeleteOptions::getIfCondition)
-				.ifPresent(criteriaDefinitions -> applyDeleteIfCondition(builder, criteriaDefinitions));
+		.map(DeleteOptions::getIfCondition)
+		.ifPresent(criteriaDefinitions -> applyDeleteIfCondition(builder, criteriaDefinitions));
 
 		builder.transform(statement -> QueryOptionsUtil.addQueryOptions(statement, options));
 
@@ -608,12 +689,13 @@ public class StatementFactory {
 	}
 
 	private StatementBuilder<Select> createSelect(Query query, CassandraPersistentEntity<?> entity, Filter filter,
-			List<Selector> selectors, CqlIdentifier tableName) {
+			List<Selector> selectors, CqlIdentifier tableName, @Nullable CqlIdentifier keyspace) {
 
-		Sort sort = Optional.of(query.getSort()).map(querySort -> getQueryMapper().getMappedSort(querySort, entity))
+		Sort sort = Optional.of(query.getSort())
+				.map(querySort -> getQueryMapper().getMappedSort(querySort, entity))
 				.orElse(Sort.unsorted());
 
-		StatementBuilder<Select> select = createSelectAndOrder(selectors, tableName, filter, sort);
+		StatementBuilder<Select> select = this.createSelectAndOrder(selectors, tableName, filter, sort, keyspace);
 
 		if (query.getLimit() > 0) {
 			select.apply(it -> it.limit(Math.toIntExact(query.getLimit())));
@@ -631,24 +713,28 @@ public class StatementFactory {
 		return select;
 	}
 
-	private static StatementBuilder<Select> createSelectAndOrder(List<Selector> selectors, CqlIdentifier from,
-			Filter filter, Sort sort) {
+	private StatementBuilder<Select> createSelectAndOrder(List<Selector> selectors, CqlIdentifier from,
+		Filter filter, Sort sort) {
+		return createSelectAndOrder(selectors, from, filter, sort, null);
+	}
+
+	private StatementBuilder<Select> createSelectAndOrder(List<Selector> selectors, CqlIdentifier from, Filter filter, Sort sort, @Nullable CqlIdentifier keyspace) {
 
 		Select select;
 
 		if (selectors.isEmpty()) {
-			select = QueryBuilder.selectFrom(from).all();
+			select = QueryBuilder.selectFrom(keyspace, from).all();
 		} else {
-
-			List<com.datastax.oss.driver.api.querybuilder.select.Selector> mappedSelectors = new ArrayList<>(
-					selectors.size());
+			List<com.datastax.oss.driver.api.querybuilder.select.Selector> mappedSelectors = new ArrayList<>(selectors.size());
 			for (Selector selector : selectors) {
 				com.datastax.oss.driver.api.querybuilder.select.Selector orElseGet = selector.getAlias()
-						.map(it -> getSelection(selector).as(it)).orElseGet(() -> getSelection(selector));
+				.map(it -> getSelection(selector).as(it))
+				.orElseGet(() -> getSelection(selector));
 				mappedSelectors.add(orElseGet);
 			}
 
-			select = QueryBuilder.selectFrom(from).selectors(mappedSelectors);
+			select = QueryBuilder.selectFrom(from)
+			.selectors(mappedSelectors);
 		}
 
 		StatementBuilder<Select> builder = StatementBuilder.of(select);
@@ -664,8 +750,7 @@ public class StatementFactory {
 				Select statementToUse = statement;
 
 				for (Sort.Order order : sort) {
-					statementToUse = statementToUse.orderBy(order.getProperty(),
-							order.isAscending() ? ClusteringOrder.ASC : ClusteringOrder.DESC);
+					statementToUse = statementToUse.orderBy(order.getProperty(), order.isAscending() ? ClusteringOrder.ASC : ClusteringOrder.DESC);
 				}
 
 				return statementToUse;
