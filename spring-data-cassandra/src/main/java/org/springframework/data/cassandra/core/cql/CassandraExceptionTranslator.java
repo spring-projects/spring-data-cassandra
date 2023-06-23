@@ -23,10 +23,12 @@ import java.util.Set;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataAccessResourceFailureException;
+import org.springframework.dao.QueryTimeoutException;
 import org.springframework.dao.TransientDataAccessResourceException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.data.cassandra.CassandraAuthenticationException;
 import org.springframework.data.cassandra.CassandraConnectionFailureException;
+import org.springframework.data.cassandra.CassandraDriverTimeOutException;
 import org.springframework.data.cassandra.CassandraInsufficientReplicasAvailableException;
 import org.springframework.data.cassandra.CassandraInvalidConfigurationInQueryException;
 import org.springframework.data.cassandra.CassandraInvalidQueryException;
@@ -43,6 +45,7 @@ import org.springframework.util.StringUtils;
 
 import com.datastax.oss.driver.api.core.AllNodesFailedException;
 import com.datastax.oss.driver.api.core.DriverException;
+import com.datastax.oss.driver.api.core.DriverTimeoutException;
 import com.datastax.oss.driver.api.core.auth.AuthenticationException;
 import com.datastax.oss.driver.api.core.metadata.Node;
 import com.datastax.oss.driver.api.core.servererrors.AlreadyExistsException;
@@ -70,6 +73,7 @@ import com.datastax.oss.driver.api.core.servererrors.WriteType;
  * @author Alex Shvid
  * @author Matthew T. Adams
  * @author Mark Paluch
+ * @author Mikhail Polivakha
  */
 @SuppressWarnings("unchecked")
 public class CassandraExceptionTranslator implements CqlExceptionTranslator {
@@ -103,6 +107,10 @@ public class CassandraExceptionTranslator implements CqlExceptionTranslator {
 		if (exception instanceof AuthenticationException) {
 			return new CassandraAuthenticationException(((AuthenticationException) exception).getEndPoint(), message,
 					exception);
+		}
+
+		if (exception instanceof DriverTimeoutException driverTimeoutException) {
+			return new CassandraDriverTimeOutException(driverTimeoutException.getMessage(), driverTimeoutException);
 		}
 
 		if (exception instanceof ReadTimeoutException) {
@@ -178,7 +186,6 @@ public class CassandraExceptionTranslator implements CqlExceptionTranslator {
 			// unknown or unhandled exception
 			return new CassandraUncategorizedException(message, exception);
 		}
-
 		return null;
 	}
 
