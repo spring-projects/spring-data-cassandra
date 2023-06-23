@@ -28,6 +28,7 @@ import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.dao.TransientDataAccessResourceException;
 import org.springframework.data.cassandra.CassandraAuthenticationException;
 import org.springframework.data.cassandra.CassandraConnectionFailureException;
+import org.springframework.data.cassandra.CassandraDriverTimeOutException;
 import org.springframework.data.cassandra.CassandraInsufficientReplicasAvailableException;
 import org.springframework.data.cassandra.CassandraInvalidConfigurationInQueryException;
 import org.springframework.data.cassandra.CassandraInvalidQueryException;
@@ -40,6 +41,7 @@ import org.springframework.data.cassandra.CassandraUncategorizedException;
 import org.springframework.data.cassandra.CassandraWriteTimeoutException;
 
 import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
+import com.datastax.oss.driver.api.core.DriverTimeoutException;
 import com.datastax.oss.driver.api.core.NoNodeAvailableException;
 import com.datastax.oss.driver.api.core.ProtocolVersion;
 import com.datastax.oss.driver.api.core.UnsupportedProtocolVersionException;
@@ -72,6 +74,7 @@ import com.datastax.oss.driver.internal.core.metadata.DefaultEndPoint;
  *
  * @author Matthew T. Adams
  * @author Mark Paluch
+ * @author Mikhail Polivakha
  */
 class CassandraExceptionTranslatorUnitTests {
 
@@ -115,6 +118,14 @@ class CassandraExceptionTranslatorUnitTests {
 
 		assertThat(result).isInstanceOf(CassandraInvalidConfigurationInQueryException.class)
 				.hasMessageStartingWith("message").hasCauseInstanceOf(InvalidConfigurationInQueryException.class);
+	}
+
+	@Test
+	void shouldRecognizeDriverTimeoutException() {
+		DataAccessException dataAccessException = sut.translateExceptionIfPossible(new DriverTimeoutException("message"));
+
+		assertThat(dataAccessException).isInstanceOf(CassandraDriverTimeOutException.class).hasMessageStartingWith("message")
+				.hasCauseInstanceOf(DriverTimeoutException.class);
 	}
 
 	@Test // DATACASS-402
