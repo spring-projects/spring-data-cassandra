@@ -71,7 +71,6 @@ import com.datastax.oss.driver.api.core.servererrors.WriteType;
  * @author Matthew T. Adams
  * @author Mark Paluch
  */
-@SuppressWarnings("unchecked")
 public class CassandraExceptionTranslator implements CqlExceptionTranslator {
 
 	private static final Set<String> CONNECTION_FAILURE_TYPES = new HashSet<>(
@@ -101,37 +100,33 @@ public class CassandraExceptionTranslator implements CqlExceptionTranslator {
 		// superclass would match before the subclass!
 
 		if (exception instanceof AuthenticationException) {
-			return new CassandraAuthenticationException(((AuthenticationException) exception).getEndPoint(), message,
-					exception);
+			return new CassandraAuthenticationException(((AuthenticationException) exception).getEndPoint(), message, exception);
 		}
 
 		if (exception instanceof ReadTimeoutException) {
 			return new CassandraReadTimeoutException(((ReadTimeoutException) exception).wasDataPresent(), message, exception);
 		}
 
-		if (exception instanceof WriteTimeoutException) {
+		if (exception instanceof WriteTimeoutException writeTimeoutException) {
 
-			WriteType writeType = ((WriteTimeoutException) exception).getWriteType();
-			return new CassandraWriteTimeoutException(writeType == null ? null : writeType.name(), message, exception);
+			WriteType writeType = writeTimeoutException.getWriteType();
+			return new CassandraWriteTimeoutException(writeType.name(), message, exception);
 		}
 
 		if (exception instanceof TruncateException) {
 			return new CassandraTruncateException(message, exception);
 		}
 
-		if (exception instanceof UnavailableException) {
-
-			UnavailableException ux = (UnavailableException) exception;
-			return new CassandraInsufficientReplicasAvailableException(ux.getRequired(), ux.getAlive(), message, exception);
+		if (exception instanceof UnavailableException unavailableException) {
+			return new CassandraInsufficientReplicasAvailableException(unavailableException.getRequired(), unavailableException.getAlive(), message, exception);
 		}
 
 		if (exception instanceof OverloadedException || exception instanceof BootstrappingException) {
 			return new TransientDataAccessResourceException(message, exception);
 		}
-		if (exception instanceof AlreadyExistsException) {
 
-			AlreadyExistsException aex = (AlreadyExistsException) exception;
-			return new CassandraSchemaElementExistsException(aex.getMessage(), aex);
+		if (exception instanceof AlreadyExistsException alreadyExistsException) {
+			return new CassandraSchemaElementExistsException(alreadyExistsException.getMessage(), alreadyExistsException);
 		}
 
 		if (exception instanceof InvalidConfigurationInQueryException) {
@@ -150,9 +145,8 @@ public class CassandraExceptionTranslator implements CqlExceptionTranslator {
 			return new CassandraUnauthorizedException(message, exception);
 		}
 
-		if (exception instanceof AllNodesFailedException) {
-			return new CassandraConnectionFailureException(((AllNodesFailedException) exception).getErrors(), message,
-					exception);
+		if (exception instanceof AllNodesFailedException allNodesFailedException) {
+			return new CassandraConnectionFailureException(message, allNodesFailedException.getAllErrors(), exception);
 		}
 
 		String exceptionType = ClassUtils.getShortName(ClassUtils.getUserClass(exception.getClass()));
@@ -161,8 +155,7 @@ public class CassandraExceptionTranslator implements CqlExceptionTranslator {
 
 			Map<Node, Throwable> errorMap = Collections.emptyMap();
 
-			if (exception instanceof CoordinatorException) {
-				CoordinatorException cx = (CoordinatorException) exception;
+			if (exception instanceof CoordinatorException cx) {
 				errorMap = Collections.singletonMap(cx.getCoordinator(), exception);
 			}
 
