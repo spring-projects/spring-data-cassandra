@@ -55,7 +55,7 @@ class ExecutableInsertOperationSupport implements ExecutableInsertOperation {
 		@Nullable private final CqlIdentifier tableName;
 
 		public ExecutableInsertSupport(CassandraTemplate template, Class<T> domainType, InsertOptions insertOptions,
-				CqlIdentifier tableName) {
+				@Nullable CqlIdentifier tableName) {
 			this.template = template;
 			this.domainType = domainType;
 			this.insertOptions = insertOptions;

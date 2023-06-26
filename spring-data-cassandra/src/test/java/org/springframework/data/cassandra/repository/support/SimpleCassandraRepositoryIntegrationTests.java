@@ -28,6 +28,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.BeansException;
@@ -37,12 +38,14 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.cassandra.config.CqlSessionFactoryBean;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.mapping.event.AbstractCassandraEventListener;
 import org.springframework.data.cassandra.core.mapping.event.AfterSaveEvent;
 import org.springframework.data.cassandra.core.mapping.event.BeforeSaveEvent;
 import org.springframework.data.cassandra.core.mapping.event.CassandraMappingEvent;
 import org.springframework.data.cassandra.core.query.CassandraPageRequest;
+import org.springframework.data.cassandra.domain.EntityWithKeyspace;
 import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.domain.UserToken;
 import org.springframework.data.cassandra.repository.CassandraRepository;
@@ -56,7 +59,14 @@ import org.springframework.data.util.Version;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.util.ClassUtils;
 
+import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Select;
+import com.datastax.driver.core.schemabuilder.Create;
 import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.cql.Statement;
+import com.datastax.oss.driver.api.core.cql.StatementBuilder;
+import com.datastax.oss.protocol.internal.request.Query;
 
 /**
  * Integration tests for {@link SimpleCassandraRepository}.
@@ -92,8 +102,9 @@ public class SimpleCassandraRepositoryIntegrationTests extends IntegrationTestsS
 	private BeanFactory beanFactory;
 	private CassandraRepositoryFactory factory;
 	private ClassLoader classLoader;
-	private UserRepostitory repository;
+	private UserRepository userRepository;
 
+	private EntityWithKeyspaceRepostitory entityWithKeyspaceRepostitory;
 	private User dave, oliver, carter, boyd;
 
 	@Override
@@ -115,26 +126,38 @@ public class SimpleCassandraRepositoryIntegrationTests extends IntegrationTestsS
 		factory.setBeanFactory(beanFactory);
 		factory.setEvaluationContextProvider(ExtensionAwareQueryMethodEvaluationContextProvider.DEFAULT);
 
-		repository = factory.getRepository(UserRepostitory.class);
+		userRepository = factory.getRepository(UserRepository.class);
+		entityWithKeyspaceRepostitory = factory.getRepository(EntityWithKeyspaceRepostitory.class);
 
 		cassandraVersion = CassandraVersion.get(session);
 
-		repository.deleteAll();
+		userRepository.deleteAll();
 
 		dave = new User("42", "Dave", "Matthews");
 		oliver = new User("4", "Oliver August", "Matthews");
 		carter = new User("49", "Carter", "Beauford");
 		boyd = new User("45", "Boyd", "Tinsley");
 
-		repository.saveAll(Arrays.asList(oliver, dave, carter, boyd));
+		userRepository.saveAll(Arrays.asList(oliver, dave, carter, boyd));
 
 		eventListener.clear();
+	}
+
+	@Test
+	void whenInsertingEntityWithKeyspaceSpecified_thenAppliedQueryWithKeyspace() {
+		session.execute("CREATE KEYSPACE custom WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 }");
+		session.execute("CREATE TABLE custom.entity_with_keyspace (id TEXT, name TEXT, type TEXT, PRIMARY KEY ((id)) )");
+		EntityWithKeyspace entityWithKeyspace = new EntityWithKeyspace("12", "Artur", "COMMON");
+		entityWithKeyspaceRepostitory.save(entityWithKeyspace);
+		Optional<EntityWithKeyspace> foundEntity = entityWithKeyspaceRepostitory.findById("12");
+		Assertions.assertThat(foundEntity).isPresent();
+		Assertions.assertThat(foundEntity.get().type()).isEqualTo("COMMON");
 	}
 
 	@Test // DATACASS-396
 	void existsByIdShouldReturnTrueForExistingObject() {
 
-		Boolean exists = repository.existsById(dave.getId());
+		Boolean exists = userRepository.existsById(dave.getId());
 
 		assertThat(exists).isTrue();
 	}
@@ -142,7 +165,7 @@ public class SimpleCassandraRepositoryIntegrationTests extends IntegrationTestsS
 	@Test // DATACASS-396
 	void existsByIdShouldReturnFalseForAbsentObject() {
 
-		boolean exists = repository.existsById("unknown");
+		boolean exists = userRepository.existsById("unknown");
 
 		assertThat(exists).isFalse();
 	}
@@ -150,7 +173,7 @@ public class SimpleCassandraRepositoryIntegrationTests extends IntegrationTestsS
 	@Test // DATACASS-396
 	void existsByMonoOfIdShouldReturnTrueForExistingObject() {
 
-		boolean exists = repository.existsById(dave.getId());
+		boolean exists = userRepository.existsById(dave.getId());
 
 		assertThat(exists).isTrue();
 	}
@@ -158,7 +181,7 @@ public class SimpleCassandraRepositoryIntegrationTests extends IntegrationTestsS
 	@Test // DATACASS-396
 	void findByIdShouldReturnObject() {
 
-		Optional<User> User = repository.findById(dave.getId());
+		Optional<User> User = userRepository.findById(dave.getId());
 
 		assertThat(User).contains(dave);
 	}
@@ -166,7 +189,7 @@ public class SimpleCassandraRepositoryIntegrationTests extends IntegrationTestsS
 	@Test // DATACASS-396
 	void findByIdShouldCompleteWithoutValueForAbsentObject() {
 
-		Optional<User> User = repository.findById("unknown");
+		Optional<User> User = userRepository.findById("unknown");
 
 		assertThat(User).isEmpty();
 	}
@@ -174,7 +197,7 @@ public class SimpleCassandraRepositoryIntegrationTests extends IntegrationTestsS
 	@Test // DATACASS-396, DATACASS-416
 	void findAllShouldReturnAllResults() {
 
-		List<User> Users = repository.findAll();
+		List<User> Users = userRepository.findAll();
 
 		assertThat(Users).hasSize(4);
 	}
@@ -182,7 +205,7 @@ public class SimpleCassandraRepositoryIntegrationTests extends IntegrationTestsS
 	@Test // DATACASS-396, DATACASS-416
 	void findAllByIterableOfIdShouldReturnResults() {
 
-		List<User> Users = repository.findAllById(Arrays.asList(dave.getId(), boyd.getId()));
+		List<User> Users = userRepository.findAllById(Arrays.asList(dave.getId(), boyd.getId()));
 
 		assertThat(Users).hasSize(2);
 	}
@@ -190,11 +213,11 @@ public class SimpleCassandraRepositoryIntegrationTests extends IntegrationTestsS
 	@Test // DATACASS-56
 	void findAllWithPaging() {
 
-		Slice<User> slice = repository.findAll(CassandraPageRequest.first(2));
+		Slice<User> slice = userRepository.findAll(CassandraPageRequest.first(2));
 
 		assertThat(slice).hasSize(2);
 
-		assertThat(repository.findAll(slice.nextPageable())).hasSize(2);
+		assertThat(userRepository.findAll(slice.nextPageable())).hasSize(2);
 	}
 
 	@Test // DATACASS-700
@@ -202,7 +225,7 @@ public class SimpleCassandraRepositoryIntegrationTests extends IntegrationTestsS
 
 		assumeTrue(cassandraVersion.isGreaterThan(CASSANDRA_3));
 
-		UserTokenRepostitory repository = factory.getRepository(UserTokenRepostitory.class);
+		UserTokenRepository repository = factory.getRepository(UserTokenRepository.class);
 		repository.deleteAll();
 
 		UUID id = UUID.randomUUID();
@@ -232,7 +255,7 @@ public class SimpleCassandraRepositoryIntegrationTests extends IntegrationTestsS
 	@Test // DATACASS-396
 	void countShouldReturnNumberOfRecords() {
 
-		long count = repository.count();
+		long count = userRepository.count();
 
 		assertThat(count).isEqualTo(4);
 	}
@@ -240,23 +263,23 @@ public class SimpleCassandraRepositoryIntegrationTests extends IntegrationTestsS
 	@Test // DATACASS-415
 	void insertEntityShouldInsertEntity() {
 
-		repository.deleteAll();
+		userRepository.deleteAll();
 
 		User User = new User("36", "Homer", "Simpson");
 
-		repository.insert(User);
+		userRepository.insert(User);
 
-		assertThat(repository.count()).isEqualTo(1);
+		assertThat(userRepository.count()).isEqualTo(1);
 	}
 
 	@Test // DATACASS-415
 	void insertIterableOfEntitiesShouldInsertEntity() {
 
-		repository.deleteAll();
+		userRepository.deleteAll();
 
-		repository.insert(Arrays.asList(dave, oliver, boyd));
+		userRepository.insert(Arrays.asList(dave, oliver, boyd));
 
-		assertThat(repository.count()).isEqualTo(3);
+		assertThat(userRepository.count()).isEqualTo(3);
 	}
 
 	@Test // DATACASS-396, DATACASS-573
@@ -265,11 +288,11 @@ public class SimpleCassandraRepositoryIntegrationTests extends IntegrationTestsS
 		dave.setFirstname("Hello, Dave");
 		dave.setLastname("Bowman");
 
-		User saved = repository.save(dave);
+		User saved = userRepository.save(dave);
 
 		assertThat(saved).isSameAs(saved);
 
-		Optional<User> loaded = repository.findById(dave.getId());
+		Optional<User> loaded = userRepository.findById(dave.getId());
 
 		assertThat(loaded).isPresent();
 
@@ -285,7 +308,7 @@ public class SimpleCassandraRepositoryIntegrationTests extends IntegrationTestsS
 		dave.setFirstname("Hello, Dave");
 		dave.setLastname("Bowman");
 
-		repository.save(dave);
+		userRepository.save(dave);
 
 		assertThat(eventListener.getBeforeSave()).hasSize(1);
 		assertThat(eventListener.getAfterSave()).hasSize(1);
@@ -296,11 +319,11 @@ public class SimpleCassandraRepositoryIntegrationTests extends IntegrationTestsS
 
 		User User = new User("36", "Homer", "Simpson");
 
-		User saved = repository.save(User);
+		User saved = userRepository.save(User);
 
 		assertThat(saved).isEqualTo(User);
 
-		Optional<User> loaded = repository.findById(User.getId());
+		Optional<User> loaded = userRepository.findById(User.getId());
 
 		assertThat(loaded).contains(User);
 	}
@@ -308,13 +331,13 @@ public class SimpleCassandraRepositoryIntegrationTests extends IntegrationTestsS
 	@Test // DATACASS-396, DATACASS-416, DATACASS-573
 	void saveIterableOfNewEntitiesShouldInsertEntity() {
 
-		repository.deleteAll();
+		userRepository.deleteAll();
 
-		List<User> saved = repository.saveAll(Arrays.asList(dave, oliver, boyd));
+		List<User> saved = userRepository.saveAll(Arrays.asList(dave, oliver, boyd));
 
 		assertThat(saved).hasSize(3).contains(dave, oliver, boyd);
 
-		assertThat(repository.count()).isEqualTo(3);
+		assertThat(userRepository.count()).isEqualTo(3);
 	}
 
 	@Test // DATACASS-396, DATACASS-416
@@ -325,23 +348,23 @@ public class SimpleCassandraRepositoryIntegrationTests extends IntegrationTestsS
 		dave.setFirstname("Hello, Dave");
 		dave.setLastname("Bowman");
 
-		List<User> saved = repository.saveAll(Arrays.asList(User, dave));
+		List<User> saved = userRepository.saveAll(Arrays.asList(User, dave));
 
 		assertThat(saved).hasSize(2);
 
-		Optional<User> persistentDave = repository.findById(dave.getId());
+		Optional<User> persistentDave = userRepository.findById(dave.getId());
 		assertThat(persistentDave).contains(dave);
 
-		Optional<User> persistentHomer = repository.findById(User.getId());
+		Optional<User> persistentHomer = userRepository.findById(User.getId());
 		assertThat(persistentHomer).contains(User);
 	}
 
 	@Test // DATACASS-396, DATACASS-416
 	void deleteAllShouldRemoveEntities() {
 
-		repository.deleteAll();
+		userRepository.deleteAll();
 
-		List<User> result = repository.findAll();
+		List<User> result = userRepository.findAll();
 
 		assertThat(result).isEmpty();
 	}
@@ -349,9 +372,9 @@ public class SimpleCassandraRepositoryIntegrationTests extends IntegrationTestsS
 	@Test // DATACASS-396
 	void deleteByIdShouldRemoveEntity() {
 
-		repository.deleteById(dave.getId());
+		userRepository.deleteById(dave.getId());
 
-		Optional<User> loaded = repository.findById(dave.getId());
+		Optional<User> loaded = userRepository.findById(dave.getId());
 
 		assertThat(loaded).isEmpty();
 	}
@@ -359,9 +382,9 @@ public class SimpleCassandraRepositoryIntegrationTests extends IntegrationTestsS
 	@Test // DATACASS-825
 	void deleteAllByIdShouldRemoveEntity() {
 
-		repository.deleteAllById(Collections.singletonList(dave.getId()));
+		userRepository.deleteAllById(Collections.singletonList(dave.getId()));
 
-		Optional<User> loaded = repository.findById(dave.getId());
+		Optional<User> loaded = userRepository.findById(dave.getId());
 
 		assertThat(loaded).isEmpty();
 	}
@@ -369,9 +392,9 @@ public class SimpleCassandraRepositoryIntegrationTests extends IntegrationTestsS
 	@Test // DATACASS-396
 	void deleteShouldRemoveEntity() {
 
-		repository.delete(dave);
+		userRepository.delete(dave);
 
-		Optional<User> loaded = repository.findById(dave.getId());
+		Optional<User> loaded = userRepository.findById(dave.getId());
 
 		assertThat(loaded).isEmpty();
 	}
@@ -379,16 +402,18 @@ public class SimpleCassandraRepositoryIntegrationTests extends IntegrationTestsS
 	@Test // DATACASS-396
 	void deleteIterableOfEntitiesShouldRemoveEntities() {
 
-		repository.deleteAll(Arrays.asList(dave, boyd));
+		userRepository.deleteAll(Arrays.asList(dave, boyd));
 
-		Optional<User> loaded = repository.findById(boyd.getId());
+		Optional<User> loaded = userRepository.findById(boyd.getId());
 
 		assertThat(loaded).isEmpty();
 	}
 
-	interface UserRepostitory extends CassandraRepository<User, String> {}
+	interface UserRepository extends CassandraRepository<User, String> {}
 
-	interface UserTokenRepostitory extends CassandraRepository<UserToken, UUID> {
+	interface EntityWithKeyspaceRepostitory extends CassandraRepository<EntityWithKeyspace, String> {}
+
+	interface UserTokenRepository extends CassandraRepository<UserToken, UUID> {
 		Slice<UserToken> findAllByUserId(UUID id, Pageable pageRequest);
 	}
 

@@ -89,14 +89,13 @@ class BasicCassandraPersistentEntityUnitTests {
 	@Test
 	void setForceQuoteCallsSetTableName() {
 
-		BasicCassandraPersistentEntity<Message> entitySpy = spy(
-				new BasicCassandraPersistentEntity<>(TypeInformation.of(Message.class)));
+		BasicCassandraPersistentEntity<Message> entitySpy = spy(new BasicCassandraPersistentEntity<>(TypeInformation.of(Message.class)));
 
 		DirectFieldAccessor directFieldAccessor = new DirectFieldAccessor(entitySpy);
 
 		entitySpy.setTableName(CqlIdentifier.fromCql("Messages"));
 
-		assertThat(directFieldAccessor.getPropertyValue("forceQuote")).isNull();
+		assertThat((Boolean) directFieldAccessor.getPropertyValue("forceQuote")).isFalse();
 
 		entitySpy.setForceQuote(true);
 

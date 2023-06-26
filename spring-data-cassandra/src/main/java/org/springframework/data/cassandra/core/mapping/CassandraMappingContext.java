@@ -355,6 +355,8 @@ public class CassandraMappingContext
 	@Override
 	protected <T> BasicCassandraPersistentEntity<T> createPersistentEntity(TypeInformation<T> typeInformation) {
 
+
+
 		BasicCassandraPersistentEntity<T> entity = isUserDefinedType(typeInformation)
 				? new CassandraUserTypePersistentEntity<>(typeInformation, getVerifier())
 				: isTuple(typeInformation) ? new BasicCassandraPersistentTupleEntity<>(typeInformation)
@@ -363,6 +365,7 @@ public class CassandraMappingContext
 		if (this.namingStrategy != null) {
 			entity.setNamingStrategy(this.namingStrategy);
 		}
+
 		Optional.ofNullable(this.applicationContext).ifPresent(entity::setApplicationContext);
 
 		return entity;

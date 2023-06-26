@@ -17,9 +17,14 @@ package org.springframework.data.cassandra;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.dao.DataAccessResourceFailureException;
+import org.springframework.util.CollectionUtils;
 
 import com.datastax.oss.driver.api.core.metadata.Node;
 
@@ -32,14 +37,26 @@ public class CassandraConnectionFailureException extends DataAccessResourceFailu
 
 	private static final long serialVersionUID = 6299912054261646552L;
 
-	private final Map<Node, Throwable> messagesByHost = new HashMap<>();
+	private final Map<Node, List<Throwable>> messagesByHost = new HashMap<>();
 
 	public CassandraConnectionFailureException(Map<Node, Throwable> map, String msg, Throwable cause) {
+		super(msg, cause);
+		map.forEach((node, throwable) -> messagesByHost.put(node, Collections.singletonList(throwable)));
+	}
+
+	public CassandraConnectionFailureException(String msg, Map<Node, List<Throwable>> map, Throwable cause) {
 		super(msg, cause);
 		this.messagesByHost.putAll(map);
 	}
 
+	@Deprecated(forRemoval = true)
 	public Map<Node, Throwable> getMessagesByHost() {
+		HashMap<Node, Throwable> singleMessageByHost = new HashMap<>();
+		this.messagesByHost.forEach((node, throwables) -> singleMessageByHost.put(node, CollectionUtils.firstElement(throwables)));
+		return singleMessageByHost;
+	}
+
+	public Map<Node, List<Throwable>> getAllMessagesByHost() {
 		return Collections.unmodifiableMap(messagesByHost);
 	}
 }

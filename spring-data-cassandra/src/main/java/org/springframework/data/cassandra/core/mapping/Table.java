@@ -51,4 +51,9 @@ public @interface Table {
 	 */
 	@Deprecated
 	boolean forceQuote() default false;
+
+	/**
+	 * Keyspace where this table is located
+	 */
+	String keyspace() default "";
 }

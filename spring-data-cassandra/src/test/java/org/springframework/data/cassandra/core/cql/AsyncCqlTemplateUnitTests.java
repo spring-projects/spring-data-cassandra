@@ -797,7 +797,7 @@ class AsyncCqlTemplateUnitTests {
 		template.setSession(this.session);
 
 		if (fetchSize != null) {
-			template.setFetchSize(fetchSize);
+			template.setPageSize(fetchSize);
 		}
 
 		if (consistencyLevel != null) {

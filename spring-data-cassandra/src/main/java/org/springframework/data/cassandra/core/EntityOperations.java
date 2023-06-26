@@ -114,6 +114,20 @@ class EntityOperations {
 	}
 
 	/**
+	 * Returns custom keyspace defined (if any) where the table for entity {@code entityClass} should be persisted.
+	 * If the keyspace is not overridden in {@link org.springframework.data.cassandra.core.mapping.Table} annotation,
+	 * then {@code null} is returned, signaling that default keyspace of {@link com.datastax.oss.driver.api.core.CqlSession}
+	 * should be used
+	 *
+	 * @param entityClass entity class, must not be {@literal null}.
+	 * @return custom keyspace defined (if any)
+	 */
+	@Nullable
+	CqlIdentifier getCustomKeyspaceName(Class<?> entityClass) {
+		return getRequiredPersistentEntity(entityClass).getCustomKeyspace();
+	}
+
+	/**
 	 * Introspect the given {@link Class result type} in the context of the {@link Class entity type} whether the returned
 	 * type is a projection and what property paths are participating in the projection.
 	 *

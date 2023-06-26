@@ -881,14 +881,13 @@ public class AsyncCassandraTemplate
 			return statement.getPageSize();
 		}
 
-		if (getAsyncCqlOperations() instanceof CassandraAccessor) {
+		if (getAsyncCqlOperations() instanceof CassandraAccessor cassandraAccessor) {
 
-			CassandraAccessor accessor = (CassandraAccessor) getAsyncCqlOperations();
-
-			if (accessor.getFetchSize() != -1) {
-				return accessor.getFetchSize();
+			if (cassandraAccessor.getPageSize() != -1) {
+				return cassandraAccessor.getPageSize();
 			}
 		}
+
 		class GetConfiguredPageSize implements AsyncSessionCallback<Integer>, CqlProvider {
 			@Override
 			public ListenableFuture<Integer> doInSession(CqlSession session) {
@@ -904,7 +903,6 @@ public class AsyncCassandraTemplate
 		return getAsyncCqlOperations().execute(new GetConfiguredPageSize()).completable().join();
 	}
 
-	@SuppressWarnings("unchecked")
 	private <T> Function<Row, T> getMapper(Class<?> entityType, Class<T> targetType, CqlIdentifier tableName) {
 
 		EntityProjection<T, ?> projection = entityOperations.introspectProjection(targetType, entityType);

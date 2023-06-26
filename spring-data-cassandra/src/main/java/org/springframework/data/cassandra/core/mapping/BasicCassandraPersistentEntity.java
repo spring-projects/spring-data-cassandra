@@ -34,6 +34,7 @@ import org.springframework.data.util.TypeInformation;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 
@@ -50,13 +51,15 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 
 	private static final CassandraPersistentEntityMetadataVerifier DEFAULT_VERIFIER = new CompositeCassandraPersistentEntityMetadataVerifier();
 
-	private final CqlIdentifierGenerator namingAccessor = new CqlIdentifierGenerator();
+	private final CqlIdentifierGenerator cqlIdentifierGenerator = new CqlIdentifierGenerator();
 
-	private Boolean forceQuote;
+	private Boolean forceQuote = Boolean.FALSE;
 
 	private CassandraPersistentEntityMetadataVerifier verifier = DEFAULT_VERIFIER;
 
 	private CqlIdentifier tableName;
+
+	private CqlIdentifier keyspaceName;
 
 	private @Nullable StandardEvaluationContext spelContext;
 
@@ -110,12 +113,20 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 			@Nullable Annotation annotation) {
 
 		if (annotation != null) {
-			return this.namingAccessor.generate((String) AnnotationUtils.getValue(annotation),
+			return this.cqlIdentifierGenerator.generate((String) AnnotationUtils.getValue(annotation),
 					(Boolean) AnnotationUtils.getValue(annotation, "forceQuote"), defaultNameGenerator, this, this.spelContext);
 		}
 
-		return this.namingAccessor.generate(null, forceQuote != null ? forceQuote : false, defaultNameGenerator, this,
+		return this.cqlIdentifierGenerator.generate(null, forceQuote, defaultNameGenerator, this,
 				this.spelContext);
+	}
+
+	@Nullable
+	CqlIdentifier determineKeyspaceName() {
+		String keyspace = Optional.ofNullable(findAnnotation(Table.class))
+				.map((it) -> (String) AnnotationUtils.getValue(it, "keyspace"))
+				.orElse(null);
+		return (keyspaceName = (StringUtils.hasText(keyspace) ? CqlIdentifierGenerator.createIdentifier(keyspace, this.forceQuote) : null));
 	}
 
 	@Override
@@ -181,12 +192,17 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	 * @since 3.0
 	 */
 	public void setNamingStrategy(NamingStrategy namingStrategy) {
-		this.namingAccessor.setNamingStrategy(namingStrategy);
+		this.cqlIdentifierGenerator.setNamingStrategy(namingStrategy);
 	}
 
 	@Override
 	public CqlIdentifier getTableName() {
 		return Optional.ofNullable(this.tableName).orElseGet(this::determineTableName);
+	}
+
+	@Override
+	public CqlIdentifier getCustomKeyspace() {
+		return Optional.ofNullable(this.keyspaceName).orElseGet(this::determineKeyspaceName);
 	}
 
 	/**
