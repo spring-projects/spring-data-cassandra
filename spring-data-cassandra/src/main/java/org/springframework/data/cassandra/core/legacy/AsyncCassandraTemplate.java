@@ -881,14 +881,13 @@ public class AsyncCassandraTemplate
 			return statement.getPageSize();
 		}
 
-		if (getAsyncCqlOperations() instanceof CassandraAccessor) {
+		if (getAsyncCqlOperations() instanceof CassandraAccessor cassandraAccessor) {
 
-			CassandraAccessor accessor = (CassandraAccessor) getAsyncCqlOperations();
-
-			if (accessor.getFetchSize() != -1) {
-				return accessor.getFetchSize();
+			if (cassandraAccessor.getPageSize() != -1) {
+				return cassandraAccessor.getPageSize();
 			}
 		}
+
 		class GetConfiguredPageSize implements AsyncSessionCallback<Integer>, CqlProvider {
 			@Override
 			public ListenableFuture<Integer> doInSession(CqlSession session) {

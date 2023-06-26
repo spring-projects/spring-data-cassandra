@@ -713,11 +713,6 @@ public class StatementFactory {
 		return select;
 	}
 
-	private StatementBuilder<Select> createSelectAndOrder(List<Selector> selectors, CqlIdentifier from,
-		Filter filter, Sort sort) {
-		return createSelectAndOrder(selectors, from, filter, sort, null);
-	}
-
 	private StatementBuilder<Select> createSelectAndOrder(List<Selector> selectors, CqlIdentifier from, Filter filter, Sort sort, @Nullable CqlIdentifier keyspace) {
 
 		Select select;
@@ -733,8 +728,7 @@ public class StatementFactory {
 				mappedSelectors.add(orElseGet);
 			}
 
-			select = QueryBuilder.selectFrom(from)
-			.selectors(mappedSelectors);
+			select = QueryBuilder.selectFrom(keyspace, from).selectors(mappedSelectors);
 		}
 
 		StatementBuilder<Select> builder = StatementBuilder.of(select);
@@ -886,14 +880,13 @@ public class StatementFactory {
 
 	private static Assignment getAssignment(SetOp updateOp, TermFactory termFactory) {
 
-		if (updateOp instanceof SetAtIndexOp) {
+		if (updateOp instanceof SetAtIndexOp setAtIndexOp) {
 
 			return Assignment.setListValue(updateOp.toCqlIdentifier(),
-					termFactory.create(((SetAtIndexOp) updateOp).getIndex()), termFactory.create(updateOp.getValue()));
+					termFactory.create(setAtIndexOp.getIndex()), termFactory.create(updateOp.getValue()));
 		}
 
-		if (updateOp instanceof SetAtKeyOp) {
-			SetAtKeyOp op = (SetAtKeyOp) updateOp;
+		if (updateOp instanceof SetAtKeyOp op) {
 			return Assignment.setMapValue(op.toCqlIdentifier(), termFactory.create(op.getKey()),
 					termFactory.create(op.getValue()));
 		}
@@ -1211,36 +1204,22 @@ public class StatementFactory {
 		}
 	}
 
-	private static class RemoveCollectionElementsAssignment implements Assignment {
+	private record RemoveCollectionElementsAssignment(CqlIdentifier columnId, Term value) implements Assignment {
 
-		private final CqlIdentifier columnId;
-		private final Term value;
+			@Override
+			public void appendTo(StringBuilder builder) {
+				builder.append(String.format("%1$s=%1$s-%2$s", columnId.asCql(true), buildRightOperand()));
+			}
 
-		protected RemoveCollectionElementsAssignment(CqlIdentifier columnId, Term value) {
-			this.columnId = columnId;
-			this.value = value;
-		}
+			private String buildRightOperand() {
+				StringBuilder builder = new StringBuilder();
+				value.appendTo(builder);
+				return builder.toString();
+			}
 
-		@Override
-		public void appendTo(StringBuilder builder) {
-			builder.append(String.format("%1$s=%1$s-%2$s", columnId.asCql(true), buildRightOperand()));
-		}
-
-		private String buildRightOperand() {
-			StringBuilder builder = new StringBuilder();
-			value.appendTo(builder);
-			return builder.toString();
-		}
-
-		@Override
-		public boolean isIdempotent() {
-			return value.isIdempotent();
-		}
-
-		public Term getValue() {
-			return value;
-		}
-
+			@Override
+			public boolean isIdempotent() {
+				return value.isIdempotent();
+			}
 	}
-
 }

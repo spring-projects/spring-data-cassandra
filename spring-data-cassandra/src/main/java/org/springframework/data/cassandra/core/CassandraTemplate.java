@@ -586,7 +586,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	boolean doExists(Query query, Class<?> entityClass, CqlIdentifier tableName) {
 
 		StatementBuilder<Select> select = getStatementFactory().select(query.limit(1),
-				getRequiredPersistentEntity(entityClass), tableName);
+				getRequiredPersistentEntity(entityClass), tableName, getEntityOperations().getCustomKeyspaceName(entityClass));
 
 		return doQueryForResultSet(select.build()).one() != null;
 	}
@@ -915,12 +915,10 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 			return statement.getPageSize();
 		}
 
-		if (getCqlOperations() instanceof CassandraAccessor) {
+		if (getCqlOperations() instanceof CassandraAccessor cassandraAccessor) {
 
-			CassandraAccessor accessor = (CassandraAccessor) getCqlOperations();
-
-			if (accessor.getFetchSize() != -1) {
-				return accessor.getFetchSize();
+			if (cassandraAccessor.getPageSize() != -1) {
+				return cassandraAccessor.getPageSize();
 			}
 		}
 
