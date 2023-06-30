@@ -16,13 +16,16 @@
 package org.springframework.data.cassandra.core.cql;
 
 import java.time.Duration;
+import java.util.function.BiFunction;
 
+import org.springframework.data.cassandra.core.cql.util.Bindings;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.cql.BatchStatement;
 import com.datastax.oss.driver.api.core.cql.BoundStatement;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.Statement;
+import com.datastax.oss.driver.api.querybuilder.BindMarker;
 import com.datastax.oss.driver.api.querybuilder.delete.Delete;
 import com.datastax.oss.driver.api.querybuilder.delete.DeleteSelection;
 import com.datastax.oss.driver.api.querybuilder.insert.Insert;
@@ -85,7 +88,7 @@ public abstract class QueryOptionsUtil {
 
 		if (queryOptions.getTracing() != null) {
 			// While the following statement is null-safe, avoid setting Statement tracing if the tracing query option
-			// is null since Statements are immutable and the call creates a new object.  Therefore keep the following
+			// is null since Statements are immutable and the call creates a new object. Therefore keep the following
 			// statement wrapped in the conditional null check to avoid additional garbage and added GC pressure.
 			statementToUse = statementToUse.setTracing(Boolean.TRUE.equals(queryOptions.getTracing()));
 		}
@@ -120,15 +123,38 @@ public abstract class QueryOptionsUtil {
 
 		Insert insertToUse = insert;
 
-		if (!writeOptions.getTtl().isNegative()) {
-			insertToUse = insertToUse.usingTtl(Math.toIntExact(writeOptions.getTtl().getSeconds()));
-		}
-
 		if (writeOptions.getTimestamp() != null) {
 			insertToUse = insertToUse.usingTimestamp(writeOptions.getTimestamp());
 		}
 
+		if (hasTtl(writeOptions.getTtl())) {
+			insertToUse = insertToUse.usingTtl(Math.toIntExact(writeOptions.getTtl().getSeconds()));
+		}
+
 		return insertToUse;
+	}
+
+	/**
+	 * Add common {@link WriteOptions} options to {@link Update} CQL statements.
+	 *
+	 * @param update {@link Update} CQL statement, must not be {@literal null}.
+	 * @param writeOptions write options (e.g. consistency level) to add to the CQL statement.
+	 * @return the given {@link Update}.
+	 */
+	public static Update addWriteOptions(Update update, WriteOptions writeOptions) {
+
+		Assert.notNull(update, "Update must not be null");
+		Assert.notNull(writeOptions, "WriteOptions must not be null");
+
+		if (writeOptions.getTimestamp() != null) {
+			update = (Update) ((UpdateStart) update).usingTimestamp(writeOptions.getTimestamp());
+		}
+
+		if (hasTtl(writeOptions.getTtl())) {
+			update = (Update) ((UpdateStart) update).usingTtl(getTtlSeconds(writeOptions.getTtl()));
+		}
+
+		return update;
 	}
 
 	/**
@@ -152,26 +178,27 @@ public abstract class QueryOptionsUtil {
 	}
 
 	/**
-	 * Add common {@link WriteOptions} options to {@link Update} CQL statements.
+	 * Add common {@link WriteOptions} options to CQL statements through {@link CqlStatementOptionsAccessor}.
 	 *
-	 * @param update {@link Update} CQL statement, must not be {@literal null}.
+	 * @param accessor CQL statement accessor, must not be {@literal null}.
 	 * @param writeOptions write options (e.g. consistency level) to add to the CQL statement.
-	 * @return the given {@link Update}.
+	 * @return the resulting statement.
+	 * @since 4.2
 	 */
-	public static Update addWriteOptions(Update update, WriteOptions writeOptions) {
+	public static <T> T addWriteOptions(CqlStatementOptionsAccessor<T> accessor, WriteOptions writeOptions) {
 
-		Assert.notNull(update, "Update must not be null");
+		Assert.notNull(accessor, "CqlStatementOptionsAccessor must not be null");
 		Assert.notNull(writeOptions, "WriteOptions must not be null");
 
-		if (hasTtl(writeOptions.getTtl())) {
-			update = (Update) ((UpdateStart) update).usingTtl(getTtlSeconds(writeOptions.getTtl()));
-		}
-
 		if (writeOptions.getTimestamp() != null) {
-			update = (Update) ((UpdateStart) update).usingTimestamp(writeOptions.getTimestamp());
+			accessor.usingTimestamp(writeOptions.getTimestamp());
 		}
 
-		return update;
+		if (hasTtl(writeOptions.getTtl())) {
+			accessor.usingTtl(getTtlSeconds(writeOptions.getTtl()));
+		}
+
+		return accessor.getStatement();
 	}
 
 	private static int getTtlSeconds(Duration ttl) {
@@ -180,6 +207,201 @@ public abstract class QueryOptionsUtil {
 
 	private static boolean hasTtl(Duration ttl) {
 		return !ttl.isZero() && !ttl.isNegative();
+	}
+
+	/**
+	 * Wrapper for common options used with CQL statements that are represented in the CQL statement such as TTL and
+	 * timestamp.
+	 *
+	 * @param <T>
+	 * @since 4.2
+	 */
+	public static abstract class CqlStatementOptionsAccessor<T> {
+
+		/**
+		 * Set the timestamp to the underlying statement.
+		 *
+		 * @param timestamp the timestamp value to use.
+		 */
+		abstract void usingTimestamp(long timestamp);
+
+		/**
+		 * Set the TTL to the underlying statement.
+		 *
+		 * @param ttl the TTL value to use.
+		 */
+		abstract void usingTtl(int ttl);
+
+		/**
+		 * Returns the current statement instance.
+		 *
+		 * @return the current statement instance.
+		 */
+		abstract T getStatement();
+
+		/**
+		 * Creates an accessor variant that captures options through {@link BindMarker} for {@link Insert}.
+		 *
+		 * @param bindings
+		 * @param statement
+		 * @return
+		 */
+		public static CqlStatementOptionsAccessor<Insert> ofInsert(Bindings bindings, Insert statement) {
+			return new BoundOptionsAccessor<>(bindings, statement, Insert::usingTimestamp, Insert::usingTtl);
+		}
+
+		/**
+		 * Creates an accessor variant that applies options directly within the CQL statement for {@link Insert}.
+		 *
+		 * @param statement
+		 * @return
+		 */
+		public static CqlStatementOptionsAccessor<Insert> ofInsert(Insert statement) {
+			return new InlineOptionsAccessor<>(statement, Insert::usingTimestamp, Insert::usingTtl);
+		}
+
+		/**
+		 * Creates an accessor variant that captures options through {@link BindMarker} for {@link Update}.
+		 *
+		 * @param bindings
+		 * @param statement
+		 * @return
+		 */
+		public static CqlStatementOptionsAccessor<UpdateStart> ofUpdate(Bindings bindings, UpdateStart statement) {
+			return new BoundOptionsAccessor<>(bindings, statement, UpdateStart::usingTimestamp, UpdateStart::usingTtl);
+		}
+
+		/**
+		 * Creates an accessor variant that applies options directly within the CQL statement for {@link Update}.
+		 *
+		 * @param statement
+		 * @return
+		 */
+		public static CqlStatementOptionsAccessor<UpdateStart> ofUpdate(UpdateStart statement) {
+			return new InlineOptionsAccessor<>(statement, UpdateStart::usingTimestamp, UpdateStart::usingTtl);
+		}
+
+		/**
+		 * Creates an accessor variant that captures options through {@link BindMarker} for {@link Delete}.
+		 *
+		 * @param bindings
+		 * @param statement
+		 * @return
+		 */
+		public static CqlStatementOptionsAccessor<DeleteSelection> ofDelete(Bindings bindings, DeleteSelection statement) {
+			return new BoundOptionsAccessor<>(bindings, statement, DeleteSelection::usingTimestamp,
+					(deleteSelection, bindMarker) -> deleteSelection);
+		}
+
+		/**
+		 * Creates an accessor variant that applies options directly within the CQL statement for {@link Delete}.
+		 *
+		 * @param statement
+		 * @return
+		 */
+		public static CqlStatementOptionsAccessor<DeleteSelection> ofDelete(DeleteSelection statement) {
+			return new InlineOptionsAccessor<>(statement, DeleteSelection::usingTimestamp,
+					(deleteSelection, bindMarker) -> deleteSelection);
+		}
+
+	}
+
+	/**
+	 * Accessor variant that uses bind markers.
+	 *
+	 * @param <T>
+	 */
+	private static class BoundOptionsAccessor<T> extends CqlStatementOptionsAccessor<T> {
+
+		private final Bindings bindings;
+		private T instance;
+
+		private final BiFunction<T, BindMarker, T> timestampFunction;
+
+		private final BiFunction<T, BindMarker, T> ttlFunction;
+
+		private BoundOptionsAccessor(Bindings bindings, T instance, BiFunction<T, BindMarker, T> timestampFunction,
+				BiFunction<T, BindMarker, T> ttlFunction) {
+			this.bindings = bindings;
+			this.instance = instance;
+			this.timestampFunction = timestampFunction;
+			this.ttlFunction = ttlFunction;
+		}
+
+		@Override
+		void usingTimestamp(long timestamp) {
+
+			BindMarker bindMarker = bindings.bind(timestamp);
+			instance = timestampFunction.apply(instance, bindMarker);
+		}
+
+		@Override
+		void usingTtl(int ttl) {
+			BindMarker bindMarker = bindings.bind(ttl);
+			instance = ttlFunction.apply(instance, bindMarker);
+		}
+
+		@Override
+		T getStatement() {
+			return instance;
+		}
+
+	}
+
+	/**
+	 * Accessor variant that uses inline values.
+	 *
+	 * @param <T>
+	 */
+	private static class InlineOptionsAccessor<T> extends CqlStatementOptionsAccessor<T> {
+
+		private T instance;
+
+		private final TimestampFunction<T> timestampFunction;
+
+		private final TtlFunction<T> ttlFunction;
+
+		private InlineOptionsAccessor(T instance, TimestampFunction<T> timestampFunction, TtlFunction<T> ttlFunction) {
+			this.instance = instance;
+			this.timestampFunction = timestampFunction;
+			this.ttlFunction = ttlFunction;
+		}
+
+		@Override
+		void usingTimestamp(long timestamp) {
+			instance = timestampFunction.apply(instance, timestamp);
+		}
+
+		@Override
+		void usingTtl(int ttl) {
+			instance = ttlFunction.apply(instance, ttl);
+		}
+
+		@Override
+		T getStatement() {
+			return instance;
+		}
+
+		/**
+		 * Bi-function accepting a statement and {@code long} timestamp returning the modified statement.
+		 *
+		 * @param <T>
+		 */
+		interface TimestampFunction<T> {
+
+			T apply(T statement, long timestamp);
+		}
+
+		/**
+		 * Bi-function accepting a statement and {@code int} TTL returning the modified statement.
+		 *
+		 * @param <T>
+		 */
+		interface TtlFunction<T> {
+
+			T apply(T statement, int ttl);
+		}
+
 	}
 
 }

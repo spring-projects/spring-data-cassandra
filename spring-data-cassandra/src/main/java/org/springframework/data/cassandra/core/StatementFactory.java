@@ -33,6 +33,7 @@ import org.springframework.data.cassandra.core.convert.UpdateMapper;
 import org.springframework.data.cassandra.core.convert.Where;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.cql.QueryOptionsUtil;
+import org.springframework.data.cassandra.core.cql.QueryOptionsUtil.CqlStatementOptionsAccessor;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.data.cassandra.core.cql.util.StatementBuilder;
 import org.springframework.data.cassandra.core.cql.util.TermFactory;
@@ -309,9 +310,13 @@ public class StatementFactory {
 				.of(QueryBuilder.insertInto(tableName).valuesByIds(Collections.emptyMap())).bind((statement, factory) -> {
 
 					Map<CqlIdentifier, Term> values = createTerms(insertNulls, object, factory);
+					CqlStatementOptionsAccessor<Insert> accessor = factory.ifBoundOrInline(
+							bindings -> CqlStatementOptionsAccessor.ofInsert(bindings, statement),
+							() -> CqlStatementOptionsAccessor.ofInsert(statement));
+					RegularInsert afterOptions = (RegularInsert) addInsertOptions(accessor, options);
 
-					return statement.valuesByIds(values);
-				}).apply(statement -> (RegularInsert) addWriteOptions(statement, options));
+					return afterOptions.valuesByIds(values);
+				});
 
 		builder.transform(statement -> QueryOptionsUtil.addQueryOptions(statement, options));
 
@@ -373,14 +378,11 @@ public class StatementFactory {
 		Update mappedUpdate = getUpdateMapper().getMappedObject(update, persistentEntity);
 
 		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> builder = update(tableName, mappedUpdate,
-				filter);
+				filter, query.getQueryOptions().filter(WriteOptions.class::isInstance).map(WriteOptions.class::cast));
 
 		query.getQueryOptions().filter(UpdateOptions.class::isInstance).map(UpdateOptions.class::cast)
 				.map(UpdateOptions::getIfCondition)
 				.ifPresent(criteriaDefinitions -> applyUpdateIfCondition(builder, criteriaDefinitions));
-
-		query.getQueryOptions().filter(WriteOptions.class::isInstance).map(WriteOptions.class::cast)
-				.ifPresent(writeOptions -> builder.apply(statement -> addWriteOptions(statement, writeOptions)));
 
 		query.getQueryOptions().ifPresent(
 				options -> builder.transform(statementBuilder -> QueryOptionsUtil.addQueryOptions(statementBuilder, options)));
@@ -435,10 +437,16 @@ public class StatementFactory {
 		where.forEach((cqlIdentifier, o) -> object.remove(cqlIdentifier));
 
 		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> builder = StatementBuilder
-				.of(QueryBuilder.update(tableName).set().where())
-				.bind((statement, factory) -> ((UpdateWithAssignments) statement).set(toAssignments(object, factory))
-						.where(toRelations(where, factory)))
-				.apply(update -> addWriteOptions(update, options));
+				.of(QueryBuilder.update(tableName).set().where()).bind((statement, factory) -> {
+
+					CqlStatementOptionsAccessor<UpdateStart> accessor = factory.ifBoundOrInline(
+							bindings -> CqlStatementOptionsAccessor.ofUpdate(bindings, (UpdateStart) statement),
+							() -> CqlStatementOptionsAccessor.ofUpdate((UpdateStart) statement));
+					com.datastax.oss.driver.api.querybuilder.update.Update statementToUse = addUpdateOptions(accessor, options);
+
+					return ((UpdateWithAssignments) statementToUse).set(toAssignments(object, factory))
+							.where(toRelations(where, factory));
+				});
 
 		Optional.of(options).filter(UpdateOptions.class::isInstance).map(UpdateOptions.class::cast)
 				.map(UpdateOptions::getIfCondition)
@@ -503,14 +511,12 @@ public class StatementFactory {
 		Filter filter = getQueryMapper().getMappedObject(query, persistentEntity);
 		List<CqlIdentifier> columnNames = getQueryMapper().getMappedColumnNames(query.getColumns(), persistentEntity);
 
-		StatementBuilder<Delete> builder = delete(columnNames, tableName, filter);
+		StatementBuilder<Delete> builder = delete(columnNames, tableName, filter,
+				query.getQueryOptions().filter(WriteOptions.class::isInstance).map(WriteOptions.class::cast));
 
 		query.getQueryOptions().filter(DeleteOptions.class::isInstance).map(DeleteOptions.class::cast)
 				.map(DeleteOptions::getIfCondition)
 				.ifPresent(criteriaDefinitions -> applyDeleteIfCondition(builder, criteriaDefinitions));
-
-		query.getQueryOptions().filter(WriteOptions.class::isInstance).map(WriteOptions.class::cast)
-				.ifPresent(writeOptions -> builder.apply(statement -> addWriteOptions(statement, writeOptions)));
 
 		query.getQueryOptions()
 				.ifPresent(options -> builder.transform(statement -> QueryOptionsUtil.addQueryOptions(statement, options)));
@@ -539,10 +545,21 @@ public class StatementFactory {
 		entityWriter.write(entity, where);
 
 		StatementBuilder<Delete> builder = StatementBuilder.of(QueryBuilder.deleteFrom(tableName).where())
-				.bind((statement, factory) -> statement.where(toRelations(where, factory)));
+				.bind((statement, factory) -> {
 
-		Optional.of(options).filter(WriteOptions.class::isInstance).map(WriteOptions.class::cast)
-				.ifPresent(it -> builder.apply(statement -> addWriteOptions(statement, it)));
+					Delete statementToUse;
+					if (options instanceof WriteOptions wo) {
+
+						CqlStatementOptionsAccessor<DeleteSelection> accessor = factory.ifBoundOrInline(
+								bindings -> CqlStatementOptionsAccessor.ofDelete(bindings, (DeleteSelection) statement),
+								() -> CqlStatementOptionsAccessor.ofDelete((DeleteSelection) statement));
+						statementToUse = addDeleteOptions(accessor, wo);
+					} else {
+						statementToUse = statement;
+					}
+
+					return statementToUse.where(toRelations(where, factory));
+				});
 
 		Optional.of(options).filter(DeleteOptions.class::isInstance).map(DeleteOptions.class::cast)
 				.map(DeleteOptions::getIfCondition)
@@ -707,17 +724,28 @@ public class StatementFactory {
 	}
 
 	private static StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update(CqlIdentifier table,
-			Update mappedUpdate, Filter filter) {
+			Update mappedUpdate, Filter filter, Optional<WriteOptions> optionalOptions) {
 
 		UpdateStart updateStart = QueryBuilder.update(table);
 
 		return StatementBuilder.of((com.datastax.oss.driver.api.querybuilder.update.Update) updateStart)
 				.bind((statement, factory) -> {
 
+					com.datastax.oss.driver.api.querybuilder.update.Update statementToUse;
+					WriteOptions options = optionalOptions.orElse(null);
+					if (options != null) {
+						CqlStatementOptionsAccessor<UpdateStart> accessor = factory.ifBoundOrInline(
+								bindings -> CqlStatementOptionsAccessor.ofUpdate(bindings, (UpdateStart) statement),
+								() -> CqlStatementOptionsAccessor.ofUpdate((UpdateStart) statement));
+						statementToUse = addUpdateOptions(accessor, options);
+					} else {
+						statementToUse = statement;
+					}
+
 					List<Assignment> assignments = mappedUpdate.getUpdateOperations().stream()
 							.map(assignmentOp -> getAssignment(assignmentOp, factory)).collect(Collectors.toList());
 
-					return (com.datastax.oss.driver.api.querybuilder.update.Update) ((OngoingAssignment) statement)
+					return (com.datastax.oss.driver.api.querybuilder.update.Update) ((OngoingAssignment) statementToUse)
 							.set(assignments);
 
 				}).bind((statement, factory) -> {
@@ -851,7 +879,8 @@ public class StatementFactory {
 		return Assignment.append(updateOp.toCqlIdentifier(), termFactory.create(updateOp.getValue()));
 	}
 
-	private StatementBuilder<Delete> delete(List<CqlIdentifier> columnNames, CqlIdentifier from, Filter filter) {
+	private StatementBuilder<Delete> delete(List<CqlIdentifier> columnNames, CqlIdentifier from, Filter filter,
+			Optional<WriteOptions> optionsOptional) {
 
 		DeleteSelection select = QueryBuilder.deleteFrom(from);
 
@@ -860,7 +889,19 @@ public class StatementFactory {
 		}
 
 		return StatementBuilder.of(select.where()).bind((statement, factory) -> {
-			return statement.where(getRelations(filter, factory));
+
+			WriteOptions options = optionsOptional.orElse(null);
+			Delete statementToUse;
+			if (options != null) {
+				CqlStatementOptionsAccessor<DeleteSelection> accessor = factory.ifBoundOrInline(
+						bindings -> CqlStatementOptionsAccessor.ofDelete(bindings, (DeleteSelection) statement),
+						() -> CqlStatementOptionsAccessor.ofDelete((DeleteSelection) statement));
+				statementToUse = addDeleteOptions(accessor, options);
+			} else {
+				statementToUse = statement;
+			}
+
+			return statementToUse.where(getRelations(filter, factory));
 		});
 	}
 
@@ -870,21 +911,22 @@ public class StatementFactory {
 	 * @param insert {@link Insert} CQL statement, must not be {@literal null}.
 	 * @param writeOptions write options (e.g. consistency level) to add to the CQL statement.
 	 * @return the given {@link Insert}.
-	 * @see #addWriteOptions(Insert, WriteOptions)
 	 * @since 2.1
 	 */
-	static Insert addWriteOptions(Insert insert, WriteOptions writeOptions) {
+	static Insert addInsertOptions(CqlStatementOptionsAccessor<Insert> insert, WriteOptions writeOptions) {
 
 		Assert.notNull(insert, "Insert must not be null");
+
+		Insert insertToUse = QueryOptionsUtil.addWriteOptions(insert, writeOptions);
 
 		if (writeOptions instanceof InsertOptions insertOptions) {
 
 			if (insertOptions.isIfNotExists()) {
-				insert = insert.ifNotExists();
+				insertToUse = insertToUse.ifNotExists();
 			}
 		}
 
-		return QueryOptionsUtil.addWriteOptions(insert, writeOptions);
+		return insertToUse;
 	}
 
 	/**
@@ -898,13 +940,13 @@ public class StatementFactory {
 	 * @see QueryOptionsUtil#addWriteOptions(com.datastax.oss.driver.api.querybuilder.update.Update, WriteOptions)
 	 * @since 2.1
 	 */
-	static com.datastax.oss.driver.api.querybuilder.update.Update addWriteOptions(
-			com.datastax.oss.driver.api.querybuilder.update.Update update, WriteOptions writeOptions) {
+	static com.datastax.oss.driver.api.querybuilder.update.Update addUpdateOptions(
+			CqlStatementOptionsAccessor<UpdateStart> update, WriteOptions writeOptions) {
 
 		Assert.notNull(update, "Update must not be null");
 
-		com.datastax.oss.driver.api.querybuilder.update.Update updateToUse = QueryOptionsUtil.addWriteOptions(update,
-				writeOptions);
+		com.datastax.oss.driver.api.querybuilder.update.Update updateToUse = (com.datastax.oss.driver.api.querybuilder.update.Update) QueryOptionsUtil
+				.addWriteOptions(update, writeOptions);
 
 		if (writeOptions instanceof UpdateOptions updateOptions) {
 
@@ -924,11 +966,11 @@ public class StatementFactory {
 	 * @return the given {@link Delete}.
 	 * @since 2.1
 	 */
-	static Delete addWriteOptions(Delete delete, WriteOptions writeOptions) {
+	static Delete addDeleteOptions(CqlStatementOptionsAccessor<DeleteSelection> delete, WriteOptions writeOptions) {
 
 		Assert.notNull(delete, "Delete must not be null");
 
-		Delete deleteToUse = QueryOptionsUtil.addWriteOptions(delete, writeOptions);
+		Delete deleteToUse = (Delete) QueryOptionsUtil.addWriteOptions(delete, writeOptions);
 
 		if (writeOptions instanceof DeleteOptions deleteOptions) {
 
@@ -996,15 +1038,13 @@ public class StatementFactory {
 
 			case CONTAINS:
 
-				Assert.state(value != null,
-						() -> String.format("CONTAINS value for column %s is null", columnName));
+				Assert.state(value != null, () -> String.format("CONTAINS value for column %s is null", columnName));
 
 				return column.contains(factory.create(value));
 
 			case CONTAINS_KEY:
 
-				Assert.state(value != null,
-						() -> String.format("CONTAINS KEY value for column %s is null", columnName));
+				Assert.state(value != null, () -> String.format("CONTAINS KEY value for column %s is null", columnName));
 
 				return column.containsKey(factory.create(value));
 		}
@@ -1061,8 +1101,8 @@ public class StatementFactory {
 				return column.in(factory.create(value));
 		}
 
-		throw new IllegalArgumentException(String.format("Criteria %s %s %s not supported for IF Conditions", columnName,
-				predicate.getOperator(), value));
+		throw new IllegalArgumentException(
+				String.format("Criteria %s %s %s not supported for IF Conditions", columnName, predicate.getOperator(), value));
 	}
 
 	static List<Term> toLiterals(@Nullable Object arrayOrList) {

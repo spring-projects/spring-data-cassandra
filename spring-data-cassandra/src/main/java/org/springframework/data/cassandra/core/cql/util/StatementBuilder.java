@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 import org.springframework.lang.NonNull;
@@ -32,6 +33,7 @@ import org.springframework.util.Assert;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.SimpleStatementBuilder;
 import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
+import com.datastax.oss.driver.api.querybuilder.BindMarker;
 import com.datastax.oss.driver.api.querybuilder.BuildableQuery;
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
 import com.datastax.oss.driver.api.querybuilder.term.Term;
@@ -76,8 +78,8 @@ public class StatementBuilder<S extends BuildableQuery> {
 	private final List<UnaryOperator<SimpleStatement>> onBuilt = new ArrayList<>();
 
 	/**
-	 * Factory method used to create a new {@link StatementBuilder} with the given {@link BuildableQuery query stub}.
-	 * The stub is used as base for the built query so each query inherits properties of this stub.
+	 * Factory method used to create a new {@link StatementBuilder} with the given {@link BuildableQuery query stub}. The
+	 * stub is used as base for the built query so each query inherits properties of this stub.
 	 *
 	 * @param <S> query type.
 	 * @param stub the {@link BuildableQuery query stub} to use.
@@ -95,8 +97,8 @@ public class StatementBuilder<S extends BuildableQuery> {
 	/**
 	 * Constructs a new instance of this {@link StatementBuilder} with the given {@link BuildableQuery query stub}.
 	 *
-	 * @param statement the {@link BuildableQuery query stub} from which to build
-	 * the {@link com.datastax.oss.driver.api.core.cql.Statement}.
+	 * @param statement the {@link BuildableQuery query stub} from which to build the
+	 *          {@link com.datastax.oss.driver.api.core.cql.Statement}.
 	 * @see com.datastax.oss.driver.api.querybuilder.BuildableQuery
 	 */
 	private StatementBuilder(S statement) {
@@ -229,9 +231,17 @@ public class StatementBuilder<S extends BuildableQuery> {
 
 			List<Object> values = new ArrayList<>();
 
-			TermFactory termFactory = value -> {
-				values.add(value);
-				return QueryBuilder.bindMarker();
+			TermFactory termFactory = new TermFactory() {
+				@Override
+				public BindMarker create(@Nullable Object value) {
+					values.add(value);
+					return QueryBuilder.bindMarker();
+				}
+
+				@Override
+				public <T> T ifBoundOrInline(Function<Bindings, T> bindingFunction, Supplier<T> inlineFunction) {
+					return bindingFunction.apply(this::create);
+				}
 			};
 
 			for (BuilderRunnable<S> runnable : queryActions) {
@@ -249,10 +259,18 @@ public class StatementBuilder<S extends BuildableQuery> {
 
 			Map<String, Object> values = new LinkedHashMap<>();
 
-			TermFactory termFactory = value -> {
-				String name = "p" + values.size();
-				values.put(name, value);
-				return QueryBuilder.bindMarker(name);
+			TermFactory termFactory = new TermFactory() {
+				@Override
+				public BindMarker create(@Nullable Object value) {
+					String name = "p" + values.size();
+					values.put(name, value);
+					return QueryBuilder.bindMarker(name);
+				}
+
+				@Override
+				public <T> T ifBoundOrInline(Function<Bindings, T> bindingFunction, Supplier<T> inlineFunction) {
+					return bindingFunction.apply(this::create);
+				}
 			};
 
 			for (BuilderRunnable<S> runnable : queryActions) {
@@ -316,8 +334,8 @@ public class StatementBuilder<S extends BuildableQuery> {
 
 			Map<Term, Term> terms = new LinkedHashMap<>();
 
-			((Map<?, ?>) value).forEach((k, v) ->
-				terms.put(toLiteralTerms(k, codecRegistry), toLiteralTerms(v, codecRegistry)));
+			((Map<?, ?>) value)
+					.forEach((k, v) -> terms.put(toLiteralTerms(k, codecRegistry), toLiteralTerms(v, codecRegistry)));
 
 			return new MapTerm(terms);
 		}

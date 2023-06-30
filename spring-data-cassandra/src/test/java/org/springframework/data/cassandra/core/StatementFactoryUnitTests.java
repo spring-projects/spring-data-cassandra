@@ -246,6 +246,38 @@ class StatementFactoryUnitTests {
 				.isEqualTo("DELETE FROM group USING TIMESTAMP 1234 WHERE foo='bar'");
 	}
 
+	@Test // GH-1401
+	void deleteByQueryWithOptionsShouldRenderBindMarkers() {
+
+		DeleteOptions options = DeleteOptions.builder().timestamp(1234).build();
+		Query query = Query.query(Criteria.where("foo").is("bar")).queryOptions(options);
+
+		StatementBuilder<Delete> delete = statementFactory.delete(query,
+				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
+
+		SimpleStatement statement = delete.build(ParameterHandling.BY_INDEX);
+
+		assertThat(statement.getQuery()).isEqualTo("DELETE FROM group USING TIMESTAMP ? WHERE foo=?");
+		assertThat(statement.getPositionalValues()).containsExactly(1234L, "bar");
+	}
+
+	@Test // GH-1401
+	void deleteByEntityWithOptionsShouldRenderBindMarkers() {
+
+		Person person = new Person();
+		person.id = "foo";
+
+		DeleteOptions options = DeleteOptions.builder().timestamp(1234).build();
+
+		StatementBuilder<Delete> delete = statementFactory.delete(person, options, converter,
+				CqlIdentifier.fromCql("person"));
+
+		SimpleStatement statement = delete.build(ParameterHandling.BY_INDEX);
+
+		assertThat(statement.getQuery()).isEqualTo("DELETE FROM person USING TIMESTAMP ? WHERE id=?");
+		assertThat(statement.getPositionalValues()).containsExactly(1234L, "foo");
+	}
+
 	@Test // DATACASS-708
 	void deleteShouldApplyQueryOptions() {
 
@@ -292,6 +324,23 @@ class StatementFactoryUnitTests {
 		SimpleStatement statement = insert.build();
 		assertThat(statement.getExecutionProfileName()).isEqualTo("foo");
 		assertThat(statement.getSerialConsistencyLevel()).isEqualTo(DefaultConsistencyLevel.QUORUM);
+	}
+
+	@Test // GH-1401
+	void insertWithOptionsShouldRenderBindMarkers() {
+
+		Person person = new Person();
+		person.id = "foo";
+
+		WriteOptions queryOptions = WriteOptions.builder() //
+				.ttl(10).timestamp(1234).build();
+
+		StatementBuilder<RegularInsert> insert = statementFactory.insert(person, queryOptions);
+
+		SimpleStatement statement = insert.build(ParameterHandling.BY_INDEX);
+
+		assertThat(statement.getQuery()).isEqualTo("INSERT INTO person (id) VALUES (?) USING TIMESTAMP ? AND TTL ?");
+		assertThat(statement.getPositionalValues()).containsExactly("foo", 1234L, 10);
 	}
 
 	@Test // DATACASS-656
@@ -382,6 +431,22 @@ class StatementFactoryUnitTests {
 
 		assertThat(update.build(ParameterHandling.INLINE).getQuery())
 				.isEqualTo("UPDATE person USING TIMESTAMP 1234 SET first_name='baz' WHERE foo='bar'");
+	}
+
+	@Test // GH-1401
+	void updateWithOptionsShouldRenderBindMarker() {
+
+		WriteOptions options = WriteOptions.builder().ttl(Duration.ofMinutes(1)).timestamp(1234).build();
+		Query query = Query.query(Criteria.where("foo").is("bar")).queryOptions(options);
+
+		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory.update(query,
+				Update.empty().set("firstName", "baz"), personEntity);
+
+		SimpleStatement statement = update.build(ParameterHandling.BY_INDEX);
+		assertThat(statement.getQuery())
+				.isEqualTo("UPDATE person USING TIMESTAMP ? AND TTL ? SET first_name=? WHERE foo=?");
+
+		assertThat(statement.getPositionalValues()).containsExactly(1234L, 60, "baz", "bar");
 	}
 
 	@Test // DATACASS-343, DATACASS-712

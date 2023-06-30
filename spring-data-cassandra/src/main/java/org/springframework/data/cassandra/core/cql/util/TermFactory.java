@@ -15,6 +15,9 @@
  */
 package org.springframework.data.cassandra.core.cql.util;
 
+import java.util.function.Function;
+import java.util.function.Supplier;
+
 import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.querybuilder.term.Term;
@@ -49,4 +52,18 @@ public interface TermFactory {
 	default boolean canBindCollection() {
 		return true;
 	}
+
+	/**
+	 * Apply functions depending on whether the term factory uses bind markers or inline values.
+	 *
+	 * @param bindingFunction the binding functions to apply with {@link Bindings} for bind marker capturing.
+	 * @param inlineFunction the function to run otherwise, if the term factory uses inline values.
+	 * @return the outcome of the binding operation.
+	 * @param <T>
+	 * @since 4.2
+	 */
+	default <T> T ifBoundOrInline(Function<Bindings, T> bindingFunction, Supplier<T> inlineFunction) {
+		return inlineFunction.get();
+	}
+
 }
