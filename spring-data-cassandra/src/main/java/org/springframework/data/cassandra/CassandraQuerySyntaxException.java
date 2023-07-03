@@ -26,10 +26,21 @@ public class CassandraQuerySyntaxException extends InvalidDataAccessApiUsageExce
 
 	private static final long serialVersionUID = 4398474399882434154L;
 
+	/**
+	 * Constructor for {@link CassandraQuerySyntaxException}.
+	 *
+	 * @param msg the detail message.
+	 */
 	public CassandraQuerySyntaxException(String msg) {
 		super(msg);
 	}
 
+	/**
+	 * Constructor for {@link CassandraQuerySyntaxException}.
+	 *
+	 * @param msg the detail message.
+	 * @param cause the root cause from the underlying data access API.
+	 */
 	public CassandraQuerySyntaxException(String msg, Throwable cause) {
 		super(msg, cause);
 	}

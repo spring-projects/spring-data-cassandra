@@ -26,10 +26,21 @@ public class CassandraTruncateException extends TransientDataAccessException {
 
 	private static final long serialVersionUID = 5730642491362430311L;
 
+	/**
+	 * Constructor for {@link CassandraTruncateException}.
+	 *
+	 * @param msg the detail message.
+	 */
 	public CassandraTruncateException(String msg) {
 		super(msg);
 	}
 
+	/**
+	 * Constructor for {@link CassandraTruncateException}.
+	 *
+	 * @param msg the detail message.
+	 * @param cause the root cause from the underlying data access API.
+	 */
 	public CassandraTruncateException(String msg, Throwable cause) {
 		super(msg, cause);
 	}

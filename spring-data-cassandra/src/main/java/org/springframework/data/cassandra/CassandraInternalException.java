@@ -26,10 +26,21 @@ public class CassandraInternalException extends DataAccessException {
 
 	private static final long serialVersionUID = 433061676465346338L;
 
+	/**
+	 * Constructor for {@link CassandraInternalException}.
+	 *
+	 * @param msg the detail message.
+	 */
 	public CassandraInternalException(String msg) {
 		super(msg);
 	}
 
+	/**
+	 * Constructor for {@link CassandraInternalException}.
+	 *
+	 * @param msg the detail message.
+	 * @param cause the root cause from the underlying data access API.
+	 */
 	public CassandraInternalException(String msg, Throwable cause) {
 		super(msg, cause);
 	}

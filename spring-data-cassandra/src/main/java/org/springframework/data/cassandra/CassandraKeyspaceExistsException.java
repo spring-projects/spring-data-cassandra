@@ -24,6 +24,13 @@ public class CassandraKeyspaceExistsException extends CassandraSchemaElementExis
 
 	private static final long serialVersionUID = 6032967419751410352L;
 
+	/**
+	 * Constructor for {@link CassandraKeyspaceExistsException}.
+	 *
+	 * @param keyspaceName the keyspace name.
+	 * @param msg the detail message.
+	 * @param cause the root cause from the underlying data access API.
+	 */
 	public CassandraKeyspaceExistsException(String keyspaceName, String msg, Throwable cause) {
 		super(keyspaceName, ElementType.KEYSPACE, msg, cause);
 	}

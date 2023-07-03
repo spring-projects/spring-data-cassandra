@@ -36,6 +36,14 @@ public class CassandraSchemaElementExistsException extends NonTransientDataAcces
 	private String elementName;
 	private ElementType elementType;
 
+	/**
+	 * Constructor for {@link CassandraSchemaElementExistsException}.
+	 *
+	 * @param elementName the CQL element name.
+	 * @param elementType the CQL element type.
+	 * @param msg the detail message.
+	 * @param cause the root cause from the underlying data access API.
+	 */
 	@Deprecated
 	public CassandraSchemaElementExistsException(String elementName, ElementType elementType, String msg,
 			Throwable cause) {
@@ -44,6 +52,12 @@ public class CassandraSchemaElementExistsException extends NonTransientDataAcces
 		this.elementType = elementType;
 	}
 
+	/**
+	 * Constructor for {@link CassandraSchemaElementExistsException}.
+	 *
+	 * @param msg the detail message.
+	 * @param cause the root cause from the underlying data access API.
+	 */
 	public CassandraSchemaElementExistsException(String msg, Throwable cause) {
 		super(msg, cause);
 	}

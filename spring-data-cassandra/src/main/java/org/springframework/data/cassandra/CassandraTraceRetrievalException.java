@@ -26,10 +26,21 @@ public class CassandraTraceRetrievalException extends TransientDataAccessExcepti
 
 	private static final long serialVersionUID = -3163557220324700239L;
 
+	/**
+	 * Constructor for {@link CassandraTraceRetrievalException}.
+	 *
+	 * @param msg the detail message.
+	 */
 	public CassandraTraceRetrievalException(String msg) {
 		super(msg);
 	}
 
+	/**
+	 * Constructor for {@link CassandraTraceRetrievalException}.
+	 *
+	 * @param msg the detail message.
+	 * @param cause the root cause from the underlying data access API.
+	 */
 	public CassandraTraceRetrievalException(String msg, Throwable cause) {
 		super(msg, cause);
 	}

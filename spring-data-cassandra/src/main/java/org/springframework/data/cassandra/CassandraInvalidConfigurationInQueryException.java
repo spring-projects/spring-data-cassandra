@@ -27,10 +27,21 @@ public class CassandraInvalidConfigurationInQueryException extends InvalidDataAc
 
 	private static final long serialVersionUID = 4594321191806182918L;
 
+	/**
+	 * Constructor for {@link CassandraInvalidConfigurationInQueryException}.
+	 *
+	 * @param msg the detail message.
+	 */
 	public CassandraInvalidConfigurationInQueryException(String msg) {
 		super(msg);
 	}
 
+	/**
+	 * Constructor for {@link CassandraInvalidConfigurationInQueryException}.
+	 *
+	 * @param msg the detail message.
+	 * @param cause the root cause from the underlying data access API.
+	 */
 	public CassandraInvalidConfigurationInQueryException(String msg, Throwable cause) {
 		super(msg, cause);
 	}

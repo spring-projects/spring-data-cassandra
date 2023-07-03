@@ -26,10 +26,21 @@ public class CassandraInvalidQueryException extends InvalidDataAccessApiUsageExc
 
 	private static final long serialVersionUID = 4594321191806182918L;
 
+	/**
+	 * Constructor for {@link CassandraInvalidQueryException}.
+	 *
+	 * @param msg the detail message.
+	 */
 	public CassandraInvalidQueryException(String msg) {
 		super(msg);
 	}
 
+	/**
+	 * Constructor for {@link CassandraInvalidQueryException}.
+	 *
+	 * @param msg the detail message.
+	 * @param cause the root cause from the underlying data access API.
+	 */
 	public CassandraInvalidQueryException(String msg, Throwable cause) {
 		super(msg, cause);
 	}

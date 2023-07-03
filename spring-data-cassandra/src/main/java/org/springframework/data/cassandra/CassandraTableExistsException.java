@@ -24,6 +24,13 @@ public class CassandraTableExistsException extends CassandraSchemaElementExistsE
 
 	private static final long serialVersionUID = 6032967419751410352L;
 
+	/**
+	 * Constructor for {@link CassandraTableExistsException}.
+	 *
+	 * @param tableName the table name.
+	 * @param msg the detail message.
+	 * @param cause the root cause from the underlying data access API.
+	 */
 	public CassandraTableExistsException(String tableName, String msg, Throwable cause) {
 		super(tableName, ElementType.TABLE, msg, cause);
 	}

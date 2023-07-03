@@ -29,10 +29,22 @@ public class CassandraInsufficientReplicasAvailableException extends TransientDa
 	private int numberRequired;
 	private int numberAlive;
 
+	/**
+	 * Constructor for {@link CassandraInsufficientReplicasAvailableException}.
+	 *
+	 * @param msg the detail message.
+	 */
 	public CassandraInsufficientReplicasAvailableException(String msg) {
 		super(msg);
 	}
 
+	/**
+	 * Constructor for {@link CassandraInsufficientReplicasAvailableException}.
+	 *
+	 * @param numberRequired the required number of replicas.
+	 * @param msg the detail message.
+	 * @param cause the root cause from the underlying data access API.
+	 */
 	public CassandraInsufficientReplicasAvailableException(int numberRequired, int numberAlive, String msg,
 			Throwable cause) {
 		super(msg, cause);

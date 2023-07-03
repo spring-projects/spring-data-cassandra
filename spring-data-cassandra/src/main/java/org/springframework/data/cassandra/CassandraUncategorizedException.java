@@ -27,6 +27,12 @@ public class CassandraUncategorizedException extends UncategorizedDataAccessExce
 
 	private static final long serialVersionUID = 1029525121238025444L;
 
+	/**
+	 * Constructor for {@link CassandraUncategorizedException}.
+	 *
+	 * @param msg the detail message.
+	 * @param cause the root cause from the underlying data access API.
+	 */
 	public CassandraUncategorizedException(String msg, Throwable cause) {
 		super(msg, cause);
 	}

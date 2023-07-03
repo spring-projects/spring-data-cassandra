@@ -26,6 +26,12 @@ public class CassandraUnauthorizedException extends PermissionDeniedDataAccessEx
 
 	private static final long serialVersionUID = 4618185356687726647L;
 
+	/**
+	 * Constructor for {@link CassandraUnauthorizedException}.
+	 *
+	 * @param msg the detail message.
+	 * @param cause the root cause from the underlying data access API.
+	 */
 	public CassandraUnauthorizedException(String msg, Throwable cause) {
 		super(msg, cause);
 	}

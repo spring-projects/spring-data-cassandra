@@ -30,11 +30,11 @@ public class CassandraReadTimeoutException extends QueryTimeoutException {
 	private final boolean wasDataPresent;
 
 	/**
-	 * Constructor for QueryTimeoutException.
+	 * Constructor for {@link CassandraReadTimeoutException}.
 	 *
 	 * @param wasDataPresent whether the actual data was amongst the received replica responses.
 	 * @param msg the detail message.
-	 * @param cause the root cause from the data access API in use.
+	 * @param cause the root cause from the underlying data access API.
 	 */
 	public CassandraReadTimeoutException(boolean wasDataPresent, String msg, Throwable cause) {
 		super(msg, cause);

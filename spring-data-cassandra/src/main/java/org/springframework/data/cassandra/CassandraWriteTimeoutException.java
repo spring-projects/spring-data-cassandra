@@ -30,6 +30,14 @@ public class CassandraWriteTimeoutException extends QueryTimeoutException {
 
 	private @Nullable String writeType;
 
+	/**
+	 * Constructor for {@link CassandraWriteTimeoutException}.
+	 *
+	 * @param writeType the write type.
+	 * @param msg the detail message.
+	 * @param cause the root cause from the underlying data access API.
+	 * @see com.datastax.oss.driver.api.core.servererrors.WriteType
+	 */
 	public CassandraWriteTimeoutException(@Nullable String writeType, String msg, Throwable cause) {
 		super(msg, cause);
 		this.writeType = writeType;

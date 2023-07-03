@@ -23,22 +23,9 @@ import java.util.Set;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataAccessResourceFailureException;
-import org.springframework.dao.QueryTimeoutException;
 import org.springframework.dao.TransientDataAccessResourceException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
-import org.springframework.data.cassandra.CassandraAuthenticationException;
-import org.springframework.data.cassandra.CassandraConnectionFailureException;
-import org.springframework.data.cassandra.CassandraDriverTimeOutException;
-import org.springframework.data.cassandra.CassandraInsufficientReplicasAvailableException;
-import org.springframework.data.cassandra.CassandraInvalidConfigurationInQueryException;
-import org.springframework.data.cassandra.CassandraInvalidQueryException;
-import org.springframework.data.cassandra.CassandraQuerySyntaxException;
-import org.springframework.data.cassandra.CassandraReadTimeoutException;
-import org.springframework.data.cassandra.CassandraSchemaElementExistsException;
-import org.springframework.data.cassandra.CassandraTruncateException;
-import org.springframework.data.cassandra.CassandraUnauthorizedException;
-import org.springframework.data.cassandra.CassandraUncategorizedException;
-import org.springframework.data.cassandra.CassandraWriteTimeoutException;
+import org.springframework.data.cassandra.*;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
@@ -48,19 +35,7 @@ import com.datastax.oss.driver.api.core.DriverException;
 import com.datastax.oss.driver.api.core.DriverTimeoutException;
 import com.datastax.oss.driver.api.core.auth.AuthenticationException;
 import com.datastax.oss.driver.api.core.metadata.Node;
-import com.datastax.oss.driver.api.core.servererrors.AlreadyExistsException;
-import com.datastax.oss.driver.api.core.servererrors.BootstrappingException;
-import com.datastax.oss.driver.api.core.servererrors.CoordinatorException;
-import com.datastax.oss.driver.api.core.servererrors.InvalidConfigurationInQueryException;
-import com.datastax.oss.driver.api.core.servererrors.InvalidQueryException;
-import com.datastax.oss.driver.api.core.servererrors.OverloadedException;
-import com.datastax.oss.driver.api.core.servererrors.ReadTimeoutException;
-import com.datastax.oss.driver.api.core.servererrors.SyntaxError;
-import com.datastax.oss.driver.api.core.servererrors.TruncateException;
-import com.datastax.oss.driver.api.core.servererrors.UnauthorizedException;
-import com.datastax.oss.driver.api.core.servererrors.UnavailableException;
-import com.datastax.oss.driver.api.core.servererrors.WriteTimeoutException;
-import com.datastax.oss.driver.api.core.servererrors.WriteType;
+import com.datastax.oss.driver.api.core.servererrors.*;
 
 /**
  * Simple {@link PersistenceExceptionTranslator} for Cassandra.
@@ -110,7 +85,7 @@ public class CassandraExceptionTranslator implements CqlExceptionTranslator {
 		}
 
 		if (exception instanceof DriverTimeoutException driverTimeoutException) {
-			return new CassandraDriverTimeOutException(driverTimeoutException.getMessage(), driverTimeoutException);
+			return new CassandraDriverTimeoutException(driverTimeoutException.getMessage(), driverTimeoutException);
 		}
 
 		if (exception instanceof ReadTimeoutException) {

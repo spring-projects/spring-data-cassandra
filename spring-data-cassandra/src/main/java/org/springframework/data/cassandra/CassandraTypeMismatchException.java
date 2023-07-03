@@ -26,10 +26,21 @@ public class CassandraTypeMismatchException extends TypeMismatchDataAccessExcept
 
 	private static final long serialVersionUID = -7420058975444905629L;
 
+	/**
+	 * Constructor for {@link CassandraTypeMismatchException}.
+	 *
+	 * @param msg the detail message.
+	 */
 	public CassandraTypeMismatchException(String msg) {
 		super(msg);
 	}
 
+	/**
+	 * Constructor for {@link CassandraTypeMismatchException}.
+	 *
+	 * @param msg the detail message.
+	 * @param cause the root cause from the underlying data access API.
+	 */
 	public CassandraTypeMismatchException(String msg, Throwable cause) {
 		super(msg, cause);
 	}
