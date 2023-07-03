@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra;
 
+import java.io.Serial;
+
 import org.springframework.dao.PermissionDeniedDataAccessException;
 
 import com.datastax.oss.driver.api.core.metadata.EndPoint;
@@ -26,7 +28,7 @@ import com.datastax.oss.driver.api.core.metadata.EndPoint;
  */
 public class CassandraAuthenticationException extends PermissionDeniedDataAccessException {
 
-	private static final long serialVersionUID = 8556304586797273927L;
+	@Serial private static final long serialVersionUID = 8556304586797273927L;
 
 	private final EndPoint host;
 

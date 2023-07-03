@@ -15,11 +15,13 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
+import java.io.Serial;
+
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 
 public class UnsupportedCassandraOperationException extends InvalidDataAccessApiUsageException {
 
-	private static final long serialVersionUID = 4921001859094231277L;
+	@Serial private static final long serialVersionUID = 4921001859094231277L;
 
 	public UnsupportedCassandraOperationException(String msg) {
 		super(msg);

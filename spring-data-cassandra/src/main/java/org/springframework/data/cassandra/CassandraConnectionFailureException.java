@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra;
 
+import java.io.Serial;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +31,7 @@ import com.datastax.oss.driver.api.core.metadata.Node;
  */
 public class CassandraConnectionFailureException extends DataAccessResourceFailureException {
 
-	private static final long serialVersionUID = 6299912054261646552L;
+	@Serial private static final long serialVersionUID = 6299912054261646552L;
 
 	private final Map<Node, Throwable> messagesByHost;
 

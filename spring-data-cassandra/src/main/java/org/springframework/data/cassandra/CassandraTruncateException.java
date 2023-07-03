@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra;
 
+import java.io.Serial;
+
 import org.springframework.dao.TransientDataAccessException;
 
 /**
@@ -24,7 +26,7 @@ import org.springframework.dao.TransientDataAccessException;
  */
 public class CassandraTruncateException extends TransientDataAccessException {
 
-	private static final long serialVersionUID = 5730642491362430311L;
+	@Serial private static final long serialVersionUID = 5730642491362430311L;
 
 	/**
 	 * Constructor for {@link CassandraTruncateException}.

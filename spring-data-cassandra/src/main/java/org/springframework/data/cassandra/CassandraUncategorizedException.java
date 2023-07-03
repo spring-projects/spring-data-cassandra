@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra;
 
+import java.io.Serial;
+
 import org.springframework.dao.UncategorizedDataAccessException;
 
 /**
@@ -25,7 +27,7 @@ import org.springframework.dao.UncategorizedDataAccessException;
  */
 public class CassandraUncategorizedException extends UncategorizedDataAccessException {
 
-	private static final long serialVersionUID = 1029525121238025444L;
+	@Serial private static final long serialVersionUID = 1029525121238025444L;
 
 	/**
 	 * Constructor for {@link CassandraUncategorizedException}.

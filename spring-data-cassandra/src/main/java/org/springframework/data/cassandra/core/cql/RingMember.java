@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -31,7 +32,7 @@ import com.datastax.oss.driver.api.core.metadata.Node;
  */
 public final class RingMember implements Serializable {
 
-	private static final long serialVersionUID = -2582309141903132916L;
+	@Serial private static final long serialVersionUID = -2582309141903132916L;
 
 	/*
 	 * Ring attributes

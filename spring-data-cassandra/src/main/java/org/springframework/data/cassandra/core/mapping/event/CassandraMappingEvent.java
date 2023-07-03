@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.core.mapping.event;
 
+import java.io.Serial;
+
 import org.springframework.context.ApplicationEvent;
 import org.springframework.util.Assert;
 
@@ -29,7 +31,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  */
 public class CassandraMappingEvent<T> extends ApplicationEvent {
 
-	private static final long serialVersionUID = 1L;
+	@Serial private static final long serialVersionUID = 1L;
 
 	private final CqlIdentifier tableName;
 

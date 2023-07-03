@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra;
 
+import java.io.Serial;
+
 import org.springframework.dao.TransientDataAccessException;
 
 /**
@@ -24,7 +26,7 @@ import org.springframework.dao.TransientDataAccessException;
  */
 public class CassandraInsufficientReplicasAvailableException extends TransientDataAccessException {
 
-	private static final long serialVersionUID = 6415130674604814905L;
+	@Serial private static final long serialVersionUID = 6415130674604814905L;
 
 	private int numberRequired;
 	private int numberAlive;

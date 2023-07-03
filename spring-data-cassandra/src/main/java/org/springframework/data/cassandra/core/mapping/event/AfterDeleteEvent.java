@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.core.mapping.event;
 
+import java.io.Serial;
+
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.cql.Statement;
 
@@ -27,7 +29,7 @@ import com.datastax.oss.driver.api.core.cql.Statement;
  */
 public class AfterDeleteEvent<T> extends AbstractDeleteEvent<T> {
 
-	private static final long serialVersionUID = 1L;
+	@Serial private static final long serialVersionUID = 1L;
 
 	/**
 	 * Create a new {@link AfterDeleteEvent}.

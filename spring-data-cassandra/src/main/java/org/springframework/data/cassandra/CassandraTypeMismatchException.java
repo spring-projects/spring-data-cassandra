@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra;
 
+import java.io.Serial;
+
 import org.springframework.dao.TypeMismatchDataAccessException;
 
 /**
@@ -24,7 +26,7 @@ import org.springframework.dao.TypeMismatchDataAccessException;
  */
 public class CassandraTypeMismatchException extends TypeMismatchDataAccessException {
 
-	private static final long serialVersionUID = -7420058975444905629L;
+	@Serial private static final long serialVersionUID = -7420058975444905629L;
 
 	/**
 	 * Constructor for {@link CassandraTypeMismatchException}.

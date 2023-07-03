@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra;
 
+import java.io.Serial;
+
 import org.springframework.dao.DataAccessException;
 
 /**
@@ -24,7 +26,7 @@ import org.springframework.dao.DataAccessException;
  */
 public class CassandraInternalException extends DataAccessException {
 
-	private static final long serialVersionUID = 433061676465346338L;
+	@Serial private static final long serialVersionUID = 433061676465346338L;
 
 	/**
 	 * Constructor for {@link CassandraInternalException}.

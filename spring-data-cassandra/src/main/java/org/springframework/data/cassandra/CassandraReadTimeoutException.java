@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra;
 
+import java.io.Serial;
+
 import org.springframework.dao.QueryTimeoutException;
 
 /**
@@ -25,7 +27,7 @@ import org.springframework.dao.QueryTimeoutException;
  */
 public class CassandraReadTimeoutException extends QueryTimeoutException {
 
-	private static final long serialVersionUID = -787022307935203387L;
+	@Serial private static final long serialVersionUID = -787022307935203387L;
 
 	private final boolean wasDataPresent;
 

@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra;
 
+import java.io.Serial;
+
 /**
  * Spring data access exception for Cassandra when a keyspace being created already exists.
  *
@@ -22,7 +24,7 @@ package org.springframework.data.cassandra;
  */
 public class CassandraKeyspaceExistsException extends CassandraSchemaElementExistsException {
 
-	private static final long serialVersionUID = 6032967419751410352L;
+	@Serial private static final long serialVersionUID = 6032967419751410352L;
 
 	/**
 	 * Constructor for {@link CassandraKeyspaceExistsException}.

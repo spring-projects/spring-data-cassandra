@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra;
 
+import java.io.Serial;
+
 import org.springframework.dao.NonTransientDataAccessException;
 import org.springframework.lang.Nullable;
 
@@ -26,7 +28,7 @@ import org.springframework.lang.Nullable;
  */
 public class CassandraSchemaElementExistsException extends NonTransientDataAccessException {
 
-	private static final long serialVersionUID = 7798361273692300162L;
+	@Serial private static final long serialVersionUID = 7798361273692300162L;
 
 	@Deprecated
 	public enum ElementType {
