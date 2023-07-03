@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.core;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
@@ -43,32 +44,46 @@ public interface CassandraAdminOperations extends CassandraOperations {
 	SchemaFactory getSchemaFactory();
 
 	/**
+	 * Create a table with the name, that is derived from the given {@code entityClass} and also fields corresponding to
+	 * the same class. If the table already exists and parameter {@code ifNotExists} is {@literal true}, this is a no-op
+	 * and {@literal false} is returned. If the table doesn't exist, parameter {@code ifNotExists} is ignored, the table
+	 * is created and {@literal true} is returned.
+	 *
+	 * @param ifNotExists if {@code true}, create the table only if it doesn't exist.
+	 * @param entityClass the class whose fields determine the columns created.
+	 * @since 4.2
+	 */
+	default void createTable(boolean ifNotExists, Class<?> entityClass) {
+		createTable(ifNotExists, entityClass, Collections.emptyMap());
+	}
+
+	/**
+	 * Create a table with the name, that is derived from the given {@code entityClass} and also fields corresponding to
+	 * the same class. If the table already exists and parameter {@code ifNotExists} is {@literal true}, this is a no-op
+	 * and {@literal false} is returned. If the table doesn't exist, parameter {@code ifNotExists} is ignored, the table
+	 * is created and {@literal true} is returned.
+	 *
+	 * @param ifNotExists if {@code true}, create the table only if it doesn't exist.
+	 * @param entityClass the class whose fields determine the columns created.
+	 * @param optionsByName table options, given by the string option name and the appropriate option value.
+	 * @since 4.2
+	 */
+	default void createTable(boolean ifNotExists, Class<?> entityClass, Map<String, Object> optionsByName) {
+		createTable(ifNotExists, getTableName(entityClass), entityClass, optionsByName);
+	}
+
+	/**
 	 * Create a table with the name given and fields corresponding to the given class. If the table already exists and
 	 * parameter {@code ifNotExists} is {@literal true}, this is a no-op and {@literal false} is returned. If the table
 	 * doesn't exist, parameter {@code ifNotExists} is ignored, the table is created and {@literal true} is returned.
 	 *
-	 * @param ifNotExists If true, will only create the table if it doesn't exist, else the create operation will be
-	 *          ignored.
-	 * @param tableName The name of the table.
-	 * @param entityClass The class whose fields determine the columns created.
-	 * @param optionsByName Table options, given by the string option name and the appropriate option value.
+	 * @param ifNotExists if {@code true}, create the table only if it doesn't exist.
+	 * @param tableName the name of the table.
+	 * @param entityClass the class whose fields determine the columns created.
+	 * @param optionsByName table options, given by the string option name and the appropriate option value.
 	 */
 	void createTable(boolean ifNotExists, CqlIdentifier tableName, Class<?> entityClass,
 			Map<String, Object> optionsByName);
-
-	/**
-	 * Create a table with the name, that is derived from the given {@code entityClass} and also fields corresponding to the
-	 * same class. If the table already exists and parameter {@code ifNotExists} is {@literal true}, this is a no-op and
-	 * {@literal false} is returned. If the table doesn't exist, parameter {@code ifNotExists} is ignored, the table is created
-	 * and {@literal true} is returned.
-	 *
-	 * @param ifNotExists If true, will only create the table if it doesn't exist, else the create operation will be
-	 *          ignored.
-	 * @param entityClass The class whose fields determine the columns created.
-	 * @param optionsByName Table options, given by the string option name and the appropriate option value.
-	 */
-	void createTable(boolean ifNotExists, Class<?> entityClass, Map<String, Object> optionsByName);
-
 
 	/**
 	 * Drops a table based on the given {@link Class entity type}. The name of the table is derived from either the simple
@@ -89,7 +104,7 @@ public interface CassandraAdminOperations extends CassandraOperations {
 	/**
 	 * Drops the {@link String named} table.
 	 *
-	 * @param ifExists If {@literal true}, will only drop the table if it exists, else the drop operation will be ignored.
+	 * @param ifExists if {@code true}, drop the table only if it exists.
 	 * @param tableName {@link String Name} of the table to drop.
 	 * @since 2.1
 	 */

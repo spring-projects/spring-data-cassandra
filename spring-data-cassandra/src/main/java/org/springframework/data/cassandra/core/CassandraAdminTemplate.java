@@ -61,8 +61,8 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 	 * @since 2.2
 	 */
 	public CassandraAdminTemplate(CqlSession session) {
-		super(session);
 
+		super(session);
 		this.schemaFactory = new SchemaFactory(getConverter());
 	}
 
@@ -73,6 +73,7 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 	 * @param converter must not be {@literal null}.
 	 */
 	public CassandraAdminTemplate(CqlSession session, CassandraConverter converter) {
+
 		super(session, converter);
 		this.schemaFactory = new SchemaFactory(getConverter());
 	}
@@ -84,8 +85,8 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 	 * @param converter must not be {@literal null}.
 	 */
 	public CassandraAdminTemplate(SessionFactory sessionFactory, CassandraConverter converter) {
-		super(sessionFactory, converter);
 
+		super(sessionFactory, converter);
 		this.schemaFactory = new SchemaFactory(getConverter());
 	}
 
@@ -113,8 +114,7 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 		CassandraPersistentEntity<?> entity = getConverter().getMappingContext().getRequiredPersistentEntity(entityClass);
 
 		CreateTableSpecification createTableSpecification = this.schemaFactory
-		.getCreateTableSpecificationFor(entity, tableName)
-		.ifNotExists(ifNotExists);
+				.getCreateTableSpecificationFor(entity, tableName).ifNotExists(ifNotExists);
 
 		if (!CollectionUtils.isEmpty(optionsByName)) {
 			optionsByName.forEach((key, value) -> {
@@ -128,12 +128,6 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 		}
 
 		getCqlOperations().execute(CreateTableCqlGenerator.toCql(createTableSpecification));
-	}
-
-	@Override
-	public void createTable(boolean ifNotExists, Class<?> entityClass, Map<String, Object> optionsByName) {
-		CassandraPersistentEntity<?> entity = getConverter().getMappingContext().getRequiredPersistentEntity(entityClass);
-		this.createTable(ifNotExists, entity.getTableName(), entityClass, optionsByName);
 	}
 
 	@Override
