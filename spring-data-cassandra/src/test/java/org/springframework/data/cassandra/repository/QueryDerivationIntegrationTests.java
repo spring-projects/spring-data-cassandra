@@ -43,6 +43,7 @@ import org.springframework.data.cassandra.core.mapping.Embedded;
 import org.springframework.data.cassandra.core.mapping.Indexed;
 import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.core.query.CassandraPageRequest;
+import org.springframework.data.cassandra.core.query.CassandraScrollPosition;
 import org.springframework.data.cassandra.domain.AddressType;
 import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.cassandra.repository.QueryDerivationIntegrationTests.PersonRepository.NumberOfChildren;
@@ -54,8 +55,12 @@ import org.springframework.data.cassandra.repository.support.IntegrationTestConf
 import org.springframework.data.cassandra.support.CassandraVersion;
 import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Window;
+import org.springframework.data.support.WindowIterator;
+import org.springframework.data.util.Streamable;
 import org.springframework.data.util.Version;
 import org.springframework.lang.Nullable;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
@@ -341,6 +346,49 @@ class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedCassandr
 		assertThat(result).contains(walter, skyler, flynn);
 	}
 
+	@Test // GH-1408
+	public void shouldSelectWindow() {
+
+		List<Person> result = new ArrayList<>();
+
+		Window<Person> firstWindow = personRepository.findAllWindowByLastname("White", CassandraScrollPosition.initial(),
+				Limit.of(2));
+		Window<Person> nextWindow = personRepository.findAllWindowByLastname("White",
+				firstWindow.positionAt(firstWindow.size() - 1), Limit.of(10));
+
+		result.addAll(firstWindow.getContent());
+		result.addAll(nextWindow.getContent());
+
+		assertThat(firstWindow).hasSize(2);
+
+		assertThat(nextWindow).hasSize(1);
+		assertThat(result).contains(walter, skyler, flynn);
+
+		WindowIterator<Person> iterator = WindowIterator
+				.of(scrollPosition -> personRepository.findAllWindowByLastname("White", scrollPosition, Limit.of(2)))
+				.startingAt(CassandraScrollPosition.initial());
+
+		List<Person> people = Streamable.of(() -> iterator).toList();
+		assertThat(people).containsOnly(walter, skyler, flynn);
+	}
+
+	@Test // GH-1408
+	public void shouldSelectWindowWithTopKeyword() {
+
+		List<Person> result = new ArrayList<>();
+
+		Window<Person> firstWindow = personRepository.findTop2ByLastname("White", CassandraScrollPosition.initial());
+		Window<Person> nextWindow = personRepository.findTop2ByLastname("White",
+				firstWindow.positionAt(firstWindow.size() - 1));
+
+		result.addAll(firstWindow.getContent());
+		result.addAll(nextWindow.getContent());
+
+		assertThat(firstWindow).hasSize(2);
+		assertThat(nextWindow).hasSize(1);
+		assertThat(result).contains(walter, skyler, flynn);
+	}
+
 	@Test // GH-1407
 	public void shouldSelectWithLimit() {
 
@@ -435,6 +483,10 @@ class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedCassandr
 		boolean existsByLastname(String lastname);
 
 		Slice<Person> findAllSlicedByLastname(String lastname, Pageable pageable);
+
+		Window<Person> findAllWindowByLastname(String lastname, ScrollPosition scrollPosition, Limit limit);
+
+		Window<Person> findTop2ByLastname(String lastname, ScrollPosition scrollPosition);
 
 		List<Person> findAllLimitedByLastname(String lastname, Limit limit);
 

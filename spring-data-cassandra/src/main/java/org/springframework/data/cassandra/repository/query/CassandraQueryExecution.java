@@ -23,7 +23,9 @@ import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.query.CassandraPageRequest;
+import org.springframework.data.cassandra.core.query.CassandraScrollPosition;
 import org.springframework.data.convert.DtoInstantiatingConverter;
+import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
@@ -105,6 +107,37 @@ interface CassandraQueryExecution {
 
 			CassandraPageRequest cassandraPageRequest = (CassandraPageRequest) slice.getPageable();
 			return new SliceImpl<>(slice.getContent(), cassandraPageRequest.withSort(pageable.getSort()), slice.hasNext());
+		}
+	}
+
+	/**
+	 * {@link CassandraQueryExecution} for a {@link org.springframework.data.domain.Window}.
+	 *
+	 * @author Mark Paluch
+	 * @since 4.2
+	 */
+	final class WindowExecution implements CassandraQueryExecution {
+
+		private final CassandraOperations operations;
+		private final CassandraScrollPosition scrollPosition;
+		private final Limit limit;
+
+		public WindowExecution(CassandraOperations operations, CassandraScrollPosition scrollPosition, Limit limit) {
+			this.operations = operations;
+			this.scrollPosition = scrollPosition;
+			this.limit = limit;
+		}
+
+		@Override
+		public Object execute(Statement<?> statement, Class<?> type) {
+
+			Statement<?> statementToUse = limit.isLimited() ? statement.setPageSize(limit.max()) : statement;
+
+			if (!this.scrollPosition.isInitial()) {
+				statementToUse = statementToUse.setPagingState(this.scrollPosition.getPagingState());
+			}
+
+			return WindowUtil.of(operations.slice(statementToUse, type));
 		}
 	}
 
@@ -197,7 +230,7 @@ interface CassandraQueryExecution {
 	}
 
 	/**
-	 * {@link CassandraQueryExecution} to return a {@link ResultSet}.
+	 * {@link CassandraQueryExecution} to return a {@link com.datastax.oss.driver.api.core.cql.ResultSet}.
 	 *
 	 * @author Mark Paluch
 	 */

@@ -151,7 +151,7 @@ public class PersonRepositoryTests {
 
       assertThat(firstBatch).hasSize(10);
 
-      Page<Person> nextBatch = repository.findAll(firstBatch.nextPageable());
+      Slice<Person> nextBatch = repository.findAll(firstBatch.nextPageable());
 
       // …
     }
@@ -182,20 +182,22 @@ public interface PersonRepository extends CrudRepository<Person, String> {
 
     Slice<Person> findByFirstname(String firstname, Pageable pageRequest);  <2>
 
-    List<Person> findByFirstname(String firstname, QueryOptions opts);      <3>
+    Window<Person> findByFirstname(String firstname, CassandraScrollPosition pos, Limit limit);  <3>
 
-    List<Person> findByFirstname(String firstname, Sort sort);              <4>
+    List<Person> findByFirstname(String firstname, QueryOptions opts);      <4>
 
-    List<Person> findByFirstname(String firstname, Limit limit);            <5>
+    List<Person> findByFirstname(String firstname, Sort sort);              <5>
 
-    Person findByShippingAddress(Address address);                          <6>
+    List<Person> findByFirstname(String firstname, Limit limit);            <6>
 
-    Person findFirstByShippingAddress(Address address);                     <7>
+    Person findByShippingAddress(Address address);                          <7>
 
-    Stream<Person> findAllBy();                                             <8>
+    Person findFirstByShippingAddress(Address address);                     <8>
+
+    Stream<Person> findAllBy();                                             <9>
 
     @AllowFiltering
-    List<Person> findAllByAge(int age);                                     <9>
+    List<Person> findAllByAge(int age);                                     <10>
 }
 ----
 
@@ -204,17 +206,20 @@ The query is derived from parsing the method name for constraints, which can be 
 Thus, the method name results in a query expression of `SELECT * FROM person WHERE lastname = 'lastname'`.
 <2> Applies pagination to a query.
 You can equip your method signature with a `Pageable` parameter and let the method return a `Slice` instance, and we automatically page the query accordingly.
-<3> Passing a `QueryOptions` object applies the query options to the resulting query before its execution.
-<4> Applies dynamic sorting to a query.
+<3> Applies scrolling to a query.
+Scrolling wraps Cassandra's `PagingState` into `CassandraScrollPosition` and allows dynamic limiting.
+You can also use `findTop…` for a static limit.
+<4> Passing a `QueryOptions` object applies the query options to the resulting query before its execution.
+<5> Applies dynamic sorting to a query.
 You can add a `Sort` parameter to your method signature, and Spring Data automatically applies ordering to the query.
-<5> Applies dynamic result limiting to a query.
+<6> Applies dynamic result limiting to a query.
 Query results can be limited using `SELECT … LIMIT`.
-<6> Shows that you can query based on properties that are not a primitive type by using `Converter` instances registered in `CustomConversions`.
+<7> Shows that you can query based on properties that are not a primitive type by using `Converter` instances registered in `CustomConversions`.
 Throws `IncorrectResultSizeDataAccessException` if more than one match is found.
-<7> Uses the `First` keyword to restrict the query to only the first result.
+<8> Uses the `First` keyword to restrict the query to only the first result.
 Unlike the preceding method, this method does not throw an exception if more than one match is found.
-<8> Uses a Java 8 `Stream` to read and convert individual elements while iterating the stream.
-<9> Shows a query method annotated with `@AllowFiltering`, to allow server-side filtering.
+<9> Uses a Java 8 `Stream` to read and convert individual elements while iterating the stream.
+<10> Shows a query method annotated with `@AllowFiltering`, to allow server-side filtering.
 ====
 
 NOTE: Querying non-primary key properties requires secondary indexes.

@@ -18,7 +18,9 @@ package org.springframework.data.cassandra.repository.query;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
+import org.springframework.data.cassandra.core.query.CassandraScrollPosition;
 import org.springframework.data.domain.Limit;
+import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.data.repository.query.ParametersParameterAccessor;
 import org.springframework.lang.Nullable;
@@ -57,6 +59,7 @@ public class CassandraParametersParameterAccessor extends ParametersParameterAcc
 	}
 
 	@Nullable
+	@Override
 	public CassandraType findCassandraType(int index) {
 		return getParameters().getParameter(index).getCassandraType();
 	}
@@ -74,6 +77,22 @@ public class CassandraParametersParameterAccessor extends ParametersParameterAcc
 	@Override
 	public Object[] getValues() {
 		return super.getValues();
+	}
+
+	@Override
+	public CassandraScrollPosition getScrollPosition() {
+
+		ScrollPosition scrollPosition = super.getScrollPosition();
+		if (scrollPosition instanceof CassandraScrollPosition csp) {
+			return csp;
+		}
+
+		if (scrollPosition == null) {
+			return CassandraScrollPosition.initial();
+		}
+
+		throw new IllegalArgumentException(
+				"Unsupported scroll position " + scrollPosition + ". Only CassandraScrollPosition supported.");
 	}
 
 	@Override

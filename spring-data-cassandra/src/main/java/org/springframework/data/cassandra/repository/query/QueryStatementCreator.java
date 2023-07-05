@@ -15,7 +15,6 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -24,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.data.cassandra.core.StatementFactory;
 import org.springframework.data.cassandra.core.cql.QueryExtractorDelegate;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
+import org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuilder;
 import org.springframework.data.cassandra.core.cql.QueryOptionsUtil;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
@@ -196,13 +196,16 @@ class QueryStatementCreator {
 
 		try {
 
-			if (tree.isLimiting()) {
-				query = query.limit(tree.getMaxResults());
-			}
-
 			Limit limit = parameterAccessor.getLimit();
-			if (limit.isLimited()) {
-				query = query.limit(limit);
+
+			if (!queryMethod.isScrollQuery()) {
+
+				if (limit.isLimited()) {
+					query = query.limit(limit);
+				}
+				if (tree.isLimiting()) {
+					query = query.limit(tree.getMaxResults());
+				}
 			}
 
 			if (allowsFiltering()) {
@@ -210,13 +213,22 @@ class QueryStatementCreator {
 			}
 
 			Optional<QueryOptions> queryOptions = Optional.ofNullable(parameterAccessor.getQueryOptions());
+			QueryOptionsBuilder optionsBuilder = queryOptions.orElseGet(QueryOptions::empty).mutate();
 
-			if (queryOptions.isPresent()) {
-				query = Optional.ofNullable(parameterAccessor.getQueryOptions()).map(query::queryOptions).orElse(query);
-			} else if (this.queryMethod.hasConsistencyLevel()) {
-				query = query.queryOptions(
-						QueryOptions.builder().consistencyLevel(this.queryMethod.getRequiredAnnotatedConsistencyLevel()).build());
+			if (queryMethod.isScrollQuery()) {
+
+				if (limit.isLimited()) {
+					optionsBuilder.pageSize(limit.max());
+				} else if (tree.isLimiting()) {
+					optionsBuilder.pageSize(tree.getMaxResults());
+				}
 			}
+
+			if (this.queryMethod.hasConsistencyLevel()) {
+				optionsBuilder.consistencyLevel(this.queryMethod.getRequiredAnnotatedConsistencyLevel());
+			}
+
+			query = query.queryOptions(optionsBuilder.build());
 
 			return function.apply(query);
 		} catch (RuntimeException cause) {

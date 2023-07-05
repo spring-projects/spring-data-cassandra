@@ -15,12 +15,17 @@
  */
 package org.springframework.data.cassandra.repository;
 
+import static org.assertj.core.api.Assertions.*;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -35,6 +40,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.core.query.CassandraPageRequest;
+import org.springframework.data.cassandra.core.query.CassandraScrollPosition;
 import org.springframework.data.cassandra.domain.Group;
 import org.springframework.data.cassandra.domain.GroupKey;
 import org.springframework.data.cassandra.domain.User;
@@ -44,8 +50,10 @@ import org.springframework.data.cassandra.repository.support.ReactiveCassandraRe
 import org.springframework.data.cassandra.repository.support.SimpleReactiveCassandraRepository;
 import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Window;
 import org.springframework.data.util.Streamable;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
@@ -130,7 +138,47 @@ class ReactiveCassandraRepositoryIntegrationTests extends AbstractSpringDataEmbe
 		repository.findByLastname(dave.getLastname()).as(StepVerifier::create).expectNextCount(2).verifyComplete();
 	}
 
-	@Test // DATACASS-529
+	@Test // GH-1408
+	void shouldSelectWindow() {
+
+		List<User> result = new ArrayList<>();
+
+		Window<User> firstWindow = repository
+				.findAllWindowByLastname("Matthews", CassandraScrollPosition.initial(), Limit.of(1))
+				.block(Duration.ofSeconds(10));
+
+		Window<User> nextWindow = repository
+				.findAllWindowByLastname("Matthews", firstWindow.positionAt(firstWindow.size() - 1), Limit.of(10))
+				.block(Duration.ofSeconds(10));
+
+		result.addAll(firstWindow.getContent());
+		result.addAll(nextWindow.getContent());
+
+		assertThat(firstWindow).hasSize(1);
+		assertThat(nextWindow).hasSize(1);
+		assertThat(result).contains(dave, oliver);
+	}
+
+	@Test // GH-1408
+	void shouldSelectWindowWithTopKeyword() {
+
+		List<User> result = new ArrayList<>();
+
+		Window<User> firstWindow = repository.findTop1ByLastname("Matthews", CassandraScrollPosition.initial())
+				.block(Duration.ofSeconds(10));
+
+		Window<User> nextWindow = repository.findTop1ByLastname("Matthews", firstWindow.positionAt(firstWindow.size() - 1))
+				.block(Duration.ofSeconds(10));
+
+		result.addAll(firstWindow.getContent());
+		result.addAll(nextWindow.getContent());
+
+		assertThat(firstWindow).hasSize(1);
+		assertThat(nextWindow).hasSize(1);
+		assertThat(result).contains(dave, oliver);
+	}
+
+	@Test // GH-1408
 	void shouldFindSliceByLastName() {
 		repository.findByLastname(carter.getLastname(), CassandraPageRequest.first(1)).as(StepVerifier::create)
 				.expectNextMatches(users -> users.getSize() == 1 && users.hasNext()).verifyComplete();
@@ -247,6 +295,10 @@ class ReactiveCassandraRepositoryIntegrationTests extends AbstractSpringDataEmbe
 		Flux<User> findByLastname(String lastname);
 
 		Mono<Slice<User>> findByLastname(String firstname, Pageable pageable);
+
+		Mono<Window<User>> findAllWindowByLastname(String lastname, ScrollPosition scrollPosition, Limit limit);
+
+		Mono<Window<User>> findTop1ByLastname(String lastname, ScrollPosition scrollPosition);
 
 		Flux<User> findByLastname(String lastname, Limit limit);
 

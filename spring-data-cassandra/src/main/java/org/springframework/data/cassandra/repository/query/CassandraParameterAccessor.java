@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.repository.query;
 
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
+import org.springframework.data.cassandra.core.query.CassandraScrollPosition;
 import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.lang.Nullable;
 
@@ -70,6 +71,9 @@ public interface CassandraParameterAccessor extends ParameterAccessor {
 	 * @since 1.5
 	 */
 	Object[] getValues();
+
+	@Override
+	CassandraScrollPosition getScrollPosition();
 
 	/**
 	 * Returns the {@link QueryOptions} associated with the associated Repository query method.

@@ -27,7 +27,9 @@ import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.query.CassandraPageRequest;
+import org.springframework.data.cassandra.core.query.CassandraScrollPosition;
 import org.springframework.data.convert.DtoInstantiatingConverter;
+import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
@@ -91,6 +93,40 @@ interface ReactiveCassandraQueryExecution {
 				return new SliceImpl<>(it.getContent(), cassandraPageRequest.withSort(pageable.getSort()), it.hasNext());
 
 			});
+		}
+	}
+
+	/**
+	 * {@link ReactiveCassandraQueryExecution} for a {@link org.springframework.data.domain.Window}.
+	 *
+	 * @author Mark Paluch
+	 * @since 4.2
+	 */
+	final class WindowExecution implements ReactiveCassandraQueryExecution {
+
+		private final ReactiveCassandraOperations operations;
+		private final CassandraScrollPosition scrollPosition;
+		private final Limit limit;
+
+		public WindowExecution(ReactiveCassandraOperations operations, CassandraScrollPosition scrollPosition,
+				Limit limit) {
+			this.operations = operations;
+			this.scrollPosition = scrollPosition;
+			this.limit = limit;
+		}
+
+		@Override
+		public Publisher<? extends Object> execute(Statement<?> statement, Class<?> type) {
+
+			Statement<?> statementToUse = limit.isLimited() ? statement.setPageSize(limit.max()) : statement;
+
+			if (!this.scrollPosition.isInitial()) {
+				statementToUse = statementToUse.setPagingState(this.scrollPosition.getPagingState());
+			}
+
+			Mono<? extends Slice<?>> slice = operations.slice(statementToUse, type);
+
+			return slice.map(WindowUtil::of);
 		}
 	}
 

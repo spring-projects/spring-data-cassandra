@@ -28,6 +28,7 @@ import org.springframework.data.cassandra.repository.query.ReactiveCassandraQuer
 import org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution.ResultProcessingExecution;
 import org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution.SingleEntityExecution;
 import org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution.SlicedExecution;
+import org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution.WindowExecution;
 import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.query.ResultProcessor;
@@ -122,6 +123,9 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 
 		if (getQueryMethod().isSliceQuery()) {
 			return new SlicedExecution(getReactiveCassandraOperations(), parameterAccessor.getPageable());
+		} else if (getQueryMethod().isScrollQuery()) {
+			return new WindowExecution(getReactiveCassandraOperations(), parameterAccessor.getScrollPosition(),
+					parameterAccessor.getLimit());
 		} else if (getQueryMethod().isCollectionQuery()) {
 			return new CollectionExecution(getReactiveCassandraOperations());
 		} else if (isCountQuery()) {
