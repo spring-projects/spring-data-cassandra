@@ -113,14 +113,13 @@ Working with the repository instance is a matter of injecting the repository as 
 ====
 [source,java]
 ----
-@RunWith(SpringRunner.class)
-@ContextConfiguration
-public class PersonRepositoryTests {
+@ExtendWith(SpringExtension.class)
+class PersonRepositoryTests {
 
     @Autowired PersonRepository repository;
 
     @Test
-    public void readsPersonTableCorrectly() {
+    void readsPersonTableCorrectly() {
 
       List<Person> persons = repository.findAll();
       assertThat(persons.isEmpty()).isFalse();
@@ -138,14 +137,13 @@ The following example shows how to set up paging access to `Person` entities:
 ====
 [source,java]
 ----
-@RunWith(SpringRunner.class)
-@ContextConfiguration
-public class PersonRepositoryTests {
+@ExtendWith(SpringExtension.class)
+class PersonRepositoryTests {
 
     @Autowired PersonRepository repository;
 
     @Test
-    public void readsPagesCorrectly() {
+    void readsPagesCorrectly() {
 
       Slice<Person> firstBatch = repository.findAll(CassandraPageRequest.first(10));
 
@@ -176,7 +174,7 @@ The following example shows a number of such method declarations:
 ====
 [source,java]
 ----
-public interface PersonRepository extends CrudRepository<Person, String> {
+interface PersonRepository extends CrudRepository<Person, String> {
 
     List<Person> findByLastname(String lastname);                           <1>
 
@@ -328,7 +326,7 @@ The following example sets the consistency level to `ConsistencyLevel.LOCAL_ONE`
 ====
 [source,java]
 ----
-public interface PersonRepository extends CrudRepository<Person, String> {
+interface PersonRepository extends CrudRepository<Person, String> {
 
     @Consistency(ConsistencyLevel.LOCAL_ONE)
     List<Person> findByLastname(String lastname);

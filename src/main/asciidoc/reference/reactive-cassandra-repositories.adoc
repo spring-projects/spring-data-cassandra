@@ -145,14 +145,13 @@ The following example shows how to set up paging access to `Person` entities:
 ====
 [source,java]
 ----
-@RunWith(SpringRunner.class)
-@ContextConfiguration
-public class PersonRepositoryTests {
+@ExtendWith(SpringExtension.class)
+class PersonRepositoryTests {
 
     @Autowired PersonRepository repository;
 
     @Test
-    public void readsPagesCorrectly() {
+    void readsPagesCorrectly() {
 
       Mono<Slice<Person>> firstBatch = repository.findAll(CassandraPageRequest.first(10));
 
