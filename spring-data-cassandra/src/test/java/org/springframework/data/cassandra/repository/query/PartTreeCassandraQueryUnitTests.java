@@ -242,12 +242,12 @@ class PartTreeCassandraQueryUnitTests {
 		assertThat(statement.getQuery()).isEqualTo("DELETE FROM person WHERE lastname=?");
 	}
 
-	@Test // DATACASS-512
+	@Test // DATACASS-512, GH-1401
 	void shouldCreateExistsQuery() {
 
 		SimpleStatement statement = deriveQueryFromMethod(Repo.class, "existsBy", new Class[0]);
 
-		assertThat(statement.getQuery()).isEqualTo("SELECT * FROM person LIMIT 1");
+		assertThat(statement.getQuery()).isEqualTo("SELECT * FROM person LIMIT ?");
 	}
 
 	private String deriveQueryFromMethod(String method, Object... args) {

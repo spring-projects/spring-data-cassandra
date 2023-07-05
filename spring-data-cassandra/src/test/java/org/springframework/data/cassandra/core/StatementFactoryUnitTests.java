@@ -41,6 +41,7 @@ import org.springframework.data.cassandra.core.query.Criteria;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.core.query.Update;
 import org.springframework.data.cassandra.domain.Group;
+import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Sort;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -136,8 +137,8 @@ class StatementFactoryUnitTests {
 		assertThat(select.build(ParameterHandling.INLINE).getQuery()).isEqualTo("SELECT ttl(email) FROM group");
 	}
 
-	@Test // #1008
-	void shouldMapSelectQueryWithSortLimitAndAllowFiltering() {
+	@Test // GH-1008
+	void shouldMapSelectQueryWithSort() {
 
 		Query query = Query.empty().sort(Sort.by(DESC, "email", "age"));
 
@@ -146,6 +147,22 @@ class StatementFactoryUnitTests {
 
 		assertThat(select.build(ParameterHandling.INLINE).getQuery())
 				.isEqualTo("SELECT * FROM group ORDER BY email DESC,age DESC");
+	}
+
+	@Test // GH-1401
+	void shouldMapSelectQueryWithLimit() {
+
+		Query query = Query.query(Criteria.where("email").is("e@mail")).limit(Limit.of(10));
+
+		StatementBuilder<Select> select = statementFactory.select(query,
+				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
+
+		assertThat(select.build(ParameterHandling.INLINE).getQuery())
+				.isEqualTo("SELECT * FROM group WHERE email='e@mail' LIMIT 10");
+
+		SimpleStatement statement = select.build(ParameterHandling.BY_INDEX);
+		assertThat(statement.getQuery()).isEqualTo("SELECT * FROM group WHERE email=? LIMIT ?");
+		assertThat(statement.getPositionalValues()).containsExactly("e@mail", 10);
 	}
 
 	@Test // DATACASS-343

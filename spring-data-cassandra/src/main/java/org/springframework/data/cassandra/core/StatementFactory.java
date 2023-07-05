@@ -632,16 +632,18 @@ public class StatementFactory {
 
 		StatementBuilder<Select> select = createSelectAndOrder(selectors, tableName, filter, sort);
 
-		// TODO: Bind marker
-		if (query.getLimit() > 0) {
-			select.apply(it -> it.limit(Math.toIntExact(query.getLimit())));
-		}
-
 		if (query.isAllowFiltering()) {
 			select.apply(Select::allowFiltering);
 		}
 
 		select.onBuild(statementBuilder -> query.getPagingState().ifPresent(statementBuilder::setPagingState));
+
+		if (query.getLimit() > 0) {
+
+			int limit = Math.toIntExact(query.getLimit());
+			select.bind((statement, factory) -> factory.ifBoundOrInline(bindings -> statement.limit(bindings.bind(limit)),
+					() -> statement.limit(limit)));
+		}
 
 		query.getQueryOptions()
 				.ifPresent(it -> select.transform(statement -> QueryOptionsUtil.addQueryOptions(statement, it)));
