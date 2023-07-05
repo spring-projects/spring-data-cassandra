@@ -42,6 +42,7 @@ import org.springframework.data.cassandra.repository.support.AbstractSpringDataE
 import org.springframework.data.cassandra.repository.support.IntegrationTestConfig;
 import org.springframework.data.cassandra.repository.support.ReactiveCassandraRepositoryFactory;
 import org.springframework.data.cassandra.repository.support.SimpleReactiveCassandraRepository;
+import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
@@ -133,6 +134,18 @@ class ReactiveCassandraRepositoryIntegrationTests extends AbstractSpringDataEmbe
 	void shouldFindSliceByLastName() {
 		repository.findByLastname(carter.getLastname(), CassandraPageRequest.first(1)).as(StepVerifier::create)
 				.expectNextMatches(users -> users.getSize() == 1 && users.hasNext()).verifyComplete();
+	}
+
+	@Test // GH-1407
+	void shouldFindWithLimitByLastName() {
+		repository.findByLastname(dave.getLastname(), Limit.of(1)).as(StepVerifier::create).expectNextCount(1)
+				.verifyComplete();
+
+		repository.findByLastname(dave.getLastname(), Limit.of(2)).as(StepVerifier::create).expectNextCount(2)
+				.verifyComplete();
+
+		repository.findByLastname(dave.getLastname(), Limit.unlimited()).as(StepVerifier::create).expectNextCount(2)
+				.verifyComplete();
 	}
 
 	@Test // DATACASS-529
@@ -234,6 +247,8 @@ class ReactiveCassandraRepositoryIntegrationTests extends AbstractSpringDataEmbe
 		Flux<User> findByLastname(String lastname);
 
 		Mono<Slice<User>> findByLastname(String firstname, Pageable pageable);
+
+		Flux<User> findByLastname(String lastname, Limit limit);
 
 		Mono<User> findFirstByLastname(String lastname);
 

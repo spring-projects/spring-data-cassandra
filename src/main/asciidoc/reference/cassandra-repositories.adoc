@@ -186,16 +186,19 @@ public interface PersonRepository extends CrudRepository<Person, String> {
 
     List<Person> findByFirstname(String firstname, Sort sort);              <4>
 
-    Person findByShippingAddress(Address address);                          <5>
+    List<Person> findByFirstname(String firstname, Limit limit);            <5>
 
-    Person findFirstByShippingAddress(Address address);                     <6>
+    Person findByShippingAddress(Address address);                          <6>
 
-    Stream<Person> findAllBy();                                             <7>
+    Person findFirstByShippingAddress(Address address);                     <7>
+
+    Stream<Person> findAllBy();                                             <8>
 
     @AllowFiltering
-    List<Person> findAllByAge(int age);                                     <8>
+    List<Person> findAllByAge(int age);                                     <9>
 }
 ----
+
 <1> The method shows a query for all people with the given `lastname`.
 The query is derived from parsing the method name for constraints, which can be concatenated with `And`.
 Thus, the method name results in a query expression of `SELECT * FROM person WHERE lastname = 'lastname'`.
@@ -204,12 +207,14 @@ You can equip your method signature with a `Pageable` parameter and let the meth
 <3> Passing a `QueryOptions` object applies the query options to the resulting query before its execution.
 <4> Applies dynamic sorting to a query.
 You can add a `Sort` parameter to your method signature, and Spring Data automatically applies ordering to the query.
-<5> Shows that you can query based on properties that are not a primitive type by using `Converter` instances registered in `CustomConversions`.
+<5> Applies dynamic result limiting to a query.
+Query results can be limited using `SELECT … LIMIT`.
+<6> Shows that you can query based on properties that are not a primitive type by using `Converter` instances registered in `CustomConversions`.
 Throws `IncorrectResultSizeDataAccessException` if more than one match is found.
-<6> Uses the `First` keyword to restrict the query to only the first result.
+<7> Uses the `First` keyword to restrict the query to only the first result.
 Unlike the preceding method, this method does not throw an exception if more than one match is found.
-<7> Uses a Java 8 `Stream` to read and convert individual elements while iterating the stream.
-<8> Shows a query method annotated with `@AllowFiltering`, to allow server-side filtering.
+<8> Uses a Java 8 `Stream` to read and convert individual elements while iterating the stream.
+<9> Shows a query method annotated with `@AllowFiltering`, to allow server-side filtering.
 ====
 
 NOTE: Querying non-primary key properties requires secondary indexes.

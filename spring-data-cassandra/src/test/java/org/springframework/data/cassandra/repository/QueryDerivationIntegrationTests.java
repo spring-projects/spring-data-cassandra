@@ -52,6 +52,7 @@ import org.springframework.data.cassandra.repository.config.EnableCassandraRepos
 import org.springframework.data.cassandra.repository.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.data.cassandra.repository.support.IntegrationTestConfig;
 import org.springframework.data.cassandra.support.CassandraVersion;
+import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
@@ -340,6 +341,14 @@ class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedCassandr
 		assertThat(result).contains(walter, skyler, flynn);
 	}
 
+	@Test // GH-1407
+	public void shouldSelectWithLimit() {
+
+		List<Person> result = personRepository.findAllLimitedByLastname("White", Limit.of(2));
+
+		assertThat(result).hasSize(2);
+	}
+
 	@Test // DATACASS-512
 	public void shouldCountRecords() {
 
@@ -426,6 +435,8 @@ class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedCassandr
 		boolean existsByLastname(String lastname);
 
 		Slice<Person> findAllSlicedByLastname(String lastname, Pageable pageable);
+
+		List<Person> findAllLimitedByLastname(String lastname, Limit limit);
 
 		Collection<PersonProjection> findPersonProjectedBy();
 

@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.repository.query;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
+import org.springframework.data.domain.Limit;
 import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.data.repository.query.ParametersParameterAccessor;
 import org.springframework.lang.Nullable;
@@ -73,6 +74,16 @@ public class CassandraParametersParameterAccessor extends ParametersParameterAcc
 	@Override
 	public Object[] getValues() {
 		return super.getValues();
+	}
+
+	@Override
+	public Limit getLimit() {
+
+		if (!getParameters().hasLimitParameter()) {
+			return Limit.unlimited();
+		}
+
+		return super.getLimit();
 	}
 
 	@Nullable

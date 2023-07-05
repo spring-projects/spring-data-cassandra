@@ -20,6 +20,7 @@ import java.util.Iterator;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
+import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Range;
 import org.springframework.data.domain.ScrollPosition;
@@ -62,6 +63,11 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 	@Override
 	public Sort getSort() {
 		return this.delegate.getSort();
+	}
+
+	@Override
+	public Limit getLimit() {
+		return this.delegate.getLimit();
 	}
 
 	@Nullable

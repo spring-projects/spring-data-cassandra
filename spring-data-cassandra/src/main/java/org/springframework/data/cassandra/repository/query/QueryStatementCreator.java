@@ -30,6 +30,7 @@ import org.springframework.data.cassandra.core.mapping.CassandraPersistentProper
 import org.springframework.data.cassandra.core.query.Columns;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.repository.Query.Idempotency;
+import org.springframework.data.domain.Limit;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.model.SpELExpressionEvaluator;
 import org.springframework.data.repository.query.QueryCreationException;
@@ -197,6 +198,11 @@ class QueryStatementCreator {
 
 			if (tree.isLimiting()) {
 				query = query.limit(tree.getMaxResults());
+			}
+
+			Limit limit = parameterAccessor.getLimit();
+			if (limit.isLimited()) {
+				query = query.limit(limit);
 			}
 
 			if (allowsFiltering()) {

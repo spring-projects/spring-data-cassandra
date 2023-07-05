@@ -1063,7 +1063,8 @@ The `Query` class has some additional methods that you can use to provide option
 * `Query` *by* `(CriteriaDefinition... criteria)`: Used to create a `Query` object.
 * `Query` *and* `(CriteriaDefinition criteria)`: Used to add additional criteria to the query.
 * `Query` *columns* `(Columns columns)`: Used to define columns to be included in the query results.
-* `Query` *limit* `(long limit)`: Used to limit the size of the returned results to the provided limit (used for paging).
+* `Query` *limit* `(Limit limit)`: Used to limit the size of the returned results to the provided limit (used `SELECT` limiting).
+* `Query` *limit* `(long limit)`: Used to limit the size of the returned results to the provided limit (used `SELECT` limiting).
 * `Query` *pageRequest* `(Pageable pageRequest)`: Used to associate `Sort`, `PagingState`, and `fetchSize` with the query (used for paging).
 * `Query` *pagingState* `(ByteBuffer pagingState)`: Used to associate a `ByteBuffer` with the query (used for paging).
 * `Query` *queryOptions* `(QueryOptions queryOptions)`: Used to associate `QueryOptions` with the query.

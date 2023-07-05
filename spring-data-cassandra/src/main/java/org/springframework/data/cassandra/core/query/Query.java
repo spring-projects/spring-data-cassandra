@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import org.springframework.data.cassandra.core.cql.QueryOptions;
+import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -46,7 +47,7 @@ import org.springframework.util.Assert;
 public class Query implements Filter {
 
 	private static final Query EMPTY = new Query(Collections.emptyList(), Columns.empty(), Sort.unsorted(),
-			Optional.empty(), Optional.empty(), Optional.empty(), false);
+			Optional.empty(), Optional.empty(), Limit.unlimited(), false);
 
 	private final boolean allowFiltering;
 
@@ -54,7 +55,7 @@ public class Query implements Filter {
 
 	private final List<CriteriaDefinition> criteriaDefinitions;
 
-	private final Optional<Long> limit;
+	private final Limit limit;
 
 	private final Optional<ByteBuffer> pagingState;
 
@@ -63,8 +64,9 @@ public class Query implements Filter {
 	private final Sort sort;
 
 	private Query(List<CriteriaDefinition> criteriaDefinitions, Columns columns, Sort sort,
-			Optional<ByteBuffer> pagingState, Optional<QueryOptions> queryOptions, Optional<Long> limit,
-			boolean allowFiltering) {
+			Optional<ByteBuffer> pagingState, Optional<QueryOptions> queryOptions, Limit limit, boolean allowFiltering) {
+
+		Assert.notNull(limit, "Limit must not be null");
 
 		this.criteriaDefinitions = criteriaDefinitions;
 		this.columns = columns;
@@ -110,7 +112,7 @@ public class Query implements Filter {
 		List<CriteriaDefinition> collect = StreamSupport.stream(criteriaDefinitions.spliterator(), false)
 				.collect(Collectors.toList());
 
-		return new Query(collect, Columns.empty(), Sort.unsorted(), Optional.empty(), Optional.empty(), Optional.empty(),
+		return new Query(collect, Columns.empty(), Sort.unsorted(), Optional.empty(), Optional.empty(), Limit.unlimited(),
 				false);
 	}
 
@@ -194,7 +196,7 @@ public class Query implements Filter {
 	/**
 	 * Create a {@link Query} initialized with a {@link PageRequest} to fetch the first page of results or advance in
 	 * paging along with sorting. Reads (and overrides, if set) {@link Pageable#getPageSize() page size} into
-	 * {@link QueryOptions#getPageSize()} and sets {@code pagingState} and {@link Sort}.
+	 * {@code QueryOptions#getPageSize()} and sets {@code pagingState} and {@link Sort}.
 	 *
 	 * @param pageable must not be {@literal null}.
 	 * @return a new {@link Query} object containing the former settings with {@link PageRequest} applied.
@@ -269,14 +271,32 @@ public class Query implements Filter {
 	 */
 	public Query limit(long limit) {
 		return new Query(this.criteriaDefinitions, this.columns, this.sort, this.pagingState, this.queryOptions,
-				Optional.of(limit), this.allowFiltering);
+				Limit.of(Math.toIntExact(limit)), this.allowFiltering);
+	}
+
+	/**
+	 * Limit the number of returned rows to {@link Limit}.
+	 *
+	 * @param limit
+	 * @return a new {@link Query} object containing the former settings with {@code limit} applied.
+	 */
+	public Query limit(Limit limit) {
+		return new Query(this.criteriaDefinitions, this.columns, this.sort, this.pagingState, this.queryOptions, limit,
+				this.allowFiltering);
 	}
 
 	/**
 	 * @return the maximum number of rows to be returned.
 	 */
 	public long getLimit() {
-		return this.limit.orElse(0L);
+		return this.limit.isLimited() ? this.limit.max() : 0;
+	}
+
+	/**
+	 * @return {@code true} if the query is limited.
+	 */
+	public boolean isLimited() {
+		return this.limit.isLimited();
 	}
 
 	/**

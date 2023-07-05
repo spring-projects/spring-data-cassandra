@@ -632,6 +632,7 @@ public class StatementFactory {
 
 		StatementBuilder<Select> select = createSelectAndOrder(selectors, tableName, filter, sort);
 
+		// TODO: Bind marker
 		if (query.getLimit() > 0) {
 			select.apply(it -> it.limit(Math.toIntExact(query.getLimit())));
 		}
