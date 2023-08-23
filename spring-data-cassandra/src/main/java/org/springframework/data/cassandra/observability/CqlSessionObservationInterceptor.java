@@ -66,6 +66,10 @@ final class CqlSessionObservationInterceptor implements MethodInterceptor {
 		Method method = invocation.getMethod();
 		Object[] args = invocation.getArguments();
 
+		if (method.getName().equals("getTargetClass")) {
+			return delegate.getClass();
+		}
+
 		if (method.getName().equals("execute") && args.length > 0) {
 			return observe(createStatement(args), method.getName(), this.delegate::execute);
 		}
