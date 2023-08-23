@@ -17,6 +17,8 @@ package org.springframework.data.cassandra.observability;
 
 import io.micrometer.observation.Observation;
 
+import java.lang.reflect.Method;
+
 import javax.annotation.Nonnull;
 
 import org.aopalliance.intercept.MethodInterceptor;
@@ -77,7 +79,13 @@ final class ObservationStatement implements MethodInterceptor {
 	@Override
 	public Object invoke(@Nonnull MethodInvocation invocation) throws Throwable {
 
-		if (invocation.getMethod().getName().equals("getObservation")) {
+		Method method = invocation.getMethod();
+
+		if (method.getName().equals("getTargetClass")) {
+			return this.delegate.getClass();
+		}
+
+		if (method.getName().equals("getObservation")) {
 			return this.observation;
 		}
 
