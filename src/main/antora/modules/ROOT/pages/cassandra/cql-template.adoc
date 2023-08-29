@@ -1,0 +1,287 @@
+[[cassandra.cql-template]]
+= CQL Template API
+
+The `CqlTemplate` class (and its reactive variant `ReactiveCqlTemplate`) is the central class in the core CQL package.
+It handles the creation and release of resources.
+It performs the basic tasks of the core CQL workflow, such as statement creation and execution, and leaves application code to provide CQL and extract results.
+The `CqlTemplate` class executes CQL queries and update statements, performs iteration over `ResultSet` instances and extraction of returned parameter values.
+It also catches CQL exceptions and translates them to the generic, more informative, exception hierarchy defined in the `org.springframework.dao` package.
+
+When you use the `CqlTemplate` for your code, you need only implement callback interfaces, which have a clearly defined contract.
+Given a `Connection`, the `PreparedStatementCreator` callback interface creates a xref:cassandra/prepared-statements.adoc#cassandra.template.prepared-statements.cql[prepared statement] with the provided CQL and any necessary parameter arguments.
+The `RowCallbackHandler` interface extracts values from each row of a `ResultSet`.
+
+The `CqlTemplate` can be used within a DAO implementation through direct instantiation with a `SessionFactory` reference or be configured in the Spring container and given to DAOs as a bean reference. `CqlTemplate` is a foundational building block for xref:cassandra/template.adoc[`CassandraTemplate`].
+
+All CQL issued by this class is logged at the `DEBUG` level under the category corresponding to the fully-qualified class name of the template instance (typically `CqlTemplate`, but it may be different if you use a custom subclass of the `CqlTemplate` class).
+
+You can control fetch size, consistency level, and retry policy defaults by configuring these parameters on the CQL API instances: `CqlTemplate`, `AsyncCqlTemplate`, and `ReactiveCqlTemplate`.
+Defaults apply if the particular query option is not set.
+
+NOTE: `CqlTemplate` comes in different execution model flavors.
+The basic `CqlTemplate` uses a blocking execution model.
+You can use `AsyncCqlTemplate` for asynchronous execution and synchronization with `ListenableFuture` instances or
+<<cassandra.reactive.cql-template,`ReactiveCqlTemplate`>> for reactive execution.
+
+[[cassandracql-template.examples]]
+== Examples of `CqlTemplate` Class Usage
+
+This section provides some examples of the `CqlTemplate` class in action.
+These examples are not an exhaustive list of all functionality exposed by the `CqlTemplate`.
+See the https://docs.spring.io/spring-data/cassandra/docs/{version}/api/[Javadoc] for that.
+
+[[cassandra.cql-template.examples.query]]
+=== Querying (SELECT) with `CqlTemplate`
+
+The following query gets the number of rows in a table:
+
+[tabs]
+======
+Imperative::
++
+[source,java,indent=0,subs="verbatim,quotes",role="primary"]
+----
+include::example$CqlTemplateExamples.java[tags=rowCount]
+----
+
+Reactive::
++
+[source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
+----
+include::example$ReactiveCqlTemplateExamples.java[tags=rowCount]
+----
+======
+
+The following query uses a bind variable:
+
+[tabs]
+======
+Imperative::
++
+[source,java,indent=0,subs="verbatim,quotes",role="primary"]
+----
+include::example$CqlTemplateExamples.java[tags=countOfActorsNamedJoe]
+----
+
+Reactive::
++
+[source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
+----
+include::example$ReactiveCqlTemplateExamples.java[tags=countOfActorsNamedJoe]
+----
+======
+
+The following example queries for a `String`:
+
+[tabs]
+======
+Imperative::
++
+[source,java,indent=0,subs="verbatim,quotes",role="primary"]
+----
+include::example$CqlTemplateExamples.java[tags=lastName]
+----
+
+Reactive::
++
+[source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
+----
+include::example$ReactiveCqlTemplateExamples.java[tags=lastName]
+----
+======
+
+The following example queries and populates a single domain object:
+
+[tabs]
+======
+Imperative::
++
+[source,java,indent=0,subs="verbatim,quotes",role="primary"]
+----
+include::example$CqlTemplateExamples.java[tags=rowMapper]
+----
+
+Reactive::
++
+[source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
+----
+include::example$ReactiveCqlTemplateExamples.java[tags=rowMapper]
+----
+======
+
+The following example queries and populates multiple domain objects:
+
+[tabs]
+======
+Imperative::
++
+[source,java,indent=0,subs="verbatim,quotes",role="primary"]
+----
+include::example$CqlTemplateExamples.java[tags=listOfRowMapper]
+----
+
+Reactive::
++
+[source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
+----
+include::example$ReactiveCqlTemplateExamples.java[tags=listOfRowMapper]
+----
+======
+
+If the last two snippets of code actually existed in the same application, it would make sense to remove the duplication present in the two `RowMapper` anonymous inner classes and extract them out into a single class (typically a `static` nested class) that can then be referenced by DAO methods.
+
+For example, it might be better to write the last code snippet as follows:
+
+[tabs]
+======
+Imperative::
++
+[source,java,indent=0,subs="verbatim,quotes",role="primary"]
+----
+include::example$CqlTemplateExamples.java[tags=findAllActors]
+----
+
+Reactive::
++
+[source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
+----
+include::example$ReactiveCqlTemplateExamples.java[tags=findAllActors]
+----
+======
+
+[[cassandra.cql-template.examples.update]]
+=== `INSERT`, `UPDATE`, and `DELETE` with `CqlTemplate`
+
+You can use the `execute(…)` method to perform `INSERT`, `UPDATE`, and `DELETE` operations.
+Parameter values are usually provided as variable arguments or, alternatively, as an object array.
+
+The following example shows how to perform an `INSERT` operation with `CqlTemplate`:
+
+[tabs]
+======
+Imperative::
++
+[source,java,indent=0,subs="verbatim,quotes",role="primary"]
+----
+include::example$CqlTemplateExamples.java[tags=insert]
+----
+
+Reactive::
++
+[source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
+----
+include::example$ReactiveCqlTemplateExamples.java[tags=insert]
+----
+======
+
+The following example shows how to perform an `UPDATE` operation with `CqlTemplate`:
+
+[tabs]
+======
+Imperative::
++
+[source,java,indent=0,subs="verbatim,quotes",role="primary"]
+----
+include::example$CqlTemplateExamples.java[tags=update]
+----
+
+Reactive::
++
+[source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
+----
+include::example$ReactiveCqlTemplateExamples.java[tags=update]
+----
+======
+
+The following example shows how to perform an `DELETE` operation with `CqlTemplate`:
+
+[tabs]
+======
+Imperative::
++
+[source,java,indent=0,subs="verbatim,quotes",role="primary"]
+----
+include::example$CqlTemplateExamples.java[tags=delete]
+----
+
+Reactive::
++
+[source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
+----
+include::example$ReactiveCqlTemplateExamples.java[tags=delete]
+----
+======
+
+[[cassandra.cql-template.examples.other]]
+=== Other `CqlTemplate` operations
+
+You can use the `execute(..)` method to execute any arbitrary CQL.
+As a result, the method is often used for DDL statements.
+It is heavily overloaded with variants that take callback interfaces, bind variable arrays, and so on.
+
+The following example shows how to create and drop a table by using different API objects that are all passed to the `execute()` methods:
+
+====
+[source,java]
+----
+include::example$CqlTemplateExamples.java[tags=other]
+----
+====
+
+[[cassandra.connections]]
+== Controlling Cassandra Connections
+
+Applications connect to Apache Cassandra by using `CqlSession` objects.
+A Cassandra `CqlSession` keeps track of multiple connections to the individual nodes and is designed to be a thread-safe, long-lived object.
+Usually, you can use a single `CqlSession` for the whole application.
+
+Spring acquires a Cassandra `CqlSession` through a `SessionFactory`. `SessionFactory` is part of Spring Data for Apache Cassandra and is a generalized connection factory.
+It lets the container or framework hide connection handling and routing issues from the application code.
+
+The following example shows how to configure a default `SessionFactory`:
+
+[tabs]
+======
+Imperative::
++
+[source,java,indent=0,subs="verbatim,quotes",role="primary"]
+----
+CqlSession session = … // get a Cassandra Session
+
+CqlTemplate template = new CqlTemplate();
+
+template.setSessionFactory(new DefaultSessionFactory(session));
+----
+
+Reactive::
++
+[source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
+----
+
+CqlSession session = … // get a Cassandra Session
+
+ReactiveCqlTemplate template = new ReactiveCqlTemplate(new DefaultBridgedReactiveSession(session));
+----
+======
+
+`CqlTemplate` and other Template API implementations obtain a `CqlSession` for each operation.
+Due to their long-lived nature, sessions are not closed after invoking the desired operation.
+Responsibility for proper resource disposal lies with the container or framework that uses the session.
+
+You can find various `SessionFactory` implementations within the `org.springframework.data.cassandra.core.cql.session`
+package.
+
+[[exception-translation]]
+== Exception Translation
+
+The Spring Framework provides exception translation for a wide variety of database and mapping technologies.
+This has traditionally been for JDBC and JPA.
+Spring Data for Apache Cassandra extends this feature to Apache Cassandra by providing an implementation of the `org.springframework.dao.support.PersistenceExceptionTranslator` interface.
+
+The motivation behind mapping to Spring's {springDocsUrl}html/dao.html#dao-exceptions[consistent data access exception hierarchy]
+is to let you write portable and descriptive exception handling code without resorting to coding against and handling specific Cassandra exceptions.
+All of Spring's data access exceptions are inherited from the
+`DataAccessException` class, so you can be sure that you can catch all database-related exceptions within a single try-catch block.
+
+`ReactiveCqlTemplate` and `ReactiveCassandraTemplate` propagate exceptions as early as possible.
+Exceptions that occur during the processing of the reactive sequence are emitted as error signals.

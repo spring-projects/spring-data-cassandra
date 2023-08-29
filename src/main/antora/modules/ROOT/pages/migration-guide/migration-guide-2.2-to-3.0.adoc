@@ -1,0 +1,228 @@
+[[cassandra.migration.2.x-to-3.x]]
+= Migration Guide from 2.x to 3.x
+
+Spring Data for Apache Cassandra 3.0 introduces a set of breaking changes when upgrading from earlier versions.
+
+[[review-dependencies]]
+== Review dependencies
+
+Upgrading to Spring Data Cassandra requires an upgrade to the DataStax Driver version 4. Upgrading to the new driver comes with transitive dependency changes, most notably, Google Guava is bundled and shaded by the driver.
+Check out the https://docs.datastax.com/en/developer/java-driver/4.3/upgrade_guide/[DataStax Java Driver for Apache Cassandra 4 Upgrade Guide] for details on the Driver-related changes.
+
+[[adapt-configuration]]
+== Adapt Configuration
+
+DataStax Java Driver 4 merges `Cluster` and `Session` objects into a single `CqlSession` object, therefore, all `Cluster`-related API was removed.
+The configuration was revised in large parts by removing most configuration items that were moved into `DriverConfigLoader` that is mostly file-based.
+This means that `SocketOptions`, `AddressTranslator` and many more options are configured now through other means.
+
+If you're using XML-based configuration, make sure to migrate all configuration files from the  `cql` namespace (`http://www.springframework.org/schema/cql https://www.springframework.org/schema/cql/spring-cql.xsd`) to the `cassandra` namespace (`http://www.springframework.org/schema/data/cassandra https://www.springframework.org/schema/data/cassandra/spring-cassandra.xsd`).
+
+To reflect the change in configuration builders, `ClusterBuilderConfigurer` was renamed to `SessionBuilderConfigurer` accepting now `CqlSessionBuilder` instead of the `Cluster.Builder`.
+Make sure to also provide the local data center in your configuration as it is required to properly configure load balancing.
+
+[[connectivity]]
+=== Connectivity
+
+The configuration elements for `Cluster` (`cassandra:cluster`) and `Session` (`cassandra:session`) were merged into a single `CqlSession` (`cassandra:session`) element that configures both, the keyspace and endpoints.
+
+With the upgrade, schema support was moved to a new namespace element: `cassandra:session-factory` that provides a `SessionFactory` bean.
+
+.Cluster, Session and Schema Configuration in version 2:
+====
+[source,xml]
+----
+<cassandra:cluster contact-points="localhost" port="9042">
+  <cassandra:keyspace action="CREATE_DROP" name="mykeyspace" />
+</cassandra:cluster>
+
+<cassandra:session keyspace-name="mykeyspace" schema-action="CREATE">
+  <cassandra:startup-cql>CREATE TABLE …</cassandra:startup-cql>
+</cassandra:session>
+----
+====
+
+.Session and Schema Configuration in version 3:
+====
+[source,xml]
+----
+<cassandra:session contact-points="localhost" port="9042" keyspace="mykeyspace" local-datacenter="datacenter1">
+  <cassandra:keyspace action="CREATE_DROP" name="mykeyspace" />
+</cassandra:session>
+
+<cassandra:session-factory schema-action="CREATE">
+  <cassandra:script location="classpath:/schema.cql"/>
+</cassandra:session-factory>
+----
+====
+
+NOTE: Spring Data Cassandra 3.0 no longer registers default Mapping Context, Context and Template API beans when using XML namespace configuration.
+The defaulting should be applied on application or Spring Boot level.
+
+[[template-api]]
+== Template API
+
+Spring Data for Apache Cassandra encapsulates most of the changes that come with the driver upgrade as the Template API and repository support if your application mainly interacts with mapped entities or primitive Java types.
+
+We generally recommend to create `CqlTemplate` and `CassandraTemplate` objects by using `SessionFactory` as the factory usage allows synchronization for schema creation and introduces a level of flexibility when working with multiple databases.
+
+.Template API configuration in version 2:
+====
+[source,xml]
+----
+<cql:template session-ref="…" />
+
+<cassandra:template session-ref="…" cassandra-converter-ref="…"/>
+----
+====
+
+.Template API configuration in version 3:
+====
+[source,xml]
+----
+<cassandra:session-factory />
+
+<cassandra:cql-template session-factory-ref="…" />
+
+<cassandra:template session-factory-ref="…" cassandra-converter-ref="…"/>
+----
+====
+
+You will have to adapt your code in all places, where you use DataStax driver API directly.
+Typical cases include:
+
+* Implementations of `ResultSetExtractor`
+* Implementations of `RowCallbackHandler`
+* Implementations of `RowMapper`
+* Implementations of `PreparedStatementCreator` including async and reactive variants
+* Calls to `CqlTemplate.queryForResultSet(…)`
+* Calling methods that accept `Statement`
+
+[[changes-in-asynccqltemplate]]
+=== Changes in `AsyncCqlTemplate`
+
+DataStax driver 4 has changed the result type of queries that are run asynchronously.
+To reflect these changes, you need to adapt your code that provides:
+
+* Implementations of `AsyncSessionCallback`
+* Implementations of `AsyncPreparedStatementCreator`
+
+Result set extraction requires a new interface for DataStax' `AsyncResultSet`.
+`AsyncCqlTemplate` now uses `AsyncResultSetExtractor` in places where it used previously `ResultSetExtractor`.
+Note that `AsyncResultSetExtractor.extractData(…)` returns a `Future` instead of a scalar object so a migration of code comes with the possibility to use fully non-blocking code in the extractor.
+
+[[data-model-migrations]]
+== Data model migrations
+
+Your data model may require updates if you use the following features:
+
+* `@CassandraType`
+* `forceQuote` in `@Table`,  `@Column`, `@PrimaryKeyColumn`, `@PrimaryKey` and `@UserDefinedType`
+* Properties using `java.lang.Date`
+* Properties using `UDTValue` or `TupleValue`
+
+[[cassandratype]]
+=== `@CassandraType`
+
+DataStax driver 4 no longer ships with a `Name` enumeration to describe the Cassandra type.
+We decided to re-introduce the enumeration with `CassandraType.Name`.
+Make sure to update your imports to use the newly introduced replacement type.
+
+[[force-quote]]
+=== Force Quote
+
+This flag is now deprecated, and we recommend not to use it any longer.
+Spring Data for Apache Cassandra internally uses the driver's `CqlIdentifier` that ensures quoting where it's required.
+
+[[property-types]]
+=== Property Types
+
+DataStax driver 4 no longer uses `java.lang.Date`.
+Please upgrade your data model to use `java.time.LocalDateTime`.
+Please also migrate raw UDT and tuple types to the new driver types `UdtValue` respective `TupleValue`.
+
+[[other-changes]]
+== Other changes
+
+* Driver's `ConsistencyLevel` constant class was removed and reintroduced as `DefaultConsistencyLevel`. `@Consistency` was adapted to `DefaultConsistencyLevel`.
+* `RetryPolicy` on `QueryOptions` and `…CqlTemplate` types was removed without replacement.
+* Drivers's `PagingState` type was removed.
+Paging state now uses `ByteBuffer`.
+* `SimpleUserTypeResolver` accepts `CqlSession` instead of `Cluster`.
+* `SimpleTupleTypeFactory` was migrated to `enum`. `SimpleTupleTypeFactory.INSTANCE` no longer requires a `Cluster`/`CqlSession` context.
+* Introduction of `StatementBuilder` to functionally build statements as the QueryBuilder API uses immutable statement types.
+* `Session` bean renamed from `session` to `cassandraSession` and `SessionFactory` bean renamed from `sessionFactory` to `cassandraSessionFactory`.
+* `ReactiveSession` bean renamed from `reactiveSession` to `reactiveCassandraSession` and `ReactiveSessionFactory` bean renamed from `reactiveSessionFactory` to `reactiveCassandraSessionFactory`.
+* `ReactiveSessionFactory.getSession()` now returns a `Mono<ReactiveSession>`.
+Previously it returned just `ReactiveSession`.
+* Data type resolution was moved into `ColumnTypeResolver` so all `DataType`-related methods were moved from `CassandraPersistentEntity`/`CassandraPersistentProperty` into `ColumnTypeResolver` (affected methods are `MappingContext.getDataType(…)`, `CassandraPersistentProperty.getDataType()`, `CassandraPersistentEntity.getUserType()`, and `CassandraPersistentEntity.getTupleType()`).
+* Schema creation was moved from `MappingContext` to `SchemaFactory` (affected methods are `CassandraMappingContext.getCreateTableSpecificationFor(…)`, `CassandraMappingContext.getCreateIndexSpecificationsFor(…)`, and `CassandraMappingContext.getCreateUserTypeSpecificationFor(…)`).
+
+[[deprecations]]
+== Deprecations
+
+* `CassandraCqlSessionFactoryBean`, use `CqlSessionFactoryBean` instead.
+* `KeyspaceIdentifier` and `CqlIdentifier`, use `com.datastax.oss.driver.api.core.CqlIdentifier` instead.
+* `CassandraSessionFactoryBean`, use `CqlSessionFactoryBean` instead.
+* `AbstractCqlTemplateConfiguration`, use `AbstractSessionConfiguration` instead.
+* `AbstractSessionConfiguration.getClusterName()`, use `AbstractSessionConfiguration.getSessionName()` instead.
+* `CodecRegistryTupleTypeFactory`, use `SimpleTupleTypeFactory` instead.
+* Spring Data's `CqlIdentifier`, use the driver `CqlIdentifier` instead.
+* `forceQuote` attributes as quoting is no longer required. `CqlIdentifier` properly escapes reserved keywords and takes care of case-sensitivity.
+* `fetchSize` on  `QueryOptions` and `…CqlTemplate` types was deprecated, use `pageSize` instead
+* `CassandraMappingContext.setUserTypeResolver(…)`,  `CassandraMappingContext.setCodecRegistry(…)`, and `CassandraMappingContext.setCustomConversions(…)`: Configure these properties on `CassandraConverter`.
+* `TupleTypeFactory` and `CassandraMappingContext.setTupleTypeFactory(…)`: `TupleTypeFactory` is no longer used as the Cassandra driver ships with a `DataTypes.tupleOf(…)` factory method.
+* Schema creation via `CqlSessionFactoryBean` (`cassandra:session`) is deprecated.
+Keyspace creation via `CqlSessionFactoryBean` (`cassandra:session`) is not affected.
+
+[[removals]]
+== Removals
+
+[[removal.configuration-api]]
+=== Configuration API
+
+* `PoolingOptionsFactoryBean`
+* `SocketOptionsFactoryBean`
+* `CassandraClusterFactoryBean`
+* `CassandraClusterParser`
+* `CassandraCqlClusterFactoryBean`
+* `CassandraCqlClusterParser`
+* `CassandraCqlSessionParser`
+* `AbstractClusterConfiguration`
+* `ClusterBuilderConfigurer` (use `SessionBuilderConfigurer` instead
+
+[[utilities]]
+=== Utilities
+
+* `GuavaListenableFutureAdapter`
+* `QueryOptions` and `WriteOptions` constructor taking `ConsistencyLevel` and `RetryPolicy` arguments.
+Use the builder in conjunction of execution profiles as replacement.
+* `CassandraAccessor.setRetryPolicy(…)` and `ReactiveCqlTemplate.setRetryPolicy(…)` methods.
+Use execution profiles as replacement.
+
+[[removal.namespace-support]]
+=== Namespace support
+
+* `cql` namespace (`http://www.springframework.org/schema/cql`, use `http://www.springframework.org/schema/data/cassandra` instead)
+* `cassandra:cluster` (endpoint properties merged to `cassandra:session`)
+* `cql:template`, use `cassandra:cql-template` instead
+* Removed implicit bean registrations Mapping Context, Context and Template API beans.
+These must be declared explicitly.
+
+[[additions]]
+== Additions
+
+[[add.configuration-api]]
+=== Configuration API
+
+* `CqlSessionFactoryBean`
+* `InitializeKeyspaceBeanDefinitionParser`
+* `SessionFactoryFactoryBean` including schema creation via `KeyspacePopulator`
+* `KeyspacePopulator` and `SessionFactoryInitializer` to initialize a keyspace
+
+[[add.namespace-support]]
+=== Namespace support
+
+* `cassandra:cluster` (endpoint properties merged to `cassandra:session`)
+* `cassandra:initialize-keyspace` namespace support
+* `cassandra:session-factory` with `cassandra:script` support

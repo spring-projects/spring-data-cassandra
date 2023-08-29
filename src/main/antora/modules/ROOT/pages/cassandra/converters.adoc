@@ -1,0 +1,47 @@
+include::{commons}@data-commons::page$custom-conversions.adoc[]
+
+[[cassandra.custom-converters]]
+== Overriding Default Mapping with Custom Converters
+
+To have more fine-grained control over the mapping process, you can register Spring `Converters` with
+`CassandraConverter` implementations, such as `MappingCassandraConverter`.
+
+`MappingCassandraConverter` first checks to see whether any Spring `Converters` can handle a specific class before attempting to map the object itself.
+To "'hijack'" the normal mapping strategies of the `MappingCassandraConverter` (perhaps for increased performance or other custom mapping needs), you need to create an implementation of the Spring `Converter` interface and register it with the `MappingCassandraConverter`.
+
+[[customconversions.writer]]
+=== Saving by Using a Registered Spring Converter
+
+You can combine converting and saving in a single process, basically using the converter to do the saving.
+
+The following example uses a `Converter` to convert a `Person` object to a `java.lang.String`
+with Jackson 2:
+
+[source,java]
+----
+include::example$PersonWriteConverter.java[tags=class]
+----
+
+[[customconversions.reader]]
+=== Reading by Using a Spring Converter
+
+Similar to how you can combine saving and converting, you can also combine reading and converting.
+
+The following example uses a `Converter` that converts a `java.lang.String` into a `Person` object with Jackson 2:
+
+[source,java]
+----
+include::example$PersonReadConverter.java[tags=class]
+----
+
+[[customconversions.java]]
+=== Registering Spring Converters with `CassandraConverter`
+
+Spring Data for Apache Cassandra Java configuration provides a convenient way to register Spring `Converter` instances:
+`MappingCassandraConverter`.
+The following configuration snippet shows how to manually register converters as well as configure `CustomConversions`:
+
+[source,java]
+----
+include::example$ConverterConfiguration.java[tags=class]
+----

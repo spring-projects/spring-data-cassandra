@@ -1,0 +1,64 @@
+[[cassandra.auditing]]
+= Auditing Configuration for Cassandra
+
+To activate auditing functionality, create a configuration as the following example shows:
+
+.Activating auditing through configuration
+[tabs]
+======
+Java::
++
+[source,java,indent=0,subs="verbatim,quotes",role="primary"]
+----
+@Configuration
+@EnableCassandraAuditing
+class Config {
+
+  @Bean
+  public AuditorAware<AuditableUser> myAuditorProvider() {
+      return new AuditorAwareImpl();
+  }
+}
+----
+
+XML::
++
+[source,xml,indent=0,subs="verbatim,quotes",role="secondary"]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:cassandra="http://www.springframework.org/schema/data/cassandra"
+  xsi:schemaLocation="
+    http://www.springframework.org/schema/data/cassandra
+    https://www.springframework.org/schema/data/cassandra/spring-cassandra.xsd
+    http://www.springframework.org/schema/beans
+    https://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <cassandra:auditing mapping-context-ref="customMappingContext" auditor-aware-ref="yourAuditorAwareImpl"/>
+</beans>
+----
+======
+
+If you expose a bean of type `AuditorAware` to the `ApplicationContext`, the auditing infrastructure picks it up automatically and uses it to determine the current user to be set on domain types.
+If you have multiple implementations registered in the `ApplicationContext`, you can select the one to be used by explicitly setting the `auditorAwareRef` attribute of `@EnableCassandraAuditing`.
+
+To enable auditing, leveraging a reactive programming model, use the `@EnableReactiveCassandraAuditing` annotation. +
+If you expose a bean of type `ReactiveAuditorAware` to the `ApplicationContext`, the auditing infrastructure picks it up automatically and uses it to determine the current user to be set on domain types.
+If you have multiple implementations registered in the `ApplicationContext`, you can select the one to be used by explicitly setting the `auditorAwareRef` attribute of `@EnableReactiveCassandraAuditing`.
+
+.Activating reactive auditing using JavaConfig
+====
+[source,java]
+----
+@Configuration
+@EnableReactiveCassandraAuditing
+class Config {
+
+  @Bean
+  public ReactiveAuditorAware<AuditableUser> myAuditorProvider() {
+      return new AuditorAwareImpl();
+  }
+}
+----
+====

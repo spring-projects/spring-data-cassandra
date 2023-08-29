@@ -1,8 +1,0 @@
-[[cassandra.migration]]
-= Appendix E: Migration Guides
-
-include::migration-guide-1.5-to-2.0.adoc[leveloffset=+1]
-
-include::migration-guide-2.2-to-3.0.adoc[leveloffset=+1]
-
-include::migration-guide-3.0-to-4.0.adoc[leveloffset=+1]

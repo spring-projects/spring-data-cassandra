@@ -1,0 +1,103 @@
+[[cassandra.getting-started]]
+= Getting Started
+
+Spring Data for Apache Cassandra requires Apache Cassandra 2.1 or later and Datastax Java Driver 4.0 or later.
+An easy way to quickly set up and bootstrap a working environment is to create a Spring-based project in https://spring.io/tools[Spring Tools] or use https://start.spring.io/[Spring Initializer].
+
+[[cassandra.examples-repo]]
+== Examples Repository
+
+To get a feel for how the library works, you can download and play around with
+https://github.com/spring-projects/spring-data-examples[several examples].
+
+[[cassandra.hello-world]]
+== Hello World
+
+First, you need to set up a running Apache Cassandra server.
+See the
+https://cassandra.apache.org/doc/latest/getting_started/index.html[Apache Cassandra Quick Start Guide]
+for an explanation on how to start Apache Cassandra.
+Once installed, starting Cassandra is typically a matter of executing the following command: `CASSANDRA_HOME/bin/cassandra -f`.
+
+To create a Spring project in STS, go to File -> New -> Spring Template Project -> Simple Spring Utility Project and press Yes when prompted.
+Then enter a project and a package name, such as `org.spring.data.cassandra.example`.
+
+Then you can add the following dependency declaration to your pom.xml file's `dependencies` section.
+
+====
+[source,xml,subs="verbatim,attributes"]
+----
+<dependencies>
+
+  <dependency>
+    <groupId>org.springframework.data</groupId>
+    <artifactId>spring-data-cassandra</artifactId>
+    <version>{version}</version>
+  </dependency>
+
+</dependencies>
+----
+====
+
+Also, you should change the version of Spring in the pom.xml file to be as follows:
+
+====
+[source,xml,subs="verbatim,attributes"]
+----
+<spring.version>{springVersion}</spring.version>
+----
+====
+
+If using a milestone release instead of a GA release, you also need to add the location of the Spring Milestone repository for Maven to your pom.xml file so that it is at the same level of your `<dependencies/>` element, as follows:
+
+[source,xml]
+----
+<repositories>
+  <repository>
+    <id>spring-milestone</id>
+    <name>Spring Maven MILESTONE Repository</name>
+    <url>https://repo.spring.io/milestone</url>
+  </repository>
+</repositories>
+----
+
+The repository is also https://repo.spring.io/milestone/org/springframework/data/[browseable here].
+
+You can also browse all Spring repositories https://repo.spring.io/webapp/#/home[here].
+
+Now you can create a simple Java application that stores and reads a domain object to and from Cassandra.
+
+To do so, first create a simple domain object class to persist, as the following example shows:
+
+====
+[source,java]
+----
+include::example$Person.java[tags=file]
+----
+====
+
+Next, create the main application to run, as the following example shows:
+
+[tabs]
+======
+Imperative::
++
+[source,java,indent=0,subs="verbatim,quotes",role="primary"]
+----
+include::example$CassandraApplication.java[tags=file]
+----
+
+Reactive::
++
+[source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
+----
+include::example$ReactiveCassandraApplication.java[tags=file]
+----
+======
+
+Even in this simple example, there are a few notable things to point out:
+
+* You can create an instance of `CassandraTemplate` (or `ReactiveCassandraTemplate` for reactive usage) with a Cassandra `CqlSession`.
+* You must annotate your POJO as a Cassandra `@Table` entity and also annotate the `@PrimaryKey`.
+Optionally, you can override these mapping names to match your Cassandra database table and column names.
+* You can either use raw CQL or the DataStax `QueryBuilder` API to construct your queries.

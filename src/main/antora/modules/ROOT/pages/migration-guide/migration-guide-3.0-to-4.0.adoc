@@ -1,0 +1,11 @@
+[[cassandra.migration.3.x-to-4.x]]
+= Migration Guide from 3.x to 4.x
+
+Spring Data for Apache Cassandra 4.0 introduces a set of breaking changes when upgrading from earlier versions.
+
+[[asynchronous-template-api]]
+== Asynchronous Template API
+
+With the deprecation of `ListenableFuture`, `AsyncCqlOperations` and `AsyncCassandraOperations` and their dependant classes were migrated to `CompletableFuture`.
+If your application heavily depends on `ListenableFuture` and you cannot easily migrate to `CompletableFuture` then we suggest switching to the legacy `Async…Operations` types in the `legacy` subpackage.
+That is `org.springframework.data.cassandra.core.cql.legacy` for `AsyncCqlOperations` and `org.springframework.data.cassandra.core.legacy` for `AsyncCassandraOperations`.

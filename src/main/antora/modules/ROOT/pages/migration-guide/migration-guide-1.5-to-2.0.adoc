@@ -1,0 +1,140 @@
+[[cassandra.migration.1.x-to-2.x]]
+= Migration Guide from 1.x to 2.x
+
+Spring Data for Apache Cassandra 2.0 introduces a set of breaking changes when upgrading from earlier versions:
+
+* Merged the `spring-cql` and `spring-data-cassandra` modules into a single module.
+* Separated asynchronous and synchronous operations in `CqlOperations` and `CassandraOperations`
+into dedicated interfaces and templates.
+* Revised the `CqlTemplate` API to align with `JdbcTemplate`.
+* Removed the `CassandraOperations.selectBySimpleIds` method.
+* Used better names for `CassandraRepository`.
+* Removed SD Cassandra `ConsistencyLevel` and `RetryPolicy` types in favor of DataStax `ConsistencyLevel` and `RetryPolicy` types.
+* Refactored CQL specifications to value objects and configurators.
+* Refactored `QueryOptions` to be immutable objects.
+* Refactored `CassandraPersistentProperty` to single-column.
+
+[[deprecations]]
+== Deprecations
+
+* Deprecated `QueryOptionsBuilder.readTimeout(long, TimeUnit)` in favor of `QueryOptionsBuilder.readTimeout(Duration)`.
+* Deprecated `CustomConversions` in favor of `CassandraCustomConversions`.
+* Deprecated `BasicCassandraMappingContext` in favor of `CassandraMappingContext`.
+* Deprecated `o.s.d.c.core.cql.CachedPreparedStatementCreator` in favor of `o.s.d.c.core.cql.support.CachedPreparedStatementCreator`.
+* Deprecated `CqlTemplate.getSession()` in favor of `getSessionFactory()`.
+* Deprecated `CqlIdentifier.cqlId(…)` and `KeyspaceIdentifier.ksId(…)` in favor of the `.of(…)` methods.
+* Deprecated constructors of `QueryOptions` in favor of their builders.
+* Deprecated `TypedIdCassandraRepository` in favor of `CassandraRepository`
+
+[[merged-spring-cql-and-spring-data-cassandra-modules]]
+== Merged Spring CQL and Spring Data Cassandra Modules
+
+Spring CQL and Spring Data Cassandra are now merged into a single module.
+The standalone `spring-cql` module is no longer available.
+You can find all types merged into `spring-data-cassandra`.
+The following listing shows how to include `spring-data-cassandra` in your maven dependencies:
+
+====
+[source,xml,subs="verbatim,attributes"]
+----
+<dependencies>
+
+  <dependency>
+    <groupId>org.springframework.data</groupId>
+    <artifactId>spring-data-cassandra</artifactId>
+    <version>{version}</version>
+  </dependency>
+
+</dependencies>
+----
+====
+
+With the merge, we merged all CQL packages into Spring Data Cassandra:
+
+* Moved `o.s.d.cql` into `o.s.d.cassandra.core.cql`.
+* Merged `o.s.d.cql` with `o.s.d.cassandra.config` and flattened the XML and Java subpackages.
+* Moved `CassandraExceptionTranslator` and `CqlExceptionTranslator` to `o.s.d.c.core.cql`.
+* Moved Cassandra exceptions `o.s.d.c.support.exception` to `o.s.d.cassandra`.
+* Moved `o.s.d.c.convert` to `o.s.d.c.core.convert` (affects converters).
+* Moved `o.s.d.c.mapping` to `o.s.d.c.core.mapping` (affects mapping annotations).
+* Moved `MapId` from `o.s.d.c.repository` to `o.s.d.c.core.mapping`.
+
+[[revised-cqltemplate/cassandratemplate]]
+== Revised `CqlTemplate`/`CassandraTemplate`
+
+We split `CqlTemplate` and `CassandraTemplate` in three ways:
+
+* `CassandraTemplate` is no longer a `CqlTemplate` but uses an instance that allows reuse and fine-grained control over fetch size, consistency levels, and retry policies.
+You can obtain the `CqlOperations` through
+`CassandraTemplate.getCqlOperations()`.
+Because of the change, dependency injection of `CqlTemplate` requires additional bean setup.
+* `CqlTemplate` now reflects basic CQL operations instead of mixing high-level and low-level API calls (such as `count(…)`
+versus `execute(…)`) and the reduced method set is aligned with Spring Frameworks's `JdbcTemplate` with its convenient callback interfaces.
+* Asynchronous methods are re-implemented on `AsyncCqlTemplate` and `AsyncCassandraTemplate` by using `ListenableFuture`.
+We removed `Cancellable` and the various async callback listeners. `ListenableFuture` is a flexible approach and allows transition into a `CompletableFuture`.
+
+[[removed-cassandraoperations-selectbysimpleids]]
+== Removed `CassandraOperations.selectBySimpleIds()`
+
+The method was removed because it did not support complex IDs.
+The newly introduced query DSL allows mapped and complex id's for single column Id's, as the following example shows:
+
+====
+[source,java]
+----
+cassandraTemplate.select(Query.query(Criteria.where("id").in(…)), Person.class)
+----
+====
+
+[[better-names-for-cassandrarepository]]
+== Better names for `CassandraRepository`
+
+We renamed `CassandraRepository` and `TypedIdCassandraRepository` to align Spring Data Cassandra naming with other Spring Data modules:
+
+* Renamed `CassandraRepository` to `MapIdCassandraRepository`
+* Renamed `TypedIdCassandraRepository` to `CassandraRepository`
+* Introduced `TypedIdCassandraRepository`, extending `CassandraRepository` as a deprecated type to ease migration
+
+[[removed-sd-cassandra-consistencylevel-and-retrypolicy-types-in-favor-of-datastax-consistencylevel-and-retrypolicy-types]]
+== Removed SD Cassandra `ConsistencyLevel` and `RetryPolicy` types in favor of DataStax `ConsistencyLevel` and `RetryPolicy` types
+
+Spring Data Cassandra `ConsistencyLevel` and `RetryPolicy` have been removed.
+Please use the types provided by the DataStax driver.
+
+The Spring Data Cassandra types restricted usage of available features provided in and allowed by the Cassandra native driver.
+As a result, the Spring Data Cassandra's types required an update each time newer functionality was introduced by the driver.
+
+[[refactored-cql-specifications-to-value-objects-and-configurators]]
+== Refactored CQL Specifications to Value Objects and Configurators
+
+As much as possible, CQL specification types are now value types (such as `FieldSpecification`, `AlterColumnSpecification`), and objects are constructed by static factory methods.
+This allows immutability for simple value objects.
+Configurator objects (such as `AlterTableSpecification`) that operate on mandatory properties (such as a table name or keyspace name) are initially constructed through a a static factory method and allow further configuration until the desired state is created.
+
+[[refactored-queryoptions-to-be-immutable-objects]]
+== Refactored `QueryOptions` to be Immutable Objects
+
+`QueryOptions` and `WriteOptions` are now immutable and can be created through builders.
+Methods accepting
+`QueryOptions` enforce non-null objects, which are available from static `empty()` factory methods.
+The following example shows how to use `QueryOptions.builder()`:
+
+[source,java]
+----
+QueryOptions queryOptions = QueryOptions.builder()
+		.consistencyLevel(ConsistencyLevel.ANY)
+		.retryPolicy(FallthroughRetryPolicy.INSTANCE)
+		.readTimeout(Duration.ofSeconds(10))
+		.fetchSize(10)
+		.tracing(true)
+		.build();
+----
+
+[[refactored-cassandrapersistentproperty-to-single-column]]
+== Refactored `CassandraPersistentProperty` to Single-column
+
+This change affects You only if you operate directly on the mapping model.
+
+`CassandraPersistentProperty` allowed previously multiple column names to be bound for composite primary key use.
+Columns of a `CassandraPersistentProperty` are now reduced to a single column.
+Resolved composite primary keys map to a class through `MappingContext.getRequiredPersistentEntity(…)`.

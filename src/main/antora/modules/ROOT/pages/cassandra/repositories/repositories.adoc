@@ -1,0 +1,246 @@
+[[cassandra.repositories]]
+= Cassandra Repositories
+
+To access domain entities stored in Apache Cassandra, you can use Spring Data's sophisticated repository support, which significantly eases implementing DAOs.
+To do so, create an interface for your repository, as the following example shows:
+
+.Sample Person entity
+====
+[source,java]
+----
+@Table
+public class Person {
+
+  @Id
+  private String id;
+  private String firstname;
+  private String lastname;
+
+  // … getters and setters omitted
+}
+----
+====
+
+Note that the entity has a property named `id` of type `String`.
+The default conversion mechanism used in `MappingCassandraConverter` (which backs the repository support) regards properties named `id` as being the row ID.
+
+The following example shows a repository definition to persist `Person` entities:
+
+.Basic repository interface to persist `Person` entities
+[tabs]
+======
+Imperative::
++
+[source,java,indent=0,subs="verbatim,quotes",role="primary"]
+----
+interface PersonRepository extends CrudRepository<Person, String> {
+
+  // additional custom finder methods go here
+}
+----
+
+Reactive::
++
+[source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
+----
+interface PersonRepository extends ReactiveCrudRepository<Person, String> {
+
+  // additional custom finder methods go here
+}
+----
+======
+
+Right now, the interface in the preceding example serves only typing purposes, but we add additional methods to it later.
+
+Next, in your Spring configuration, add the following (if you use Java for configuration):
+
+If you want to use Java configuration, use the `@EnableCassandraRepositories` respective `@EnableReactiveCassandraRepositories` annotation.
+The annotation carries the same attributes as the namespace element.
+If no base package is configured, the infrastructure scans the package of the annotated configuration class.
+The following example show how to the different configuration approaches:
+
+.Configuration for repositories
+[tabs]
+======
+Imperative Java Configuration::
++
+[source,java,indent=0,subs="verbatim,quotes",role="primary"]
+----
+@Configuration
+@EnableCassandraRepositories
+class ApplicationConfig extends AbstractCassandraConfiguration {
+
+  @Override
+  protected String getKeyspaceName() {
+    return "keyspace";
+  }
+
+  public String[] getEntityBasePackages() {
+    return new String[] { "com.oreilly.springdata.cassandra" };
+  }
+}
+----
+
+XML::
++
+[source,xml,indent=0,subs="verbatim,quotes",role="secondary"]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:cassandra="http://www.springframework.org/schema/data/cassandra"
+  xsi:schemaLocation="
+    http://www.springframework.org/schema/data/cassandra
+    https://www.springframework.org/schema/data/cassandra/spring-cassandra.xsd
+    http://www.springframework.org/schema/beans
+    https://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <cassandra:session port="9042" keyspace-name="keyspaceName"/>
+
+    <cassandra:mapping
+            entity-base-packages="com.acme.*.entities">
+    </cassandra:mapping>
+
+    <cassandra:converter/>
+
+    <cassandra:template/>
+
+    <cassandra:repositories base-package="com.acme.*.entities"/>
+</beans>
+----
+
+Reactive Java Configuration::
++
+[source,java,indent=0,subs="verbatim,quotes",role="third"]
+----
+@Configuration
+@EnableReactiveCassandraRepositories
+class ApplicationConfig extends AbstractReactiveCassandraConfiguration {
+
+  @Override
+  protected String getKeyspaceName() {
+    return "keyspace";
+  }
+
+  public String[] getEntityBasePackages() {
+    return new String[] { "com.oreilly.springdata.cassandra" };
+  }
+}
+----
+======
+
+The `cassandra:repositories` namespace element causes the base packages to be scanned for interfaces that extend `CrudRepository` and create Spring beans for each one found.
+By default, the repositories are wired with a `CassandraTemplate` Spring bean called `cassandraTemplate`, so you only need to configure
+`cassandra-template-ref` explicitly if you deviate from this convention.
+
+Because our domain repository extends `CrudRepository` respective `ReactiveCrudRepository`, it provides you with basic CRUD operations.
+Working with the repository instance is a matter of injecting the repository as a dependency into a client, as the following example does by autowiring `PersonRepository`:
+
+.Basic access to Person entities
+[tabs]
+======
+Imperative::
++
+[source,java,indent=0,subs="verbatim,quotes",role="primary"]
+----
+@ExtendWith(SpringExtension.class)
+class PersonRepositoryTests {
+
+    @Autowired PersonRepository repository;
+
+    @Test
+    void readsPersonTableCorrectly() {
+
+      List<Person> persons = repository.findAll();
+      assertThat(persons.isEmpty()).isFalse();
+    }
+}
+----
+
+Reactive::
++
+[source,java,indent=0,subs="verbatim,quotes",role="secondary"]
+----
+public class PersonRepositoryTests {
+
+    @Autowired ReactivePersonRepository repository;
+
+    @Test
+    public void sortsElementsCorrectly() {
+        Flux<Person> people = repository.findAll(Sort.by(new Order(ASC, "lastname")));
+    }
+}
+----
+======
+
+Cassandra repositories support paging and sorting for paginated and sorted access to the entities.
+Cassandra paging requires a paging state to forward-only navigate through pages.
+A `Slice` keeps track of the current paging state and allows for creation of a `Pageable` to request the next page.
+The following example shows how to set up paging access to `Person` entities:
+
+.Paging access to `Person` entities
+[tabs]
+======
+Imperative::
++
+[source,java,indent=0,subs="verbatim,quotes",role="primary"]
+----
+@ExtendWith(SpringExtension.class)
+class PersonRepositoryTests {
+
+    @Autowired PersonRepository repository;
+
+    @Test
+    void readsPagesCorrectly() {
+
+      Slice<Person> firstBatch = repository.findAll(CassandraPageRequest.first(10));
+
+      assertThat(firstBatch).hasSize(10);
+
+      Slice<Person> nextBatch = repository.findAll(firstBatch.nextPageable());
+
+      // …
+    }
+}
+----
+
+Reactive::
++
+[source,java,indent=0,subs="verbatim,quotes",role="secondary"]
+----
+@ExtendWith(SpringExtension.class)
+class PersonRepositoryTests {
+
+    @Autowired PersonRepository repository;
+
+    @Test
+    void readsPagesCorrectly() {
+
+      Mono<Slice<Person>> firstBatch = repository.findAll(CassandraPageRequest.first(10));
+
+      Mono<Slice<Person>> nextBatch = firstBatch.flatMap(it -> repository.findAll(it.nextPageable()));
+
+      // …
+    }
+}}
+----
+======
+
+NOTE: Cassandra repositories do not extend `PagingAndSortingRepository`, because classic paging patterns using limit/offset are not applicable to Cassandra.
+
+The preceding example creates an application context with Spring's unit test support, which performs annotation-based dependency injection into the test class.
+Inside the test cases (the test methods), we use the repository to query the data store.
+We invoke the repository query method that requests all `Person` instances.
+
+[[cassandra.repositories.reactive]]
+== Reactive Repositories
+
+Spring Data's repository abstraction is a dynamic API that is mostly defined by you and your requirements as you declare query methods.
+Reactive Cassandra repositories can be implemented by using either RxJava or Project Reactor wrapper types by extending from one of the library-specific repository interfaces:
+
+* `ReactiveCrudRepository`
+* `ReactiveSortingRepository`
+* `RxJava3CrudRepository`
+* `RxJava3SortingRepository`
+
+Spring Data converts reactive wrapper types behind the scenes so that you can stick to your favorite composition library.

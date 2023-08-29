@@ -1,0 +1,36 @@
+[[cassandra.reactive]]
+= Reactive Infrastructure
+
+The reactive Cassandra support contains a wide range of features:
+
+* Spring configuration support using Java-based `@Configuration` classes.
+* `ReactiveCqlTemplate` helper class that increases productivity by properly handling common Cassandra data access operations.
+* `ReactiveCassandraTemplate` helper class that increases productivity by using `ReactiveCassandraOperations` in a reactive manner.
+It includes integrated object mapping between tables and POJOs.
+* Exception translation into Spring's portable {springDocsUrl}data-access.html#dao-exceptions[Data Access Exception Hierarchy].
+* Feature rich object mapping integrated with Spring's {springDocsUrl}core.html#core-convert[Conversion Service].
+* Java-based Query, Criteria, and Update DSLs.
+* Automatic implementation of `Repository` interfaces, including support for custom finder methods.
+
+For most data-oriented tasks, you can use the `ReactiveCassandraTemplate` or the repository support, which use the rich object mapping functionality. `ReactiveCqlTemplate` is commonly used to increment counters or perform ad-hoc CRUD operations. `ReactiveCqlTemplate` also provides callback methods that make it easy to get low-level API objects, such as `com.datastax.oss.driver.api.core.CqlSession`, which let you communicate directly with Cassandra.
+Spring Data for Apache Cassandra uses consistent naming conventions on objects in various APIs to those found in the DataStax Java Driver so that they are immediately familiar and so that you can map your existing knowledge onto the Spring APIs.
+
+Reactive usage is broken up into two phases: Composition and Execution.
+
+Calling repository methods lets you compose a reactive sequence by obtaining `Publisher` instances and applying operators.
+No I/O happens until you subscribe.
+Passing the reactive sequence to a reactive execution infrastructure, such as {springDocsUrl}web.html#web-reactive[Spring WebFlux]
+or https://vertx.io/docs/vertx-reactive-streams/java/[Vert.x]), subscribes to the publisher and initiate the actual execution.
+See https://projectreactor.io/docs/core/release/reference/#reactive.subscribe[the Project reactor documentation] for more detail.
+
+[[cassandra.reactive.repositories.libraries]]
+== Reactive Composition Libraries
+
+The reactive space offers various reactive composition libraries.
+The most common libraries are
+https://github.com/ReactiveX/RxJava[RxJava] and https://projectreactor.io/[Project Reactor].
+
+Spring Data for Apache Cassandra is built on top of the https://github.com/datastax/java-driver[DataStax Cassandra Driver].
+The driver is not reactive but the asynchronous capabilities allow us to adopt and expose the `Publisher` APIs to provide maximum interoperability by relying on the https://www.reactive-streams.org/[Reactive Streams] initiative.
+Static APIs, such as `ReactiveCassandraOperations`, are provided by using Project Reactor's `Flux` and `Mono` types.
+Project Reactor offers various adapters to convert reactive wrapper types (`Flux` to `Observable` and back), but conversion can easily clutter your code.

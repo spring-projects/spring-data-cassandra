@@ -15,4 +15,9 @@ build
 .idea
 download
 work
+build/
+node_modules
+node
+package.json
+package-lock.json
 

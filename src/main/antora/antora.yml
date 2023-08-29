@@ -1,0 +1,12 @@
+name: data-cassandra
+version: true
+title: Spring Data Cassandra
+nav:
+  - modules/ROOT/nav.adoc
+ext:
+  collector:
+    - run:
+        command: ./mvnw validate process-resources -pl :spring-data-cassandra-distribution -am -Pantora-process-resources
+        local: true
+      scan:
+        dir: spring-data-cassandra-distribution/target/classes/

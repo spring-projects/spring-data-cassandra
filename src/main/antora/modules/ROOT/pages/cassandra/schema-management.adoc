@@ -1,0 +1,253 @@
+[[cassandra.schema-management]]
+= Schema Management
+
+Apache Cassandra is a data store that requires a schema definition prior to any data interaction.
+Spring Data for Apache Cassandra can support you with schema creation.
+
+[[keyspaces-and-lifecycle-scripts]]
+== Keyspaces and Lifecycle Scripts
+
+The first thing to start with is a Cassandra keyspace.
+A keyspace is a logical grouping of tables that share the same replication factor and replication strategy.
+Keyspace management is located in the `CqlSession` configuration, which has the `KeyspaceSpecification` and startup and shutdown CQL script execution.
+
+Declaring a keyspace with a specification allows creating and dropping of the Keyspace.
+It derives CQL from the specification so that you need not write CQL yourself.
+The following example specifies a Cassandra keyspace by using XML:
+
+.Specifying a Cassandra keyspace
+====
+.Java
+[source,java,role="primary"]
+----
+include::example$CreateKeyspaceConfiguration.java[tags=class]
+----
+
+.XML
+[source,xml,role="secondary"]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:cassandra="http://www.springframework.org/schema/data/cassandra"
+  xsi:schemaLocation="
+    http://www.springframework.org/schema/data/cassandra
+    https://www.springframework.org/schema/data/cassandra/spring-cassandra.xsd
+    http://www.springframework.org/schema/beans
+    https://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <cassandra:session>
+
+        <cassandra:keyspace action="CREATE_DROP" durable-writes="true" name="my_keyspace">
+            <cassandra:replication class="NETWORK_TOPOLOGY_STRATEGY">
+              <cassandra:data-center name="foo" replication-factor="1" />
+              <cassandra:data-center name="bar" replication-factor="2" />
+            </cassandra:replication>
+      </cassandra:keyspace>
+
+    </cassandra:session>
+</beans>
+----
+====
+
+NOTE: Keyspace creation allows rapid bootstrapping without the need of external keyspace management.
+This can be useful for certain scenarios but should be used with care.
+Dropping a keyspace on application shutdown removes the keyspace and all data from the tables in the keyspace.
+
+[[cassandra.schema-management.initializing]]
+== Initializing a `SessionFactory`
+
+The `org.springframework.data.cassandra.core.cql.session.init` package provides support for initializing an existing `SessionFactory`.
+You may sometimes need to initialize a keyspace that runs on a server somewhere.
+
+[[cassandra.schema-management.initializing.config]]
+=== Initializing a Keyspace
+
+You can provide arbitrary CQL that is executed on `CqlSession` initialization and shutdown in the configured keyspace, as the following Java configuration example shows:
+
+====
+.Java
+[source,java,role="primary"]
+----
+include::example$KeyspacePopulatorConfiguration.java[tags=class]
+----
+
+.XML
+[source,xml,indent=0,subs="verbatim,quotes",role="secondary"]
+----
+<cassandra:initialize-keyspace session-factory-ref="cassandraSessionFactory">
+    <cassandra:script location="classpath:com/foo/cql/db-schema.cql"/>
+    <cassandra:script location="classpath:com/foo/cql/db-test-data.cql"/>
+</cassandra:initialize-keyspace>
+----
+====
+
+The preceding example runs the two specified scripts against the keyspace.
+The first script creates a schema, and the second populates tables with a test data set.
+The script locations can also be patterns with wildcards in the usual Ant style used for resources in Spring (for example, `classpath{asterisk}:/com/foo/{asterisk}{asterisk}/cql/{asterisk}-data.cql`).
+If you use a pattern, the scripts are run in the lexical order of their URL or filename.
+
+The default behavior of the keyspace initializer is to unconditionally run the provided scripts.
+This may not always be what you want -- for instance, if you run the scripts against a keyspace that already has test data in it.
+The likelihood of accidentally deleting data is reduced by following the common pattern (shown earlier) of creating the tables first and then inserting the data.
+The first step fails if the tables already exist.
+
+However, to gain more control over the creation and deletion of existing data, the XML namespace provides a few additional options.
+The first is a flag to switch the initialization on and off.
+You can set this according to the environment (such as pulling a boolean value from system properties or from an environment bean).
+The following example gets a value from a system property:
+
+====
+[source,xml,indent=0,subs="verbatim,quotes"]
+----
+<cassandra:initialize-keyspace session-factory-ref="cassandraSessionFactory"
+    enabled="#{systemProperties.INITIALIZE_KEYSPACE}">    <1>
+    <cassandra:script location="..."/>
+</cassandra:initialize-database>
+----
+<1> Get the value for `enabled` from a system property called `INITIALIZE_KEYSPACE`.
+====
+
+The second option to control what happens with existing data is to be more tolerant of failures.
+To this end, you can control the ability of the initializer to ignore certain errors in the CQL it executes from the scripts, as the following example shows:
+
+====
+.Java
+[source,java,role="primary"]
+----
+include::example$KeyspacePopulatorFailureConfiguration.java[tags=class]
+----
+
+.XML
+[source,xml,indent=0,subs="verbatim,quotes",role="secondary"]
+----
+<cassandra:initialize-keyspace session-factory-ref="cassandraSessionFactory" ignore-failures="DROPS">
+    <cassandra:script location="..."/>
+</cassandra:initialize-database>
+----
+====
+
+In the preceding example, we are saying that we expect that, sometimes, the scripts are run against an empty keyspace, and there are some `DROP` statements in the scripts that would, therefore, fail.
+So failed CQL `DROP` statements will be ignored, but other failures will cause an exception.
+This is useful if you don't want tu use support `DROP ... IF EXISTS` (or similar) but you want to unconditionally remove all test data before re-creating it.
+In that case the first script is usually a set of `DROP` statements, followed by a set of `CREATE` statements.
+
+The `ignore-failures` option can be set to `NONE` (the default), `DROPS` (ignore failed drops), or `ALL` (ignore all failures).
+
+Each statement should be separated by `;` or a new line if the `;` character is not present at all in the script.
+You can control that globally or script by script, as the following example shows:
+
+====
+.Java
+[source,java,role="primary"]
+----
+include::example$SessionFactoryInitializerConfiguration.java[tags=class]
+----
+
+.XML
+[source,xml,indent=0,subs="verbatim,quotes",role="secondary"]
+----
+<cassandra:initialize-keyspace session-factory-ref="cassandraSessionFactory" separator="@@">
+    <cassandra:script location="classpath:com/myapp/cql/db-schema.cql" separator=";"/>
+    <cassandra:script location="classpath:com/myapp/cql/db-test-data-1.cql"/>
+    <cassandra:script location="classpath:com/myapp/cql/db-test-data-2.cql"/>
+</cassandra:initialize-keyspace>
+----
+====
+
+
+In this example, the two `test-data` scripts use `@@` as statement separator and only the `db-schema.cql` uses `;`.
+This configuration specifies that the default separator is `@@` and overrides that default for the `db-schema` script.
+
+If you need more control than you get from the XML namespace, you can use the `SessionFactoryInitializer` directly and define it as a component in your application.
+
+[[cassandra.schema-management.initializing.component]]
+==== Initialization of Other Components that Depend on the Keyspace
+
+A large class of applications (those that do not use the database until after the Spring context has started) can use the database initializer with no further complications.
+If your application is not one of those, you might need to read the rest of this section.
+
+The database initializer depends on a `SessionFactory` instance and runs the scripts provided in its initialization callback (analogous to an `init-method` in an XML bean definition, a `@PostConstruct` method in a component, or the `afterPropertiesSet()` method in a component that implements `InitializingBean`).
+If other beans depend on the same data source and use the session factory in an initialization callback, there might be a problem because the data has not yet been initialized.
+A common example of this is a cache that initializes eagerly and loads data from the database on application startup.
+
+To get around this issue, you have two options: change your cache initialization strategy to a later phase or ensure that the keyspace initializer is initialized first.
+
+Changing your cache initialization strategy might be easy if the application is in your control and not otherwise.
+Some suggestions for how to implement this include:
+
+* Make the cache initialize lazily on first usage, which improves application startup time.
+* Have your cache or a separate component that initializes the cache implement `Lifecycle` or `SmartLifecycle`.
+When the application context starts, you can automatically start a `SmartLifecycle` by setting its `autoStartup` flag, and you can manually start a `Lifecycle` by calling `ConfigurableApplicationContext.start()` on the enclosing context.
+* Use a Spring `ApplicationEvent` or similar custom observer mechanism to trigger the cache initialization. `ContextRefreshedEvent` is always published by the context when it is ready for use (after all beans have been initialized), so that is often a useful hook (this is how the `SmartLifecycle` works by default).
+
+Ensuring that the keyspace initializer is initialized first can also be easy.
+Some suggestions on how to implement this include:
+
+* Rely on the default behavior of the Spring `BeanFactory`, which is that beans are initialized in registration order.
+You can easily arrange that by adopting the common practice of a set of `<import/>` elements in XML configuration that order your application modules and ensuring that the database and database initialization are listed first.
+* Separate the `SessionFactory` and the business components that use it and control their startup order by putting them in separate `ApplicationContext` instances (for example, the parent context contains the `SessionFactory`, and the child context contains the business components).
+This structure is common in Spring web applications but can be more generally applied.
+* Use the Schema management for xref:cassandra/schema-management.adoc#cassandra.schema-management.tables[Tables and User-defined Types] to initialize the keyspace using Spring Data Cassandra's built-in schema generator.
+
+[[cassandra.schema-management.tables]]
+== Tables and User-defined Types
+
+Spring Data for Apache Cassandra approaches data access with mapped entity classes that fit your data model.
+You can use these entity classes to create Cassandra table specifications and user type definitions.
+
+Schema creation is tied to `CqlSession` initialization by `SchemaAction`.
+The following actions are supported:
+
+* `SchemaAction.NONE`: No tables or types are created or dropped.
+This is the default setting.
+* `SchemaAction.CREATE`: Create tables, indexes, and user-defined types from entities annotated with `@Table` and types annotated with `@UserDefinedType`.
+Existing tables or types cause an error if you tried to create the type.
+* `SchemaAction.CREATE_IF_NOT_EXISTS`: Like `SchemaAction.CREATE` but with `IF NOT EXISTS` applied.
+Existing tables or types do not cause any errors but may remain stale.
+* `SchemaAction.RECREATE`: Drops and recreates existing tables and types that are known to be used.
+Tables and types that are not configured in the application are not dropped.
+* `SchemaAction.RECREATE_DROP_UNUSED`: Drops all tables and types and recreates only known tables and types.
+
+NOTE: `SchemaAction.RECREATE` and `SchemaAction.RECREATE_DROP_UNUSED` drop your tables and lose all data.
+`RECREATE_DROP_UNUSED` also drops tables and types that are not known to the application.
+
+[[enabling-tables-and-user-defined-types-for-schema-management]]
+=== Enabling Tables and User-Defined Types for Schema Management
+
+xref:object-mapping.adoc#mapping.usage[Metadata-based Mapping] explains object mapping with conventions and annotations.
+To prevent unwanted classes from being created as a table or a type, schema management is only active for entities annotated with `@Table` and user-defined types annotated with `@UserDefinedType`.
+Entities are discovered by scanning the classpath.
+Entity scanning requires one or more base packages.
+Tuple-typed columns that use `TupleValue` do not provide any typing details.
+Consequently, you must annotate such column properties with `@CassandraType(type = TUPLE, typeArguments = …)`
+to specify the desired column type.
+
+The following example shows how to specify entity base packages in XML configuration:
+
+.Specifying entity base packages
+====
+.Java
+[source,java,role="primary"]
+----
+include::example$EntityBasePackagesConfiguration.java[tags=class]
+----
+
+.XML
+[source,xml,role="secondary"]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:cassandra="http://www.springframework.org/schema/data/cassandra"
+  xsi:schemaLocation="
+    http://www.springframework.org/schema/data/cassandra
+    https://www.springframework.org/schema/data/cassandra/spring-cassandra.xsd
+    http://www.springframework.org/schema/beans
+    https://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <cassandra:mapping entity-base-packages="com.foo,com.bar"/>
+</beans>
+----
+====
+
