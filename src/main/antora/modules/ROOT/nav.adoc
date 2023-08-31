@@ -1,5 +1,9 @@
 * xref:index.adoc[Overview]
 ** xref:commons/upgrade.adoc[]
+** xref:migration-guides.adoc[]
+*** xref:migration-guide/migration-guide-1.5-to-2.0.adoc[]
+*** xref:migration-guide/migration-guide-2.2-to-3.0.adoc[]
+*** xref:migration-guide/migration-guide-3.0-to-4.0.adoc[]
 
 * xref:cassandra.adoc[]
 ** xref:cassandra/getting-started.adoc[]
@@ -38,8 +42,4 @@
 ** xref:kotlin/extensions.adoc[]
 ** xref:kotlin/coroutines.adoc[]
 
-* xref:migration-guides.adoc[]
-** xref:migration-guide/migration-guide-1.5-to-2.0.adoc[]
-** xref:migration-guide/migration-guide-2.2-to-3.0.adoc[]
-** xref:migration-guide/migration-guide-3.0-to-4.0.adoc[]
 * https://github.com/spring-projects/spring-data-commons/wiki[Wiki]
