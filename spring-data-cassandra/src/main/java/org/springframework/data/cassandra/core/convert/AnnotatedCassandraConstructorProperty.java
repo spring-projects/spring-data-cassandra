@@ -222,6 +222,11 @@ class AnnotatedCassandraConstructorProperty implements CassandraPersistentProper
 	}
 
 	@Override
+	public boolean isReadable() {
+		return delegate.isReadable();
+	}
+
+	@Override
 	public boolean isImmutable() {
 		return delegate.isImmutable();
 	}

@@ -211,6 +211,11 @@ class CassandraConstructorProperty implements CassandraPersistentProperty {
 	}
 
 	@Override
+	public boolean isReadable() {
+		return true;
+	}
+
+	@Override
 	public boolean isImmutable() {
 		return false;
 	}
