@@ -62,7 +62,7 @@ private CassandraOperations cassandraOperations;
 
 Reactive::
 +
-[source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
+[source,java,indent=0,subs="verbatim,quotes",role="secondary"]
 ----
 @Autowired
 private ReactiveCassandraOperations reactiveCassandraOperations;
@@ -85,7 +85,7 @@ private CassandraOperations cassandraOperations;
 
 Reactive::
 +
-[source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
+[source,java,indent=0,subs="verbatim,quotes",role="secondary"]
 ----
 @Autowired
 @Qualifier("keyspaceOneTemplateBeanId")
@@ -110,7 +110,7 @@ CassandraOperations cassandraOperations = applicationContext.getBean("cassandraT
 
 Reactive::
 +
-[source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
+[source,java,indent=0,subs="verbatim,quotes",role="secondary"]
 ----
 ReactiveCassandraOperations cassandraOperations = applicationContext.getBean("ReactiveCassandraOperations", ReactiveCassandraOperations.class);
 ----
@@ -151,7 +151,7 @@ List<Person> result = cassandraTemplate.select(query(where("age").is(50))
 
 Reactive::
 +
-[source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
+[source,java,indent=0,subs="verbatim,quotes",role="secondary"]
 ----
 import static org.springframework.data.cassandra.core.query.Criteria.where;
 import static org.springframework.data.cassandra.core.query.Query.query;
@@ -249,7 +249,7 @@ List<SWCharacter> all = ops.query(SWCharacter.class)
 
 Reactive::
 +
-[source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
+[source,java,indent=0,subs="verbatim,quotes",role="secondary"]
 ----
 Flux<SWCharacter> all = ops.query(SWCharacter.class)
   .inTable("star_wars")                        <1>
@@ -278,7 +278,7 @@ List<Jedi> all = ops.query(SWCharacter.class)    <1>
 
 Reactive::
 +
-[source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
+[source,java,indent=0,subs="verbatim,quotes",role="secondary"]
 ----
 Flux<Jedi> all = ops.query(SWCharacter.class)    <1>
   .as(Jedi.class)                                <2>
@@ -347,7 +347,7 @@ Person queriedBob = cassandraTemplate.selectOneById(query(where("age").is(33)), 
 
 Reactive::
 +
-[source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
+[source,java,indent=0,subs="verbatim,quotes",role="secondary"]
 ----
 import static org.springframework.data.cassandra.core.query.Criteria.where;
 import static org.springframework.data.cassandra.core.query.Query.query;
@@ -385,7 +385,7 @@ cassandraTemplate().getCqlOperations().execute(cql);
 
 Reactive::
 +
-[source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
+[source,java,indent=0,subs="verbatim,quotes",role="secondary"]
 ----
 String cql = "INSERT INTO person (age, name) VALUES (39, 'Bob')";
 
@@ -446,7 +446,7 @@ boolean applied = cassandraTemplate.update(Query.query(where("id").is("foo")),
 
 Reactive::
 +
-[source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
+[source,java,indent=0,subs="verbatim,quotes",role="secondary"]
 ----
 import static org.springframework.data.cassandra.core.query.Criteria.where;
 import org.springframework.data.cassandra.core.query.Query;

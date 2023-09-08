@@ -41,7 +41,7 @@ interface PersonRepository extends CrudRepository<Person, String> {
 
 Reactive::
 +
-[source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
+[source,java,indent=0,subs="verbatim,quotes",role="secondary"]
 ----
 interface PersonRepository extends ReactiveCrudRepository<Person, String> {
 

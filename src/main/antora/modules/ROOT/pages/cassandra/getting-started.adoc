@@ -2,7 +2,7 @@
 = Getting Started
 
 Spring Data for Apache Cassandra requires Apache Cassandra 2.1 or later and Datastax Java Driver 4.0 or later.
-An easy way to quickly set up and bootstrap a working environment is to create a Spring-based project in https://spring.io/tools[Spring Tools] or use https://start.spring.io/[Spring Initializer].
+An easy way to quickly set up and bootstrap a working environment is to create a Spring-based project in https://spring.io/tools[Spring Tools] or use https://start.spring.io/#!type=maven-project&dependencies=data-cassandra[start.spring.io].
 
 [[cassandra.examples-repo]]
 == Examples Repository
@@ -89,7 +89,7 @@ include::example$CassandraApplication.java[tags=file]
 
 Reactive::
 +
-[source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
+[source,java,indent=0,subs="verbatim,quotes",role="secondary"]
 ----
 include::example$ReactiveCassandraApplication.java[tags=file]
 ----

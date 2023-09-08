@@ -46,7 +46,7 @@ include::example$CqlTemplateExamples.java[tags=rowCount]
 
 Reactive::
 +
-[source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
+[source,java,indent=0,subs="verbatim,quotes",role="secondary"]
 ----
 include::example$ReactiveCqlTemplateExamples.java[tags=rowCount]
 ----
@@ -65,7 +65,7 @@ include::example$CqlTemplateExamples.java[tags=countOfActorsNamedJoe]
 
 Reactive::
 +
-[source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
+[source,java,indent=0,subs="verbatim,quotes",role="secondary"]
 ----
 include::example$ReactiveCqlTemplateExamples.java[tags=countOfActorsNamedJoe]
 ----
@@ -84,7 +84,7 @@ include::example$CqlTemplateExamples.java[tags=lastName]
 
 Reactive::
 +
-[source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
+[source,java,indent=0,subs="verbatim,quotes",role="secondary"]
 ----
 include::example$ReactiveCqlTemplateExamples.java[tags=lastName]
 ----
@@ -103,7 +103,7 @@ include::example$CqlTemplateExamples.java[tags=rowMapper]
 
 Reactive::
 +
-[source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
+[source,java,indent=0,subs="verbatim,quotes",role="secondary"]
 ----
 include::example$ReactiveCqlTemplateExamples.java[tags=rowMapper]
 ----
@@ -122,7 +122,7 @@ include::example$CqlTemplateExamples.java[tags=listOfRowMapper]
 
 Reactive::
 +
-[source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
+[source,java,indent=0,subs="verbatim,quotes",role="secondary"]
 ----
 include::example$ReactiveCqlTemplateExamples.java[tags=listOfRowMapper]
 ----
@@ -143,7 +143,7 @@ include::example$CqlTemplateExamples.java[tags=findAllActors]
 
 Reactive::
 +
-[source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
+[source,java,indent=0,subs="verbatim,quotes",role="secondary"]
 ----
 include::example$ReactiveCqlTemplateExamples.java[tags=findAllActors]
 ----
@@ -168,7 +168,7 @@ include::example$CqlTemplateExamples.java[tags=insert]
 
 Reactive::
 +
-[source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
+[source,java,indent=0,subs="verbatim,quotes",role="secondary"]
 ----
 include::example$ReactiveCqlTemplateExamples.java[tags=insert]
 ----
@@ -187,7 +187,7 @@ include::example$CqlTemplateExamples.java[tags=update]
 
 Reactive::
 +
-[source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
+[source,java,indent=0,subs="verbatim,quotes",role="secondary"]
 ----
 include::example$ReactiveCqlTemplateExamples.java[tags=update]
 ----
@@ -206,7 +206,7 @@ include::example$CqlTemplateExamples.java[tags=delete]
 
 Reactive::
 +
-[source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
+[source,java,indent=0,subs="verbatim,quotes",role="secondary"]
 ----
 include::example$ReactiveCqlTemplateExamples.java[tags=delete]
 ----
@@ -255,7 +255,7 @@ template.setSessionFactory(new DefaultSessionFactory(session));
 
 Reactive::
 +
-[source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
+[source,java,indent=0,subs="verbatim,quotes",role="secondary"]
 ----
 
 CqlSession session = … // get a Cassandra Session

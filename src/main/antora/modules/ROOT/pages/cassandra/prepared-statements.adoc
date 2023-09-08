@@ -33,7 +33,7 @@ include::example$CqlTemplateExamples.java[tags=lastName]
 
 Reactive::
 +
-[source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
+[source,java,indent=0,subs="verbatim,quotes",role="secondary"]
 ----
 include::example$ReactiveCqlTemplateExamples.java[tags=lastName]
 ----
@@ -52,7 +52,7 @@ include::example$CqlTemplateExamples.java[tags=preparedStatement]
 
 Reactive::
 +
-[source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
+[source,java,indent=0,subs="verbatim,quotes",role="secondary"]
 ----
 include::example$ReactiveCqlTemplateExamples.java[tags=preparedStatement]
 ----
@@ -83,7 +83,7 @@ include::example$CassandraTemplateExamples.java[tags=preparedStatement]
 
 Reactive::
 +
-[source,kotlin,indent=0,subs="verbatim,quotes",role="secondary"]
+[source,java,indent=0,subs="verbatim,quotes",role="secondary"]
 ----
 include::example$ReactiveCassandraTemplateExamples.java[tags=preparedStatement]
 ----
