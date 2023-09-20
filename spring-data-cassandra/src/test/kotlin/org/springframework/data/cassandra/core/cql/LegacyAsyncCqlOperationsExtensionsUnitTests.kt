@@ -50,14 +50,14 @@ class LegacyAsyncCqlOperationsExtensionsUnitTests {
 	fun `queryForObject(String, KClass, array) extension should call its Java counterpart`() {
 
 		operations.queryForObject("", Person::class, "foo", "bar")
-		verify { operations.queryForObject("", Person::class.java, arrayOf("foo", "bar")) }
+		verify { operations.queryForObject("", Person::class.java, "foo", "bar") }
 	}
 
 	@Test // DATACASS-484
 	fun `queryForObject(String, array) extension should call its Java counterpart`() {
 
 		operations.queryForObject<Person>("", "foo", "bar")
-		verify { operations.queryForObject("", Person::class.java, arrayOf("foo", "bar")) }
+		verify { operations.queryForObject("", Person::class.java, "foo", "bar") }
 	}
 
 	@Test // DATACASS-484
@@ -96,7 +96,7 @@ class LegacyAsyncCqlOperationsExtensionsUnitTests {
 	fun `queryForList(String, array) extension should call its Java counterpart`() {
 
 		operations.queryForList<Person>("", "foo", "bar")
-		verify { operations.queryForList("", Person::class.java, arrayOf("foo", "bar")) }
+		verify { operations.queryForList("", Person::class.java, "foo", "bar") }
 	}
 
 	@Test // DATACASS-484
