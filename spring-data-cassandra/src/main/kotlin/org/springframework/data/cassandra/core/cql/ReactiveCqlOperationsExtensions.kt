@@ -48,19 +48,19 @@ inline fun <reified T : Any> ReactiveCqlOperations.queryForObject(cql: String): 
  */
 @Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("queryForObject<T>(cql, args)"))
 fun <T : Any> ReactiveCqlOperations.queryForObject(cql: String, entityClass: KClass<T>, vararg args: Any): Mono<T> =
-		queryForObject(cql, entityClass.java, args)
+		queryForObject(cql, entityClass.java, *args)
 
 /**
  * Extension for [ReactiveCqlOperations.queryForObject] leveraging reified type parameters.
  */
 inline fun <reified T : Any> ReactiveCqlOperations.queryForObject(cql: String, vararg args: Any): Mono<T> =
-		queryForObject(cql, T::class.java, args)
+	queryForObject(cql, T::class.java, *args)
 
 /**
  * Extension for [ReactiveCqlOperations.queryForObject] leveraging reified type parameters.
  */
 fun <T : Any> ReactiveCqlOperations.queryForObject(cql: String, vararg args: Any, function: (Row, Int) -> T): Mono<T> =
-		queryForObject(cql, function, args)
+	queryForObject(cql, function, *args)
 
 /**
  * Extension for [ReactiveCqlOperations.queryForObject] providing a [KClass] based variant.
@@ -87,7 +87,7 @@ inline fun <reified T : Any> ReactiveCqlOperations.queryForFlux(cql: String): Fl
  */
 @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
 inline fun <reified T : Any> ReactiveCqlOperations.queryForFlux(cql: String, vararg args: Any): Flux<T> =
-		queryForFlux(cql, T::class.java, args)
+	queryForFlux(cql, T::class.java, *args)
 
 /**
  * Extension for [ReactiveCqlOperations.queryForFlux] providing a [KClass] based variant.

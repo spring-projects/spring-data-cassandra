@@ -59,7 +59,7 @@ fun <T : Any> AsyncCqlOperations.queryForObject(
 	entityClass: KClass<T>,
 	vararg args: Any
 ): CompletableFuture<T?> =
-	queryForObject(cql, entityClass.java, args)
+	queryForObject(cql, entityClass.java, *args)
 
 /**
  * Extension for [AsyncCqlOperations.queryForObject] leveraging reified type parameters.
@@ -68,7 +68,7 @@ inline fun <reified T : Any> AsyncCqlOperations.queryForObject(
 	cql: String,
 	vararg args: Any
 ): CompletableFuture<T?> =
-	queryForObject(cql, T::class.java, args)
+	queryForObject(cql, T::class.java, *args)
 
 /**
  * Extension for [AsyncCqlOperations.queryForObject] leveraging reified type parameters.
@@ -78,7 +78,7 @@ fun <T : Any> AsyncCqlOperations.queryForObject(
 	vararg args: Any,
 	function: (Row, Int) -> T
 ): CompletableFuture<T?> =
-	queryForObject(cql, RowMapper { row, i -> function(row, i) }, *args)
+	queryForObject(cql, { row, i -> function(row, i) }, *args)
 
 /**
  * Extension for [AsyncCqlOperations.queryForObject] providing a [KClass] based variant.
@@ -114,7 +114,7 @@ inline fun <reified T : Any> AsyncCqlOperations.queryForList(
 	cql: String,
 	vararg args: Any
 ): CompletableFuture<List<T>> =
-	queryForList(cql, T::class.java, args)
+	queryForList(cql, T::class.java, *args)
 
 /**
  * Extension for [AsyncCqlOperations.queryForList] providing a [KClass] based variant.

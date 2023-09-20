@@ -46,19 +46,19 @@ inline fun <reified T : Any> CqlOperations.queryForObject(cql: String): T? =
  */
 @Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("queryForObject<T>(cql, args)"))
 fun <T : Any> CqlOperations.queryForObject(cql: String, entityClass: KClass<T>, vararg args: Any): T? =
-		queryForObject(cql, entityClass.java, args)
+		queryForObject(cql, entityClass.java, *args)
 
 /**
  * Extension for [CqlOperations.queryForObject] leveraging reified type parameters.
  */
 inline fun <reified T : Any> CqlOperations.queryForObject(cql: String, vararg args: Any): T? =
-		queryForObject(cql, T::class.java, args)
+	queryForObject(cql, T::class.java, *args)
 
 /**
  * Extension for [CqlOperations.queryForObject] leveraging reified type parameters.
  */
 fun <T : Any> CqlOperations.queryForObject(cql: String, vararg args: Any, function: (Row, Int) -> T): T? =
-		queryForObject(cql, function, args)
+	queryForObject(cql, function, *args)
 
 /**
  * Extension for [CqlOperations.queryForObject] providing a [KClass] based variant.
@@ -85,7 +85,7 @@ inline fun <reified T : Any> CqlOperations.queryForList(cql: String): List<T> =
  */
 @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
 inline fun <reified T : Any> CqlOperations.queryForList(cql: String, vararg args: Any): List<T> =
-		queryForList(cql, T::class.java, args)
+	queryForList(cql, T::class.java, *args)
 
 /**
  * Extension for [CqlOperations.queryForList] providing a [KClass] based variant.
