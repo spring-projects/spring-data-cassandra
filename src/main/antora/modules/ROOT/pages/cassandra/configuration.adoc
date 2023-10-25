@@ -10,7 +10,7 @@ https://docs.spring.io/spring/docs/3.2.x/spring-framework-reference/html/new-in-
 as well as the detailed documentation {springDocsUrl}core.html#beans-java-instantiating-container[here].
 
 [[cassandra.cassandra-java-config]]
-== Registering a Session Instance by Using Java-based Metadata
+== Registering a Session Instance by using Java-based Metadata
 
 The following example shows how to use Java-based bean metadata to register an instance of a `com.datastax.oss.driver.api.core.CqlSession`:
 
@@ -68,10 +68,25 @@ include::example$CassandraConfiguration.java[tags=class]
 ----
 ====
 
+`Abstract…Configuration` classes wire all the necessary beans for using Cassandra from your application.
+The configuration assumes a single `CqlSession` and wires it through `SessionFactory` into the related components such as `CqlTemplate`.
+If you want to customize the creation of the `CqlSession`, then you can provide a `SessionBuilderConfigurer` function to customize `CqlSessionBuilder`.
+This is useful to provide e.g. a Cloud Connection Bundle for Astra.
+
+.Connecting to Astra through `AbstractCassandraConfiguration`
+====
+[source,java]
+----
+include::example$CustomizedCassandraConfiguration.java[tags=class]
+----
+====
+
 [[cassandra-connectors.xmlconfig]]
-=== XML Configuration
+== XML Configuration
 
 This section describes how to configure Spring Data Cassandra with XML.
+
+WARNING: While we still support Namespace Configuration, we generally recommend using <<cassandra.cassandra-java-config,Java-based Configuration>>.
 
 [[cassandra-connectors.xmlconfig.ext_properties]]
 === Externalizing Connection Properties

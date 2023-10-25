@@ -20,14 +20,18 @@ import org.springframework.data.cassandra.config.AbstractCassandraConfiguration;
 
 // tag::class[]
 @Configuration
-public class CassandraConfiguration extends AbstractCassandraConfiguration {
+public class CustomizedCassandraConfiguration extends AbstractCassandraConfiguration {
 
 	/*
-	 * Provide a contact point to the configuration.
+	 * Customize the CqlSession through CqlSessionBuilder.
 	 */
 	@Override
-	public String getContactPoints() {
-		return "localhost";
+	protected SessionBuilderConfigurer getSessionBuilderConfigurer() {
+
+		Path connectBundlePath = …;
+
+		return builder -> builder
+				.withCloudSecureConnectBundle(Path.of(connectBundlePath));
 	}
 
 	/*
@@ -37,5 +41,6 @@ public class CassandraConfiguration extends AbstractCassandraConfiguration {
 	public String getKeyspaceName() {
 		return "mykeyspace";
 	}
+
 }
 // end::class[]
