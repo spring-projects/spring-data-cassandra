@@ -21,7 +21,7 @@ Declaring these beans in your Spring `ApplicationContext` will cause them to be 
 
 The `AbstractCassandraEventListener` has the following callback methods:
 
-* `onBeforeSave`: Called in `CassandraTemplate.insert(…)` and `.update(…)` operations before inserting or updating a row in the database.
+* `onBeforeSave`: Called in `CassandraTemplate.insert(…)` and `.update(…)` operations before inserting or updating a row in the database but after creating the `Statement`.
 * `onAfterSave`: Called in `CassandraTemplate…insert(…)` and `.update(…)` operations after inserting or updating a row in the database.
 * `onBeforeDelete`: Called in `CassandraTemplate.delete(…)` operations before deleting row from the database.
 * `onAfterDelete`: Called in `CassandraTemplate.delete(…)` operations after deleting row from the database.
@@ -34,7 +34,7 @@ Complex types used as properties within an aggregate root are not subject to eve
 include::{commons}@data-commons::page$entity-callbacks.adoc[leveloffset=+1]
 
 [[cassandra.entity-callbacks]]
-=== Store specific EntityCallbacks
+=== Store-specific EntityCallbacks
 
 Spring Data for Apache Cassandra uses the `EntityCallback` API for its auditing support and reacts on the following callbacks.
 
@@ -49,7 +49,8 @@ Spring Data for Apache Cassandra uses the `EntityCallback` API for its auditing 
 | `ReactiveBeforeConvertCallback`
 `BeforeConvertCallback`
 | `onBeforeConvert(T entity, CqlIdentifier tableName)`
-| Invoked before a domain object is converted to `com.datastax.driver.core.Statement`.
+| Invoked before a domain object is converted to `Statement`.
+Domain objects can be updated to include the change in the `Statement`.
 | `Ordered.LOWEST_PRECEDENCE`
 
 | `ReactiveAuditingEntityCallback`
@@ -62,7 +63,7 @@ Spring Data for Apache Cassandra uses the `EntityCallback` API for its auditing 
 `BeforeSaveCallback`
 | `onBeforeSave(T entity, CqlIdentifier tableName, Statement statement)`
 | Invoked before a domain object is saved. +
-Can modify the target, to be persisted, `com.datastax.driver.core.Statement` containing all mapped entity information.
+Can modify the target object after the `Statement` has been created. The provided statement contains all mapped entity information but changes to the domain object are not included in the `Statement`.
 | `Ordered.LOWEST_PRECEDENCE`
 
 |===
