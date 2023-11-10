@@ -51,7 +51,7 @@ public class AfterLoadEvent<T> extends CassandraMappingEvent<Row> {
 	/**
 	 * Returns the type for which the {@link AfterLoadEvent} shall be invoked for.
 	 *
-	 * @return
+	 * @return the type for which the {@link AfterLoadEvent} shall be invoked for.
 	 */
 	public Class<T> getType() {
 		return type;
