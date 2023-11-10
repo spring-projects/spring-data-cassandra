@@ -19,13 +19,17 @@ import org.reactivestreams.Publisher;
 import org.springframework.data.mapping.callback.EntityCallback;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.cql.Statement;
 
 /**
- * Callback being invoked before a domain object is converted to be persisted.
+ * Callback being invoked before a domain object is converted to be persisted. Entity callback invoked before converting
+ * a domain object to a {@code INSERT}/{@code UPDATE} {@link Statement}. This is useful to apply changes to the domain
+ * objects to that these will be reflected in the generated {@link Statement}.
  *
  * @author Mark Paluch
  * @since 2.2
  * @see org.springframework.data.mapping.callback.ReactiveEntityCallbacks
+ * @see ReactiveBeforeSaveCallback
  */
 @FunctionalInterface
 public interface ReactiveBeforeConvertCallback<T> extends EntityCallback<T> {

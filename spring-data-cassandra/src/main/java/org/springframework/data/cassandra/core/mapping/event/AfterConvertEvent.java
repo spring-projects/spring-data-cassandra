@@ -21,7 +21,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.cql.Row;
 
 /**
- * Event to be triggered after converting a {@link Row}.
+ * Event to be triggered after converting a {@link Row} into an entity.
  *
  * @author Mark Paluch
  * @since 2.1

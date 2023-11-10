@@ -19,7 +19,10 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.cql.Statement;
 
 /**
- * {@link CassandraMappingEvent} triggered before save of an object.
+ * {@link CassandraMappingEvent Mapping event} triggered before inserting or updating a row in the database. Before save
+ * is invoked after {@link BeforeConvertCallback converting the entity} into a {@link Statement}. This is useful to let
+ * the mapping layer derive values into the statement while the save callback can either update the domain object
+ * without reflecting the changes in the statement. Another use is to inspect the {@link Statement}.
  *
  * @author Lukasz Antoniak
  * @author Mark Paluch
