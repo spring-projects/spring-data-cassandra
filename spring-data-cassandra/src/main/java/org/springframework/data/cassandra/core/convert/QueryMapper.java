@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
@@ -36,6 +37,8 @@ import org.springframework.data.cassandra.core.query.Criteria;
 import org.springframework.data.cassandra.core.query.CriteriaDefinition;
 import org.springframework.data.cassandra.core.query.CriteriaDefinition.Predicate;
 import org.springframework.data.cassandra.core.query.Filter;
+import org.springframework.data.convert.PropertyValueConverter;
+import org.springframework.data.convert.ValueConversionContext;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.mapping.PersistentProperty;
@@ -44,6 +47,7 @@ import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.data.mapping.context.MappingContext;
+import org.springframework.data.mapping.model.PropertyValueProvider;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -130,19 +134,47 @@ public class QueryMapper {
 			});
 
 			Predicate predicate = criteriaDefinition.getPredicate();
-
 			Object value = predicate.getValue();
-
-			ColumnType typeDescriptor = getColumnType(field, value, ColumnTypeTransformer.of(field, predicate.getOperator()));
-
-			Object mappedValue = value != null ? getConverter().convertToColumnType(value, typeDescriptor) : null;
-
+			Object mappedValue = value != null ? getMappedValue(field, predicate, value) : null;
 			Predicate mappedPredicate = new Predicate(predicate.getOperator(), mappedValue);
 
 			result.add(Criteria.of(field.getMappedKey(), mappedPredicate));
 		}
 
 		return Filter.from(result);
+	}
+
+	@Nullable
+	private Object getMappedValue(Field field, Predicate predicate, Object value) {
+
+		if (field.getProperty().isPresent()
+				&& field.getProperty().filter(it -> converter.getCustomConversions().hasValueConverter(it)).isPresent()) {
+
+			CassandraPersistentProperty property = field.getProperty().get();
+			CassandraConversionContext conversionContext = new CassandraConversionContext(new PropertyValueProvider<>() {
+				@Override
+				public <T> T getPropertyValue(CassandraPersistentProperty property) {
+					throw new IllegalStateException("No enclosing property available");
+				}
+			}, property, converter);
+
+			PropertyValueConverter<Object, Object, ValueConversionContext<CassandraPersistentProperty>> valueConverter = converter
+					.getCustomConversions().getPropertyValueConversions().getValueConverter(property);
+
+			/* might be an $in clause with multiple entries */
+			if (!property.isCollectionLike() && value instanceof List<?> collection) {
+				return collection.stream().map(it -> valueConverter.write(it, conversionContext)).toList();
+			}
+
+			if (!property.isCollectionLike() && value instanceof Set<?> collection) {
+				return collection.stream().map(it -> valueConverter.write(it, conversionContext)).collect(Collectors.toSet());
+			}
+
+			return valueConverter.write(value, conversionContext);
+		}
+
+		ColumnType typeDescriptor = getColumnType(field, value, ColumnTypeTransformer.of(field, predicate.getOperator()));
+		return getConverter().convertToColumnType(value, typeDescriptor);
 	}
 
 	/**

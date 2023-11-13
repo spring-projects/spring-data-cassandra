@@ -55,9 +55,12 @@ import org.springframework.data.cassandra.core.query.Filter;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.domain.TypeWithKeyClass;
 import org.springframework.data.cassandra.support.UserDefinedTypeBuilder;
+import org.springframework.data.convert.PropertyValueConverter;
+import org.springframework.data.convert.ValueConverter;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
+import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.data.TupleValue;
@@ -274,6 +277,17 @@ public class QueryMapperUnitTests {
 		assertThat(mappedCriteriaDefinition.getColumnName().toString()).isEqualTo("first_name");
 	}
 
+	@Test // GH-1449
+	void shouldConsiderPropertyValueConverter() {
+
+		Query query = Query.query(Criteria.where("reverseName").is("Heisenberg"));
+
+		Filter mappedObject = queryMapper.getMappedObject(query, personPersistentEntity);
+
+		CriteriaDefinition mappedCriteriaDefinition = mappedObject.iterator().next();
+		assertThat(mappedCriteriaDefinition.getPredicate().getValue()).isEqualTo("grebnesieH");
+	}
+
 	@Test // DATACASS-343
 	void shouldCreateSelectExpression() {
 
@@ -437,6 +451,32 @@ public class QueryMapperUnitTests {
 
 		@Column("first_name") String firstName;
 
+		@ValueConverter(ReversingValueConverter.class) String reverseName;
+
+	}
+
+	static class ReversingValueConverter implements PropertyValueConverter<String, String, CassandraConversionContext> {
+
+		@Nullable
+		@Override
+		public String read(@Nullable String value, CassandraConversionContext context) {
+			return reverse(value);
+		}
+
+		@Nullable
+		@Override
+		public String write(@Nullable String value, CassandraConversionContext context) {
+			return reverse(value);
+		}
+
+		private String reverse(String source) {
+
+			if (source == null) {
+				return null;
+			}
+
+			return new StringBuilder(source).reverse().toString();
+		}
 	}
 
 	static class WithPrimaryKeyClass {

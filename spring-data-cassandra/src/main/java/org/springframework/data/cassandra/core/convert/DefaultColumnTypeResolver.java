@@ -28,6 +28,7 @@ import java.util.stream.StreamSupport;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
@@ -38,6 +39,9 @@ import org.springframework.data.cassandra.core.mapping.CassandraType.Name;
 import org.springframework.data.cassandra.core.mapping.Frozen;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.convert.CustomConversions;
+import org.springframework.data.convert.PropertyValueConversions;
+import org.springframework.data.convert.PropertyValueConverter;
+import org.springframework.data.convert.ValueConversionContext;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.util.Lazy;
@@ -140,7 +144,29 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 			return resolve(annotation);
 		}
 
+		PropertyValueConversions pvc = customConversions.get().getPropertyValueConversions();
 		TypeInformation<?> typeInformation = property.getTypeInformation();
+
+		if (pvc != null && pvc.hasValueConverter(property)) {
+
+			PropertyValueConverter<Object, Object, ValueConversionContext<CassandraPersistentProperty>> converter = pvc
+					.getValueConverter(property);
+			ResolvableType resolvableType = ResolvableType.forClass(converter.getClass());
+			ResolvableType storeType = resolvableType.as(PropertyValueConverter.class).getGeneric(1);
+			Class<?> storeTypeClass = storeType.resolve();
+
+			if (storeTypeClass == Object.class || storeTypeClass == null) {
+
+				if (log.isDebugEnabled()) {
+					log.debug(String.format(
+							"PropertyValueConverter %s for Property %s.%s resolves to Object.class. Falling back to the property type %s.",
+							converter, property.getOwner().getName(), property.getName(), typeInformation));
+				}
+			} else {
+				typeInformation = TypeInformation.of(storeType);
+			}
+		}
+
 		return resolve(typeInformation, getFrozenInfo(property));
 	}
 
@@ -195,9 +221,8 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 
 		return getCustomWriteTarget(typeInformation)
 				.map(it -> createCassandraTypeDescriptor(tryResolve(it), TypeInformation.of(it)))
-			.orElseGet(() -> typeInformation.getType().isEnum()
-				? ColumnType.create(String.class, DataTypes.TEXT)
-				: createCassandraTypeDescriptor(typeInformation, frozen));
+				.orElseGet(() -> typeInformation.getType().isEnum() ? ColumnType.create(String.class, DataTypes.TEXT)
+						: createCassandraTypeDescriptor(typeInformation, frozen));
 	}
 
 	private Optional<Class<?>> getCustomWriteTarget(TypeInformation<?> typeInformation) {
@@ -234,10 +259,8 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 			case MAP:
 				assertTypeArguments(annotation.typeArguments().length, 2);
 
-				CassandraColumnType keyType = createCassandraTypeDescriptor(
-						getRequiredDataType(annotation, 0));
-				CassandraColumnType valueType = createCassandraTypeDescriptor(
-						getRequiredDataType(annotation, 1));
+				CassandraColumnType keyType = createCassandraTypeDescriptor(getRequiredDataType(annotation, 0));
+				CassandraColumnType valueType = createCassandraTypeDescriptor(getRequiredDataType(annotation, 1));
 
 				return ColumnType.mapOf(keyType, valueType);
 
@@ -442,9 +465,8 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 
 		DataType dataType = tryResolve(typeInformation.getType());
 
-		return dataType == null
-			? new UnresolvableCassandraType(typeInformation)
-			: new DefaultCassandraColumnType(typeInformation, dataType);
+		return dataType == null ? new UnresolvableCassandraType(typeInformation)
+				: new DefaultCassandraColumnType(typeInformation, dataType);
 	}
 
 	private DataType getRequiredDataType(CassandraType annotation, int typeIndex) {

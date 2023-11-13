@@ -53,15 +53,18 @@ import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.domain.UserToken;
 import org.springframework.data.cassandra.support.UserDefinedTypeBuilder;
 import org.springframework.data.cassandra.test.util.RowMockUtil;
+import org.springframework.data.convert.ValueConverter;
 import org.springframework.data.projection.EntityProjection;
 import org.springframework.data.projection.EntityProjectionIntrospector;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
+import org.springframework.lang.Nullable;
 import org.springframework.util.ObjectUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.data.UdtValue;
 import com.datastax.oss.driver.api.core.type.DataTypes;
+import com.datastax.oss.driver.api.core.type.TupleType;
 import com.datastax.oss.driver.internal.core.data.DefaultTupleValue;
 import com.datastax.oss.driver.internal.core.type.DefaultTupleType;
 
@@ -816,6 +819,96 @@ public class MappingCassandraConverterUnitTests {
 		assertThat(map.get("Europe/Paris")).hasOnlyElementsOfType(LocalDate.class);
 	}
 
+	@Test // GH-1449
+	void shouldConsiderPropertyValueConverterOnRowWrite() {
+
+		TypeWithPropertyValueConverter toInsert = new TypeWithPropertyValueConverter();
+		toInsert.name = "Walter";
+		toInsert.other = "Some other value";
+		toInsert.tuple = new TupleWithConverter();
+		toInsert.tuple.name = "Heisenberg";
+		toInsert.tuple.other = "Mike";
+
+		Map<CqlIdentifier, Object> object = new LinkedHashMap<>();
+		mappingCassandraConverter.write(toInsert, object);
+
+		assertThat(object).containsEntry(CqlIdentifier.fromCql("name"), "Other: Some other value, reversed: retlaW");
+		assertThat(object).containsEntry(CqlIdentifier.fromCql("other"), "Some other value");
+		assertThat(object).containsKey(CqlIdentifier.fromCql("tuple"));
+
+		DefaultTupleValue tupleValue = (DefaultTupleValue) object.get(CqlIdentifier.fromCql("tuple"));
+		assertThat(tupleValue.getString(0)).isEqualTo("Other: Mike, reversed: grebnesieH");
+		assertThat(tupleValue.getString(1)).isEqualTo("Mike");
+	}
+
+	@Test // GH-1449
+	void shouldConsiderPropertyValueConverterOnRowRead() {
+
+		TupleType tupleType = DataTypes.tupleOf(DataTypes.TEXT, DataTypes.TEXT);
+		DefaultTupleValue tupleValue = new DefaultTupleValue(tupleType);
+		tupleValue.setString(0, "grebnesieH");
+		tupleValue.setString(1, "Mike");
+
+		rowMock = RowMockUtil.newRowMock(RowMockUtil.column("name", "retlaW", DataTypes.TEXT),
+				RowMockUtil.column("other", "Some other value", DataTypes.TEXT),
+				RowMockUtil.column("tuple", tupleValue, tupleType));
+
+		TypeWithPropertyValueConverter result = mappingCassandraConverter.read(TypeWithPropertyValueConverter.class,
+				rowMock);
+
+		assertThat(result.name).isEqualTo("Other: Some other value, reversed: Walter");
+		assertThat(result.other).isEqualTo("Some other value");
+		assertThat(result.tuple).isNotNull();
+		assertThat(result.tuple.name).isEqualTo("Other: Mike, reversed: Heisenberg");
+		assertThat(result.tuple.other).isEqualTo("Mike");
+	}
+
+	@Test // GH-1449
+	void shouldConsiderProgrammaticConverterRead() {
+
+		CassandraCustomConversions conversions = CassandraCustomConversions.create(adapter -> {
+
+			adapter.configurePropertyConversions(registrar -> {
+
+				registrar.registerConverter(AllPossibleTypes.class, "id", String.class)
+						.writing((from, ctx) -> from.toUpperCase()).reading((from, ctx) -> from.toLowerCase());
+			});
+		});
+
+		MappingCassandraConverter converter = new MappingCassandraConverter(mappingContext);
+		converter.setCustomConversions(conversions);
+
+		rowMock = RowMockUtil.newRowMock(RowMockUtil.column("id", "WALTER", DataTypes.TEXT));
+
+		AllPossibleTypes result = converter.read(AllPossibleTypes.class, rowMock);
+
+		assertThat(result.getId()).isEqualTo("walter");
+	}
+
+	@Test // GH-1449
+	void shouldConsiderProgrammaticConverterWrite() {
+
+		CassandraCustomConversions conversions = CassandraCustomConversions.create(adapter -> {
+
+			adapter.configurePropertyConversions(registrar -> {
+
+				registrar.registerConverter(AllPossibleTypes.class, "id", String.class)
+						.writing((from, ctx) -> from.toUpperCase()).reading((from, ctx) -> from.toLowerCase());
+			});
+		});
+
+		MappingCassandraConverter converter = new MappingCassandraConverter(mappingContext);
+		converter.setCustomConversions(conversions);
+
+		AllPossibleTypes apt = new AllPossibleTypes();
+		apt.setId("walter");
+
+		Map<CqlIdentifier, Object> object = new LinkedHashMap<>();
+		converter.write(apt, object);
+
+		assertThat(object).containsEntry(CqlIdentifier.fromCql("id"), "WALTER");
+	}
+
 	@Test // DATACASS-189
 	void writeShouldSkipTransientProperties() {
 
@@ -1178,6 +1271,49 @@ public class MappingCassandraConverterUnitTests {
 		@PrimaryKey private String id;
 
 		private Map<ZoneId, List<java.time.LocalDate>> times;
+	}
+
+	private static class TypeWithPropertyValueConverter {
+
+		@ValueConverter(ReversingValueConverter.class) private String name;
+
+		private String other;
+
+		private TupleWithConverter tuple;
+	}
+
+	@Tuple
+	private static class TupleWithConverter {
+
+		@Element(0)
+		@ValueConverter(ReversingValueConverter.class) private String name;
+
+		@Element(1) private String other;
+
+	}
+
+	static class ReversingValueConverter implements CassandraValueConverter<String, String> {
+
+		@Nullable
+		@Override
+		public String read(@Nullable String value, CassandraConversionContext context) {
+			return String.format("Other: %s, reversed: %s", context.getValue("other"), reverse(value));
+		}
+
+		@Nullable
+		@Override
+		public String write(@Nullable String value, CassandraConversionContext context) {
+			return String.format("Other: %s, reversed: %s", context.getValue("other"), reverse(value));
+		}
+
+		private String reverse(String source) {
+
+			if (source == null) {
+				return null;
+			}
+
+			return new StringBuilder(source).reverse().toString();
+		}
 	}
 
 	private static class WithTransient {

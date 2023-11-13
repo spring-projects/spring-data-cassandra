@@ -14,7 +14,8 @@
 ** xref:cassandra/template.adoc[]
 ** xref:cassandra/prepared-statements.adoc[]
 ** xref:object-mapping.adoc[]
-** xref:cassandra/converters.adoc[]
+** xref:cassandra/converters.adoc[Type-based Converter]
+** xref:cassandra/property-converters.adoc[]
 ** xref:cassandra/events.adoc[]
 ** xref:cassandra/auditing.adoc[]
 

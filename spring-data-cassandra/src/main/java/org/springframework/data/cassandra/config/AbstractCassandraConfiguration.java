@@ -16,7 +16,6 @@
 package org.springframework.data.cassandra.config;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 
@@ -73,8 +72,6 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 
 		CqlSession cqlSession = getRequiredSession();
 
-
-
 		MappingCassandraConverter converter = new MappingCassandraConverter(
 				requireBeanOfType(CassandraMappingContext.class));
 
@@ -117,8 +114,6 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 	public CassandraMappingContext cassandraMappingContext(CassandraManagedTypes cassandraManagedTypes) {
 
 		CqlSession cqlSession = getRequiredSession();
-
-
 
 		CassandraMappingContext mappingContext = new CassandraMappingContext(userTypeResolver(cqlSession),
 				SimpleTupleTypeFactory.DEFAULT);
@@ -181,7 +176,7 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 	 */
 	@Bean
 	public CassandraCustomConversions customConversions() {
-		return new CassandraCustomConversions(Collections.emptyList());
+		return CassandraCustomConversions.create(config -> {});
 	}
 
 	/**

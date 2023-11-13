@@ -27,12 +27,16 @@ import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.core.mapping.Frozen;
 import org.springframework.data.cassandra.core.mapping.UserDefinedType;
+import org.springframework.data.convert.PropertyValueConverter;
+import org.springframework.data.convert.ValueConverter;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.core.data.TupleValue;
 import com.datastax.oss.driver.api.core.type.DataType;
@@ -322,6 +326,59 @@ public class ColumnTypeResolverUnitTests {
 		});
 	}
 
+	@Test // GH-1449
+	void shouldConsiderDeclarativePropertyValueConverter() {
+
+		CassandraPersistentEntity<?> entity = mappingContext
+				.getRequiredPersistentEntity(TypeWithPropertyValueConverters.class);
+
+		DataType dataType = resolver.resolve(entity.getRequiredPersistentProperty("declarative")).getDataType();
+		assertThat(dataType).isEqualTo(DataTypes.INT);
+	}
+
+	@Test // GH-1449
+	void shouldConsiderLambdaPropertyValueConverterFallbackToPropertyType() {
+
+		CassandraPersistentEntity<?> entity = mappingContext
+				.getRequiredPersistentEntity(TypeWithPropertyValueConverters.class);
+
+		CassandraCustomConversions conversions = CassandraCustomConversions.create(adapter -> {
+
+			adapter.configurePropertyConversions(registrar -> {
+
+				registrar.registerConverter(TypeWithPropertyValueConverters.class, "programmatic", String.class)
+						.writing((from, ctx) -> from.length()).reading((from, ctx) -> from.toString());
+			});
+		});
+
+		resolver = new DefaultColumnTypeResolver(mappingContext, SchemaFactory.ShallowUserTypeResolver.INSTANCE,
+				() -> CodecRegistry.DEFAULT, () -> conversions);
+
+		DataType dataType = resolver.resolve(entity.getRequiredPersistentProperty("programmatic")).getDataType();
+		assertThat(dataType).isEqualTo(DataTypes.TEXT);
+	}
+
+	@Test // GH-1449
+	void shouldConsiderRegisteredPropertyValueConverter() {
+
+		CassandraPersistentEntity<?> entity = mappingContext
+				.getRequiredPersistentEntity(TypeWithPropertyValueConverters.class);
+
+		CassandraCustomConversions conversions = CassandraCustomConversions.create(adapter -> {
+
+			adapter.configurePropertyConversions(registrar -> {
+				registrar.registerConverter(TypeWithPropertyValueConverters.class, "programmatic",
+						new CharacterCountingConverter());
+			});
+		});
+
+		resolver = new DefaultColumnTypeResolver(mappingContext, SchemaFactory.ShallowUserTypeResolver.INSTANCE,
+				() -> CodecRegistry.DEFAULT, () -> conversions);
+
+		DataType dataType = resolver.resolve(entity.getRequiredPersistentProperty("programmatic")).getDataType();
+		assertThat(dataType).isEqualTo(DataTypes.INT);
+	}
+
 	static class Person {
 
 		String name;
@@ -375,6 +432,30 @@ public class ColumnTypeResolverUnitTests {
 		UUID uuid;
 
 		@CassandraType(type = CassandraType.Name.TIMEUUID) UUID timeUUID;
+	}
+
+	private static class TypeWithPropertyValueConverters {
+
+		@ValueConverter(CharacterCountingConverter.class) String declarative;
+
+		String programmatic;
+
+	}
+
+	static class CharacterCountingConverter
+			implements PropertyValueConverter<String, Integer, CassandraConversionContext> {
+
+		@Nullable
+		@Override
+		public String read(Integer value, CassandraConversionContext context) {
+			return value.toString();
+		}
+
+		@Nullable
+		@Override
+		public Integer write(String value, CassandraConversionContext context) {
+			return value.length();
+		}
 	}
 
 	enum MyEnum {

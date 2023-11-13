@@ -50,6 +50,7 @@ import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
 import org.springframework.data.mapping.model.DefaultSpELExpressionEvaluator;
 import org.springframework.data.mapping.model.EntityInstantiator;
 import org.springframework.data.mapping.model.ParameterValueProvider;
+import org.springframework.data.mapping.model.PropertyValueProvider;
 import org.springframework.data.mapping.model.SpELContext;
 import org.springframework.data.mapping.model.SpELExpressionEvaluator;
 import org.springframework.data.mapping.model.SpELExpressionParameterValueProvider;
@@ -257,7 +258,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity
 	 */
 	@SuppressWarnings("unchecked")
-	private <S> ConvertingPropertyAccessor<S> newConvertingPropertyAccessor(S source, CassandraPersistentEntity<?> entity) {
+	private <S> ConvertingPropertyAccessor<S> newConvertingPropertyAccessor(S source,
+			CassandraPersistentEntity<?> entity) {
 		return new ConvertingPropertyAccessor<>(entity.getPropertyAccessor(source), getConversionService());
 	}
 
@@ -850,9 +852,20 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	private <T> T getWriteValue(CassandraPersistentProperty property, ConvertingPropertyAccessor<?> propertyAccessor) {
 
 		ColumnType cassandraTypeDescriptor = cassandraTypeResolver.resolve(property);
+		Object value = propertyAccessor.getProperty(property, cassandraTypeDescriptor.getType());
 
-		return (T) getWriteValue(propertyAccessor.getProperty(property, cassandraTypeDescriptor.getType()),
-				cassandraTypeDescriptor);
+		if (getCustomConversions().hasValueConverter(property)) {
+			return (T) getCustomConversions().getPropertyValueConversions().getValueConverter(property).write(value,
+					new CassandraConversionContext(new PropertyValueProvider<>() {
+						@Nullable
+						@Override
+						public <T> T getPropertyValue(CassandraPersistentProperty property) {
+							return (T) propertyAccessor.getProperty(property);
+						}
+					}, property, this, spELContext));
+		}
+
+		return (T) getWriteValue(value, cassandraTypeDescriptor);
 	}
 
 	/**
@@ -1080,6 +1093,11 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		}
 
 		Object value = valueProvider.getPropertyValue(property);
+
+		if (getCustomConversions().hasValueConverter(property)) {
+			return getCustomConversions().getPropertyValueConversions().getValueConverter(property).read(value,
+					new CassandraConversionContext(valueProvider, property, this, spELContext));
+		}
 
 		return value == null ? null : context.convert(value, property.getTypeInformation());
 	}

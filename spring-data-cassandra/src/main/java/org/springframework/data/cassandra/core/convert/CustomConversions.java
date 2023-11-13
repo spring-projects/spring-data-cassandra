@@ -23,7 +23,7 @@ import org.springframework.data.mapping.model.SimpleTypeHolder;
  * Value object to capture custom conversion. That is essentially a {@link List} of converters and some additional logic
  * around them. The converters are pretty much builds up two sets of types which Cassandra basic types can be converted
  * into and from. These types will be considered simple ones (which means they neither need deeper inspection nor nested
- * conversion. Thus the {@link CustomConversions} also act as factory for {@link SimpleTypeHolder}
+ * conversion). Thus, the {@link CustomConversions} also act as factory for {@link SimpleTypeHolder}
  *
  * @author Mark Paluch
  * @since 1.5

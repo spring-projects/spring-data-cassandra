@@ -30,12 +30,10 @@ public class ConverterConfiguration extends AbstractCassandraConfiguration {
 	@Override
 	public CassandraCustomConversions customConversions() {
 
-		List<Converter<?, ?>> converters = new ArrayList<>();
-
-		converters.add(new PersonReadConverter());
-		converters.add(new PersonWriteConverter());
-
-		return new CassandraCustomConversions(converters);
+		return CassandraCustomConversions.create(config -> {
+			config.registerConverter(new PersonReadConverter()));
+			config.registerConverter(new PersonWriteConverter()));
+		});
 	}
 
 	// other methods omitted...
