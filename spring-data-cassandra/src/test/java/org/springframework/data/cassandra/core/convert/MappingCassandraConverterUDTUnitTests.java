@@ -61,7 +61,7 @@ import com.datastax.oss.driver.api.core.type.DataTypes;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class MappingCassandraConverterUDTUnitTests {
 
-	@Mock UserTypeResolver userTypeResolver;
+	@Mock UserTypeResolver typeResolver;
 
 	private com.datastax.oss.driver.api.core.type.UserDefinedType manufacturer = UserDefinedTypeBuilder
 			.forName("manufacturer").withField("name", DataTypes.TEXT).withField("displayname", DataTypes.TEXT).build();
@@ -93,23 +93,23 @@ class MappingCassandraConverterUDTUnitTests {
 	void setUp() {
 
 		mappingContext = new CassandraMappingContext();
-		mappingContext.setUserTypeResolver(userTypeResolver);
+		mappingContext.setUserTypeResolver(typeResolver);
 
 		CassandraCustomConversions cassandraCustomConversions = new CassandraCustomConversions(
-				Arrays.asList(new UDTToCurrencyConverter(), new CurrencyToUDTConverter(userTypeResolver)));
+				Arrays.asList(new UDTToCurrencyConverter(), new CurrencyToUDTConverter(typeResolver)));
 		mappingContext.setSimpleTypeHolder(cassandraCustomConversions.getSimpleTypeHolder());
 
 		converter = new MappingCassandraConverter(mappingContext);
 		converter.setCustomConversions(cassandraCustomConversions);
 		converter.afterPropertiesSet();
 
-		when(userTypeResolver.resolveType(CqlIdentifier.fromCql("address"))).thenReturn(address);
-		when(userTypeResolver.resolveType(CqlIdentifier.fromCql("engine"))).thenReturn(engine);
-		when(userTypeResolver.resolveType(CqlIdentifier.fromCql("manufacturer"))).thenReturn(manufacturer);
-		when(userTypeResolver.resolveType(CqlIdentifier.fromCql("currency"))).thenReturn(currency);
-		when(userTypeResolver.resolveType(CqlIdentifier.fromCql("withnullableembeddedtype")))
+		when(typeResolver.resolveType(CqlIdentifier.fromCql("address"))).thenReturn(address);
+		when(typeResolver.resolveType(CqlIdentifier.fromCql("engine"))).thenReturn(engine);
+		when(typeResolver.resolveType(CqlIdentifier.fromCql("manufacturer"))).thenReturn(manufacturer);
+		when(typeResolver.resolveType(CqlIdentifier.fromCql("currency"))).thenReturn(currency);
+		when(typeResolver.resolveType(CqlIdentifier.fromCql("withnullableembeddedtype")))
 				.thenReturn(withnullableembeddedtype);
-		when(userTypeResolver.resolveType(CqlIdentifier.fromCql("withprefixednullableembeddedtype")))
+		when(typeResolver.resolveType(CqlIdentifier.fromCql("withprefixednullableembeddedtype")))
 				.thenReturn(withprefixednullableembeddedtype);
 	}
 
@@ -476,7 +476,7 @@ class MappingCassandraConverterUDTUnitTests {
 	@Test // #1098
 	void shouldWriteMapWithTypeHintToUdtValue() {
 
-		when(userTypeResolver.resolveType(CqlIdentifier.fromCql("udt"))).thenReturn(manufacturer);
+		when(typeResolver.resolveType(CqlIdentifier.fromCql("udt"))).thenReturn(manufacturer);
 
 		MapWithUdt mapWithUdt = new MapWithUdt();
 		mapWithUdt.map = Collections.singletonMap("key", new Manufacturer("name", "display"));

@@ -80,15 +80,15 @@ public class MappingCassandraConverterUnitTests {
 	private Row rowMock;
 
 	private CassandraMappingContext mappingContext;
-	private MappingCassandraConverter mappingCassandraConverter;
+	private MappingCassandraConverter converter;
 
 	@BeforeEach
 	void setUp() {
 
 		this.mappingContext = new CassandraMappingContext();
 
-		this.mappingCassandraConverter = new MappingCassandraConverter(mappingContext);
-		this.mappingCassandraConverter.afterPropertiesSet();
+		this.converter = new MappingCassandraConverter(mappingContext);
+		this.converter.afterPropertiesSet();
 	}
 
 	@Test // DATACASS-260
@@ -100,7 +100,7 @@ public class MappingCassandraConverterUnitTests {
 
 		Map<CqlIdentifier, Object> insert = new LinkedHashMap<>();
 
-		mappingCassandraConverter.write(withEnumColumns, insert);
+		converter.write(withEnumColumns, insert);
 
 		assertThat(getValues(insert)).contains("MINT");
 	}
@@ -113,7 +113,7 @@ public class MappingCassandraConverterUnitTests {
 
 		Map<CqlIdentifier, Object> insert = new LinkedHashMap<>();
 
-		mappingCassandraConverter.write(entity, insert);
+		converter.write(entity, insert);
 
 		assertThat(insert.get(CqlIdentifier.fromCql("setofenum"))).isInstanceOf(Set.class);
 	}
@@ -126,7 +126,7 @@ public class MappingCassandraConverterUnitTests {
 
 		Map<CqlIdentifier, Object> insert = new LinkedHashMap<>();
 
-		mappingCassandraConverter.write(enumToOrdinalMapping, insert);
+		converter.write(enumToOrdinalMapping, insert);
 
 		assertThat(getValues(insert)).contains(Condition.USED.ordinal());
 	}
@@ -136,7 +136,7 @@ public class MappingCassandraConverterUnitTests {
 
 		rowMock = RowMockUtil.newRowMock(column("asOrdinal", 1, DataTypes.INT));
 
-		EnumToOrdinalMapping loaded = mappingCassandraConverter.read(EnumToOrdinalMapping.class, rowMock);
+		EnumToOrdinalMapping loaded = converter.read(EnumToOrdinalMapping.class, rowMock);
 
 		assertThat(loaded.getAsOrdinal()).isEqualTo(Condition.USED);
 	}
@@ -149,7 +149,7 @@ public class MappingCassandraConverterUnitTests {
 
 		Map<CqlIdentifier, Object> insert = new LinkedHashMap<>();
 
-		mappingCassandraConverter.write(key, insert);
+		converter.write(key, insert);
 
 		assertThat(getValues(insert)).contains("MINT");
 	}
@@ -165,7 +165,7 @@ public class MappingCassandraConverterUnitTests {
 
 		Map<CqlIdentifier, Object> insert = new LinkedHashMap<>();
 
-		mappingCassandraConverter.write(composite, insert);
+		converter.write(composite, insert);
 
 		assertThat(getValues(insert)).contains("MINT");
 	}
@@ -178,7 +178,7 @@ public class MappingCassandraConverterUnitTests {
 
 		Where where = new Where();
 
-		mappingCassandraConverter.write(key, where);
+		converter.write(key, where);
 
 		assertThat(getWhereValues(where)).contains("MINT");
 	}
@@ -194,7 +194,7 @@ public class MappingCassandraConverterUnitTests {
 
 		Where where = new Where();
 
-		mappingCassandraConverter.write(composite, where);
+		converter.write(composite, where);
 
 		assertThat(getWhereValues(where)).contains("MINT");
 	}
@@ -207,7 +207,7 @@ public class MappingCassandraConverterUnitTests {
 
 		Where where = new Where();
 
-		mappingCassandraConverter.write(key, where);
+		converter.write(key, where);
 
 		assertThat(getWhereValues(where)).contains("MINT");
 	}
@@ -217,7 +217,7 @@ public class MappingCassandraConverterUnitTests {
 
 		rowMock = RowMockUtil.newRowMock(column("foo", "foo", DataTypes.TEXT));
 
-		String result = mappingCassandraConverter.readRow(String.class, rowMock);
+		String result = converter.readRow(String.class, rowMock);
 
 		assertThat(result).isEqualTo("foo");
 	}
@@ -227,7 +227,7 @@ public class MappingCassandraConverterUnitTests {
 
 		rowMock = RowMockUtil.newRowMock(column("foo", 2, DataTypes.VARINT));
 
-		Integer result = mappingCassandraConverter.readRow(Integer.class, rowMock);
+		Integer result = converter.readRow(Integer.class, rowMock);
 
 		assertThat(result).isEqualTo(2);
 	}
@@ -237,7 +237,7 @@ public class MappingCassandraConverterUnitTests {
 
 		rowMock = RowMockUtil.newRowMock(column("foo", 2, DataTypes.VARINT));
 
-		Long result = mappingCassandraConverter.readRow(Long.class, rowMock);
+		Long result = converter.readRow(Long.class, rowMock);
 
 		assertThat(result).isEqualTo(2L);
 	}
@@ -247,7 +247,7 @@ public class MappingCassandraConverterUnitTests {
 
 		rowMock = RowMockUtil.newRowMock(column("foo", 2D, DataTypes.DOUBLE));
 
-		Double result = mappingCassandraConverter.readRow(Double.class, rowMock);
+		Double result = converter.readRow(Double.class, rowMock);
 
 		assertThat(result).isEqualTo(2D);
 	}
@@ -257,7 +257,7 @@ public class MappingCassandraConverterUnitTests {
 
 		rowMock = RowMockUtil.newRowMock(column("foo", 2F, DataTypes.DOUBLE));
 
-		Float result = mappingCassandraConverter.readRow(Float.class, rowMock);
+		Float result = converter.readRow(Float.class, rowMock);
 
 		assertThat(result).isEqualTo(2F);
 	}
@@ -267,7 +267,7 @@ public class MappingCassandraConverterUnitTests {
 
 		rowMock = RowMockUtil.newRowMock(column("foo", BigInteger.valueOf(2), DataTypes.BIGINT));
 
-		BigInteger result = mappingCassandraConverter.readRow(BigInteger.class, rowMock);
+		BigInteger result = converter.readRow(BigInteger.class, rowMock);
 
 		assertThat(result).isEqualTo(BigInteger.valueOf(2));
 	}
@@ -277,7 +277,7 @@ public class MappingCassandraConverterUnitTests {
 
 		rowMock = RowMockUtil.newRowMock(column("foo", BigDecimal.valueOf(2), DataTypes.DECIMAL));
 
-		BigDecimal result = mappingCassandraConverter.readRow(BigDecimal.class, rowMock);
+		BigDecimal result = converter.readRow(BigDecimal.class, rowMock);
 
 		assertThat(result).isEqualTo(BigDecimal.valueOf(2));
 	}
@@ -289,7 +289,7 @@ public class MappingCassandraConverterUnitTests {
 
 		rowMock = RowMockUtil.newRowMock(column("foo", uuid, DataTypes.UUID));
 
-		UUID result = mappingCassandraConverter.readRow(UUID.class, rowMock);
+		UUID result = converter.readRow(UUID.class, rowMock);
 
 		assertThat(result).isEqualTo(uuid);
 	}
@@ -300,7 +300,7 @@ public class MappingCassandraConverterUnitTests {
 		InetAddress localHost = InetAddress.getLoopbackAddress();
 		rowMock = RowMockUtil.newRowMock(column("foo", localHost, DataTypes.UUID));
 
-		InetAddress result = mappingCassandraConverter.readRow(InetAddress.class, rowMock);
+		InetAddress result = converter.readRow(InetAddress.class, rowMock);
 
 		assertThat(result).isEqualTo(localHost);
 	}
@@ -312,7 +312,7 @@ public class MappingCassandraConverterUnitTests {
 
 		rowMock = RowMockUtil.newRowMock(column("foo", instant, DataTypes.TIMESTAMP));
 
-		Date result = mappingCassandraConverter.readRow(Date.class, rowMock);
+		Date result = converter.readRow(Date.class, rowMock);
 
 		assertThat(result).isEqualTo(Date.from(instant));
 	}
@@ -324,7 +324,7 @@ public class MappingCassandraConverterUnitTests {
 
 		rowMock = RowMockUtil.newRowMock(column("foo", instant, DataTypes.TIMESTAMP));
 
-		Instant result = mappingCassandraConverter.readRow(Instant.class, rowMock);
+		Instant result = converter.readRow(Instant.class, rowMock);
 
 		assertThat(result).isEqualTo(instant);
 	}
@@ -338,7 +338,7 @@ public class MappingCassandraConverterUnitTests {
 
 		Map<CqlIdentifier, Object> insert = new LinkedHashMap<>();
 
-		mappingCassandraConverter.write(entity, insert);
+		converter.write(entity, insert);
 
 		assertThat(insert.get(CqlIdentifier.fromCql("instant"))).isInstanceOf(Instant.class);
 		assertThat(insert.get(CqlIdentifier.fromCql("timestamp"))).isInstanceOf(Instant.class);
@@ -351,7 +351,7 @@ public class MappingCassandraConverterUnitTests {
 
 		rowMock = RowMockUtil.newRowMock(column("foo", date, DataTypes.DATE));
 
-		LocalDate result = mappingCassandraConverter.readRow(LocalDate.class, rowMock);
+		LocalDate result = converter.readRow(LocalDate.class, rowMock);
 
 		assertThat(result).isEqualTo(date);
 	}
@@ -361,7 +361,7 @@ public class MappingCassandraConverterUnitTests {
 
 		rowMock = RowMockUtil.newRowMock(column("foo", true, DataTypes.BOOLEAN));
 
-		Boolean result = mappingCassandraConverter.readRow(Boolean.class, rowMock);
+		Boolean result = converter.readRow(Boolean.class, rowMock);
 
 		assertThat(result).isEqualTo(true);
 	}
@@ -375,7 +375,7 @@ public class MappingCassandraConverterUnitTests {
 		rowMock = RowMockUtil.newRowMock(column("id", "my-id", DataTypes.ASCII),
 				column("localdate", Date.from(instant), DataTypes.TIMESTAMP));
 
-		TypeWithLocalDate result = mappingCassandraConverter.readRow(TypeWithLocalDate.class, rowMock);
+		TypeWithLocalDate result = converter.readRow(TypeWithLocalDate.class, rowMock);
 
 		assertThat(result.localDate).isNotNull();
 		assertThat(result.localDate.getYear()).isEqualTo(now.getYear());
@@ -392,7 +392,7 @@ public class MappingCassandraConverterUnitTests {
 
 		Map<CqlIdentifier, Object> insert = new LinkedHashMap<>();
 
-		mappingCassandraConverter.write(typeWithLocalDate, insert);
+		converter.write(typeWithLocalDate, insert);
 
 		assertThat(getValues(insert)).contains(LocalDate.of(now.getYear(), now.getMonthValue(), now.getDayOfMonth()));
 	}
@@ -407,7 +407,7 @@ public class MappingCassandraConverterUnitTests {
 
 		Map<CqlIdentifier, Object> insert = new LinkedHashMap<>();
 
-		mappingCassandraConverter.write(typeWithLocalDate, insert);
+		converter.write(typeWithLocalDate, insert);
 
 		assertThat(getValues(insert)).contains(LocalDate.of(now.getYear(), now.getMonthValue(), now.getDayOfMonth()));
 	}
@@ -423,7 +423,7 @@ public class MappingCassandraConverterUnitTests {
 
 		Map<CqlIdentifier, Object> insert = new LinkedHashMap<>();
 
-		mappingCassandraConverter.write(typeWithLocalDate, insert);
+		converter.write(typeWithLocalDate, insert);
 
 		List<LocalDate> dates = (List) insert.get(CqlIdentifier.fromCql("list"));
 
@@ -442,7 +442,7 @@ public class MappingCassandraConverterUnitTests {
 
 		Map<CqlIdentifier, Object> insert = new LinkedHashMap<>();
 
-		mappingCassandraConverter.write(typeWithLocalDate, insert);
+		converter.write(typeWithLocalDate, insert);
 
 		Set<LocalDate> dates = (Set) insert.get(CqlIdentifier.fromInternal("set"));
 
@@ -456,7 +456,7 @@ public class MappingCassandraConverterUnitTests {
 		rowMock = RowMockUtil.newRowMock(column("id", "my-id", DataTypes.ASCII),
 				column("localDate", LocalDate.of(2010, 7, 4), DataTypes.DATE));
 
-		TypeWithLocalDateMappedToDate result = mappingCassandraConverter.readRow(TypeWithLocalDateMappedToDate.class,
+		TypeWithLocalDateMappedToDate result = converter.readRow(TypeWithLocalDateMappedToDate.class,
 				rowMock);
 
 		assertThat(result.localDate).isNotNull();
@@ -473,7 +473,7 @@ public class MappingCassandraConverterUnitTests {
 
 		Map<CqlIdentifier, Object> insert = new LinkedHashMap<>();
 
-		mappingCassandraConverter.write(typeWithLocalDate, insert);
+		converter.write(typeWithLocalDate, insert);
 
 		assertThat(getValues(insert)).contains(LocalDate.of(2010, 7, 4));
 	}
@@ -486,7 +486,7 @@ public class MappingCassandraConverterUnitTests {
 
 		Map<CqlIdentifier, Object> update = new LinkedHashMap<>();
 
-		mappingCassandraConverter.write(typeWithLocalDate, update);
+		converter.write(typeWithLocalDate, update);
 
 		assertThat(getValues(update)).contains(LocalDate.of(2010, 7, 4));
 	}
@@ -500,7 +500,7 @@ public class MappingCassandraConverterUnitTests {
 		rowMock = RowMockUtil.newRowMock(column("id", "my-id", DataTypes.ASCII),
 				column("localDateTime", Date.from(instant), DataTypes.TIMESTAMP));
 
-		TypeWithLocalDate result = mappingCassandraConverter.readRow(TypeWithLocalDate.class, rowMock);
+		TypeWithLocalDate result = converter.readRow(TypeWithLocalDate.class, rowMock);
 
 		assertThat(result.localDateTime).isNotNull();
 		assertThat(result.localDateTime.getYear()).isEqualTo(now.getYear());
@@ -516,7 +516,7 @@ public class MappingCassandraConverterUnitTests {
 		rowMock = RowMockUtil.newRowMock(column("id", "my-id", DataTypes.ASCII),
 				column("instant", Date.from(instant), DataTypes.TIMESTAMP));
 
-		TypeWithInstant result = mappingCassandraConverter.readRow(TypeWithInstant.class, rowMock);
+		TypeWithInstant result = converter.readRow(TypeWithInstant.class, rowMock);
 
 		assertThat(result.instant).isNotNull();
 		assertThat(result.instant.getEpochSecond()).isEqualTo(instant.getEpochSecond());
@@ -528,7 +528,7 @@ public class MappingCassandraConverterUnitTests {
 		rowMock = RowMockUtil.newRowMock(column("id", "my-id", DataTypes.ASCII),
 				column("zoneId", "Europe/Paris", DataTypes.TEXT));
 
-		TypeWithZoneId result = mappingCassandraConverter.readRow(TypeWithZoneId.class, rowMock);
+		TypeWithZoneId result = converter.readRow(TypeWithZoneId.class, rowMock);
 
 		assertThat(result.zoneId).isNotNull();
 		assertThat(result.zoneId.getId()).isEqualTo("Europe/Paris");
@@ -546,8 +546,8 @@ public class MappingCassandraConverterUnitTests {
 		Map<CqlIdentifier, Object> update = new LinkedHashMap<>();
 		Where where = new Where();
 
-		mappingCassandraConverter.write(userToken, update);
-		mappingCassandraConverter.write(userToken, where);
+		converter.write(userToken, update);
+		converter.write(userToken, where);
 
 		assertThat(update).containsEntry(CqlIdentifier.fromCql("admincomment"), "admin comment");
 		assertThat(update).containsEntry(CqlIdentifier.fromCql("user_comment"), "user comment");
@@ -559,7 +559,7 @@ public class MappingCassandraConverterUnitTests {
 
 		Where where = new Where();
 
-		mappingCassandraConverter.write("42", where, mappingContext.getRequiredPersistentEntity(User.class));
+		converter.write("42", where, mappingContext.getRequiredPersistentEntity(User.class));
 
 		assertThat(where).containsEntry(CqlIdentifier.fromCql("id"), "42");
 	}
@@ -572,7 +572,7 @@ public class MappingCassandraConverterUnitTests {
 		User user = new User();
 		user.setId("42");
 
-		mappingCassandraConverter.write(user, where, mappingContext.getRequiredPersistentEntity(User.class));
+		converter.write(user, where, mappingContext.getRequiredPersistentEntity(User.class));
 
 		assertThat(where).containsEntry(CqlIdentifier.fromCql("id"), "42");
 	}
@@ -580,7 +580,8 @@ public class MappingCassandraConverterUnitTests {
 	@Test // DATACASS-308
 	void shouldFailWriteWhereConditionUsingEntityWithNullId() {
 
-		assertThatIllegalArgumentException().isThrownBy(() -> mappingCassandraConverter.write(new User(), new Where(),
+		assertThatIllegalArgumentException().isThrownBy(
+				() -> converter.write(new User(), new Where(),
 				mappingContext.getRequiredPersistentEntity(User.class)));
 	}
 
@@ -589,7 +590,7 @@ public class MappingCassandraConverterUnitTests {
 
 		Where where = new Where();
 
-		mappingCassandraConverter.write(id("id", "42"), where, mappingContext.getRequiredPersistentEntity(User.class));
+		converter.write(id("id", "42"), where, mappingContext.getRequiredPersistentEntity(User.class));
 
 		assertThat(where).containsEntry(CqlIdentifier.fromCql("id"), "42");
 	}
@@ -603,7 +604,7 @@ public class MappingCassandraConverterUnitTests {
 		entity.setFirstname("Walter");
 		entity.setLastname("White");
 
-		mappingCassandraConverter.write(entity, where,
+		converter.write(entity, where,
 				mappingContext.getRequiredPersistentEntity(TypeWithCompositeKey.class));
 
 		assertThat(where).containsEntry(CqlIdentifier.fromCql("firstname"), "Walter");
@@ -615,7 +616,7 @@ public class MappingCassandraConverterUnitTests {
 
 		Where where = new Where();
 
-		mappingCassandraConverter.write(id("firstname", "Walter").with("lastname", "White"), where,
+		converter.write(id("firstname", "Walter").with("lastname", "White"), where,
 				mappingContext.getRequiredPersistentEntity(TypeWithCompositeKey.class));
 
 		assertThat(where).containsEntry(CqlIdentifier.fromCql("firstname"), "Walter");
@@ -631,7 +632,7 @@ public class MappingCassandraConverterUnitTests {
 		entity.setFirstname("Walter");
 		entity.setLastname("White");
 
-		mappingCassandraConverter.write(entity, where, mappingContext.getRequiredPersistentEntity(TypeWithMapId.class));
+		converter.write(entity, where, mappingContext.getRequiredPersistentEntity(TypeWithMapId.class));
 
 		assertThat(where).containsEntry(CqlIdentifier.fromCql("firstname"), "Walter");
 		assertThat(where).containsEntry(CqlIdentifier.fromCql("lastname"), "White");
@@ -642,7 +643,7 @@ public class MappingCassandraConverterUnitTests {
 
 		Where where = new Where();
 
-		mappingCassandraConverter.write(Condition.MINT, where,
+		converter.write(Condition.MINT, where,
 				mappingContext.getRequiredPersistentEntity(EnumPrimaryKey.class));
 
 		assertThat(where).containsEntry(CqlIdentifier.fromCql("condition"), "MINT");
@@ -653,7 +654,7 @@ public class MappingCassandraConverterUnitTests {
 
 		Where where = new Where();
 
-		mappingCassandraConverter.write(id("firstname", "Walter").with("lastname", "White"), where,
+		converter.write(id("firstname", "Walter").with("lastname", "White"), where,
 				mappingContext.getRequiredPersistentEntity(TypeWithMapId.class));
 
 		assertThat(where).containsEntry(CqlIdentifier.fromCql("firstname"), "Walter");
@@ -672,7 +673,7 @@ public class MappingCassandraConverterUnitTests {
 		TypeWithKeyClass entity = new TypeWithKeyClass();
 		entity.setKey(key);
 
-		mappingCassandraConverter.write(entity, where, mappingContext.getRequiredPersistentEntity(TypeWithKeyClass.class));
+		converter.write(entity, where, mappingContext.getRequiredPersistentEntity(TypeWithKeyClass.class));
 
 		assertThat(where).containsEntry(CqlIdentifier.fromCql("first_name"), "Walter");
 		assertThat(where).containsEntry(CqlIdentifier.fromCql("lastname"), "White");
@@ -681,7 +682,7 @@ public class MappingCassandraConverterUnitTests {
 	@Test // DATACASS-308
 	void shouldFailWritingWhereConditionForTypeWithPkClassKeyUsingEntityWithNullId() {
 
-		assertThatIllegalArgumentException().isThrownBy(() -> mappingCassandraConverter.write(new TypeWithKeyClass(),
+		assertThatIllegalArgumentException().isThrownBy(() -> converter.write(new TypeWithKeyClass(),
 				new Where(), mappingContext.getRequiredPersistentEntity(TypeWithKeyClass.class)));
 	}
 
@@ -694,7 +695,7 @@ public class MappingCassandraConverterUnitTests {
 		key.setFirstname("Walter");
 		key.setLastname("White");
 
-		mappingCassandraConverter.write(key, where, mappingContext.getRequiredPersistentEntity(TypeWithKeyClass.class));
+		converter.write(key, where, mappingContext.getRequiredPersistentEntity(TypeWithKeyClass.class));
 
 		assertThat(where).containsEntry(CqlIdentifier.fromCql("first_name"), "Walter");
 		assertThat(where).containsEntry(CqlIdentifier.fromCql("lastname"), "White");
@@ -707,7 +708,7 @@ public class MappingCassandraConverterUnitTests {
 		Row row = RowMockUtil.newRowMock(column("condition", "MINT", DataTypes.TEXT),
 				column("localdate", LocalDate.of(2017, 1, 2), DataTypes.DATE));
 
-		TypeWithEnumAndLocalDateKey result = mappingCassandraConverter.read(TypeWithEnumAndLocalDateKey.class, row);
+		TypeWithEnumAndLocalDateKey result = converter.read(TypeWithEnumAndLocalDateKey.class, row);
 
 		assertThat(result.id.condition).isEqualTo(Condition.MINT);
 		assertThat(result.id.localDate).isEqualTo(java.time.LocalDate.of(2017, 1, 2));
@@ -720,7 +721,7 @@ public class MappingCassandraConverterUnitTests {
 		Row row = RowMockUtil.newRowMock(column("firstname", "Walter", DataTypes.TEXT),
 				column("lastname", "White", DataTypes.TEXT));
 
-		TableWithCompositeKeyViaConstructor result = mappingCassandraConverter
+		TableWithCompositeKeyViaConstructor result = converter
 				.read(TableWithCompositeKeyViaConstructor.class, row);
 
 		assertThat(result.key.firstname).isEqualTo("Walter");
@@ -732,7 +733,7 @@ public class MappingCassandraConverterUnitTests {
 
 		Where where = new Where();
 
-		mappingCassandraConverter.write(id("firstname", "Walter").with("lastname", "White"), where,
+		converter.write(id("firstname", "Walter").with("lastname", "White"), where,
 				mappingContext.getRequiredPersistentEntity(TypeWithKeyClass.class));
 
 		assertThat(where).containsEntry(CqlIdentifier.fromCql("first_name"), "Walter");
@@ -742,7 +743,7 @@ public class MappingCassandraConverterUnitTests {
 	@Test // DATACASS-308
 	void shouldFailWhereConditionForTypeWithPkClassKeyUsingMapIdHavingUnknownProperty() {
 
-		assertThatIllegalArgumentException().isThrownBy(() -> mappingCassandraConverter.write(id("unknown", "Walter"),
+		assertThatIllegalArgumentException().isThrownBy(() -> converter.write(id("unknown", "Walter"),
 				new Where(), mappingContext.getRequiredPersistentEntity(TypeWithMapId.class)));
 	}
 
@@ -755,7 +756,7 @@ public class MappingCassandraConverterUnitTests {
 		key.setFirstname("first");
 		key.setLastname("last");
 
-		mappingCassandraConverter.write(key, where, mappingContext.getRequiredPersistentEntity(TypeWithKeyClass.class));
+		converter.write(key, where, mappingContext.getRequiredPersistentEntity(TypeWithKeyClass.class));
 
 		assertThat(where).containsEntry(CqlIdentifier.fromCql("first_name"), "first");
 		assertThat(where).containsEntry(CqlIdentifier.fromCql("lastname"), "last");
@@ -768,7 +769,7 @@ public class MappingCassandraConverterUnitTests {
 
 		MapId mapId = BasicMapId.id("firstname", "first").with("lastname", "last");
 
-		mappingCassandraConverter.write(mapId, where, mappingContext.getRequiredPersistentEntity(TypeWithKeyClass.class));
+		converter.write(mapId, where, mappingContext.getRequiredPersistentEntity(TypeWithKeyClass.class));
 
 		assertThat(where).containsEntry(CqlIdentifier.fromCql("first_name"), "first");
 		assertThat(where).containsEntry(CqlIdentifier.fromCql("lastname"), "last");
@@ -785,7 +786,7 @@ public class MappingCassandraConverterUnitTests {
 		rowMock = RowMockUtil.newRowMock(
 				RowMockUtil.column("times", times, DataTypes.mapOf(DataTypes.TEXT, DataTypes.listOf(DataTypes.DATE))));
 
-		TypeWithConvertedMap converted = this.mappingCassandraConverter.read(TypeWithConvertedMap.class, rowMock);
+		TypeWithConvertedMap converted = this.converter.read(TypeWithConvertedMap.class, rowMock);
 
 		assertThat(converted.times).containsKeys(ZoneId.of("Europe/Paris"));
 
@@ -806,7 +807,7 @@ public class MappingCassandraConverterUnitTests {
 
 		Map<CqlIdentifier, Object> insert = new LinkedHashMap<>();
 
-		this.mappingCassandraConverter.write(typeWithConvertedMap, insert);
+		this.converter.write(typeWithConvertedMap, insert);
 
 		List<Object> values = getValues(insert);
 
@@ -830,7 +831,7 @@ public class MappingCassandraConverterUnitTests {
 		toInsert.tuple.other = "Mike";
 
 		Map<CqlIdentifier, Object> object = new LinkedHashMap<>();
-		mappingCassandraConverter.write(toInsert, object);
+		converter.write(toInsert, object);
 
 		assertThat(object).containsEntry(CqlIdentifier.fromCql("name"), "Other: Some other value, reversed: retlaW");
 		assertThat(object).containsEntry(CqlIdentifier.fromCql("other"), "Some other value");
@@ -853,7 +854,7 @@ public class MappingCassandraConverterUnitTests {
 				RowMockUtil.column("other", "Some other value", DataTypes.TEXT),
 				RowMockUtil.column("tuple", tupleValue, tupleType));
 
-		TypeWithPropertyValueConverter result = mappingCassandraConverter.read(TypeWithPropertyValueConverter.class,
+		TypeWithPropertyValueConverter result = converter.read(TypeWithPropertyValueConverter.class,
 				rowMock);
 
 		assertThat(result.name).isEqualTo("Other: Some other value, reversed: Walter");
@@ -919,7 +920,7 @@ public class MappingCassandraConverterUnitTests {
 
 		Map<CqlIdentifier, Object> insert = new LinkedHashMap<>();
 
-		this.mappingCassandraConverter.write(withTransient, insert);
+		this.converter.write(withTransient, insert);
 
 		assertThat(insert).containsKey(CqlIdentifier.fromCql("firstname"))
 				.doesNotContainKey(CqlIdentifier.fromCql("displayName"));
@@ -934,7 +935,7 @@ public class MappingCassandraConverterUnitTests {
 
 		Map<CqlIdentifier, Object> insert = new LinkedHashMap<>();
 
-		this.mappingCassandraConverter.write(withTransient, insert);
+		this.converter.write(withTransient, insert);
 
 		assertThat(insert).containsKey(CqlIdentifier.fromCql("firstname"))
 				.doesNotContainKey(CqlIdentifier.fromCql("computedName"));
@@ -946,7 +947,7 @@ public class MappingCassandraConverterUnitTests {
 		rowMock = RowMockUtil.newRowMock(RowMockUtil.column("id", "id", DataTypes.TEXT),
 				RowMockUtil.column("fn", "fn", DataTypes.TEXT));
 
-		WithValue result = this.mappingCassandraConverter.read(WithValue.class, rowMock);
+		WithValue result = this.converter.read(WithValue.class, rowMock);
 
 		assertThat(result.id).isEqualTo("id");
 		assertThat(result.firstname).isEqualTo("fn");
@@ -960,7 +961,7 @@ public class MappingCassandraConverterUnitTests {
 
 		Map<CqlIdentifier, Object> insert = new LinkedHashMap<>();
 
-		this.mappingCassandraConverter.write(value, insert);
+		this.converter.write(value, insert);
 
 		assertThat(insert).containsEntry(CqlIdentifier.fromCql("conditionlist"), Arrays.asList(0, 1));
 	}
@@ -973,7 +974,7 @@ public class MappingCassandraConverterUnitTests {
 
 		Map<CqlIdentifier, Object> insert = new LinkedHashMap<>();
 
-		this.mappingCassandraConverter.write(value, insert);
+		this.converter.write(value, insert);
 
 		assertThat(insert).containsEntry(CqlIdentifier.fromCql("conditionset"), new LinkedHashSet<>(Arrays.asList(0, 1)));
 	}
@@ -986,7 +987,7 @@ public class MappingCassandraConverterUnitTests {
 
 		Map<CqlIdentifier, Object> insert = new LinkedHashMap<>();
 
-		this.mappingCassandraConverter.write(value, insert);
+		this.converter.write(value, insert);
 
 		assertThat(insert).containsEntry(CqlIdentifier.fromCql("conditionmap"), Collections.singletonMap(0, 1));
 	}
@@ -998,7 +999,7 @@ public class MappingCassandraConverterUnitTests {
 				RowMockUtil.column("firstname", "Heisenberg", DataTypes.ASCII),
 				RowMockUtil.column("lastname", "White", DataTypes.ASCII));
 
-		WithColumnAnnotationInConstructor converted = this.mappingCassandraConverter
+		WithColumnAnnotationInConstructor converted = this.converter
 				.read(WithColumnAnnotationInConstructor.class, rowMock);
 
 		assertThat(converted.firstname).isEqualTo("Walter");
@@ -1018,7 +1019,7 @@ public class MappingCassandraConverterUnitTests {
 		rowMock = RowMockUtil.newRowMock(RowMockUtil.column("firstname", "Heisenberg", DataTypes.ASCII),
 				RowMockUtil.column("tuple", value, value.getType()));
 
-		WithMappedTuple converted = this.mappingCassandraConverter.read(WithMappedTuple.class, rowMock);
+		WithMappedTuple converted = this.converter.read(WithMappedTuple.class, rowMock);
 
 		assertThat(converted.firstname).isEqualTo("Heisenberg");
 		assertThat(converted.tuple.firstname).isEqualTo("Two");
@@ -1044,7 +1045,7 @@ public class MappingCassandraConverterUnitTests {
 		EntityProjection<WithMappedTupleDtoProjection, WithMappedTuple> projection = introspector
 				.introspect(WithMappedTupleDtoProjection.class, WithMappedTuple.class);
 
-		WithMappedTupleDtoProjection result = this.mappingCassandraConverter.project(projection, rowMock);
+		WithMappedTupleDtoProjection result = this.converter.project(projection, rowMock);
 
 		assertThat(result.firstname()).isEqualTo("Heisenberg");
 		assertThat(result.tuple().getOne()).isEqualTo("One");
@@ -1070,7 +1071,7 @@ public class MappingCassandraConverterUnitTests {
 		EntityProjection<TupleAndNameProjection, WithMappedTuple> projection = introspector
 				.introspect(TupleAndNameProjection.class, WithMappedTuple.class);
 
-		TupleAndNameProjection result = this.mappingCassandraConverter.project(projection, rowMock);
+		TupleAndNameProjection result = this.converter.project(projection, rowMock);
 
 		assertThat(result.name().firstname()).isEqualTo("Heisenberg");
 		assertThat(result.tuple().zero).isEqualTo("Zero");
@@ -1504,7 +1505,7 @@ public class MappingCassandraConverterUnitTests {
 
 		Map<CqlIdentifier, Object> sink = new LinkedHashMap<>();
 
-		mappingCassandraConverter.write(entity, sink);
+		converter.write(entity, sink);
 
 		assertThat(sink) //
 				.containsEntry(CqlIdentifier.fromCql("id"), "id-1") //
@@ -1525,7 +1526,7 @@ public class MappingCassandraConverterUnitTests {
 
 		Map<CqlIdentifier, Object> sink = new LinkedHashMap<>();
 
-		mappingCassandraConverter.write(entity, sink);
+		converter.write(entity, sink);
 
 		assertThat(sink) //
 				.containsEntry(CqlIdentifier.fromCql("id"), "id-1") //
@@ -1543,7 +1544,7 @@ public class MappingCassandraConverterUnitTests {
 
 		Map<CqlIdentifier, Object> sink = new LinkedHashMap<>();
 
-		mappingCassandraConverter.write(entity, sink);
+		converter.write(entity, sink);
 
 		assertThat(sink) //
 				.containsEntry(CqlIdentifier.fromCql("id"), "id-1") //
@@ -1558,7 +1559,7 @@ public class MappingCassandraConverterUnitTests {
 		Row source = RowMockUtil.newRowMock(column("id", "id-1", DataTypes.TEXT), column("age", 30, DataTypes.INT),
 				column("firstname", "fn", DataTypes.TEXT));
 
-		WithNullableEmbeddedType target = mappingCassandraConverter.read(WithNullableEmbeddedType.class, source);
+		WithNullableEmbeddedType target = converter.read(WithNullableEmbeddedType.class, source);
 		assertThat(target.nested).isEqualTo(new EmbeddedWithSimpleTypes("fn", 30, null));
 	}
 
@@ -1568,7 +1569,7 @@ public class MappingCassandraConverterUnitTests {
 		Row source = RowMockUtil.newRowMock(column("id", "id-1", DataTypes.TEXT), column("prefixage", 30, DataTypes.INT),
 				column("prefixfirstname", "fn", DataTypes.TEXT));
 
-		WithPrefixedNullableEmbeddedType target = mappingCassandraConverter.read(WithPrefixedNullableEmbeddedType.class,
+		WithPrefixedNullableEmbeddedType target = converter.read(WithPrefixedNullableEmbeddedType.class,
 				source);
 		assertThat(target.nested).isEqualTo(new EmbeddedWithSimpleTypes("fn", 30, null));
 	}
@@ -1578,7 +1579,7 @@ public class MappingCassandraConverterUnitTests {
 
 		Row source = RowMockUtil.newRowMock(column("id", "id-1", DataTypes.TEXT));
 
-		WithNullableEmbeddedType target = mappingCassandraConverter.read(WithNullableEmbeddedType.class, source);
+		WithNullableEmbeddedType target = converter.read(WithNullableEmbeddedType.class, source);
 		assertThat(target.nested).isNull();
 	}
 
@@ -1591,13 +1592,13 @@ public class MappingCassandraConverterUnitTests {
 		this.mappingContext = new CassandraMappingContext();
 		this.mappingContext.setSimpleTypeHolder(conversions.getSimpleTypeHolder());
 
-		this.mappingCassandraConverter = new MappingCassandraConverter(mappingContext);
-		this.mappingCassandraConverter.setCustomConversions(conversions);
-		this.mappingCassandraConverter.afterPropertiesSet();
+		this.converter = new MappingCassandraConverter(mappingContext);
+		this.converter.setCustomConversions(conversions);
+		this.converter.afterPropertiesSet();
 
 		Row source = RowMockUtil.newRowMock(column("thejson", "{\"hello\":\"world\"}", DataTypes.TEXT));
 
-		TypeWithJsonObject target = mappingCassandraConverter.read(TypeWithJsonObject.class, source);
+		TypeWithJsonObject target = converter.read(TypeWithJsonObject.class, source);
 		assertThat(target.theJson).isNotNull();
 		assertThat(target.theJson.get("hello")).isEqualTo("world");
 	}
@@ -1614,12 +1615,12 @@ public class MappingCassandraConverterUnitTests {
 				column("author", udtValue, authorType));
 
 		EntityProjectionIntrospector introspector = EntityProjectionIntrospector.create(
-				mappingCassandraConverter.getProjectionFactory(),
+				converter.getProjectionFactory(),
 				EntityProjectionIntrospector.ProjectionPredicate.typeHierarchy()
-						.and((target, underlyingType) -> !mappingCassandraConverter.getCustomConversions().isSimpleType(target)),
+						.and((target, underlyingType) -> !converter.getCustomConversions().isSimpleType(target)),
 				mappingContext);
 
-		BookProjection projection = mappingCassandraConverter
+		BookProjection projection = converter
 				.project(introspector.introspect(BookProjection.class, Book.class), source);
 
 		assertThat(projection.getName()).isEqualTo("my-book by Walter White");

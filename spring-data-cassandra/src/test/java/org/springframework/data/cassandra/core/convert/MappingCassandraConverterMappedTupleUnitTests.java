@@ -50,7 +50,7 @@ class MappingCassandraConverterMappedTupleUnitTests {
 
 	private CassandraMappingContext mappingContext;
 
-	private MappingCassandraConverter mappingCassandraConverter;
+	private MappingCassandraConverter converter;
 
 	private Row rowMock;
 
@@ -58,8 +58,8 @@ class MappingCassandraConverterMappedTupleUnitTests {
 	void setUp() {
 
 		this.mappingContext = new CassandraMappingContext();
-		this.mappingCassandraConverter = new MappingCassandraConverter(mappingContext);
-		this.mappingCassandraConverter.afterPropertiesSet();
+		this.converter = new MappingCassandraConverter(mappingContext);
+		this.converter.afterPropertiesSet();
 	}
 
 	@Test // DATACASS-523
@@ -67,14 +67,14 @@ class MappingCassandraConverterMappedTupleUnitTests {
 
 		BasicCassandraPersistentEntity<?> entity = this.mappingContext.getRequiredPersistentEntity(MappedTuple.class);
 
-		CassandraColumnType type = mappingCassandraConverter.getColumnTypeResolver().resolve(entity.getTypeInformation());
+		CassandraColumnType type = converter.getColumnTypeResolver().resolve(entity.getTypeInformation());
 
 		TupleValue value = ((TupleType) type.getDataType()).newValue("hello", 1);
 
 		this.rowMock = RowMockUtil.newRowMock(column("name", "Jon Doe", DataTypes.TEXT),
 				column("tuple", value, type.getDataType()));
 
-		Person person = this.mappingCassandraConverter.read(Person.class, rowMock);
+		Person person = this.converter.read(Person.class, rowMock);
 
 		assertThat(person).isNotNull();
 		assertThat(person.name()).isEqualTo("Jon Doe");
@@ -93,7 +93,7 @@ class MappingCassandraConverterMappedTupleUnitTests {
 
 		Map<CqlIdentifier, Object> insert = new LinkedHashMap<>();
 
-		this.mappingCassandraConverter.write(person, insert);
+		this.converter.write(person, insert);
 
 		TupleValue tupleValue = (TupleValue) insert.get(CqlIdentifier.fromCql("tuple"));
 		assertThat(tupleValue.getFormattedContents()).contains("('hello',1)");
