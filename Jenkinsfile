@@ -83,12 +83,12 @@ pipeline {
 					docker.image("harbor-repo.vmware.com/dockerhub-proxy-cache/springci/spring-data-with-cassandra-3.11:${p['java.main.tag']}").inside('-v $HOME:/tmp/jenkins-home') {
 						sh 'mkdir -p /tmp/jenkins-home'
 						sh 'JAVA_HOME=/opt/java/openjdk8 /opt/cassandra/bin/cassandra -R &'
-						sh 'MAVEN_OPTS="-Duser.name=spring-builds+jenkins -Duser.home=/tmp/jenkins-home" ' +
-							'DEVELOCITY_CACHE_USERNAME=${DEVELOCITY_CACHE_USR} ' +
-							'DEVELOCITY_CACHE_PASSWORD=${DEVELOCITY_CACHE_PSW} ' +
-							'GRADLE_ENTERPRISE_ACCESS_KEY=${DEVELOCITY_ACCESS_KEY} ' +
-							'./mvnw -s settings.xml -Pci,external-cassandra ' +
-							'clean dependency:list verify -Dsort -U -B'
+						sh 'MAVEN_OPTS="-Duser.name=' + "${p['jenkins.user.name']}" + ' -Duser.home=/tmp/jenkins-home" ' +
+							"DEVELOCITY_CACHE_USERNAME=${DEVELOCITY_CACHE_USR} " +
+							"DEVELOCITY_CACHE_PASSWORD=${DEVELOCITY_CACHE_PSW} " +
+							"GRADLE_ENTERPRISE_ACCESS_KEY=${DEVELOCITY_ACCESS_KEY} " +
+							"./mvnw -s settings.xml -Pci,external-cassandra " +
+							"clean dependency:list verify -Dsort -U -B"
 					}
 				}
 			}
@@ -118,12 +118,12 @@ pipeline {
 							docker.image("harbor-repo.vmware.com/dockerhub-proxy-cache/springci/spring-data-with-cassandra-3.11:${p['java.next.tag']}").inside('-v $HOME:/tmp/jenkins-home') {
 								sh 'mkdir -p /tmp/jenkins-home'
 								sh 'JAVA_HOME=/opt/java/openjdk8 /opt/cassandra/bin/cassandra -R &'
-								sh 'MAVEN_OPTS="-Duser.name=spring-builds+jenkins -Duser.home=/tmp/jenkins-home" ' +
-									'DEVELOCITY_CACHE_USERNAME=${DEVELOCITY_CACHE_USR} ' +
-									'DEVELOCITY_CACHE_PASSWORD=${DEVELOCITY_CACHE_PSW} ' +
-									'GRADLE_ENTERPRISE_ACCESS_KEY=${DEVELOCITY_ACCESS_KEY} ' +
-									'./mvnw -s settings.xml -Pci,external-cassandra ' +
-									'clean dependency:list verify -Dsort -U -B'
+								sh 'MAVEN_OPTS="-Duser.name=' + "${p['jenkins.user.name']}" + ' -Duser.home=/tmp/jenkins-home" ' +
+									"DEVELOCITY_CACHE_USERNAME=${DEVELOCITY_CACHE_USR} " +
+									"DEVELOCITY_CACHE_PASSWORD=${DEVELOCITY_CACHE_PSW} " +
+									"GRADLE_ENTERPRISE_ACCESS_KEY=${DEVELOCITY_ACCESS_KEY} " +
+									"./mvnw -s settings.xml -Pci,external-cassandra " +
+									"clean dependency:list verify -Dsort -U -B"
 							}
 						}
 					}
@@ -154,18 +154,18 @@ pipeline {
 				script {
 					docker.image(p['docker.java.main.image']).inside(p['docker.java.inside.basic']) {
 						sh 'mkdir -p /tmp/jenkins-home'
-						sh 'MAVEN_OPTS="-Duser.name=spring-builds+jenkins -Duser.home=/tmp/jenkins-home" ' + 
-								'DEVELOCITY_CACHE_USERNAME=${DEVELOCITY_CACHE_USR} ' +
-								'DEVELOCITY_CACHE_PASSWORD=${DEVELOCITY_CACHE_PSW} ' +
-								'GRADLE_ENTERPRISE_ACCESS_KEY=${DEVELOCITY_ACCESS_KEY} ' +
-								' ./mvnw -s settings.xml -Pci,artifactory ' +
-								'-Dartifactory.server=https://repo.spring.io ' +
+						sh 'MAVEN_OPTS="-Duser.name=' + "${p['jenkins.user.name']}" + ' -Duser.home=/tmp/jenkins-home" ' +
+								"DEVELOCITY_CACHE_USERNAME=${DEVELOCITY_CACHE_USR} " +
+								"DEVELOCITY_CACHE_PASSWORD=${DEVELOCITY_CACHE_PSW} " +
+								"GRADLE_ENTERPRISE_ACCESS_KEY=${DEVELOCITY_ACCESS_KEY} " +
+								"./mvnw -s settings.xml -Pci,artifactory " +
+								"-Dartifactory.server=${p['artifactory.url']} " +
 								"-Dartifactory.username=${ARTIFACTORY_USR} " +
 								"-Dartifactory.password=${ARTIFACTORY_PSW} " +
-								"-Dartifactory.staging-repository=libs-snapshot-local " +
+								"-Dartifactory.staging-repository=${p['artifactory.repository.snapshot']} " +
 								"-Dartifactory.build-name=spring-data-cassandra " +
 								"-Dartifactory.build-number=${BUILD_NUMBER} " +
-								'-Dmaven.test.skip=true clean deploy -U -B'
+								"-Dmaven.test.skip=true clean deploy -U -B"
 					}
 				}
 			}
