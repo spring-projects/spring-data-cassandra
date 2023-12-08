@@ -29,9 +29,11 @@ import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.repository.query.CassandraParameters.CassandraParameter;
 import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.Parameters;
+import org.springframework.data.repository.query.ParametersSource;
 import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.data.repository.util.ReactiveWrappers;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 
 /**
@@ -45,15 +47,16 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 	private final @Nullable Integer queryOptionsIndex;
 
 	/**
-	 * Create a new {@link CassandraParameters} instance from the given {@link Method}
+	 * Create a new {@link CassandraParameters} instance from the given {@link Method}.
 	 *
-	 * @param method must not be {@literal null}.
+	 * @param parametersSource must not be {@literal null}.
 	 */
-	public CassandraParameters(Method method) {
+	public CassandraParameters(ParametersSource parametersSource) {
+		super(parametersSource,
+				methodParameter -> new CassandraParameter(methodParameter, parametersSource.getDomainTypeInformation()));
 
-		super(method);
-
-		this.queryOptionsIndex = Arrays.asList(method.getParameterTypes()).indexOf(QueryOptions.class);
+		this.queryOptionsIndex = Arrays.asList(parametersSource.getMethod().getParameterTypes())
+				.indexOf(QueryOptions.class);
 	}
 
 	private CassandraParameters(List<CassandraParameter> originals, @Nullable Integer queryOptionsIndex) {
@@ -61,11 +64,6 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 		super(originals);
 
 		this.queryOptionsIndex = queryOptionsIndex;
-	}
-
-	@Override
-	protected CassandraParameter createParameter(MethodParameter parameter) {
-		return new CassandraParameter(parameter);
 	}
 
 	@Override
@@ -93,9 +91,9 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 		private final @Nullable CassandraType cassandraType;
 		private final Class<?> parameterType;
 
-		CassandraParameter(MethodParameter parameter) {
+		CassandraParameter(MethodParameter parameter, TypeInformation<?> domainType) {
 
-			super(parameter);
+			super(parameter, domainType);
 
 			AnnotatedParameter annotatedParameter = new AnnotatedParameter(parameter);
 

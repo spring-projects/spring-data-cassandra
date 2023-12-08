@@ -80,7 +80,8 @@ class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedCassandr
 
 	@Configuration
 	@EnableCassandraRepositories(considerNestedRepositories = true,
-			includeFilters = @Filter(pattern = ".*PersonRepository", type = FilterType.REGEX))
+			includeFilters = @Filter(classes = { PersonRepository.class, EmbeddedPersonRepository.class },
+					type = FilterType.ASSIGNABLE_TYPE))
 	public static class Config extends IntegrationTestConfig {
 
 		@Override
