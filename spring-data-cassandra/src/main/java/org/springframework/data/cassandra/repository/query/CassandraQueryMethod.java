@@ -29,6 +29,8 @@ import org.springframework.data.cassandra.repository.Query.Idempotency;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.repository.query.Parameters;
+import org.springframework.data.repository.query.ParametersSource;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
@@ -128,8 +130,8 @@ public class CassandraQueryMethod extends QueryMethod {
 	}
 
 	@Override
-	protected CassandraParameters createParameters(Method method) {
-		return new CassandraParameters(method);
+	protected Parameters<?, ?> createParameters(ParametersSource parametersSource) {
+		return new CassandraParameters(parametersSource);
 	}
 
 	/**
