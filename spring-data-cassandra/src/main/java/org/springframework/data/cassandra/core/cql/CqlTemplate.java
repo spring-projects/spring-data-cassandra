@@ -620,7 +620,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 		SessionFactory sessionFactory = getSessionFactory();
 
-		Assert.state(sessionFactory != null, "SessionFactory is null");
+		Assert.notNull(sessionFactory, "SessionFactory is null");
 
 		return sessionFactory.getSession();
 	}
