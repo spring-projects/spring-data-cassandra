@@ -49,6 +49,7 @@ import com.datastax.oss.driver.api.core.metadata.Node;
  * @author Mark Paluch
  * @author John Blum
  * @author Tomasz Lelek
+ * @author Mikhail Polivakha
  * @see org.springframework.data.cassandra.support.CassandraConnectionProperties
  * @see com.datastax.oss.driver.api.core.CqlSessionBuilder
  * @see com.datastax.oss.driver.api.core.CqlSession
@@ -155,7 +156,7 @@ class CassandraDelegate {
 	 * @param cqlDataSet must not be {@literal null}
 	 * @return the rule
 	 */
-	private CassandraDelegate before(InvocationMode invocationMode, CqlDataSet cqlDataSet) {
+	public CassandraDelegate before(InvocationMode invocationMode, CqlDataSet cqlDataSet) {
 
 		Assert.notNull(cqlDataSet, "CqlDataSet must not be null");
 
@@ -346,7 +347,7 @@ class CassandraDelegate {
 	private String resolveHost() {
 
 		if (isTestcontainers()) {
-			return container.getContainerIpAddress();
+			return container.getHost();
 		}
 
 		return isEmbedded() ? EmbeddedCassandraServerHelper.getHost() : this.properties.getCassandraHost();
@@ -425,7 +426,7 @@ class CassandraDelegate {
 
 	private void load(CqlSession session, CqlDataSet cqlDataSet) {
 
-		Optional.of(cqlDataSet.getKeyspaceName()).filter(StringUtils::hasText)
+		Optional.ofNullable(cqlDataSet.getKeyspaceName()).filter(StringUtils::hasText)
 				.filter(
 						keyspaceName -> !keyspaceName.equals(session.getKeyspace().map(CqlIdentifier::toString).orElse("system")))
 				.ifPresent(keyspaceName -> session.execute(String.format(TestKeyspaceDelegate.USE_KEYSPACE_CQL, keyspaceName)));

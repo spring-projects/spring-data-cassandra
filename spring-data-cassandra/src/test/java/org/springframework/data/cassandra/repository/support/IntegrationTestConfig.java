@@ -37,6 +37,7 @@ import org.springframework.data.cassandra.support.RandomKeyspaceName;
  * @author David Webb
  * @author Matthew T. Adams
  * @author Mark Paluch
+ * @author Mikhail Polivakha
  */
 @Configuration
 public class IntegrationTestConfig extends AbstractReactiveCassandraConfiguration {
@@ -88,7 +89,7 @@ public class IntegrationTestConfig extends AbstractReactiveCassandraConfiguratio
 
 	@Override
 	protected List<CreateKeyspaceSpecification> getKeyspaceCreations() {
-		return Collections.singletonList(createKeyspace(getKeyspaceName()).withSimpleReplication());
+		return Collections.singletonList(createKeyspace(getKeyspaceName()).ifNotExists().withSimpleReplication());
 	}
 
 	@Override

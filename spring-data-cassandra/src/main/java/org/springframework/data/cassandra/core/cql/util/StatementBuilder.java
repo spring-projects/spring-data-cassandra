@@ -25,7 +25,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
 
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
@@ -38,7 +37,6 @@ import com.datastax.oss.driver.api.querybuilder.BindMarker;
 import com.datastax.oss.driver.api.querybuilder.BuildableQuery;
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
 import com.datastax.oss.driver.api.querybuilder.term.Term;
-import com.datastax.oss.driver.internal.querybuilder.CqlHelper;
 
 /**
  * Functional builder for Cassandra {@link BuildableQuery statements}. Statements are built by applying
@@ -67,6 +65,7 @@ import com.datastax.oss.driver.internal.querybuilder.CqlHelper;
  * All methods returning {@link StatementBuilder} point to the same instance. This class is intended for internal use.
  *
  * @author Mark Paluch
+ * @author Mikhail Polivakha
  * @param <S> Statement type
  * @since 3.0
  */

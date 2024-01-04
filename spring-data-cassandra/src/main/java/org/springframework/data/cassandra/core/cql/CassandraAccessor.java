@@ -45,6 +45,7 @@ import com.datastax.oss.driver.api.core.retry.RetryPolicy;
  * @author Mark Paluch
  * @author John Blum
  * @author Tomasz Lelek
+ * @author Mikhail Polivakha
  * @see org.springframework.beans.factory.InitializingBean
  * @see com.datastax.oss.driver.api.core.CqlSession
  */
