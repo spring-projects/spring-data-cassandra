@@ -13,6 +13,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.CassandraSchemaValidationException;
+import org.springframework.data.cassandra.core.convert.CassandraConverter;
+import org.springframework.data.cassandra.core.convert.CassandraSchemaValidator;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.Column;
 import org.springframework.data.cassandra.core.mapping.Table;
@@ -36,12 +38,12 @@ class CassandraSchemaValidatorTest {
         @Bean("cassandraSchemaValidator")
         CassandraSchemaValidator cassandraSchemaValidator(
           CqlSessionFactoryBean cqlSessionFactoryBean,
-          CassandraMappingContext cassandraMappingContext,
+          CassandraConverter cassandraConverter,
           @Value("${validation.mode.strict:true}") Boolean validationModeStrict
         ) {
             return new CassandraSchemaValidator(
-              cqlSessionFactoryBean,
-              cassandraMappingContext,
+              cqlSessionFactoryBean.getSession(),
+              cassandraConverter,
               validationModeStrict
             );
         }

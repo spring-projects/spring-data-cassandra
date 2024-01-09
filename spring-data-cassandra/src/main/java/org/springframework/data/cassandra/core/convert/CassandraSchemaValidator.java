@@ -1,4 +1,4 @@
-package org.springframework.data.cassandra.config;
+package org.springframework.data.cassandra.core.convert;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -12,6 +12,7 @@ import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.data.cassandra.CassandraKeyspaceDoesNotExistsException;
 import org.springframework.data.cassandra.CassandraNoActiveKeyspaceSetForCqlSessionException;
 import org.springframework.data.cassandra.CassandraSchemaValidationException;
+import org.springframework.data.cassandra.config.CassandraSchemaValidationProfile;
 import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
@@ -36,20 +37,28 @@ public class CassandraSchemaValidator implements SmartInitializingSingleton {
 
     private static final Log logger = LogFactory.getLog(CassandraSchemaValidator.class);
 
-    private final CqlSessionFactoryBean cqlSessionFactoryBean;
+    private final CqlSession cqlSession;
 
     private final CassandraMappingContext cassandraMappingContext;
+
+    private final ColumnTypeResolver columnTypeResolver;
 
     private final boolean strictValidation;
 
     public CassandraSchemaValidator(
-      CqlSessionFactoryBean cqlSessionFactoryBean,
-      CassandraMappingContext cassandraMappingContext,
+      CqlSession cqlSession,
+      CassandraConverter cassandraConverter,
       boolean strictValidation
     ) {
         this.strictValidation = strictValidation;
-        this.cqlSessionFactoryBean = cqlSessionFactoryBean;
-        this.cassandraMappingContext = cassandraMappingContext;
+        this.cqlSession = cqlSession;
+        this.cassandraMappingContext = cassandraConverter.getMappingContext();
+        this.columnTypeResolver = new DefaultColumnTypeResolver(
+          cassandraMappingContext,
+          SchemaFactory.ShallowUserTypeResolver.INSTANCE,
+          cassandraConverter::getCodecRegistry,
+          cassandraConverter::getCustomConversions
+        );
     }
 
     /**
@@ -60,13 +69,11 @@ public class CassandraSchemaValidator implements SmartInitializingSingleton {
      */
     @Override
     public void afterSingletonsInstantiated() {
-        CqlSession session = cqlSessionFactoryBean.getSession();
-
-        CqlIdentifier activeKeyspace = session
+        CqlIdentifier activeKeyspace = cqlSession
           .getKeyspace()
           .orElseThrow(CassandraNoActiveKeyspaceSetForCqlSessionException::new);
 
-        KeyspaceMetadata keyspaceMetadata = session
+        KeyspaceMetadata keyspaceMetadata = cqlSession
           .getMetadata()
           .getKeyspace(activeKeyspace)
           .orElseThrow(() -> new CassandraKeyspaceDoesNotExistsException(activeKeyspace.asInternal()));
@@ -131,6 +138,11 @@ public class CassandraSchemaValidator implements SmartInitializingSingleton {
         List<String> validationErrors = new LinkedList<>();
 
         entity.doWithProperties((PropertyHandler<CassandraPersistentProperty>) persistentProperty -> {
+
+            if (persistentProperty.isTransient()) {
+                return;
+            }
+
             CqlIdentifier expectedColumnName = persistentProperty.getColumnName();
 
             Assert.notNull(expectedColumnName, "Column cannot not be null at this point");
@@ -139,7 +151,7 @@ public class CassandraSchemaValidator implements SmartInitializingSingleton {
 
             if (column.isPresent()) {
                 ColumnMetadata columnMetadata = column.get();
-                DataType dataTypeExpected = CassandraSimpleTypeHolder.getDataTypeFor(persistentProperty.getRawType());
+                DataType dataTypeExpected = columnTypeResolver.resolve(persistentProperty).getDataType();
 
                 if (dataTypeExpected == null) {
                     validationErrors.add(
