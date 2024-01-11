@@ -4,6 +4,7 @@
 *** xref:migration-guide/migration-guide-1.5-to-2.0.adoc[]
 *** xref:migration-guide/migration-guide-2.2-to-3.0.adoc[]
 *** xref:migration-guide/migration-guide-3.0-to-4.0.adoc[]
+*** xref:migration-guide/migration-guide-4.0-to-4.3.adoc[]
 
 * xref:cassandra.adoc[]
 ** xref:cassandra/getting-started.adoc[]

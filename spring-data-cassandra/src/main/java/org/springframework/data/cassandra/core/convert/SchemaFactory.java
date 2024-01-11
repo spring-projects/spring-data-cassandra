@@ -32,6 +32,7 @@ import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.context.MappingContext;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -378,7 +379,7 @@ public class SchemaFactory {
 		}
 
 		@Override
-		public UdtValue newValue(@edu.umd.cs.findbugs.annotations.NonNull Object... fields) {
+		public UdtValue newValue(@NonNull Object... fields) {
 			throw new UnsupportedOperationException(
 					"This implementation should only be used internally, this is likely a driver bug");
 		}
@@ -396,7 +397,7 @@ public class SchemaFactory {
 		}
 
 		@Override
-		public void attach(@edu.umd.cs.findbugs.annotations.NonNull AttachmentPoint attachmentPoint) {
+		public void attach(@NonNull AttachmentPoint attachmentPoint) {
 			throw new UnsupportedOperationException(
 					"This implementation should only be used internally, this is likely a driver bug");
 		}

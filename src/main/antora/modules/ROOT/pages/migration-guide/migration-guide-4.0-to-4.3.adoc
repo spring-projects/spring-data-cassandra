@@ -1,0 +1,43 @@
+[[cassandra.migration.4.x-to-4.3]]
+= Migration Guide from 4.x to 4.3
+
+Spring Data for Apache Cassandra 4.3 has migrated the `com.datastax.oss` groupId to `org.apache.cassandra`.
+
+[[driver-group-id]]
+== Migration of the Datastax driver into Apache
+
+With the migration of the Datastax driver into the Apache foundation, you need to update coordinates of the driver in your code. Consider the following example showing a potential previous state of a Maven project configuration:
+
+.`pom.xml` Example up to 4.2.x
+====
+[source,xml]
+----
+<dependency>
+	<groupId>com.datastax.oss</groupId>
+	<artifactId>java-driver-core</artifactId>
+</dependency>
+
+<dependency>
+	<groupId>com.datastax.oss</groupId>
+	<artifactId>java-driver-query-builder</artifactId>
+</dependency>
+----
+====
+
+With upgrading the groupId from `com.datastax.oss` to `org.apache.cassandra` your project configuration would look like:
+
+.`pom.xml` Example since to 4.3.x
+====
+[source,xml]
+----
+<dependency>
+	<groupId>org.apache.cassandra</groupId>
+	<artifactId>java-driver-core</artifactId>
+</dependency>
+
+<dependency>
+	<groupId>org.apache.cassandra</groupId>
+	<artifactId>java-driver-query-builder</artifactId>
+</dependency>
+----
+====
