@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2024 the original author or authors.
+ * Copyright 2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.core.convert;
+package org.springframework.data.cassandra.core.mapping;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedType;
@@ -22,11 +22,9 @@ import java.lang.reflect.Method;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.data.cassandra.core.cql.Ordering;
-import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
-import org.springframework.data.cassandra.core.mapping.Column;
-import org.springframework.data.cassandra.core.mapping.Element;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.util.TypeInformation;
@@ -46,41 +44,31 @@ class AnnotatedCassandraConstructorProperty implements CassandraPersistentProper
 
 	private final CassandraPersistentProperty delegate;
 
-	private final MergedAnnotations annotations;
+	private final MergedAnnotation<Column> column;
+
+	private final MergedAnnotation<Element> element;
 
 	public AnnotatedCassandraConstructorProperty(CassandraPersistentProperty delegate, MergedAnnotations annotations) {
 		this.delegate = delegate;
-		this.annotations = annotations;
+		this.column = annotations.get(Column.class);
+		this.element = annotations.get(Element.class);
 	}
 
 	@Override
 	@Nullable
 	public CqlIdentifier getColumnName() {
-
-		if (annotations.isPresent(Column.class)) {
-			return CqlIdentifier.fromCql(annotations.get(Column.class).getString("value"));
-		}
-
-		return delegate.getColumnName();
+		return column.isPresent() ? CqlIdentifier.fromCql(column.getString("value")) : delegate.getColumnName();
 	}
 
 	@Override
 	public boolean hasExplicitColumnName() {
-		if (annotations.isPresent(Column.class)) {
-			return !ObjectUtils.isEmpty(annotations.get(Column.class).getString("value"));
-		}
-		return false;
+		return column.isPresent() && !ObjectUtils.isEmpty(column.getString("value"));
 	}
 
 	@Override
 	@Nullable
 	public Integer getOrdinal() {
-
-		if (annotations.isPresent(Element.class)) {
-			return annotations.get(Element.class).getInt("value");
-		}
-
-		return delegate.getOrdinal();
+		return element.isPresent() ? Integer.valueOf(element.getInt("value")) : delegate.getOrdinal();
 	}
 
 	@Override

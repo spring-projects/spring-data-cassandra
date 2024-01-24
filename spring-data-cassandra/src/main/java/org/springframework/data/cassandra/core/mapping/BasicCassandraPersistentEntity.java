@@ -17,7 +17,9 @@ package org.springframework.data.cassandra.core.mapping;
 
 import java.lang.annotation.Annotation;
 import java.util.Comparator;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 
 import org.springframework.beans.BeansException;
@@ -26,9 +28,11 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.expression.BeanFactoryAccessor;
 import org.springframework.context.expression.BeanFactoryResolver;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.AssociationHandler;
 import org.springframework.data.mapping.MappingException;
+import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
@@ -59,6 +63,8 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	private CqlIdentifier tableName;
 
 	private @Nullable StandardEvaluationContext spelContext;
+
+	private final Map<Parameter<?, CassandraPersistentProperty>, CassandraPersistentProperty> constructorProperties = new ConcurrentHashMap<>();
 
 	/**
 	 * Create a new {@link BasicCassandraPersistentEntity} given {@link TypeInformation}.
@@ -212,5 +218,26 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	@Override
 	public boolean isUserDefinedType() {
 		return false;
+	}
+
+	@Override
+	public CassandraPersistentProperty getProperty(Parameter<?, CassandraPersistentProperty> parameter) {
+
+		if (parameter.getName() == null) {
+			return null;
+		}
+
+		MergedAnnotations annotations = parameter.getAnnotations();
+		if (annotations.isPresent(Column.class) || annotations.isPresent(Element.class)) {
+
+			return constructorProperties.computeIfAbsent(parameter, it -> {
+
+				CassandraPersistentProperty property = getPersistentProperty(it.getName());
+				return new AnnotatedCassandraConstructorProperty(
+						property == null ? new CassandraConstructorProperty(it, this) : property, it.getAnnotations());
+			});
+		}
+
+		return getPersistentProperty(parameter.getName());
 	}
 }
