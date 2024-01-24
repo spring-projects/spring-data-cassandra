@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2024 the original author or authors.
+ * Copyright 2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,283 +13,274 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.core.convert;
+package org.springframework.data.cassandra.core.mapping;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.Optional;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
-import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.data.cassandra.core.cql.Ordering;
-import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
-import org.springframework.data.cassandra.core.mapping.Column;
-import org.springframework.data.cassandra.core.mapping.Element;
 import org.springframework.data.mapping.Association;
+import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
-import org.springframework.util.ObjectUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
- * {@link CassandraPersistentProperty} wrapper for a delegate {@link CassandraPersistentProperty} considering
- * annotations from a constructor parameter.
+ * Annotated {@link CassandraPersistentProperty} synthesized from a constructor parameter.
  *
  * @author Mark Paluch
  * @since 3.2
  */
-class AnnotatedCassandraConstructorProperty implements CassandraPersistentProperty {
+class CassandraConstructorProperty implements CassandraPersistentProperty {
 
-	private final CassandraPersistentProperty delegate;
+	private final Parameter<?, CassandraPersistentProperty> constructorParameter;
 
-	private final MergedAnnotations annotations;
+	private final String name;
 
-	public AnnotatedCassandraConstructorProperty(CassandraPersistentProperty delegate, MergedAnnotations annotations) {
-		this.delegate = delegate;
-		this.annotations = annotations;
+	private final CassandraPersistentEntity<?> owner;
+
+	private final TypeInformation<?> typeInformation;
+
+	public CassandraConstructorProperty(Parameter<?, CassandraPersistentProperty> constructorParameter,
+			CassandraPersistentEntity<?> owner) {
+		this.constructorParameter = constructorParameter;
+		this.name = constructorParameter.getName();
+		this.owner = owner;
+		this.typeInformation = constructorParameter.getType();
 	}
 
-	@Override
 	@Nullable
+	@Override
 	public CqlIdentifier getColumnName() {
-
-		if (annotations.isPresent(Column.class)) {
-			return CqlIdentifier.fromCql(annotations.get(Column.class).getString("value"));
-		}
-
-		return delegate.getColumnName();
+		throw new IllegalStateException(String.format("Parameter %s is not annotated with @Column", name));
 	}
 
-	@Override
-	public boolean hasExplicitColumnName() {
-		if (annotations.isPresent(Column.class)) {
-			return !ObjectUtils.isEmpty(annotations.get(Column.class).getString("value"));
-		}
-		return false;
-	}
-
-	@Override
 	@Nullable
+	@Override
 	public Integer getOrdinal() {
-
-		if (annotations.isPresent(Element.class)) {
-			return annotations.get(Element.class).getInt("value");
-		}
-
-		return delegate.getOrdinal();
+		throw new IllegalStateException(String.format("Parameter %s is not annotated with @Element", name));
 	}
 
-	@Override
 	@Nullable
+	@Override
 	public Ordering getPrimaryKeyOrdering() {
-		return delegate.getPrimaryKeyOrdering();
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public boolean isClusterKeyColumn() {
-		return delegate.isClusterKeyColumn();
+		return false;
 	}
 
 	@Override
 	public boolean isCompositePrimaryKey() {
-		return delegate.isCompositePrimaryKey();
+		return false;
 	}
 
 	@Override
 	public boolean isMapLike() {
-		return delegate.isMapLike();
+		return typeInformation.isMap();
 	}
 
 	@Override
 	public boolean isPartitionKeyColumn() {
-		return delegate.isPartitionKeyColumn();
+		return false;
 	}
 
 	@Override
 	public boolean isPrimaryKeyColumn() {
-		return delegate.isPrimaryKeyColumn();
+		return false;
 	}
 
 	@Override
 	public boolean isStaticColumn() {
-		return delegate.isStaticColumn();
+		return false;
 	}
 
-	@Override
 	@Nullable
+	@Override
 	public AnnotatedType findAnnotatedType(Class<? extends Annotation> annotationType) {
-		return delegate.findAnnotatedType(annotationType);
+		return null;
 	}
 
 	@Override
 	public PersistentEntity<?, CassandraPersistentProperty> getOwner() {
-		return delegate.getOwner();
+		return owner;
 	}
 
 	@Override
 	public String getName() {
-		return delegate.getName();
+		return name;
+	}
+
+	@Override
+	public boolean hasExplicitColumnName() {
+		return false;
 	}
 
 	@Override
 	public Class<?> getType() {
-		return delegate.getType();
+		return null;
 	}
 
 	@Override
 	public TypeInformation<?> getTypeInformation() {
-		return delegate.getTypeInformation();
+		return typeInformation;
 	}
 
-	@Override
 	@Nullable
+	@Override
 	public Method getGetter() {
-		return delegate.getGetter();
+		return null;
 	}
 
-	@Override
 	@Nullable
+	@Override
 	public Method getSetter() {
-		return delegate.getSetter();
+		return null;
 	}
 
-	@Override
 	@Nullable
+	@Override
 	public Method getWither() {
-		return delegate.getWither();
+		return null;
 	}
 
-	@Override
 	@Nullable
+	@Override
 	public Field getField() {
-		return delegate.getField();
+		return null;
 	}
 
-	@Override
 	@Nullable
+	@Override
 	public String getSpelExpression() {
-		return delegate.getSpelExpression();
+		return null;
 	}
 
-	@Override
 	@Nullable
+	@Override
 	public Association<CassandraPersistentProperty> getAssociation() {
-		return delegate.getAssociation();
+		return null;
 	}
 
 	@Override
 	public boolean isEntity() {
-		return delegate.isEntity();
+		return false;
 	}
 
 	@Override
 	public boolean isIdProperty() {
-		return delegate.isIdProperty();
+		return false;
 	}
 
 	@Override
 	public boolean isVersionProperty() {
-		return delegate.isVersionProperty();
+		return false;
 	}
 
 	@Override
 	public boolean isCollectionLike() {
-		return delegate.isCollectionLike();
+		return typeInformation.isCollectionLike();
 	}
 
 	@Override
 	public boolean isMap() {
-		return delegate.isMap();
+		return typeInformation.isMap();
 	}
 
 	@Override
 	public boolean isArray() {
-		return delegate.isArray();
+		return typeInformation.getType().isArray();
 	}
 
 	@Override
 	public boolean isTransient() {
-		return delegate.isTransient();
+		return false;
 	}
 
 	@Override
 	public boolean isWritable() {
-		return delegate.isWritable();
+		return false;
 	}
 
 	@Override
 	public boolean isImmutable() {
-		return delegate.isImmutable();
+		return false;
 	}
 
 	@Override
 	public boolean isAssociation() {
-		return delegate.isAssociation();
+		return false;
 	}
 
-	@Override
 	@Nullable
+	@Override
 	public Class<?> getComponentType() {
-		return delegate.getComponentType();
+		return Optional.ofNullable(typeInformation.getComponentType()).map(TypeInformation::getType).orElse(null);
 	}
 
 	@Override
 	public Class<?> getRawType() {
-		return delegate.getRawType();
+		return typeInformation.getType();
 	}
 
-	@Override
 	@Nullable
+	@Override
 	public Class<?> getMapValueType() {
-		return delegate.getMapValueType();
+		return Optional.ofNullable(typeInformation.getMapValueType()).map(TypeInformation::getType).orElse(null);
 	}
 
 	@Override
 	public Class<?> getActualType() {
-		return delegate.getActualType();
+		return typeInformation.getRequiredActualType().getType();
 	}
 
-	@Override
 	@Nullable
+	@Override
 	public <A extends Annotation> A findAnnotation(Class<A> annotationType) {
-		return delegate.findAnnotation(annotationType);
+		return null;
 	}
 
-	@Override
 	@Nullable
+	@Override
 	public <A extends Annotation> A findPropertyOrOwnerAnnotation(Class<A> annotationType) {
-		return delegate.findPropertyOrOwnerAnnotation(annotationType);
+		return null;
 	}
 
 	@Override
 	public boolean isAnnotationPresent(Class<? extends Annotation> annotationType) {
-		return delegate.isAnnotationPresent(annotationType);
+		return false;
 	}
 
 	@Override
 	public boolean usePropertyAccess() {
-		return delegate.usePropertyAccess();
+		return false;
 	}
 
-	@Override
 	@Nullable
+	@Override
 	public Class<?> getAssociationTargetType() {
-		return delegate.getAssociationTargetType();
+		return null;
 	}
 
 	@Override
 	public Iterable<? extends TypeInformation<?>> getPersistentEntityTypeInformation() {
-		return delegate.getPersistentEntityTypeInformation();
+		return Collections.emptyList();
 	}
 
 	@Nullable
 	@Override
 	public TypeInformation<?> getAssociationTargetTypeInformation() {
-		return delegate.getAssociationTargetTypeInformation();
+		return null;
 	}
 
 	@Override
@@ -308,4 +299,20 @@ class AnnotatedCassandraConstructorProperty implements CassandraPersistentProper
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (!(o instanceof CassandraConstructorProperty that)) {
+			return false;
+		}
+
+		return constructorParameter.equals(that.constructorParameter);
+	}
+
+	@Override
+	public int hashCode() {
+		return constructorParameter.hashCode();
+	}
 }

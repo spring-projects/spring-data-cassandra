@@ -27,12 +27,12 @@ import java.util.function.Predicate;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.CollectionFactory;
-import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
@@ -1406,8 +1406,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 				throw new MappingException(String.format("Parameter %s does not have a name", parameter));
 			}
 
-			CassandraPersistentProperty property = getPersistentProperty(name, parameter.getType(),
-					parameter.getAnnotations());
+			CassandraPersistentProperty property = entity.getProperty(parameter);
 
 			if (property == null) {
 
@@ -1418,19 +1417,6 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			return (T) getReadValue(context.forProperty(property.getName()), provider, property);
 		}
 
-		@Nullable
-		private CassandraPersistentProperty getPersistentProperty(String name, TypeInformation<?> typeInformation,
-				MergedAnnotations annotations) {
-
-			CassandraPersistentProperty property = entity.getPersistentProperty(name);
-
-			if (annotations.isPresent(Column.class) || annotations.isPresent(Element.class)) {
-				return new AnnotatedCassandraConstructorProperty(
-						property == null ? new CassandraConstructorProperty(name, entity, typeInformation) : property, annotations);
-			}
-
-			return property;
-		}
 	}
 
 	private record PropertyTranslatingPropertyAccessor<T> (PersistentPropertyAccessor<T> delegate,

@@ -15,7 +15,9 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
+import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -28,6 +30,19 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * @author Mark Paluch
  */
 public interface CassandraPersistentEntity<T> extends PersistentEntity<T, CassandraPersistentProperty> {
+
+	/**
+	 * Retrieve a {@link CassandraPersistentProperty} from a {@link Parameter persistence creator (constructor/factory
+	 * method) parameter}. Parameters are either derived by name or synthesized if their name does not map to a existing
+	 * property.
+	 *
+	 * @param parameter the parameter to create a property from. Parameters without a name return no ({@literal null})
+	 *          parameter.
+	 * @return the property, synthetic property or {@literal null}, if the parameter is unnamed.
+	 * @since 4.1.9
+	 */
+	@Nullable
+	CassandraPersistentProperty getProperty(Parameter<?, CassandraPersistentProperty> parameter);
 
 	/**
 	 * Returns whether this entity represents a composite primary key.
