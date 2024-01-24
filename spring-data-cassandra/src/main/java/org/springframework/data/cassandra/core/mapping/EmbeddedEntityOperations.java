@@ -311,6 +311,13 @@ public class EmbeddedEntityOperations {
 			return delegate.requiresPropertyPopulation();
 		}
 
+		@Nullable
+		@Override
+		public CassandraPersistentProperty getProperty(Parameter<?, CassandraPersistentProperty> parameter) {
+			CassandraPersistentProperty property = delegate.getProperty(parameter);
+			return property == null ? null : wrap(property);
+		}
+
 		@NotNull
 		@Override
 		public Iterator<CassandraPersistentProperty> iterator() {
@@ -328,6 +335,28 @@ public class EmbeddedEntityOperations {
 		@Override
 		public Spliterator<CassandraPersistentProperty> spliterator() {
 			return delegate.spliterator();
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) {
+				return true;
+			}
+			if (!(o instanceof PrefixedCassandraPersistentEntity<?> that)) {
+				return false;
+			}
+
+			if (!prefix.equals(that.prefix)) {
+				return false;
+			}
+			return delegate.equals(that.delegate);
+		}
+
+		@Override
+		public int hashCode() {
+			int result = prefix.hashCode();
+			result = 31 * result + delegate.hashCode();
+			return result;
 		}
 
 		private PrefixedCassandraPersistentProperty wrap(CassandraPersistentProperty source) {
@@ -645,6 +674,28 @@ public class EmbeddedEntityOperations {
 		@Override
 		public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 			delegate.setApplicationContext(applicationContext);
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) {
+				return true;
+			}
+			if (!(o instanceof PrefixedCassandraPersistentProperty that)) {
+				return false;
+			}
+
+			if (!prefix.equals(that.prefix)) {
+				return false;
+			}
+			return delegate.equals(that.delegate);
+		}
+
+		@Override
+		public int hashCode() {
+			int result = prefix.hashCode();
+			result = 31 * result + delegate.hashCode();
+			return result;
 		}
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2024 the original author or authors.
+ * Copyright 2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.core.convert;
+package org.springframework.data.cassandra.core.mapping;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedType;
@@ -25,9 +25,8 @@ import java.util.Optional;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.cassandra.core.cql.Ordering;
-import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
-import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.mapping.Association;
+import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
@@ -42,17 +41,20 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  */
 class CassandraConstructorProperty implements CassandraPersistentProperty {
 
+	private final Parameter<?, CassandraPersistentProperty> constructorParameter;
+
 	private final String name;
 
 	private final CassandraPersistentEntity<?> owner;
 
 	private final TypeInformation<?> typeInformation;
 
-	public CassandraConstructorProperty(String name, CassandraPersistentEntity<?> owner,
-			TypeInformation<?> typeInformation) {
-		this.name = name;
+	public CassandraConstructorProperty(Parameter<?, CassandraPersistentProperty> constructorParameter,
+			CassandraPersistentEntity<?> owner) {
+		this.constructorParameter = constructorParameter;
+		this.name = constructorParameter.getName();
 		this.owner = owner;
-		this.typeInformation = typeInformation;
+		this.typeInformation = constructorParameter.getType();
 	}
 
 	@Nullable
@@ -300,5 +302,22 @@ class CassandraConstructorProperty implements CassandraPersistentProperty {
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (!(o instanceof CassandraConstructorProperty that)) {
+			return false;
+		}
+
+		return constructorParameter.equals(that.constructorParameter);
+	}
+
+	@Override
+	public int hashCode() {
+		return constructorParameter.hashCode();
 	}
 }
