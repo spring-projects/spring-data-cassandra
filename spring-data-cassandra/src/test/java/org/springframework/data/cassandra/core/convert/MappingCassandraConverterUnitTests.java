@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.cassandra.core.mapping.BasicMapId.*;
 import static org.springframework.data.cassandra.test.util.RowMockUtil.*;
 
+import com.carrotsearch.hppc.mutables.DoubleHolder;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -26,11 +27,13 @@ import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
+import java.awt.print.Book;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -49,11 +52,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import org.assertj.core.data.Percentage;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.annotation.Id;
@@ -82,6 +88,9 @@ import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.domain.UserToken;
 import org.springframework.data.cassandra.support.UserDefinedTypeBuilder;
 import org.springframework.data.cassandra.test.util.RowMockUtil;
+import org.springframework.data.convert.ReadingConverter;
+import org.springframework.data.convert.SimplePropertyValueConversions;
+import org.springframework.data.convert.ValueConverter;
 import org.springframework.data.projection.EntityProjection;
 import org.springframework.data.projection.EntityProjectionIntrospector;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
@@ -110,9 +119,13 @@ public class MappingCassandraConverterUnitTests {
 	@BeforeEach
 	void setUp() {
 
+		CassandraCustomConversions conversions = new CassandraCustomConversions(
+				List.of(new ByteBufferToDoubleHolderConverter()));
 		this.mappingContext = new CassandraMappingContext();
+		this.mappingContext.setSimpleTypeHolder(conversions.getSimpleTypeHolder());
 
 		this.mappingCassandraConverter = new MappingCassandraConverter(mappingContext);
+		this.mappingCassandraConverter.setCustomConversions(conversions);
 		this.mappingCassandraConverter.afterPropertiesSet();
 	}
 
@@ -1012,6 +1025,27 @@ public class MappingCassandraConverterUnitTests {
 		assertThat(result.getTuple().one).isEqualTo("One");
 	}
 
+	@Test // GH-1472
+	void projectShouldReadDtoProjectionPropertiesOnlyOnce() {
+
+		ByteBuffer number = ByteBuffer.allocate(8);
+		number.putDouble(1.2d);
+		number.flip();
+
+		rowMock = RowMockUtil.newRowMock(RowMockUtil.column("number", number, DataTypes.BLOB));
+
+		EntityProjectionIntrospector introspector = EntityProjectionIntrospector.create(
+				new SpelAwareProxyProjectionFactory(), EntityProjectionIntrospector.ProjectionPredicate.typeHierarchy(),
+				this.mappingContext);
+
+		EntityProjection<DoubleHolderDto, WithDoubleHolder> projection = introspector.introspect(DoubleHolderDto.class,
+				WithDoubleHolder.class);
+
+		DoubleHolderDto result = this.mappingCassandraConverter.project(projection, rowMock);
+
+		assertThat(result.number.number).isCloseTo(1.2, Percentage.withPercentage(1));
+	}
+
 	private static List<Object> getValues(Map<CqlIdentifier, Object> statement) {
 		return new ArrayList<>(statement.values());
 	}
@@ -1521,5 +1555,30 @@ public class MappingCassandraConverterUnitTests {
 
 		String lastName;
 
+	}
+
+	@ReadingConverter
+	static class ByteBufferToDoubleHolderConverter implements Converter<ByteBuffer, DoubleHolder> {
+
+		@Override
+		public DoubleHolder convert(ByteBuffer source) {
+			return new DoubleHolder(source.getDouble());
+		}
+	}
+
+	record DoubleHolder(double number) {
+
+	}
+
+	static class WithDoubleHolder {
+		DoubleHolder number;
+	}
+
+	static class DoubleHolderDto {
+		DoubleHolder number;
+
+		public DoubleHolderDto(DoubleHolder number) {
+			this.number = number;
+		}
 	}
 }

@@ -344,11 +344,15 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 		EntityInstantiator instantiator = instantiators.getInstantiatorFor(mappedEntity);
 		R instance = instantiator.createInstance(mappedEntity, provider);
-		PersistentPropertyAccessor<R> accessor = mappedEntity.getPropertyAccessor(instance);
 
-		readProperties(context, mappedEntity, valueProviderToUse, accessor, Predicates.isTrue());
+		if (mappedEntity.requiresPropertyPopulation()) {
 
-		return accessor.getBean();
+			PersistentPropertyAccessor<R> accessor = mappedEntity.getPropertyAccessor(instance);
+			readProperties(context, mappedEntity, valueProviderToUse, accessor, isConstructorArgument(mappedEntity).negate());
+			return accessor.getBean();
+		}
+
+		return instance;
 	}
 
 	private Object doReadOrProject(ConversionContext context, Row row, TypeInformation<?> typeHint,
@@ -513,14 +517,19 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		EntityInstantiator instantiator = this.instantiators.getInstantiatorFor(entity);
 		S instance = instantiator.createInstance(entity, provider);
 
-		if (entity.requiresPropertyPopulation()) {
-			ConvertingPropertyAccessor<S> propertyAccessor = newConvertingPropertyAccessor(instance, entity);
+		return populateProperties(context, entity, valueProvider, instance);
+	}
 
-			readProperties(context, entity, valueProvider, propertyAccessor, isConstructorArgument(entity).negate());
-			return propertyAccessor.getBean();
+	private <S> S populateProperties(ConversionContext context, CassandraPersistentEntity<?> entity,
+			CassandraValueProvider valueProvider, S instance) {
+
+		if (!entity.requiresPropertyPopulation()) {
+			return instance;
 		}
 
-		return instance;
+		ConvertingPropertyAccessor<S> propertyAccessor = newConvertingPropertyAccessor(instance, entity);
+		readProperties(context, entity, valueProvider, propertyAccessor, isConstructorArgument(entity).negate());
+		return propertyAccessor.getBean();
 	}
 
 	private void readProperties(ConversionContext context, CassandraPersistentEntity<?> entity,
@@ -1419,7 +1428,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 	}
 
-	private record PropertyTranslatingPropertyAccessor<T> (PersistentPropertyAccessor<T> delegate,
+	private record PropertyTranslatingPropertyAccessor<T>(PersistentPropertyAccessor<T> delegate,
 			PersistentPropertyTranslator propertyTranslator) implements PersistentPropertyAccessor<T> {
 
 		static <T> PersistentPropertyAccessor<T> create(PersistentPropertyAccessor<T> delegate,
