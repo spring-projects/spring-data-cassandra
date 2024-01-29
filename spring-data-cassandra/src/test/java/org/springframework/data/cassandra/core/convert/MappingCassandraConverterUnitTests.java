@@ -24,6 +24,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -31,6 +32,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.*;
 
+import org.assertj.core.data.Percentage;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -55,6 +57,7 @@ import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.domain.UserToken;
 import org.springframework.data.cassandra.support.UserDefinedTypeBuilder;
 import org.springframework.data.cassandra.test.util.RowMockUtil;
+import org.springframework.data.convert.ReadingConverter;
 import org.springframework.data.convert.SimplePropertyValueConversions;
 import org.springframework.data.convert.ValueConverter;
 import org.springframework.data.projection.EntityProjection;
@@ -88,9 +91,13 @@ public class MappingCassandraConverterUnitTests {
 	@BeforeEach
 	void setUp() {
 
+		CassandraCustomConversions conversions = new CassandraCustomConversions(
+				List.of(new ByteBufferToDoubleHolderConverter()));
 		this.mappingContext = new CassandraMappingContext();
+		this.mappingContext.setSimpleTypeHolder(conversions.getSimpleTypeHolder());
 
 		this.converter = new MappingCassandraConverter(mappingContext);
+		this.converter.setCustomConversions(conversions);
 		this.converter.afterPropertiesSet();
 	}
 
@@ -1074,6 +1081,27 @@ public class MappingCassandraConverterUnitTests {
 		assertThat(result.tuple().one).isEqualTo("One");
 	}
 
+	@Test // GH-1472
+	void projectShouldReadDtoProjectionPropertiesOnlyOnce() {
+
+		ByteBuffer number = ByteBuffer.allocate(8);
+		number.putDouble(1.2d);
+		number.flip();
+
+		rowMock = RowMockUtil.newRowMock(RowMockUtil.column("number", number, DataTypes.BLOB));
+
+		EntityProjectionIntrospector introspector = EntityProjectionIntrospector.create(
+				new SpelAwareProxyProjectionFactory(), EntityProjectionIntrospector.ProjectionPredicate.typeHierarchy(),
+				this.mappingContext);
+
+		EntityProjection<DoubleHolderDto, WithDoubleHolder> projection = introspector.introspect(DoubleHolderDto.class,
+				WithDoubleHolder.class);
+
+		DoubleHolderDto result = this.converter.project(projection, rowMock);
+
+		assertThat(result.number.number).isCloseTo(1.2, Percentage.withPercentage(1));
+	}
+
 	@Test // GH-1471
 	void propertyValueConversionsCacheShouldConsiderPropertyEquality() {
 
@@ -1768,6 +1796,31 @@ public class MappingCassandraConverterUnitTests {
 
 		public void setLastName(String lastName) {
 			this.lastName = lastName;
+		}
+	}
+
+	@ReadingConverter
+	static class ByteBufferToDoubleHolderConverter implements Converter<ByteBuffer, DoubleHolder> {
+
+		@Override
+		public DoubleHolder convert(ByteBuffer source) {
+			return new DoubleHolder(source.getDouble());
+		}
+	}
+
+	record DoubleHolder(double number) {
+
+	}
+
+	static class WithDoubleHolder {
+		DoubleHolder number;
+	}
+
+	static class DoubleHolderDto {
+		DoubleHolder number;
+
+		public DoubleHolderDto(DoubleHolder number) {
+			this.number = number;
 		}
 	}
 }
