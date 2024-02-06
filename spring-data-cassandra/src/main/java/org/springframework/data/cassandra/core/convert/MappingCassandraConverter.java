@@ -968,7 +968,13 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		ColumnType componentType = type.getRequiredComponentType();
 
 		for (Object element : source) {
-			converted.add(getWriteValue(element, componentType));
+
+			ColumnType elementType = componentType;
+			if (elementType.getType() == Object.class) {
+				elementType = getColumnTypeResolver().resolve(element);
+			}
+
+			converted.add(getWriteValue(element, elementType));
 		}
 
 		return converted;
@@ -982,7 +988,18 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		ColumnType valueType = type.getRequiredMapValueType();
 
 		for (Entry<Object, Object> entry : source.entrySet()) {
-			converted.put(getWriteValue(entry.getKey(), keyType), getWriteValue(entry.getValue(), valueType));
+
+			ColumnType elementKeyType = keyType;
+			if (elementKeyType.getType() == Object.class) {
+				elementKeyType = getColumnTypeResolver().resolve(entry.getKey());
+			}
+
+			ColumnType elementValueType = valueType;
+			if (elementValueType.getType() == Object.class) {
+				elementValueType = getColumnTypeResolver().resolve(entry.getValue());
+			}
+
+			converted.put(getWriteValue(entry.getKey(), elementKeyType), getWriteValue(entry.getValue(), elementValueType));
 		}
 
 		return converted;

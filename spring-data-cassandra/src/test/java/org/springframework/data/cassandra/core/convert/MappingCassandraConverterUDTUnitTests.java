@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -197,6 +198,31 @@ class MappingCassandraConverterUDTUnitTests {
 
 		assertThat(statement.getQuery()).isEqualTo("INSERT INTO withcompositeprimarykey (id,addressusertype) "
 				+ "VALUES ('foo',{zip:'69469',city:'Weinheim',streetlines:['Heckenpfad','14']})");
+	}
+
+	@Test // GH-1473
+	void shouldWriteMapCorrectly() {
+
+		Manufacturer manufacturer = new Manufacturer("foo", "bar");
+		AddressUserType addressUserType = prepareAddressUserType();
+
+		Map<Manufacturer, AddressUserType> value = Map.of(manufacturer, addressUserType);
+		Map<?, ?> writeValue = (Map<?, ?>) converter.convertToColumnType(value);
+		Map.Entry<?, ?> entry = writeValue.entrySet().iterator().next();
+
+		assertThat(entry.getKey()).isInstanceOf(UdtValue.class);
+		assertThat(entry.getValue()).isInstanceOf(UdtValue.class);
+	}
+
+	@Test // GH-1473
+	void shouldWriteSetCorrectly() {
+
+		AddressUserType addressUserType = prepareAddressUserType();
+
+		Set<AddressUserType> value = Set.of(addressUserType);
+		Set<?> writeValue = (Set<?>) converter.convertToColumnType(value);
+
+		assertThat(writeValue.iterator().next()).isInstanceOf(UdtValue.class);
 	}
 
 	private static AddressUserType prepareAddressUserType() {
