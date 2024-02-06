@@ -26,6 +26,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -352,6 +353,27 @@ class StringBasedCassandraQueryUnitTests {
 		assertThat(actual.getPositionalValues().get(0)).isInstanceOf(UdtValue.class);
 	}
 
+	@Test // GH-1473
+	void bindsCollectionOfMappedUdtPropertyCorrectly() {
+
+		UserDefinedType addressType = UserDefinedTypeBuilder.forName("address").withField("city", DataTypes.TEXT)
+				.withField("country", DataTypes.TEXT).build();
+
+		when(userTypeResolver.resolveType(CqlIdentifier.fromCql("address"))).thenReturn(addressType);
+
+		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByMainAddress", Set.class);
+		CassandraParameterAccessor accessor = new ConvertingParameterAccessor(converter,
+				new CassandraParametersParameterAccessor(cassandraQuery.getQueryMethod(), Set.of(new AddressType())));
+
+		SimpleStatement actual = cassandraQuery.createQuery(accessor);
+
+		assertThat(actual.getQuery()).isEqualTo("SELECT * FROM person WHERE address=?;");
+		assertThat(actual.getPositionalValues().get(0)).isInstanceOf(Set.class);
+
+		Set<?> set = (Set<?>) actual.getPositionalValues().get(0);
+		assertThat(set.iterator().next()).isInstanceOf(UdtValue.class);
+	}
+
 	@Test // DATACASS-172
 	void bindsUdtValuePropertyCorrectly() {
 
@@ -466,6 +488,9 @@ class StringBasedCassandraQueryUnitTests {
 
 		@Query("SELECT * FROM person WHERE address=?0;")
 		Person findByMainAddress(AddressType address);
+
+		@Query("SELECT * FROM person WHERE address=?0;")
+		Person findByMainAddress(Set<AddressType> address);
 
 		@Query("SELECT * FROM person WHERE address=?0;")
 		Person findByMainAddress(UdtValue UdtValue);
