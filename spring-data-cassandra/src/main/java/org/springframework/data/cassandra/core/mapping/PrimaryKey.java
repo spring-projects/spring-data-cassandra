@@ -21,6 +21,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.core.annotation.AliasFor;
 import org.springframework.data.annotation.Id;
 
 /**
@@ -43,11 +44,13 @@ import org.springframework.data.annotation.Id;
 @Retention(value = RetentionPolicy.RUNTIME)
 @Target(value = { ElementType.ANNOTATION_TYPE, ElementType.FIELD, ElementType.METHOD })
 @Id
+@Column
 public @interface PrimaryKey {
 
 	/**
 	 * The column name for the primary key if it is of a simple type, else ignored.
 	 */
+	@AliasFor(annotation = Column.class, attribute = "value")
 	String value() default "";
 
 	/**
@@ -58,5 +61,6 @@ public @interface PrimaryKey {
 	 * @see com.datastax.oss.driver.api.core.CqlIdentifier#fromInternal(String)
 	 */
 	@Deprecated
+	@AliasFor(annotation = Column.class, attribute = "forceQuote")
 	boolean forceQuote() default false;
 }

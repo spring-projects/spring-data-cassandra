@@ -166,33 +166,13 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		}
 
 		String overriddenName = null;
-
 		boolean forceQuote = false;
 
-		if (isIdProperty()) { // then the id is of a simple type (since it's not a composite primary key)
+		Column column = findAnnotation(Column.class);
 
-			PrimaryKey primaryKey = findAnnotation(PrimaryKey.class);
-
-			if (primaryKey != null) {
-				overriddenName = primaryKey.value();
-				forceQuote = primaryKey.forceQuote();
-			}
-		} else if (isPrimaryKeyColumn()) { // then it's a simple type
-
-			PrimaryKeyColumn primaryKeyColumn = findAnnotation(PrimaryKeyColumn.class);
-
-			if (primaryKeyColumn != null) {
-				overriddenName = primaryKeyColumn.value();
-				forceQuote = primaryKeyColumn.forceQuote();
-			}
-		} else { // then it's a vanilla column with the assumption that it's mapped to a single column
-
-			Column column = findAnnotation(Column.class);
-
-			if (column != null) {
-				overriddenName = column.value();
-				forceQuote = column.forceQuote();
-			}
+		if (column != null) {
+			overriddenName = column.value();
+			forceQuote = column.forceQuote();
 		}
 
 		return namingAccessor.generate(overriddenName, forceQuote, NamingStrategy::getColumnName, this, this.spelContext);
@@ -205,23 +185,8 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 			return false;
 		}
 
-		if (isIdProperty()) { // then the id is of a simple type (since it's not a composite primary key)
-
-			PrimaryKey primaryKey = findAnnotation(PrimaryKey.class);
-
-			return primaryKey != null && !ObjectUtils.isEmpty(primaryKey.value());
-
-		} else if (isPrimaryKeyColumn()) { // then it's a simple type
-
-			PrimaryKeyColumn primaryKeyColumn = findAnnotation(PrimaryKeyColumn.class);
-
-			return primaryKeyColumn != null && !ObjectUtils.isEmpty(primaryKeyColumn.value());
-		} else { // then it's a vanilla column with the assumption that it's mapped to a single column
-
-			Column column = findAnnotation(Column.class);
-
-			return column != null && !ObjectUtils.isEmpty(column.value());
-		}
+		Column column = findAnnotation(Column.class);
+		return column != null && !ObjectUtils.isEmpty(column.value());
 	}
 
 	@Override
