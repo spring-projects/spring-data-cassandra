@@ -40,18 +40,19 @@ import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 @Documented
 @Retention(value = RetentionPolicy.RUNTIME)
 @Target(value = { ElementType.ANNOTATION_TYPE, ElementType.FIELD, ElementType.METHOD })
+@Column
 public @interface PrimaryKeyColumn {
 
 	/**
 	 * The name of the column in the table.
 	 */
-	@AliasFor(attribute = "name")
+	@AliasFor(annotation = Column.class, attribute = "value")
 	String value() default "";
 
 	/**
 	 * The name of the column in the table.
 	 */
-	@AliasFor(attribute = "value")
+	@AliasFor(annotation = Column.class, attribute = "value")
 	String name() default "";
 
 	/**
@@ -78,5 +79,6 @@ public @interface PrimaryKeyColumn {
 	 * @see com.datastax.oss.driver.api.core.CqlIdentifier#fromInternal(String)
 	 */
 	@Deprecated
+	@AliasFor(annotation = Column.class, attribute = "forceQuote")
 	boolean forceQuote() default false;
 }

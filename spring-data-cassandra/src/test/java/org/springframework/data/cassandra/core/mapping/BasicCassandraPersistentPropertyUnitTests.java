@@ -48,6 +48,8 @@ class BasicCassandraPersistentPropertyUnitTests {
 	@Test
 	void usesAnnotatedColumnName() {
 		assertThat(getPropertyFor(Timeline.class, "text").getRequiredColumnName()).hasToString("message");
+		assertThat(getPropertyFor(Timeline.class, "pkValue").getRequiredColumnName()).hasToString("val");
+		assertThat(getPropertyFor(Timeline.class, "pkName").getRequiredColumnName()).hasToString("val");
 	}
 
 	@Test
@@ -180,6 +182,10 @@ class BasicCassandraPersistentPropertyUnitTests {
 		String keyspace;
 
 		@Column("table") String table;
+
+		@PrimaryKeyColumn(value = "val") String pkValue;
+
+		@PrimaryKeyColumn(name = "val") String pkName;
 	}
 
 	@Retention(RetentionPolicy.RUNTIME)
