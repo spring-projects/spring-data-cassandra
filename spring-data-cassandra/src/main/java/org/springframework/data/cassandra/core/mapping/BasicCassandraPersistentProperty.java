@@ -25,8 +25,6 @@ import java.util.Optional;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.expression.BeanFactoryAccessor;
-import org.springframework.context.expression.BeanFactoryResolver;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.cassandra.core.cql.Ordering;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
@@ -36,7 +34,6 @@ import org.springframework.data.mapping.model.Property;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.Optionals;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -64,8 +61,6 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 	private @Nullable CqlIdentifier columnName;
 
-	private @Nullable StandardEvaluationContext spelContext;
-
 	/**
 	 * Create a new {@link BasicCassandraPersistentProperty}.
 	 *
@@ -80,15 +75,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	}
 
 	@Override
-	public void setApplicationContext(ApplicationContext context) {
-
-		Assert.notNull(context, "ApplicationContext must not be null");
-
-		this.spelContext = new StandardEvaluationContext();
-		this.spelContext.addPropertyAccessor(new BeanFactoryAccessor());
-		this.spelContext.setBeanResolver(new BeanFactoryResolver(context));
-		this.spelContext.setRootObject(context);
-	}
+	public void setApplicationContext(ApplicationContext context) {}
 
 	@Override
 	public CassandraPersistentEntity<?> getOwner() {
@@ -175,7 +162,10 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 			forceQuote = column.forceQuote();
 		}
 
-		return namingAccessor.generate(overriddenName, forceQuote, NamingStrategy::getColumnName, this, this.spelContext);
+		BasicCassandraPersistentEntity<?> entity = (BasicCassandraPersistentEntity<?>) getOwner();
+
+		return namingAccessor.generate(overriddenName, forceQuote, NamingStrategy::getColumnName, this,
+				BasicCassandraPersistentEntity.PARSER, entity::getValueEvaluationContext);
 	}
 
 	@Override

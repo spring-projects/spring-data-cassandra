@@ -18,10 +18,13 @@ package org.springframework.data.cassandra.core.mapping;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import org.springframework.data.cassandra.util.SpelUtils;
-import org.springframework.expression.EvaluationContext;
+import org.springframework.data.expression.ValueEvaluationContext;
+import org.springframework.data.expression.ValueExpression;
+import org.springframework.data.expression.ValueExpressionParser;
+import org.springframework.data.spel.ExpressionDependencies;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -59,18 +62,21 @@ class CqlIdentifierGenerator {
 	 * @param forceQuote whether to enforce quoting.
 	 * @param defaultNameGenerator the default name generator.
 	 * @param source source to be used for name generation.
-	 * @param spelContext the SpEL evaluation context for evaluating SpEL expressions provided through
-	 *          {@code providedName}.
+	 * @param parser expression parser.
+	 * @param contextFunction evaluation context provider function.
 	 * @return the generated name.
 	 */
 	public <T> CqlIdentifier generate(@Nullable String providedName, boolean forceQuote,
-			BiFunction<NamingStrategy, T, String> defaultNameGenerator, T source, @Nullable EvaluationContext spelContext) {
+			BiFunction<NamingStrategy, T, String> defaultNameGenerator, T source, ValueExpressionParser parser,
+			BiFunction<Object, ExpressionDependencies, ValueEvaluationContext> contextFunction) {
 
 		String name;
 		boolean useForceQuote = forceQuote;
 
 		if (StringUtils.hasText(providedName)) {
-			name = spelContext != null ? SpelUtils.evaluate(providedName, spelContext) : providedName;
+			ValueExpression expression = parser.parse(providedName);
+			name = ObjectUtils
+					.nullSafeToString(expression.evaluate(contextFunction.apply(null, expression.getExpressionDependencies())));
 			useForceQuote = true;
 		} else {
 			name = defaultNameGenerator.apply(getNamingStrategy(forceQuote), source);

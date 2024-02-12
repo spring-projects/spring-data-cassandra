@@ -16,7 +16,7 @@
 package org.springframework.data.cassandra.core.convert;
 
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
-import org.springframework.data.mapping.model.SpELExpressionEvaluator;
+import org.springframework.data.mapping.model.ValueExpressionEvaluator;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -33,16 +33,16 @@ public class RowValueProvider implements CassandraValueProvider {
 
 	private final RowReader reader;
 
-	private final SpELExpressionEvaluator evaluator;
+	private final ValueExpressionEvaluator evaluator;
 
 	/**
 	 * Create a new {@link RowValueProvider} with the given {@link Row}, {@link CodecRegistry} and
-	 * {@link SpELExpressionEvaluator}.
+	 * {@link ValueExpressionEvaluator}.
 	 *
 	 * @param source must not be {@literal null}.
 	 * @param evaluator must not be {@literal null}.
 	 */
-	public RowValueProvider(Row source, SpELExpressionEvaluator evaluator) {
+	public RowValueProvider(Row source, ValueExpressionEvaluator evaluator) {
 
 		Assert.notNull(source, "Source Row must not be null");
 		Assert.notNull(evaluator, "SpELExpressionEvaluator must not be null");

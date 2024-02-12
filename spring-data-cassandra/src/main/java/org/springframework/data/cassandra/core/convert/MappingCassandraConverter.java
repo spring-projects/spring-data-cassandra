@@ -32,9 +32,13 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.EnvironmentAware;
 import org.springframework.core.CollectionFactory;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.EnvironmentCapable;
+import org.springframework.core.env.StandardEnvironment;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.core.mapping.*;
 import org.springframework.data.cassandra.core.mapping.Embedded.OnEmpty;
@@ -46,19 +50,20 @@ import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.context.MappingContext;
+import org.springframework.data.mapping.model.CachingValueExpressionEvaluatorFactory;
 import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
-import org.springframework.data.mapping.model.DefaultSpELExpressionEvaluator;
 import org.springframework.data.mapping.model.EntityInstantiator;
 import org.springframework.data.mapping.model.ParameterValueProvider;
 import org.springframework.data.mapping.model.PropertyValueProvider;
 import org.springframework.data.mapping.model.SpELContext;
-import org.springframework.data.mapping.model.SpELExpressionEvaluator;
-import org.springframework.data.mapping.model.SpELExpressionParameterValueProvider;
+import org.springframework.data.mapping.model.ValueExpressionEvaluator;
+import org.springframework.data.mapping.model.ValueExpressionParameterValueProvider;
 import org.springframework.data.projection.EntityProjection;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.util.Predicates;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -87,7 +92,7 @@ import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
  * @author Frank Spitulski
  */
 public class MappingCassandraConverter extends AbstractCassandraConverter
-		implements ApplicationContextAware, BeanClassLoaderAware {
+		implements ApplicationContextAware, EnvironmentAware, EnvironmentCapable, BeanClassLoaderAware {
 
 	private final Log log = LogFactory.getLog(getClass());
 
@@ -99,11 +104,21 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 	private @Nullable ClassLoader beanClassLoader;
 
+	private @Nullable Environment environment;
+
 	private SpELContext spELContext;
 
 	private final DefaultColumnTypeResolver cassandraTypeResolver;
+
 	private final EmbeddedEntityOperations embeddedEntityOperations;
-	private final SpelAwareProxyProjectionFactory projectionFactory = new SpelAwareProxyProjectionFactory();
+
+	private final SpelExpressionParser expressionParser = new SpelExpressionParser();
+
+	private final SpelAwareProxyProjectionFactory projectionFactory = new SpelAwareProxyProjectionFactory(
+			expressionParser);
+
+	private final CachingValueExpressionEvaluatorFactory expressionEvaluatorFactory = new CachingValueExpressionEvaluatorFactory(
+			expressionParser, this, o -> spELContext.getEvaluationContext(o));
 
 	/**
 	 * Create a new {@link MappingCassandraConverter} with a {@link CassandraMappingContext}.
@@ -171,8 +186,28 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+
 		this.spELContext = new SpELContext(this.spELContext, applicationContext);
+		this.environment = applicationContext.getEnvironment();
 		this.projectionFactory.setBeanFactory(applicationContext);
+	}
+
+	@Override
+	public void setEnvironment(Environment environment) {
+		this.environment = environment;
+	}
+
+	@Override
+	public Environment getEnvironment() {
+
+		if (this.environment == null) {
+			this.environment = new StandardEnvironment();
+		}
+		return this.environment;
+	}
+
+	public void setSpELContext(SpELContext spELContext) {
+		this.spELContext = spELContext;
 	}
 
 	@Override
@@ -294,8 +329,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 				this::doReadTupleValue, this::doReadUdtValue, this::readCollectionOrArray, this::readMap,
 				this::getPotentiallyConvertedSimpleRead, projection);
 
-		return doReadProjection(context, new RowValueProvider(row, new DefaultSpELExpressionEvaluator(row, spELContext)),
-				projection);
+		return doReadProjection(context, new RowValueProvider(row, expressionEvaluatorFactory.create(row)), projection);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -334,11 +368,10 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 		ParameterValueProvider<CassandraPersistentProperty> provider;
 		if (persistenceCreator != null && persistenceCreator.hasParameters()) {
-			SpELExpressionEvaluator evaluator = new DefaultSpELExpressionEvaluator(valueProviderToUse.getSource(),
-					spELContext);
+			ValueExpressionEvaluator evaluator = expressionEvaluatorFactory.create(valueProviderToUse.getSource());
 			ParameterValueProvider<CassandraPersistentProperty> parameterValueProvider = newParameterValueProvider(context,
 					entity, valueProviderToUse);
-			provider = new ConverterAwareSpELExpressionParameterValueProvider(evaluator, getConversionService(),
+			provider = new ConverterAwareValueExpressionParameterValueProvider(evaluator, getConversionService(),
 					parameterValueProvider, context);
 		} else {
 			provider = NoOpParameterValueProvider.INSTANCE;
@@ -362,8 +395,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 		if (typeDescriptor.isProjection()) {
 
-			CassandraValueProvider valueProvider = new RowValueProvider(row,
-					new DefaultSpELExpressionEvaluator(row, this.spELContext));
+			CassandraValueProvider valueProvider = new RowValueProvider(row, expressionEvaluatorFactory.create(row));
 			return doReadProjection(context, valueProvider, typeDescriptor);
 		}
 
@@ -376,7 +408,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		if (typeDescriptor.isProjection()) {
 
 			CassandraValueProvider valueProvider = new UdtValueProvider(udtValue,
-					new DefaultSpELExpressionEvaluator(udtValue, this.spELContext));
+					expressionEvaluatorFactory.create(udtValue));
 			return doReadProjection(context, valueProvider, typeDescriptor);
 		}
 
@@ -389,7 +421,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		if (typeDescriptor.isProjection()) {
 
 			CassandraValueProvider valueProvider = new TupleValueProvider(tupleValue,
-					new DefaultSpELExpressionEvaluator(tupleValue, this.spELContext));
+					expressionEvaluatorFactory.create(tupleValue));
 			return doReadProjection(context, valueProvider, typeDescriptor);
 		}
 
@@ -436,10 +468,10 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	}
 
 	private <S> S doReadEntity(ConversionContext context, Object value,
-			Function<SpELExpressionEvaluator, CassandraValueProvider> valueProviderSupplier,
+			Function<ValueExpressionEvaluator, CassandraValueProvider> valueProviderSupplier,
 			TypeInformation<? extends S> typeHint) {
 
-		SpELExpressionEvaluator expressionEvaluator = new DefaultSpELExpressionEvaluator(value, this.spELContext);
+		ValueExpressionEvaluator expressionEvaluator = expressionEvaluatorFactory.create(value);
 		CassandraValueProvider valueProvider = valueProviderSupplier.apply(expressionEvaluator);
 
 		return doReadEntity(context, valueProvider, typeHint);
@@ -507,10 +539,10 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		ParameterValueProvider<CassandraPersistentProperty> provider;
 
 		if (persistenceCreator != null && persistenceCreator.hasParameters()) {
-			SpELExpressionEvaluator evaluator = new DefaultSpELExpressionEvaluator(valueProvider.getSource(), spELContext);
+			ValueExpressionEvaluator evaluator = expressionEvaluatorFactory.create(valueProvider.getSource());
 			ParameterValueProvider<CassandraPersistentProperty> parameterValueProvider = newParameterValueProvider(context,
 					entity, valueProvider);
-			provider = new ConverterAwareSpELExpressionParameterValueProvider(evaluator, getConversionService(),
+			provider = new ConverterAwareValueExpressionParameterValueProvider(evaluator, getConversionService(),
 					parameterValueProvider, context);
 		} else {
 			provider = NoOpParameterValueProvider.INSTANCE;
@@ -1261,23 +1293,23 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	}
 
 	/**
-	 * Extension of {@link SpELExpressionParameterValueProvider} to recursively trigger value conversion on the raw
+	 * Extension of {@link ValueExpressionParameterValueProvider} to recursively trigger value conversion on the raw
 	 * resolved SpEL value.
 	 */
-	private static class ConverterAwareSpELExpressionParameterValueProvider
-			extends SpELExpressionParameterValueProvider<CassandraPersistentProperty> {
+	private static class ConverterAwareValueExpressionParameterValueProvider
+			extends ValueExpressionParameterValueProvider<CassandraPersistentProperty> {
 
 		private final ConversionContext context;
 
 		/**
-		 * Creates a new {@link ConverterAwareSpELExpressionParameterValueProvider}.
+		 * Creates a new {@link ConverterAwareValueExpressionParameterValueProvider}.
 		 *
 		 * @param evaluator must not be {@literal null}.
 		 * @param conversionService must not be {@literal null}.
 		 * @param delegate must not be {@literal null}.
 		 * @param context must not be {@literal null}.
 		 */
-		public ConverterAwareSpELExpressionParameterValueProvider(SpELExpressionEvaluator evaluator,
+		public ConverterAwareValueExpressionParameterValueProvider(ValueExpressionEvaluator evaluator,
 				ConversionService conversionService, ParameterValueProvider<CassandraPersistentProperty> delegate,
 				ConversionContext context) {
 
@@ -1286,8 +1318,9 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		}
 
 		@Override
-		protected <T> T potentiallyConvertSpelValue(Object object, Parameter<T, CassandraPersistentProperty> parameter) {
-			return (T) context.convert(object, parameter.getType());
+		protected <T> T potentiallyConvertExpressionValue(Object object,
+				Parameter<T, CassandraPersistentProperty> parameter) {
+			return context.convert(object, parameter.getType());
 		}
 	}
 

@@ -16,7 +16,7 @@
 package org.springframework.data.cassandra.core.convert;
 
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
-import org.springframework.data.mapping.model.SpELExpressionEvaluator;
+import org.springframework.data.mapping.model.ValueExpressionEvaluator;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -34,17 +34,17 @@ public class TupleValueProvider implements CassandraValueProvider {
 
 	private final CodecRegistry codecRegistry;
 
-	private final SpELExpressionEvaluator evaluator;
+	private final ValueExpressionEvaluator evaluator;
 
 	private final TupleValue tupleValue;
 
 	/**
-	 * Create a new {@link TupleValueProvider} with the given {@link TupleValue} and {@link SpELExpressionEvaluator}.
+	 * Create a new {@link TupleValueProvider} with the given {@link TupleValue} and {@link ValueExpressionEvaluator}.
 	 *
 	 * @param tupleValue must not be {@literal null}.
 	 * @param evaluator must not be {@literal null}.
 	 */
-	public TupleValueProvider(TupleValue tupleValue, SpELExpressionEvaluator evaluator) {
+	public TupleValueProvider(TupleValue tupleValue, ValueExpressionEvaluator evaluator) {
 
 		Assert.notNull(tupleValue, "TupleValue must not be null");
 		Assert.notNull(evaluator, "SpELExpressionEvaluator must not be null");

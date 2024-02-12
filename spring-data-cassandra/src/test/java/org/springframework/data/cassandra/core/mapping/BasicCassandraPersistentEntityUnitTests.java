@@ -33,6 +33,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.AssociationHandler;
+import org.springframework.data.spel.ExtensionAwareEvaluationContextProvider;
 import org.springframework.data.util.TypeInformation;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -81,6 +82,7 @@ class BasicCassandraPersistentEntityUnitTests {
 
 		BasicCassandraPersistentEntity<UserLine> entity = new BasicCassandraPersistentEntity<>(
 				TypeInformation.of(UserLine.class));
+		entity.setEvaluationContextProvider(new ExtensionAwareEvaluationContextProvider(context));
 		entity.setApplicationContext(context);
 
 		assertThat(entity.getTableName()).hasToString(bean.tableName);

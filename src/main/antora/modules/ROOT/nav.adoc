@@ -19,6 +19,7 @@
 ** xref:cassandra/property-converters.adoc[]
 ** xref:cassandra/events.adoc[]
 ** xref:cassandra/auditing.adoc[]
+** xref:cassandra/value-expressions.adoc[]
 
 * xref:repositories.adoc[]
 ** xref:repositories/core-concepts.adoc[]

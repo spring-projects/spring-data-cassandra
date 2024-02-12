@@ -23,18 +23,23 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.expression.BeanFactoryAccessor;
-import org.springframework.context.expression.BeanFactoryResolver;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.annotation.MergedAnnotations;
+import org.springframework.data.expression.ValueEvaluationContext;
+import org.springframework.data.expression.ValueExpressionParser;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.AssociationHandler;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
+import org.springframework.data.spel.ExpressionDependencies;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.expression.EvaluationContext;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -52,17 +57,19 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
 public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, CassandraPersistentProperty>
 		implements CassandraPersistentEntity<T>, ApplicationContextAware {
 
+	static final ValueExpressionParser PARSER = ValueExpressionParser.create(SpelExpressionParser::new);
+
 	private static final CassandraPersistentEntityMetadataVerifier DEFAULT_VERIFIER = new CompositeCassandraPersistentEntityMetadataVerifier();
 
 	private final CqlIdentifierGenerator namingAccessor = new CqlIdentifierGenerator();
+
+	private @Nullable ApplicationContext applicationContext;
 
 	private Boolean forceQuote;
 
 	private CassandraPersistentEntityMetadataVerifier verifier = DEFAULT_VERIFIER;
 
 	private CqlIdentifier tableName;
-
-	private @Nullable StandardEvaluationContext spelContext;
 
 	private final Map<Parameter<?, CassandraPersistentProperty>, CassandraPersistentProperty> constructorProperties = new ConcurrentHashMap<>();
 
@@ -117,11 +124,45 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 
 		if (annotation != null) {
 			return this.namingAccessor.generate((String) AnnotationUtils.getValue(annotation),
-					(Boolean) AnnotationUtils.getValue(annotation, "forceQuote"), defaultNameGenerator, this, this.spelContext);
+					(Boolean) AnnotationUtils.getValue(annotation, "forceQuote"), defaultNameGenerator, this, PARSER,
+					this::getValueEvaluationContext);
 		}
 
 		return this.namingAccessor.generate(null, forceQuote != null ? forceQuote : false, defaultNameGenerator, this,
-				this.spelContext);
+				PARSER, this::getValueEvaluationContext);
+	}
+
+	@Override
+	protected EvaluationContext getEvaluationContext(Object rootObject) {
+		return postProcess(super.getEvaluationContext(rootObject == null ? applicationContext : rootObject));
+	}
+
+	@Override
+	protected EvaluationContext getEvaluationContext(Object rootObject, ExpressionDependencies dependencies) {
+		return postProcess(super.getEvaluationContext(rootObject == null ? applicationContext : rootObject, dependencies));
+	}
+
+	// TODO: Do we want to keep the Context customization? Ideally, we align with EvaluationContextProvider.
+	private EvaluationContext postProcess(EvaluationContext evaluationContext) {
+
+		if (evaluationContext instanceof StandardEvaluationContext sec) {
+
+			if (sec.getRootObject().getValue() instanceof BeanFactory) {
+				sec.addPropertyAccessor(new BeanFactoryAccessor());
+			}
+		}
+
+		return evaluationContext;
+	}
+
+	@Override
+	protected ValueEvaluationContext getValueEvaluationContext(Object rootObject) {
+		return super.getValueEvaluationContext(rootObject);
+	}
+
+	@Override
+	protected ValueEvaluationContext getValueEvaluationContext(Object rootObject, ExpressionDependencies dependencies) {
+		return super.getValueEvaluationContext(rootObject, dependencies);
 	}
 
 	@Override
@@ -151,13 +192,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 
 	@Override
 	public void setApplicationContext(ApplicationContext context) throws BeansException {
-
-		Assert.notNull(context, "ApplicationContext must not be null");
-
-		spelContext = new StandardEvaluationContext();
-		spelContext.addPropertyAccessor(new BeanFactoryAccessor());
-		spelContext.setBeanResolver(new BeanFactoryResolver(context));
-		spelContext.setRootObject(context);
+		this.applicationContext = context;
 	}
 
 	@Override

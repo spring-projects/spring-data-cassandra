@@ -16,7 +16,7 @@
 package org.springframework.data.cassandra.core.convert;
 
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
-import org.springframework.data.mapping.model.SpELExpressionEvaluator;
+import org.springframework.data.mapping.model.ValueExpressionEvaluator;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -32,15 +32,15 @@ public class UdtValueProvider implements CassandraValueProvider {
 
 	private final UdtValue udtValue;
 
-	private final SpELExpressionEvaluator evaluator;
+	private final ValueExpressionEvaluator evaluator;
 
 	/**
-	 * Create a new {@link UdtValueProvider} with the given {@link UdtValue} and {@link SpELExpressionEvaluator}.
+	 * Create a new {@link UdtValueProvider} with the given {@link UdtValue} and {@link ValueExpressionEvaluator}.
 	 *
 	 * @param udtValue must not be {@literal null}.
 	 * @param evaluator must not be {@literal null}.
 	 */
-	public UdtValueProvider(UdtValue udtValue, SpELExpressionEvaluator evaluator) {
+	public UdtValueProvider(UdtValue udtValue, ValueExpressionEvaluator evaluator) {
 
 		Assert.notNull(udtValue, "UDTValue must not be null");
 		Assert.notNull(evaluator, "SpELExpressionEvaluator must not be null");
