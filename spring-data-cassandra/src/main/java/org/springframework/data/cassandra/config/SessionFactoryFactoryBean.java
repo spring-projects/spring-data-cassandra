@@ -145,6 +145,10 @@ public class SessionFactoryFactoryBean extends AbstractFactoryBean<SessionFactor
 
 		super.afterPropertiesSet();
 
+		if(!shouldRunSchemaAction()) {
+			return;
+		}
+
 		Runnable schemaActionRunnable = () -> {
 			if (this.keyspacePopulator != null) {
 				this.keyspacePopulator.populate(this.session);
@@ -168,6 +172,10 @@ public class SessionFactoryFactoryBean extends AbstractFactoryBean<SessionFactor
 	@Override
 	@SuppressWarnings("all")
 	public void destroy() throws Exception {
+
+		if(!shouldRunSchemaAction()) {
+			return;
+		}
 
 		Runnable schemaActionRunnable = () -> {
 			if (this.keyspaceCleaner != null) {
@@ -228,6 +236,14 @@ public class SessionFactoryFactoryBean extends AbstractFactoryBean<SessionFactor
 	 */
 	protected void createTables(boolean drop, boolean dropUnused, boolean ifNotExists) {
 		performSchemaActions(drop, dropUnused, ifNotExists);
+	}
+
+	/**
+	 * @return {@literal true} if schema action or {@link KeyspacePopulator} defined.
+	 * @since 4.3
+	 */
+	protected boolean shouldRunSchemaAction() {
+		return keyspacePopulator != null || SchemaAction.NONE != this.schemaAction;
 	}
 
 	@SuppressWarnings("all")

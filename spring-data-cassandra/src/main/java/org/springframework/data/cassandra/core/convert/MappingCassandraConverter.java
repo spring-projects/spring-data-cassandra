@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -61,6 +62,7 @@ import org.springframework.data.mapping.model.ValueExpressionParameterValueProvi
 import org.springframework.data.projection.EntityProjection;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
+import org.springframework.data.util.Lazy;
 import org.springframework.data.util.Predicates;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
@@ -98,7 +100,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 	private final CassandraMappingContext mappingContext;
 
-	private CodecRegistry codecRegistry;
+	private Supplier<CodecRegistry> codecRegistry;
 
 	private @Nullable UserTypeResolver userTypeResolver;
 
@@ -234,8 +236,20 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	public void setCodecRegistry(CodecRegistry codecRegistry) {
 
 		Assert.notNull(codecRegistry, "CodecRegistry must not be null");
+		setCodecRegistry(() -> codecRegistry);
+	}
 
-		this.codecRegistry = codecRegistry;
+	/**
+	 * Sets the {@link Supplier} used for obtaining the {@link CodecRegistry} to use.
+	 *
+	 * @param codecRegistry must not be {@literal null}.
+	 * @since 4.3
+	 */
+	public void setCodecRegistry(Supplier<CodecRegistry> codecRegistry) {
+
+		Assert.notNull(codecRegistry, "CodecRegistry provider must not be null");
+
+		this.codecRegistry = Lazy.of(codecRegistry);
 	}
 
 	/**
@@ -245,8 +259,11 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 * @since 3.0
 	 */
 	@Override
+	@SuppressWarnings({ "deprecation" })
 	public CodecRegistry getCodecRegistry() {
-		return this.codecRegistry != null ? this.codecRegistry : getMappingContext().getCodecRegistry();
+
+		CodecRegistry registry = this.codecRegistry != null ? this.codecRegistry.get() : null;
+		return  registry != null ? registry : getMappingContext().getCodecRegistry();
 	}
 
 	/**
