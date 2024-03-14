@@ -49,7 +49,7 @@ import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
  * @author Mark Paluch
  * @see AbstractKeyspaceCreatingIntegrationTests
  */
-class SchemaActionIntegrationTests extends IntegrationTestsSupport {
+class SchemaActionIntegrationTests extends AbstractKeyspaceCreatingIntegrationTests {
 
 	private static final String CREATE_PERSON_TABLE_CQL = "CREATE TABLE IF NOT EXISTS person (id int, firstName text, lastName text, PRIMARY KEY(id));";
 
@@ -66,7 +66,7 @@ class SchemaActionIntegrationTests extends IntegrationTestsSupport {
 	protected <T> T doInSessionWithConfiguration(Class<?> annotatedClass, SessionCallback<T> sessionCallback) {
 
 		try (ConfigurableApplicationContext applicationContext = newApplicationContext(annotatedClass)) {
-			return sessionCallback.doInSession(applicationContext.getBean(CqlSession.class));
+			return sessionCallback.doInSession(getSession());
 		}
 	}
 
@@ -154,6 +154,21 @@ class SchemaActionIntegrationTests extends IntegrationTestsSupport {
 		});
 	}
 
+	@Test // GH-380
+	void shouldDoNotingIfSchemaActionIsNoneAndNoPopulateScriptPresent() {
+
+		doInSessionWithConfiguration(CreateWithoutSchemaAction.class, session -> {
+
+			KeyspaceMetadata keyspaceMetadata = session.refreshSchema().getKeyspace(session.getKeyspace().get()).orElse(null);
+
+			assertThat(keyspaceMetadata).isNotNull();
+			assertThat(keyspaceMetadata.getTables()).isEmpty();
+
+			return null;
+		});
+
+	}
+
 	@Configuration
 	static class CreateWithNoExistingTableConfiguration extends IntegrationTestConfig {
 
@@ -165,6 +180,20 @@ class SchemaActionIntegrationTests extends IntegrationTestsSupport {
 		@Override
 		protected Set<Class<?>> getInitialEntitySet() throws ClassNotFoundException {
 			return Collections.singleton(Person.class);
+		}
+	}
+
+	@Configuration
+	static class CreateWithoutSchemaAction extends IntegrationTestConfig {
+
+		@Override
+		public SchemaAction getSchemaAction() {
+			return SchemaAction.NONE;
+		}
+
+		@Override
+		protected KeyspacePopulator keyspacePopulator() {
+			return null;
 		}
 	}
 
