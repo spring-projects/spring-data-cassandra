@@ -16,19 +16,16 @@
 package org.springframework.data.cassandra.config;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-import java.net.InetSocketAddress;
 import java.util.Collections;
 
-import com.datastax.oss.driver.api.core.CqlIdentifier;
-import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.internal.core.metadata.DefaultEndPoint;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.data.cassandra.SessionFactory;
 import org.springframework.data.cassandra.core.CassandraTemplate;
@@ -39,7 +36,11 @@ import org.springframework.data.cassandra.core.convert.MappingCassandraConverter
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.SimpleUserTypeResolver;
 
+import com.datastax.oss.driver.api.core.CqlSession;
+
 /**
+ * Test for a lazily initialized session to assert no access to the Session.
+ *
  * @author Christoph Strobl
  */
 class LazyStartupConfigurationTest {
@@ -57,18 +58,15 @@ class LazyStartupConfigurationTest {
 	@Configuration
 	static class LazyStartupConfig {
 
-		@Lazy
 		@Bean
 		CqlSession cqlSession() {
-
-			return CqlSession.builder()
-					.addContactEndPoint(new DefaultEndPoint(InetSocketAddress.createUnresolved("127.0.0.2", 9042)))
-					.withKeyspace("system")
-					.build();
+			return mock(CqlSession.class, invocation -> {
+				throw new BeanCreationException("I am expected");
+			});
 		}
 
 		@Bean
-		public SessionFactoryFactoryBean cassandraSessionFactory(CassandraConverter converter, @Lazy CqlSession cqlSession) {
+		public SessionFactoryFactoryBean cassandraSessionFactory(CassandraConverter converter, CqlSession cqlSession) {
 
 			SessionFactoryFactoryBean session = new SessionFactoryFactoryBean();
 			session.setSession(cqlSession);
@@ -85,14 +83,13 @@ class LazyStartupConfigurationTest {
 		}
 
 		@Bean
-		public CassandraConverter cassandraConverter(CassandraMappingContext mappingContext, @Lazy CqlSession cqlSession) {
+		public CassandraConverter cassandraConverter(CassandraMappingContext mappingContext, CqlSession cqlSession) {
 
 			MappingCassandraConverter converter = new MappingCassandraConverter(mappingContext);
 			converter.setCodecRegistry(() -> cqlSession.getContext().getCodecRegistry());
 			converter.setCustomConversions(mappingContext.getCustomConversions());
 
-			CqlIdentifier keyspace = CqlIdentifier.fromCql("system");
-			converter.setUserTypeResolver(new SimpleUserTypeResolver(cqlSession::getMetadata, keyspace));
+			converter.setUserTypeResolver(new SimpleUserTypeResolver(cqlSession));
 			return converter;
 		}
 

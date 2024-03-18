@@ -145,7 +145,7 @@ public class SessionFactoryFactoryBean extends AbstractFactoryBean<SessionFactor
 
 		super.afterPropertiesSet();
 
-		if(!shouldRunSchemaAction()) {
+		if (!shouldRunSchemaAction()) {
 			return;
 		}
 
@@ -173,7 +173,7 @@ public class SessionFactoryFactoryBean extends AbstractFactoryBean<SessionFactor
 	@SuppressWarnings("all")
 	public void destroy() throws Exception {
 
-		if(!shouldRunSchemaAction()) {
+		if (!shouldRunSchemaAction()) {
 			return;
 		}
 

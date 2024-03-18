@@ -126,7 +126,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 * Create a new {@link MappingCassandraConverter} with a {@link CassandraMappingContext}.
 	 */
 	public MappingCassandraConverter() {
-		this(newDefaultMappingContext(new CassandraCustomConversions(Collections.emptyList())));
+		this(newDefaultMappingContext());
 	}
 
 	/**
@@ -134,6 +134,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 *
 	 * @param mappingContext must not be {@literal null}.
 	 */
+	@SuppressWarnings({ "deprecation" })
 	public MappingCassandraConverter(CassandraMappingContext mappingContext) {
 
 		super(newConversionService());
@@ -171,16 +172,14 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	/**
 	 * Constructs a new instance of a {@link MappingContext} for Cassandra.
 	 *
-	 * @param conversions {@link CassandraCustomConversions} object encapsulating complex type conversion logic.
 	 * @return a new {@link CassandraMappingContext}.
-	 * @see org.springframework.data.cassandra.core.mapping.CassandraMappingContext
-	 * @see org.springframework.data.mapping.context.MappingContext
 	 */
-	private static CassandraMappingContext newDefaultMappingContext(CassandraCustomConversions conversions) {
+	@SuppressWarnings({ "deprecation" })
+	private static CassandraMappingContext newDefaultMappingContext() {
 
 		CassandraMappingContext mappingContext = new CassandraMappingContext();
 
-		mappingContext.setCustomConversions(conversions);
+		mappingContext.setCustomConversions(new CassandraCustomConversions(Collections.emptyList()));
 		mappingContext.afterPropertiesSet();
 
 		return mappingContext;
@@ -263,7 +262,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	public CodecRegistry getCodecRegistry() {
 
 		CodecRegistry registry = this.codecRegistry != null ? this.codecRegistry.get() : null;
-		return  registry != null ? registry : getMappingContext().getCodecRegistry();
+		return registry != null ? registry : getMappingContext().getCodecRegistry();
 	}
 
 	/**
