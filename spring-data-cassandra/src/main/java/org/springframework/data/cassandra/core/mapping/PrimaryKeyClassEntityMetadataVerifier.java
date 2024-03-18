@@ -45,8 +45,6 @@ public class PrimaryKeyClassEntityMetadataVerifier implements CassandraPersisten
 		List<CassandraPersistentProperty> partitionKeyColumns = new ArrayList<>();
 		List<CassandraPersistentProperty> primaryKeyColumns = new ArrayList<>();
 
-		Class<?> entityType = entity.getType();
-
 		// @Indexed not allowed on type level
 		if (entity.isAnnotationPresent(Indexed.class)) {
 			exceptions.add(new MappingException("@Indexed cannot be used on primary key classes"));
