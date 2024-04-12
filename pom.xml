@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.springframework.data.build</groupId>
 		<artifactId>spring-data-parent</artifactId>
-		<version>3.3.0-RC1</version>
+		<version>3.3.0-SNAPSHOT</version>
 	</parent>
 
 	<groupId>org.springframework.data</groupId>
@@ -97,7 +97,7 @@
 		<hppc.version>0.5.4</hppc.version>
 		<multithreadedtc.version>1.01</multithreadedtc.version>
 		<project.type>multi</project.type>
-		<springdata.commons>3.3.0-RC1</springdata.commons>
+		<springdata.commons>3.3.0-SNAPSHOT</springdata.commons>
 	</properties>
 
 	<dependencyManagement>
@@ -377,6 +377,16 @@
 	</profiles>
 
 	<repositories>
+		<repository>
+			<id>spring-snapshot</id>
+			<url>https://repo.spring.io/snapshot</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</repository>
 		<repository>
 			<id>spring-milestone</id>
 			<url>https://repo.spring.io/milestone</url>
