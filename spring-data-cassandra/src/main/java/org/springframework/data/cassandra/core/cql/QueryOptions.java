@@ -219,11 +219,9 @@ public class QueryOptions {
 			return true;
 		}
 
-		if (!(o instanceof QueryOptions)) {
+		if (!(o instanceof QueryOptions options)) {
 			return false;
 		}
-
-		QueryOptions options = (QueryOptions) o;
 
 		if (!ObjectUtils.nullSafeEquals(consistencyLevel, options.consistencyLevel)) {
 			return false;
@@ -482,12 +480,7 @@ public class QueryOptions {
 		 */
 		@Deprecated
 		public QueryOptionsBuilder readTimeout(Duration readTimeout) {
-
-			Assert.isTrue(!readTimeout.isNegative(), "ReadTimeout must be greater than equal to zero");
-
-			this.timeout = readTimeout;
-
-			return this;
+			return timeout(readTimeout);
 		}
 
 		/**
