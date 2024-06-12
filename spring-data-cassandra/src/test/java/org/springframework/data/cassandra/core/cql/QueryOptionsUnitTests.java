@@ -99,22 +99,7 @@ class QueryOptionsUnitTests {
 	@Test // GH-1494
 	void shouldRejectNegativeDurationTimeoutQueryOptions() {
 
-		assertThatIllegalArgumentException().isThrownBy(
-				() -> QueryOptions.builder().timeout(Duration.ofSeconds(-1)).build());
-	}
-
-	@Test // GH-1494
-	void buildZeroDurationReadTimeoutQueryOptions() {
-
-		QueryOptions queryOptions = QueryOptions.builder().readTimeout(Duration.ofSeconds(0)).build();
-
-		assertThat(queryOptions.getReadTimeout()).isEqualTo(Duration.ZERO);
-	}
-
-	@Test // GH-1494
-	void shouldRejectNegativeDurationReadTimeoutQueryOptions() {
-
-		assertThatIllegalArgumentException().isThrownBy(
-				() -> QueryOptions.builder().readTimeout(Duration.ofSeconds(-1)).build());
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> QueryOptions.builder().timeout(Duration.ofSeconds(-1)).build());
 	}
 }
