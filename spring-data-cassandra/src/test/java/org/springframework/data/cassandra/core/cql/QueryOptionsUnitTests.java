@@ -31,6 +31,7 @@ import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
  * @author Mark Paluch
  * @author Tomasz Lelek
  * @author Sam Lightfoot
+ * @author Seungho Kang
  */
 class QueryOptionsUnitTests {
 
@@ -85,5 +86,35 @@ class QueryOptionsUnitTests {
 		assertThat(mutated.isIdempotent()).isEqualTo(true);
 		assertThat(mutated.getRoutingKeyspace()).isEqualTo(CqlIdentifier.fromCql("rksl"));
 		assertThat(mutated.getRoutingKey()).isEqualTo(ByteBuffer.allocate(1));
+	}
+
+	@Test // GH-1494
+	void buildZeroDurationTimeoutQueryOptions() {
+
+		QueryOptions queryOptions = QueryOptions.builder().timeout(Duration.ofSeconds(0)).build();
+
+		assertThat(queryOptions.getTimeout()).isEqualTo(Duration.ZERO);
+	}
+
+	@Test // GH-1494
+	void shouldRejectNegativeDurationTimeoutQueryOptions() {
+
+		assertThatIllegalArgumentException().isThrownBy(
+				() -> QueryOptions.builder().timeout(Duration.ofSeconds(-1)).build());
+	}
+
+	@Test // GH-1494
+	void buildZeroDurationReadTimeoutQueryOptions() {
+
+		QueryOptions queryOptions = QueryOptions.builder().readTimeout(Duration.ofSeconds(0)).build();
+
+		assertThat(queryOptions.getReadTimeout()).isEqualTo(Duration.ZERO);
+	}
+
+	@Test // GH-1494
+	void shouldRejectNegativeDurationReadTimeoutQueryOptions() {
+
+		assertThatIllegalArgumentException().isThrownBy(
+				() -> QueryOptions.builder().readTimeout(Duration.ofSeconds(-1)).build());
 	}
 }

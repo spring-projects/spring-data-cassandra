@@ -284,6 +284,7 @@ public class QueryOptions {
 	 * Builder for {@link QueryOptions}.
 	 *
 	 * @author Mark Paluch
+	 * @author Seungho Kang
 	 * @since 1.5
 	 */
 	public static class QueryOptionsBuilder {
@@ -482,8 +483,7 @@ public class QueryOptions {
 		@Deprecated
 		public QueryOptionsBuilder readTimeout(Duration readTimeout) {
 
-			Assert.isTrue(!readTimeout.isZero() && !readTimeout.isNegative(),
-					"ReadTimeout must be greater than equal to zero");
+			Assert.isTrue(!readTimeout.isNegative(), "ReadTimeout must be greater than equal to zero");
 
 			this.timeout = readTimeout;
 
@@ -548,7 +548,7 @@ public class QueryOptions {
 		 */
 		public QueryOptionsBuilder timeout(Duration timeout) {
 
-			Assert.isTrue(!timeout.isZero() && !timeout.isNegative(), "ReadTimeout must be greater than equal to zero");
+			Assert.isTrue(!timeout.isNegative(), "ReadTimeout must be greater than equal to zero");
 
 			this.timeout = timeout;
 
