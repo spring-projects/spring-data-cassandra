@@ -45,6 +45,7 @@ import com.datastax.oss.driver.api.core.retry.RetryPolicy;
  * @author Mark Paluch
  * @author John Blum
  * @author Tomasz Lelek
+ * @author Mikhail Polivakha
  * @see org.springframework.beans.factory.InitializingBean
  * @see com.datastax.oss.driver.api.core.CqlSession
  */
@@ -85,7 +86,7 @@ public class CassandraAccessor implements InitializingBean {
 	 */
 	private @Nullable ConsistencyLevel serialConsistencyLevel;
 
-	private @Nullable SessionFactory sessionFactory;
+	private SessionFactory sessionFactory;
 
 	/**
 	 * Ensures the Cassandra {@link CqlSession} and exception translator has been propertly set.
@@ -314,7 +315,6 @@ public class CassandraAccessor implements InitializingBean {
 	 * @since 2.0
 	 * @see SessionFactory
 	 */
-	@Nullable
 	public SessionFactory getSessionFactory() {
 		return this.sessionFactory;
 	}
@@ -361,11 +361,10 @@ public class CassandraAccessor implements InitializingBean {
 		}
 
 		if (keyspace != null) {
-			if (statementToUse instanceof BatchStatement) {
-				statementToUse = ((BatchStatement) statementToUse).setKeyspace(keyspace);
-			}
-			if (statementToUse instanceof SimpleStatement) {
-				statementToUse = ((SimpleStatement) statementToUse).setKeyspace(keyspace);
+			if (statementToUse instanceof BatchStatement bs) {
+				statementToUse = bs.setKeyspace(keyspace);
+			} else if (statementToUse instanceof SimpleStatement ss) {
+				statementToUse = ss.setKeyspace(keyspace);
 			}
 		}
 
