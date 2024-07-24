@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.core;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.springframework.data.cassandra.core.query.Criteria.*;
 import static org.springframework.data.domain.Sort.Direction.*;
 
 import java.time.Duration;
@@ -26,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
@@ -37,7 +39,6 @@ import org.springframework.data.cassandra.core.cql.util.StatementBuilder.Paramet
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.Column;
 import org.springframework.data.cassandra.core.query.Columns;
-import org.springframework.data.cassandra.core.query.Criteria;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.core.query.Update;
 import org.springframework.data.cassandra.domain.Group;
@@ -79,6 +80,17 @@ class StatementFactoryUnitTests {
 		assertThat(select.build(ParameterHandling.INLINE).getQuery()).isEqualTo("SELECT * FROM group");
 	}
 
+	@Test // GH-1275
+	void shouldConsiderKeyspaceForSelect() {
+
+		statementFactory.setKeyspaceProvider((entity, tableName) -> CqlIdentifier.fromCql("ks_" + tableName));
+
+		StatementBuilder<Select> select = statementFactory.select(Query.empty(),
+				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
+
+		assertThat(select.build(ParameterHandling.INLINE).getQuery()).isEqualTo("SELECT * FROM ks_group.group");
+	}
+
 	@Test // DATACASS-708
 	void selectShouldApplyQueryOptions() {
 
@@ -98,7 +110,7 @@ class StatementFactoryUnitTests {
 	@Test // DATACASS-343
 	void shouldMapSelectQueryWithColumnsAndCriteria() {
 
-		Query query = Query.query(Criteria.where("foo").is("bar")).columns(Columns.from("age"));
+		Query query = Query.query(where("foo").is("bar")).columns(Columns.from("age"));
 
 		StatementBuilder<Select> select = statementFactory.select(query, groupEntity);
 
@@ -108,7 +120,7 @@ class StatementFactoryUnitTests {
 	@Test // DATACASS-549
 	void shouldMapSelectQueryNotEquals() {
 
-		Query query = Query.query(Criteria.where("foo").ne("bar")).columns(Columns.from("age"));
+		Query query = Query.query(where("foo").ne("bar")).columns(Columns.from("age"));
 
 		StatementBuilder<Select> select = statementFactory.select(query, groupEntity);
 
@@ -118,7 +130,7 @@ class StatementFactoryUnitTests {
 	@Test // DATACASS-549
 	void shouldMapSelectQueryIsNotNull() {
 
-		Query query = Query.query(Criteria.where("foo").isNotNull()).columns(Columns.from("age"));
+		Query query = Query.query(where("foo").isNotNull()).columns(Columns.from("age"));
 
 		StatementBuilder<Select> select = statementFactory.select(query, groupEntity);
 
@@ -152,7 +164,7 @@ class StatementFactoryUnitTests {
 	@Test // GH-1401
 	void shouldMapSelectQueryWithLimit() {
 
-		Query query = Query.query(Criteria.where("email").is("e@mail")).limit(Limit.of(10));
+		Query query = Query.query(where("email").is("e@mail")).limit(Limit.of(10));
 
 		StatementBuilder<Select> select = statementFactory.select(query,
 				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
@@ -192,12 +204,12 @@ class StatementFactoryUnitTests {
 	@Test // GH-1172
 	void shouldMapSelectInQueryAsInlineValue() {
 
-		StatementBuilder<Select> select = statementFactory.select(Query.query(Criteria.where("foo").in("bar")),
+		StatementBuilder<Select> select = statementFactory.select(Query.query(where("foo").in("bar")),
 				groupEntity);
 
 		assertThat(select.build(ParameterHandling.INLINE).getQuery()).isEqualTo("SELECT * FROM group WHERE foo IN ('bar')");
 
-		select = statementFactory.select(Query.query(Criteria.where("foo").in("bar", "baz")), groupEntity);
+		select = statementFactory.select(Query.query(where("foo").in("bar", "baz")), groupEntity);
 
 		assertThat(select.build(ParameterHandling.INLINE).getQuery())
 				.isEqualTo("SELECT * FROM group WHERE foo IN ('bar','baz')");
@@ -206,14 +218,14 @@ class StatementFactoryUnitTests {
 	@Test // GH-1172
 	void shouldMapSelectInQueryAsByIndexValue() {
 
-		StatementBuilder<Select> select = statementFactory.select(Query.query(Criteria.where("foo").in("bar")),
+		StatementBuilder<Select> select = statementFactory.select(Query.query(where("foo").in("bar")),
 				groupEntity);
 		SimpleStatement statement = select.build(ParameterHandling.BY_INDEX);
 
 		assertThat(statement.getQuery()).isEqualTo("SELECT * FROM group WHERE foo IN ?");
 		assertThat(statement.getPositionalValues()).containsOnly(Collections.singletonList("bar"));
 
-		select = statementFactory.select(Query.query(Criteria.where("foo").in("bar", "baz")), groupEntity);
+		select = statementFactory.select(Query.query(where("foo").in("bar", "baz")), groupEntity);
 		statement = select.build(ParameterHandling.BY_INDEX);
 
 		assertThat(statement.getQuery()).isEqualTo("SELECT * FROM group WHERE foo IN ?");
@@ -223,7 +235,7 @@ class StatementFactoryUnitTests {
 	@Test // GH-1172
 	void shouldMapSelectInQueryAsByNamedValue() {
 
-		StatementBuilder<Select> select = statementFactory.select(Query.query(Criteria.where("foo").in("bar")),
+		StatementBuilder<Select> select = statementFactory.select(Query.query(where("foo").in("bar")),
 				groupEntity);
 		SimpleStatement statement = select.build(ParameterHandling.BY_NAME);
 
@@ -231,7 +243,7 @@ class StatementFactoryUnitTests {
 		assertThat(statement.getNamedValues()).hasSize(1).containsEntry(CqlIdentifier.fromCql("p0"),
 				Collections.singletonList("bar"));
 
-		select = statementFactory.select(Query.query(Criteria.where("foo").in("bar", "baz")), groupEntity);
+		select = statementFactory.select(Query.query(where("foo").in("bar", "baz")), groupEntity);
 		statement = select.build(ParameterHandling.BY_NAME);
 
 		assertThat(statement.getQuery()).isEqualTo("SELECT * FROM group WHERE foo IN :p0");
@@ -254,7 +266,7 @@ class StatementFactoryUnitTests {
 	void shouldMapDeleteQueryWithTimestampColumns() {
 
 		DeleteOptions options = DeleteOptions.builder().timestamp(1234).build();
-		Query query = Query.query(Criteria.where("foo").is("bar")).queryOptions(options);
+		Query query = Query.query(where("foo").is("bar")).queryOptions(options);
 
 		StatementBuilder<Delete> delete = statementFactory.delete(query,
 				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
@@ -267,7 +279,7 @@ class StatementFactoryUnitTests {
 	void deleteByQueryWithOptionsShouldRenderBindMarkers() {
 
 		DeleteOptions options = DeleteOptions.builder().timestamp(1234).build();
-		Query query = Query.query(Criteria.where("foo").is("bar")).queryOptions(options);
+		Query query = Query.query(where("foo").is("bar")).queryOptions(options);
 
 		StatementBuilder<Delete> delete = statementFactory.delete(query,
 				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
@@ -293,6 +305,33 @@ class StatementFactoryUnitTests {
 
 		assertThat(statement.getQuery()).isEqualTo("DELETE FROM person USING TIMESTAMP ? WHERE id=?");
 		assertThat(statement.getPositionalValues()).containsExactly(1234L, "foo");
+	}
+
+	@Test // GH-1275
+	void shouldConsiderKeyspaceForDeleteByEntity() {
+
+		statementFactory.setKeyspaceProvider((entity, tableName) -> CqlIdentifier.fromCql("ks_" + tableName));
+
+		Person person = new Person();
+		person.id = "foo";
+
+		StatementBuilder<Delete> delete = statementFactory.delete(person, DeleteOptions.empty(), converter,
+				CqlIdentifier.fromCql("person"));
+
+		SimpleStatement statement = delete.build(ParameterHandling.BY_INDEX);
+
+		assertThat(statement.getQuery()).isEqualTo("DELETE FROM ks_person.person WHERE id=?");
+	}
+
+	@Test // GH-1275
+	void shouldConsiderKeyspaceForDelete() {
+
+		statementFactory.setKeyspaceProvider((entity, tableName) -> CqlIdentifier.fromCql("ks_" + tableName));
+		StatementBuilder<Delete> delete = statementFactory.delete(Query.query(where("foo").is("bar")), groupEntity);
+
+		SimpleStatement statement = delete.build(ParameterHandling.BY_INDEX);
+
+		assertThat(statement.getQuery()).isEqualTo("DELETE FROM ks_group.group WHERE foo=?");
 	}
 
 	@Test // DATACASS-708
@@ -323,6 +362,20 @@ class StatementFactoryUnitTests {
 		StatementBuilder<RegularInsert> insert = statementFactory.insert(person, WriteOptions.empty());
 
 		assertThat(insert.build(ParameterHandling.INLINE).getQuery()).isEqualTo("INSERT INTO person (id) VALUES ('foo')");
+	}
+
+	@Test // GH-1275
+	void shouldConsiderKeyspaceForInsert() {
+
+		statementFactory.setKeyspaceProvider((entity, tableName) -> CqlIdentifier.fromCql("ks_" + tableName));
+
+		Person person = new Person();
+		person.id = "foo";
+
+		StatementBuilder<RegularInsert> insert = statementFactory.insert(person, WriteOptions.empty());
+
+		assertThat(insert.build(ParameterHandling.INLINE).getQuery())
+				.isEqualTo("INSERT INTO ks_person.person (id) VALUES ('foo')");
 	}
 
 	@Test // DATACASS-708
@@ -415,7 +468,7 @@ class StatementFactoryUnitTests {
 	@Test // DATACASS-343
 	void shouldCreateSetUpdate() {
 
-		Query query = Query.query(Criteria.where("foo").is("bar"));
+		Query query = Query.query(where("foo").is("bar"));
 
 		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory.update(query,
 				Update.empty().set("firstName", "baz").set("boo", "baa"), personEntity);
@@ -424,11 +477,25 @@ class StatementFactoryUnitTests {
 				.isEqualTo("UPDATE person SET first_name='baz', boo='baa' WHERE foo='bar'");
 	}
 
+	@Test // GH-1275
+	void shouldConsiderKeyspaceForCreateSetUpdate() {
+
+		statementFactory.setKeyspaceProvider((entity, tableName) -> CqlIdentifier.fromCql("ks_" + tableName));
+
+		Query query = Query.query(where("foo").is("bar"));
+
+		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory.update(query,
+				Update.empty().set("firstName", "baz").set("boo", "baa"), personEntity);
+
+		assertThat(update.build(ParameterHandling.INLINE).getQuery())
+				.isEqualTo("UPDATE ks_person.person SET first_name='baz', boo='baa' WHERE foo='bar'");
+	}
+
 	@Test // DATACASS-656
 	void shouldCreateSetUpdateWithTtl() {
 
 		WriteOptions options = WriteOptions.builder().ttl(Duration.ofMinutes(1)).build();
-		Query query = Query.query(Criteria.where("foo").is("bar")).queryOptions(options);
+		Query query = Query.query(where("foo").is("bar")).queryOptions(options);
 
 		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory.update(query,
 				Update.empty().set("firstName", "baz"), personEntity);
@@ -441,7 +508,7 @@ class StatementFactoryUnitTests {
 	void shouldCreateSetUpdateWithTimestamp() {
 
 		WriteOptions options = WriteOptions.builder().timestamp(1234).build();
-		Query query = Query.query(Criteria.where("foo").is("bar")).queryOptions(options);
+		Query query = Query.query(where("foo").is("bar")).queryOptions(options);
 
 		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory.update(query,
 				Update.empty().set("firstName", "baz"), personEntity);
@@ -454,7 +521,7 @@ class StatementFactoryUnitTests {
 	void updateWithOptionsShouldRenderBindMarker() {
 
 		WriteOptions options = WriteOptions.builder().ttl(Duration.ofMinutes(1)).timestamp(1234).build();
-		Query query = Query.query(Criteria.where("foo").is("bar")).queryOptions(options);
+		Query query = Query.query(where("foo").is("bar")).queryOptions(options);
 
 		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory.update(query,
 				Update.empty().set("firstName", "baz"), personEntity);
@@ -626,7 +693,7 @@ class StatementFactoryUnitTests {
 	@Test // DATACASS-569
 	void shouldCreateSetUpdateIfExists() {
 
-		Query query = Query.query(Criteria.where("foo").is("bar"))
+		Query query = Query.query(where("foo").is("bar"))
 				.queryOptions(UpdateOptions.builder().withIfExists().build());
 
 		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory.update(query,
@@ -639,8 +706,8 @@ class StatementFactoryUnitTests {
 	@Test // DATACASS-656
 	void shouldCreateSetUpdateIfCondition() {
 
-		Query query = Query.query(Criteria.where("foo").is("bar"))
-				.queryOptions(UpdateOptions.builder().ifCondition(Criteria.where("foo").is("baz")).build());
+		Query query = Query.query(where("foo").is("bar"))
+				.queryOptions(UpdateOptions.builder().ifCondition(where("foo").is("baz")).build());
 
 		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory.update(query,
 				Update.empty().set("firstName", "baz"), personEntity);
@@ -657,7 +724,7 @@ class StatementFactoryUnitTests {
 				.serialConsistencyLevel(DefaultConsistencyLevel.QUORUM) //
 				.build();
 
-		Query query = Query.query(Criteria.where("foo").is("bar")).queryOptions(queryOptions);
+		Query query = Query.query(where("foo").is("bar")).queryOptions(queryOptions);
 
 		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory.update(query,
 				Update.empty().set("firstName", "baz"), personEntity);
@@ -698,7 +765,7 @@ class StatementFactoryUnitTests {
 	@Test // DATACASS-656
 	void shouldCreateSetUpdateFromObjectIfCondition() {
 
-		UpdateOptions options = UpdateOptions.builder().ifCondition(Criteria.where("foo").is("bar")).build();
+		UpdateOptions options = UpdateOptions.builder().ifCondition(where("foo").is("bar")).build();
 		Person person = new Person();
 		person.id = "foo";
 		person.firstName = "bar";
@@ -774,7 +841,7 @@ class StatementFactoryUnitTests {
 	@Test // DATACASS-512
 	void shouldCreateCountQuery() {
 
-		Query query = Query.query(Criteria.where("foo").is("bar"));
+		Query query = Query.query(where("foo").is("bar"));
 
 		StatementBuilder<Select> count = statementFactory.count(query,
 				converter.getMappingContext().getRequiredPersistentEntity(Group.class));

@@ -26,7 +26,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
-import org.springframework.data.cassandra.core.convert.UpdateMapper;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity;
@@ -74,7 +73,7 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 	 * @param batchType must not be {@literal null}.
 	 * @since 3.2.6
 	 */
-	ReactiveCassandraBatchTemplate(ReactiveCassandraOperations operations, BatchType batchType) {
+	ReactiveCassandraBatchTemplate(ReactiveCassandraTemplate operations, BatchType batchType) {
 
 		Assert.notNull(operations, "CassandraOperations must not be null");
 		Assert.notNull(batchType, "BatchType must not be null");
@@ -83,7 +82,7 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 		this.batch = BatchStatement.builder(batchType);
 		this.converter = operations.getConverter();
 		this.mappingContext = this.converter.getMappingContext();
-		this.statementFactory = new StatementFactory(new UpdateMapper(converter));
+		this.statementFactory = operations.getStatementFactory();
 	}
 
 	private void assertNotExecuted() {

@@ -19,7 +19,6 @@ import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
-import org.springframework.data.cassandra.core.convert.UpdateMapper;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity;
@@ -66,7 +65,7 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 	 * @param batchType must not be {@literal null}.
 	 * @since 3.2.6
 	 */
-	CassandraBatchTemplate(CassandraOperations operations, BatchType batchType) {
+	CassandraBatchTemplate(CassandraTemplate operations, BatchType batchType) {
 
 		Assert.notNull(operations, "CassandraOperations must not be null");
 		Assert.notNull(batchType, "BatchType must not be null");
@@ -75,7 +74,7 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 		this.batch = BatchStatement.builder(batchType);
 		this.converter = operations.getConverter();
 		this.mappingContext = this.converter.getMappingContext();
-		this.statementFactory = new StatementFactory(new UpdateMapper(converter));
+		this.statementFactory = operations.getStatementFactory();
 	}
 
 	/**

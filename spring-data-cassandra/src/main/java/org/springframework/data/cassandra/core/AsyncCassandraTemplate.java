@@ -27,6 +27,7 @@ import java.util.stream.StreamSupport;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -39,20 +40,7 @@ import org.springframework.data.cassandra.SessionFactory;
 import org.springframework.data.cassandra.core.EntityOperations.AdaptibleEntity;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
-import org.springframework.data.cassandra.core.cql.AsyncCqlOperations;
-import org.springframework.data.cassandra.core.cql.AsyncCqlTemplate;
-import org.springframework.data.cassandra.core.cql.AsyncPreparedStatementCreator;
-import org.springframework.data.cassandra.core.cql.AsyncResultSetExtractor;
-import org.springframework.data.cassandra.core.cql.AsyncSessionCallback;
-import org.springframework.data.cassandra.core.cql.CassandraAccessor;
-import org.springframework.data.cassandra.core.cql.CqlProvider;
-import org.springframework.data.cassandra.core.cql.PreparedStatementBinder;
-import org.springframework.data.cassandra.core.cql.QueryExtractorDelegate;
-import org.springframework.data.cassandra.core.cql.QueryOptions;
-import org.springframework.data.cassandra.core.cql.RowCallbackHandler;
-import org.springframework.data.cassandra.core.cql.RowMapper;
-import org.springframework.data.cassandra.core.cql.SingleColumnRowMapper;
-import org.springframework.data.cassandra.core.cql.WriteOptions;
+import org.springframework.data.cassandra.core.cql.*;
 import org.springframework.data.cassandra.core.cql.session.DefaultSessionFactory;
 import org.springframework.data.cassandra.core.cql.util.StatementBuilder;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
@@ -245,6 +233,17 @@ public class AsyncCassandraTemplate
 	}
 
 	/**
+	 * Returns the {@link StatementFactory} used by this template to construct and run Cassandra CQL statements.
+	 *
+	 * @return the {@link StatementFactory} used by this template to construct and run Cassandra CQL statements.
+	 * @see StatementFactory
+	 * @since 2.1
+	 */
+	public StatementFactory getStatementFactory() {
+		return this.statementFactory;
+	}
+
+	/**
 	 * Returns whether this instance is configured to use {@link PreparedStatement prepared statements}. If enabled
 	 * (default), then all persistence methods (such as {@link #select}, {@link #update}, and others) will make use of
 	 * prepared statements. Note that methods accepting a {@link Statement} must be called with {@link SimpleStatement}
@@ -298,17 +297,6 @@ public class AsyncCassandraTemplate
 
 	private CassandraPersistentEntity<?> getRequiredPersistentEntity(Class<?> entityType) {
 		return getEntityOperations().getRequiredPersistentEntity(entityType);
-	}
-
-	/**
-	 * Returns the {@link StatementFactory} used by this template to construct and run Cassandra CQL statements.
-	 *
-	 * @return the {@link StatementFactory} used by this template to construct and run Cassandra CQL statements.
-	 * @see StatementFactory
-	 * @since 2.1
-	 */
-	protected StatementFactory getStatementFactory() {
-		return this.statementFactory;
 	}
 
 	private CqlIdentifier getTableName(Class<?> entityClass) {

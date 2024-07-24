@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.repository.query;
 import reactor.core.publisher.Mono;
 
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
+import org.springframework.data.cassandra.core.ReactiveCassandraTemplate;
 import org.springframework.data.cassandra.core.StatementFactory;
 import org.springframework.data.cassandra.core.convert.UpdateMapper;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
@@ -58,7 +59,8 @@ public class ReactivePartTreeCassandraQuery extends AbstractReactiveCassandraQue
 
 		this.tree = new PartTree(queryMethod.getName(), queryMethod.getResultProcessor().getReturnedType().getDomainType());
 		this.mappingContext = operations.getConverter().getMappingContext();
-		this.statementFactory = new StatementFactory(new UpdateMapper(operations.getConverter()));
+		this.statementFactory = operations instanceof ReactiveCassandraTemplate rct ? rct.getStatementFactory()
+				: new StatementFactory(new UpdateMapper(operations.getConverter()));
 	}
 
 	/**

@@ -260,6 +260,17 @@ public class AsyncCassandraTemplate
 	}
 
 	/**
+	 * Returns the {@link StatementFactory} used by this template to construct and run Cassandra CQL statements.
+	 *
+	 * @return the {@link StatementFactory} used by this template to construct and run Cassandra CQL statements.
+	 * @see StatementFactory
+	 * @since 2.1
+	 */
+	public StatementFactory getStatementFactory() {
+		return this.statementFactory;
+	}
+
+	/**
 	 * Returns whether this instance is configured to use {@link PreparedStatement prepared statements}. If enabled
 	 * (default), then all persistence methods (such as {@link #select}, {@link #update}, and others) will make use of
 	 * prepared statements. Note that methods accepting a {@link Statement} must be called with {@link SimpleStatement}
@@ -313,17 +324,6 @@ public class AsyncCassandraTemplate
 
 	private CassandraPersistentEntity<?> getRequiredPersistentEntity(Class<?> entityType) {
 		return getEntityOperations().getRequiredPersistentEntity(entityType);
-	}
-
-	/**
-	 * Returns the {@link StatementFactory} used by this template to construct and run Cassandra CQL statements.
-	 *
-	 * @return the {@link StatementFactory} used by this template to construct and run Cassandra CQL statements.
-	 * @see StatementFactory
-	 * @since 2.1
-	 */
-	protected StatementFactory getStatementFactory() {
-		return this.statementFactory;
 	}
 
 	private CqlIdentifier getTableName(Class<?> entityClass) {
