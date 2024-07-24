@@ -27,11 +27,14 @@ import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.StringUtils;
 
 import com.datastax.oss.driver.api.core.cql.BatchStatement;
 import com.datastax.oss.driver.api.core.cql.BatchStatementBuilder;
 import com.datastax.oss.driver.api.core.cql.BatchType;
+import com.datastax.oss.driver.api.core.cql.BatchableStatement;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.cql.Statement;
 
 /**
  * Default implementation for {@link CassandraBatchOperations}.
@@ -129,6 +132,37 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 	}
 
 	@Override
+	public CassandraBatchOperations addStatement(BatchableStatement<?> statement) {
+
+		Assert.notNull(statement, "Statement must not be null");
+
+		this.batch.addStatement(statement);
+
+		return this;
+	}
+
+	@Override
+	public CassandraBatchOperations addStatements(BatchableStatement<?>... statements) {
+
+		Assert.notNull(statements, "Statements must not be null");
+
+		this.batch.addStatements(statements);
+
+		return this;
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public CassandraBatchOperations addStatements(Iterable<? extends BatchableStatement<?>> statements) {
+
+		Assert.notNull(statements, "Statements must not be null");
+
+		this.batch.addStatements((Iterable<BatchableStatement<?>>) statements);
+
+		return this;
+	}
+
+	@Override
 	public CassandraBatchOperations insert(Object... entities) {
 
 		Assert.notNull(entities, "Entities must not be null");
@@ -147,6 +181,7 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 		assertNotExecuted();
 		Assert.notNull(entities, "Entities must not be null");
 		Assert.notNull(options, "WriteOptions must not be null");
+		assertNotStatement("insert", entities);
 		assertNotQueryOptions(entities);
 
 		CassandraMappingContext mappingContext = getMappingContext();
@@ -154,6 +189,7 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 		for (Object entity : entities) {
 
 			Assert.notNull(entity, "Entity must not be null");
+			assertNotStatement("insert", entity);
 
 			BasicCassandraPersistentEntity<?> persistentEntity = mappingContext
 					.getRequiredPersistentEntity(entity.getClass());
@@ -161,7 +197,7 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 			SimpleStatement insertQuery = getStatementFactory()
 					.insert(entity, options, persistentEntity, persistentEntity.getTableName()).build();
 
-			this.batch.addStatement(insertQuery);
+			addStatement(insertQuery);
 		}
 
 		return this;
@@ -191,13 +227,14 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 		for (Object entity : entities) {
 
 			Assert.notNull(entity, "Entity must not be null");
+			assertNotStatement("update", entity);
 
 			CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
 
 			SimpleStatement update = getStatementFactory()
 					.update(entity, options, persistentEntity, persistentEntity.getTableName()).build();
 
-			this.batch.addStatement(update);
+			addStatement(update);
 		}
 
 		return this;
@@ -227,13 +264,14 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 		for (Object entity : entities) {
 
 			Assert.notNull(entity, "Entity must not be null");
+			assertNotStatement("delete", entity);
 
 			CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
 
 			SimpleStatement delete = getStatementFactory()
 					.delete(entity, options, this.getConverter(), persistentEntity.getTableName()).build();
 
-			this.batch.addStatement(delete);
+			addStatement(delete);
 		}
 
 		return this;
@@ -256,5 +294,12 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 
 	private CassandraPersistentEntity<?> getRequiredPersistentEntity(Class<?> entityType) {
 		return getMappingContext().getRequiredPersistentEntity(ClassUtils.getUserClass(entityType));
+	}
+
+	private static void assertNotStatement(String operation, Object o) {
+		if (o instanceof Statement<?>) {
+			throw new IllegalArgumentException(String.format("%s cannot use a Statement: %s. Use only entities for %s",
+					StringUtils.capitalize(operation), ClassUtils.getDescriptiveType(o), operation));
+		}
 	}
 }

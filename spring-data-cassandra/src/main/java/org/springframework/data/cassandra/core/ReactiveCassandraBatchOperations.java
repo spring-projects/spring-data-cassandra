@@ -15,18 +15,22 @@
  */
 package org.springframework.data.cassandra.core;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Collections;
 
 import org.reactivestreams.Subscriber;
+
 import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.util.Assert;
 
+import com.datastax.oss.driver.api.core.cql.BatchableStatement;
+
 /**
  * Reactive Batch operations for insert/update/delete actions on a table. {@link ReactiveCassandraBatchOperations} use
- * logged Cassandra {@code BATCH}es for single entities and collections of entities. A
- * {@link ReactiveCassandraBatchOperations} instance cannot be modified/used once it was executed.
+ * logged Cassandra {@code BATCH}es for single entities, collections of entities, and {@link BatchableStatement
+ * statements}. A {@link ReactiveCassandraBatchOperations} instance cannot be modified/used once it was executed.
  * <p>
  * Batches are atomic by default. In the context of a Cassandra batch operation, atomic means that if any of the batch
  * succeeds, all of it will. Statement order does not matter within a batch. {@link ReactiveCassandraBatchOperations}
@@ -60,6 +64,62 @@ public interface ReactiveCassandraBatchOperations {
 	 * @throws IllegalStateException if the batch was already executed.
 	 */
 	ReactiveCassandraBatchOperations withTimestamp(long timestamp);
+
+	/**
+	 * Add a {@link BatchableStatement statement} to the batch.
+	 *
+	 * @param statement the batchable statement such as {@code INSERT}, {@code UPDATE}, {@code DELETE}.
+	 * @return {@code this} {@link ReactiveCassandraBatchOperations}.
+	 * @throws IllegalStateException if the batch was already executed.
+	 * @since 4.4
+	 */
+	default ReactiveCassandraBatchOperations addStatement(BatchableStatement<?> statement) {
+		return addStatement(Mono.just(statement));
+	}
+
+	/**
+	 * Add a Mono of {@link BatchableStatement statement} to the batch.
+	 *
+	 * @param statement the batchable statement such as {@code INSERT}, {@code UPDATE}, {@code DELETE}.
+	 * @return {@code this} {@link ReactiveCassandraBatchOperations}.
+	 * @throws IllegalStateException if the batch was already executed.
+	 * @since 4.4
+	 */
+	ReactiveCassandraBatchOperations addStatement(Mono<? extends BatchableStatement<?>> statement);
+
+	/**
+	 * Add {@link BatchableStatement statements} to the batch.
+	 *
+	 * @param statements the batchable statements such as {@code INSERT}, {@code UPDATE}, {@code DELETE}.
+	 * @return {@code this} {@link ReactiveCassandraBatchOperations}.
+	 * @throws IllegalStateException if the batch was already executed.
+	 * @since 4.4
+	 */
+	default ReactiveCassandraBatchOperations addStatements(BatchableStatement<?>... statements) {
+		return addStatements(Flux.fromArray(statements).toIterable());
+	}
+
+	/**
+	 * Add {@link BatchableStatement statements} to the batch.
+	 *
+	 * @param statements the batchable statements such as {@code INSERT}, {@code UPDATE}, {@code DELETE}.
+	 * @return {@code this} {@link ReactiveCassandraBatchOperations}.
+	 * @throws IllegalStateException if the batch was already executed.
+	 * @since 4.4
+	 */
+	default ReactiveCassandraBatchOperations addStatements(Iterable<? extends BatchableStatement<?>> statements) {
+		return addStatements(Mono.just(statements));
+	}
+
+	/**
+	 * Add Mono of {@link BatchableStatement statements} to the batch.
+	 *
+	 * @param statements the batchable statements such as {@code INSERT}, {@code UPDATE}, {@code DELETE}.
+	 * @return {@code this} {@link ReactiveCassandraBatchOperations}.
+	 * @throws IllegalStateException if the batch was already executed.
+	 * @since 4.4
+	 */
+	ReactiveCassandraBatchOperations addStatements(Mono<? extends Iterable<? extends BatchableStatement<?>>> statements);
 
 	/**
 	 * Add an insert to the batch.

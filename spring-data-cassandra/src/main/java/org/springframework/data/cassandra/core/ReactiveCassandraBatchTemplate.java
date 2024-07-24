@@ -34,12 +34,14 @@ import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.StringUtils;
 
 import com.datastax.oss.driver.api.core.cql.BatchStatement;
 import com.datastax.oss.driver.api.core.cql.BatchStatementBuilder;
 import com.datastax.oss.driver.api.core.cql.BatchType;
 import com.datastax.oss.driver.api.core.cql.BatchableStatement;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.cql.Statement;
 
 /**
  * Default implementation for {@link ReactiveCassandraBatchOperations}.
@@ -59,7 +61,7 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 
 	private final CassandraMappingContext mappingContext;
 
-	private final List<Mono<Collection<? extends BatchableStatement<?>>>> batchMonos = new CopyOnWriteArrayList<>();
+	private final List<Mono<? extends Iterable<? extends BatchableStatement<?>>>> batchMonos = new CopyOnWriteArrayList<>();
 
 	private final ReactiveCassandraOperations operations;
 
@@ -126,6 +128,7 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public Mono<WriteResult> execute() {
 
 		return Mono.defer(() -> {
@@ -140,7 +143,6 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 							this.batch.addStatements((List<BatchableStatement<?>>) statements);
 
 							return this.operations.getReactiveCqlOperations().queryForResultSet(this.batch.build());
-
 						}) //
 						.flatMap(resultSet -> resultSet.rows().collectList()
 								.map(rows -> new WriteResult(resultSet.getAllExecutionInfo(), resultSet.wasApplied(), rows)));
@@ -155,6 +157,27 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 
 		assertNotExecuted();
 		this.batch.setQueryTimestamp(timestamp);
+
+		return this;
+	}
+
+	@Override
+	public ReactiveCassandraBatchOperations addStatement(Mono<? extends BatchableStatement<?>> statement) {
+
+		Assert.notNull(statement, "Statement mono must not be null");
+
+		this.batchMonos.add(statement.map(List::of));
+
+		return this;
+	}
+
+	@Override
+	public ReactiveCassandraBatchOperations addStatements(
+			Mono<? extends Iterable<? extends BatchableStatement<?>>> statements) {
+
+		Assert.notNull(statements, "Statements mono must not be null");
+
+		this.batchMonos.add(statements);
 
 		return this;
 	}
@@ -185,7 +208,7 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 		Assert.notNull(options, "WriteOptions must not be null");
 		assertNotQueryOptions(entities);
 
-		this.batchMonos.add(Mono.just(doInsert(entities, options)));
+		addStatements(doInsert(entities, options));
 
 		return this;
 	}
@@ -197,7 +220,7 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 		Assert.notNull(entities, "Entities must not be null");
 		Assert.notNull(options, "WriteOptions must not be null");
 
-		this.batchMonos.add(entities.map(entity -> doInsert(entity, options)));
+		addStatements(entities.map(entity -> doInsert(entity, options)));
 
 		return this;
 	}
@@ -210,6 +233,7 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 		for (Object entity : entities) {
 
 			Assert.notNull(entity, "Entity must not be null");
+			assertNotStatement("insert", entity);
 
 			BasicCassandraPersistentEntity<?> persistentEntity = mappingContext
 					.getRequiredPersistentEntity(entity.getClass());
@@ -249,7 +273,7 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 		Assert.notNull(options, "WriteOptions must not be null");
 		assertNotQueryOptions(entities);
 
-		this.batchMonos.add(Mono.just(doUpdate(entities, options)));
+		addStatements(Mono.just(doUpdate(entities, options)));
 
 		return this;
 	}
@@ -261,7 +285,7 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 		Assert.notNull(entities, "Entities must not be null");
 		Assert.notNull(options, "WriteOptions must not be null");
 
-		this.batchMonos.add(entities.map(entity -> doUpdate(entity, options)));
+		addStatements(entities.map(entity -> doUpdate(entity, options)));
 
 		return this;
 	}
@@ -273,6 +297,7 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 		for (Object entity : entities) {
 
 			Assert.notNull(entity, "Entity must not be null");
+			assertNotStatement("update", entity);
 
 			CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
 
@@ -311,7 +336,7 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 		Assert.notNull(options, "WriteOptions must not be null");
 		assertNotQueryOptions(entities);
 
-		this.batchMonos.add(Mono.just(doDelete(entities, options)));
+		addStatements(Mono.just(doDelete(entities, options)));
 
 		return this;
 	}
@@ -323,7 +348,7 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 		Assert.notNull(entities, "Entities must not be null");
 		Assert.notNull(options, "WriteOptions must not be null");
 
-		this.batchMonos.add(entities.map(it -> doDelete(it, options)));
+		addStatements(entities.map(it -> doDelete(it, options)));
 
 		return this;
 	}
@@ -346,6 +371,7 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 		for (Object entity : entities) {
 
 			Assert.notNull(entity, "Entity must not be null");
+			assertNotStatement("delete", entity);
 
 			CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
 

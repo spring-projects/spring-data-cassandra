@@ -18,10 +18,12 @@ package org.springframework.data.cassandra.core;
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.data.cassandra.domain.FlatGroup;
 import org.springframework.data.cassandra.domain.Group;
@@ -32,6 +34,7 @@ import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingInte
 import com.datastax.oss.driver.api.core.cql.BatchType;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 
 /**
  * Integration tests for {@link CassandraBatchTemplate}.
@@ -59,6 +62,33 @@ class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 
 		template.insert(walter);
 		template.insert(mike);
+	}
+
+	@Test // GH-1499
+	void shouldAddStatements() {
+
+		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template, BatchType.LOGGED);
+
+		List<SimpleStatement> statements = List.of(SimpleStatement
+				.newInstance("INSERT INTO GROUP (groupname, hash_prefix, username) VALUES('users', '0x1', 'walter')"));
+
+		batchOperations.addStatements(statements).execute();
+
+		Group loaded = template.selectOneById(walter.getId(), Group.class);
+
+		assertThat(loaded.getId().getUsername()).isEqualTo(walter.getId().getUsername());
+	}
+
+	@Test // GH-1499
+	void insertUpdateDeleteShouldRejectStatements() {
+
+		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template, BatchType.LOGGED);
+
+		SimpleStatement statement = SimpleStatement.newInstance("FOO");
+
+		assertThatIllegalArgumentException().isThrownBy(() -> batchOperations.insert(statement));
+		assertThatIllegalArgumentException().isThrownBy(() -> batchOperations.update(statement));
+		assertThatIllegalArgumentException().isThrownBy(() -> batchOperations.delete(statement));
 	}
 
 	@Test // DATACASS-288

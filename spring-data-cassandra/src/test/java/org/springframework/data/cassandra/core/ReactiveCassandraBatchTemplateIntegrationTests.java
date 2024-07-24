@@ -23,11 +23,13 @@ import reactor.test.StepVerifier;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.cassandra.ReactiveResultSet;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.ReactiveCqlTemplate;
@@ -41,6 +43,7 @@ import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingInte
 
 import com.datastax.oss.driver.api.core.cql.BatchType;
 import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 
 /**
  * Integration tests for {@link ReactiveCassandraBatchTemplate}.
@@ -74,6 +77,34 @@ class ReactiveCassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCre
 				.as(StepVerifier::create) //
 				.expectNextCount(1) //
 				.verifyComplete();
+	}
+
+	@Test // GH-1499
+	void shouldAddStatements() {
+
+		ReactiveCassandraBatchOperations batchOperations = new ReactiveCassandraBatchTemplate(template, BatchType.LOGGED);
+
+		List<SimpleStatement> statements = List.of(SimpleStatement
+				.newInstance("INSERT INTO GROUP (groupname, hash_prefix, username) VALUES('users', '0x1', 'walter')"));
+
+		batchOperations.addStatements(statements).execute().as(StepVerifier::create).expectNextCount(1).verifyComplete();
+
+		template.selectOneById(walter.getId(), Group.class) //
+				.as(StepVerifier::create) //
+				.assertNext(loaded -> assertThat(loaded.getId().getUsername()).isEqualTo(walter.getId().getUsername()))
+				.verifyComplete();
+	}
+
+	@Test // GH-1499
+	void insertUpdateDeleteShouldRejectStatements() {
+
+		ReactiveCassandraBatchOperations batchOperations = new ReactiveCassandraBatchTemplate(template, BatchType.LOGGED);
+
+		SimpleStatement statement = SimpleStatement.newInstance("FOO");
+
+		assertThatIllegalArgumentException().isThrownBy(() -> batchOperations.insert(statement));
+		assertThatIllegalArgumentException().isThrownBy(() -> batchOperations.update(statement));
+		assertThatIllegalArgumentException().isThrownBy(() -> batchOperations.delete(statement));
 	}
 
 	@Test // #1135
