@@ -182,7 +182,6 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 		Assert.notNull(entities, "Entities must not be null");
 		Assert.notNull(options, "WriteOptions must not be null");
 		assertNotStatement("insert", entities);
-		assertNotQueryOptions(entities);
 
 		CassandraMappingContext mappingContext = getMappingContext();
 
@@ -190,6 +189,7 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 
 			Assert.notNull(entity, "Entity must not be null");
 			assertNotStatement("insert", entity);
+			assertNotQueryOptions(entity);
 
 			BasicCassandraPersistentEntity<?> persistentEntity = mappingContext
 					.getRequiredPersistentEntity(entity.getClass());
@@ -222,12 +222,12 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 		assertNotExecuted();
 		Assert.notNull(entities, "Entities must not be null");
 		Assert.notNull(options, "WriteOptions must not be null");
-		assertNotQueryOptions(entities);
 
 		for (Object entity : entities) {
 
 			Assert.notNull(entity, "Entity must not be null");
 			assertNotStatement("update", entity);
+			assertNotQueryOptions(entity);
 
 			CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
 
@@ -259,12 +259,12 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 		assertNotExecuted();
 		Assert.notNull(entities, "Entities must not be null");
 		Assert.notNull(options, "WriteOptions must not be null");
-		assertNotQueryOptions(entities);
 
 		for (Object entity : entities) {
 
 			Assert.notNull(entity, "Entity must not be null");
 			assertNotStatement("delete", entity);
+			assertNotQueryOptions(entity);
 
 			CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
 
@@ -277,17 +277,6 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 		return this;
 	}
 
-	private void assertNotQueryOptions(Iterable<?> entities) {
-
-		for (Object entity : entities) {
-			if (entity instanceof QueryOptions) {
-				throw new IllegalArgumentException(
-						String.format("%s must not be used as entity; Please make sure to call the appropriate method accepting %s",
-								ClassUtils.getDescriptiveType(entity), ClassUtils.getShortName(entity.getClass())));
-			}
-		}
-	}
-
 	private void assertNotExecuted() {
 		Assert.state(!this.executed.get(), "This Cassandra Batch was already executed");
 	}
@@ -296,7 +285,17 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 		return getMappingContext().getRequiredPersistentEntity(ClassUtils.getUserClass(entityType));
 	}
 
+	private static void assertNotQueryOptions(Object o) {
+
+		if (o instanceof QueryOptions) {
+			throw new IllegalArgumentException(
+					String.format("%s must not be used as entity; Please make sure to call the appropriate method accepting %s",
+							ClassUtils.getDescriptiveType(o), ClassUtils.getShortName(o.getClass())));
+		}
+	}
+
 	private static void assertNotStatement(String operation, Object o) {
+
 		if (o instanceof Statement<?>) {
 			throw new IllegalArgumentException(String.format("%s cannot use a Statement: %s. Use only entities for %s",
 					StringUtils.capitalize(operation), ClassUtils.getDescriptiveType(o), operation));

@@ -206,7 +206,6 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 		assertNotExecuted();
 		Assert.notNull(entities, "Entities must not be null");
 		Assert.notNull(options, "WriteOptions must not be null");
-		assertNotQueryOptions(entities);
 
 		addStatements(doInsert(entities, options));
 
@@ -234,6 +233,7 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 
 			Assert.notNull(entity, "Entity must not be null");
 			assertNotStatement("insert", entity);
+			assertNotQueryOptions(entity);
 
 			BasicCassandraPersistentEntity<?> persistentEntity = mappingContext
 					.getRequiredPersistentEntity(entity.getClass());
@@ -271,7 +271,6 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 		assertNotExecuted();
 		Assert.notNull(entities, "Entities must not be null");
 		Assert.notNull(options, "WriteOptions must not be null");
-		assertNotQueryOptions(entities);
 
 		addStatements(Mono.just(doUpdate(entities, options)));
 
@@ -298,6 +297,7 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 
 			Assert.notNull(entity, "Entity must not be null");
 			assertNotStatement("update", entity);
+			assertNotQueryOptions(entity);
 
 			CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
 
@@ -334,7 +334,6 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 		assertNotExecuted();
 		Assert.notNull(entities, "Entities must not be null");
 		Assert.notNull(options, "WriteOptions must not be null");
-		assertNotQueryOptions(entities);
 
 		addStatements(Mono.just(doDelete(entities, options)));
 
@@ -353,17 +352,6 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 		return this;
 	}
 
-	private void assertNotQueryOptions(Iterable<?> entities) {
-
-		for (Object entity : entities) {
-			if (entity instanceof QueryOptions) {
-				throw new IllegalArgumentException(
-						String.format("%s must not be used as entity; Please make sure to call the appropriate method accepting %s",
-								ClassUtils.getDescriptiveType(entity), ClassUtils.getShortName(entity.getClass())));
-			}
-		}
-	}
-
 	private Collection<SimpleStatement> doDelete(Iterable<?> entities, WriteOptions options) {
 
 		List<SimpleStatement> deleteQueries = new ArrayList<>();
@@ -372,6 +360,7 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 
 			Assert.notNull(entity, "Entity must not be null");
 			assertNotStatement("delete", entity);
+			assertNotQueryOptions(entity);
 
 			CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entity.getClass());
 
@@ -382,5 +371,22 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 		}
 
 		return deleteQueries;
+	}
+
+	private static void assertNotQueryOptions(Object o) {
+
+		if (o instanceof QueryOptions) {
+			throw new IllegalArgumentException(
+					String.format("%s must not be used as entity; Please make sure to call the appropriate method accepting %s",
+							ClassUtils.getDescriptiveType(o), ClassUtils.getShortName(o.getClass())));
+		}
+	}
+
+	private static void assertNotStatement(String operation, Object o) {
+
+		if (o instanceof Statement<?>) {
+			throw new IllegalArgumentException(String.format("%s cannot use a Statement: %s. Use only entities for %s",
+					StringUtils.capitalize(operation), ClassUtils.getDescriptiveType(o), operation));
+		}
 	}
 }
