@@ -24,13 +24,18 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.data.cassandra.core.cql.SessionCallback;
 import org.springframework.data.cassandra.support.CassandraConnectionProperties;
 import org.springframework.data.cassandra.support.CqlDataSet;
+import org.springframework.data.util.Optionals;
 import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
+
 import org.testcontainers.containers.CassandraContainer;
+import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
@@ -273,6 +278,14 @@ class CassandraDelegate {
 
 			container = getCassandraDockerImageName().map(CassandraContainer::new).orElseGet(CassandraContainer::new);
 
+			DockerImageName imageName = DockerImageName.parse(container.getDockerImageName());
+			String versionPart = imageName.getVersionPart();
+			Version version = Version.parse(versionPart);
+
+			if (version.getMajor() >= 5) {
+				container.withCopyToContainer(MountableFile.forClasspathResource("testcontainer-cassandra-v5.yaml"),
+						"/etc/cassandra/cassandra.yaml");
+			}
 			container.start();
 
 			log.info("Running with Cassandra Docker Testcontainer Image Name [{}]", container.getDockerImageName());
@@ -290,8 +303,8 @@ class CassandraDelegate {
 
 	private Optional<String> resolveCassandraVersion() {
 
-		return Optional.ofNullable(System.getProperty("cassandra.version", System.getenv("CASSANDRA_VERSION")))
-				.filter(StringUtils::hasText);
+		return Optionals.firstNonEmpty(() -> Optional.ofNullable(System.getenv("CASSANDRA_VERSION")),
+				() -> Optional.ofNullable(System.getProperty("cassandra.version"))).filter(StringUtils::hasText);
 	}
 
 	private synchronized void initializeConnection() {
@@ -392,7 +405,7 @@ class CassandraDelegate {
 
 	private synchronized void releaseConnection() {
 
-		if (resourceHolder == null) {
+		if (resourceHolder == null && this.session != null) {
 			this.session.close();
 		}
 
