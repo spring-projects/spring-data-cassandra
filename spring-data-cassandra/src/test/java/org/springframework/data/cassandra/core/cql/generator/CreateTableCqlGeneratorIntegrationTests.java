@@ -19,11 +19,13 @@ import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.cassandra.core.cql.Ordering;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.TableOption;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
 
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
 import com.datastax.oss.driver.api.core.type.DataTypes;
 
@@ -41,6 +43,11 @@ class CreateTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCreatingIn
 
 		session.execute("DROP TABLE IF EXISTS person;");
 		session.execute("DROP TABLE IF EXISTS address;");
+
+		session.execute("DROP KEYSPACE IF EXISTS CreateTableCqlGenerator_it;");
+		session.execute(
+				"CREATE KEYSPACE CreateTableCqlGenerator_it WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};");
+
 	}
 
 	@Test // DATACASS-518
@@ -82,6 +89,23 @@ class CreateTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCreatingIn
 		session.execute(CreateTableCqlGenerator.toCql(table));
 
 		TableMetadata person = session.getMetadata().getKeyspace(getKeyspace()).flatMap(it -> it.getTable("person")).get();
+		assertThat(person.getPartitionKey()).hasSize(1);
+		assertThat(person.getClusteringColumns()).hasSize(1);
+	}
+
+	@Test // GH-921
+	void shouldGenerateTableInOtherKeyspace() {
+
+		CreateTableSpecification table = CreateTableSpecification
+				.createTable(CqlIdentifier.fromCql("CreateTableCqlGenerator_it"), CqlIdentifier.fromCql("person")) //
+				.partitionKeyColumn("id", DataTypes.ASCII) //
+				.clusteredKeyColumn("date_of_birth", DataTypes.DATE, Ordering.ASCENDING) //
+				.column("name", DataTypes.ASCII).with(TableOption.COMPACT_STORAGE);
+
+		session.execute(CreateTableCqlGenerator.toCql(table));
+
+		TableMetadata person = session.getMetadata().getKeyspace("CreateTableCqlGenerator_it")
+				.flatMap(it -> it.getTable("person")).get();
 		assertThat(person.getPartitionKey()).hasSize(1);
 		assertThat(person.getClusteringColumns()).hasSize(1);
 	}

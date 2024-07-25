@@ -113,6 +113,17 @@ public class EmbeddedEntityOperations {
 		}
 
 		@Override
+		@Nullable
+		public CqlIdentifier getKeyspace() {
+			return delegate.getKeyspace();
+		}
+
+		@Override
+		public void setKeyspace(CqlIdentifier keyspace) {
+			delegate.setKeyspace(keyspace);
+		}
+
+		@Override
 		public boolean isTupleType() {
 			return delegate.isTupleType();
 		}

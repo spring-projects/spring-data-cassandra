@@ -57,7 +57,7 @@ public class CreateUserTypeCqlGenerator extends UserTypeNameCqlGenerator<CreateU
 	private StringBuilder preambleCql(StringBuilder cql) {
 
 		return cql.append("CREATE TYPE ").append(spec().getIfNotExists() ? "IF NOT EXISTS " : "")
-				.append(spec().getName().asCql(true));
+				.append(CqlIdentifierUtil.renderName(spec()));
 	}
 
 	private StringBuilder columns(StringBuilder cql) {

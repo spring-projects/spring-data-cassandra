@@ -124,7 +124,7 @@ class CassandraPersistentEntitySchemaDropperUnitTests extends CassandraPersisten
 
 		verify(operations).dropTable(CqlIdentifier.fromCql("person"));
 		verify(operations).dropTable(CqlIdentifier.fromCql("contact"));
-		verify(operations).getKeyspaceMetadata();
+		verify(operations, atLeast(1)).getKeyspaceMetadata();
 		verifyNoMoreInteractions(operations);
 	}
 
@@ -143,7 +143,7 @@ class CassandraPersistentEntitySchemaDropperUnitTests extends CassandraPersisten
 		schemaDropper.dropTables(false);
 
 		verify(operations).dropTable(CqlIdentifier.fromCql("person"));
-		verify(operations).getKeyspaceMetadata();
+		verify(operations, atLeast(1)).getKeyspaceMetadata();
 		verifyNoMoreInteractions(operations);
 	}
 

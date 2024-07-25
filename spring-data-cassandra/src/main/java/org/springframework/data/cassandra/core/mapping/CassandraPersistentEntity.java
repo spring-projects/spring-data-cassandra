@@ -86,6 +86,52 @@ public interface CassandraPersistentEntity<T> extends PersistentEntity<T, Cassan
 	void setTableName(CqlIdentifier tableName);
 
 	/**
+	 * Returns a specific keyspace to which the entity shall be persisted. If the entity isn't associated with a specific
+	 * keyspace, then the entity is persisted in the keyspace associated with the Cassandra session.
+	 *
+	 * @since 4.4
+	 */
+	@Nullable
+	CqlIdentifier getKeyspace();
+
+	/**
+	 * Returns the required keyspace name or throws {@link IllegalStateException} if the entity isn't associated with a
+	 * specific keyspace.
+	 *
+	 * @return the required keyspace name.
+	 * @throws IllegalStateException if the entity isn't associated with a specific keyspace.
+	 * @since 4.4
+	 */
+	default CqlIdentifier getRequiredKeyspace() {
+
+		CqlIdentifier keyspace = getKeyspace();
+
+		if (keyspace == null) {
+			throw new IllegalStateException(String.format("No keyspace specified for %s", this));
+		}
+
+		return keyspace;
+	}
+
+	/**
+	 * Returns {@code true} if the entity is associated with a specific keyspace; {@code false} otherwise.
+	 *
+	 * @return {@code true} if the entity is associated with a specific keyspace; {@code false} otherwise.
+	 * @since 4.4
+	 */
+	default boolean hasKeyspace() {
+		return getKeyspace() != null;
+	}
+
+	/**
+	 * Sets the CQL keyspace.
+	 *
+	 * @param keyspace must not be {@literal null}.
+	 * @since 4.4
+	 */
+	void setKeyspace(CqlIdentifier keyspace);
+
+	/**
 	 * @return {@literal true} if the type is a mapped tuple type.
 	 * @since 2.1
 	 * @see Tuple

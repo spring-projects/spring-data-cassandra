@@ -46,6 +46,10 @@ public abstract class TableOptionsSpecification<T extends TableOptionsSpecificat
 		super(name);
 	}
 
+	protected TableOptionsSpecification(@Nullable CqlIdentifier keyspace, CqlIdentifier name) {
+		super(keyspace, name);
+	}
+
 	/**
 	 * Convenience method that calls {@code with(option, null)}.
 	 *

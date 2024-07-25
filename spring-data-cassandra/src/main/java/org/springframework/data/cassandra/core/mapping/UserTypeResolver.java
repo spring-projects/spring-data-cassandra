@@ -40,4 +40,15 @@ public interface UserTypeResolver {
 	@Nullable
 	UserDefinedType resolveType(CqlIdentifier typeName);
 
+	/**
+	 * Resolve a {@link UserDefinedType} by {@link String name}.
+	 *
+	 * @param typeName {@link String name} of the {@link UserDefinedType} to resolve; must not be {@literal null}.
+	 * @return the resolved {@link UserDefinedType} or {@literal null} if not found.
+	 */
+	@Nullable
+	default UserDefinedType resolveType(CqlIdentifier keyspace, CqlIdentifier typeName) {
+		return resolveType(typeName);
+	}
+
 }

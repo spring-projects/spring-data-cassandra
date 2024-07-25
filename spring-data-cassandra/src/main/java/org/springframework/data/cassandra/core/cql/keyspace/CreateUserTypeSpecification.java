@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
+import org.springframework.lang.Nullable;
+
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
@@ -29,8 +31,8 @@ public class CreateUserTypeSpecification extends UserTypeSpecification<CreateUse
 
 	private boolean ifNotExists;
 
-	private CreateUserTypeSpecification(CqlIdentifier name) {
-		super(name);
+	private CreateUserTypeSpecification(@Nullable CqlIdentifier keyspace, CqlIdentifier name) {
+		super(keyspace, name);
 	}
 
 	/**
@@ -41,7 +43,7 @@ public class CreateUserTypeSpecification extends UserTypeSpecification<CreateUse
 	 * @return a new {@link CreateUserTypeSpecification}.
 	 */
 	public static CreateUserTypeSpecification createType(String name) {
-		return new CreateUserTypeSpecification(CqlIdentifier.fromCql(name));
+		return new CreateUserTypeSpecification(null, CqlIdentifier.fromCql(name));
 	}
 
 	/**
@@ -52,7 +54,21 @@ public class CreateUserTypeSpecification extends UserTypeSpecification<CreateUse
 	 * @return a new {@link CreateUserTypeSpecification}.
 	 */
 	public static CreateUserTypeSpecification createType(CqlIdentifier name) {
-		return new CreateUserTypeSpecification(name);
+		return new CreateUserTypeSpecification(null, name);
+	}
+
+	/**
+	 * Entry point into the {@link CreateUserTypeSpecification}'s fluent API given {@code name} to create a type.
+	 * Convenient if imported statically. Uses the default keyspace if {@code keyspace} is null; otherwise, of the
+	 * {@code keyspace} is not {@link null}, then the UDT name is prefixed with {@code keyspace}.
+	 *
+	 * @param keyspace can be {@literal null}.
+	 * @param name must not {@literal null}.
+	 * @return a new {@link CreateUserTypeSpecification}.
+	 * @since 4.4
+	 */
+	public static CreateUserTypeSpecification createType(@Nullable CqlIdentifier keyspace, CqlIdentifier name) {
+		return new CreateUserTypeSpecification(keyspace, name);
 	}
 
 	/**

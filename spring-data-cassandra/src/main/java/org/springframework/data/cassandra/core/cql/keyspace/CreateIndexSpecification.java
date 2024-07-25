@@ -52,8 +52,8 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 
 	private CreateIndexSpecification() {}
 
-	private CreateIndexSpecification(CqlIdentifier name) {
-		super(name);
+	private CreateIndexSpecification(@Nullable CqlIdentifier keyspace, @Nullable CqlIdentifier name) {
+		super(keyspace, name);
 	}
 
 	/**
@@ -83,7 +83,23 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 	 * @return a new {@link CreateIndexSpecification}.
 	 */
 	public static CreateIndexSpecification createIndex(CqlIdentifier indexName) {
-		return new CreateIndexSpecification(indexName);
+		return new CreateIndexSpecification(null, indexName);
+	}
+
+	/**
+	 * Entry point into the {@link CreateIndexSpecification}'s fluent API given {@code keyspace} and {@code indexName} to
+	 * create an index. Convenient if imported statically. Uses the default keyspace if {@code keyspace} is null;
+	 * otherwise, of the {@code keyspace} is not {@link null}, then the index and table name are prefixed with
+	 * {@code keyspace}.
+	 *
+	 * @param keyspace can be {@literal null}.
+	 * @param indexName can be {@literal null}.
+	 * @return a new {@link CreateIndexSpecification}.
+	 * @since 4.4
+	 */
+	public static CreateIndexSpecification createIndex(@Nullable CqlIdentifier keyspace,
+			@Nullable CqlIdentifier indexName) {
+		return new CreateIndexSpecification(keyspace, indexName);
 	}
 
 	/**

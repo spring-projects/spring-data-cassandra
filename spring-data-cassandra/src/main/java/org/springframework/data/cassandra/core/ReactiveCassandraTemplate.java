@@ -728,8 +728,10 @@ public class ReactiveCassandraTemplate
 
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		CqlIdentifier tableName = getTableName(entityClass);
-		Truncate truncate = QueryBuilder.truncate(tableName);
+		CassandraPersistentEntity<?> entity = getRequiredPersistentEntity(entityClass);
+		CqlIdentifier tableName = entity.getTableName();
+
+		Truncate truncate = QueryBuilder.truncate(entity.getKeyspace(), tableName);
 		SimpleStatement statement = truncate.build();
 
 		Mono<Boolean> result = doExecute(statement, ReactiveResultSet::wasApplied)

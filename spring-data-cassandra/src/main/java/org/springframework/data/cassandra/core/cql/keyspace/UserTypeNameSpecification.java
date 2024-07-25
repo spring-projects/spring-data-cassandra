@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -32,13 +33,31 @@ public abstract class UserTypeNameSpecification {
 	/**
 	 * User type name.
 	 */
+	private final @Nullable CqlIdentifier keyspace;
 	private final CqlIdentifier name;
 
 	protected UserTypeNameSpecification(CqlIdentifier name) {
 
 		Assert.notNull(name, "Name must not be null");
 
+		this.keyspace = null;
 		this.name = name;
+	}
+
+	protected UserTypeNameSpecification(@Nullable CqlIdentifier keyspace, CqlIdentifier name) {
+
+		Assert.notNull(name, "Name must not be null");
+
+		this.keyspace = keyspace;
+		this.name = name;
+	}
+
+	/**
+	 * @return the user type keyspace.
+	 */
+	@Nullable
+	public CqlIdentifier getKeyspace() {
+		return keyspace;
 	}
 
 	/**

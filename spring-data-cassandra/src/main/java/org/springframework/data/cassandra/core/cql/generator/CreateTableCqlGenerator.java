@@ -63,7 +63,7 @@ public class CreateTableCqlGenerator extends TableOptionsCqlGenerator<TableSpeci
 
 	private void preambleCql(StringBuilder cql) {
 		cql.append("CREATE TABLE ").append(spec().getIfNotExists() ? "IF NOT EXISTS " : "")
-				.append(spec().getName().asCql(true));
+				.append(CqlIdentifierUtil.renderName(spec()));
 	}
 
 	@SuppressWarnings("unchecked")

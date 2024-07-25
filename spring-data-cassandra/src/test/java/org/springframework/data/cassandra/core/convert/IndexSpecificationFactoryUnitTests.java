@@ -21,12 +21,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.annotation.AccessType;
 import org.springframework.data.annotation.AccessType.Type;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification.ColumnFunction;
+import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
-import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.mapping.Indexed;
 import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
 import org.springframework.data.cassandra.core.mapping.SASI;
@@ -151,21 +152,21 @@ class IndexSpecificationFactoryUnitTests {
 
 		assertThat(simpleSasi.getOptions()).containsEntry("normalize_lowercase", "true")
 				.containsEntry("case_sensitive", "false").doesNotContainKey("normalize_uppercase");
-
 	}
 
 	private CreateIndexSpecification createIndexFor(Class<?> type, String property) {
-		return IndexSpecificationFactory.createIndexSpecifications(getProperty(type, property)).stream().findFirst()
-				.orElse(null);
-	}
 
-	private CassandraPersistentProperty getProperty(Class<?> type, String property) {
-		return mappingContext.getRequiredPersistentEntity(type).getRequiredPersistentProperty(property);
+		BasicCassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(type);
+
+		return IndexSpecificationFactory
+				.createIndexSpecifications(entity.getKeyspace(), entity.getRequiredPersistentProperty(property)).stream()
+				.findFirst().get();
 	}
 
 	private static class IndexedType {
 
-		@PrimaryKeyColumn("first_name") @Indexed("my_index") String firstname;
+		@PrimaryKeyColumn("first_name")
+		@Indexed("my_index") String firstname;
 
 		@Indexed List<String> phoneNumbers;
 
@@ -176,15 +177,20 @@ class IndexSpecificationFactoryUnitTests {
 		Map<String, @Indexed String> values;
 
 		@SASI String simpleSasi;
-		@SASI @StandardAnalyzed("de") String sasiStandard;
-		@SASI @StandardAnalyzed(value = "de", enableStemming = true, normalization = Normalization.UPPERCASE,
+		@SASI
+		@StandardAnalyzed("de") String sasiStandard;
+		@SASI
+		@StandardAnalyzed(value = "de", enableStemming = true, normalization = Normalization.UPPERCASE,
 				skipStopWords = true) String sasiStandardWithOptions;
 
-		@SASI @StandardAnalyzed(normalization = Normalization.LOWERCASE) String sasiStandardLowercase;
+		@SASI
+		@StandardAnalyzed(normalization = Normalization.LOWERCASE) String sasiStandardLowercase;
 
-		@SASI @NonTokenizingAnalyzed String sasiNontokenizing;
+		@SASI
+		@NonTokenizingAnalyzed String sasiNontokenizing;
 
-		@SASI @NonTokenizingAnalyzed(caseSensitive = false,
+		@SASI
+		@NonTokenizingAnalyzed(caseSensitive = false,
 				normalization = Normalization.LOWERCASE) String sasiNontokenizingLowercase;
 	}
 

@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
+import org.springframework.lang.Nullable;
+
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
@@ -26,8 +28,8 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  */
 public class DropIndexSpecification extends IndexNameSpecification<DropIndexSpecification> {
 
-	private DropIndexSpecification(CqlIdentifier name) {
-		super(name);
+	private DropIndexSpecification(@Nullable CqlIdentifier keyspace, CqlIdentifier name) {
+		super(keyspace, name);
 	}
 
 	/**
@@ -47,6 +49,19 @@ public class DropIndexSpecification extends IndexNameSpecification<DropIndexSpec
 	 * @return a new {@link DropIndexSpecification}.
 	 */
 	public static DropIndexSpecification dropIndex(CqlIdentifier indexName) {
-		return new DropIndexSpecification(indexName);
+		return new DropIndexSpecification(null, indexName);
+	}
+
+	/**
+	 * Create a new {@link DropIndexSpecification} for the given {@code indexName}. Uses the default keyspace if
+	 * {@code keyspace} is null; otherwise, of the {@code keyspace} is not {@link null}, then the index name is prefixed
+	 * with {@code keyspace}.
+	 *
+	 * @param keyspace can be {@literal null}.
+	 * @param indexName must not be {@literal null}.
+	 * @return a new {@link DropIndexSpecification}.
+	 */
+	public static DropIndexSpecification dropIndex(@Nullable CqlIdentifier keyspace, CqlIdentifier indexName) {
+		return new DropIndexSpecification(keyspace, indexName);
 	}
 }

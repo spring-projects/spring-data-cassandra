@@ -19,8 +19,10 @@ import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.cassandra.core.cql.generator.CreateUserTypeCqlGenerator.*;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.cassandra.core.cql.keyspace.CreateUserTypeSpecification;
 
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.type.DataTypes;
 
 /**
@@ -38,6 +40,16 @@ class CreateUserTypeCqlGeneratorUnitTests {
 				.field("city", DataTypes.TEXT);
 
 		assertThat(toCql(spec)).isEqualTo("CREATE TYPE address (city text);");
+	}
+
+	@Test // DATACASS-921
+	void shouldConsiderKeyspace() {
+
+		CreateUserTypeSpecification spec = CreateUserTypeSpecification //
+				.createType(CqlIdentifier.fromCql("myks"), CqlIdentifier.fromCql("address")) //
+				.field("city", DataTypes.TEXT);
+
+		assertThat(toCql(spec)).isEqualTo("CREATE TYPE myks.address (city text);");
 	}
 
 	@Test // DATACASS-172

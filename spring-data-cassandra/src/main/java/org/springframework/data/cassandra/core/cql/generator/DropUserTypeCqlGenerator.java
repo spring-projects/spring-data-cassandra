@@ -43,7 +43,7 @@ public class DropUserTypeCqlGenerator extends UserTypeNameCqlGenerator<DropUserT
 	@Override
 	public StringBuilder toCql(StringBuilder cql) {
 		return cql.append("DROP TYPE").append(spec().getIfExists() ? " IF EXISTS " : " ")
-				.append(spec().getName().asCql(true))
+				.append(CqlIdentifierUtil.renderName(spec()))
 				.append(";");
 	}
 }

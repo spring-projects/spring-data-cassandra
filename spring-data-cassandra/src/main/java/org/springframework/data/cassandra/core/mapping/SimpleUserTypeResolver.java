@@ -92,4 +92,12 @@ public class SimpleUserTypeResolver implements UserTypeResolver {
 				.flatMap(it -> it.getUserDefinedType(typeName)) //
 				.orElse(null);
 	}
+
+	@Nullable
+	@Override
+	public UserDefinedType resolveType(CqlIdentifier keyspace, CqlIdentifier typeName) {
+		return metadataSupplier.get().getKeyspace(keyspace) //
+				.flatMap(it -> it.getUserDefinedType(typeName)) //
+				.orElse(null);
+	}
 }

@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
+import org.springframework.lang.Nullable;
+
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
@@ -29,8 +31,8 @@ public class DropUserTypeSpecification extends UserTypeNameSpecification {
 
 	private boolean ifExists;
 
-	private DropUserTypeSpecification(CqlIdentifier name) {
-		super(name);
+	private DropUserTypeSpecification(@Nullable CqlIdentifier keyspace, CqlIdentifier name) {
+		super(keyspace, name);
 	}
 
 	/**
@@ -41,7 +43,7 @@ public class DropUserTypeSpecification extends UserTypeNameSpecification {
 	 * @return a new {@link DropUserTypeSpecification}.
 	 */
 	public static DropUserTypeSpecification dropType(String name) {
-		return new DropUserTypeSpecification(CqlIdentifier.fromCql(name));
+		return new DropUserTypeSpecification(null, CqlIdentifier.fromCql(name));
 	}
 
 	/**
@@ -52,11 +54,25 @@ public class DropUserTypeSpecification extends UserTypeNameSpecification {
 	 * @return a new {@link DropUserTypeSpecification}.
 	 */
 	public static DropUserTypeSpecification dropType(CqlIdentifier name) {
-		return new DropUserTypeSpecification(name);
+		return new DropUserTypeSpecification(null, name);
 	}
 
 	/**
-	 * Enables the inclusion of an{@code IF EXISTS} clause.
+	 * Entry point into the {@link DropUserTypeSpecification}'s fluent API given {@code name} to drop a type. Convenient
+	 * if imported statically. Uses the default keyspace if {@code keyspace} is null; otherwise, of the {@code keyspace}
+	 * is not {@link null}, then the UDT name is prefixed with {@code keyspace}.
+	 *
+	 * @param keyspace can be {@code null}.
+	 * @param name must not be {@code null} or empty.
+	 * @return a new {@link DropUserTypeSpecification}.
+	 * @since 4.4
+	 */
+	public static DropUserTypeSpecification dropType(@Nullable CqlIdentifier keyspace, CqlIdentifier name) {
+		return new DropUserTypeSpecification(keyspace, name);
+	}
+
+	/**
+	 * Enables the inclusion of an {@code IF EXISTS} clause.
 	 *
 	 * @return this {@link DropUserTypeSpecification}.
 	 */

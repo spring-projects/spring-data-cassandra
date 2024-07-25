@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.springframework.lang.Nullable;
+
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.type.DataType;
 
@@ -37,6 +39,10 @@ public class UserTypeSpecification<T extends UserTypeSpecification<T>> extends U
 
 	protected UserTypeSpecification(CqlIdentifier name) {
 		super(name);
+	}
+
+	protected UserTypeSpecification(@Nullable CqlIdentifier keyspace, CqlIdentifier name) {
+		super(keyspace, name);
 	}
 
 	/**

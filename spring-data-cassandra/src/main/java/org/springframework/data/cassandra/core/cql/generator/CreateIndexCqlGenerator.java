@@ -48,10 +48,10 @@ public class CreateIndexCqlGenerator extends IndexNameCqlGenerator<CreateIndexSp
 				.append(spec().getIfNotExists() ? " IF NOT EXISTS" : "");
 
 		if (spec().getName() != null) {
-			cql.append(" ").append(spec().getName().asCql(true));
+			cql.append(" ").append(CqlIdentifierUtil.renderName(spec().getKeyspace(), spec().getName()));
 		}
 
-		cql.append(" ON ").append(spec().getTableName().asCql(true)).append(" (");
+		cql.append(" ON ").append(CqlIdentifierUtil.renderName(spec().getKeyspace(), spec().getTableName())).append(" (");
 
 		if (spec().getColumnFunction() != ColumnFunction.NONE) {
 			cql.append(spec().getColumnFunction().name()).append("(").append(spec().getColumnName().asCql(true)).append(")");

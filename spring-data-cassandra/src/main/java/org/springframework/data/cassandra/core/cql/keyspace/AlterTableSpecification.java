@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.springframework.lang.Nullable;
+
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.type.DataType;
 
@@ -41,10 +43,10 @@ public class AlterTableSpecification extends TableOptionsSpecification<AlterTabl
 	/**
 	 * The list of column changes.
 	 */
-	private List<ColumnChangeSpecification> changes = new ArrayList<>();
+	private final List<ColumnChangeSpecification> changes = new ArrayList<>();
 
-	private AlterTableSpecification(CqlIdentifier name) {
-		super(name);
+	private AlterTableSpecification(@Nullable CqlIdentifier keyspace, CqlIdentifier name) {
+		super(keyspace, name);
 	}
 
 	/**
@@ -66,7 +68,21 @@ public class AlterTableSpecification extends TableOptionsSpecification<AlterTabl
 	 * @return a new {@link AlterTableSpecification}.
 	 */
 	public static AlterTableSpecification alterTable(CqlIdentifier tableName) {
-		return new AlterTableSpecification(tableName);
+		return new AlterTableSpecification(null, tableName);
+	}
+
+	/**
+	 * Entry point into the {@link AlterTableSpecification}'s fluent API given {@code tableName} to alter a table.
+	 * Convenient if imported statically. Uses the default keyspace if {@code keyspace} is null; otherwise, of the
+	 * {@code keyspace} is not {@link null}, then the table name is prefixed with {@code keyspace}.
+	 *
+	 * @param keyspace can be {@literal null}.
+	 * @param tableName must not be {@literal null}.
+	 * @return a new {@link AlterTableSpecification}.
+	 * @since 4.4
+	 */
+	public static AlterTableSpecification alterTable(CqlIdentifier keyspace, CqlIdentifier tableName) {
+		return new AlterTableSpecification(keyspace, tableName);
 	}
 
 	/**

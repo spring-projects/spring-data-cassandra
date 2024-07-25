@@ -19,7 +19,10 @@ import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.cassandra.core.cql.generator.DropUserTypeCqlGenerator.*;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.cassandra.core.cql.keyspace.DropUserTypeSpecification;
+
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * Unit tests for {@link DropUserTypeCqlGenerator}.
@@ -34,6 +37,15 @@ class DropUserTypeCqlGeneratorUnitTests {
 		DropUserTypeSpecification spec = DropUserTypeSpecification.dropType("address");
 
 		assertThat(toCql(spec)).isEqualTo("DROP TYPE address;");
+	}
+
+	@Test // GH-921
+	void shouldConsiderKeyspace() {
+
+		DropUserTypeSpecification spec = DropUserTypeSpecification.dropType(CqlIdentifier.fromCql("foo"),
+				CqlIdentifier.fromCql("bar"));
+
+		assertThat(toCql(spec)).isEqualTo("DROP TYPE foo.bar;");
 	}
 
 	@Test // DATACASS-172

@@ -17,6 +17,8 @@ package org.springframework.data.cassandra.core.mapping;
 
 import java.util.function.Function;
 
+import org.springframework.lang.Nullable;
+
 /**
  * {@link NamingStrategy} that applies a transformation {@link Function} after invoking a delegate
  * {@link NamingStrategy}.
@@ -33,6 +35,14 @@ public class TransformingNamingStrategy implements NamingStrategy {
 	public TransformingNamingStrategy(NamingStrategy delegate, Function<String, String> mappingFunction) {
 		this.delegate = delegate;
 		this.mappingFunction = mappingFunction;
+	}
+
+	@Nullable
+	@Override
+	public String getKeyspace(CassandraPersistentEntity<?> entity) {
+
+		String keyspace = this.delegate.getKeyspace(entity);
+		return keyspace != null ? this.mappingFunction.apply(keyspace) : null;
 	}
 
 	@Override

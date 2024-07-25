@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -23,8 +24,15 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * Abstract builder class to support the construction of table specifications.
  *
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 public abstract class TableNameSpecification {
+
+	/**
+	 * The keyspace of the table.
+	 */
+
+	private final @Nullable CqlIdentifier keyspace;
 
 	/**
 	 * The name of the table.
@@ -35,10 +43,25 @@ public abstract class TableNameSpecification {
 
 		Assert.notNull(name, "CqlIdentifier must not be null");
 
+		this.keyspace = null;
 		this.name = name;
+	}
+
+	protected TableNameSpecification(@Nullable CqlIdentifier keyspace, CqlIdentifier name) {
+
+		Assert.notNull(name, "CqlIdentifier must not be null");
+
+		this.keyspace = keyspace;
+		this.name = name;
+	}
+
+	@Nullable
+	public CqlIdentifier getKeyspace() {
+		return keyspace;
 	}
 
 	public CqlIdentifier getName() {
 		return this.name;
 	}
+
 }

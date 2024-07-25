@@ -69,6 +69,8 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 
 	private CassandraPersistentEntityMetadataVerifier verifier = DEFAULT_VERIFIER;
 
+	private @Nullable CqlIdentifier keyspace;
+
 	private CqlIdentifier tableName;
 
 	private final Map<Parameter<?, CassandraPersistentProperty>, CassandraPersistentProperty> constructorProperties = new ConcurrentHashMap<>();
@@ -115,15 +117,20 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	}
 
 	protected CqlIdentifier determineTableName() {
-		return determineTableName(NamingStrategy::getTableName, findAnnotation(Table.class));
+		return determineName(NamingStrategy::getTableName, findAnnotation(Table.class), "value").getRequiredIdentifier();
 	}
 
-	CqlIdentifier determineTableName(
+	@Nullable
+	protected CqlIdentifier determineKeyspace() {
+		return determineName(NamingStrategy::getKeyspace, findAnnotation(Table.class), "keyspace").getIdentifier();
+	}
+
+	CqlIdentifierGenerator.GeneratedName determineName(
 			BiFunction<NamingStrategy, CassandraPersistentEntity<?>, String> defaultNameGenerator,
-			@Nullable Annotation annotation) {
+			@Nullable Annotation annotation, String annotationAttribute) {
 
 		if (annotation != null) {
-			return this.namingAccessor.generate((String) AnnotationUtils.getValue(annotation),
+			return this.namingAccessor.generate((String) AnnotationUtils.getValue(annotation, annotationAttribute),
 					(Boolean) AnnotationUtils.getValue(annotation, "forceQuote"), defaultNameGenerator, this, PARSER,
 					this::getValueEvaluationContext);
 		}
@@ -188,6 +195,10 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 		if (this.tableName == null) {
 			setTableName(determineTableName());
 		}
+
+		if (this.keyspace == null) {
+			setKeyspace(determineKeyspace());
+		}
 	}
 
 	@Override
@@ -204,7 +215,27 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 
 		if (changed) {
 			setTableName(CqlIdentifierGenerator.createIdentifier(getTableName().asInternal(), forceQuote));
+
+			if (hasKeyspace()) {
+				setKeyspace(CqlIdentifierGenerator.createIdentifier(getKeyspace().asInternal(), forceQuote));
+			}
 		}
+	}
+
+	@Nullable
+	@Override
+	public CqlIdentifier getKeyspace() {
+		return Optional.ofNullable(this.keyspace).orElseGet(this::determineKeyspace);
+	}
+
+	@Override
+	public void setKeyspace(CqlIdentifier keyspace) {
+		this.keyspace = keyspace;
+	}
+
+	@Override
+	public CqlIdentifier getTableName() {
+		return Optional.ofNullable(this.tableName).orElseGet(this::determineTableName);
 	}
 
 	@Override
@@ -223,11 +254,6 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	 */
 	public void setNamingStrategy(NamingStrategy namingStrategy) {
 		this.namingAccessor.setNamingStrategy(namingStrategy);
-	}
-
-	@Override
-	public CqlIdentifier getTableName() {
-		return Optional.ofNullable(this.tableName).orElseGet(this::determineTableName);
 	}
 
 	/**
@@ -274,5 +300,10 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 		}
 
 		return getPersistentProperty(parameter.getName());
+	}
+
+	@Override
+	public String toString() {
+		return getName();
 	}
 }

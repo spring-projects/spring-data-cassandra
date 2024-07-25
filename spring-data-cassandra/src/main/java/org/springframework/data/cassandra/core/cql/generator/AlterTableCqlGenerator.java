@@ -76,7 +76,7 @@ public class AlterTableCqlGenerator extends TableOptionsCqlGenerator<AlterTableS
 	}
 
 	private void preambleCql(StringBuilder cql) {
-		cql.append("ALTER TABLE ").append(spec().getName().asCql(true));
+		cql.append("ALTER TABLE ").append(CqlIdentifierUtil.renderName(spec()));
 	}
 
 	private void changesCql(StringBuilder cql) {
@@ -159,7 +159,7 @@ public class AlterTableCqlGenerator extends TableOptionsCqlGenerator<AlterTableS
 			}
 
 			// else just use value as string
-			cql.append(value.toString());
+			cql.append(value);
 		}
 	}
 }

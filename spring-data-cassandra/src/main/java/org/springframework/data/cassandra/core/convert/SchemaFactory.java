@@ -141,13 +141,14 @@ public class SchemaFactory {
 		Assert.notNull(tableName, "Table name must not be null");
 		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
 
-		CreateTableSpecification specification = createTable(tableName);
+		CreateTableSpecification specification = createTable(entity.getKeyspace(), tableName);
 
 		for (CassandraPersistentProperty property : entity) {
 
 			if (property.isCompositePrimaryKey()) {
 
-				CassandraPersistentEntity<?> primaryKeyEntity = mappingContext.getRequiredPersistentEntity(property.getRawType());
+				CassandraPersistentEntity<?> primaryKeyEntity = mappingContext
+						.getRequiredPersistentEntity(property.getRawType());
 
 				for (CassandraPersistentProperty primaryKeyProperty : primaryKeyEntity) {
 
@@ -227,7 +228,7 @@ public class SchemaFactory {
 
 		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
 
-		return getCreateIndexSpecificationsFor(entity, entity.getTableName());
+		return getCreateIndexSpecificationsFor(entity, entity.getKeyspace(), entity.getTableName());
 	}
 
 	/**
@@ -241,6 +242,20 @@ public class SchemaFactory {
 	 */
 	public List<CreateIndexSpecification> getCreateIndexSpecificationsFor(CassandraPersistentEntity<?> entity,
 			CqlIdentifier tableName) {
+		return getCreateIndexSpecificationsFor(entity, null, tableName);
+	}
+
+	/**
+	 * Returns {@link CreateIndexSpecification index specifications} derived from {@link CassandraPersistentEntity} using
+	 * {@link CqlIdentifier table name}.
+	 *
+	 * @param entity must not be {@literal null}.
+	 * @param tableName must not be {@literal null}.
+	 * @return
+	 * @since 2.0
+	 */
+	public List<CreateIndexSpecification> getCreateIndexSpecificationsFor(CassandraPersistentEntity<?> entity,
+			@Nullable CqlIdentifier keyspace, CqlIdentifier tableName) {
 
 		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
 		Assert.notNull(tableName, "Table name must not be null");
@@ -249,20 +264,21 @@ public class SchemaFactory {
 
 		for (CassandraPersistentProperty property : entity) {
 			if (property.isCompositePrimaryKey()) {
-				indexes.addAll(getCreateIndexSpecificationsFor(mappingContext.getRequiredPersistentEntity(property)));
+				CassandraPersistentEntity<?> pkEntity = mappingContext.getRequiredPersistentEntity(property);
+				indexes.addAll(getCreateIndexSpecificationsFor(pkEntity, pkEntity.getKeyspace(), pkEntity.getTableName()));
 			}
 			if (property.isEmbedded()) {
 
 				if (property.isAnnotationPresent(Indexed.class)) {
 					Indexed indexed = property.findAnnotation(Indexed.class);
 					for (CassandraPersistentProperty embeddedProperty : embeddedEntityOperations.getEntity(property)) {
-						indexes.add(IndexSpecificationFactory.createIndexSpecification(indexed, embeddedProperty));
+						indexes.add(IndexSpecificationFactory.createIndexSpecification(keyspace, indexed, embeddedProperty));
 					}
 				} else {
 					indexes.addAll(getCreateIndexSpecificationsFor(embeddedEntityOperations.getEntity(property)));
 				}
 			} else {
-				indexes.addAll(IndexSpecificationFactory.createIndexSpecifications(property));
+				indexes.addAll(IndexSpecificationFactory.createIndexSpecifications(keyspace, property));
 			}
 		}
 
@@ -280,7 +296,8 @@ public class SchemaFactory {
 
 		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
 
-		CreateUserTypeSpecification specification = CreateUserTypeSpecification.createType(entity.getTableName());
+		CreateUserTypeSpecification specification = CreateUserTypeSpecification.createType(entity.getKeyspace(),
+				entity.getTableName());
 
 		for (CassandraPersistentProperty property : entity) {
 
@@ -310,27 +327,36 @@ public class SchemaFactory {
 
 		@Override
 		public UserDefinedType resolveType(CqlIdentifier typeName) {
-			return new ShallowUserDefinedType(typeName, false);
+			return new ShallowUserDefinedType(null, typeName, false);
 		}
+
+		@Override
+		public UserDefinedType resolveType(CqlIdentifier keyspace, CqlIdentifier typeName) {
+			return new ShallowUserDefinedType(keyspace, typeName, false);
+		}
+
 	}
 
 	static class ShallowUserDefinedType implements com.datastax.oss.driver.api.core.type.UserDefinedType {
 
+		private final @Nullable CqlIdentifier keyspace;
 		private final CqlIdentifier name;
 		private final boolean frozen;
 
 		public ShallowUserDefinedType(String name, boolean frozen) {
-			this(CqlIdentifier.fromInternal(name), frozen);
+			this(null, CqlIdentifier.fromInternal(name), frozen);
 		}
 
-		public ShallowUserDefinedType(CqlIdentifier name, boolean frozen) {
+		public ShallowUserDefinedType(@Nullable CqlIdentifier keyspace, CqlIdentifier name, boolean frozen) {
+			this.keyspace = keyspace;
 			this.name = name;
 			this.frozen = frozen;
 		}
 
+		@Nullable
 		@Override
 		public CqlIdentifier getKeyspace() {
-			return null;
+			return keyspace;
 		}
 
 		@Override
@@ -369,7 +395,7 @@ public class SchemaFactory {
 
 		@Override
 		public com.datastax.oss.driver.api.core.type.UserDefinedType copy(boolean newFrozen) {
-			return new ShallowUserDefinedType(this.name, newFrozen);
+			return new ShallowUserDefinedType(this.keyspace, this.name, newFrozen);
 		}
 
 		@Override

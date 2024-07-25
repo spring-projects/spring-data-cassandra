@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
+import org.springframework.lang.Nullable;
+
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
@@ -27,8 +29,8 @@ public class DropTableSpecification extends TableNameSpecification {
 
 	private boolean ifExists = false;
 
-	private DropTableSpecification(CqlIdentifier name) {
-		super(name);
+	private DropTableSpecification(@Nullable CqlIdentifier keyspace, CqlIdentifier name) {
+		super(keyspace, name);
 	}
 
 	/**
@@ -50,7 +52,21 @@ public class DropTableSpecification extends TableNameSpecification {
 	 * @return a new {@link DropTableSpecification}.
 	 */
 	public static DropTableSpecification dropTable(CqlIdentifier tableName) {
-		return new DropTableSpecification(tableName);
+		return new DropTableSpecification(null, tableName);
+	}
+
+	/**
+	 * Entry point into the {@link DropTableSpecification}'s fluent API given {@code tableName} to drop a table.
+	 * Convenient if imported statically. Uses the default keyspace if {@code keyspace} is null; otherwise, of the
+	 * {@code keyspace} is not {@link null}, then the table name is prefixed with {@code keyspace}.
+	 *
+	 * @param keyspace can be {@literal null}.
+	 * @param tableName must not be {@literal null}.
+	 * @return a new {@link DropTableSpecification}.
+	 * @since 4.4
+	 */
+	public static DropTableSpecification dropTable(@Nullable CqlIdentifier keyspace, CqlIdentifier tableName) {
+		return new DropTableSpecification(keyspace, tableName);
 	}
 
 	/**

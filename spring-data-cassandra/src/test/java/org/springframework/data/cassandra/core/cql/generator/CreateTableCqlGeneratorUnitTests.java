@@ -203,6 +203,16 @@ class CreateTableCqlGeneratorUnitTests {
 				+ "WITH CLUSTERING ORDER BY (date_of_birth ASC);");
 	}
 
+	@Test // GH-921
+	void shouldConsiderKeyspace() {
+
+		CreateTableSpecification table = CreateTableSpecification
+				.createTable(CqlIdentifier.fromCql("myks"), CqlIdentifier.fromCql("person"))
+				.partitionKeyColumn("id", DataTypes.ASCII);
+
+		assertThat(toCql(table)).isEqualTo("CREATE TABLE myks.person (" + "id ascii, " + "PRIMARY KEY (id));");
+	}
+
 	/**
 	 * Asserts that the preamble is first & correctly formatted in the given CQL string.
 	 */

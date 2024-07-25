@@ -61,7 +61,7 @@ public class AlterUserTypeCqlGenerator extends UserTypeNameCqlGenerator<AlterUse
 	}
 
 	private StringBuilder preambleCql(StringBuilder cql) {
-		return cql.append("ALTER TYPE ").append(spec().getName().asCql(true)).append(' ');
+		return cql.append("ALTER TYPE ").append(CqlIdentifierUtil.renderName(spec())).append(' ');
 	}
 
 	private StringBuilder changesCql(StringBuilder cql) {

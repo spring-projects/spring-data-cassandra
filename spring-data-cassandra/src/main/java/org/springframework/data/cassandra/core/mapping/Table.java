@@ -29,6 +29,7 @@ import org.springframework.data.annotation.Persistent;
  *
  * @author Alex Shvid
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 @Documented
 @Persistent
@@ -38,7 +39,17 @@ import org.springframework.data.annotation.Persistent;
 public @interface Table {
 
 	/**
-	 * The name of the table; must be a valid CQL identifier or quoted identifier.
+	 * The keyspace for the table; table uses the session-keyspace if empty; must be a valid CQL identifier or quoted
+	 * identifier. The value can be either a string or a {@link org.springframework.data.expression.ValueExpression Value
+	 * Expression}.
+	 *
+	 * @since 4.4
+	 */
+	String keyspace() default "";
+
+	/**
+	 * The name of the table; must be a valid CQL identifier or quoted identifier. The value can be either a string or a
+	 * {@link org.springframework.data.expression.ValueExpression Value Expression}.
 	 */
 	String value() default "";
 

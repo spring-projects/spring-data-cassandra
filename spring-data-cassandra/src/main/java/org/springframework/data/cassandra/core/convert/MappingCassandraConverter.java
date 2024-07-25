@@ -141,7 +141,19 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 		Assert.notNull(mappingContext, "CassandraMappingContext must not be null");
 
-		UserTypeResolver userTypeResolver = userTypeName -> getUserTypeResolver().resolveType(userTypeName);
+		UserTypeResolver userTypeResolver = new UserTypeResolver() {
+			@Nullable
+			@Override
+			public UserDefinedType resolveType(CqlIdentifier typeName) {
+				return MappingCassandraConverter.this.getUserTypeResolver().resolveType(typeName);
+			}
+
+			@Nullable
+			@Override
+			public UserDefinedType resolveType(CqlIdentifier keyspace, CqlIdentifier typeName) {
+				return MappingCassandraConverter.this.getUserTypeResolver().resolveType(keyspace, typeName);
+			}
+		};
 
 		this.mappingContext = mappingContext;
 		this.setCodecRegistry(mappingContext.getCodecRegistry());

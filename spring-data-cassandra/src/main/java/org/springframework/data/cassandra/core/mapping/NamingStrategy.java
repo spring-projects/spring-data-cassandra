@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.core.mapping;
 import java.util.Locale;
 import java.util.function.UnaryOperator;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -51,6 +52,18 @@ public interface NamingStrategy {
 	 * Naming strategy that renders CamelCase name parts to {@code snake_case}.
 	 */
 	NamingStrategy SNAKE_CASE = new SnakeCaseNamingStrategy();
+
+	/**
+	 * Create a keyspace name from the given {@link CassandraPersistentEntity}. Defaults to {@literal null} meaning the
+	 * keyspace is being inherited from the Cassandra session instead of using a specific keyspace regardless of the
+	 * session configuration.
+	 *
+	 * @since 4.4
+	 */
+	@Nullable
+	default String getKeyspace(CassandraPersistentEntity<?> entity) {
+		return null;
+	}
 
 	/**
 	 * Create a table name from the given {@link CassandraPersistentEntity}.

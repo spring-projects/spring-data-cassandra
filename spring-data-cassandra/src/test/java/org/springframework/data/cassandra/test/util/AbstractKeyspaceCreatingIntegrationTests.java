@@ -48,7 +48,7 @@ public abstract class AbstractKeyspaceCreatingIntegrationTests extends Integrati
 	/**
 	 * Returns the configured {@link String name} of the Cassandra Keyspace used for tests.
 	 *
-	 * @return the confiured {@link String name} of the Cassandra Keyspace used for tests.
+	 * @return the configured {@link String name} of the Cassandra Keyspace used for tests.
 	 */
 	protected String getKeyspace() {
 		return this.keyspace;
@@ -57,8 +57,8 @@ public abstract class AbstractKeyspaceCreatingIntegrationTests extends Integrati
 	/**
 	 * Returns the configured {@link CqlSession}. The {@link CqlSession} is logged into the {@link #getKeyspace()}.
 	 *
-	 * @return the configured {@link Session}.
-	 * @see com.datastax.driver.core.Session
+	 * @return the configured {@link CqlSession}.
+	 * @see CqlSession
 	 */
 	protected CqlSession getSession() {
 		return this.session;

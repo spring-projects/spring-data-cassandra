@@ -54,6 +54,10 @@ class CqlIdentifierGenerator {
 		return CqlIdentifier.fromCql(simpleName);
 	}
 
+	private static CqlIdentifier createIdentifier(GeneratedName name) {
+		return createIdentifier(name.getRequiredName(), name.useForceQuote());
+	}
+
 	/**
 	 * Generate a {@link CqlIdentifier name} using the provided name or fall back to the default {@link Function name
 	 * generator} using a {@link NamingStrategy}.
@@ -64,9 +68,9 @@ class CqlIdentifierGenerator {
 	 * @param source source to be used for name generation.
 	 * @param parser expression parser.
 	 * @param contextFunction evaluation context provider function.
-	 * @return the generated name.
+	 * @return the generated name or an object without the name if no name could be generated.
 	 */
-	public <T> CqlIdentifier generate(@Nullable String providedName, boolean forceQuote,
+	public <T> GeneratedName generate(@Nullable String providedName, boolean forceQuote,
 			BiFunction<NamingStrategy, T, String> defaultNameGenerator, T source, ValueExpressionParser parser,
 			BiFunction<Object, ExpressionDependencies, ValueEvaluationContext> contextFunction) {
 
@@ -82,9 +86,7 @@ class CqlIdentifierGenerator {
 			name = defaultNameGenerator.apply(getNamingStrategy(forceQuote), source);
 		}
 
-		Assert.state(name != null, () -> String.format("Cannot determine default name for %s", source));
-
-		return createIdentifier(name, useForceQuote);
+		return new GeneratedName(name, useForceQuote, source, CqlIdentifierGenerator::createIdentifier);
 	}
 
 	public void setNamingStrategy(@Nullable NamingStrategy namingStrategy) {
@@ -105,5 +107,49 @@ class CqlIdentifierGenerator {
 		}
 
 		return namingStrategy;
+	}
+
+	/**
+	 * Generated name. Can be {@link #hasName() present} or absent.
+	 *
+	 * @param name
+	 * @param useForceQuote
+	 * @param source
+	 * @param identifierFunction
+	 */
+	record GeneratedName(@Nullable String name, boolean useForceQuote, Object source,
+			Function<GeneratedName, CqlIdentifier> identifierFunction) {
+
+		public boolean hasName() {
+			return name != null;
+		}
+
+		public String getRequiredName() {
+
+			String name = name();
+
+			if (name == null) {
+				throw new IllegalStateException(String.format("Cannot determine default name for %s", source));
+			}
+
+			return name;
+		}
+
+		@Nullable
+		public CqlIdentifier getIdentifier() {
+			return hasName() ? identifierFunction.apply(this) : null;
+		}
+
+		public CqlIdentifier getRequiredIdentifier() {
+
+			CqlIdentifier identifier = getIdentifier();
+
+			if (identifier == null) {
+				throw new IllegalStateException(String.format("Cannot determine default name for %s", source));
+			}
+
+			return identifier;
+		}
+
 	}
 }

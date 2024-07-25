@@ -165,7 +165,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		BasicCassandraPersistentEntity<?> entity = (BasicCassandraPersistentEntity<?>) getOwner();
 
 		return namingAccessor.generate(overriddenName, forceQuote, NamingStrategy::getColumnName, this,
-				BasicCassandraPersistentEntity.PARSER, entity::getValueEvaluationContext);
+				BasicCassandraPersistentEntity.PARSER, entity::getValueEvaluationContext).getRequiredIdentifier();
 	}
 
 	@Override

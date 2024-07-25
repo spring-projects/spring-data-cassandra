@@ -43,30 +43,34 @@ public class TableSpecification<T> extends TableOptionsSpecification<TableSpecif
 	/**
 	 * List of all columns.
 	 */
-	private List<ColumnSpecification> columns = new ArrayList<>();
+	private final List<ColumnSpecification> columns = new ArrayList<>();
 
 	/**
 	 * List of only those columns that comprise the partition key.
 	 */
-	private List<ColumnSpecification> partitionKeyColumns = new ArrayList<>();
+	private final List<ColumnSpecification> partitionKeyColumns = new ArrayList<>();
 
 	/**
 	 * List of only those columns that comprise the primary key that are not also part of the partition key.
 	 */
-	private List<ColumnSpecification> clusteredKeyColumns = new ArrayList<>();
+	private final List<ColumnSpecification> clusteredKeyColumns = new ArrayList<>();
 
 	/**
 	 * List of only those columns that are not partition or primary key columns.
 	 */
-	private List<ColumnSpecification> nonKeyColumns = new ArrayList<>();
+	private final List<ColumnSpecification> nonKeyColumns = new ArrayList<>();
 
 	/**
 	 * List of static columns.
 	 */
-	private List<ColumnSpecification> staticColumns = new ArrayList<>();
+	private final List<ColumnSpecification> staticColumns = new ArrayList<>();
 
 	protected TableSpecification(CqlIdentifier name) {
 		super(name);
+	}
+
+	protected TableSpecification(CqlIdentifier keyspace, CqlIdentifier name) {
+		super(keyspace, name);
 	}
 
 	/**

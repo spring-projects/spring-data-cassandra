@@ -43,7 +43,14 @@ public class CassandraUserTypePersistentEntity<T> extends BasicCassandraPersiste
 
 	@Override
 	protected CqlIdentifier determineTableName() {
-		return determineTableName(NamingStrategy::getUserDefinedTypeName, findAnnotation(UserDefinedType.class));
+		return determineName(NamingStrategy::getUserDefinedTypeName, findAnnotation(UserDefinedType.class), "value")
+				.getRequiredIdentifier();
+	}
+
+	@Override
+	protected CqlIdentifier determineKeyspace() {
+		return determineName(NamingStrategy::getKeyspace, findAnnotation(UserDefinedType.class), "keyspace")
+				.getIdentifier();
 	}
 
 	@Override

@@ -486,10 +486,19 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 	}
 
 	private UserDefinedType getUserType(CassandraPersistentEntity<?> persistentEntity, boolean frozen) {
-		return getUserType(persistentEntity.getTableName()).copy(frozen);
+		return (persistentEntity.hasKeyspace()
+				? getUserType(persistentEntity.getRequiredKeyspace(), persistentEntity.getTableName())
+				: getUserType(persistentEntity.getTableName())).copy(frozen);
 	}
 
 	private UserDefinedType getUserType(String userTypeName) {
+
+		if (userTypeName.contains(".") && !userTypeName.contains("\"")) {
+
+			String[] split = userTypeName.split("\\.");
+			return getUserType(CqlIdentifier.fromCql(split[0]), CqlIdentifier.fromCql(split[1]));
+		}
+
 		return getUserType(CqlIdentifier.fromCql(userTypeName));
 	}
 
@@ -499,6 +508,17 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 
 		if (type == null) {
 			throw new MappingException(String.format("User type [%s] not found", userTypeName));
+		}
+
+		return type;
+	}
+
+	private UserDefinedType getUserType(CqlIdentifier keyspace, CqlIdentifier userTypeName) {
+
+		UserDefinedType type = userTypeResolver.resolveType(keyspace, userTypeName);
+
+		if (type == null) {
+			throw new MappingException(String.format("User type [%s] in keyspace [%s] not found", userTypeName, keyspace));
 		}
 
 		return type;

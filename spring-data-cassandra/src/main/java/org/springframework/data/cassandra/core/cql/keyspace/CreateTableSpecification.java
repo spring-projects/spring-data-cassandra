@@ -29,8 +29,8 @@ public class CreateTableSpecification extends TableSpecification<CreateTableSpec
 
 	private boolean ifNotExists = false;
 
-	private CreateTableSpecification(CqlIdentifier name) {
-		super(name);
+	private CreateTableSpecification(@Nullable CqlIdentifier keyspace, CqlIdentifier name) {
+		super(keyspace, name);
 	}
 
 	/**
@@ -41,7 +41,7 @@ public class CreateTableSpecification extends TableSpecification<CreateTableSpec
 	 * @return a new {@link CreateTableSpecification}.
 	 */
 	public static CreateTableSpecification createTable(String tableName) {
-		return new CreateTableSpecification(CqlIdentifier.fromCql(tableName));
+		return new CreateTableSpecification(null, CqlIdentifier.fromCql(tableName));
 	}
 
 	/**
@@ -52,7 +52,21 @@ public class CreateTableSpecification extends TableSpecification<CreateTableSpec
 	 * @return a new {@link CreateTableSpecification}.
 	 */
 	public static CreateTableSpecification createTable(CqlIdentifier tableName) {
-		return new CreateTableSpecification(tableName);
+		return new CreateTableSpecification(null, tableName);
+	}
+
+	/**
+	 * Entry point into the {@link CreateTableSpecification}'s fluent API given {@code tableName} to create a table.
+	 * Convenient if imported statically. Uses the default keyspace if {@code keyspace} is null; otherwise, of the
+	 * {@code keyspace} is not {@link null}, then the table name is prefixed with {@code keyspace}.
+	 *
+	 * @param keyspace can be {@literal null}.
+	 * @param tableName must not be {@literal null}.
+	 * @return a new {@link CreateTableSpecification}.
+	 * @since 4.4
+	 */
+	public static CreateTableSpecification createTable(@Nullable CqlIdentifier keyspace, CqlIdentifier tableName) {
+		return new CreateTableSpecification(keyspace, tableName);
 	}
 
 	/**

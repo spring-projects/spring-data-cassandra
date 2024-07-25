@@ -110,7 +110,7 @@ public class StatementFactory {
 
 	private final UpdateMapper updateMapper;
 
-	private KeyspaceProvider keyspaceProvider = KeyspaceProviders.EMPTY_KEYSPACE;
+	private KeyspaceProvider keyspaceProvider = KeyspaceProviders.ENTITY_KEYSPACE;
 
 	/**
 	 * Create {@link StatementFactory} given {@link CassandraConverter}.
@@ -1252,7 +1252,25 @@ public class StatementFactory {
 
 	}
 
+	/**
+	 * Implementations of {@link KeyspaceProvider}.
+	 */
 	enum KeyspaceProviders implements KeyspaceProvider {
+
+		/**
+		 * Derive the keyspace from the given {@link CassandraPersistentEntity}.
+		 */
+		ENTITY_KEYSPACE {
+			@Nullable
+			@Override
+			public CqlIdentifier getKeyspace(CassandraPersistentEntity<?> entity, CqlIdentifier tableName) {
+				return entity.getKeyspace();
+			}
+		},
+
+		/**
+		 * Use the session's keyspace.
+		 */
 		EMPTY_KEYSPACE {
 			@Nullable
 			@Override

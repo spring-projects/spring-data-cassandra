@@ -33,16 +33,35 @@ public abstract class IndexNameSpecification<T extends IndexNameSpecification<T>
 	/**
 	 * The name of the index.
 	 */
+	private final @Nullable CqlIdentifier keyspace;
+
+	/**
+	 * The name of the index.
+	 */
 	private final @Nullable CqlIdentifier name;
 
 	protected IndexNameSpecification() {
+		this.keyspace = null;
 		this.name = null;
 	}
 
 	protected IndexNameSpecification(CqlIdentifier name) {
 
 		Assert.notNull(name, "CqlIdentifier must not be null");
+
+		this.keyspace = null;
 		this.name = name;
+	}
+
+	protected IndexNameSpecification(@Nullable CqlIdentifier keyspace, @Nullable CqlIdentifier name) {
+
+		this.keyspace = keyspace;
+		this.name = name;
+	}
+
+	@Nullable
+	public CqlIdentifier getKeyspace() {
+		return keyspace;
 	}
 
 	@Nullable

@@ -34,8 +34,11 @@ import org.springframework.data.cassandra.core.mapping.SASI.NonTokenizingAnalyze
 import org.springframework.data.cassandra.core.mapping.SASI.Normalization;
 import org.springframework.data.cassandra.core.mapping.SASI.StandardAnalyzed;
 import org.springframework.data.mapping.MappingException;
+import org.springframework.lang.Nullable;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
+
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * Factory to create {@link org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification} based on
@@ -70,13 +73,15 @@ class IndexSpecificationFactory {
 	 * @param property must not be {@literal null}.
 	 * @return {@link List} of {@link CreateIndexSpecification}.
 	 */
-	static List<CreateIndexSpecification> createIndexSpecifications(CassandraPersistentProperty property) {
+	static List<CreateIndexSpecification> createIndexSpecifications(@Nullable CqlIdentifier keyspace,
+			CassandraPersistentProperty property) {
 
 		List<CreateIndexSpecification> indexes = new ArrayList<>();
 
 		if (property.isAnnotationPresent(Indexed.class)) {
 
-			CreateIndexSpecification index = createIndexSpecification(property.findAnnotation(Indexed.class), property);
+			CreateIndexSpecification index = createIndexSpecification(keyspace, property.findAnnotation(Indexed.class),
+					property);
 
 			if (property.isMapLike()) {
 				index.entries();
@@ -86,7 +91,7 @@ class IndexSpecificationFactory {
 		}
 
 		if (property.isAnnotationPresent(SASI.class)) {
-			indexes.add(createIndexSpecification(property.findAnnotation(SASI.class), property));
+			indexes.add(createIndexSpecification(keyspace, property.findAnnotation(SASI.class), property));
 		}
 
 		if (property.isMapLike()) {
@@ -113,11 +118,11 @@ class IndexSpecificationFactory {
 				}
 
 				if (keyIndex != null) {
-					indexes.add(createIndexSpecification(keyIndex, property).keys());
+					indexes.add(createIndexSpecification(keyspace, keyIndex, property).keys());
 				}
 
 				if (valueIndex != null) {
-					indexes.add(createIndexSpecification(valueIndex, property).values());
+					indexes.add(createIndexSpecification(keyspace, valueIndex, property).values());
 				}
 			}
 		}
@@ -125,29 +130,29 @@ class IndexSpecificationFactory {
 		return indexes;
 	}
 
-	static CreateIndexSpecification createIndexSpecification(Indexed annotation,
+	static CreateIndexSpecification createIndexSpecification(@Nullable CqlIdentifier keyspace, Indexed annotation,
 			CassandraPersistentProperty property) {
 
 		CreateIndexSpecification index;
 
 		if (StringUtils.hasText(annotation.value())) {
-			index = CreateIndexSpecification.createIndex(annotation.value());
+			index = CreateIndexSpecification.createIndex(keyspace, CqlIdentifier.fromCql(annotation.value()));
 		} else {
-			index = CreateIndexSpecification.createIndex();
+			index = CreateIndexSpecification.createIndex(keyspace, null);
 		}
 
 		return index.columnName(property.getRequiredColumnName());
 	}
 
-	private static CreateIndexSpecification createIndexSpecification(SASI annotation,
+	private static CreateIndexSpecification createIndexSpecification(@Nullable CqlIdentifier keyspace, SASI annotation,
 			CassandraPersistentProperty property) {
 
 		CreateIndexSpecification index;
 
 		if (StringUtils.hasText(annotation.value())) {
-			index = CreateIndexSpecification.createIndex(annotation.value());
+			index = CreateIndexSpecification.createIndex(keyspace, CqlIdentifier.fromCql(annotation.value()));
 		} else {
-			index = CreateIndexSpecification.createIndex();
+			index = CreateIndexSpecification.createIndex(keyspace, null);
 		}
 
 		index.using("org.apache.cassandra.index.sasi.SASIIndex") //

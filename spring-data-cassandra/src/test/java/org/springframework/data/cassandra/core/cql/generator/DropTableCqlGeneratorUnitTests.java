@@ -18,7 +18,10 @@ package org.springframework.data.cassandra.core.cql.generator;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.cassandra.core.cql.keyspace.DropTableSpecification;
+
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * Unit tests for {@link DropTableCqlGenerator}.
@@ -33,6 +36,15 @@ class DropTableCqlGeneratorUnitTests {
 	 */
 	private static void assertStatement(String tableName, boolean ifExists, String cql) {
 		assertThat(cql).isEqualTo("DROP TABLE " + (ifExists ? "IF EXISTS " : "") + tableName + ";");
+	}
+
+	@Test // GH-921
+	void shouldConsiderKeyspace() {
+
+		DropTableSpecification spec = DropTableSpecification.dropTable(CqlIdentifier.fromCql("foo"),
+				CqlIdentifier.fromCql("bar"));
+
+		assertThat(DropTableCqlGenerator.toCql(spec)).isEqualTo("DROP TABLE foo.bar;");
 	}
 
 	/**

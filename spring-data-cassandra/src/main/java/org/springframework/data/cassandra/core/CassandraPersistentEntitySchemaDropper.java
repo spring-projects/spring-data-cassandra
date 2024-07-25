@@ -32,6 +32,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;
 import com.datastax.oss.driver.api.core.metadata.schema.RelationMetadata;
 import com.datastax.oss.driver.api.core.type.DataType;
 import com.datastax.oss.driver.api.core.type.ListType;
@@ -80,12 +81,17 @@ public class CassandraPersistentEntitySchemaDropper {
 	 */
 	public void dropTables(boolean dropUnused) {
 
+		KeyspaceMetadata keyspaceMetadata = this.cassandraAdminOperations.getKeyspaceMetadata();
+		Set<CqlIdentifier> canRecreate = this.mappingContext.getTableEntities().stream()
+				.filter(it -> isInKeyspace(it, keyspaceMetadata)).map(CassandraPersistentEntity::getTableName)
+				.collect(Collectors.toSet());
+
 		this.cassandraAdminOperations.getKeyspaceMetadata() //
 				.getTables() //
 				.values() //
 				.stream() //
 				.map(RelationMetadata::getName) //
-				.filter(table -> dropUnused || this.mappingContext.usesTable(table)) //
+				.filter(table -> canRecreate.contains(table) || (dropUnused && !mappingContext.usesTable(table))) //
 				.forEach(this.cassandraAdminOperations::dropTable);
 	}
 
@@ -98,16 +104,26 @@ public class CassandraPersistentEntitySchemaDropper {
 	 */
 	public void dropUserTypes(boolean dropUnused) {
 
+		KeyspaceMetadata keyspaceMetadata = this.cassandraAdminOperations.getKeyspaceMetadata();
 		Set<CqlIdentifier> canRecreate = this.mappingContext.getUserDefinedTypeEntities().stream()
-				.map(CassandraPersistentEntity::getTableName).collect(Collectors.toSet());
+				.filter(it -> isInKeyspace(it, keyspaceMetadata)).map(CassandraPersistentEntity::getTableName)
+				.collect(Collectors.toSet());
 
-		Collection<UserDefinedType> userTypes = this.cassandraAdminOperations.getKeyspaceMetadata().getUserDefinedTypes()
-				.values();
+		Collection<UserDefinedType> userTypes = keyspaceMetadata.getUserDefinedTypes().values();
 
 		getUserTypesToDrop(userTypes) //
 				.stream() //
 				.filter(it -> canRecreate.contains(it) || (dropUnused && !mappingContext.usesUserType(it))) //
 				.forEach(this.cassandraAdminOperations::dropUserType);
+	}
+
+	private static boolean isInKeyspace(CassandraPersistentEntity<?> entity, KeyspaceMetadata keyspaceMetadata) {
+
+		if (entity.hasKeyspace() && keyspaceMetadata.getName().equals(entity.getRequiredKeyspace())) {
+			return true;
+		}
+
+		return !entity.hasKeyspace();
 	}
 
 	/**

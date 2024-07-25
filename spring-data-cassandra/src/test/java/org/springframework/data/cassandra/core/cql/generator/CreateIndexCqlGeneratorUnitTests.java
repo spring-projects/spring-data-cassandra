@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.core.cql.generator;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -38,6 +39,16 @@ class CreateIndexCqlGeneratorUnitTests {
 				.columnName("column");
 
 		assertThat(CreateIndexCqlGenerator.toCql(spec)).isEqualTo("CREATE INDEX myindex ON mytable (column);");
+	}
+
+	@Test // GH-921
+	void shouldConsiderKeyspace() {
+
+		CreateIndexSpecification spec = CreateIndexSpecification
+				.createIndex(CqlIdentifier.fromCql("myks"), CqlIdentifier.fromCql("myindex")).tableName("mytable")
+				.columnName("column");
+
+		assertThat(CreateIndexCqlGenerator.toCql(spec)).isEqualTo("CREATE INDEX myks.myindex ON myks.mytable (column);");
 	}
 
 	@Test // DATACASS-213

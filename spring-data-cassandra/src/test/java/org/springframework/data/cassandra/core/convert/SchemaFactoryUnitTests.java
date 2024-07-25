@@ -31,10 +31,13 @@ import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.cql.Ordering;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
+import org.springframework.data.cassandra.core.cql.generator.CreateIndexCqlGenerator;
+import org.springframework.data.cassandra.core.cql.generator.CreateTableCqlGenerator;
 import org.springframework.data.cassandra.core.cql.keyspace.ColumnSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification.ColumnFunction;
@@ -45,6 +48,7 @@ import org.springframework.data.cassandra.support.UserDefinedTypeBuilder;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.util.StringUtils;
 
+import com.datastax.driver.core.UDTValue;
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.data.TupleValue;
 import com.datastax.oss.driver.api.core.data.UdtValue;
@@ -583,6 +587,38 @@ public class SchemaFactoryUnitTests {
 		assertThat(specification.getName()).isEqualTo(customTableName);
 	}
 
+	@Test // GH-921
+	void createTableShouldConsiderKeyspaces() {
+
+		CreateTableSpecification specification = getCreateTableSpecificationFor(WithKeyspace.class);
+
+		assertThat(specification.getKeyspace()).isEqualTo(CqlIdentifier.fromCql("some_ks"));
+
+		assertThat(getColumnType("mapped", specification).asCql(true, true)).isEqualTo("frozen<mappedudt>");
+		assertThat(getColumnType("human", specification).asCql(true, true)).isEqualTo("frozen<udt_ks.udtwithkeyspace>");
+
+		String cql = CreateTableCqlGenerator.toCql(specification);
+
+		assertThat(cql).contains("CREATE TABLE some_ks.withkeyspace");
+		assertThat(cql).contains("mapped frozen<mappedudt>");
+		assertThat(cql).contains("human frozen<udt_ks.udtwithkeyspace>");
+		assertThat(cql).contains("some_udt frozen<some_udt>");
+		assertThat(cql).contains("some_ks_udt frozen<some_other_ks.some_udt>");
+	}
+
+	@Test // GH-921
+	void createIndexShouldConsiderKeyspace() {
+
+		List<CreateIndexSpecification> index = getCreateIndexSpecificationFor(WithKeyspace.class);
+
+		assertThat(index).hasSize(1).extracting(CreateIndexSpecification::getKeyspace)
+				.contains(CqlIdentifier.fromCql("some_ks"));
+
+		String cql = CreateIndexCqlGenerator.toCql(index.get(0));
+
+		assertThat(cql).contains("CREATE INDEX ON some_ks.withkeyspace (id)");
+	}
+
 	private CreateTableSpecification getCreateTableSpecificationFor(Class<?> persistentEntityClass) {
 
 		CassandraCustomConversions customConversions = new CassandraCustomConversions(Collections.emptyList());
@@ -590,6 +626,10 @@ public class SchemaFactoryUnitTests {
 
 		CassandraPersistentEntity<?> persistentEntity = mappingContext.getRequiredPersistentEntity(persistentEntityClass);
 		return schemaFactory.getCreateTableSpecificationFor(persistentEntity);
+	}
+
+	private List<CreateIndexSpecification> getCreateIndexSpecificationFor(Class<?> persistentEntityClass) {
+		return schemaFactory.getCreateIndexSpecificationsFor(persistentEntityClass);
 	}
 
 	private DataType getColumnType(String columnName, CreateTableSpecification specification) {
@@ -668,6 +708,24 @@ public class SchemaFactoryUnitTests {
 		String firstname;
 		String lastname;
 	}
+
+	@Table(keyspace = "some_ks")
+	private static class WithKeyspace {
+
+		@Id
+		@Indexed String id;
+
+		MappedUdt mapped;
+
+		UdtWithKeyspace human;
+
+		@CassandraType(type = Name.UDT, userTypeName = "some_udt") UDTValue some_udt;
+
+		@CassandraType(type = Name.UDT, userTypeName = "some_other_ks.some_udt") UDTValue some_ks_udt;
+	}
+
+	@org.springframework.data.cassandra.core.mapping.UserDefinedType(keyspace = "udt_ks")
+	private static class UdtWithKeyspace {}
 
 	private static class PersonReadConverter implements Converter<String, Human> {
 
@@ -890,16 +948,6 @@ public class SchemaFactoryUnitTests {
 		ColumnSpecification name = tableSpecification.getStaticColumns().get(0);
 		assertThat(name.getName().toString()).isEqualTo("address");
 		assertThat(name.isStatic()).isTrue();
-	}
-
-	@Test // GH-978
-	void aaa() {
-
-		CassandraPersistentEntity<?> persistentEntity = mappingContext.getRequiredPersistentEntity(Person.class);
-
-		CreateTableSpecification tableSpecification = schemaFactory.getCreateTableSpecificationFor(persistentEntity);
-
-		System.out.println(tableSpecification);
 	}
 
 	@PrimaryKeyClass

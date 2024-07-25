@@ -18,7 +18,10 @@ package org.springframework.data.cassandra.core.cql.generator;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.cassandra.core.cql.keyspace.DropIndexSpecification;
+
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * Unit tests for {@link DropIndexCqlGenerator}.
@@ -33,6 +36,15 @@ public class DropIndexCqlGeneratorUnitTests {
 	 */
 	private static void assertStatement(String indexName, boolean ifExists, String cql) {
 		assertThat(cql).isEqualTo("DROP INDEX " + (ifExists ? "IF EXISTS " : "") + indexName + ";");
+	}
+
+	@Test // GH-921
+	void shouldConsiderKeyspace() {
+
+		DropIndexSpecification spec = DropIndexSpecification.dropIndex(CqlIdentifier.fromCql("foo"),
+				CqlIdentifier.fromCql("bar"));
+
+		assertThat(DropIndexCqlGenerator.toCql(spec)).isEqualTo("DROP INDEX foo.bar;");
 	}
 
 	/**

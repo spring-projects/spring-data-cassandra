@@ -37,7 +37,16 @@ import java.lang.annotation.Target;
 public @interface UserDefinedType {
 
 	/**
-	 * The name of the UDT. Must be a valid CQL identifier or quoted identifier.
+	 * The keyspace for the UDT; must be a valid CQL identifier/quoted identifier or empty to use the session-keyspace.
+	 * The value can be either a string or a {@link org.springframework.data.expression.ValueExpression Value Expression}.
+	 *
+	 * @since 4.4
+	 */
+	String keyspace() default "";
+
+	/**
+	 * The name of the UDT. Must be a valid CQL identifier or quoted identifier. The value can be either a string or a
+	 * {@link org.springframework.data.expression.ValueExpression Value Expression}.
 	 */
 	String value() default "";
 

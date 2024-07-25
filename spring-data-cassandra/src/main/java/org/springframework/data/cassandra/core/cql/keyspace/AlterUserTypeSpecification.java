@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.springframework.lang.Nullable;
+
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.type.DataType;
 
@@ -34,8 +36,8 @@ public class AlterUserTypeSpecification extends UserTypeNameSpecification {
 
 	private final List<ColumnChangeSpecification> changes = new ArrayList<>();
 
-	private AlterUserTypeSpecification(CqlIdentifier name) {
-		super(name);
+	private AlterUserTypeSpecification(@Nullable CqlIdentifier keyspace, CqlIdentifier name) {
+		super(keyspace, name);
 	}
 
 	/**
@@ -53,11 +55,24 @@ public class AlterUserTypeSpecification extends UserTypeNameSpecification {
 	 * Entry point into the {@link AlterUserTypeSpecification}'s fluent API given {@code typeName} to alter a type.
 	 * Convenient if imported statically.
 	 *
-	 * @param typeName must not be {@literal null} or empty.
+	 * @param typeName must not be {@literal null}.
 	 * @return a new {@link AlterUserTypeSpecification}.
 	 */
 	private static AlterUserTypeSpecification alterType(CqlIdentifier typeName) {
-		return new AlterUserTypeSpecification(typeName);
+		return new AlterUserTypeSpecification(null, typeName);
+	}
+
+	/**
+	 * Entry point into the {@link AlterUserTypeSpecification}'s fluent API given {@code typeName} to alter a type.
+	 * Convenient if imported statically. Uses the default keyspace if {@code keyspace} is null; otherwise, of the
+	 * {@code keyspace} is not {@link null}, then the table name is prefixed with {@code keyspace}.
+	 *
+	 * @param keyspace can be {@literal null}.
+	 * @param typeName must not be {@literal null}.
+	 * @return a new {@link AlterUserTypeSpecification}.
+	 */
+	private static AlterUserTypeSpecification alterType(@Nullable CqlIdentifier keyspace, CqlIdentifier typeName) {
+		return new AlterUserTypeSpecification(keyspace, typeName);
 	}
 
 	/**
