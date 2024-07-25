@@ -24,9 +24,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.jetbrains.annotations.NotNull;
-import org.springframework.data.cassandra.core.cql.generator.CreateIndexCqlGenerator;
-import org.springframework.data.cassandra.core.cql.generator.CreateTableCqlGenerator;
-import org.springframework.data.cassandra.core.cql.generator.CreateUserTypeCqlGenerator;
+
+import org.springframework.data.cassandra.core.cql.generator.CqlGenerator;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateUserTypeSpecification;
@@ -96,7 +95,7 @@ public class CassandraPersistentEntitySchemaCreator {
 	public void createTables(boolean ifNotExists) {
 
 		createTableSpecifications(ifNotExists).stream() //
-				.map(CreateTableCqlGenerator::toCql) //
+				.map(CqlGenerator::toCql) //
 				.forEach(cql -> this.cassandraAdminOperations.getCqlOperations().execute(cql));
 	}
 
@@ -123,7 +122,7 @@ public class CassandraPersistentEntitySchemaCreator {
 	public void createIndexes(boolean ifNotExists) {
 
 		createIndexSpecifications(ifNotExists).stream() //
-				.map(CreateIndexCqlGenerator::toCql) //
+				.map(CqlGenerator::toCql) //
 				.forEach(cql -> this.cassandraAdminOperations.getCqlOperations().execute(cql));
 	}
 
@@ -150,7 +149,7 @@ public class CassandraPersistentEntitySchemaCreator {
 	public void createUserTypes(boolean ifNotExists) {
 
 		createUserTypeSpecifications(ifNotExists).stream() //
-				.map(CreateUserTypeCqlGenerator::toCql) //
+				.map(CqlGenerator::toCql) //
 				.forEach(cql -> this.cassandraAdminOperations.getCqlOperations().execute(cql));
 	}
 

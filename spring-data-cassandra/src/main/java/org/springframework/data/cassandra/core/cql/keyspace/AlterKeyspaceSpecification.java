@@ -22,7 +22,8 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  *
  * @author Mark Paluch
  */
-public class AlterKeyspaceSpecification extends KeyspaceOptionsSpecification<AlterKeyspaceSpecification> {
+public class AlterKeyspaceSpecification extends KeyspaceOptionsSpecification<AlterKeyspaceSpecification>
+		implements CqlSpecification {
 
 	private AlterKeyspaceSpecification(CqlIdentifier name) {
 		super(name);

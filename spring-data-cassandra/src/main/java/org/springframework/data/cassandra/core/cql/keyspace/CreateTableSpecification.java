@@ -25,7 +25,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * @author Matthew T. Adams
  * @author Mark Paluch
  */
-public class CreateTableSpecification extends TableSpecification<CreateTableSpecification> {
+public class CreateTableSpecification extends TableSpecification<CreateTableSpecification> implements CqlSpecification {
 
 	private boolean ifNotExists = false;
 

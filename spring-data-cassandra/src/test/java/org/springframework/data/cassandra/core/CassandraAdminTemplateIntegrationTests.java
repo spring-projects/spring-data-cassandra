@@ -23,10 +23,11 @@ import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
-import org.springframework.data.cassandra.core.cql.generator.DropTableCqlGenerator;
-import org.springframework.data.cassandra.core.cql.keyspace.DropTableSpecification;
+import org.springframework.data.cassandra.core.cql.generator.CqlGenerator;
+import org.springframework.data.cassandra.core.cql.keyspace.SpecificationBuilder;
 import org.springframework.data.cassandra.core.cql.keyspace.TableOption;
 import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.domain.User;
@@ -56,7 +57,7 @@ class CassandraAdminTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 		Collection<TableMetadata> tables = keyspace.getTables().values();
 		for (TableMetadata table : tables) {
 			cassandraAdminTemplate.getCqlOperations()
-					.execute(DropTableCqlGenerator.toCql(DropTableSpecification.dropTable(table.getName())));
+					.execute(CqlGenerator.toCql(SpecificationBuilder.dropTable(table.getName())));
 		}
 	}
 

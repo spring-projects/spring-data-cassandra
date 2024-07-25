@@ -16,10 +16,10 @@
 package org.springframework.data.cassandra.core.cql.generator;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.springframework.data.cassandra.core.cql.generator.AlterUserTypeCqlGenerator.*;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.data.cassandra.core.cql.keyspace.AlterUserTypeSpecification;
+import org.springframework.data.cassandra.core.cql.keyspace.SpecificationBuilder;
 
 import com.datastax.oss.driver.api.core.type.DataTypes;
 
@@ -33,43 +33,44 @@ class AlterUserTypeCqlGeneratorUnitTests {
 	@Test // DATACASS-172
 	void alterTypeShouldAddField() {
 
-		AlterUserTypeSpecification spec = AlterUserTypeSpecification.alterType("address") //
+		AlterUserTypeSpecification spec = SpecificationBuilder.alterType("address") //
 				.add("zip", DataTypes.TEXT);
 
-		assertThat(toCql(spec)).isEqualTo("ALTER TYPE address ADD zip text;");
+		assertThat(CqlGenerator.toCql(spec)).isEqualTo("ALTER TYPE address ADD zip text;");
 	}
 
 	@Test // DATACASS-172
 	void alterTypeShouldAlterField() {
 
-		AlterUserTypeSpecification spec = AlterUserTypeSpecification.alterType("address") //
+		AlterUserTypeSpecification spec = SpecificationBuilder.alterType("address") //
 				.alter("zip", DataTypes.TEXT);
 
-		assertThat(toCql(spec)).isEqualTo("ALTER TYPE address ALTER zip TYPE text;");
+		assertThat(CqlGenerator.toCql(spec)).isEqualTo("ALTER TYPE address ALTER zip TYPE text;");
 	}
 
 	@Test // DATACASS-172
 	void alterTypeShouldRenameField() {
 
-		AlterUserTypeSpecification spec = AlterUserTypeSpecification.alterType("address") //
+		AlterUserTypeSpecification spec = SpecificationBuilder.alterType("address") //
 				.rename("zip", "zap");
 
-		assertThat(toCql(spec)).isEqualTo("ALTER TYPE address RENAME zip TO zap;");
+		assertThat(CqlGenerator.toCql(spec)).isEqualTo("ALTER TYPE address RENAME zip TO zap;");
 	}
 
 	@Test // DATACASS-172
 	void alterTypeShouldRenameFields() {
 
-		AlterUserTypeSpecification spec = AlterUserTypeSpecification.alterType("address") //
+		AlterUserTypeSpecification spec = SpecificationBuilder.alterType("address") //
 				.rename("zip", "zap") //
 				.rename("city", "county");
 
-		assertThat(toCql(spec)).isEqualTo("ALTER TYPE address RENAME zip TO zap AND city TO county;");
+		assertThat(CqlGenerator.toCql(spec)).isEqualTo("ALTER TYPE address RENAME zip TO zap AND city TO county;");
 	}
 
 
 	@Test // DATACASS-172
 	void generationFailsWithoutFields() {
-		assertThatIllegalArgumentException().isThrownBy(() -> toCql(AlterUserTypeSpecification.alterType("hello")));
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> AlterUserTypeCqlGenerator.toCql(AlterUserTypeSpecification.alterType("hello")));
 	}
 }

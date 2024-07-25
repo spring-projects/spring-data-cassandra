@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
+import org.springframework.data.cassandra.core.cql.keyspace.SpecificationBuilder;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 
@@ -35,67 +36,67 @@ class CreateIndexCqlGeneratorUnitTests {
 	@Test // DATACASS-213
 	void createIndex() {
 
-		CreateIndexSpecification spec = CreateIndexSpecification.createIndex("myindex").tableName("mytable")
+		CreateIndexSpecification spec = SpecificationBuilder.createIndex("myindex").tableName("mytable")
 				.columnName("column");
 
-		assertThat(CreateIndexCqlGenerator.toCql(spec)).isEqualTo("CREATE INDEX myindex ON mytable (column);");
+		assertThat(CqlGenerator.toCql(spec)).isEqualTo("CREATE INDEX myindex ON mytable (column);");
 	}
 
 	@Test // GH-921
 	void shouldConsiderKeyspace() {
 
-		CreateIndexSpecification spec = CreateIndexSpecification
+		CreateIndexSpecification spec = SpecificationBuilder
 				.createIndex(CqlIdentifier.fromCql("myks"), CqlIdentifier.fromCql("myindex")).tableName("mytable")
 				.columnName("column");
 
-		assertThat(CreateIndexCqlGenerator.toCql(spec)).isEqualTo("CREATE INDEX myks.myindex ON myks.mytable (column);");
+		assertThat(CqlGenerator.toCql(spec)).isEqualTo("CREATE INDEX myks.myindex ON myks.mytable (column);");
 	}
 
 	@Test // DATACASS-213
 	void createCustomIndex() {
 
-		CreateIndexSpecification spec = CreateIndexSpecification.createIndex("myindex").tableName("mytable")
+		CreateIndexSpecification spec = SpecificationBuilder.createIndex("myindex").tableName("mytable")
 				.columnName("column").using("indexclass");
 
-		assertThat(CreateIndexCqlGenerator.toCql(spec))
+		assertThat(CqlGenerator.toCql(spec))
 				.isEqualTo("CREATE CUSTOM INDEX myindex ON mytable (column) USING 'indexclass';");
 	}
 
 	@Test // DATACASS-213
 	void createIndexOnKeys() {
 
-		CreateIndexSpecification spec = CreateIndexSpecification.createIndex().tableName("mytable").keys()
+		CreateIndexSpecification spec = SpecificationBuilder.createIndex().tableName("mytable").keys()
 				.columnName("column");
 
-		assertThat(CreateIndexCqlGenerator.toCql(spec)).isEqualTo("CREATE INDEX ON mytable (KEYS(column));");
+		assertThat(CqlGenerator.toCql(spec)).isEqualTo("CREATE INDEX ON mytable (KEYS(column));");
 	}
 
 	@Test // DATACASS-213
 	void createIndexIfNotExists() {
 
-		CreateIndexSpecification spec = CreateIndexSpecification.createIndex().tableName("mytable").columnName("column")
+		CreateIndexSpecification spec = SpecificationBuilder.createIndex().tableName("mytable").columnName("column")
 				.ifNotExists();
 
-		assertThat(CreateIndexCqlGenerator.toCql(spec)).isEqualTo("CREATE INDEX IF NOT EXISTS ON mytable (column);");
+		assertThat(CqlGenerator.toCql(spec)).isEqualTo("CREATE INDEX IF NOT EXISTS ON mytable (column);");
 	}
 
 	@Test // DATACASS-306
 	void createIndexWithOptions() {
 
-		CreateIndexSpecification spec = CreateIndexSpecification.createIndex().tableName("mytable").columnName("column")
+		CreateIndexSpecification spec = SpecificationBuilder.createIndex().tableName("mytable").columnName("column")
 				.withOption("foo", "b'a'r").withOption("type", "PREFIX");
 
-		assertThat(CreateIndexCqlGenerator.toCql(spec))
+		assertThat(CqlGenerator.toCql(spec))
 				.isEqualTo("CREATE INDEX ON mytable (column) WITH OPTIONS = {'foo': 'b''a''r', 'type': 'PREFIX'};");
 	}
 
 	@Test // GH-1281
 	void createIndexWithQuotation() {
 
-		CreateIndexSpecification spec = CreateIndexSpecification.createIndex("order_dob").columnName("\"order\"")
+		CreateIndexSpecification spec = SpecificationBuilder.createIndex("order_dob").columnName("\"order\"")
 				.tableName(CqlIdentifier.fromInternal("order"));
 
-		assertThat(CreateIndexCqlGenerator.toCql(spec)).isEqualTo("CREATE INDEX order_dob ON \"order\" (\"order\");");
+		assertThat(CqlGenerator.toCql(spec)).isEqualTo("CREATE INDEX order_dob ON \"order\" (\"order\");");
 
 	}
 }

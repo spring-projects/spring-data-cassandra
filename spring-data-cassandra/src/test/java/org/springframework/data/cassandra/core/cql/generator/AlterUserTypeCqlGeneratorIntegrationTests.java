@@ -17,11 +17,12 @@ package org.springframework.data.cassandra.core.cql.generator;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assume.*;
-import static org.springframework.data.cassandra.core.cql.generator.AlterUserTypeCqlGenerator.*;
+import static org.springframework.data.cassandra.core.cql.generator.CqlGenerator.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.cassandra.core.cql.keyspace.AlterUserTypeSpecification;
+import org.springframework.data.cassandra.core.cql.keyspace.SpecificationBuilder;
 import org.springframework.data.cassandra.support.CassandraVersion;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
 import org.springframework.data.util.Version;
@@ -52,7 +53,7 @@ class AlterUserTypeCqlGeneratorIntegrationTests extends AbstractKeyspaceCreating
 	@Test // DATACASS-172
 	void alterTypeShouldAddField() {
 
-		AlterUserTypeSpecification spec = AlterUserTypeSpecification.alterType("address")//
+		AlterUserTypeSpecification spec = SpecificationBuilder.alterType("address")//
 				.add("street", DataTypes.TEXT);
 
 		session.execute(toCql(spec));
@@ -63,7 +64,7 @@ class AlterUserTypeCqlGeneratorIntegrationTests extends AbstractKeyspaceCreating
 
 		assumeTrue(cassandraVersion.isLessThan(CASSANDRA_3_10) && cassandraVersion.isLessThan(CASSANDRA_3_0_10));
 
-		AlterUserTypeSpecification spec = AlterUserTypeSpecification.alterType("address")//
+		AlterUserTypeSpecification spec = SpecificationBuilder.alterType("address")//
 				.alter("zip", DataTypes.TEXT);
 
 		session.execute(toCql(spec));
@@ -72,7 +73,7 @@ class AlterUserTypeCqlGeneratorIntegrationTests extends AbstractKeyspaceCreating
 	@Test // DATACASS-172
 	void alterTypeShouldRenameField() {
 
-		AlterUserTypeSpecification spec = AlterUserTypeSpecification.alterType("address")//
+		AlterUserTypeSpecification spec = SpecificationBuilder.alterType("address")//
 				.rename("zip", "zap");
 
 		session.execute(toCql(spec));
@@ -81,7 +82,7 @@ class AlterUserTypeCqlGeneratorIntegrationTests extends AbstractKeyspaceCreating
 	@Test // DATACASS-172
 	void alterTypeShouldRenameFields() {
 
-		AlterUserTypeSpecification spec = AlterUserTypeSpecification.alterType("address")//
+		AlterUserTypeSpecification spec = SpecificationBuilder.alterType("address")//
 				.rename("zip", "zap") //
 				.rename("state", "county");
 
@@ -90,11 +91,11 @@ class AlterUserTypeCqlGeneratorIntegrationTests extends AbstractKeyspaceCreating
 
 	@Test // DATACASS-172
 	void generationFailsIfNameIsNotSet() {
-		assertThatNullPointerException().isThrownBy(() -> toCql(AlterUserTypeSpecification.alterType(null)));
+		assertThatNullPointerException().isThrownBy(() -> toCql(SpecificationBuilder.alterType(null)));
 	}
 
 	@Test // DATACASS-172
 	void generationFailsWithoutFields() {
-		assertThatIllegalArgumentException().isThrownBy(() -> toCql(AlterUserTypeSpecification.alterType("hello")));
+		assertThatIllegalArgumentException().isThrownBy(() -> toCql(SpecificationBuilder.alterType("hello")));
 	}
 }

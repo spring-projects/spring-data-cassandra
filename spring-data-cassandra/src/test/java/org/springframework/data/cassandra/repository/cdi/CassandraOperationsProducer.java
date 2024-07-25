@@ -28,10 +28,9 @@ import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraPersistentEntitySchemaCreator;
 import org.springframework.data.cassandra.core.CassandraPersistentEntitySchemaDropper;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
-import org.springframework.data.cassandra.core.cql.generator.CreateKeyspaceCqlGenerator;
-import org.springframework.data.cassandra.core.cql.generator.DropKeyspaceCqlGenerator;
+import org.springframework.data.cassandra.core.cql.generator.CqlGenerator;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateKeyspaceSpecification;
-import org.springframework.data.cassandra.core.cql.keyspace.DropKeyspaceSpecification;
+import org.springframework.data.cassandra.core.cql.keyspace.SpecificationBuilder;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.SimpleUserTypeResolver;
@@ -73,7 +72,7 @@ class CassandraOperationsProducer {
 
 		CreateKeyspaceSpecification createKeyspaceSpecification = CreateKeyspaceSpecification.createKeyspace(KEYSPACE_NAME)
 				.ifNotExists();
-		cassandraTemplate.getCqlOperations().execute(CreateKeyspaceCqlGenerator.toCql(createKeyspaceSpecification));
+		cassandraTemplate.getCqlOperations().execute(CqlGenerator.toCql(createKeyspaceSpecification));
 		cassandraTemplate.getCqlOperations().execute("USE " + KEYSPACE_NAME);
 
 		CassandraPersistentEntitySchemaDropper schemaDropper = new CassandraPersistentEntitySchemaDropper(mappingContext,
@@ -105,7 +104,7 @@ class CassandraOperationsProducer {
 	public void close(@Disposes CassandraOperations cassandraOperations) {
 
 		cassandraOperations.getCqlOperations()
-				.execute(DropKeyspaceCqlGenerator.toCql(DropKeyspaceSpecification.dropKeyspace(KEYSPACE_NAME)));
+				.execute(CqlGenerator.toCql(SpecificationBuilder.dropKeyspace(KEYSPACE_NAME)));
 	}
 
 	public void close(@Disposes CqlSession cqlSession) {

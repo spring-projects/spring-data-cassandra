@@ -25,7 +25,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  *
  * @author Mark Paluch
  */
-public class DropKeyspaceSpecification extends KeyspaceActionSpecification {
+public class DropKeyspaceSpecification extends KeyspaceActionSpecification implements CqlSpecification {
 
 	private boolean ifExists;
 

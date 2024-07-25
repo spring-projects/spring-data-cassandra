@@ -16,11 +16,11 @@
 package org.springframework.data.cassandra.core.cql.generator;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.springframework.data.cassandra.core.cql.generator.DropUserTypeCqlGenerator.*;
 
 import org.junit.jupiter.api.Test;
 
 import org.springframework.data.cassandra.core.cql.keyspace.DropUserTypeSpecification;
+import org.springframework.data.cassandra.core.cql.keyspace.SpecificationBuilder;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 
@@ -34,25 +34,25 @@ class DropUserTypeCqlGeneratorUnitTests {
 	@Test // DATACASS-172
 	void shouldDropUserType() {
 
-		DropUserTypeSpecification spec = DropUserTypeSpecification.dropType("address");
+		DropUserTypeSpecification spec = SpecificationBuilder.dropType("address");
 
-		assertThat(toCql(spec)).isEqualTo("DROP TYPE address;");
+		assertThat(CqlGenerator.toCql(spec)).isEqualTo("DROP TYPE address;");
 	}
 
 	@Test // GH-921
 	void shouldConsiderKeyspace() {
 
-		DropUserTypeSpecification spec = DropUserTypeSpecification.dropType(CqlIdentifier.fromCql("foo"),
+		DropUserTypeSpecification spec = SpecificationBuilder.dropType(CqlIdentifier.fromCql("foo"),
 				CqlIdentifier.fromCql("bar"));
 
-		assertThat(toCql(spec)).isEqualTo("DROP TYPE foo.bar;");
+		assertThat(CqlGenerator.toCql(spec)).isEqualTo("DROP TYPE foo.bar;");
 	}
 
 	@Test // DATACASS-172
 	void shouldDropUserTypeIfExists() {
 
-		DropUserTypeSpecification spec = DropUserTypeSpecification.dropType("address").ifExists();
+		DropUserTypeSpecification spec = SpecificationBuilder.dropType("address").ifExists();
 
-		assertThat(toCql(spec)).isEqualTo("DROP TYPE IF EXISTS address;");
+		assertThat(CqlGenerator.toCql(spec)).isEqualTo("DROP TYPE IF EXISTS address;");
 	}
 }

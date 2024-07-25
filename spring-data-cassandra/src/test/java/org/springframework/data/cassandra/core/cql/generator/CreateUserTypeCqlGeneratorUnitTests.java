@@ -16,11 +16,11 @@
 package org.springframework.data.cassandra.core.cql.generator;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.springframework.data.cassandra.core.cql.generator.CreateUserTypeCqlGenerator.*;
 
 import org.junit.jupiter.api.Test;
 
 import org.springframework.data.cassandra.core.cql.keyspace.CreateUserTypeSpecification;
+import org.springframework.data.cassandra.core.cql.keyspace.SpecificationBuilder;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.type.DataTypes;
@@ -35,11 +35,11 @@ class CreateUserTypeCqlGeneratorUnitTests {
 	@Test // DATACASS-172
 	void createUserType() {
 
-		CreateUserTypeSpecification spec = CreateUserTypeSpecification //
+		CreateUserTypeSpecification spec = SpecificationBuilder //
 				.createType("address") //
 				.field("city", DataTypes.TEXT);
 
-		assertThat(toCql(spec)).isEqualTo("CREATE TYPE address (city text);");
+		assertThat(CqlGenerator.toCql(spec)).isEqualTo("CREATE TYPE address (city text);");
 	}
 
 	@Test // DATACASS-921
@@ -49,7 +49,7 @@ class CreateUserTypeCqlGeneratorUnitTests {
 				.createType(CqlIdentifier.fromCql("myks"), CqlIdentifier.fromCql("address")) //
 				.field("city", DataTypes.TEXT);
 
-		assertThat(toCql(spec)).isEqualTo("CREATE TYPE myks.address (city text);");
+		assertThat(CqlGenerator.toCql(spec)).isEqualTo("CREATE TYPE myks.address (city text);");
 	}
 
 	@Test // DATACASS-172
@@ -60,7 +60,7 @@ class CreateUserTypeCqlGeneratorUnitTests {
 				.field("zip", DataTypes.ASCII) //
 				.field("city", DataTypes.TEXT);
 
-		assertThat(toCql(spec)).isEqualTo("CREATE TYPE address (zip ascii, city text);");
+		assertThat(CqlGenerator.toCql(spec)).isEqualTo("CREATE TYPE address (zip ascii, city text);");
 	}
 
 	@Test // DATACASS-172
@@ -70,11 +70,12 @@ class CreateUserTypeCqlGeneratorUnitTests {
 				.createType("address").ifNotExists().field("zip", DataTypes.ASCII) //
 				.field("city", DataTypes.TEXT);
 
-		assertThat(toCql(spec)).isEqualTo("CREATE TYPE IF NOT EXISTS address (zip ascii, city text);");
+		assertThat(CqlGenerator.toCql(spec)).isEqualTo("CREATE TYPE IF NOT EXISTS address (zip ascii, city text);");
 	}
 
 	@Test // DATACASS-172
 	void generationFailsWithoutFields() {
-		assertThatIllegalArgumentException().isThrownBy(() -> toCql(CreateUserTypeSpecification.createType("hello")));
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> CqlGenerator.toCql(CreateUserTypeSpecification.createType("hello")));
 	}
 }

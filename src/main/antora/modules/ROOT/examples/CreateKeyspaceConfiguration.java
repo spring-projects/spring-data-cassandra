@@ -33,7 +33,7 @@ public class CreateKeyspaceConfiguration extends AbstractCassandraConfiguration 
 	@Override
 	protected List<CreateKeyspaceSpecification> getKeyspaceCreations() {
 
-		CreateKeyspaceSpecification specification = CreateKeyspaceSpecification.createKeyspace("my_keyspace")
+		CreateKeyspaceSpecification specification = SpecificationBuilder.createKeyspace("my_keyspace")
 				.with(KeyspaceOption.DURABLE_WRITES, true)
 				.withNetworkReplication(DataCenterReplication.of("foo", 1), DataCenterReplication.of("bar", 2));
 

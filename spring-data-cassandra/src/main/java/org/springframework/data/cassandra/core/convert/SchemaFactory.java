@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import static org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification.*;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -24,6 +22,7 @@ import java.util.Objects;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateUserTypeSpecification;
+import org.springframework.data.cassandra.core.cql.keyspace.SpecificationBuilder;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.mapping.EmbeddedEntityOperations;
@@ -141,7 +140,7 @@ public class SchemaFactory {
 		Assert.notNull(tableName, "Table name must not be null");
 		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
 
-		CreateTableSpecification specification = createTable(entity.getKeyspace(), tableName);
+		CreateTableSpecification specification = SpecificationBuilder.createTable(entity.getKeyspace(), tableName);
 
 		for (CassandraPersistentProperty property : entity) {
 
@@ -296,7 +295,7 @@ public class SchemaFactory {
 
 		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
 
-		CreateUserTypeSpecification specification = CreateUserTypeSpecification.createType(entity.getKeyspace(),
+		CreateUserTypeSpecification specification = SpecificationBuilder.createType(entity.getKeyspace(),
 				entity.getTableName());
 
 		for (CassandraPersistentProperty property : entity) {

@@ -36,8 +36,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.cql.Ordering;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
-import org.springframework.data.cassandra.core.cql.generator.CreateIndexCqlGenerator;
-import org.springframework.data.cassandra.core.cql.generator.CreateTableCqlGenerator;
+import org.springframework.data.cassandra.core.cql.generator.CqlGenerator;
 import org.springframework.data.cassandra.core.cql.keyspace.ColumnSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification.ColumnFunction;
@@ -597,7 +596,7 @@ public class SchemaFactoryUnitTests {
 		assertThat(getColumnType("mapped", specification).asCql(true, true)).isEqualTo("frozen<mappedudt>");
 		assertThat(getColumnType("human", specification).asCql(true, true)).isEqualTo("frozen<udt_ks.udtwithkeyspace>");
 
-		String cql = CreateTableCqlGenerator.toCql(specification);
+		String cql = CqlGenerator.toCql(specification);
 
 		assertThat(cql).contains("CREATE TABLE some_ks.withkeyspace");
 		assertThat(cql).contains("mapped frozen<mappedudt>");
@@ -614,7 +613,7 @@ public class SchemaFactoryUnitTests {
 		assertThat(index).hasSize(1).extracting(CreateIndexSpecification::getKeyspace)
 				.contains(CqlIdentifier.fromCql("some_ks"));
 
-		String cql = CreateIndexCqlGenerator.toCql(index.get(0));
+		String cql = CqlGenerator.toCql(index.get(0));
 
 		assertThat(cql).contains("CREATE INDEX ON some_ks.withkeyspace (id)");
 	}

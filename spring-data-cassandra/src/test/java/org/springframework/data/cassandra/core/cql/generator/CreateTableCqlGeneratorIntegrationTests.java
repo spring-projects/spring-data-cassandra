@@ -44,10 +44,9 @@ class CreateTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCreatingIn
 		session.execute("DROP TABLE IF EXISTS person;");
 		session.execute("DROP TABLE IF EXISTS address;");
 
-		session.execute("DROP KEYSPACE IF EXISTS CreateTableCqlGenerator_it;");
+		session.execute("DROP KEYSPACE IF EXISTS CqlGenerator_it;");
 		session.execute(
-				"CREATE KEYSPACE CreateTableCqlGenerator_it WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};");
-
+				"CREATE KEYSPACE CqlGenerator_it WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};");
 	}
 
 	@Test // DATACASS-518
@@ -58,7 +57,7 @@ class CreateTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCreatingIn
 				.clusteredKeyColumn("date_of_birth", DataTypes.DATE) //
 				.column("name", DataTypes.ASCII);
 
-		session.execute(CreateTableCqlGenerator.toCql(table));
+		session.execute(CqlGenerator.toCql(table));
 	}
 
 	@Test // DATACASS-518
@@ -71,7 +70,7 @@ class CreateTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCreatingIn
 				.clusteredKeyColumn("age", DataTypes.SMALLINT) //
 				.column("name", DataTypes.ASCII);
 
-		session.execute(CreateTableCqlGenerator.toCql(table));
+		session.execute(CqlGenerator.toCql(table));
 
 		TableMetadata person = session.getMetadata().getKeyspace(getKeyspace()).flatMap(it -> it.getTable("person")).get();
 		assertThat(person.getPartitionKey()).hasSize(2);
@@ -86,7 +85,7 @@ class CreateTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCreatingIn
 				.clusteredKeyColumn("date_of_birth", DataTypes.DATE, Ordering.ASCENDING) //
 				.column("name", DataTypes.ASCII).with(TableOption.COMPACT_STORAGE);
 
-		session.execute(CreateTableCqlGenerator.toCql(table));
+		session.execute(CqlGenerator.toCql(table));
 
 		TableMetadata person = session.getMetadata().getKeyspace(getKeyspace()).flatMap(it -> it.getTable("person")).get();
 		assertThat(person.getPartitionKey()).hasSize(1);
@@ -97,15 +96,15 @@ class CreateTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCreatingIn
 	void shouldGenerateTableInOtherKeyspace() {
 
 		CreateTableSpecification table = CreateTableSpecification
-				.createTable(CqlIdentifier.fromCql("CreateTableCqlGenerator_it"), CqlIdentifier.fromCql("person")) //
+				.createTable(CqlIdentifier.fromCql("CqlGenerator_it"), CqlIdentifier.fromCql("person")) //
 				.partitionKeyColumn("id", DataTypes.ASCII) //
 				.clusteredKeyColumn("date_of_birth", DataTypes.DATE, Ordering.ASCENDING) //
 				.column("name", DataTypes.ASCII).with(TableOption.COMPACT_STORAGE);
 
-		session.execute(CreateTableCqlGenerator.toCql(table));
+		session.execute(CqlGenerator.toCql(table));
 
-		TableMetadata person = session.getMetadata().getKeyspace("CreateTableCqlGenerator_it")
-				.flatMap(it -> it.getTable("person")).get();
+		TableMetadata person = session.getMetadata().getKeyspace("CqlGenerator_it").flatMap(it -> it.getTable("person"))
+				.get();
 		assertThat(person.getPartitionKey()).hasSize(1);
 		assertThat(person.getClusteringColumns()).hasSize(1);
 	}

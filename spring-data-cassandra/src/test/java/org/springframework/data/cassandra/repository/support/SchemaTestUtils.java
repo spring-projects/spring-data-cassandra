@@ -20,8 +20,8 @@ import java.util.Optional;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.convert.SchemaFactory;
 import org.springframework.data.cassandra.core.cql.SessionCallback;
+import org.springframework.data.cassandra.core.cql.generator.CqlGenerator;
 import org.springframework.data.cassandra.core.cql.generator.CreateTableCqlGenerator;
-import org.springframework.data.cassandra.core.cql.generator.CreateUserTypeCqlGenerator;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateUserTypeSpecification;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
@@ -93,7 +93,7 @@ public class SchemaTestUtils {
 
 			CreateUserTypeSpecification udtspec = schemaFactory.getCreateUserTypeSpecificationFor(persistentEntity)
 					.ifNotExists();
-			operations.getCqlOperations().execute(CreateUserTypeCqlGenerator.toCql(udtspec));
+			operations.getCqlOperations().execute(CqlGenerator.toCql(udtspec));
 
 		} else {
 

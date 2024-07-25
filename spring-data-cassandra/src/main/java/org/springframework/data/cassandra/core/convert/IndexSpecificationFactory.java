@@ -27,6 +27,7 @@ import java.util.function.BiConsumer;
 
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
+import org.springframework.data.cassandra.core.cql.keyspace.SpecificationBuilder;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.mapping.Indexed;
 import org.springframework.data.cassandra.core.mapping.SASI;
@@ -136,9 +137,9 @@ class IndexSpecificationFactory {
 		CreateIndexSpecification index;
 
 		if (StringUtils.hasText(annotation.value())) {
-			index = CreateIndexSpecification.createIndex(keyspace, CqlIdentifier.fromCql(annotation.value()));
+			index = SpecificationBuilder.createIndex(keyspace, CqlIdentifier.fromCql(annotation.value()));
 		} else {
-			index = CreateIndexSpecification.createIndex(keyspace, null);
+			index = SpecificationBuilder.createIndex(keyspace, null);
 		}
 
 		return index.columnName(property.getRequiredColumnName());
@@ -150,9 +151,9 @@ class IndexSpecificationFactory {
 		CreateIndexSpecification index;
 
 		if (StringUtils.hasText(annotation.value())) {
-			index = CreateIndexSpecification.createIndex(keyspace, CqlIdentifier.fromCql(annotation.value()));
+			index = SpecificationBuilder.createIndex(keyspace, CqlIdentifier.fromCql(annotation.value()));
 		} else {
-			index = CreateIndexSpecification.createIndex(keyspace, null);
+			index = SpecificationBuilder.createIndex(keyspace, null);
 		}
 
 		index.using("org.apache.cassandra.index.sasi.SASIIndex") //

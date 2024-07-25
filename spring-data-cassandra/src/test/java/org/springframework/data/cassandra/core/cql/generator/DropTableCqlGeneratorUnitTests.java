@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.data.cassandra.core.cql.keyspace.DropTableSpecification;
+import org.springframework.data.cassandra.core.cql.keyspace.SpecificationBuilder;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 
@@ -41,10 +42,10 @@ class DropTableCqlGeneratorUnitTests {
 	@Test // GH-921
 	void shouldConsiderKeyspace() {
 
-		DropTableSpecification spec = DropTableSpecification.dropTable(CqlIdentifier.fromCql("foo"),
+		DropTableSpecification spec = SpecificationBuilder.dropTable(CqlIdentifier.fromCql("foo"),
 				CqlIdentifier.fromCql("bar"));
 
-		assertThat(DropTableCqlGenerator.toCql(spec)).isEqualTo("DROP TABLE foo.bar;");
+		assertThat(CqlGenerator.toCql(spec)).isEqualTo("DROP TABLE foo.bar;");
 	}
 
 	/**

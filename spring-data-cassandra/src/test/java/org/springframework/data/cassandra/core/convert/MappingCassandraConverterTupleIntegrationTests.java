@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -35,7 +36,7 @@ import org.springframework.data.annotation.Transient;
 import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.core.StatementFactory;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
-import org.springframework.data.cassandra.core.cql.generator.CreateUserTypeCqlGenerator;
+import org.springframework.data.cassandra.core.cql.generator.CqlGenerator;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateUserTypeSpecification;
 import org.springframework.data.cassandra.core.cql.util.StatementBuilder;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
@@ -103,7 +104,7 @@ public class MappingCassandraConverterTupleIntegrationTests extends AbstractSpri
 			CreateUserTypeSpecification createAddress = schemaFactory
 					.getCreateUserTypeSpecificationFor(mappingContext.getRequiredPersistentEntity(AddressUserType.class));
 
-			this.session.execute(CreateUserTypeCqlGenerator.toCql(createAddress));
+			this.session.execute(CqlGenerator.toCql(createAddress));
 
 			String ddl = "CREATE TABLE person (id text, " + "tuplevalue tuple<text,int>," //
 					+ "mapoftuples map<text, frozen<tuple<address, list<text>, text>>>, " //

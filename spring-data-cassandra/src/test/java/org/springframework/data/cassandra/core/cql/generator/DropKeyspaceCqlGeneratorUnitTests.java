@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.data.cassandra.core.cql.keyspace.DropKeyspaceSpecification;
+import org.springframework.data.cassandra.core.cql.keyspace.SpecificationBuilder;
 import org.springframework.data.cassandra.support.RandomKeyspaceName;
 
 /**
@@ -49,7 +50,7 @@ class DropKeyspaceCqlGeneratorUnitTests {
 
 		@Override
 		public DropKeyspaceSpecification specification() {
-			return DropKeyspaceSpecification.dropKeyspace(name);
+			return SpecificationBuilder.dropKeyspace(name);
 		}
 
 		@Override

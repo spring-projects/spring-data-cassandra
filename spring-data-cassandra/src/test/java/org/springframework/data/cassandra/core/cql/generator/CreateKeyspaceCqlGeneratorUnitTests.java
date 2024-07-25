@@ -26,6 +26,7 @@ import org.springframework.data.cassandra.core.cql.keyspace.DefaultOption;
 import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceAttributes;
 import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceOption;
 import org.springframework.data.cassandra.core.cql.keyspace.Option;
+import org.springframework.data.cassandra.core.cql.keyspace.SpecificationBuilder;
 import org.springframework.data.cassandra.support.RandomKeyspaceName;
 
 /**
@@ -81,7 +82,7 @@ public class CreateKeyspaceCqlGeneratorUnitTests {
 		public CreateKeyspaceSpecification specification() {
 			keyspace = name;
 
-			return CreateKeyspaceSpecification.createKeyspace(keyspace)
+			return SpecificationBuilder.createKeyspace(keyspace)
 					.with(KeyspaceOption.REPLICATION, replicationMap).with(KeyspaceOption.DURABLE_WRITES, durableWrites);
 		}
 

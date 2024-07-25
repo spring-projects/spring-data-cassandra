@@ -24,6 +24,7 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.cassandra.core.cql.keyspace.AlterTableSpecification;
+import org.springframework.data.cassandra.core.cql.keyspace.SpecificationBuilder;
 import org.springframework.data.cassandra.core.cql.keyspace.TableOption;
 import org.springframework.data.cassandra.core.cql.keyspace.TableOption.CachingOption;
 import org.springframework.data.cassandra.core.cql.keyspace.TableOption.KeyCachingOption;
@@ -65,7 +66,7 @@ class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCreatingInt
 		session.execute(
 				"CREATE TABLE addamsFamily (name varchar PRIMARY KEY, gender varchar,\n" + "  lastknownlocation bigint);");
 
-		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily").alter("lastKnownLocation",
+		AlterTableSpecification spec = SpecificationBuilder.alterTable("addamsFamily").alter("lastKnownLocation",
 				DataTypes.VARINT);
 
 		execute(spec);
@@ -83,7 +84,7 @@ class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCreatingInt
 		session.execute(
 				"CREATE TABLE addamsFamily (name varchar PRIMARY KEY, gender varchar,\n" + "  lastknownlocation list<ascii>);");
 
-		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily").alter("lastKnownLocation",
+		AlterTableSpecification spec = SpecificationBuilder.alterTable("addamsFamily").alter("lastKnownLocation",
 				DataTypes.listOf(DataTypes.TEXT));
 
 		execute(spec);
@@ -99,7 +100,7 @@ class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCreatingInt
 		session.execute(
 				"CREATE TABLE addamsFamily (name varchar PRIMARY KEY, gender varchar,\n" + "  lastknownlocation varchar);");
 
-		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily").add("gravesite", DataTypes.TEXT);
+		AlterTableSpecification spec = SpecificationBuilder.alterTable("addamsFamily").add("gravesite", DataTypes.TEXT);
 
 		execute(spec);
 
@@ -113,7 +114,7 @@ class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCreatingInt
 
 		session.execute("CREATE TABLE users (user_name varchar PRIMARY KEY);");
 
-		AlterTableSpecification spec = AlterTableSpecification.alterTable("users").add("top_places",
+		AlterTableSpecification spec = SpecificationBuilder.alterTable("users").add("top_places",
 				DataTypes.listOf(DataTypes.ASCII));
 
 		execute(spec);
@@ -128,7 +129,7 @@ class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCreatingInt
 
 		session.execute("CREATE TABLE addamsFamily (name varchar PRIMARY KEY, gender varchar);");
 
-		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily").drop("gender");
+		AlterTableSpecification spec = SpecificationBuilder.alterTable("addamsFamily").drop("gender");
 
 		execute(spec);
 
@@ -140,7 +141,7 @@ class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCreatingInt
 
 		session.execute("CREATE TABLE addamsFamily (name varchar PRIMARY KEY, firstname varchar);");
 
-		AlterTableSpecification spec = AlterTableSpecification.alterTable("addamsFamily").rename("name", "newname");
+		AlterTableSpecification spec = SpecificationBuilder.alterTable("addamsFamily").rename("name", "newname");
 
 		execute(spec);
 
@@ -157,7 +158,7 @@ class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCreatingInt
 		cachingMap.put(CachingOption.KEYS, KeyCachingOption.NONE);
 		cachingMap.put(CachingOption.ROWS_PER_PARTITION, "15");
 
-		AlterTableSpecification spec = AlterTableSpecification.alterTable("users").with(TableOption.CACHING, cachingMap);
+		AlterTableSpecification spec = SpecificationBuilder.alterTable("users").with(TableOption.CACHING, cachingMap);
 
 		execute(spec);
 
@@ -165,7 +166,7 @@ class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCreatingInt
 	}
 
 	private void execute(AlterTableSpecification spec) {
-		session.execute(new AlterTableCqlGenerator(spec).toCql());
+		session.execute(CqlGenerator.toCql(spec));
 	}
 
 	private TableMetadata getTableMetadata(String table) {

@@ -44,7 +44,7 @@ public class DropIndexCqlGeneratorUnitTests {
 		DropIndexSpecification spec = DropIndexSpecification.dropIndex(CqlIdentifier.fromCql("foo"),
 				CqlIdentifier.fromCql("bar"));
 
-		assertThat(DropIndexCqlGenerator.toCql(spec)).isEqualTo("DROP INDEX foo.bar;");
+		assertThat(CqlGenerator.toCql(spec)).isEqualTo("DROP INDEX foo.bar;");
 	}
 
 	/**

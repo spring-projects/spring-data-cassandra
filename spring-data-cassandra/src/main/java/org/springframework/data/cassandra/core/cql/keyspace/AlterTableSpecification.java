@@ -38,7 +38,8 @@ import com.datastax.oss.driver.api.core.type.DataType;
  * @see TableOptionsSpecification
  * @see org.springframework.data.cassandra.core.cql.generator.AlterTableCqlGenerator
  */
-public class AlterTableSpecification extends TableOptionsSpecification<AlterTableSpecification> {
+public class AlterTableSpecification extends TableOptionsSpecification<AlterTableSpecification>
+		implements CqlSpecification {
 
 	/**
 	 * The list of column changes.
@@ -81,7 +82,7 @@ public class AlterTableSpecification extends TableOptionsSpecification<AlterTabl
 	 * @return a new {@link AlterTableSpecification}.
 	 * @since 4.4
 	 */
-	public static AlterTableSpecification alterTable(CqlIdentifier keyspace, CqlIdentifier tableName) {
+	public static AlterTableSpecification alterTable(@Nullable CqlIdentifier keyspace, CqlIdentifier tableName) {
 		return new AlterTableSpecification(keyspace, tableName);
 	}
 

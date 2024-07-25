@@ -4,6 +4,54 @@
 Apache Cassandra is a data store that requires a schema definition prior to any data interaction.
 Spring Data for Apache Cassandra can support you with schema creation.
 
+[[cql-specifications]]
+== CQL Specifications
+
+CQL specifications are an abstraction to represent CQL DDL actions such as table creations or keyspace drops.
+Specifications are available for the following CQL object types:
+
+* Keyspace
+* Table
+* Index
+* User-defined Type
+
+NOTE: Variants of Cassandra can support Materialized Views, User-defined functions, roles and many more object types.
+Spring Data for Apache Cassandra provides only specifications for the above listed types.
+
+These can be used to CREATE, ALTER, and DROP CQL objects through a fluent interface. `SpecificationBuilder` is the entry point to build such a specification.
+You can use later on `CqlGenerator.toCql(…)` to easily render CQL from a specification.
+
+See the following examples to create a specification for keyspace creation, table creation, and index creation.
+
+.Specifying a Cassandra keyspace
+====
+.Java
+[indent=0,source,java]
+----
+include::example$Specifications.java[tags=keyspace]
+----
+====
+
+.Specifying a Cassandra table
+====
+.Java
+[indent=0,source,java]
+----
+include::example$Specifications.java[tags=table]
+----
+====
+
+.Specifying a Cassandra index
+====
+.Java
+[indent=0,source,java]
+----
+include::example$Specifications.java[tags=index]
+----
+====
+
+You can use specifications together with the configuration API to define keyspace creation and schema actions.
+
 [[keyspaces-and-lifecycle-scripts]]
 == Keyspaces and Lifecycle Scripts
 
@@ -105,6 +153,7 @@ The following example gets a value from a system property:
     <cassandra:script location="..."/>
 </cassandra:initialize-database>
 ----
+
 <1> Get the value for `enabled` from a system property called `INITIALIZE_KEYSPACE`.
 ====
 
@@ -154,7 +203,6 @@ include::example$SessionFactoryInitializerConfiguration.java[tags=class]
 </cassandra:initialize-keyspace>
 ----
 ====
-
 
 In this example, the two `test-data` scripts use `@@` as statement separator and only the `db-schema.cql` uses `;`.
 This configuration specifies that the default separator is `@@` and overrides that default for the `db-schema` script.

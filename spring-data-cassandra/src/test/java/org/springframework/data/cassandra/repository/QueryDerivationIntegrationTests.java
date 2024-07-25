@@ -37,7 +37,7 @@ import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.core.CassandraOperations;
-import org.springframework.data.cassandra.core.cql.generator.CreateIndexCqlGenerator;
+import org.springframework.data.cassandra.core.cql.generator.CqlGenerator;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
 import org.springframework.data.cassandra.core.mapping.Embedded;
 import org.springframework.data.cassandra.core.mapping.Indexed;
@@ -179,7 +179,7 @@ class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedCassandr
 		CreateIndexSpecification indexSpecification = CreateIndexSpecification.createIndex("person_main_address")
 				.ifNotExists().tableName("person").columnName("mainaddress");
 
-		template.getCqlOperations().execute(CreateIndexCqlGenerator.toCql(indexSpecification));
+		template.getCqlOperations().execute(CqlGenerator.toCql(indexSpecification));
 
 		// Give Cassandra some time to build the index
 		Thread.sleep(500);
@@ -195,7 +195,7 @@ class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedCassandr
 		CreateIndexSpecification indexSpecification = CreateIndexSpecification.createIndex("person_main_address")
 				.ifNotExists().tableName("person").columnName("mainaddress");
 
-		template.getCqlOperations().execute(CreateIndexCqlGenerator.toCql(indexSpecification));
+		template.getCqlOperations().execute(CqlGenerator.toCql(indexSpecification));
 
 		// Give Cassandra some time to build the index
 		Thread.sleep(500);
@@ -231,7 +231,7 @@ class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedCassandr
 		CreateIndexSpecification indexSpecification = CreateIndexSpecification.createIndex("fn_starts_with").ifNotExists()
 				.tableName("person").columnName("nickname").using("org.apache.cassandra.index.sasi.SASIIndex");
 
-		template.getCqlOperations().execute(CreateIndexCqlGenerator.toCql(indexSpecification));
+		template.getCqlOperations().execute(CqlGenerator.toCql(indexSpecification));
 
 		// Give Cassandra some time to build the index
 		Thread.sleep(500);
@@ -251,7 +251,7 @@ class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedCassandr
 		CreateIndexSpecification indexSpecification = CreateIndexSpecification.createIndex("person_number_of_children")
 				.ifNotExists().tableName("person").columnName("numberofchildren");
 
-		template.getCqlOperations().execute(CreateIndexCqlGenerator.toCql(indexSpecification));
+		template.getCqlOperations().execute(CqlGenerator.toCql(indexSpecification));
 
 		// Give Cassandra some time to build the index
 		Thread.sleep(500);
@@ -267,7 +267,7 @@ class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedCassandr
 		CreateIndexSpecification indexSpecification = CreateIndexSpecification.createIndex("person_created_date")
 				.ifNotExists().tableName("person").columnName("createddate");
 
-		template.getCqlOperations().execute(CreateIndexCqlGenerator.toCql(indexSpecification));
+		template.getCqlOperations().execute(CqlGenerator.toCql(indexSpecification));
 
 		// Give Cassandra some time to build the index
 		Thread.sleep(500);
@@ -300,7 +300,7 @@ class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedCassandr
 		CreateIndexSpecification indexSpecification = CreateIndexSpecification.createIndex("fn_starts_with").ifNotExists()
 				.tableName("person").columnName("nickname").using("org.apache.cassandra.index.sasi.SASIIndex");
 
-		template.getCqlOperations().execute(CreateIndexCqlGenerator.toCql(indexSpecification));
+		template.getCqlOperations().execute(CqlGenerator.toCql(indexSpecification));
 
 		// Give Cassandra some time to build the index
 		Thread.sleep(500);
@@ -320,7 +320,7 @@ class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedCassandr
 				.tableName("person").columnName("nickname").using("org.apache.cassandra.index.sasi.SASIIndex")
 				.withOption("mode", "CONTAINS");
 
-		template.getCqlOperations().execute(CreateIndexCqlGenerator.toCql(indexSpecification));
+		template.getCqlOperations().execute(CqlGenerator.toCql(indexSpecification));
 
 		// Give Cassandra some time to build the index
 		Thread.sleep(500);

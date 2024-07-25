@@ -16,13 +16,13 @@
 package org.springframework.data.cassandra.core.cql.generator;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.springframework.data.cassandra.core.cql.generator.CreateUserTypeCqlGenerator.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateUserTypeSpecification;
+import org.springframework.data.cassandra.core.cql.keyspace.SpecificationBuilder;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -52,12 +52,12 @@ class CreateUserTypeCqlGeneratorIntegrationTests extends AbstractKeyspaceCreatin
 	@Test // DATACASS-172
 	void createUserType() {
 
-		CreateUserTypeSpecification spec = CreateUserTypeSpecification //
+		CreateUserTypeSpecification spec = SpecificationBuilder //
 				.createType("address") //
 				.field("zip", DataTypes.ASCII) //
 				.field("city", DataTypes.TEXT);
 
-		session.execute(toCql(spec));
+		session.execute(CqlGenerator.toCql(spec));
 
 		KeyspaceMetadata keyspace = session.getMetadata().getKeyspace(session.getKeyspace().get()).get();
 		UserDefinedType address = keyspace.getUserDefinedType("address").get();
@@ -67,11 +67,11 @@ class CreateUserTypeCqlGeneratorIntegrationTests extends AbstractKeyspaceCreatin
 	@Test // DATACASS-172
 	void createUserTypeIfNotExists() {
 
-		CreateUserTypeSpecification spec = CreateUserTypeSpecification //
+		CreateUserTypeSpecification spec = SpecificationBuilder //
 				.createType("address").ifNotExists().field("zip", DataTypes.ASCII) //
 				.field("city", DataTypes.TEXT);
 
-		session.execute(toCql(spec));
+		session.execute(CqlGenerator.toCql(spec));
 
 		KeyspaceMetadata keyspace = session.getMetadata().getKeyspace(session.getKeyspace().get()).get();
 		UserDefinedType address = keyspace.getUserDefinedType("address").get();
@@ -81,11 +81,11 @@ class CreateUserTypeCqlGeneratorIntegrationTests extends AbstractKeyspaceCreatin
 	@Test // DATACASS-172, DATACASS-424
 	void createNestedUserType() {
 
-		CreateUserTypeSpecification addressSpec = CreateUserTypeSpecification //
+		CreateUserTypeSpecification addressSpec = SpecificationBuilder //
 				.createType("address").ifNotExists().field("zip", DataTypes.ASCII) //
 				.field("city", DataTypes.TEXT);
 
-		session.execute(toCql(addressSpec));
+		session.execute(CqlGenerator.toCql(addressSpec));
 
 		KeyspaceMetadata keyspace = session.getMetadata().getKeyspace(session.getKeyspace().get()).get();
 		UserDefinedType address = keyspace.getUserDefinedType("address").get();
@@ -94,26 +94,26 @@ class CreateUserTypeCqlGeneratorIntegrationTests extends AbstractKeyspaceCreatin
 				.createType("person").ifNotExists().field("address", address.copy(true)) //
 				.field("city", DataTypes.TEXT);
 
-		session.execute(toCql(personSpec));
+		session.execute(CqlGenerator.toCql(personSpec));
 	}
 
 	@Test // DATACASS-172
 	void shouldGenerateTypeAndTableInOtherKeyspace() {
 
-		CreateUserTypeSpecification spec = CreateUserTypeSpecification //
+		CreateUserTypeSpecification spec = SpecificationBuilder //
 				.createType(CqlIdentifier.fromCql("CreateUserTypeCqlGenerator_it"), CqlIdentifier.fromCql("address"))
 				.ifNotExists().field("zip", DataTypes.ASCII) //
 				.field("city", DataTypes.TEXT);
 
-		session.execute(toCql(spec));
+		session.execute(CqlGenerator.toCql(spec));
 
-		CreateTableSpecification table = CreateTableSpecification
+		CreateTableSpecification table = SpecificationBuilder
 				.createTable(CqlIdentifier.fromCql("CreateUserTypeCqlGenerator_it"), CqlIdentifier.fromCql("person"))
 				.partitionKeyColumn("id", DataTypes.ASCII)//
 				.column("udtref", new ShallowUserDefinedType(CqlIdentifier.fromCql("CreateUserTypeCqlGenerator_it"),
 						CqlIdentifier.fromCql("address"), true));
 
-		session.execute(CreateTableCqlGenerator.toCql(table));
+		session.execute(CqlGenerator.toCql(table));
 
 		KeyspaceMetadata keyspace = session.getMetadata().getKeyspace("CreateUserTypeCqlGenerator_it").get();
 		UserDefinedType address = keyspace.getUserDefinedType("address").get();

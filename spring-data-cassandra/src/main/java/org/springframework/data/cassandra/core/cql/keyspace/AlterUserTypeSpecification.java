@@ -32,7 +32,7 @@ import com.datastax.oss.driver.api.core.type.DataType;
  * @since 1.5
  * @see CqlIdentifier
  */
-public class AlterUserTypeSpecification extends UserTypeNameSpecification {
+public class AlterUserTypeSpecification extends UserTypeNameSpecification implements CqlSpecification {
 
 	private final List<ColumnChangeSpecification> changes = new ArrayList<>();
 
@@ -58,7 +58,7 @@ public class AlterUserTypeSpecification extends UserTypeNameSpecification {
 	 * @param typeName must not be {@literal null}.
 	 * @return a new {@link AlterUserTypeSpecification}.
 	 */
-	private static AlterUserTypeSpecification alterType(CqlIdentifier typeName) {
+	public static AlterUserTypeSpecification alterType(CqlIdentifier typeName) {
 		return new AlterUserTypeSpecification(null, typeName);
 	}
 
@@ -70,8 +70,9 @@ public class AlterUserTypeSpecification extends UserTypeNameSpecification {
 	 * @param keyspace can be {@literal null}.
 	 * @param typeName must not be {@literal null}.
 	 * @return a new {@link AlterUserTypeSpecification}.
+	 * @since 4.4
 	 */
-	private static AlterUserTypeSpecification alterType(@Nullable CqlIdentifier keyspace, CqlIdentifier typeName) {
+	public static AlterUserTypeSpecification alterType(@Nullable CqlIdentifier keyspace, CqlIdentifier typeName) {
 		return new AlterUserTypeSpecification(keyspace, typeName);
 	}
 

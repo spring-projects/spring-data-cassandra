@@ -34,7 +34,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * @author Mark Paluch
  */
 public class CreateIndexSpecification extends IndexNameSpecification<CreateIndexSpecification>
-		implements IndexDescriptor {
+		implements IndexDescriptor, CqlSpecification {
 
 	private @Nullable CqlIdentifier tableName;
 
@@ -57,7 +57,7 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 	}
 
 	/**
-	 * Entry point into the {@link CreateIndexSpecification}'s fluent API to create a index. Convenient if imported
+	 * Entry point into the {@link CreateIndexSpecification}'s fluent API to create an index. Convenient if imported
 	 * statically.
 	 */
 	public static CreateIndexSpecification createIndex() {
@@ -65,7 +65,7 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 	}
 
 	/**
-	 * Entry point into the {@link CreateIndexSpecification}'s fluent API given {@code indexName} to create a index.
+	 * Entry point into the {@link CreateIndexSpecification}'s fluent API given {@code indexName} to create an index.
 	 * Convenient if imported statically.
 	 *
 	 * @param indexName must not be {@literal null} or empty.
@@ -76,7 +76,7 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 	}
 
 	/**
-	 * Entry point into the {@link CreateIndexSpecification}'s fluent API given {@code indexName} to create a index.
+	 * Entry point into the {@link CreateIndexSpecification}'s fluent API given {@code indexName} to create an index.
 	 * Convenient if imported statically.
 	 *
 	 * @param indexName must not be {@literal null}.

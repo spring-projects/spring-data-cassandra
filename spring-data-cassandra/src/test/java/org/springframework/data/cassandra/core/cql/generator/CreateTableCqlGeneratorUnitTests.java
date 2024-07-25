@@ -16,7 +16,6 @@
 package org.springframework.data.cassandra.core.cql.generator;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.springframework.data.cassandra.core.cql.generator.CreateTableCqlGenerator.*;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -57,7 +56,7 @@ class CreateTableCqlGeneratorUnitTests {
 		CreateTableSpecification table = CreateTableSpecification.createTable(name)
 				.partitionKeyColumn(partitionKey0, partitionKeyType0).column(column1, columnType1);
 
-		String cql = toCql(table);
+		String cql = CqlGenerator.toCql(table);
 		assertPreamble(name, cql);
 		assertColumns("partitionkey0 text, column1 text", cql);
 		assertPrimaryKey(partitionKey0.toString(), cql);
@@ -78,7 +77,7 @@ class CreateTableCqlGeneratorUnitTests {
 				.partitionKeyColumn(partKey0, partKeyType0).partitionKeyColumn(partKey1, partKeyType1)
 				.column(column0, columnType0);
 
-		String cql = toCql(table);
+		String cql = CqlGenerator.toCql(table);
 
 		assertPreamble(name, cql);
 		assertColumns("partkey0 text, partkey1 text, column0 text", cql);
@@ -101,7 +100,7 @@ class CreateTableCqlGeneratorUnitTests {
 				.partitionKeyColumn(partitionKey0, partitionKeyType0).partitionKeyColumn(partitionKey1, partitionKeyType1)
 				.column(column1, columnType1).with(TableOption.READ_REPAIR_CHANCE, readRepairChance);
 
-		String cql = toCql(table);
+		String cql = CqlGenerator.toCql(table);
 
 		assertPreamble(name, cql);
 		assertColumns("partitionkey0 text, create_timestamp timestamp, column1 text", cql);
@@ -149,7 +148,7 @@ class CreateTableCqlGeneratorUnitTests {
 				.with(TableOption.DCLOCAL_READ_REPAIR_CHANCE, dcLocalReadRepairChance)
 				.with(TableOption.GC_GRACE_SECONDS, gcGraceSeconds);
 
-		String cql = toCql(table);
+		String cql = CqlGenerator.toCql(table);
 
 		assertPreamble(name, cql);
 		assertColumns("tid timeuuid, create_timestamp timestamp, data_point text", cql);
@@ -170,7 +169,7 @@ class CreateTableCqlGeneratorUnitTests {
 				.clusteredKeyColumn("date_of_birth", DataTypes.DATE, Ordering.ASCENDING) //
 				.column("name", DataTypes.ASCII);
 
-		assertThat(toCql(table)).isEqualTo("CREATE TABLE person (id ascii, date_of_birth date, name ascii, " //
+		assertThat(CqlGenerator.toCql(table)).isEqualTo("CREATE TABLE person (id ascii, date_of_birth date, name ascii, " //
 				+ "PRIMARY KEY (id, date_of_birth)) " //
 				+ "WITH CLUSTERING ORDER BY (date_of_birth ASC);");
 	}
@@ -183,7 +182,7 @@ class CreateTableCqlGeneratorUnitTests {
 				.clusteredKeyColumn("date_of_birth", DataTypes.DATE, Ordering.ASCENDING) //
 				.column("name", DataTypes.ASCII).with(TableOption.COMPACT_STORAGE);
 
-		assertThat(toCql(table)).isEqualTo("CREATE TABLE person (id ascii, date_of_birth date, name ascii, " //
+		assertThat(CqlGenerator.toCql(table)).isEqualTo("CREATE TABLE person (id ascii, date_of_birth date, name ascii, " //
 				+ "PRIMARY KEY (id, date_of_birth)) " //
 				+ "WITH CLUSTERING ORDER BY (date_of_birth ASC) AND COMPACT STORAGE;");
 	}
@@ -197,10 +196,9 @@ class CreateTableCqlGeneratorUnitTests {
 				.column("name", DataTypes.ASCII)
 				.staticColumn("country", DataTypes.ASCII);
 
-		assertThat(toCql(table)).isEqualTo("CREATE TABLE person ("
-				+ "id ascii, date_of_birth date, name ascii, country ascii STATIC, "
-				+ "PRIMARY KEY (id, date_of_birth)) "
-				+ "WITH CLUSTERING ORDER BY (date_of_birth ASC);");
+		assertThat(CqlGenerator.toCql(table))
+				.isEqualTo("CREATE TABLE person (" + "id ascii, date_of_birth date, name ascii, country ascii STATIC, "
+						+ "PRIMARY KEY (id, date_of_birth)) " + "WITH CLUSTERING ORDER BY (date_of_birth ASC);");
 	}
 
 	@Test // GH-921
@@ -210,7 +208,7 @@ class CreateTableCqlGeneratorUnitTests {
 				.createTable(CqlIdentifier.fromCql("myks"), CqlIdentifier.fromCql("person"))
 				.partitionKeyColumn("id", DataTypes.ASCII);
 
-		assertThat(toCql(table)).isEqualTo("CREATE TABLE myks.person (" + "id ascii, " + "PRIMARY KEY (id));");
+		assertThat(CqlGenerator.toCql(table)).isEqualTo("CREATE TABLE myks.person (" + "id ascii, " + "PRIMARY KEY (id));");
 	}
 
 	/**

@@ -23,9 +23,9 @@ import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.annotation.Id;
-import org.springframework.data.cassandra.core.cql.generator.CreateIndexCqlGenerator;
-import org.springframework.data.cassandra.core.cql.generator.CreateTableCqlGenerator;
+import org.springframework.data.cassandra.core.cql.generator.CqlGenerator;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
 import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity;
@@ -67,8 +67,8 @@ class IndexCreationIntegrationTests extends AbstractKeyspaceCreatingIntegrationT
 		CreateTableSpecification createTable = schemaFactory.getCreateTableSpecificationFor(entity);
 		List<CreateIndexSpecification> createIndexes = schemaFactory.getCreateIndexSpecificationsFor(entity);
 
-		session.execute(CreateTableCqlGenerator.toCql(createTable));
-		createIndexes.forEach(it -> session.execute(CreateIndexCqlGenerator.toCql(it)));
+		session.execute(CqlGenerator.toCql(createTable));
+		createIndexes.forEach(it -> session.execute(CqlGenerator.toCql(it)));
 
 		Thread.sleep(500); // index creation is async so we do poor man's sync to await completion
 
@@ -85,8 +85,8 @@ class IndexCreationIntegrationTests extends AbstractKeyspaceCreatingIntegrationT
 		CreateTableSpecification createTable = schemaFactory.getCreateTableSpecificationFor(entity);
 		List<CreateIndexSpecification> createIndexes = schemaFactory.getCreateIndexSpecificationsFor(entity);
 
-		session.execute(CreateTableCqlGenerator.toCql(createTable));
-		createIndexes.forEach(it -> session.execute(CreateIndexCqlGenerator.toCql(it)));
+		session.execute(CqlGenerator.toCql(createTable));
+		createIndexes.forEach(it -> session.execute(CqlGenerator.toCql(it)));
 
 		Thread.sleep(500); // index creation is async so we do poor man's sync to await completion
 

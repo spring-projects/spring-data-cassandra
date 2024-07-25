@@ -26,7 +26,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * @author David Webb
  * @author Mark Paluch
  */
-public class DropIndexSpecification extends IndexNameSpecification<DropIndexSpecification> {
+public class DropIndexSpecification extends IndexNameSpecification<DropIndexSpecification> implements CqlSpecification {
 
 	private DropIndexSpecification(@Nullable CqlIdentifier keyspace, CqlIdentifier name) {
 		super(keyspace, name);

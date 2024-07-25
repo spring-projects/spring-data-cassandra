@@ -23,12 +23,9 @@ import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.SchemaFactory;
 import org.springframework.data.cassandra.core.cql.CqlOperations;
 import org.springframework.data.cassandra.core.cql.SessionCallback;
-import org.springframework.data.cassandra.core.cql.generator.CreateTableCqlGenerator;
-import org.springframework.data.cassandra.core.cql.generator.DropTableCqlGenerator;
-import org.springframework.data.cassandra.core.cql.generator.DropUserTypeCqlGenerator;
+import org.springframework.data.cassandra.core.cql.generator.CqlGenerator;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
-import org.springframework.data.cassandra.core.cql.keyspace.DropTableSpecification;
-import org.springframework.data.cassandra.core.cql.keyspace.DropUserTypeSpecification;
+import org.springframework.data.cassandra.core.cql.keyspace.SpecificationBuilder;
 import org.springframework.data.cassandra.core.cql.keyspace.TableOption;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.util.Assert;
@@ -127,7 +124,7 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 			});
 		}
 
-		getCqlOperations().execute(CreateTableCqlGenerator.toCql(createTableSpecification));
+		getCqlOperations().execute(CqlGenerator.toCql(createTableSpecification));
 	}
 
 	@Override
@@ -143,7 +140,7 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 	@Override
 	public void dropTable(boolean ifExists, CqlIdentifier tableName) {
 
-		String dropTableCql = DropTableCqlGenerator.toCql(DropTableSpecification.dropTable(tableName).ifExists(ifExists));
+		String dropTableCql = CqlGenerator.toCql(SpecificationBuilder.dropTable(tableName).ifExists(ifExists));
 
 		getCqlOperations().execute(dropTableCql);
 	}
@@ -153,7 +150,7 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 
 		Assert.notNull(typeName, "Type name must not be null");
 
-		String dropUserTypeCql = DropUserTypeCqlGenerator.toCql(DropUserTypeSpecification.dropType(typeName));
+		String dropUserTypeCql = CqlGenerator.toCql(SpecificationBuilder.dropType(typeName));
 
 		getCqlOperations().execute(dropUserTypeCql);
 	}

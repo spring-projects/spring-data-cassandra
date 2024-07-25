@@ -28,7 +28,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * @author Mark Paluch
  */
 public class CreateKeyspaceSpecification extends KeyspaceOptionsSpecification<CreateKeyspaceSpecification>
-		implements KeyspaceDescriptor {
+		implements KeyspaceDescriptor, CqlSpecification {
 
 	private boolean ifNotExists = false;
 
