@@ -20,11 +20,12 @@ import java.util.function.Supplier;
 
 import org.springframework.lang.Nullable;
 
+import com.datastax.oss.driver.api.querybuilder.BindMarker;
 import com.datastax.oss.driver.api.querybuilder.term.Term;
 
 /**
  * Factory for {@link Term} objects encapsulating a binding {@code value}. Classes implementing this factory interface
- * may return inline terms to render values as part of the query string, or bind markers to supply parameters on
+ * may return inline {@link Term terms} to render values as part of the query string, or {@link BindMarker bind markers} to supply parameters on
  * statement creation/parameter binding.
  * <p>
  * A {@link TermFactory} is typically used with {@link StatementBuilder}.

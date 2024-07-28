@@ -29,6 +29,7 @@ import com.datastax.oss.driver.shaded.guava.common.io.Resources;
  * particular keyspace.
  *
  * @author Mark Paluch
+ * @author Mikhail Polivakha
  */
 public class CqlDataSet {
 
@@ -91,5 +92,14 @@ public class CqlDataSet {
 
 		URL url = Resources.getResource(resource);
 		return new CqlDataSet(url, null);
+	}
+
+	/**
+	 * Create a {@link CqlDataSet} from a class-path resource.
+	 */
+	public static CqlDataSet fromClassPath(String resource, String keyspaceName) {
+
+		URL url = Resources.getResource(resource);
+		return new CqlDataSet(url, keyspaceName);
 	}
 }
