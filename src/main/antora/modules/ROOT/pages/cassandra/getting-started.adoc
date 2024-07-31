@@ -97,7 +97,7 @@ include::example$ReactiveCassandraApplication.java[tags=file]
 
 Even in this simple example, there are a few notable things to point out:
 
-* You can create an instance of `CassandraTemplate` (or `ReactiveCassandraTemplate` for reactive usage) with a Cassandra `CqlSession`.
+* You can create an instance of javadoc:org.springframework.data.cassandra.core.CassandraTemplate[] (or javadoc:org.springframework.data.cassandra.core.ReactiveCassandraTemplate[] for reactive usage) with a Cassandra `CqlSession`.
 * You must annotate your POJO as a Cassandra `@Table` entity and also annotate the `@PrimaryKey`.
 Optionally, you can override these mapping names to match your Cassandra database table and column names.
-* You can either use raw CQL or the DataStax `QueryBuilder` API to construct your queries.
+* You can either use raw CQL or the Driver `QueryBuilder` API to construct your queries.
