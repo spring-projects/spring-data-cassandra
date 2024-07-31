@@ -1,21 +1,22 @@
 [[cassandra.cql-template]]
 = CQL Template API
 
-The `CqlTemplate` class (and its reactive variant `ReactiveCqlTemplate`) is the central class in the core CQL package.
+The javadoc:org.springframework.data.cassandra.core.cql.CqlTemplate[] class (and its reactive variant javadoc:org.springframework.data.cassandra.core.cql.ReactiveCqlTemplate[]) is the central class in the core CQL package.
 It handles the creation and release of resources.
 It performs the basic tasks of the core CQL workflow, such as statement creation and execution, and leaves application code to provide CQL and extract results.
 The `CqlTemplate` class executes CQL queries and update statements, performs iteration over `ResultSet` instances and extraction of returned parameter values.
 It also catches CQL exceptions and translates them to the generic, more informative, exception hierarchy defined in the `org.springframework.dao` package.
 
 When you use the `CqlTemplate` for your code, you need only implement callback interfaces, which have a clearly defined contract.
-Given a `Connection`, the `PreparedStatementCreator` callback interface creates a xref:cassandra/prepared-statements.adoc#cassandra.template.prepared-statements.cql[prepared statement] with the provided CQL and any necessary parameter arguments.
-The `RowCallbackHandler` interface extracts values from each row of a `ResultSet`.
+Given a `CqlSession`, the javadoc:org.springframework.data.cassandra.core.cql.PreparedStatementCreator[] callback interface creates a xref:cassandra/prepared-statements.adoc#cassandra.template.prepared-statements.cql[prepared statement] with the provided CQL and any necessary parameter arguments.
+The javadoc:org.springframework.data.cassandra.core.cql.RowCallbackHandler[] interface extracts values from each row of a `ResultSet`.
 
-The `CqlTemplate` can be used within a DAO implementation through direct instantiation with a `SessionFactory` reference or be configured in the Spring container and given to DAOs as a bean reference. `CqlTemplate` is a foundational building block for xref:cassandra/template.adoc[`CassandraTemplate`].
+The javadoc:org.springframework.data.cassandra.core.cql.CqlTemplate[] can be used within a DAO implementation through direct instantiation with a javadoc:org.springframework.data.cassandra.SessionFactory[] reference or be configured in the Spring container and given to DAOs as a bean reference. `CqlTemplate` is a foundational building block for xref:cassandra/template.adoc[`CassandraTemplate`].
 
 All CQL issued by this class is logged at the `DEBUG` level under the category corresponding to the fully-qualified class name of the template instance (typically `CqlTemplate`, but it may be different if you use a custom subclass of the `CqlTemplate` class).
 
-You can control fetch size, consistency level, and retry policy defaults by configuring these parameters on the CQL API instances: `CqlTemplate`, `AsyncCqlTemplate`, and `ReactiveCqlTemplate`.
+You can control fetch size, consistency level, and retry policy defaults by configuring these parameters on the CQL API instances:
+javadoc:org.springframework.data.cassandra.core.cql.CqlTemplate[], javadoc:org.springframework.data.cassandra.core.cql.AsyncCqlTemplate[], and javadoc:org.springframework.data.cassandra.core.cql.ReactiveCqlTemplate[].
 Defaults apply if the particular query option is not set.
 
 NOTE: `CqlTemplate` comes in different execution model flavors.
@@ -28,7 +29,7 @@ You can use `AsyncCqlTemplate` for asynchronous execution and synchronization wi
 
 This section provides some examples of the `CqlTemplate` class in action.
 These examples are not an exhaustive list of all functionality exposed by the `CqlTemplate`.
-See the https://docs.spring.io/spring-data/cassandra/docs/{version}/api/[Javadoc] for that.
+See the javadoc:org.springframework.data.cassandra.core.cql.CqlTemplate[Javadoc] for that.
 
 [[cassandra.cql-template.examples.query]]
 === Querying (SELECT) with `CqlTemplate`

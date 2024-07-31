@@ -4,10 +4,10 @@
 The Cassandra mapping framework has several built-in `org.springframework.context.ApplicationEvent` events that your application can respond to by registering special beans in the `ApplicationContext`.
 Being based on Spring's application context event infrastructure lets other products, such as Spring Integration, easily receive these events as they are a well known eventing mechanism in Spring-based applications.
 
-To intercept an object before it goes into the database, you can register a subclass of `org.springframework.data.cassandra.core.mapping.event.AbstractCassandraEventListener` that overrides the `onBeforeSave(…)` method.
+To intercept an object before it goes into the database, you can register a subclass of javadoc:org.springframework.data.cassandra.core.mapping.event.AbstractCassandraEventListener[] that overrides the `onBeforeSave(…)` method.
 When the event is dispatched, your listener is called and passed the domain object (which is a Java entity).
 Entity lifecycle events can be costly and you may notice a change in the performance profile when loading large result sets.
-You can disable lifecycle events on the link:https://docs.spring.io/spring-data/cassandra/docs/{version}/api/org/springframework/data/cassandra/core/CassandraTemplate.html#setEntityLifecycleEventsEnabled(boolean)[Template API].
+You can disable lifecycle events on the javadoc:org.springframework.data.cassandra.core.CassandraTemplate#setEntityLifecycleEventsEnabled(boolean)[Template API].
 The following example uses the `onBeforeSave` method:
 
 ====
@@ -19,7 +19,7 @@ include::example$mapping/BeforeSaveListener.java[tags=class]
 
 Declaring these beans in your Spring `ApplicationContext` will cause them to be invoked whenever the event is dispatched.
 
-The `AbstractCassandraEventListener` has the following callback methods:
+The javadoc:org.springframework.data.cassandra.core.mapping.event.AbstractCassandraEventListener[] has the following callback methods:
 
 * `onBeforeSave`: Called in `CassandraTemplate.insert(…)` and `.update(…)` operations before inserting or updating a row in the database but after creating the `Statement`.
 * `onAfterSave`: Called in `CassandraTemplate…insert(…)` and `.update(…)` operations after inserting or updating a row in the database.
