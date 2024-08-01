@@ -15,11 +15,15 @@
  */
 package org.springframework.data.cassandra.repository.config;
 
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationBeanNameGenerator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Configuration;
@@ -37,6 +41,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
  * Unit tests for {@link ReactiveCassandraRepositoriesRegistrar}.
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  */
 @SpringJUnitConfig
 public class ReactiveCassandraRepositoriesRegistrarUnitTests {
@@ -44,6 +49,7 @@ public class ReactiveCassandraRepositoriesRegistrarUnitTests {
 	@Configuration
 	@EnableReactiveCassandraRepositories(basePackages = "org.springframework.data.cassandra.repository.config",
 			considerNestedRepositories = true,
+			nameGenerator = MyBeanNameGenerator.class,
 			includeFilters = @Filter(pattern = ".*ReactivePersonRepository", type = FilterType.REGEX))
 	static class Config {
 
@@ -61,8 +67,18 @@ public class ReactiveCassandraRepositoriesRegistrarUnitTests {
 	@Autowired ApplicationContext context;
 	@Autowired ReactivePersonRepository personRepository;
 
-	@Test // DATACASS-335
-	void testConfiguration() {}
+	@Test // DATACASS-335, GH-1509
+	void testConfiguration() {
+		assertThat(context.containsBean("reactiveCassandraRepositoriesRegistrarUnitTests.ReactivePersonREPO")).isTrue();
+	}
 
 	interface ReactivePersonRepository extends ReactiveCassandraRepository<Person, String> {}
+
+	static class MyBeanNameGenerator extends AnnotationBeanNameGenerator {
+
+		@Override
+		public String generateBeanName(BeanDefinition definition, BeanDefinitionRegistry registry) {
+			return super.generateBeanName(definition, registry).replaceAll("Repository", "REPO");
+		}
+	}
 }

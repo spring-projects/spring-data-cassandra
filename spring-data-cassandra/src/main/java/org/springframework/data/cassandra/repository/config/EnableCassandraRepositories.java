@@ -23,6 +23,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.cassandra.config.DefaultBeanNames;
@@ -109,6 +110,13 @@ public @interface EnableCassandraRepositories {
 	 * @since 1.3
 	 */
 	Class<?> repositoryBaseClass() default DefaultRepositoryBaseClass.class;
+
+	/**
+	 * Configure a specific {@link BeanNameGenerator} to be used when creating the repository beans.
+	 * @return the {@link BeanNameGenerator} to be used or the base {@link BeanNameGenerator} interface to indicate context default.
+	 * @since 4.4
+	 */
+	Class<? extends BeanNameGenerator> nameGenerator() default BeanNameGenerator.class;
 
 	/**
 	 * Configures the name of the {@link CassandraTemplate} bean to be used with the repositories detected. Defaults to
