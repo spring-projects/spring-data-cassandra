@@ -29,7 +29,6 @@ pipeline {
 					}
 					agent { label 'data' }
 					options { timeout(time: 30, unit: 'MINUTES') }
-
 					steps {
 						script {
 							def image = docker.build("springci/spring-data-with-cassandra-3.11:${p['java.main.tag']}", "--build-arg BASE=${p['docker.java.main.image']} --build-arg CASSANDRA=${p['docker.cassandra.3.version']} ci/openjdk17-8-cassandra-3.11/")
@@ -48,7 +47,6 @@ pipeline {
 					}
 					agent { label 'data' }
 					options { timeout(time: 30, unit: 'MINUTES') }
-
 					steps {
 						script {
 							def image = docker.build("springci/spring-data-with-cassandra-3.11:${p['java.next.tag']}", "--build-arg BASE=${p['docker.java.next.image']} --build-arg CASSANDRA=${p['docker.cassandra.3.version']} ci/openjdk21-8-cassandra-3.11/")
@@ -139,12 +137,10 @@ pipeline {
 				label 'data'
 			}
 			options { timeout(time: 20, unit: 'MINUTES') }
-
 			environment {
 				ARTIFACTORY = credentials("${p['artifactory.credentials']}")
 				DEVELOCITY_ACCESS_KEY = credentials("${p['develocity.access-key']}")
 			}
-
 			steps {
 				script {
 					docker.withRegistry(p['docker.proxy.registry'], p['docker.proxy.credentials']) {
