@@ -29,7 +29,6 @@ pipeline {
 					}
 					agent { label 'data' }
 					options { timeout(time: 30, unit: 'MINUTES') }
-
 					steps {
 						script {
 							def image = docker.build("springci/spring-data-with-cassandra-3.11:${p['java.main.tag']}", "--build-arg BASE=${p['docker.java.main.image']} --build-arg CASSANDRA=${p['docker.cassandra.3.version']} ci/openjdk17-8-cassandra-3.11/")
@@ -48,7 +47,6 @@ pipeline {
 					}
 					agent { label 'data' }
 					options { timeout(time: 30, unit: 'MINUTES') }
-
 					steps {
 						script {
 							def image = docker.build("springci/spring-data-with-cassandra-3.11:${p['java.next.tag']}", "--build-arg BASE=${p['docker.java.next.image']} --build-arg CASSANDRA=${p['docker.cassandra.3.version']} ci/openjdk21-8-cassandra-3.11/")
@@ -75,7 +73,6 @@ pipeline {
 			options { timeout(time: 30, unit: 'MINUTES') }
 			environment {
 				ARTIFACTORY = credentials("${p['artifactory.credentials']}")
-				DEVELOCITY_CACHE = credentials("${p['develocity.cache.credentials']}")
 				DEVELOCITY_ACCESS_KEY = credentials("${p['develocity.access-key']}")
 			}
 			steps {
@@ -85,9 +82,6 @@ pipeline {
 							sh 'mkdir -p /tmp/jenkins-home'
 							sh 'JAVA_HOME=/opt/java/openjdk8 /opt/cassandra/bin/cassandra -R &'
 							sh 'MAVEN_OPTS="-Duser.name=' + "${p['jenkins.user.name']}" + ' -Duser.home=/tmp/jenkins-home" ' +
-								"DEVELOCITY_CACHE_USERNAME=${DEVELOCITY_CACHE_USR} " +
-								"DEVELOCITY_CACHE_PASSWORD=${DEVELOCITY_CACHE_PSW} " +
-								"GRADLE_ENTERPRISE_ACCESS_KEY=${DEVELOCITY_ACCESS_KEY} " +
 								"./mvnw -s settings.xml -Pci,external-cassandra " +
 								"clean dependency:list verify -Dsort -U -B"
 						}
@@ -112,7 +106,6 @@ pipeline {
 					options { timeout(time: 30, unit: 'MINUTES') }
 					environment {
 						ARTIFACTORY = credentials("${p['artifactory.credentials']}")
-						DEVELOCITY_CACHE = credentials("${p['develocity.cache.credentials']}")
 						DEVELOCITY_ACCESS_KEY = credentials("${p['develocity.access-key']}")
 					}
 					steps {
@@ -122,9 +115,6 @@ pipeline {
 									sh 'mkdir -p /tmp/jenkins-home'
 									sh 'JAVA_HOME=/opt/java/openjdk8 /opt/cassandra/bin/cassandra -R &'
 									sh 'MAVEN_OPTS="-Duser.name=' + "${p['jenkins.user.name']}" + ' -Duser.home=/tmp/jenkins-home" ' +
-										"DEVELOCITY_CACHE_USERNAME=${DEVELOCITY_CACHE_USR} " +
-										"DEVELOCITY_CACHE_PASSWORD=${DEVELOCITY_CACHE_PSW} " +
-										"GRADLE_ENTERPRISE_ACCESS_KEY=${DEVELOCITY_ACCESS_KEY} " +
 										"./mvnw -s settings.xml -Pci,external-cassandra " +
 										"clean dependency:list verify -Dsort -U -B"
 								}
@@ -147,22 +137,16 @@ pipeline {
 				label 'data'
 			}
 			options { timeout(time: 20, unit: 'MINUTES') }
-
 			environment {
 				ARTIFACTORY = credentials("${p['artifactory.credentials']}")
-				DEVELOCITY_CACHE = credentials("${p['develocity.cache.credentials']}")
 				DEVELOCITY_ACCESS_KEY = credentials("${p['develocity.access-key']}")
 			}
-
 			steps {
 				script {
 					docker.withRegistry(p['docker.proxy.registry'], p['docker.proxy.credentials']) {
 						docker.image(p['docker.java.main.image']).inside(p['docker.java.inside.basic']) {
 							sh 'mkdir -p /tmp/jenkins-home'
 							sh 'MAVEN_OPTS="-Duser.name=' + "${p['jenkins.user.name']}" + ' -Duser.home=/tmp/jenkins-home" ' +
-									"DEVELOCITY_CACHE_USERNAME=${DEVELOCITY_CACHE_USR} " +
-									"DEVELOCITY_CACHE_PASSWORD=${DEVELOCITY_CACHE_PSW} " +
-									"GRADLE_ENTERPRISE_ACCESS_KEY=${DEVELOCITY_ACCESS_KEY} " +
 									"./mvnw -s settings.xml -Pci,artifactory " +
 									"-Dartifactory.server=${p['artifactory.url']} " +
 									"-Dartifactory.username=${ARTIFACTORY_USR} " +
