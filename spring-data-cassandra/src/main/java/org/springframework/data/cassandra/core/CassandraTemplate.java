@@ -846,7 +846,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	}
 
 	private <T> T doQueryForObject(Statement<?> statement, Class<T> resultType) {
-		return DataAccessUtils.requiredSingleResult(doQuery(statement, SingleColumnRowMapper.newInstance(resultType)));
+		return DataAccessUtils.nullableSingleResult(doQuery(statement, SingleColumnRowMapper.newInstance(resultType)));
 	}
 
 	private <T> Stream<T> doQueryForStream(Statement<?> statement, RowMapper<T> rowMapper) {

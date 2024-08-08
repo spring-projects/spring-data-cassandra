@@ -202,7 +202,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public <T> T queryForObject(String cql, RowMapper<T> rowMapper) throws DataAccessException {
-		return DataAccessUtils.requiredSingleResult(query(cql, newResultSetExtractor(rowMapper)));
+		return DataAccessUtils.nullableSingleResult(query(cql, newResultSetExtractor(rowMapper)));
 	}
 
 	@Override
@@ -286,7 +286,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public <T> T queryForObject(Statement<?> statement, RowMapper<T> rowMapper) throws DataAccessException {
-		return DataAccessUtils.requiredSingleResult(query(statement, newResultSetExtractor(rowMapper)));
+		return DataAccessUtils.nullableSingleResult(query(statement, newResultSetExtractor(rowMapper)));
 	}
 
 	@Override
@@ -501,7 +501,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public <T> T queryForObject(String cql, RowMapper<T> rowMapper, Object... args) throws DataAccessException {
-		return DataAccessUtils.requiredSingleResult(
+		return DataAccessUtils.nullableSingleResult(
 				query(newPreparedStatementCreator(cql), newPreparedStatementBinder(args), newResultSetExtractor(rowMapper, 1)));
 	}
 

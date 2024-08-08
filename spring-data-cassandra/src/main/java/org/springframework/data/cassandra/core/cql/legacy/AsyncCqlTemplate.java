@@ -216,7 +216,7 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 		ListenableFuture<List<T>> results = query(cql, newAsyncResultSetExtractor(rowMapper));
 
 		return new ExceptionTranslatingListenableFutureAdapter<>(
-				new MappingListenableFutureAdapter<>(results, DataAccessUtils::requiredSingleResult), getExceptionTranslator());
+				new MappingListenableFutureAdapter<>(results, DataAccessUtils::nullableSingleResult), getExceptionTranslator());
 	}
 
 	@Override
@@ -304,7 +304,7 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 		ListenableFuture<List<T>> results = query(statement, newAsyncResultSetExtractor(rowMapper));
 
 		return new ExceptionTranslatingListenableFutureAdapter<>(
-				new MappingListenableFutureAdapter<>(results, DataAccessUtils::requiredSingleResult), getExceptionTranslator());
+				new MappingListenableFutureAdapter<>(results, DataAccessUtils::nullableSingleResult), getExceptionTranslator());
 	}
 
 	@Override
@@ -536,7 +536,7 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 				newAsyncResultSetExtractor(rowMapper));
 
 		return new ExceptionTranslatingListenableFutureAdapter<>(
-				new MappingListenableFutureAdapter<>(results, DataAccessUtils::requiredSingleResult), getExceptionTranslator());
+				new MappingListenableFutureAdapter<>(results, DataAccessUtils::nullableSingleResult), getExceptionTranslator());
 	}
 
 	@Override

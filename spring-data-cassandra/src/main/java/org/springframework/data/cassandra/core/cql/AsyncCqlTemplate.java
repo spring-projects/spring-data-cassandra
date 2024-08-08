@@ -202,7 +202,7 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 
 		CompletableFuture<List<T>> results = query(cql, newAsyncResultSetExtractor(rowMapper));
 
-		return results.thenApply(DataAccessUtils::requiredSingleResult);
+		return results.thenApply(DataAccessUtils::nullableSingleResult);
 	}
 
 	@Override
@@ -290,7 +290,7 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 
 		CompletableFuture<List<T>> results = query(statement, newAsyncResultSetExtractor(rowMapper));
 
-		return results.thenApply(DataAccessUtils::requiredSingleResult);
+		return results.thenApply(DataAccessUtils::nullableSingleResult);
 	}
 
 	@Override
@@ -518,7 +518,7 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 		CompletableFuture<List<T>> results = query(newAsyncPreparedStatementCreator(cql), newPreparedStatementBinder(args),
 				newAsyncResultSetExtractor(rowMapper));
 
-		return results.thenApply(DataAccessUtils::requiredSingleResult);
+		return results.thenApply(DataAccessUtils::nullableSingleResult);
 	}
 
 	@Override

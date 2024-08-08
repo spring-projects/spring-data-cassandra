@@ -331,7 +331,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 
 	@Override
 	public <T> Mono<T> queryForObject(String cql, RowMapper<T> rowMapper) throws DataAccessException {
-		return query(cql, rowMapper).buffer(2).flatMap(list -> Mono.just(DataAccessUtils.requiredSingleResult(list)))
+		return query(cql, rowMapper).buffer(2).flatMap(list -> Mono.just(DataAccessUtils.nullableSingleResult(list)))
 				.next();
 	}
 
@@ -414,7 +414,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 
 	@Override
 	public <T> Mono<T> queryForObject(Statement<?> statement, RowMapper<T> rowMapper) throws DataAccessException {
-		return query(statement, rowMapper).buffer(2).flatMap(list -> Mono.just(DataAccessUtils.requiredSingleResult(list)))
+		return query(statement, rowMapper).buffer(2).flatMap(list -> Mono.just(DataAccessUtils.nullableSingleResult(list)))
 				.next();
 	}
 
@@ -562,7 +562,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 
 	@Override
 	public <T> Mono<T> queryForObject(String cql, RowMapper<T> rowMapper, Object... args) throws DataAccessException {
-		return query(cql, rowMapper, args).buffer(2).flatMap(list -> Mono.just(DataAccessUtils.requiredSingleResult(list)))
+		return query(cql, rowMapper, args).buffer(2).flatMap(list -> Mono.just(DataAccessUtils.nullableSingleResult(list)))
 				.next();
 	}
 

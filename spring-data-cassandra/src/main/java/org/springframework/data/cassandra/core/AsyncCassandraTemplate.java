@@ -504,7 +504,7 @@ public class AsyncCassandraTemplate
 
 			SingleColumnRowMapper<Long> mapper = SingleColumnRowMapper.newInstance(Long.class);
 
-			Row row = DataAccessUtils.requiredSingleResult(Streamable.of(it.currentPage()).toList());
+			Row row = DataAccessUtils.nullableSingleResult(Streamable.of(it.currentPage()).toList());
 			return mapper.mapRow(row, 0);
 		});
 

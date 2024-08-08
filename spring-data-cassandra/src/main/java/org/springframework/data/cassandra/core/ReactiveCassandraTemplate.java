@@ -502,7 +502,7 @@ public class ReactiveCassandraTemplate
 		Mono<Long> mono = doExecuteAndFlatMap(count.build(), rs -> rs.rows() //
 				.map(it -> mapper.mapRow(it, 0)) //
 				.buffer() //
-				.map(DataAccessUtils::requiredSingleResult).next());
+				.map(DataAccessUtils::nullableSingleResult).next());
 
 		return mono.switchIfEmpty(Mono.just(0L));
 	}
