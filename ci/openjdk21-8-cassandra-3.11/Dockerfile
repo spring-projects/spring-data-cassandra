@@ -4,6 +4,13 @@ FROM ${BASE}
 ARG CASSANDRA
 
 RUN set -eux; \
+#	sed -i -e 's/http/https/g' /etc/apt/sources.list ; \
+	apt-get update ; \
+	apt-get install -y curl; \
+	apt-get clean; \
+	rm -rf /var/lib/apt/lists/*;
+
+RUN set -eux; \
 	CASSANDRA_URL="https://archive.apache.org/dist/cassandra/${CASSANDRA}/apache-cassandra-${CASSANDRA}-bin.tar.gz"; \
 	sed -i -e 's/http/https/g' /etc/apt/sources.list ; \
 	curl -LfsSo /tmp/cassandra.tar.gz ${CASSANDRA_URL}; \
