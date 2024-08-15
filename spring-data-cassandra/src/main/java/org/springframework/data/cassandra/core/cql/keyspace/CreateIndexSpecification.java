@@ -196,7 +196,10 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 
 		if (StringUtils.hasText(className)) {
 			this.using = className;
-			this.custom = true;
+
+			if (!"sai".equalsIgnoreCase(className)) {
+				this.custom = true;
+			}
 		} else {
 			this.using = null;
 			this.custom = false;

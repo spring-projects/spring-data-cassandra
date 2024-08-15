@@ -61,7 +61,7 @@ public class CreateIndexCqlGenerator extends IndexNameCqlGenerator<CreateIndexSp
 
 		cql.append(")");
 
-		if (spec().isCustom()) {
+		if (StringUtils.hasText(spec().getUsing())) {
 			cql.append(" USING ").append("'").append(spec().getUsing()).append("'");
 		}
 

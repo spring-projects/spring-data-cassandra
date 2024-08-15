@@ -24,12 +24,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.SpecificationBuilder;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.mapping.Indexed;
+import org.springframework.data.cassandra.core.mapping.SAIIndexed;
 import org.springframework.data.cassandra.core.mapping.SASI;
 import org.springframework.data.cassandra.core.mapping.SASI.NonTokenizingAnalyzed;
 import org.springframework.data.cassandra.core.mapping.SASI.Normalization;
@@ -50,6 +52,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * @since 2.0
  * @see Indexed
  * @see SASI
+ * @see SAIIndexed
  */
 @SuppressWarnings("unchecked")
 class IndexSpecificationFactory {
@@ -92,43 +95,65 @@ class IndexSpecificationFactory {
 		}
 
 		if (property.isAnnotationPresent(SASI.class)) {
-			indexes.add(createIndexSpecification(keyspace, property.findAnnotation(SASI.class), property));
+			indexes.add(createIndexSpecification(keyspace, property.getRequiredAnnotation(SASI.class), property));
+		}
+
+		if (property.isAnnotationPresent(SAIIndexed.class)) {
+
+			CreateIndexSpecification index = createIndexSpecification(keyspace,
+					property.getRequiredAnnotation(SAIIndexed.class), property);
+
+			if (property.isMapLike()) {
+				index.entries();
+			}
+
+			indexes.add(index);
 		}
 
 		if (property.isMapLike()) {
 
-			AnnotatedType type = property.findAnnotatedType(Indexed.class);
-
-			if (type instanceof AnnotatedParameterizedType) {
-
-				AnnotatedParameterizedType parameterizedType = (AnnotatedParameterizedType) type;
-				AnnotatedType[] typeArgs = parameterizedType.getAnnotatedActualTypeArguments();
-
-				Indexed keyIndex = typeArgs.length == 2 ? AnnotatedElementUtils.getMergedAnnotation(typeArgs[0], Indexed.class)
-						: null;
-
-				Indexed valueIndex = typeArgs.length == 2
-						? AnnotatedElementUtils.getMergedAnnotation(typeArgs[1], Indexed.class)
-						: null;
-
-				if ((!indexes.isEmpty() && (keyIndex != null || valueIndex != null))
-						|| (keyIndex != null && valueIndex != null)) {
-
-					throw new MappingException("Multiple index declarations for " + property
-							+ " found; A map index must be either declared for entries, keys or values");
-				}
-
-				if (keyIndex != null) {
-					indexes.add(createIndexSpecification(keyspace, keyIndex, property).keys());
-				}
-
-				if (valueIndex != null) {
-					indexes.add(createIndexSpecification(keyspace, valueIndex, property).values());
-				}
-			}
+			indexes.addAll(createTypeAnnotatedIndexes(Indexed.class, property,
+					indexed -> createIndexSpecification(keyspace, indexed, property)));
+			indexes.addAll(createTypeAnnotatedIndexes(SAIIndexed.class, property,
+					indexed -> createIndexSpecification(keyspace, indexed, property)));
 		}
 
 		return indexes;
+	}
+
+	private static <T extends Annotation> List<CreateIndexSpecification> createTypeAnnotatedIndexes(
+			Class<T> annotationType, CassandraPersistentProperty property,
+			Function<T, CreateIndexSpecification> indexFunction) {
+
+		AnnotatedType type = property.findAnnotatedType(annotationType);
+
+		if (type instanceof AnnotatedParameterizedType parameterizedType) {
+
+			List<CreateIndexSpecification> indexes = new ArrayList<>(2);
+			AnnotatedType[] typeArgs = parameterizedType.getAnnotatedActualTypeArguments();
+
+			T keyIndex = typeArgs.length == 2 ? AnnotatedElementUtils.getMergedAnnotation(typeArgs[0], annotationType) : null;
+			T valueIndex = typeArgs.length == 2 ? AnnotatedElementUtils.getMergedAnnotation(typeArgs[1], annotationType)
+					: null;
+
+			if (keyIndex != null && valueIndex != null) {
+
+				throw new MappingException("Multiple index declarations for " + property
+						+ " found; A map index must be either declared for entries, keys or values");
+			}
+
+			if (keyIndex != null) {
+				indexes.add(indexFunction.apply(keyIndex).keys());
+			}
+
+			if (valueIndex != null) {
+				indexes.add(indexFunction.apply(valueIndex).values());
+			}
+
+			return indexes;
+		}
+
+		return Collections.emptyList();
 	}
 
 	static CreateIndexSpecification createIndexSpecification(@Nullable CqlIdentifier keyspace, Indexed annotation,
@@ -177,6 +202,27 @@ class IndexSpecificationFactory {
 
 			INDEX_CONFIGURERS.get(annotationType).accept(analyzed, index);
 		}
+
+		return index;
+	}
+
+	private static CreateIndexSpecification createIndexSpecification(@Nullable CqlIdentifier keyspace,
+			SAIIndexed annotation, CassandraPersistentProperty property) {
+
+		CreateIndexSpecification index;
+
+		if (StringUtils.hasText(annotation.value())) {
+			index = SpecificationBuilder.createIndex(keyspace, CqlIdentifier.fromCql(annotation.value()));
+		} else {
+			index = SpecificationBuilder.createIndex(keyspace, null);
+		}
+
+		index.using("sai") //
+				.columnName(property.getRequiredColumnName())
+				.withOption("case_sensitive", Boolean.toString(annotation.caseSensitive()))
+				.withOption("normalize", Boolean.toString(annotation.normalize()))
+				.withOption("ascii", Boolean.toString(annotation.ascii()))
+				.withOption("similarity_function", annotation.similarityFunction().name());
 
 		return index;
 	}

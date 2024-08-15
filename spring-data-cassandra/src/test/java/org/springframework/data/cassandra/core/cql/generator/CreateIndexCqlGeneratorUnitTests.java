@@ -97,6 +97,34 @@ class CreateIndexCqlGeneratorUnitTests {
 				.tableName(CqlIdentifier.fromInternal("order"));
 
 		assertThat(CqlGenerator.toCql(spec)).isEqualTo("CREATE INDEX order_dob ON \"order\" (\"order\");");
-
 	}
+
+	@Test // GH-1505
+	void createSaiIndex() {
+
+		CreateIndexSpecification spec = SpecificationBuilder.createIndex("my_index")
+				.tableName("comments_vs").columnName("comment_vector").using("sai");
+
+		assertThat(CqlGenerator.toCql(spec)).isEqualTo("CREATE INDEX my_index ON comments_vs (comment_vector) USING 'sai';");
+	}
+
+	@Test // GH-1505
+	void createSaiIndexOnKeys() {
+
+		CreateIndexSpecification spec = SpecificationBuilder.createIndex("my_index")
+				.tableName("comments_vs").columnName("comment_vector").columnFunction(CreateIndexSpecification.ColumnFunction.KEYS).using("sai");
+
+		assertThat(CqlGenerator.toCql(spec)).isEqualTo("CREATE INDEX my_index ON comments_vs (KEYS(comment_vector)) USING 'sai';");
+	}
+
+	@Test // GH-1505
+	void createSaiIndexWithOptions() {
+
+		CreateIndexSpecification spec = SpecificationBuilder.createIndex("my_index")
+				.tableName("comments_vs").columnName("comment_vector").using("sai")
+				.withOption("similarity_function", "DOT_PRODUCT");
+
+		assertThat(CqlGenerator.toCql(spec)).isEqualTo("CREATE INDEX my_index ON comments_vs (comment_vector) USING 'sai' WITH OPTIONS = {'similarity_function': 'DOT_PRODUCT'};");
+	}
+
 }

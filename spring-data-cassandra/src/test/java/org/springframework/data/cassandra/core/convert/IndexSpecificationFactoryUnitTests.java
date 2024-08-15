@@ -30,6 +30,7 @@ import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentE
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.Indexed;
 import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
+import org.springframework.data.cassandra.core.mapping.SAIIndexed;
 import org.springframework.data.cassandra.core.mapping.SASI;
 import org.springframework.data.cassandra.core.mapping.SASI.NonTokenizingAnalyzed;
 import org.springframework.data.cassandra.core.mapping.SASI.Normalization;
@@ -84,6 +85,45 @@ class IndexSpecificationFactoryUnitTests {
 		assertThat(entries.getTableName()).isNull();
 		assertThat(entries.getName()).isNull();
 		assertThat(entries.getColumnFunction()).isEqualTo(ColumnFunction.VALUES);
+	}
+
+	@Test // GH-1505
+	void createSaiIndexShouldCreateCreateIndexSpecification() {
+
+		CreateIndexSpecification simpleSasi = createIndexFor(IndexedType.class, "simpleSai");
+
+		assertThat(simpleSasi.getColumnName()).isEqualTo(CqlIdentifier.fromInternal("simplesai"));
+		assertThat(simpleSasi.getTableName()).isNull();
+		assertThat(simpleSasi.isCustom()).isFalse();
+		assertThat(simpleSasi.getUsing()).isEqualTo("sai");
+		assertThat(simpleSasi.getColumnFunction()).isEqualTo(ColumnFunction.NONE);
+		assertThat(simpleSasi.getOptions()).containsEntry("case_sensitive", "true").containsEntry("normalize", "false")
+				.containsEntry("ascii", "false").containsEntry("similarity_function", "COSINE");
+	}
+
+	@Test // GH-1505
+	void createSaiIndexShouldApplyIndexOptions() {
+
+		CreateIndexSpecification simpleSasi = createIndexFor(IndexedType.class, "customSai");
+
+		assertThat(simpleSasi.getName()).isEqualTo(CqlIdentifier.fromInternal("foo"));
+		assertThat(simpleSasi.getColumnName()).isEqualTo(CqlIdentifier.fromInternal("customsai"));
+		assertThat(simpleSasi.getTableName()).isNull();
+		assertThat(simpleSasi.isCustom()).isFalse();
+		assertThat(simpleSasi.getUsing()).isEqualTo("sai");
+		assertThat(simpleSasi.getColumnFunction()).isEqualTo(ColumnFunction.NONE);
+		assertThat(simpleSasi.getOptions()).containsEntry("case_sensitive", "false").containsEntry("normalize", "true")
+				.containsEntry("ascii", "true").containsEntry("similarity_function", "EUCLIDEAN");
+	}
+
+	@Test // GH-1505
+	void createSaiIndexMapKeyShouldCreateCreateIndexSpecification() {
+
+		CreateIndexSpecification simpleSasi = createIndexFor(SaiIndexedMapKeyProperty.class, "entries");
+
+		assertThat(simpleSasi.getColumnName()).isEqualTo(CqlIdentifier.fromInternal("entries"));
+		assertThat(simpleSasi.getUsing()).isEqualTo("sai");
+		assertThat(simpleSasi.getColumnFunction()).isEqualTo(ColumnFunction.KEYS);
 	}
 
 	@Test // DATACASS-306
@@ -155,12 +195,15 @@ class IndexSpecificationFactoryUnitTests {
 	}
 
 	private CreateIndexSpecification createIndexFor(Class<?> type, String property) {
+		return createIndexesFor(type, property).stream().findFirst().get();
+	}
+
+	private List<CreateIndexSpecification> createIndexesFor(Class<?> type, String property) {
 
 		BasicCassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(type);
 
-		return IndexSpecificationFactory
-				.createIndexSpecifications(entity.getKeyspace(), entity.getRequiredPersistentProperty(property)).stream()
-				.findFirst().get();
+		return IndexSpecificationFactory.createIndexSpecifications(entity.getKeyspace(),
+				entity.getRequiredPersistentProperty(property));
 	}
 
 	private static class IndexedType {
@@ -192,12 +235,27 @@ class IndexSpecificationFactoryUnitTests {
 		@SASI
 		@NonTokenizingAnalyzed(caseSensitive = false,
 				normalization = Normalization.LOWERCASE) String sasiNontokenizingLowercase;
+
+		@SAIIndexed String simpleSai;
+
+		@SAIIndexed(value = "foo", caseSensitive = false, normalize = true, ascii = true,
+				similarityFunction = SAIIndexed.SimilarityFunction.EUCLIDEAN) String customSai;
 	}
 
 	@AccessType(Type.PROPERTY)
 	private static class IndexedMapKeyProperty {
 
 		public Map<@Indexed String, String> getEntries() {
+			return null;
+		}
+
+		public void setEntries(Map<String, String> entries) {}
+	}
+
+	@AccessType(Type.PROPERTY)
+	private static class SaiIndexedMapKeyProperty {
+
+		public Map<@SAIIndexed String, String> getEntries() {
 			return null;
 		}
 
