@@ -32,7 +32,7 @@ import java.lang.annotation.Target;
  * <li>Map type</li>
  * </ul>
  * <p>
- * Map types distinguish allows entry, key or value-level indexing with the restriction that only a single secondary
+ * Map types distinguish between entry, key or value-level indexing with the restriction that only a single secondary
  * index is allowed.
  *
  * <pre class="code">
