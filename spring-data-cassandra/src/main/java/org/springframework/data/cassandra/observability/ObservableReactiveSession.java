@@ -50,12 +50,13 @@ public class ObservableReactiveSession implements ReactiveSession {
 
 	private final ObservationRegistry observationRegistry;
 
-	private final CassandraObservationConvention convention = new DefaultCassandraObservationConvention();
+	private final CassandraObservationConvention convention;
 
 	ObservableReactiveSession(ReactiveSession delegate, String remoteServiceName,
-			ObservationRegistry observationRegistry) {
+			CassandraObservationConvention convention, ObservationRegistry observationRegistry) {
 		this.delegate = delegate;
 		this.remoteServiceName = remoteServiceName;
+		this.convention = convention;
 		this.observationRegistry = observationRegistry;
 	}
 
@@ -67,19 +68,37 @@ public class ObservableReactiveSession implements ReactiveSession {
 	 * @return traced representation of a {@link ReactiveSession}.
 	 */
 	public static ReactiveSession create(ReactiveSession session, ObservationRegistry observationRegistry) {
-		return new ObservableReactiveSession(session, "Cassandra", observationRegistry);
+		return new ObservableReactiveSession(session, "Cassandra", DefaultCassandraObservationConvention.INSTANCE,
+				observationRegistry);
 	}
 
 	/**
 	 * Factory method for creation of a {@link ObservableReactiveSession}.
 	 *
 	 * @param session reactive session.
+	 * @param remoteServiceName the remote service name.
 	 * @param observationRegistry observation registry.
 	 * @return traced representation of a {@link ReactiveSession}.
 	 */
 	public static ReactiveSession create(ReactiveSession session, String remoteServiceName,
 			ObservationRegistry observationRegistry) {
-		return new ObservableReactiveSession(session, remoteServiceName, observationRegistry);
+		return new ObservableReactiveSession(session, remoteServiceName, DefaultCassandraObservationConvention.INSTANCE,
+				observationRegistry);
+	}
+
+	/**
+	 * Factory method for creation of a {@link ObservableReactiveSession}.
+	 *
+	 * @param session reactive session.
+	 * @param remoteServiceName the remote service name.
+	 * @param convention the observation convention.
+	 * @param observationRegistry observation registry.
+	 * @return traced representation of a {@link ReactiveSession}.
+	 * @since 4.3.4
+	 */
+	public static ReactiveSession create(ReactiveSession session, String remoteServiceName,
+			CassandraObservationConvention convention, ObservationRegistry observationRegistry) {
+		return new ObservableReactiveSession(session, remoteServiceName, convention, observationRegistry);
 	}
 
 	@Override

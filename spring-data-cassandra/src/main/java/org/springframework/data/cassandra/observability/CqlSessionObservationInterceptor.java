@@ -50,13 +50,14 @@ final class CqlSessionObservationInterceptor implements MethodInterceptor {
 
 	private final ObservationRegistry observationRegistry;
 
-	private final CassandraObservationConvention observationConvention = new DefaultCassandraObservationConvention();
+	private final CassandraObservationConvention convention;
 
 	CqlSessionObservationInterceptor(CqlSession delegate, String remoteServiceName,
-			ObservationRegistry observationRegistry) {
+			CassandraObservationConvention convention, ObservationRegistry observationRegistry) {
 
 		this.delegate = delegate;
 		this.remoteServiceName = remoteServiceName;
+		this.convention = convention;
 		this.observationRegistry = observationRegistry;
 	}
 
@@ -140,7 +141,7 @@ final class CqlSessionObservationInterceptor implements MethodInterceptor {
 			return SimpleStatement.newInstance((String) args[0]);
 		}
 
-		if (args[0]instanceof String query && args.length == 2) {
+		if (args[0] instanceof String query && args.length == 2) {
 			return args[1] instanceof Map //
 					? SimpleStatement.newInstance(query, (Map) args[1]) //
 					: SimpleStatement.newInstance(query, (Object[]) args[1]);
@@ -179,7 +180,7 @@ final class CqlSessionObservationInterceptor implements MethodInterceptor {
 								delegate.getContext().getSessionName(),
 								delegate.getKeyspace().map(CqlIdentifier::asInternal).orElse("system")),
 						observationRegistry)
-				.observationConvention(observationConvention);
+				.observationConvention(convention);
 
 		if (currentObservation != null) {
 			observation.parentObservation(currentObservation);

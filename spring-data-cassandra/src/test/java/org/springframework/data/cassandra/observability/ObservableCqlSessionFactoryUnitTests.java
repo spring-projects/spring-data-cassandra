@@ -21,6 +21,7 @@ import static org.mockito.Mockito.*;
 import io.micrometer.observation.ObservationRegistry;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.aop.support.AopUtils;
 
@@ -34,7 +35,7 @@ import com.datastax.oss.driver.api.core.CqlSession;
 class ObservableCqlSessionFactoryUnitTests {
 
 	@Test // GH-1426
-	void sessionFactoryBeanUnwrapsObservationProxy() throws Exception {
+	void sessionFactoryBeanUnwrapsObservationProxy() {
 
 		CqlSession session = mock(CqlSession.class);
 		ObservationRegistry registry = ObservationRegistry.NOOP;

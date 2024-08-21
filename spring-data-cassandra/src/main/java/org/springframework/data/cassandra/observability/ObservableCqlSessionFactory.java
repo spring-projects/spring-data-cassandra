@@ -17,8 +17,6 @@ package org.springframework.data.cassandra.observability;
 
 import io.micrometer.observation.ObservationRegistry;
 
-import org.springframework.aop.RawTargetAccess;
-import org.springframework.aop.TargetSource;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.data.cassandra.observability.CqlSessionObservationInterceptor.ObservationDecoratedProxy;
 import org.springframework.util.Assert;
@@ -58,20 +56,36 @@ public final class ObservableCqlSessionFactory {
 	 * @return
 	 */
 	public static CqlSession wrap(CqlSession session, String remoteServiceName, ObservationRegistry observationRegistry) {
+		return wrap(session, remoteServiceName, DefaultCassandraObservationConvention.INSTANCE, observationRegistry);
+	}
+
+	/**
+	 * Wrap the {@link CqlSession} with a {@link CqlSessionObservationInterceptor}.
+	 *
+	 * @param session must not be {@literal null}.
+	 * @param remoteServiceName must not be {@literal null}.
+	 * @param convention the observation convention.
+	 * @param observationRegistry must not be {@literal null}.
+	 * @return
+	 * @since 4.3.4
+	 */
+	public static CqlSession wrap(CqlSession session, String remoteServiceName, CassandraObservationConvention convention,
+			ObservationRegistry observationRegistry) {
 
 		Assert.notNull(session, "CqlSession must not be null");
-		Assert.notNull(remoteServiceName, "CqlSessionObservationConvention must not be null");
+		Assert.notNull(remoteServiceName, "Remote service name must not be null");
+		Assert.notNull(convention, "CassandraObservationConvention must not be null");
 		Assert.notNull(observationRegistry, "ObservationRegistry must not be null");
 
 		ProxyFactory proxyFactory = new ProxyFactory();
 
 		proxyFactory.setTarget(session);
-		proxyFactory.addAdvice(new CqlSessionObservationInterceptor(session, remoteServiceName, observationRegistry));
+		proxyFactory
+				.addAdvice(new CqlSessionObservationInterceptor(session, remoteServiceName, convention, observationRegistry));
 		proxyFactory.addInterface(CqlSession.class);
 		proxyFactory.addInterface(ObservationDecoratedProxy.class);
 
 		return (CqlSession) proxyFactory.getProxy();
 	}
-
 
 }

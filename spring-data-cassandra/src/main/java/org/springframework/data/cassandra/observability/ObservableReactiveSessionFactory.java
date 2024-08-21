@@ -55,11 +55,27 @@ public final class ObservableReactiveSessionFactory {
 	 */
 	public static ReactiveSession wrap(ReactiveSession session, String remoteServiceName,
 			ObservationRegistry observationRegistry) {
+		return wrap(session, remoteServiceName, DefaultCassandraObservationConvention.INSTANCE, observationRegistry);
+	}
+
+	/**
+	 * Wrap the {@link CqlSession} with a {@link CqlSessionObservationInterceptor}.
+	 *
+	 * @param session must not be {@literal null}.
+	 * @param remoteServiceName must not be {@literal null}.
+	 * @param convention the observation convention.
+	 * @param observationRegistry must not be {@literal null}.
+	 * @return
+	 * @since 4.3.4
+	 */
+	public static ReactiveSession wrap(ReactiveSession session, String remoteServiceName,
+			CassandraObservationConvention convention, ObservationRegistry observationRegistry) {
 
 		Assert.notNull(session, "CqlSession must not be null");
-		Assert.notNull(remoteServiceName, "CqlSessionObservationConvention must not be null");
+		Assert.notNull(remoteServiceName, "Remote service name must not be null");
+		Assert.notNull(convention, "CassandraObservationConvention must not be null");
 		Assert.notNull(observationRegistry, "ObservationRegistry must not be null");
 
-		return ObservableReactiveSession.create(session, remoteServiceName, observationRegistry);
+		return ObservableReactiveSession.create(session, remoteServiceName, convention, observationRegistry);
 	}
 }

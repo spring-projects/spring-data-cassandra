@@ -27,7 +27,7 @@ import io.micrometer.tracing.docs.EventValue;
  * @author Greg Turnquist
  * @since 4.0
  */
-enum CassandraObservation implements ObservationDocumentation {
+public enum CassandraObservation implements ObservationDocumentation {
 
 	/**
 	 * Create an {@link io.micrometer.observation.Observation} for Cassandra-based queries.
