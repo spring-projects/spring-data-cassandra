@@ -41,7 +41,9 @@ import com.datastax.oss.driver.api.core.metadata.Node;
  * @author Mark Paluch
  * @since 4.0
  */
-class DefaultCassandraObservationConvention implements CassandraObservationConvention {
+public class DefaultCassandraObservationConvention implements CassandraObservationConvention {
+
+	public static final CassandraObservationConvention INSTANCE = new DefaultCassandraObservationConvention();
 
 	@Override
 	public KeyValues getLowCardinalityKeyValues(CassandraObservationContext context) {
@@ -104,10 +106,10 @@ class DefaultCassandraObservationConvention implements CassandraObservationConve
 	}
 
 	@Nullable
-	private InetSocketAddress tryGetSocketAddress(EndPoint endPoint) {
+	protected InetSocketAddress tryGetSocketAddress(EndPoint endPoint) {
 
 		try {
-			if (endPoint.resolve()instanceof InetSocketAddress inet) {
+			if (endPoint.resolve() instanceof InetSocketAddress inet) {
 				return inet;
 			}
 
@@ -122,12 +124,27 @@ class DefaultCassandraObservationConvention implements CassandraObservationConve
 	}
 
 	/**
+	 * Tries to parse the CQL query or provides the default name.
+	 *
+	 * @param defaultName if there's no query
+	 * @return span name
+	 */
+	public String getOperationName(String cql, String defaultName) {
+
+		if (StringUtils.hasText(cql) && cql.indexOf(' ') > -1) {
+			return cql.substring(0, cql.indexOf(' '));
+		}
+
+		return defaultName;
+	}
+
+	/**
 	 * Extract the CQL query from the delegate {@link Statement}.
 	 *
 	 * @return string-based CQL of the delegate
 	 * @param statement
 	 */
-	private static String getCql(Statement<?> statement) {
+	protected static String getCql(Statement<?> statement) {
 
 		String query = "";
 
@@ -155,7 +172,7 @@ class DefaultCassandraObservationConvention implements CassandraObservationConve
 	 * @param statement
 	 * @return query
 	 */
-	private static String getQuery(Statement<?> statement) {
+	protected static String getQuery(Statement<?> statement) {
 
 		if (statement instanceof SimpleStatement) {
 			return ((SimpleStatement) statement).getQuery();
@@ -166,20 +183,5 @@ class DefaultCassandraObservationConvention implements CassandraObservationConve
 		}
 
 		return "";
-	}
-
-	/**
-	 * Tries to parse the CQL query or provides the default name.
-	 *
-	 * @param defaultName if there's no query
-	 * @return span name
-	 */
-	public String getOperationName(String cql, String defaultName) {
-
-		if (StringUtils.hasText(cql) && cql.indexOf(' ') > -1) {
-			return cql.substring(0, cql.indexOf(' '));
-		}
-
-		return defaultName;
 	}
 }

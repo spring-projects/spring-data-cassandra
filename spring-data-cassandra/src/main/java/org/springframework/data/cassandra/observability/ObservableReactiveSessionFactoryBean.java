@@ -50,6 +50,8 @@ public class ObservableReactiveSessionFactoryBean extends AbstractFactoryBean<Re
 
 	private @Nullable String remoteServiceName;
 
+	private CassandraObservationConvention convention = DefaultCassandraObservationConvention.INSTANCE;
+
 	/**
 	 * Construct a new {@link ObservableReactiveSessionFactoryBean}.
 	 *
@@ -85,33 +87,9 @@ public class ObservableReactiveSessionFactoryBean extends AbstractFactoryBean<Re
 		this.observationRegistry = observationRegistry;
 	}
 
-	@Override
-	protected ReactiveSession createInstance() {
-
-		if (ObjectUtils.isEmpty(getRemoteServiceName())) {
-			return ObservableReactiveSessionFactory.wrap(new DefaultBridgedReactiveSession(cqlSession), observationRegistry);
-		}
-
-		return ObservableReactiveSessionFactory.wrap(new DefaultBridgedReactiveSession(cqlSession), getRemoteServiceName(),
-				observationRegistry);
-	}
-
-	@Override
-	public Class<?> getObjectType() {
-		return ReactiveSession.class;
-	}
-
 	@Nullable
 	public String getRemoteServiceName() {
 		return remoteServiceName;
-	}
-
-	@Override
-	public void destroy() {
-
-		if (requiresDestroy) {
-			cqlSession.close();
-		}
 	}
 
 	/**
@@ -122,4 +100,37 @@ public class ObservableReactiveSessionFactoryBean extends AbstractFactoryBean<Re
 	public void setRemoteServiceName(@Nullable String remoteServiceName) {
 		this.remoteServiceName = remoteServiceName;
 	}
+
+	/**
+	 * Set the observation convention.
+	 *
+	 * @param convention
+	 * @since 4.3.4
+	 */
+	public void setConvention(CassandraObservationConvention convention) {
+		this.convention = convention;
+	}
+
+	@Override
+	protected ReactiveSession createInstance() {
+
+		String remoteServiceName = ObjectUtils.isEmpty(getRemoteServiceName()) ? "Cassandra" : getRemoteServiceName();
+
+		return ObservableReactiveSessionFactory.wrap(new DefaultBridgedReactiveSession(cqlSession), remoteServiceName,
+				convention, observationRegistry);
+	}
+
+	@Override
+	public Class<?> getObjectType() {
+		return ReactiveSession.class;
+	}
+
+	@Override
+	public void destroy() {
+
+		if (requiresDestroy) {
+			cqlSession.close();
+		}
+	}
+
 }

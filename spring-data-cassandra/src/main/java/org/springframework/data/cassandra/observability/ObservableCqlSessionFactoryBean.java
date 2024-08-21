@@ -43,6 +43,8 @@ public class ObservableCqlSessionFactoryBean extends AbstractFactoryBean<CqlSess
 
 	private @Nullable String remoteServiceName;
 
+	private CassandraObservationConvention convention = DefaultCassandraObservationConvention.INSTANCE;
+
 	/**
 	 * Construct a new {@link ObservableCqlSessionFactoryBean}.
 	 *
@@ -58,16 +60,39 @@ public class ObservableCqlSessionFactoryBean extends AbstractFactoryBean<CqlSess
 		this.observationRegistry = observationRegistry;
 	}
 
+	@Nullable
+	public String getRemoteServiceName() {
+		return remoteServiceName;
+	}
+
+	/**
+	 * Set the remote service name.
+	 *
+	 * @param remoteServiceName
+	 */
+	public void setRemoteServiceName(@Nullable String remoteServiceName) {
+		this.remoteServiceName = remoteServiceName;
+	}
+
+	/**
+	 * Set the observation convention.
+	 *
+	 * @param convention
+	 * @since 4.3.4
+	 */
+	public void setConvention(CassandraObservationConvention convention) {
+		this.convention = convention;
+	}
+
 	@Override
 	protected CqlSession createInstance() {
 
 		cqlSessionBuilder.addRequestTracker(ObservationRequestTracker.INSTANCE);
 
-		if (ObjectUtils.isEmpty(getRemoteServiceName())) {
-			return ObservableCqlSessionFactory.wrap(cqlSessionBuilder.build(), observationRegistry);
-		}
+		String remoteServiceName = ObjectUtils.isEmpty(getRemoteServiceName()) ? "Cassandra" : getRemoteServiceName();
 
-		return ObservableCqlSessionFactory.wrap(cqlSessionBuilder.build(), getRemoteServiceName(), observationRegistry);
+		return ObservableCqlSessionFactory.wrap(cqlSessionBuilder.build(), remoteServiceName, convention,
+				observationRegistry);
 	}
 
 	@Override
@@ -82,17 +107,4 @@ public class ObservableCqlSessionFactoryBean extends AbstractFactoryBean<CqlSess
 		return CqlSession.class;
 	}
 
-	@Nullable
-	public String getRemoteServiceName() {
-		return remoteServiceName;
-	}
-
-	/**
-	 * Set the remote service name.
-	 *
-	 * @param remoteServiceName
-	 */
-	public void setRemoteServiceName(@Nullable String remoteServiceName) {
-		this.remoteServiceName = remoteServiceName;
-	}
 }

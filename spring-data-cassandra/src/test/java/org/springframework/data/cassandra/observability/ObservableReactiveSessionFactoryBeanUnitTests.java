@@ -96,4 +96,23 @@ class ObservableReactiveSessionFactoryBeanUnitTests {
 
 		verifyNoInteractions(sessionMock);
 	}
+
+	@Test // GH-1490
+	void considersConvention() throws Exception {
+
+		CqlSession sessionMock = mock(CqlSession.class);
+		CassandraObservationConvention conventionMock = mock(CassandraObservationConvention.class);
+		ObservationRegistry registry = ObservationRegistry.NOOP;
+
+		CqlSession wrapped = ObservableCqlSessionFactory.wrap(sessionMock, registry);
+
+		ObservableReactiveSessionFactoryBean bean = new ObservableReactiveSessionFactoryBean(wrapped, registry);
+		bean.setConvention(conventionMock);
+		bean.afterPropertiesSet();
+
+		ReactiveSession object = bean.getObject();
+		Object usedConvention = ReflectionTestUtils.getField(object, "convention");
+
+		assertThat(usedConvention).isSameAs(conventionMock);
+	}
 }
