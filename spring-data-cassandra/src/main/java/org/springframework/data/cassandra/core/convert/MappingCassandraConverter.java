@@ -162,6 +162,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 				this::getCustomConversions);
 		this.embeddedEntityOperations = new EmbeddedEntityOperations(mappingContext);
 		this.spELContext = new SpELContext(RowReaderPropertyAccessor.INSTANCE);
+
+		getCustomConversions().registerConvertersIn((DefaultConversionService) getConversionService());
 	}
 
 	/**
@@ -972,7 +974,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			return getConversionService().convert(value, resolvedTargetType);
 		}
 
-		if (value instanceof Collection) {
+		if (value instanceof Collection && columnType.isCollectionLike()) {
 			return writeCollectionInternal((Collection<Object>) value, columnType);
 		}
 
@@ -1015,7 +1017,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 			}
 		}
 
-		if (getCustomConversions().isSimpleType(value.getClass())) {
+		if (getCustomConversions().isSimpleType(value.getClass()) || getCustomConversions().isSimpleType(requestedTargetType)) {
 			return getPotentiallyConvertedSimpleValue(value, requestedTargetType);
 		}
 

@@ -15,13 +15,14 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.convert.SchemaFactory;
 import org.springframework.data.cassandra.core.cql.SessionCallback;
 import org.springframework.data.cassandra.core.cql.generator.CqlGenerator;
-import org.springframework.data.cassandra.core.cql.generator.CreateTableCqlGenerator;
+import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateUserTypeSpecification;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
@@ -79,8 +80,12 @@ public class SchemaTestUtils {
 					.flatMap(it -> it.getTable(persistentEntity.getTableName()));
 
 			if (!table.isPresent()) {
+
 				CreateTableSpecification tableSpecification = schemaFactory.getCreateTableSpecificationFor(persistentEntity);
-				operations.getCqlOperations().execute(new CreateTableCqlGenerator(tableSpecification).toCql());
+				operations.getCqlOperations().execute(CqlGenerator.toCql(tableSpecification));
+
+				List<CreateIndexSpecification> indexes = schemaFactory.getCreateIndexSpecificationsFor(persistentEntity);
+				indexes.forEach(index -> operations.getCqlOperations().execute(CqlGenerator.toCql(index)));
 			}
 			return null;
 		});

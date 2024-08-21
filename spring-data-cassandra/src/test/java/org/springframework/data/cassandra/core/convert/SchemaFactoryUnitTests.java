@@ -44,11 +44,13 @@ import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecifica
 import org.springframework.data.cassandra.core.mapping.*;
 import org.springframework.data.cassandra.domain.AllPossibleTypes;
 import org.springframework.data.cassandra.support.UserDefinedTypeBuilder;
+import org.springframework.data.domain.Vector;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.util.StringUtils;
 
 import com.datastax.driver.core.UDTValue;
 import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.data.CqlVector;
 import com.datastax.oss.driver.api.core.data.TupleValue;
 import com.datastax.oss.driver.api.core.data.UdtValue;
 import com.datastax.oss.driver.api.core.type.DataType;
@@ -965,5 +967,54 @@ public class SchemaFactoryUnitTests {
 		@PrimaryKey PersonKey key;
 
 		int age;
+	}
+
+	@Test // GH-1504
+	void shouldCreateTableWithVector() {
+
+		CassandraPersistentEntity<?> persistentEntity = mappingContext.getRequiredPersistentEntity(TypeWithVector.class);
+
+		CreateTableSpecification tableSpecification = schemaFactory.getCreateTableSpecificationFor(persistentEntity);
+
+		ColumnSpecification cqlvector = tableSpecification.getColumns().get(1);
+		assertThat(cqlvector.getName().toString()).isEqualTo("cqlvector");
+		assertThat(cqlvector.getType()).isEqualTo(DataTypes.vectorOf(DataTypes.FLOAT, 5));
+	}
+
+	@Test // GH-1504
+	void shouldFailOnMissingCqlVectorAnnotation() {
+
+		assertThatExceptionOfType(MappingException.class)
+				.isThrownBy(() -> schemaFactory.getCreateTableSpecificationFor(
+						mappingContext.getRequiredPersistentEntity(TypeWithCqlVectorMissingAnnotation.class)))
+				.withMessageContaining("@VectorType");
+
+		assertThatExceptionOfType(MappingException.class)
+				.isThrownBy(() -> schemaFactory.getCreateTableSpecificationFor(
+						mappingContext.getRequiredPersistentEntity(TypeWithVectorMissingAnnotation.class)))
+				.withMessageContaining("@VectorType");
+	}
+
+	@Table
+	private static class TypeWithVector {
+		@Id String id;
+
+		@VectorType(dimensions = 5) CqlVector<Float> cqlVector;
+	}
+
+	@Table
+	private static class TypeWithCqlVectorMissingAnnotation {
+
+		@Id String id;
+
+		CqlVector<Float> cqlVector;
+	}
+
+	@Table
+	private static class TypeWithVectorMissingAnnotation {
+
+		@Id String id;
+
+		Vector cqlVector;
 	}
 }

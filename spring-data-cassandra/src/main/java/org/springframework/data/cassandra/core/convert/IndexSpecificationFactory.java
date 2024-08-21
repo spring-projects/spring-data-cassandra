@@ -31,17 +31,19 @@ import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecifica
 import org.springframework.data.cassandra.core.cql.keyspace.SpecificationBuilder;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.mapping.Indexed;
-import org.springframework.data.cassandra.core.mapping.SAIIndexed;
 import org.springframework.data.cassandra.core.mapping.SASI;
 import org.springframework.data.cassandra.core.mapping.SASI.NonTokenizingAnalyzed;
 import org.springframework.data.cassandra.core.mapping.SASI.Normalization;
 import org.springframework.data.cassandra.core.mapping.SASI.StandardAnalyzed;
+import org.springframework.data.cassandra.core.mapping.SaiIndexed;
+import org.springframework.data.domain.Vector;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.data.CqlVector;
 
 /**
  * Factory to create {@link org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification} based on
@@ -52,7 +54,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * @since 2.0
  * @see Indexed
  * @see SASI
- * @see SAIIndexed
+ * @see SaiIndexed
  */
 @SuppressWarnings("unchecked")
 class IndexSpecificationFactory {
@@ -98,10 +100,10 @@ class IndexSpecificationFactory {
 			indexes.add(createIndexSpecification(keyspace, property.getRequiredAnnotation(SASI.class), property));
 		}
 
-		if (property.isAnnotationPresent(SAIIndexed.class)) {
+		if (property.isAnnotationPresent(SaiIndexed.class)) {
 
 			CreateIndexSpecification index = createIndexSpecification(keyspace,
-					property.getRequiredAnnotation(SAIIndexed.class), property);
+					property.getRequiredAnnotation(SaiIndexed.class), property);
 
 			if (property.isMapLike()) {
 				index.entries();
@@ -114,7 +116,7 @@ class IndexSpecificationFactory {
 
 			indexes.addAll(createTypeAnnotatedIndexes(Indexed.class, property,
 					indexed -> createIndexSpecification(keyspace, indexed, property)));
-			indexes.addAll(createTypeAnnotatedIndexes(SAIIndexed.class, property,
+			indexes.addAll(createTypeAnnotatedIndexes(SaiIndexed.class, property,
 					indexed -> createIndexSpecification(keyspace, indexed, property)));
 		}
 
@@ -207,7 +209,7 @@ class IndexSpecificationFactory {
 	}
 
 	private static CreateIndexSpecification createIndexSpecification(@Nullable CqlIdentifier keyspace,
-			SAIIndexed annotation, CassandraPersistentProperty property) {
+			SaiIndexed annotation, CassandraPersistentProperty property) {
 
 		CreateIndexSpecification index;
 
@@ -217,14 +219,20 @@ class IndexSpecificationFactory {
 			index = SpecificationBuilder.createIndex(keyspace, null);
 		}
 
-		index.using("sai") //
-				.columnName(property.getRequiredColumnName())
-				.withOption("case_sensitive", Boolean.toString(annotation.caseSensitive()))
-				.withOption("normalize", Boolean.toString(annotation.normalize()))
-				.withOption("ascii", Boolean.toString(annotation.ascii()))
-				.withOption("similarity_function", annotation.similarityFunction().name());
+		CreateIndexSpecification sai = index.using("sai") //
+				.columnName(property.getRequiredColumnName());
 
-		return index;
+		if (isVector(property.getType())) {
+			return sai.withOption("similarity_function", annotation.similarityFunction().name());
+		} else {
+			return sai.withOption("case_sensitive", Boolean.toString(annotation.caseSensitive()))
+					.withOption("normalize", Boolean.toString(annotation.normalize()))
+					.withOption("ascii", Boolean.toString(annotation.ascii()));
+		}
+	}
+
+	private static boolean isVector(Class<?> type) {
+		return type.equals(CqlVector.class) || Vector.class.isAssignableFrom(type);
 	}
 
 	interface CreateIndexConfigurer<T extends Annotation> extends BiConsumer<T, CreateIndexSpecification> {}

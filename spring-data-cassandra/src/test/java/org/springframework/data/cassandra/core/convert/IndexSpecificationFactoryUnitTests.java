@@ -30,13 +30,15 @@ import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentE
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.Indexed;
 import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
-import org.springframework.data.cassandra.core.mapping.SAIIndexed;
 import org.springframework.data.cassandra.core.mapping.SASI;
 import org.springframework.data.cassandra.core.mapping.SASI.NonTokenizingAnalyzed;
 import org.springframework.data.cassandra.core.mapping.SASI.Normalization;
 import org.springframework.data.cassandra.core.mapping.SASI.StandardAnalyzed;
+import org.springframework.data.cassandra.core.mapping.SaiIndexed;
+import org.springframework.data.cassandra.core.mapping.SimilarityFunction;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.data.CqlVector;
 
 /**
  * Unit tests for {@link IndexSpecificationFactory}.
@@ -98,22 +100,36 @@ class IndexSpecificationFactoryUnitTests {
 		assertThat(simpleSasi.getUsing()).isEqualTo("sai");
 		assertThat(simpleSasi.getColumnFunction()).isEqualTo(ColumnFunction.NONE);
 		assertThat(simpleSasi.getOptions()).containsEntry("case_sensitive", "true").containsEntry("normalize", "false")
-				.containsEntry("ascii", "false").containsEntry("similarity_function", "COSINE");
+				.containsEntry("ascii", "false").doesNotContainKey("similarity_function");
 	}
 
 	@Test // GH-1505
 	void createSaiIndexShouldApplyIndexOptions() {
 
-		CreateIndexSpecification simpleSasi = createIndexFor(IndexedType.class, "customSai");
+		CreateIndexSpecification simpleSai = createIndexFor(IndexedType.class, "customSai");
 
-		assertThat(simpleSasi.getName()).isEqualTo(CqlIdentifier.fromInternal("foo"));
-		assertThat(simpleSasi.getColumnName()).isEqualTo(CqlIdentifier.fromInternal("customsai"));
-		assertThat(simpleSasi.getTableName()).isNull();
-		assertThat(simpleSasi.isCustom()).isFalse();
-		assertThat(simpleSasi.getUsing()).isEqualTo("sai");
-		assertThat(simpleSasi.getColumnFunction()).isEqualTo(ColumnFunction.NONE);
-		assertThat(simpleSasi.getOptions()).containsEntry("case_sensitive", "false").containsEntry("normalize", "true")
-				.containsEntry("ascii", "true").containsEntry("similarity_function", "EUCLIDEAN");
+		assertThat(simpleSai.getName()).isEqualTo(CqlIdentifier.fromInternal("foo"));
+		assertThat(simpleSai.getColumnName()).isEqualTo(CqlIdentifier.fromInternal("customsai"));
+		assertThat(simpleSai.getTableName()).isNull();
+		assertThat(simpleSai.isCustom()).isFalse();
+		assertThat(simpleSai.getUsing()).isEqualTo("sai");
+		assertThat(simpleSai.getColumnFunction()).isEqualTo(ColumnFunction.NONE);
+		assertThat(simpleSai.getOptions()).containsEntry("case_sensitive", "false").containsEntry("normalize", "true")
+				.containsEntry("ascii", "true").doesNotContainKey("similarity_function");
+	}
+
+	@Test // GH-1504
+	void createSaiIndexShouldApplyVectorIndexOptions() {
+
+		CreateIndexSpecification vector = createIndexFor(IndexedType.class, "someVector");
+
+		assertThat(vector.getName()).isNull();
+		assertThat(vector.getColumnName()).isEqualTo(CqlIdentifier.fromInternal("somevector"));
+		assertThat(vector.getTableName()).isNull();
+		assertThat(vector.isCustom()).isFalse();
+		assertThat(vector.getUsing()).isEqualTo("sai");
+		assertThat(vector.getColumnFunction()).isEqualTo(ColumnFunction.NONE);
+		assertThat(vector.getOptions()).hasSize(1).containsEntry("similarity_function", "COSINE");
 	}
 
 	@Test // GH-1505
@@ -236,10 +252,12 @@ class IndexSpecificationFactoryUnitTests {
 		@NonTokenizingAnalyzed(caseSensitive = false,
 				normalization = Normalization.LOWERCASE) String sasiNontokenizingLowercase;
 
-		@SAIIndexed String simpleSai;
+		@SaiIndexed String simpleSai;
 
-		@SAIIndexed(value = "foo", caseSensitive = false, normalize = true, ascii = true,
-				similarityFunction = SAIIndexed.SimilarityFunction.EUCLIDEAN) String customSai;
+		@SaiIndexed CqlVector<?> someVector;
+
+		@SaiIndexed(value = "foo", caseSensitive = false, normalize = true, ascii = true,
+				similarityFunction = SimilarityFunction.EUCLIDEAN) String customSai;
 	}
 
 	@AccessType(Type.PROPERTY)
@@ -255,7 +273,7 @@ class IndexSpecificationFactoryUnitTests {
 	@AccessType(Type.PROPERTY)
 	private static class SaiIndexedMapKeyProperty {
 
-		public Map<@SAIIndexed String, String> getEntries() {
+		public Map<@SaiIndexed String, String> getEntries() {
 			return null;
 		}
 

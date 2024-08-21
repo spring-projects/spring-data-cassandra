@@ -36,7 +36,7 @@ class CassandraSimpleTypeHolderUnitTests {
 	@Test // DATACASS-488
 	void shouldResolveTypeNamesForAllPrimaryTypes() {
 
-		EnumSet<Name> excluded = EnumSet.of(Name.MAP, Name.SET, Name.LIST, Name.UDT, Name.TUPLE);
+		EnumSet<Name> excluded = EnumSet.of(Name.MAP, Name.SET, Name.LIST, Name.UDT, Name.TUPLE, Name.VECTOR);
 
 		for (Name name : Name.values()) {
 

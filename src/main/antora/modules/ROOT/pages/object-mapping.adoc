@@ -79,6 +79,9 @@ The following table maps Spring Data types to Cassandra types:
 | `UDTValue`, mapped User-Defined Types
 | user type
 
+| `Vector`, `CqlVector`
+| `vector<…>`
+
 | `java.util.Map<K, V>`
 | `map`
 
@@ -374,7 +377,7 @@ Opposite to this behavior `USE_EMPTY` tries to create a new instance using eithe
 ----
 public class User {
 
-	@PrimaryKey("user_id")
+    @PrimaryKey("user_id")
     private String userId;
 
     @Embedded(onEmpty = USE_NULL) <1>
@@ -448,8 +451,12 @@ Properties of the embedded object are flattened into the structure of its parent
 Describes the index to be created at session initialization.
 * `@SASI`: Applied at the field level.
 Allows SASI index creation during session initialization.
+* `@SaiIndexed`: Applied at the field level.
+Allows to define SAI (storage-attached indexes) index creation during session initialization.
 * `@CassandraType`: Applied at the field level to specify a Cassandra data type.
 Types are derived from the property declaration by default.
+* `@VectorType`: Applied at the field level to specify the Cassandra vector type.
+This annotation is required when using schema generation.
 * `@Frozen`: Applied at the field level to class-types and parametrized types.
 Declares a frozen UDT column or frozen collection like `List<@Frozen UserDefinedPersonType>`.
 * `@UserDefinedType`: Applied at the type level to specify a Cassandra User-defined Data Type (UDT).
@@ -500,7 +507,7 @@ include::example$mapping/Coordinates.java[tags=class]
 [[mapping.index-creation]]
 ==== Index Creation
 
-You can annotate particular entity properties with `@Indexed` or `@SASI` if you wish to create secondary indexes on application startup.
+You can annotate particular entity properties with `@Indexed`, `@SaiIndexed`, or `@SASI` if you wish to create secondary indexes on application startup.
 Index creation creates simple secondary indexes for scalar types, user-defined types, and collection types.
 
 You can configure a SASI Index to apply an analyzer, such as `StandardAnalyzer` or `NonTokenizingAnalyzer` (by using
@@ -520,7 +527,7 @@ include::example$mapping/PersonWithIndexes.java[tags=class]
 
 [NOTE]
 ====
-The `@Indexed` annotation can be applied to single properties of embedded entities or along side with the `@Embedded` annotation, in which case all properties of the embedded are indexed.
+The `@Indexed` annotation can be applied to single properties of embedded entities or along with the `@Embedded` annotation, in which case all properties of the embedded are indexed.
 ====
 
 CAUTION: Index creation on session initialization may have a severe performance impact on application startup.

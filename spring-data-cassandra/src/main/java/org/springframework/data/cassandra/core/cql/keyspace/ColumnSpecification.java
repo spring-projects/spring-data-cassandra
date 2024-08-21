@@ -25,6 +25,7 @@ import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.type.DataType;
+import com.datastax.oss.driver.api.core.type.VectorType;
 
 /**
  * Object to configure a CQL column specification.
@@ -222,15 +223,22 @@ public class ColumnSpecification {
 	}
 
 	public StringBuilder toCql(StringBuilder cql) {
-		return cql.append(name.asCql(true)).append(" ").append(type.asCql(true, true));
+		return cql.append(name.asCql(true)).append(" ").append(renderType());
+	}
+
+	private String renderType() {
+
+		// TODO 'org.apache.cassandra.db.marshal.VectorType(1536)'
+		if (type instanceof VectorType vt) {
+			return "vector<%s, %d>".formatted(vt.getElementType().asCql(true, true), vt.getDimensions());
+		}
+
+		return type.asCql(true, true);
 	}
 
 	@Override
 	public String toString() {
-		return toCql(new StringBuilder()).append(" /* ")
-				.append("keyType=").append(keyType).append(", ")
-				.append("ordering=").append(ordering).append(", ")
-				.append("isStatic=").append(isStatic)
-				.append(" */ ").toString();
+		return toCql(new StringBuilder()).append(" /* ").append("keyType=").append(keyType).append(", ").append("ordering=")
+				.append(ordering).append(", ").append("isStatic=").append(isStatic).append(" */ ").toString();
 	}
 }

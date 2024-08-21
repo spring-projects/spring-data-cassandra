@@ -13,38 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.cassandra.example.mapping;
+// tag::file[]
+package org.springframework.data.cassandra.example;
 
-import java.util.Map;
-
-import org.springframework.data.annotation.Id;
-import org.springframework.data.cassandra.core.mapping.Indexed;
-import org.springframework.data.cassandra.core.mapping.SASI;
-import org.springframework.data.cassandra.core.mapping.SASI.StandardAnalyzed;
+import org.springframework.data.cassandra.core.mapping.PrimaryKey;
 import org.springframework.data.cassandra.core.mapping.Table;
 
 // tag::class[]
 @Table
-class PersonWithIndexes {
+class Comments {
 
-  @Id
-  private String key;
+	@Id UUID id;
+	String comment;
 
-  @SASI
-  @StandardAnalyzed
-  private String names;
+	@VectorType(dimensions = 5)
+	@SaiIndexed Vector vector;
+}
 
-  @SaiIndexed
-  @VectorType(dimensions = 1536) // required for table generation
-  private Vector vector;
+class CommentSearch {
 
-  @Indexed("indexed_map")
-  private Map<String, String> entries;
+	String comment;
 
-  private Map<@Indexed String, String> keys;
-
-  private Map<String, @Indexed String> values;
-
-  // …
+	float similarity;
 }
 // end::class[]
+
+// end::file[]

@@ -20,16 +20,22 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.function.Function;
 
+import org.springframework.data.cassandra.core.convert.CassandraVector;
+import org.springframework.data.cassandra.core.mapping.SimilarityFunction;
+import org.springframework.data.domain.Vector;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.data.CqlVector;
 
 /**
  * Value object to abstract column names involved in a CQL query. Columns can be constructed from an array of names and
@@ -128,7 +134,7 @@ public class Columns implements Iterable<ColumnName> {
 	 * @return a new {@link Columns} object containing all column definitions and the TTL for {@code columnName}.
 	 */
 	public Columns ttl(String columnName) {
-		return select(columnName, FunctionCall.from("TTL", ColumnSelector.from(columnName)));
+		return select(columnName, SelectorBuilder::ttl);
 	}
 
 	/**
@@ -139,7 +145,7 @@ public class Columns implements Iterable<ColumnName> {
 	 * @return a new {@link Columns} object containing all column definitions and the TTL for {@code columnName}.
 	 */
 	public Columns ttl(CqlIdentifier columnName) {
-		return select(columnName, FunctionCall.from("TTL", ColumnSelector.from(columnName)));
+		return select(columnName, SelectorBuilder::ttl);
 	}
 
 	/**
@@ -150,13 +156,35 @@ public class Columns implements Iterable<ColumnName> {
 	 * @return a new {@link Columns} object containing all column definitions and the selected {@code columnName}.
 	 */
 	public Columns select(String columnName, Selector selector) {
+		return select(ColumnName.from(columnName), selector);
+	}
 
-		Assert.notNull(columnName, "Column name must not be null");
+	/**
+	 * Include column {@code columnName} with a built {@link Selector}. This column selection overrides an existing
+	 * selection for the column name.
+	 *
+	 * @param columnName must not be {@literal null}.
+	 * @return a new {@link Columns} object containing all column definitions and the selected {@code columnName}.
+	 * @since 4.5
+	 */
+	public Columns select(CqlIdentifier columnName, Function<SelectorBuilder, Selector> builder) {
 
-		Map<ColumnName, Selector> result = new LinkedHashMap<>(this.columns);
-		result.put(ColumnName.from(columnName), selector);
+		ColumnName from = ColumnName.from(columnName);
+		return select(from, builder.apply(new DefaultSelectorBuilder(from)));
+	}
 
-		return new Columns(result);
+	/**
+	 * Include column {@code columnName} with a built {@link Selector}. This column selection overrides an existing
+	 * selection for the column name.
+	 *
+	 * @param columnName must not be {@literal null}.
+	 * @return a new {@link Columns} object containing all column definitions and the selected {@code columnName}.
+	 * @since 4.5
+	 */
+	public Columns select(String columnName, Function<SelectorBuilder, Selector> builder) {
+
+		ColumnName from = ColumnName.from(columnName);
+		return select(from, builder.apply(new DefaultSelectorBuilder(from)));
 	}
 
 	/**
@@ -167,11 +195,20 @@ public class Columns implements Iterable<ColumnName> {
 	 * @return a new {@link Columns} object containing all column definitions and the selected {@code columnName}.
 	 */
 	public Columns select(CqlIdentifier columnName, Selector selector) {
+		return select(ColumnName.from(columnName), selector);
+	}
 
-		Assert.notNull(columnName, "Column name must not be null");
+	/**
+	 * Include column {@code columnName} with {@link Selector}. This column selection overrides an existing selection for
+	 * the column name.
+	 *
+	 * @param columnName must not be {@literal null}.
+	 * @return a new {@link Columns} object containing all column definitions and the selected {@code columnName}.
+	 */
+	private Columns select(ColumnName columnName, Selector selector) {
 
 		Map<ColumnName, Selector> result = new LinkedHashMap<>(this.columns);
-		result.put(ColumnName.from(columnName), selector);
+		result.put(columnName, selector);
 
 		return new Columns(result);
 	}
@@ -244,7 +281,7 @@ public class Columns implements Iterable<ColumnName> {
 		Iterator<Entry<ColumnName, Selector>> iterator = this.columns.entrySet().iterator();
 		StringBuilder builder = toString(iterator);
 
-		if (builder.length() == 0) {
+		if (builder.isEmpty()) {
 			return "*";
 		}
 
@@ -275,15 +312,36 @@ public class Columns implements Iterable<ColumnName> {
 	}
 
 	/**
-	 * Strategy interface to render a column selection.
+	 * Strategy interface to render a column or function selection.
 	 *
 	 * @author Mark Paluch
 	 */
 	public interface Selector {
 
+		/**
+		 * Apply the given {@code alias} to the current {@link Selector} expression.
+		 *
+		 * @param alias
+		 * @return the aliased {@code Selector} expression.
+		 * @since 4.5
+		 */
+		default Selector as(String alias) {
+			return as(CqlIdentifier.fromCql(alias));
+		}
+
+		/**
+		 * Apply the given {@code alias} to the current {@link Selector} expression.
+		 *
+		 * @param alias
+		 * @return the aliased {@code Selector} expression.
+		 * @since 4.5
+		 */
+		Selector as(CqlIdentifier alias);
+
 		String getExpression();
 
 		Optional<CqlIdentifier> getAlias();
+
 	}
 
 	/**
@@ -337,35 +395,22 @@ public class Columns implements Iterable<ColumnName> {
 		/**
 		 * Create a {@link ColumnSelector} for the current {@link #getExpression() expression} aliased as {@code alias}.
 		 *
-		 * @param alias must not be {@literal null} or empty.
-		 * @return the aliased {@link ColumnSelector}.
-		 */
-		public ColumnSelector as(String alias) {
-			return as(CqlIdentifier.fromCql(alias));
-		}
-
-		/**
-		 * Create a {@link ColumnSelector} for the current {@link #getExpression() expression} aliased as {@code alias}.
-		 *
 		 * @param alias must not be {@literal null}.
 		 * @return the aliased {@link ColumnSelector}.
 		 */
+		@Override
 		public ColumnSelector as(CqlIdentifier alias) {
 			return new ColumnSelector(columnName, alias);
 		}
 
+		@Override
 		public Optional<CqlIdentifier> getAlias() {
 			return alias;
 		}
 
+		@Override
 		public String getExpression() {
 			return columnName.toCql();
-		}
-
-		@Override
-		public String toString() {
-			return getAlias().map(cqlIdentifier -> String.format("%s AS %s", getExpression(), cqlIdentifier))
-					.orElseGet(this::getExpression);
 		}
 
 		@Override
@@ -388,6 +433,12 @@ public class Columns implements Iterable<ColumnName> {
 			int result = ObjectUtils.nullSafeHashCode(columnName);
 			result = 31 * result + ObjectUtils.nullSafeHashCode(alias);
 			return result;
+		}
+
+		@Override
+		public String toString() {
+			return getAlias().map(cqlIdentifier -> String.format("%s AS %s", getExpression(), cqlIdentifier))
+					.orElseGet(this::getExpression);
 		}
 	}
 
@@ -421,19 +472,10 @@ public class Columns implements Iterable<ColumnName> {
 		/**
 		 * Create a {@link FunctionCall} for the current {@link #getExpression() expression} aliased as {@code alias}.
 		 *
-		 * @param alias must not be {@literal null} or empty.
-		 * @return the aliased {@link ColumnSelector}.
-		 */
-		public FunctionCall as(String alias) {
-			return as(CqlIdentifier.fromCql(alias));
-		}
-
-		/**
-		 * Create a {@link FunctionCall} for the current {@link #getExpression() expression} aliased as {@code alias}.
-		 *
 		 * @param alias must not be {@literal null}.
 		 * @return the aliased {@link ColumnSelector}.
 		 */
+		@Override
 		public FunctionCall as(CqlIdentifier alias) {
 			return new FunctionCall(expression, params, alias);
 		}
@@ -450,16 +492,6 @@ public class Columns implements Iterable<ColumnName> {
 
 		public List<Object> getParameters() {
 			return params;
-		}
-
-		@Override
-		public String toString() {
-
-			String parameters = StringUtils.collectionToDelimitedString(getParameters(), ", ");
-
-			return getAlias()
-					.map(cqlIdentifier -> String.format("%s(%s) AS %s", getExpression(), parameters, cqlIdentifier))
-					.orElseGet(() -> String.format("%s(%s)", getExpression(), parameters));
 		}
 
 		@Override
@@ -487,5 +519,149 @@ public class Columns implements Iterable<ColumnName> {
 			result = 31 * result + ObjectUtils.nullSafeHashCode(alias);
 			return result;
 		}
+
+		@Override
+		public String toString() {
+
+			String parameters = StringUtils.collectionToDelimitedString(getParameters(), ", ");
+
+			return getAlias().map(cqlIdentifier -> String.format("%s(%s) AS %s", getExpression(), parameters, cqlIdentifier))
+					.orElseGet(() -> String.format("%s(%s)", getExpression(), parameters));
+		}
+
 	}
+
+	/**
+	 * Entrypoint to build a {@link Selector}.
+	 *
+	 * @since 4.5
+	 */
+	public interface SelectorBuilder {
+
+		/**
+		 * Include the column in the selection.
+		 *
+		 * @return column selector for the used column name.
+		 */
+		Selector column();
+
+		/**
+		 * Return the time to live for the column in the selection.
+		 *
+		 * @return TTL function selector for the used column name.
+		 */
+		Selector ttl();
+
+		/**
+		 * Return a builder for a similarity function using the given {@link CqlVector}.
+		 *
+		 * @param vector
+		 * @return builder to build a similarity function.
+		 */
+		SimilarityBuilder similarity(CqlVector<?> vector);
+
+		/**
+		 * Return a builder for a similarity function using the given {@link Vector}.
+		 *
+		 * @param vector
+		 * @return builder to build a similarity function.
+		 */
+		SimilarityBuilder similarity(Vector vector);
+
+	}
+
+	/**
+	 * Builder for similarity functions.
+	 *
+	 * @since 4.5
+	 */
+	public interface SimilarityBuilder {
+
+		/**
+		 * Return the Cosine similarity function for the column in the selection based on the previously defined vector.
+		 *
+		 * @return cosine similarity function selector.
+		 */
+		Selector cosine();
+
+		/**
+		 * Return the Euclidean similarity function for the column in the selection based on the previously defined vector.
+		 *
+		 * @return euclidean similarity function selector.
+		 */
+		Selector euclidean();
+
+		/**
+		 * Return the Dot-Product similarity function for the column in the selection based on the previously defined
+		 * vector.
+		 *
+		 * @return dot-product similarity function selector.
+		 */
+		Selector dotProduct();
+
+		/**
+		 * Return a similarity function using {@link SimilarityFunction} for the column in the selection based on the
+		 * previously defined vector.
+		 *
+		 * @param similarityFunction must not be {@literal null}.
+		 * @return similarity function selector.
+		 */
+		Selector using(SimilarityFunction similarityFunction);
+
+	}
+
+	static class DefaultSelectorBuilder implements SelectorBuilder {
+
+		private final ColumnName columnName;
+
+		DefaultSelectorBuilder(ColumnName columnName) {
+			this.columnName = columnName;
+		}
+
+		@Override
+		public Selector column() {
+			return new ColumnSelector(columnName);
+		}
+
+		@Override
+		public Selector ttl() {
+			return FunctionCall.from("TTL", ColumnSelector.from(columnName));
+		}
+
+		@Override
+		public SimilarityBuilder similarity(CqlVector<?> vector) {
+			return similarity(CassandraVector.of(vector));
+		}
+
+		@Override
+		public SimilarityBuilder similarity(Vector vector) {
+
+			Assert.notNull(vector, "Vector must not be null");
+
+			return new SimilarityBuilder() {
+				@Override
+				public Selector cosine() {
+					return using(SimilarityFunction.COSINE);
+				}
+
+				@Override
+				public Selector euclidean() {
+					return using(SimilarityFunction.EUCLIDEAN);
+				}
+
+				@Override
+				public Selector dotProduct() {
+					return using(SimilarityFunction.DOT_PRODUCT);
+				}
+
+				@Override
+				public Selector using(SimilarityFunction similarityFunction) {
+					return FunctionCall.from("similarity_" + similarityFunction.name().toLowerCase(Locale.ROOT), columnName,
+							vector);
+				}
+			};
+		}
+
+	}
+
 }

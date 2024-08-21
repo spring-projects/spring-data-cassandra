@@ -31,6 +31,7 @@ import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.data.CqlDuration;
+import com.datastax.oss.driver.api.core.data.CqlVector;
 import com.datastax.oss.driver.api.core.data.TupleValue;
 import com.datastax.oss.driver.api.core.data.UdtValue;
 import com.datastax.oss.driver.api.core.type.DataType;
@@ -85,6 +86,7 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 		simpleTypes.add(TupleValue.class);
 		simpleTypes.add(UdtValue.class);
 		simpleTypes.add(CqlDuration.class);
+		simpleTypes.add(CqlVector.class);
 
 		classToDataType = Collections.unmodifiableMap(classToDataType(codecRegistry, primitiveWrappers));
 		nameToDataType = Collections.unmodifiableMap(nameToDataType());

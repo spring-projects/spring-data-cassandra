@@ -38,17 +38,21 @@ import org.springframework.data.cassandra.core.cql.util.StatementBuilder;
 import org.springframework.data.cassandra.core.cql.util.StatementBuilder.ParameterHandling;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.Column;
+import org.springframework.data.cassandra.core.mapping.VectorType;
 import org.springframework.data.cassandra.core.query.Columns;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.core.query.Update;
+import org.springframework.data.cassandra.core.query.VectorSort;
 import org.springframework.data.cassandra.domain.Group;
 import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Vector;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
 import com.datastax.oss.driver.api.core.ProtocolVersion;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.data.CqlVector;
 import com.datastax.oss.driver.api.core.type.DataType;
 import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.datastax.oss.driver.api.core.type.codec.TypeCodec;
@@ -210,8 +214,7 @@ class StatementFactoryUnitTests {
 	@Test // GH-1172
 	void shouldMapSelectInQueryAsInlineValue() {
 
-		StatementBuilder<Select> select = statementFactory.select(Query.query(where("foo").in("bar")),
-				groupEntity);
+		StatementBuilder<Select> select = statementFactory.select(Query.query(where("foo").in("bar")), groupEntity);
 
 		assertThat(select.build(ParameterHandling.INLINE).getQuery()).isEqualTo("SELECT * FROM group WHERE foo IN ('bar')");
 
@@ -224,8 +227,7 @@ class StatementFactoryUnitTests {
 	@Test // GH-1172
 	void shouldMapSelectInQueryAsByIndexValue() {
 
-		StatementBuilder<Select> select = statementFactory.select(Query.query(where("foo").in("bar")),
-				groupEntity);
+		StatementBuilder<Select> select = statementFactory.select(Query.query(where("foo").in("bar")), groupEntity);
 		SimpleStatement statement = select.build(ParameterHandling.BY_INDEX);
 
 		assertThat(statement.getQuery()).isEqualTo("SELECT * FROM group WHERE foo IN ?");
@@ -241,8 +243,7 @@ class StatementFactoryUnitTests {
 	@Test // GH-1172
 	void shouldMapSelectInQueryAsByNamedValue() {
 
-		StatementBuilder<Select> select = statementFactory.select(Query.query(where("foo").in("bar")),
-				groupEntity);
+		StatementBuilder<Select> select = statementFactory.select(Query.query(where("foo").in("bar")), groupEntity);
 		SimpleStatement statement = select.build(ParameterHandling.BY_NAME);
 
 		assertThat(statement.getQuery()).isEqualTo("SELECT * FROM group WHERE foo IN :p0");
@@ -710,8 +711,7 @@ class StatementFactoryUnitTests {
 	@Test // DATACASS-569
 	void shouldCreateSetUpdateIfExists() {
 
-		Query query = Query.query(where("foo").is("bar"))
-				.queryOptions(UpdateOptions.builder().withIfExists().build());
+		Query query = Query.query(where("foo").is("bar")).queryOptions(UpdateOptions.builder().withIfExists().build());
 
 		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update = statementFactory.update(query,
 				Update.empty().set("firstName", "baz"), personEntity);
@@ -914,6 +914,56 @@ class StatementFactoryUnitTests {
 				.isEqualTo("SELECT count(1) FROM group WHERE foo='bar'");
 	}
 
+	@Test // GH-1504
+	void shouldUpdateCqlVector() {
+
+		WithVector withVector = new WithVector();
+		withVector.id = "foo";
+		withVector.vector = CqlVector.newInstance(1.2f, 1.3f);
+		withVector.array = new float[] { 2.2f, 2.3f };
+		withVector.list = Arrays.asList(3.2f, 3.3f);
+
+		SimpleStatement statement = statementFactory.update(withVector, WriteOptions.empty())
+				.build(ParameterHandling.BY_NAME);
+
+		assertThat(statement.getQuery()).isEqualTo("UPDATE withvector SET vector=:p0, array=:p1, list=:p2 WHERE id=:p3");
+
+		assertThat(statement.getNamedValues().get(CqlIdentifier.fromCql("p0"))).isInstanceOf(CqlVector.class).hasToString("[1.2, 1.3]");
+		assertThat(statement.getNamedValues().get(CqlIdentifier.fromCql("p1"))).isInstanceOf(CqlVector.class).hasToString("[2.2, 2.3]");
+		assertThat(statement.getNamedValues().get(CqlIdentifier.fromCql("p2"))).isInstanceOf(CqlVector.class).hasToString("[3.2, 3.3]");
+	}
+
+	@Test // GH-1504
+	void shouldQueryVector() {
+
+		Query query = Query.empty()
+				.sort(VectorSort.ann("vector", Vector.of(1.2f, 1.3f)));
+
+		SimpleStatement statement = statementFactory.select(query, converter.getMappingContext().getRequiredPersistentEntity(WithVector.class))
+				.build(ParameterHandling.BY_NAME);
+
+		assertThat(statement.getQuery()).isEqualTo("SELECT * FROM withvector ORDER BY vector ANN OF [1.2, 1.3]");
+		assertThat(statement.getNamedValues()).isEmpty();
+	}
+
+	@Test // GH-1504
+	void shouldRenderSimilaritySelector() {
+
+		Vector vector = Vector.of(0.2f, 0.15f, 0.3f, 0.2f, 0.05f);
+
+		Columns columns = Columns.empty().include("comment").select("vector", it -> it.similarity(vector).cosine());
+
+		Query query = Query.select(columns).sort(VectorSort.ann("vector", Vector.of(1.2f, 1.3f)));
+
+		SimpleStatement statement = statementFactory
+				.select(query, converter.getMappingContext().getRequiredPersistentEntity(WithVector.class))
+				.build(ParameterHandling.BY_NAME);
+
+		assertThat(statement.getQuery()).isEqualTo(
+				"SELECT comment,similarity_cosine(vector,[0.2, 0.15, 0.3, 0.2, 0.05]) FROM withvector ORDER BY vector ANN OF [1.2, 1.3]");
+		assertThat(statement.getNamedValues()).isEmpty();
+	}
+
 	@SuppressWarnings("unused")
 	static class Person {
 
@@ -932,5 +982,14 @@ class StatementFactoryUnitTests {
 
 	record MyString(String value) {
 
+	}
+
+	static class WithVector {
+
+		@Id String id;
+
+		@VectorType(dimensions = 12) CqlVector<Number> vector;
+		@VectorType(dimensions = 12) float[] array;
+		@VectorType(dimensions = 12) List<Float> list;
 	}
 }

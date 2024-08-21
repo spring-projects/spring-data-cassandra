@@ -38,6 +38,7 @@ import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.core.mapping.CassandraType.Name;
 import org.springframework.data.cassandra.core.mapping.Frozen;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
+import org.springframework.data.cassandra.core.mapping.VectorType;
 import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.convert.PropertyValueConversions;
 import org.springframework.data.convert.PropertyValueConverter;
@@ -139,6 +140,10 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 				throw new InvalidDataAccessApiUsageException(String.format(
 						"Expected [%d] type arguments for property ['%s'] of type ['%s'] in entity [%s]; actual was [%d]", 2,
 						property.getName(), property.getType(), property.getOwner().getName(), annotation.typeArguments().length));
+			}
+
+			if (annotation.type() == Name.VECTOR) {
+				return resolve(property.getRequiredAnnotation(VectorType.class));
 			}
 
 			return resolve(annotation);
@@ -248,6 +253,12 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 			}
 			return null;
 		}
+	}
+
+	public CassandraColumnType resolve(VectorType annotation) {
+
+		DataType subtype = CassandraSimpleTypeHolder.getRequiredDataTypeFor(annotation.subtype());
+		return createCassandraTypeDescriptor(DataTypes.vectorOf(subtype, annotation.dimensions()));
 	}
 
 	@Override

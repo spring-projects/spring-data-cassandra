@@ -26,6 +26,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.PageRequest;
@@ -84,6 +85,16 @@ public class Query implements Filter {
 	 */
 	public static Query empty() {
 		return EMPTY;
+	}
+
+	/**
+	 * Static factory method to create a {@link Query} for the given column selection.
+	 *
+	 * @return a new {@link Query} selecting {@link Columns}.
+	 * @since 4.5
+	 */
+	public static Query select(Columns columns) {
+		return EMPTY.columns(columns);
 	}
 
 	/**
@@ -182,7 +193,17 @@ public class Query implements Filter {
 			}
 		}
 
-		return new Query(this.criteriaDefinitions, this.columns, this.sort.and(sort), this.scrollPosition,
+		Sort sortToUse = this.sort;
+		if (this.sort.isUnsorted()) {
+			sortToUse = sort;
+		} else {
+			if (sortToUse instanceof VectorSort || sort instanceof VectorSort) {
+				throw new InvalidDataAccessApiUsageException("Cannot concatenate multiple VectorSort instances");
+			}
+			sortToUse = this.sort.and(sort);
+		}
+
+		return new Query(this.criteriaDefinitions, this.columns, sortToUse, this.scrollPosition,
 				this.queryOptions, this.limit, this.allowFiltering);
 	}
 

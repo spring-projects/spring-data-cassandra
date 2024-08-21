@@ -109,7 +109,6 @@ public class CassandraCustomConversions extends org.springframework.data.convert
 
 		CassandraConverterConfiguration(List<?> converters) {
 			super(STORE_CONVERSIONS, converters, getConverterFilter());
-
 		}
 
 		CassandraConverterConfiguration(List<?> userConverters, PropertyValueConversions propertyValueConversions) {

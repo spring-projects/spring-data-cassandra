@@ -21,6 +21,7 @@ import static org.springframework.data.domain.Sort.Order.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Currency;
@@ -35,7 +36,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+
 import org.springframework.data.annotation.Id;
+import org.springframework.data.cassandra.core.StatementFactory;
+import org.springframework.data.cassandra.core.cql.util.StatementBuilder;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.Column;
@@ -45,6 +49,7 @@ import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
 import org.springframework.data.cassandra.core.mapping.Tuple;
 import org.springframework.data.cassandra.core.mapping.UserDefinedType;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
+import org.springframework.data.cassandra.core.mapping.VectorType;
 import org.springframework.data.cassandra.core.query.ColumnName;
 import org.springframework.data.cassandra.core.query.Columns;
 import org.springframework.data.cassandra.core.query.Columns.Selector;
@@ -63,6 +68,8 @@ import org.springframework.data.domain.Sort.Order;
 import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.data.CqlVector;
 import com.datastax.oss.driver.api.core.data.TupleValue;
 import com.datastax.oss.driver.api.core.data.UdtValue;
 import com.datastax.oss.driver.api.core.type.DataTypes;
@@ -77,6 +84,8 @@ import com.datastax.oss.driver.api.core.type.DataTypes;
 public class QueryMapperUnitTests {
 
 	private final CassandraMappingContext mappingContext = new CassandraMappingContext();
+
+	private MappingCassandraConverter cassandraConverter;
 
 	private CassandraPersistentEntity<?> personPersistentEntity;
 
@@ -98,7 +107,7 @@ public class QueryMapperUnitTests {
 		mappingContext.setCustomConversions(customConversions);
 		mappingContext.setUserTypeResolver(userTypeResolver);
 
-		MappingCassandraConverter cassandraConverter = new MappingCassandraConverter(mappingContext);
+		cassandraConverter = new MappingCassandraConverter(mappingContext);
 
 		cassandraConverter.setCustomConversions(customConversions);
 		cassandraConverter.afterPropertiesSet();
@@ -431,6 +440,47 @@ public class QueryMapperUnitTests {
 		assertThat(mappedObject.iterator().next().getPredicate().getValue()).isEqualTo(42L);
 	}
 
+	@Test //
+	void shouldConvertVectorValues() {
+
+		Filter filter = Filter.from(Criteria.where("array").is(new float[] { 1.1f, 2.2f }));
+
+		Filter mappedObject = this.queryMapper.getMappedObject(filter,
+				this.mappingContext.getRequiredPersistentEntity(WithVector.class));
+
+		assertThat(mappedObject.iterator().next().getColumnName()).isEqualTo(ColumnName.from("array"));
+		assertThat(mappedObject.iterator().next().getPredicate().getValue()).isEqualTo(new float[] { 1.1f, 2.2f });
+	}
+
+	@Test // GH-1504
+	void shouldConvertVectorValuesFromList() {
+
+		Filter filter = Filter.from(Criteria.where("list").is(Arrays.asList(1.1f, 2.2f)));
+
+		Filter mappedObject = this.queryMapper.getMappedObject(filter,
+				this.mappingContext.getRequiredPersistentEntity(WithVector.class));
+
+		assertThat(mappedObject.iterator().next().getColumnName()).isEqualTo(ColumnName.from("list"));
+		assertThat(mappedObject.iterator().next().getPredicate().getValue()).isEqualTo(CqlVector.newInstance(1.1f, 2.2f));
+	}
+
+	@Test // GH-1504
+	void shouldConvertVectorSelectorFunction() {
+
+		Columns columns = Columns.empty();
+		Columns.FunctionCall similarity = Columns.FunctionCall.from("similarity_cosine", CqlIdentifier.fromCql("array"), Arrays.asList(1.1f, 2.2f));
+
+		Query query = Query.empty().columns(columns.select("array", similarity));
+
+		StatementFactory factory = new StatementFactory(queryMapper, new UpdateMapper(cassandraConverter));
+
+		SimpleStatement statement = factory.select(query, this.mappingContext.getRequiredPersistentEntity(WithVector.class))
+				.build(StatementBuilder.ParameterHandling.BY_NAME);
+
+		assertThat(statement.getQuery()).isEqualTo("SELECT similarity_cosine(array,[1.1, 2.2]) FROM withvector");
+		assertThat(statement.getNamedValues()).isEmpty();
+	}
+
 	@SuppressWarnings("unused")
 	static class Person {
 
@@ -539,5 +589,11 @@ public class QueryMapperUnitTests {
 		public void setAge(Integer age) {
 			this.age = age;
 		}
+	}
+
+	static class WithVector {
+
+		@VectorType(dimensions = 12) float[] array;
+		@VectorType(dimensions = 12) List<Float> list;
 	}
 }

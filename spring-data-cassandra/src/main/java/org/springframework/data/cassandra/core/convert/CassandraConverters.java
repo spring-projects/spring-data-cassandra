@@ -20,6 +20,7 @@ import java.net.InetAddress;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -30,10 +31,12 @@ import org.springframework.core.convert.converter.ConverterFactory;
 import org.springframework.data.cassandra.core.cql.converter.RowToListConverter;
 import org.springframework.data.cassandra.core.cql.converter.RowToMapConverter;
 import org.springframework.data.convert.ReadingConverter;
+import org.springframework.data.domain.Vector;
 import org.springframework.util.Assert;
 import org.springframework.util.NumberUtils;
 
 import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.data.CqlVector;
 
 /**
  * Wrapper class to contain useful converters for the usage with Cassandra.
@@ -41,7 +44,7 @@ import com.datastax.oss.driver.api.core.cql.Row;
  * @author Mark Paluch
  * @since 1.5
  */
-abstract class CassandraConverters {
+public abstract class CassandraConverters {
 
 	/**
 	 * Private constructor to prevent instantiation.
@@ -65,6 +68,17 @@ abstract class CassandraConverters {
 		converters.add(RowToNumberConverterFactory.INSTANCE);
 		converters.add(RowToStringConverter.INSTANCE);
 		converters.add(RowToUuidConverter.INSTANCE);
+
+		converters.add(VectorToFloatArrayConverter.INSTANCE);
+		converters.add(VectorToDoubleArrayConverter.INSTANCE);
+		converters.add(VectorToFloatListConverter.INSTANCE);
+
+		converters.add(FloatArrayToVectorConverter.INSTANCE);
+		converters.add(DoubleArrayToVectorConverter.INSTANCE);
+		converters.add(NumberListToVectorConverter.INSTANCE);
+
+		converters.add(VectorToCqlVectorConverter.INSTANCE);
+		converters.add(CqlVectorToVectorConverter.INSTANCE);
 
 		return converters;
 	}
@@ -220,6 +234,130 @@ abstract class CassandraConverters {
 		@Override
 		public LocalDate convert(Row row) {
 			return row.getLocalDate(0);
+		}
+	}
+
+	@ReadingConverter
+	public enum DoubleArrayToVectorConverter implements Converter<double[], CqlVector<Double>> {
+
+		INSTANCE;
+
+		@Override
+		public CqlVector<Double> convert(double[] source) {
+
+			Double[] converted = new Double[source.length];
+			for (int i = 0; i < converted.length; i++) {
+				converted[i] = source[i];
+			}
+			return CqlVector.newInstance(converted);
+		}
+	}
+
+	public enum CqlVectorToVectorConverter implements Converter<CqlVector<?>, Vector> {
+
+		INSTANCE;
+
+		@Override
+		public Vector convert(CqlVector<?> source) {
+			return CassandraVector.of(source);
+		}
+	}
+
+	public enum VectorToCqlVectorConverter implements Converter<Vector, CqlVector<?>> {
+
+		INSTANCE;
+
+		@Override
+		public CqlVector<?> convert(Vector source) {
+
+			if (source instanceof CassandraVector cv) {
+				return cv.getSource();
+			}
+
+			if (source.getType() == Float.class || source.getType() == Float.TYPE) {
+
+				float[] floatArray = source.toFloatArray();
+				List<Float> boxed = new ArrayList<>(floatArray.length);
+
+				for (float v : floatArray) {
+					boxed.add(v);
+				}
+				return CqlVector.newInstance(boxed);
+			}
+
+			return CqlVector.newInstance(Arrays.stream(source.toDoubleArray()).boxed().toList());
+		}
+	}
+
+	@ReadingConverter
+	public enum FloatArrayToVectorConverter implements Converter<float[], CqlVector<Float>> {
+
+		INSTANCE;
+
+		@Override
+		public CqlVector<Float> convert(float[] source) {
+
+			Float[] converted = new Float[source.length];
+			for (int i = 0; i < converted.length; i++) {
+				converted[i] = source[i];
+			}
+			return CqlVector.newInstance(converted);
+		}
+	}
+
+	@ReadingConverter
+	public enum NumberListToVectorConverter implements Converter<List<Number>, CqlVector<Number>> {
+
+		INSTANCE;
+
+		@Override
+		public CqlVector<Number> convert(List<Number> source) {
+			return CqlVector.newInstance(source);
+		}
+	}
+
+	@ReadingConverter
+	public enum VectorToFloatArrayConverter implements Converter<CqlVector<Number>, float[]> {
+
+		INSTANCE;
+
+		@Override
+		public float[] convert(CqlVector<Number> source) {
+			float[] array = new float[source.size()];
+			for (int i = 0; i < array.length; i++) {
+				array[i] = source.get(i).floatValue();
+			}
+			return array;
+		}
+	}
+
+	@ReadingConverter
+	public enum VectorToDoubleArrayConverter implements Converter<CqlVector<Number>, double[]> {
+
+		INSTANCE;
+
+		@Override
+		public double[] convert(CqlVector<Number> source) {
+			double[] array = new double[source.size()];
+			for (int i = 0; i < array.length; i++) {
+				array[i] = source.get(i).doubleValue();
+			}
+			return array;
+		}
+	}
+
+	@ReadingConverter
+	public enum VectorToFloatListConverter implements Converter<CqlVector<Number>, List<Float>> {
+
+		INSTANCE;
+
+		@Override
+		public List<Float> convert(CqlVector<Number> source) {
+			List<Float> values = new ArrayList<>(source.size());
+			for (int i = 0; i < source.size(); i++) {
+				values.add(source.get(i).floatValue());
+			}
+			return values;
 		}
 	}
 }

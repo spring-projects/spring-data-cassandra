@@ -1823,4 +1823,5 @@ public class MappingCassandraConverterUnitTests {
 			this.number = number;
 		}
 	}
+
 }

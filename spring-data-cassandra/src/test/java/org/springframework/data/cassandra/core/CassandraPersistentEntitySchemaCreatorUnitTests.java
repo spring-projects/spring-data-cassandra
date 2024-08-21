@@ -47,6 +47,7 @@ import org.springframework.data.cassandra.core.mapping.PrimaryKeyClass;
 import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
 import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.core.mapping.UserDefinedType;
+import org.springframework.data.cassandra.core.mapping.VectorType;
 import org.springframework.data.convert.CustomConversions;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -188,17 +189,18 @@ class CassandraPersistentEntitySchemaCreatorUnitTests extends CassandraPersisten
 		verify(operations).execute("CREATE INDEX ON indexedentity (firstname);");
 	}
 
-	@Test // DATACASS-213
-	void foo() {
+	@Test // GH-1504
+	void shouldCreateTableWithVector() {
 
-		context.getPersistentEntity(Person.class);
+		context.getPersistentEntity(TableWithVector.class);
 
 		CassandraPersistentEntitySchemaCreator schemaCreator = new CassandraPersistentEntitySchemaCreator(context,
 				adminOperations);
 
 		schemaCreator.createTables(false);
 
-		// verify(operations).execute("CREATE INDEX ON indexedentity (firstname);");
+		verify(operations).execute(
+				"CREATE TABLE tablewithvector (id text, comment text, comment_vs vector<float, 1536>, PRIMARY KEY (id));");
 	}
 
 	private void verifyTypesGetCreatedInOrderFor(String... typenames) {
@@ -252,5 +254,13 @@ class CassandraPersistentEntitySchemaCreatorUnitTests extends CassandraPersisten
 		@PrimaryKey PersonKey key;
 
 		int age;
+	}
+
+	@Table
+	public static class TableWithVector {
+
+		@PrimaryKey String id;
+		String comment;
+		@VectorType(dimensions = 1536) float[] comment_vs;
 	}
 }

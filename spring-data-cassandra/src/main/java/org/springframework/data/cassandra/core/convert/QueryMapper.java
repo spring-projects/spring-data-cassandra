@@ -37,6 +37,7 @@ import org.springframework.data.cassandra.core.query.Criteria;
 import org.springframework.data.cassandra.core.query.CriteriaDefinition;
 import org.springframework.data.cassandra.core.query.CriteriaDefinition.Predicate;
 import org.springframework.data.cassandra.core.query.Filter;
+import org.springframework.data.cassandra.core.query.VectorSort;
 import org.springframework.data.convert.PropertyValueConverter;
 import org.springframework.data.convert.ValueConversionContext;
 import org.springframework.data.domain.Sort;
@@ -135,7 +136,7 @@ public class QueryMapper {
 
 			Predicate predicate = criteriaDefinition.getPredicate();
 			Object value = predicate.getValue();
-			Object mappedValue = value != null ? getMappedValue(field, predicate, value) : null;
+			Object mappedValue = value != null ? getMappedValue(field, predicate.getOperator(), value) : null;
 			Predicate mappedPredicate = new Predicate(predicate.getOperator(), mappedValue);
 
 			result.add(Criteria.of(field.getMappedKey(), mappedPredicate));
@@ -145,7 +146,7 @@ public class QueryMapper {
 	}
 
 	@Nullable
-	private Object getMappedValue(Field field, Predicate predicate, Object value) {
+	private Object getMappedValue(Field field, CriteriaDefinition.Operator operator, Object value) {
 
 		if (field.getProperty().isPresent()
 				&& field.getProperty().filter(it -> converter.getCustomConversions().hasValueConverter(it)).isPresent()) {
@@ -173,7 +174,7 @@ public class QueryMapper {
 			return valueConverter.write(value, conversionContext);
 		}
 
-		ColumnType typeDescriptor = getColumnType(field, value, ColumnTypeTransformer.of(field, predicate.getOperator()));
+		ColumnType typeDescriptor = getColumnType(field, value, ColumnTypeTransformer.of(field, operator));
 		return getConverter().convertToColumnType(value, typeDescriptor);
 	}
 
@@ -204,7 +205,7 @@ public class QueryMapper {
 				List<CqlIdentifier> mappedColumnNames = getCqlIdentifier(column, field);
 
 				for (CqlIdentifier mappedColumnName : mappedColumnNames) {
-					selectors.add(getMappedSelector(selector, mappedColumnName));
+					selectors.add(getMappedSelector(selector, mappedColumnName, field));
 				}
 			});
 		}
@@ -230,7 +231,7 @@ public class QueryMapper {
 		});
 	}
 
-	private Selector getMappedSelector(Selector selector, CqlIdentifier cqlIdentifier) {
+	private Selector getMappedSelector(Selector selector, CqlIdentifier cqlIdentifier, Field field) {
 
 		if (selector instanceof ColumnSelector) {
 
@@ -248,8 +249,24 @@ public class QueryMapper {
 			FunctionCall mappedFunctionCall = FunctionCall.from(functionCall.getExpression(),
 					functionCall.getParameters().stream().map(obj -> {
 
-						if (obj instanceof Selector) {
-							return getMappedSelector((Selector) obj, cqlIdentifier);
+						if (obj instanceof Selector sel) {
+							return getMappedSelector(sel, cqlIdentifier, field);
+						}
+
+						if (obj instanceof ColumnName cn) {
+
+							CqlIdentifier identifier = cn.getCqlIdentifier().or(() -> cn.getColumnName().map(CqlIdentifier::fromCql))
+									.orElseGet(() -> CqlIdentifier.fromCql(cn.toCql()));
+
+							return getMappedSelector(ColumnSelector.from(cn), identifier, field);
+						}
+
+						if (obj instanceof CqlIdentifier identifier) {
+							return getMappedSelector(ColumnSelector.from(identifier), identifier, field);
+						}
+
+						if (field.getProperty().isPresent()) {
+							return getMappedValue(field, CriteriaDefinition.Operators.EQ, obj);
 						}
 
 						return obj;
@@ -321,11 +338,17 @@ public class QueryMapper {
 
 		List<Order> mappedOrders = new ArrayList<>();
 
+		Object vector = sort instanceof VectorSort vs ? vs.getVector() : null;
+
 		for (Order order : sort) {
 
 			ColumnName columnName = ColumnName.from(order.getProperty());
 
 			Field field = createPropertyField(entity, columnName);
+
+			if (vector != null) {
+				vector = getMappedValue(field, CriteriaDefinition.Operators.EQ, vector);
+			}
 
 			List<CqlIdentifier> mappedColumnNames = getCqlIdentifier(columnName, field);
 
@@ -338,7 +361,7 @@ public class QueryMapper {
 			}
 		}
 
-		return Sort.by(mappedOrders);
+		return vector != null ? new VectorSort(mappedOrders, vector) : Sort.by(mappedOrders);
 	}
 
 	private List<CqlIdentifier> getCqlIdentifier(ColumnName column, Field field) {

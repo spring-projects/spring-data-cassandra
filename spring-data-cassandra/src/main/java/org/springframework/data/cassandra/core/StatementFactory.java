@@ -59,6 +59,7 @@ import org.springframework.data.cassandra.core.query.Update.RemoveOp;
 import org.springframework.data.cassandra.core.query.Update.SetAtIndexOp;
 import org.springframework.data.cassandra.core.query.Update.SetAtKeyOp;
 import org.springframework.data.cassandra.core.query.Update.SetOp;
+import org.springframework.data.cassandra.core.query.VectorSort;
 import org.springframework.data.convert.EntityWriter;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.PersistentProperty;
@@ -72,6 +73,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.data.CqlVector;
 import com.datastax.oss.driver.api.core.metadata.schema.ClusteringOrder;
 import com.datastax.oss.driver.api.querybuilder.BindMarker;
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
@@ -688,24 +690,30 @@ public class StatementFactory {
 	private StatementBuilder<Select> createSelectAndOrder(List<Selector> selectors, CassandraPersistentEntity<?> entity,
 			CqlIdentifier from, Filter filter, Sort sort) {
 
-		Select select;
+		StatementBuilder<Select> builder = StatementBuilder.of((Select) QueryBuilder.selectFrom(from),
+				cassandraConverter.getCodecRegistry());
 
-		if (selectors.isEmpty()) {
-			select = QueryBuilder.selectFrom(getKeyspace(entity, from), from).all();
-		} else {
+		builder.bind((statement, factory) -> {
 
-			List<com.datastax.oss.driver.api.querybuilder.select.Selector> mappedSelectors = new ArrayList<>(
-					selectors.size());
-			for (Selector selector : selectors) {
-				com.datastax.oss.driver.api.querybuilder.select.Selector orElseGet = selector.getAlias()
-						.map(it -> getSelection(selector).as(it)).orElseGet(() -> getSelection(selector));
-				mappedSelectors.add(orElseGet);
+			Select select;
+
+			if (selectors.isEmpty()) {
+				select = QueryBuilder.selectFrom(getKeyspace(entity, from), from).all();
+			} else {
+
+				List<com.datastax.oss.driver.api.querybuilder.select.Selector> mappedSelectors = new ArrayList<>(
+						selectors.size());
+				for (Selector selector : selectors) {
+					com.datastax.oss.driver.api.querybuilder.select.Selector orElseGet = selector.getAlias()
+							.map(it -> getSelection(selector, factory).as(it)).orElseGet(() -> getSelection(selector, factory));
+					mappedSelectors.add(orElseGet);
+				}
+
+				select = QueryBuilder.selectFrom(getKeyspace(entity, from), from).selectors(mappedSelectors);
 			}
 
-			select = QueryBuilder.selectFrom(getKeyspace(entity, from), from).selectors(mappedSelectors);
-		}
-
-		StatementBuilder<Select> builder = StatementBuilder.of(select, cassandraConverter.getCodecRegistry());
+			return select;
+		});
 
 		builder.bind((statement, factory) -> {
 			return statement.where(getRelations(filter, factory));
@@ -713,13 +721,23 @@ public class StatementFactory {
 
 		if (sort.isSorted()) {
 
-			builder.apply((statement) -> {
+			builder.bind((statement, factory) -> {
 
 				Select statementToUse = statement;
 
-				for (Sort.Order order : sort) {
-					statementToUse = statementToUse.orderBy(order.getProperty(),
-							order.isAscending() ? ClusteringOrder.ASC : ClusteringOrder.DESC);
+				if (sort instanceof VectorSort vs) {
+
+					for (Sort.Order order : sort) {
+
+						Object vector = vs.getVector();
+						statementToUse = statementToUse.orderByAnnOf(order.getProperty(), (CqlVector<?>) vector);
+					}
+				} else {
+
+					for (Sort.Order order : sort) {
+						statementToUse = statementToUse.orderBy(order.getProperty(),
+								order.isAscending() ? ClusteringOrder.ASC : ClusteringOrder.DESC);
+					}
 				}
 
 				return statementToUse;
@@ -730,25 +748,33 @@ public class StatementFactory {
 	}
 
 	private static List<Relation> getRelations(Filter filter, TermFactory factory) {
+
 		List<Relation> relations = new ArrayList<>();
+
 		for (CriteriaDefinition criteriaDefinition : filter) {
 			relations.add(toClause(criteriaDefinition, factory));
 		}
+
 		return relations;
 	}
 
-	private static com.datastax.oss.driver.api.querybuilder.select.Selector getSelection(Selector selector) {
+	private static com.datastax.oss.driver.api.querybuilder.select.Selector getSelection(Selector selector,
+			TermFactory factory) {
 
 		if (selector instanceof FunctionCall) {
 
 			com.datastax.oss.driver.api.querybuilder.select.Selector[] arguments = ((FunctionCall) selector).getParameters()
 					.stream().map(param -> {
 
-						if (param instanceof ColumnSelector) {
+						if (param instanceof ColumnSelector s) {
 
-							return com.datastax.oss.driver.api.querybuilder.select.Selector
-									.column(((ColumnSelector) param).getExpression());
+							return com.datastax.oss.driver.api.querybuilder.select.Selector.column(s.getExpression());
 						}
+
+						if (param instanceof CqlIdentifier i) {
+							return com.datastax.oss.driver.api.querybuilder.select.Selector.column(i.toString());
+						}
+
 						return new SimpleSelector(param.toString());
 
 					}).toArray(com.datastax.oss.driver.api.querybuilder.select.Selector[]::new);

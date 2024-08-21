@@ -52,6 +52,7 @@ public class CassandraParametersParameterAccessor extends ParametersParameterAcc
 	@Override
 	public DataType getDataType(int index) {
 
+		// TODO: Vector
 		CassandraType cassandraType = findCassandraType(index);
 
 		return (cassandraType != null ? CassandraSimpleTypeHolder.getDataTypeFor(cassandraType.type())

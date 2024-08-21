@@ -293,9 +293,56 @@ TIP: You can directly apply xref:repositories/projections.adoc[] to resulting do
 
 The terminating methods (`first()`, `one()`, `all()`, and `stream()`) handle switching between retrieving a single entity and retrieving multiple entities as `List` or `Stream` and similar operations.
 
-WARNING: The new fluent template API methods (that is, `query(..)`, `insert(..)`, `update(..)`, and `delete(..)`) use effectively thread-safe supporting objects to compose the CQL statement.
+WARNING: The new fluent template API methods (that is, `query(…)`, `insert(…)`, `update(…)`, and `delete(…)`) use effectively thread-safe supporting objects to compose the CQL statement.
 However, it comes at the added cost of additional young-gen JVM heap overhead, since the design is based on final fields for the various CQL statement components and construction on mutation.
-You should be careful when possibly inserting or deleting a large number of objects (such as inside of a loop, for instance).
+You should be careful when possibly inserting or deleting a large number of objects (such as inside a loop, for instance).
+
+=== Vector Search Queries
+
+Projections are the foundation for querying data returned in a different form than the entity.
+While Cassandra's primary use-case follows a key-value model – storing what you retrieve – Vector search is different.
+Running Vector search queries typically results in an aggregation or report-like result set.
+A typical query would return some form of content (such as a `text` column) along with its score (or distance) to the actual vector.
+
+Consider the following domain model:
+
+.Vector Search model
+====
+[source,java]
+----
+include::example$VectorSearchExample.java[tags=class]
+----
+====
+
+`Comments` is the domain type defining a vector column and the `comment` column.
+
+Running a Vector Search requires usage of `ANN` sorting and would typically define a similarity function to determine its distance from the given vector.
+
+.Using Vector Search
+====
+[source,java,indent=0,subs="verbatim,quotes",role="primary"]
+----
+Columns columns = Columns.from("comment")                                                <1>
+                     .select("vector", builder -> builder.similarity(vector)
+                                                         .cosine().as("similarity"));    <2>
+
+Query query = Query.select(columns)
+                   .limit(3)
+                   .sort(VectorSort.ann("vector", vector));                              <3>
+
+template.query(Comments.class)
+        .as(CommentSearch.class)                                                         <4>
+        .matching(query)
+        .all();
+----
+
+<1> Select the columns to query.
+<2> Include a function call to `similarity_cosine(vector, […])`. `Columns.select(…)` uses a selector builder customizer to configure the actual selection.
+Make sure to declare an alias to map the result onto `CommentSearch.similarity` as result mapping uses column names.
+<3> Use the `VectorSort.ann(…)` to define the sort order in comparison to the given vector.
+<4> Define the target type to map the result to.
+The `CommentSearch` type is result projection type defining columns that map the result.
+====
 
 [[cassandra-template.save-update-remove]]
 == Saving, Updating, and Removing Rows
@@ -556,7 +603,7 @@ template.save(daenerys);                                                        
 template.save(tmp); // throws OptimisticLockingFailureException                       <4>
 ----
 
-<1> Intially insert document. `version` is set to `0`.
+<1> Initially insert document. `version` is set to `0`.
 <2> Load the just inserted document. `version` is still `0`.
 <3> Update the document with `version = 0`.
 Set the `lastname` and bump `version` to `1`.

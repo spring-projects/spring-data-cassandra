@@ -29,6 +29,7 @@ import org.springframework.data.cassandra.core.mapping.EmbeddedEntityOperations;
 import org.springframework.data.cassandra.core.mapping.Indexed;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.convert.CustomConversions;
+import org.springframework.data.domain.Vector;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.lang.NonNull;
@@ -36,6 +37,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.data.CqlVector;
 import com.datastax.oss.driver.api.core.data.UdtValue;
 import com.datastax.oss.driver.api.core.detach.AttachmentPoint;
 import com.datastax.oss.driver.api.core.type.DataType;
@@ -197,6 +199,13 @@ public class SchemaFactory {
 			return typeResolver.resolve(property).getDataType();
 		} catch (MappingException e) {
 
+			if (isVector(property.getType())) {
+
+				throw new MappingException(String.format(
+						"Cannot resolve DataType for type [%s] for property [%s] in entity [%s]; Annotate the vector property with @VectorType(…)",
+						property.getType(), property.getName(), property.getOwner().getName()), e);
+			}
+
 			throw new MappingException(String.format(
 					"Cannot resolve DataType for type [%s] for property [%s] in entity [%s]; Consider registering a Converter or annotating the property with @CassandraType",
 					property.getType(), property.getName(), property.getOwner().getName()), e);
@@ -262,10 +271,12 @@ public class SchemaFactory {
 		List<CreateIndexSpecification> indexes = new ArrayList<>();
 
 		for (CassandraPersistentProperty property : entity) {
+
 			if (property.isCompositePrimaryKey()) {
 				CassandraPersistentEntity<?> pkEntity = mappingContext.getRequiredPersistentEntity(property);
 				indexes.addAll(getCreateIndexSpecificationsFor(pkEntity, pkEntity.getKeyspace(), pkEntity.getTableName()));
 			}
+
 			if (property.isEmbedded()) {
 
 				if (property.isAnnotationPresent(Indexed.class)) {
@@ -319,6 +330,10 @@ public class SchemaFactory {
 		}
 
 		return specification;
+	}
+
+	private static boolean isVector(Class<?> type) {
+		return type.equals(CqlVector.class) || Vector.class.isAssignableFrom(type);
 	}
 
 	enum ShallowUserTypeResolver implements UserTypeResolver {
