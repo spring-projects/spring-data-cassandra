@@ -37,12 +37,11 @@ import com.datastax.oss.driver.api.querybuilder.BindMarker;
 import com.datastax.oss.driver.api.querybuilder.BuildableQuery;
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
 import com.datastax.oss.driver.api.querybuilder.term.Term;
-import com.datastax.oss.driver.internal.querybuilder.CqlHelper;
 
 /**
  * Functional builder for Cassandra {@link BuildableQuery statements}. Statements are built by applying
  * {@link UnaryOperator builder functions} that get applied when {@link #build() building} the actual
- * {@link SimpleStatement statement}. The {@code StatementBuilder} provides a mutable container for statement creation
+ * {@link SimpleStatement statement}. The {@link StatementBuilder} provides a mutable container for statement creation
  * allowing a functional declaration of actions that are necessary to build a statement. This class helps building CQL
  * statements as a {@link BuildableQuery} classes are typically immutable and require return value tracking across
  * methods that want to apply modifications to a statement.
@@ -66,6 +65,7 @@ import com.datastax.oss.driver.internal.querybuilder.CqlHelper;
  * All methods returning {@link StatementBuilder} point to the same instance. This class is intended for internal use.
  *
  * @author Mark Paluch
+ * @author Mikhail Polivakha
  * @param <S> Statement type
  * @since 3.0
  */
@@ -289,13 +289,13 @@ public class StatementBuilder<S extends BuildableQuery> {
 
 	private SimpleStatement build(SimpleStatementBuilder builder) {
 
-		SimpleStatement statmentToUse = onBuild(builder).build();
+		SimpleStatement statementToUse = onBuild(builder).build();
 
 		for (UnaryOperator<SimpleStatement> operator : onBuilt) {
-			statmentToUse = operator.apply(statmentToUse);
+			statementToUse = operator.apply(statementToUse);
 		}
 
-		return statmentToUse;
+		return statementToUse;
 	}
 
 	private SimpleStatementBuilder onBuild(SimpleStatementBuilder statementBuilder) {
@@ -308,26 +308,13 @@ public class StatementBuilder<S extends BuildableQuery> {
 	@SuppressWarnings("unchecked")
 	private static Term toLiteralTerms(@Nullable Object value, CodecRegistry codecRegistry) {
 
-		if (value instanceof List) {
+		if (value instanceof Collection<?> c) {
 
-			List<Term> terms = new ArrayList<>();
+			List<Term> mappedTerms = c.stream()
+			.map(o -> toLiteralTerms(o, codecRegistry))
+			.toList();
 
-			for (Object o : (List<Object>) value) {
-				terms.add(toLiteralTerms(o, codecRegistry));
-			}
-
-			return new ListTerm(terms);
-		}
-
-		if (value instanceof Set) {
-
-			List<Term> terms = new ArrayList<>();
-
-			for (Object o : (Set<Object>) value) {
-				terms.add(toLiteralTerms(o, codecRegistry));
-			}
-
-			return new SetTerm(terms);
+			return c instanceof Set ? new SetTerm(mappedTerms) : new ListTerm(mappedTerms);
 		}
 
 		if (value instanceof Map) {
@@ -385,66 +372,6 @@ public class StatementBuilder<S extends BuildableQuery> {
 		 * Named bind markers.
 		 */
 		BY_NAME
-	}
-
-	static class ListTerm implements Term {
-
-		private final Collection<? extends Term> components;
-
-		public ListTerm(@NonNull Collection<? extends Term> components) {
-			this.components = components;
-		}
-
-		@Override
-		public void appendTo(@NonNull StringBuilder builder) {
-
-			if (components.isEmpty()) {
-				builder.append("[]");
-				return;
-			}
-
-			CqlHelper.append(components, builder, "[", ",", "]");
-		}
-
-		@Override
-		public boolean isIdempotent() {
-			for (Term component : components) {
-				if (!component.isIdempotent()) {
-					return false;
-				}
-			}
-			return true;
-		}
-	}
-
-	static class SetTerm implements Term {
-
-		private final Collection<? extends Term> components;
-
-		public SetTerm(@NonNull Collection<? extends Term> components) {
-			this.components = components;
-		}
-
-		@Override
-		public void appendTo(@NonNull StringBuilder builder) {
-
-			if (components.isEmpty()) {
-				builder.append("{}");
-				return;
-			}
-
-			CqlHelper.append(components, builder, "{", ",", "}");
-		}
-
-		@Override
-		public boolean isIdempotent() {
-			for (Term component : components) {
-				if (!component.isIdempotent()) {
-					return false;
-				}
-			}
-			return true;
-		}
 	}
 
 	static class MapTerm implements Term {

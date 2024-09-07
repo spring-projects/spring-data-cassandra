@@ -27,6 +27,7 @@ import org.junit.jupiter.api.extension.TestInstancePostProcessor;
 import org.junit.platform.commons.util.AnnotationUtils;
 import org.junit.platform.commons.util.ReflectionUtils;
 import org.junit.platform.commons.util.StringUtils;
+import org.springframework.data.cassandra.support.CqlDataSet;
 import org.springframework.data.cassandra.support.RandomKeyspaceName;
 import org.springframework.util.Assert;
 
@@ -52,6 +53,7 @@ import com.datastax.oss.driver.api.core.CqlSession;
  * </pre>
  *
  * @author Mark Paluch
+ * @author Mikhail Polivakha
  */
 public class CassandraExtension implements BeforeAllCallback, AfterAllCallback, TestInstancePostProcessor {
 
@@ -60,6 +62,13 @@ public class CassandraExtension implements BeforeAllCallback, AfterAllCallback, 
 	private static final ThreadLocal<Resources> TEST_RESOURCES = new ThreadLocal<>();
 
 	private final CassandraDelegate delegate = new CassandraDelegate("embedded-cassandra.yaml");
+
+	public CassandraExtension() {
+	}
+
+	public CassandraExtension(CqlDataSet cqlDataSet) {
+		this.delegate.before(CassandraDelegate.InvocationMode.ONCE, cqlDataSet);
+	}
 
 	/**
 	 * Retrieve the keyspace {@link CqlSession} that is associated with the current {@link Thread}.
