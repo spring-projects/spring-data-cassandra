@@ -238,7 +238,9 @@ public class StatementFactory {
 
 		cassandraConverter.write(id, where, entity);
 
-		return StatementBuilder.of(QueryBuilder.selectFrom(getKeyspace(entity, tableName), tableName).all().limit(1))
+		return StatementBuilder
+				.of(QueryBuilder.selectFrom(getKeyspace(entity, tableName), tableName).all().limit(1),
+						cassandraConverter.getCodecRegistry())
 				.bind((statement, factory) -> statement.where(toRelations(where, factory)));
 	}
 
@@ -325,7 +327,8 @@ public class StatementFactory {
 		cassandraConverter.write(objectToInsert, object, entity);
 
 		StatementBuilder<RegularInsert> builder = StatementBuilder
-				.of(QueryBuilder.insertInto(getKeyspace(entity, tableName), tableName).valuesByIds(Collections.emptyMap()))
+				.of(QueryBuilder.insertInto(getKeyspace(entity, tableName), tableName).valuesByIds(Collections.emptyMap()),
+						cassandraConverter.getCodecRegistry())
 				.bind((statement, factory) -> {
 
 					Map<CqlIdentifier, Term> values = createTerms(insertNulls, object, factory);
@@ -457,7 +460,9 @@ public class StatementFactory {
 		where.forEach((cqlIdentifier, o) -> object.remove(cqlIdentifier));
 
 		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> builder = StatementBuilder
-				.of(QueryBuilder.update(getKeyspace(entity, tableName), tableName).set().where()).bind((statement, factory) -> {
+				.of(QueryBuilder.update(getKeyspace(entity, tableName), tableName).set().where(),
+						cassandraConverter.getCodecRegistry())
+				.bind((statement, factory) -> {
 
 					CqlStatementOptionsAccessor<UpdateStart> accessor = factory.ifBoundOrInline(
 							bindings -> CqlStatementOptionsAccessor.ofUpdate(bindings, (UpdateStart) statement),
@@ -492,7 +497,9 @@ public class StatementFactory {
 
 		cassandraConverter.write(id, where, entity);
 
-		return StatementBuilder.of(QueryBuilder.deleteFrom(getKeyspace(entity, tableName), tableName).where())
+		return StatementBuilder
+				.of(QueryBuilder.deleteFrom(getKeyspace(entity, tableName), tableName).where(),
+						cassandraConverter.getCodecRegistry())
 				.bind((statement, factory) -> statement.where(toRelations(where, factory)));
 	}
 
@@ -565,7 +572,8 @@ public class StatementFactory {
 				.getRequiredPersistentEntity(ProxyUtils.getUserClass(entity.getClass()));
 
 		StatementBuilder<Delete> builder = StatementBuilder
-				.of(QueryBuilder.deleteFrom(getKeyspace(persistentEntity, tableName), tableName).where())
+				.of(QueryBuilder.deleteFrom(getKeyspace(persistentEntity, tableName), tableName).where(),
+						cassandraConverter.getCodecRegistry())
 				.bind((statement, factory) -> {
 
 					Delete statementToUse;
@@ -697,7 +705,7 @@ public class StatementFactory {
 			select = QueryBuilder.selectFrom(getKeyspace(entity, from), from).selectors(mappedSelectors);
 		}
 
-		StatementBuilder<Select> builder = StatementBuilder.of(select);
+		StatementBuilder<Select> builder = StatementBuilder.of(select, cassandraConverter.getCodecRegistry());
 
 		builder.bind((statement, factory) -> {
 			return statement.where(getRelations(filter, factory));
@@ -758,7 +766,8 @@ public class StatementFactory {
 
 		UpdateStart updateStart = QueryBuilder.update(getKeyspace(entity, table), table);
 
-		return StatementBuilder.of((com.datastax.oss.driver.api.querybuilder.update.Update) updateStart)
+		return StatementBuilder
+				.of((com.datastax.oss.driver.api.querybuilder.update.Update) updateStart, cassandraConverter.getCodecRegistry())
 				.bind((statement, factory) -> {
 
 					com.datastax.oss.driver.api.querybuilder.update.Update statementToUse;
@@ -918,7 +927,7 @@ public class StatementFactory {
 			select = select.column(columnName);
 		}
 
-		return StatementBuilder.of(select.where()).bind((statement, factory) -> {
+		return StatementBuilder.of(select.where(), cassandraConverter.getCodecRegistry()).bind((statement, factory) -> {
 
 			WriteOptions options = optionsOptional.orElse(null);
 			Delete statementToUse;

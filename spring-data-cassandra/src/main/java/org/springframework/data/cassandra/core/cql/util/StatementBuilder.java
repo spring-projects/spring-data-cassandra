@@ -43,8 +43,8 @@ import com.datastax.oss.driver.internal.querybuilder.CqlHelper;
  * Functional builder for Cassandra {@link BuildableQuery statements}. Statements are built by applying
  * {@link UnaryOperator builder functions} that get applied when {@link #build() building} the actual
  * {@link SimpleStatement statement}. The {@code StatementBuilder} provides a mutable container for statement creation
- * allowing a functional declaration of actions that are necessary to build a statement. This class helps building CQL
- * statements as a {@link BuildableQuery} classes are typically immutable and require return value tracking across
+ * allowing a functional declaration of actions that are necessary to build a statement. This class helps with building
+ * CQL statements as a {@link BuildableQuery} classes are typically immutable and require return value tracking across
  * methods that want to apply modifications to a statement.
  * <p>
  * Building a statement consists of three phases:
@@ -61,7 +61,11 @@ import com.datastax.oss.driver.internal.querybuilder.CqlHelper;
  * The builder can be used for structural evolution and value evolution of statements. Values are bound through
  * {@link BindFunction binding functions} that accept the statement and a {@link TermFactory}. Values can be bound
  * inline or through bind markers when {@link #build(ParameterHandling, CodecRegistry) building} the statement. All
- * functions are applied in the order of their declaration.
+ * functions remain in the order of their declaration.
+ * <p>
+ * {@link ParameterHandling#INLINE Inline} rendering of parameters requires a {@link CodecRegistry}. A StatementBuilder
+ * can be {@link StatementBuilder#of(BuildableQuery, CodecRegistry) created} by providing a custom CodecRegistry.
+ * Otherwise, the registry falls back to {@link CodecRegistry#DEFAULT}.
  * <p>
  * All methods returning {@link StatementBuilder} point to the same instance. This class is intended for internal use.
  *
@@ -72,6 +76,7 @@ import com.datastax.oss.driver.internal.querybuilder.CqlHelper;
 public class StatementBuilder<S extends BuildableQuery> {
 
 	private final S statement;
+	private final CodecRegistry registry;
 
 	private final List<BuilderRunnable<S>> queryActions = new ArrayList<>();
 	private final List<Consumer<SimpleStatementBuilder>> onBuild = new ArrayList<>();
@@ -79,7 +84,8 @@ public class StatementBuilder<S extends BuildableQuery> {
 
 	/**
 	 * Factory method used to create a new {@link StatementBuilder} with the given {@link BuildableQuery query stub}. The
-	 * stub is used as base for the built query so each query inherits properties of this stub.
+	 * stub is used as base for the built query so each query inherits properties of this stub. This factory method
+	 * initializes StatementBuilder with the default {@link CodecRegistry#DEFAULT CodecRegistry}.
 	 *
 	 * @param <S> query type.
 	 * @param stub the {@link BuildableQuery query stub} to use.
@@ -88,10 +94,27 @@ public class StatementBuilder<S extends BuildableQuery> {
 	 * @see com.datastax.oss.driver.api.querybuilder.BuildableQuery
 	 */
 	public static <S extends BuildableQuery> StatementBuilder<S> of(S stub) {
+		return of(stub, CodecRegistry.DEFAULT);
+	}
+
+	/**
+	 * Factory method used to create a new {@link StatementBuilder} with the given {@link BuildableQuery query stub}. The
+	 * stub is used as base for the built query so each query inherits properties of this stub.
+	 *
+	 * @param <S> query type.
+	 * @param stub the {@link BuildableQuery query stub} to use.
+	 * @param registry the default {@link CodecRegistry} to use for inline parameter rendering.
+	 * @return a {@link StatementBuilder} for the given {@link BuildableQuery query stub}.
+	 * @throws IllegalArgumentException if the {@link BuildableQuery query stub} is {@literal null}.
+	 * @see com.datastax.oss.driver.api.querybuilder.BuildableQuery
+	 * @since 4.4
+	 */
+	public static <S extends BuildableQuery> StatementBuilder<S> of(S stub, CodecRegistry registry) {
 
 		Assert.notNull(stub, "Query stub must not be null");
+		Assert.notNull(registry, "CodecRegistry stub must not be null");
 
-		return new StatementBuilder<>(stub);
+		return new StatementBuilder<>(stub, registry);
 	}
 
 	/**
@@ -101,8 +124,9 @@ public class StatementBuilder<S extends BuildableQuery> {
 	 *          {@link com.datastax.oss.driver.api.core.cql.Statement}.
 	 * @see com.datastax.oss.driver.api.querybuilder.BuildableQuery
 	 */
-	private StatementBuilder(S statement) {
+	private StatementBuilder(S statement, CodecRegistry registry) {
 		this.statement = statement;
+		this.registry = registry;
 	}
 
 	/**
@@ -177,7 +201,7 @@ public class StatementBuilder<S extends BuildableQuery> {
 	 * @return the built {@link SimpleStatement}.
 	 */
 	public SimpleStatement build() {
-		return build(ParameterHandling.BY_INDEX, CodecRegistry.DEFAULT);
+		return build(ParameterHandling.BY_INDEX, this.registry);
 	}
 
 	/**
@@ -188,7 +212,7 @@ public class StatementBuilder<S extends BuildableQuery> {
 	 * @return the built {@link SimpleStatement}.
 	 */
 	public SimpleStatement build(ParameterHandling parameterHandling) {
-		return build(parameterHandling, CodecRegistry.DEFAULT);
+		return build(parameterHandling, this.registry);
 	}
 
 	/**

@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.cassandra.core.query.Criteria.*;
 import static org.springframework.data.domain.Sort.Direction.*;
 
+import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,7 +30,6 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.convert.UpdateMapper;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
@@ -47,10 +47,16 @@ import org.springframework.data.domain.Sort;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
+import com.datastax.oss.driver.api.core.ProtocolVersion;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.type.DataType;
+import com.datastax.oss.driver.api.core.type.DataTypes;
+import com.datastax.oss.driver.api.core.type.codec.TypeCodec;
+import com.datastax.oss.driver.api.core.type.reflect.GenericType;
 import com.datastax.oss.driver.api.querybuilder.delete.Delete;
 import com.datastax.oss.driver.api.querybuilder.insert.RegularInsert;
 import com.datastax.oss.driver.api.querybuilder.select.Select;
+import com.datastax.oss.driver.internal.core.type.codec.registry.DefaultCodecRegistry;
 
 /**
  * Unit tests for {@link StatementFactory}.
@@ -60,7 +66,7 @@ import com.datastax.oss.driver.api.querybuilder.select.Select;
  */
 class StatementFactoryUnitTests {
 
-	private CassandraConverter converter = new MappingCassandraConverter();
+	private MappingCassandraConverter converter = new MappingCassandraConverter();
 
 	private UpdateMapper updateMapper = new UpdateMapper(converter);
 
@@ -850,6 +856,53 @@ class StatementFactoryUnitTests {
 				.isEqualTo("SELECT count(1) FROM group WHERE foo='bar'");
 	}
 
+	@Test // GH-1114
+	void shouldConsiderCodecRegistry() {
+
+		DefaultCodecRegistry cr = new DefaultCodecRegistry("foo");
+		cr.register(new TypeCodec<MyString>() {
+			@Override
+			public GenericType<MyString> getJavaType() {
+				return GenericType.of(MyString.class);
+			}
+
+			@Override
+			public DataType getCqlType() {
+				return DataTypes.TEXT;
+			}
+
+			@Override
+			public ByteBuffer encode(MyString value, ProtocolVersion protocolVersion) {
+				return null;
+			}
+
+			@Override
+			public MyString decode(ByteBuffer bytes, ProtocolVersion protocolVersion) {
+				return null;
+			}
+
+			@Override
+			public String format(MyString value) {
+				return "'" + value.value() + "'";
+			}
+
+			@Override
+			public MyString parse(String value) {
+				return new MyString(value);
+			}
+		});
+
+		converter.setCodecRegistry(cr);
+
+		Query query = Query.query(where("foo").is(new MyString("bar")));
+
+		StatementBuilder<Select> count = statementFactory.count(query,
+				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
+
+		assertThat(count.build(ParameterHandling.INLINE).getQuery())
+				.isEqualTo("SELECT count(1) FROM group WHERE foo='bar'");
+	}
+
 	@SuppressWarnings("unused")
 	static class Person {
 
@@ -864,5 +917,9 @@ class StatementFactoryUnitTests {
 		@Column("set_col") private Set<String> set;
 
 		@Column("first_name") private String firstName;
+	}
+
+	record MyString(String value) {
+
 	}
 }

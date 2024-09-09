@@ -17,15 +17,22 @@ package org.springframework.data.cassandra.core.cql.util;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.nio.ByteBuffer;
 import java.util.Collections;
 
 import org.junit.jupiter.api.Test;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.ProtocolVersion;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.metadata.schema.ClusteringOrder;
+import com.datastax.oss.driver.api.core.type.DataType;
+import com.datastax.oss.driver.api.core.type.DataTypes;
+import com.datastax.oss.driver.api.core.type.codec.TypeCodec;
+import com.datastax.oss.driver.api.core.type.reflect.GenericType;
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
 import com.datastax.oss.driver.api.querybuilder.relation.Relation;
+import com.datastax.oss.driver.internal.core.type.codec.registry.DefaultCodecRegistry;
 
 /**
  * Unit tests for {@link StatementBuilder}.
@@ -150,5 +157,52 @@ class StatementBuilderUnitTests {
 
 		assertThat(statement.getQuery()).isEqualTo("SELECT * FROM person");
 		assertThat(statement.getExecutionProfileName()).isEqualTo("foo");
+	}
+
+	@Test // GH-1114
+	void shouldConsiderCodecRegistry() {
+
+		DefaultCodecRegistry cr = new DefaultCodecRegistry("foo");
+		cr.register(new TypeCodec<MyString>() {
+			@Override
+			public GenericType<MyString> getJavaType() {
+				return GenericType.of(MyString.class);
+			}
+
+			@Override
+			public DataType getCqlType() {
+				return DataTypes.TEXT;
+			}
+
+			@Override
+			public ByteBuffer encode(MyString value, ProtocolVersion protocolVersion) {
+				return null;
+			}
+
+			@Override
+			public MyString decode(ByteBuffer bytes, ProtocolVersion protocolVersion) {
+				return null;
+			}
+
+			@Override
+			public String format(MyString value) {
+				return "'" + value.value() + "'";
+			}
+
+			@Override
+			public MyString parse(String value) {
+				return new MyString(value);
+			}
+		});
+
+		SimpleStatement statement = StatementBuilder.of(QueryBuilder.selectFrom("person").all(), cr)
+				.bind((select, factory) -> select.where(Relation.column("foo").isEqualTo(factory.create(new MyString("bar")))))
+				.build(StatementBuilder.ParameterHandling.INLINE);
+
+		assertThat(statement.getQuery()).isEqualTo("SELECT * FROM person WHERE foo='bar'");
+	}
+
+	record MyString(String value) {
+
 	}
 }
