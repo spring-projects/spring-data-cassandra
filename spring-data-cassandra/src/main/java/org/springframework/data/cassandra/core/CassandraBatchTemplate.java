@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
+import org.springframework.data.cassandra.core.cql.QueryOptionsUtil;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
@@ -57,6 +58,8 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 	private final CassandraOperations operations;
 
 	private final StatementFactory statementFactory;
+
+	private QueryOptions options = QueryOptions.empty();
 
 	/**
 	 * Create a new {@link CassandraBatchTemplate} given {@link CassandraOperations} and {@link BatchType}.
@@ -114,7 +117,8 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 	public WriteResult execute() {
 
 		if (this.executed.compareAndSet(false, true)) {
-			return WriteResult.of(this.operations.getCqlOperations().queryForResultSet(batch.build()));
+			BatchStatement statement = QueryOptionsUtil.addQueryOptions(batch.build(), this.options);
+			return WriteResult.of(this.operations.getCqlOperations().queryForResultSet(statement));
 		}
 
 		throw new IllegalStateException("This Cassandra Batch was already executed");
@@ -131,8 +135,20 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 	}
 
 	@Override
+	public CassandraBatchOperations withQueryOptions(QueryOptions options) {
+
+		assertNotExecuted();
+		Assert.notNull(options, "QueryOptions must not be null");
+
+		this.options = options;
+
+		return this;
+	}
+
+	@Override
 	public CassandraBatchOperations addStatement(BatchableStatement<?> statement) {
 
+		assertNotExecuted();
 		Assert.notNull(statement, "Statement must not be null");
 
 		this.batch.addStatement(statement);
@@ -143,6 +159,7 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 	@Override
 	public CassandraBatchOperations addStatements(BatchableStatement<?>... statements) {
 
+		assertNotExecuted();
 		Assert.notNull(statements, "Statements must not be null");
 
 		this.batch.addStatements(statements);
@@ -154,6 +171,7 @@ class CassandraBatchTemplate implements CassandraBatchOperations {
 	@SuppressWarnings("unchecked")
 	public CassandraBatchOperations addStatements(Iterable<? extends BatchableStatement<?>> statements) {
 
+		assertNotExecuted();
 		Assert.notNull(statements, "Statements must not be null");
 
 		this.batch.addStatements((Iterable<BatchableStatement<?>>) statements);

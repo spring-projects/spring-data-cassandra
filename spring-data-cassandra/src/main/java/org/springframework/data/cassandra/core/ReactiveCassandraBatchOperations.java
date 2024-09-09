@@ -22,6 +22,7 @@ import java.util.Collections;
 
 import org.reactivestreams.Subscriber;
 
+import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.util.Assert;
 
@@ -64,6 +65,16 @@ public interface ReactiveCassandraBatchOperations {
 	 * @throws IllegalStateException if the batch was already executed.
 	 */
 	ReactiveCassandraBatchOperations withTimestamp(long timestamp);
+
+	/**
+	 * Apply given {@link QueryOptions} to the whole batch statement.
+	 *
+	 * @param options the options to apply.
+	 * @return {@code this} {@link CassandraBatchOperations}.
+	 * @throws IllegalStateException if the batch was already executed.
+	 * @since 4.4
+	 */
+	ReactiveCassandraBatchOperations withQueryOptions(QueryOptions options);
 
 	/**
 	 * Add a {@link BatchableStatement statement} to the batch.

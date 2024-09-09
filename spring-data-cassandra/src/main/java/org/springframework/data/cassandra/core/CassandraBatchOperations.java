@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.core;
 
 import java.util.Collections;
 
+import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.util.Assert;
 
@@ -58,6 +59,16 @@ public interface CassandraBatchOperations {
 	 * @throws IllegalStateException if the batch was already executed.
 	 */
 	CassandraBatchOperations withTimestamp(long timestamp);
+
+	/**
+	 * Apply given {@link QueryOptions} to the whole batch statement.
+	 *
+	 * @param options the options to apply.
+	 * @return {@code this} {@link CassandraBatchOperations}.
+	 * @throws IllegalStateException if the batch was already executed.
+	 * @since 4.4
+	 */
+	CassandraBatchOperations withQueryOptions(QueryOptions options);
 
 	/**
 	 * Add a {@link BatchableStatement statement} to the batch.

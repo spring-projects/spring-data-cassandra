@@ -30,8 +30,10 @@ import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.springframework.data.cassandra.CassandraConnectionFailureException;
 import org.springframework.data.cassandra.ReactiveResultSet;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
+import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.cql.ReactiveCqlTemplate;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.data.cassandra.core.cql.session.DefaultBridgedReactiveSession;
@@ -41,6 +43,8 @@ import org.springframework.data.cassandra.domain.GroupKey;
 import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
 
+import com.datastax.oss.driver.api.core.AllNodesFailedException;
+import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.cql.BatchType;
 import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
@@ -153,8 +157,7 @@ class ReactiveCassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCre
 				.then(template.getReactiveCqlOperations().queryForResultSet("SELECT TTL(email), email FROM group;"));
 
 		resultSet.flatMapMany(ReactiveResultSet::availableRows) //
-				.collectList()
-				.as(StepVerifier::create) //
+				.collectList().as(StepVerifier::create) //
 				.assertNext(rows -> {
 
 					for (Row row : rows) {
@@ -252,8 +255,7 @@ class ReactiveCassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCre
 				.then(template.getReactiveCqlOperations().queryForResultSet("SELECT TTL(email), email FROM group;"));
 
 		resultSet.flatMapMany(ReactiveResultSet::availableRows) //
-				.collectList()
-				.as(StepVerifier::create) //
+				.collectList().as(StepVerifier::create) //
 				.assertNext(rows -> {
 
 					for (Row row : rows) {
@@ -388,6 +390,20 @@ class ReactiveCassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCre
 				.assertNext(row -> assertThat(row.getLong(0)).isEqualTo(timestamp)).verifyComplete();
 	}
 
+	@Test // GH-1192
+	void shouldApplyQueryOptions() {
+
+		QueryOptions options = QueryOptions.builder().consistencyLevel(ConsistencyLevel.THREE).build();
+
+		ReactiveCassandraBatchOperations batchOperations = new ReactiveCassandraBatchTemplate(template, BatchType.LOGGED);
+		Mono<WriteResult> execute = batchOperations.insert(walter).insert(mike).withQueryOptions(options).execute();
+
+		execute.as(StepVerifier::create).verifyErrorSatisfies(e -> {
+			assertThat(e).isInstanceOf(CassandraConnectionFailureException.class)
+					.hasRootCauseInstanceOf(AllNodesFailedException.class);
+		});
+	}
+
 	@Test // DATACASS-574
 	void shouldNotExecuteTwice() {
 
@@ -428,10 +444,12 @@ class ReactiveCassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCre
 
 		for (int i = 0; i < 100; i++) {
 
-			batchOperations.insert(Mono.just(Arrays.asList(new Group(new GroupKey("users", "0x1", "walter" + random.longs())),
-					new Group(new GroupKey("users", "0x1", "walter" + random.longs())),
-					new Group(new GroupKey("users", "0x1", "walter" + random.longs())),
-					new Group(new GroupKey("users", "0x1", "walter" + random.longs())))).publishOn(Schedulers.boundedElastic()));
+			batchOperations.insert(Mono
+					.just(Arrays.asList(new Group(new GroupKey("users", "0x1", "walter" + random.longs())),
+							new Group(new GroupKey("users", "0x1", "walter" + random.longs())),
+							new Group(new GroupKey("users", "0x1", "walter" + random.longs())),
+							new Group(new GroupKey("users", "0x1", "walter" + random.longs()))))
+					.publishOn(Schedulers.boundedElastic()));
 		}
 
 		batchOperations.execute()

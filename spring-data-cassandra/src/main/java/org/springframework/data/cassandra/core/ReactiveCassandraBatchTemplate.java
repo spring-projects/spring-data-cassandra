@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
+import org.springframework.data.cassandra.core.cql.QueryOptionsUtil;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
@@ -65,6 +66,8 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 	private final ReactiveCassandraOperations operations;
 
 	private final StatementFactory statementFactory;
+
+	private QueryOptions options = QueryOptions.empty();
 
 	/**
 	 * Create a new {@link CassandraBatchTemplate} given {@link CassandraOperations} and {@link BatchType}.
@@ -141,7 +144,8 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 
 							this.batch.addStatements((List<BatchableStatement<?>>) statements);
 
-							return this.operations.getReactiveCqlOperations().queryForResultSet(this.batch.build());
+							return this.operations.getReactiveCqlOperations()
+									.queryForResultSet(QueryOptionsUtil.addQueryOptions(this.batch.build(), this.options));
 						}) //
 						.flatMap(resultSet -> resultSet.rows().collectList()
 								.map(rows -> new WriteResult(resultSet.getAllExecutionInfo(), resultSet.wasApplied(), rows)));
@@ -161,8 +165,20 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 	}
 
 	@Override
+	public ReactiveCassandraBatchOperations withQueryOptions(QueryOptions options) {
+
+		assertNotExecuted();
+		Assert.notNull(options, "QueryOptions must not be null");
+
+		this.options = options;
+
+		return this;
+	}
+
+	@Override
 	public ReactiveCassandraBatchOperations addStatement(Mono<? extends BatchableStatement<?>> statement) {
 
+		assertNotExecuted();
 		Assert.notNull(statement, "Statement mono must not be null");
 
 		this.batchMonos.add(statement.map(List::of));
@@ -174,6 +190,7 @@ class ReactiveCassandraBatchTemplate implements ReactiveCassandraBatchOperations
 	public ReactiveCassandraBatchOperations addStatements(
 			Mono<? extends Iterable<? extends BatchableStatement<?>>> statements) {
 
+		assertNotExecuted();
 		Assert.notNull(statements, "Statements mono must not be null");
 
 		this.batchMonos.add(statements);

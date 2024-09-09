@@ -24,6 +24,8 @@ import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.springframework.data.cassandra.CassandraConnectionFailureException;
+import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.data.cassandra.domain.FlatGroup;
 import org.springframework.data.cassandra.domain.Group;
@@ -31,6 +33,8 @@ import org.springframework.data.cassandra.domain.GroupKey;
 import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
 
+import com.datastax.oss.driver.api.core.AllNodesFailedException;
+import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.cql.BatchType;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
@@ -297,7 +301,19 @@ class CassandraBatchTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 		}
 	}
 
-	@Test // DATACASS-288
+	@Test // GH-1192
+	void shouldApplyQueryOptions() {
+
+		QueryOptions options = QueryOptions.builder().consistencyLevel(ConsistencyLevel.THREE).build();
+
+		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template, BatchType.LOGGED);
+		CassandraBatchOperations ops = batchOperations.insert(walter).withQueryOptions(options);
+
+		assertThatExceptionOfType(CassandraConnectionFailureException.class).isThrownBy(ops::execute)
+				.withRootCauseInstanceOf(AllNodesFailedException.class);
+	}
+
+	@Test // GH-1192
 	void shouldNotExecuteTwice() {
 
 		CassandraBatchOperations batchOperations = new CassandraBatchTemplate(template, BatchType.LOGGED);
