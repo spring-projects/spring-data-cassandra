@@ -17,11 +17,17 @@ package org.springframework.data.cassandra.repository.query;
 
 import reactor.core.publisher.Mono;
 
+import org.springframework.core.env.StandardEnvironment;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.repository.Query;
-import org.springframework.data.mapping.model.SpELExpressionEvaluator;
+import org.springframework.data.expression.ReactiveValueEvaluationContextProvider;
+import org.springframework.data.expression.ValueEvaluationContextProvider;
+import org.springframework.data.expression.ValueExpressionParser;
+import org.springframework.data.mapping.model.ValueExpressionEvaluator;
 import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
+import org.springframework.data.repository.query.QueryMethodValueEvaluationContextAccessor;
 import org.springframework.data.repository.query.ReactiveQueryMethodEvaluationContextProvider;
+import org.springframework.data.repository.query.ValueExpressionDelegate;
 import org.springframework.data.spel.ExpressionDependencies;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
@@ -51,8 +57,9 @@ public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandra
 
 	private final boolean isExistsQuery;
 
-	private final ExpressionParser expressionParser;
-	private final ReactiveQueryMethodEvaluationContextProvider evaluationContextProvider;
+	private final ValueExpressionDelegate delegate;
+
+	private final ReactiveValueEvaluationContextProvider valueEvaluationContextProvider;
 
 	/**
 	 * Create a new {@link ReactiveStringBasedCassandraQuery} for the given {@link CassandraQueryMethod},
@@ -66,7 +73,9 @@ public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandra
 	 *          {@link org.springframework.expression.spel.support.StandardEvaluationContext}.
 	 * @see org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryMethod
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations
+	 * @deprecated since 4.4, use the constructors accepting {@link ValueExpressionDelegate} instead.
 	 */
+	@Deprecated(since = "4.4")
 	public ReactiveStringBasedCassandraQuery(ReactiveCassandraQueryMethod queryMethod,
 			ReactiveCassandraOperations operations, ExpressionParser expressionParser,
 			ReactiveQueryMethodEvaluationContextProvider evaluationContextProvider) {
@@ -86,19 +95,59 @@ public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandra
 	 *          {@link org.springframework.expression.spel.support.StandardEvaluationContext}.
 	 * @see org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryMethod
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations
+	 * @deprecated since 4.4, use the constructors accepting {@link ValueExpressionDelegate} instead.
 	 */
+	@Deprecated(since = "4.4")
 	public ReactiveStringBasedCassandraQuery(String query, ReactiveCassandraQueryMethod method,
 			ReactiveCassandraOperations operations, ExpressionParser expressionParser,
 			ReactiveQueryMethodEvaluationContextProvider evaluationContextProvider) {
+
+		this(query, method, operations, new ValueExpressionDelegate(new QueryMethodValueEvaluationContextAccessor(new StandardEnvironment(), evaluationContextProvider.getEvaluationContextProvider()), ValueExpressionParser.create(() -> expressionParser)));
+	}
+
+	/**
+	 * Create a new {@link ReactiveStringBasedCassandraQuery} for the given {@link CassandraQueryMethod},
+	 * {@link ReactiveCassandraOperations}, {@link ValueExpressionDelegate}
+	 *
+	 * @param queryMethod {@link ReactiveCassandraQueryMethod} on which this query is based.
+	 * @param operations {@link ReactiveCassandraOperations} used to perform data access in Cassandra.
+	 * @param delegate {@link ValueExpressionDelegate} used to parse expressions in the query.
+	 * @see org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryMethod
+	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations
+	 * @since 4.4
+	 */
+	public ReactiveStringBasedCassandraQuery(ReactiveCassandraQueryMethod queryMethod,
+			ReactiveCassandraOperations operations, ValueExpressionDelegate delegate) {
+
+		this(queryMethod.getRequiredAnnotatedQuery(), queryMethod, operations, delegate);
+	}
+
+	/**
+	 * Create a new {@link ReactiveStringBasedCassandraQuery} for the given {@code query}, {@link CassandraQueryMethod},
+	 * {@link ReactiveCassandraOperations}, {@link ValueExpressionDelegate}
+	 *
+	 * @param method {@link ReactiveCassandraQueryMethod} on which this query is based.
+	 * @param operations {@link ReactiveCassandraOperations} used to perform data access in Cassandra.
+	 * @param delegate {@link SpelExpressionParser} used to parse expressions in the query.
+	 * @see org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryMethod
+	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations
+	 * @since 4.4
+	 */
+	public ReactiveStringBasedCassandraQuery(String query, ReactiveCassandraQueryMethod method,
+			ReactiveCassandraOperations operations, ValueExpressionDelegate delegate) {
 
 		super(method, operations);
 
 		Assert.hasText(query, "Query must not be empty");
 
-		this.expressionParser = expressionParser;
-		this.evaluationContextProvider = evaluationContextProvider;
+		this.delegate = delegate;
 
-		this.stringBasedQuery = new StringBasedQuery(query, method.getParameters(), expressionParser);
+		this.stringBasedQuery = new StringBasedQuery(query, method.getParameters(), delegate);
+
+		ValueEvaluationContextProvider valueContextProvider = delegate.createValueContextProvider(
+				method.getParameters());
+		Assert.isInstanceOf(ReactiveValueEvaluationContextProvider.class, valueContextProvider, "ValueEvaluationContextProvider must be reactive");
+		this.valueEvaluationContextProvider = (ReactiveValueEvaluationContextProvider) valueContextProvider;
 
 		if (method.hasAnnotatedQuery()) {
 
@@ -126,10 +175,9 @@ public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandra
 		StringBasedQuery query = getStringBasedQuery();
 		ConvertingParameterAccessor parameterAccessorToUse = new ConvertingParameterAccessor(
 				getReactiveCassandraOperations().getConverter(), parameterAccessor);
-		Mono<SpELExpressionEvaluator> spelEvaluator = getSpelEvaluatorFor(query.getExpressionDependencies(),
-				parameterAccessorToUse);
 
-		return spelEvaluator.map(it -> getQueryStatementCreator().select(query, parameterAccessorToUse, it));
+		return getValueExpressionEvaluatorLater(query.getExpressionDependencies(), parameterAccessor)
+				.map(it -> getQueryStatementCreator().select(query, parameterAccessorToUse, it));
 	}
 
 	@Override
@@ -152,21 +200,9 @@ public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandra
 		return false;
 	}
 
-	/**
-	 * Obtain a {@link Mono publisher} emitting the {@link SpELExpressionEvaluator} suitable to evaluate expressions
-	 * backed by the given dependencies.
-	 *
-	 * @param dependencies must not be {@literal null}.
-	 * @param accessor must not be {@literal null}.
-	 * @return a {@link Mono} emitting the {@link SpELExpressionEvaluator} when ready.
-	 */
-	private Mono<SpELExpressionEvaluator> getSpelEvaluatorFor(ExpressionDependencies dependencies,
+	private Mono<ValueExpressionEvaluator> getValueExpressionEvaluatorLater(ExpressionDependencies dependencies,
 			CassandraParameterAccessor accessor) {
-
-		return evaluationContextProvider
-				.getEvaluationContextLater(getQueryMethod().getParameters(), accessor.getValues(), dependencies)
-				.map(evaluationContext -> (SpELExpressionEvaluator) new DefaultSpELExpressionEvaluator(expressionParser,
-						evaluationContext))
-				.defaultIfEmpty(DefaultSpELExpressionEvaluator.unsupported());
+		return valueEvaluationContextProvider.getEvaluationContextLater(accessor.getValues(), dependencies)
+				.map(evaluationContext -> new ValueExpressionDelegateValueExpressionEvaluator(delegate, valueExpression -> evaluationContext));
 	}
 }

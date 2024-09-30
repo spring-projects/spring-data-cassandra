@@ -25,6 +25,7 @@ import java.nio.ByteBuffer;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -33,6 +34,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
@@ -43,15 +45,18 @@ import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.cassandra.repository.Consistency;
 import org.springframework.data.cassandra.repository.Query;
 import org.springframework.data.cassandra.support.UserDefinedTypeBuilder;
+import org.springframework.data.expression.ValueExpressionParser;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.AbstractRepositoryMetadata;
-import org.springframework.data.repository.query.ExtensionAwareQueryMethodEvaluationContextProvider;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.repository.query.QueryCreationException;
+import org.springframework.data.repository.query.QueryMethodValueEvaluationContextAccessor;
+import org.springframework.data.repository.query.ValueExpressionDelegate;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.mock.env.MockEnvironment;
 import org.springframework.util.ReflectionUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -71,7 +76,7 @@ import com.datastax.oss.driver.api.core.type.UserDefinedType;
 @ExtendWith(MockitoExtension.class)
 class StringBasedCassandraQueryUnitTests {
 
-	private static final SpelExpressionParser PARSER = new SpelExpressionParser();
+	private static final ValueExpressionParser PARSER = ValueExpressionParser.create(SpelExpressionParser::new);
 
 	@Mock private CassandraOperations operations;
 	@Mock private UdtValue udtValue;
@@ -80,6 +85,7 @@ class StringBasedCassandraQueryUnitTests {
 	private RepositoryMetadata metadata;
 	private MappingCassandraConverter converter;
 	private ProjectionFactory factory;
+	private MockEnvironment environment = new MockEnvironment();
 
 	@BeforeEach
 	void setUp() {
@@ -293,6 +299,20 @@ class StringBasedCassandraQueryUnitTests {
 		assertThat(actual.getPositionalValues().get(0)).isEqualTo("Walter");
 	}
 
+	@Test // GH-1522
+	void bindsPropertyPlaceholderParameterCorrectly() {
+		environment.withProperty("someParam", "Walter");
+
+		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByPropertyPlaceholder");
+		CassandraParametersParameterAccessor accessor = new CassandraParametersParameterAccessor(
+				cassandraQuery.getQueryMethod());
+
+		SimpleStatement actual = cassandraQuery.createQuery(accessor);
+
+		assertThat(actual.getQuery()).isEqualTo("SELECT * FROM person WHERE lastname = ?;");
+		assertThat(actual.getPositionalValues().get(0)).isEqualTo("Walter");
+	}
+
 	@Test // DATACASS-117
 	void bindsReusedParametersCorrectly() {
 
@@ -431,8 +451,10 @@ class StringBasedCassandraQueryUnitTests {
 		CassandraQueryMethod queryMethod = new CassandraQueryMethod(method, metadata, factory,
 				converter.getMappingContext());
 
-		return new StringBasedCassandraQuery(queryMethod, operations, PARSER,
-				ExtensionAwareQueryMethodEvaluationContextProvider.DEFAULT);
+		QueryMethodValueEvaluationContextAccessor accessor = new QueryMethodValueEvaluationContextAccessor(
+				environment, Collections.emptySet());
+
+		return new StringBasedCassandraQuery(queryMethod, operations, new ValueExpressionDelegate(accessor, PARSER));
 	}
 
 	@SuppressWarnings("unused")
@@ -479,6 +501,9 @@ class StringBasedCassandraQueryUnitTests {
 
 		@Query("SELECT * FROM person WHERE lastname = :#{#lastname == 'Matthews' ? 'Woohoo' : #lastname};")
 		Person findByConditionalExpressionParameter(@Param("lastname") String lastname);
+
+		@Query("SELECT * FROM person WHERE lastname = :${someParam};")
+		Person findByPropertyPlaceholder();
 
 		@Query("SELECT * FROM person WHERE lastname=?0 AND firstname=?1;")
 		Person findByLastnameAndFirstname(String lastname, String firstname);
