@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import org.springframework.data.cassandra.ReactiveSession;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
@@ -37,16 +38,20 @@ import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.cassandra.repository.Consistency;
 import org.springframework.data.cassandra.repository.Query;
+import org.springframework.data.expression.ValueExpressionParser;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.AbstractRepositoryMetadata;
+import org.springframework.data.repository.query.QueryMethodValueEvaluationContextAccessor;
 import org.springframework.data.repository.query.ReactiveExtensionAwareQueryMethodEvaluationContextProvider;
+import org.springframework.data.repository.query.ValueExpressionDelegate;
 import org.springframework.data.spel.spi.EvaluationContextExtension;
 import org.springframework.data.spel.spi.ReactiveEvaluationContextExtension;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.lang.Nullable;
+import org.springframework.mock.env.MockEnvironment;
 import org.springframework.util.ReflectionUtils;
 
 import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
@@ -60,7 +65,7 @@ import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 @ExtendWith(MockitoExtension.class)
 class ReactiveStringBasedCassandraQueryUnitTests {
 
-	private static final SpelExpressionParser PARSER = new SpelExpressionParser();
+	private static final ValueExpressionParser PARSER = ValueExpressionParser.create(SpelExpressionParser::new);
 
 	@Mock private ReactiveCassandraOperations operations;
 	@Mock private ReactiveCqlOperations cqlOperations;
@@ -69,6 +74,7 @@ class ReactiveStringBasedCassandraQueryUnitTests {
 	private MappingCassandraConverter converter;
 	private ProjectionFactory factory;
 	private RepositoryMetadata metadata;
+	private MockEnvironment mockEnvironment = new MockEnvironment();
 
 	@BeforeEach
 	@SuppressWarnings("unchecked")
@@ -143,6 +149,20 @@ class ReactiveStringBasedCassandraQueryUnitTests {
 		assertThat(actual.getPositionalValues().get(0)).isEqualTo("Walter");
 	}
 
+	@Test // GH-1522
+	void shouldUsePropertyPlaceholder() {
+		mockEnvironment.withProperty("someProp", "Walter");
+		ReactiveStringBasedCassandraQuery cassandraQuery = getQueryMethod("findByPropertyPlaceholder");
+
+		CassandraParametersParameterAccessor parameterAccessor = new CassandraParametersParameterAccessor(
+				cassandraQuery.getQueryMethod());
+
+		SimpleStatement actual = cassandraQuery.createQuery(parameterAccessor).block();
+
+		assertThat(actual.getQuery()).isEqualTo("SELECT * FROM person WHERE lastname=?;");
+		assertThat(actual.getPositionalValues().get(0)).isEqualTo("Walter");
+	}
+
 	private ReactiveStringBasedCassandraQuery getQueryMethod(String name, Class<?>... args) {
 
 		Method method = ReflectionUtils.findMethod(SampleRepository.class, name, args);
@@ -150,11 +170,10 @@ class ReactiveStringBasedCassandraQueryUnitTests {
 		ReactiveCassandraQueryMethod queryMethod = new ReactiveCassandraQueryMethod(method, metadata, factory,
 				converter.getMappingContext());
 
-		ReactiveExtensionAwareQueryMethodEvaluationContextProvider provider = new ReactiveExtensionAwareQueryMethodEvaluationContextProvider(
-				Arrays.asList(MyReactiveExtension.INSTANCE, MyDefunctExtension.INSTANCE));
+		QueryMethodValueEvaluationContextAccessor accessor = new QueryMethodValueEvaluationContextAccessor(
+				mockEnvironment, Arrays.asList(MyReactiveExtension.INSTANCE, MyDefunctExtension.INSTANCE));
 
-		return new ReactiveStringBasedCassandraQuery(queryMethod, operations, PARSER,
-				provider);
+		return new ReactiveStringBasedCassandraQuery(queryMethod, operations, new ValueExpressionDelegate(accessor, PARSER));
 	}
 
 	@SuppressWarnings("unused")
@@ -169,6 +188,9 @@ class ReactiveStringBasedCassandraQueryUnitTests {
 
 		@Query("SELECT * FROM person WHERE lastname=:#{getName()};")
 		Person findBySpel();
+
+		@Query("SELECT * FROM person WHERE lastname=:${someProp};")
+		Person findByPropertyPlaceholder();
 
 	}
 

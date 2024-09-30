@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.springframework.data.mapping.model.SpELExpressionEvaluator;
+import org.springframework.data.mapping.model.ValueExpressionEvaluator;
 import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.lang.Nullable;
@@ -39,13 +39,13 @@ class BindingContext {
 
 	private final List<ParameterBinding> bindings;
 
-	private final SpELExpressionEvaluator evaluator;
+	private final ValueExpressionEvaluator evaluator;
 
 	/**
 	 * Create new {@link BindingContext}.
 	 */
-	public BindingContext(CassandraParameters parameters, ParameterAccessor parameterAccessor,
-			List<ParameterBinding> bindings, SpELExpressionEvaluator evaluator) {
+	BindingContext(CassandraParameters parameters, ParameterAccessor parameterAccessor,
+			List<ParameterBinding> bindings, ValueExpressionEvaluator evaluator) {
 
 		this.parameters = parameters;
 		this.parameterAccessor = parameterAccessor;
