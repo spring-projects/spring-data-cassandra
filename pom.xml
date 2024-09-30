@@ -11,7 +11,7 @@
 
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-cassandra-parent</artifactId>
-	<version>4.4.0-SNAPSHOT</version>
+	<version>4.4.0-GH-1522-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>Spring Data for Apache Cassandra</name>
@@ -97,7 +97,7 @@
 		<hppc.version>0.5.4</hppc.version>
 		<multithreadedtc.version>1.01</multithreadedtc.version>
 		<project.type>multi</project.type>
-		<springdata.commons>3.4.0-SNAPSHOT</springdata.commons>
+		<springdata.commons>3.4.0-GH-3049-SNAPSHOT</springdata.commons>
 	</properties>
 
 	<dependencyManagement>
