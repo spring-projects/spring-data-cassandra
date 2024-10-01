@@ -43,6 +43,7 @@ import com.datastax.oss.driver.api.core.cql.SimpleStatement;
  * index-based and expression parameters that are resolved during query execution.
  *
  * @author Mark Paluch
+ * @author Marcin Grzejszczak
  * @see org.springframework.data.cassandra.repository.Query
  * @see org.springframework.data.cassandra.repository.query.AbstractReactiveCassandraQuery
  * @since 2.0
@@ -203,6 +204,6 @@ public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandra
 	private Mono<ValueExpressionEvaluator> getValueExpressionEvaluatorLater(ExpressionDependencies dependencies,
 			CassandraParameterAccessor accessor) {
 		return valueEvaluationContextProvider.getEvaluationContextLater(accessor.getValues(), dependencies)
-				.map(evaluationContext -> new ValueExpressionDelegateValueExpressionEvaluator(delegate, valueExpression -> evaluationContext));
+				.map(evaluationContext -> new ContextualValueExpressionEvaluator(delegate, evaluationContext));
 	}
 }

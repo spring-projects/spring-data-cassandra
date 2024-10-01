@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.repository.query;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
@@ -36,6 +37,7 @@ import com.datastax.oss.driver.api.core.cql.SimpleStatement;
  * String-based Query abstracting a CQL query with parameter bindings.
  *
  * @author Mark Paluch
+ * @author Marcin Grzejszczak
  * @since 2.0
  */
 class StringBasedQuery {
@@ -270,9 +272,9 @@ class StringBasedQuery {
 		}
 
 		@Nullable
-		private static Matcher findNextBindingOrExpression(String input, int position) {
+		private static Matcher findNextBindingOrExpression(String input, int startPosition) {
 
-			List<Matcher> matchers = new ArrayList<>();
+			List<Matcher> matchers = new ArrayList<>(6);
 
 			matchers.add(INDEX_PARAMETER_BINDING_PATTERN.matcher(input));
 			matchers.add(NAMED_PARAMETER_BINDING_PATTERN.matcher(input));
@@ -281,10 +283,10 @@ class StringBasedQuery {
 			matchers.add(INDEX_BASED_PROPERTY_PLACEHOLDER_PATTERN.matcher(input));
 			matchers.add(NAME_BASED_PROPERTY_PLACEHOLDER_PATTERN.matcher(input));
 
-			TreeMap<Integer, Matcher> matcherMap = new TreeMap<>();
+			Map<Integer, Matcher> matcherMap = new TreeMap<>();
 
 			for (Matcher matcher : matchers) {
-				if (matcher.find(position)) {
+				if (matcher.find(startPosition)) {
 					matcherMap.put(matcher.start(), matcher);
 				}
 			}

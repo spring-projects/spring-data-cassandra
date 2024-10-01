@@ -19,7 +19,6 @@ import java.lang.reflect.Method;
 import java.util.Optional;
 
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.core.env.StandardEnvironment;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
@@ -27,33 +26,27 @@ import org.springframework.data.cassandra.repository.query.CassandraEntityInform
 import org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryMethod;
 import org.springframework.data.cassandra.repository.query.ReactivePartTreeCassandraQuery;
 import org.springframework.data.cassandra.repository.query.ReactiveStringBasedCassandraQuery;
-import org.springframework.data.expression.ValueExpressionParser;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.ReactiveRepositoryFactorySupport;
+import org.springframework.data.repository.query.CachingValueExpressionDelegate;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
-import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
-import org.springframework.data.repository.query.QueryMethodValueEvaluationContextAccessor;
-import org.springframework.data.repository.query.ReactiveQueryMethodEvaluationContextProvider;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.query.ValueExpressionDelegate;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
  * Factory to create {@link org.springframework.data.cassandra.repository.ReactiveCassandraRepository} instances.
  *
  * @author Mark Paluch
+ * @author Marcin Grzejszczak
  * @since 2.0
  */
 public class ReactiveCassandraRepositoryFactory extends ReactiveRepositoryFactorySupport {
-
-	private static final ValueExpressionParser EXPRESSION_PARSER = ValueExpressionParser.create(SpelExpressionParser::new);
 
 	private final ReactiveCassandraOperations operations;
 
@@ -70,8 +63,6 @@ public class ReactiveCassandraRepositoryFactory extends ReactiveRepositoryFactor
 
 		this.operations = cassandraOperations;
 		this.mappingContext = cassandraOperations.getConverter().getMappingContext();
-
-		setEvaluationContextProvider(ReactiveQueryMethodEvaluationContextProvider.DEFAULT);
 	}
 
 	@Override
@@ -92,15 +83,11 @@ public class ReactiveCassandraRepositoryFactory extends ReactiveRepositoryFactor
 		return getTargetRepositoryViaReflection(information, entityInformation, operations);
 	}
 
-	@Override protected Optional<QueryLookupStrategy> getQueryLookupStrategy(Key key,
-			ValueExpressionDelegate valueExpressionDelegate) {
-		return Optional.of(new CassandraQueryLookupStrategy(operations, valueExpressionDelegate, mappingContext));
-	}
-
 	@Override
-	protected Optional<QueryLookupStrategy> getQueryLookupStrategy(@Nullable Key key,
-			QueryMethodEvaluationContextProvider evaluationContextProvider) {
-		return Optional.of(new CassandraQueryLookupStrategy(operations, new ValueExpressionDelegate(new QueryMethodValueEvaluationContextAccessor(new StandardEnvironment(), evaluationContextProvider.getEvaluationContextProvider()), EXPRESSION_PARSER), mappingContext));
+	protected Optional<QueryLookupStrategy> getQueryLookupStrategy(Key key,
+			ValueExpressionDelegate valueExpressionDelegate) {
+		return Optional.of(new CassandraQueryLookupStrategy(operations,
+				new CachingValueExpressionDelegate(valueExpressionDelegate), mappingContext));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -117,22 +104,10 @@ public class ReactiveCassandraRepositoryFactory extends ReactiveRepositoryFactor
 	 *
 	 * @author Mark Paluch
 	 */
-	private static class CassandraQueryLookupStrategy implements QueryLookupStrategy {
-
-		private final ValueExpressionDelegate delegate;
-
-		private final ReactiveCassandraOperations operations;
-
-		private final MappingContext<? extends CassandraPersistentEntity<?>, ? extends CassandraPersistentProperty> mappingContext;
-
-		CassandraQueryLookupStrategy(ReactiveCassandraOperations operations,
-				ValueExpressionDelegate delegate,
-				MappingContext<? extends CassandraPersistentEntity<?>, ? extends CassandraPersistentProperty> mappingContext) {
-
-			this.delegate = delegate;
-			this.operations = operations;
-			this.mappingContext = mappingContext;
-		}
+	private record CassandraQueryLookupStrategy(ReactiveCassandraOperations operations, ValueExpressionDelegate delegate,
+			MappingContext<? extends CassandraPersistentEntity<?>, ? extends CassandraPersistentProperty> mappingContext)
+			implements
+				QueryLookupStrategy {
 
 		@Override
 		public RepositoryQuery resolveQuery(Method method, RepositoryMetadata metadata, ProjectionFactory factory,

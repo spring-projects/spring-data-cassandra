@@ -72,6 +72,7 @@ import com.datastax.oss.driver.api.core.type.UserDefinedType;
  * @author Matthew T. Adams
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Marcin Grzejszczak
  */
 @ExtendWith(MockitoExtension.class)
 class StringBasedCassandraQueryUnitTests {
@@ -301,6 +302,7 @@ class StringBasedCassandraQueryUnitTests {
 
 	@Test // GH-1522
 	void bindsPropertyPlaceholderParameterCorrectly() {
+
 		environment.withProperty("someParam", "Walter");
 
 		StringBasedCassandraQuery cassandraQuery = getQueryMethod("findByPropertyPlaceholder");
