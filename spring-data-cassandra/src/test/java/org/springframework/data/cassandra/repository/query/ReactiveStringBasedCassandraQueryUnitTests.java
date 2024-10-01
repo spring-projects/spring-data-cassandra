@@ -29,11 +29,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import org.springframework.data.cassandra.ReactiveSession;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
-import org.springframework.data.cassandra.core.cql.ReactiveCqlOperations;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.cassandra.repository.Consistency;
@@ -45,7 +43,6 @@ import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.AbstractRepositoryMetadata;
 import org.springframework.data.repository.query.QueryMethodValueEvaluationContextAccessor;
-import org.springframework.data.repository.query.ReactiveExtensionAwareQueryMethodEvaluationContextProvider;
 import org.springframework.data.repository.query.ValueExpressionDelegate;
 import org.springframework.data.spel.spi.EvaluationContextExtension;
 import org.springframework.data.spel.spi.ReactiveEvaluationContextExtension;
@@ -61,6 +58,7 @@ import com.datastax.oss.driver.api.core.cql.SimpleStatement;
  * Unit tests for {@link StringBasedCassandraQuery}.
  *
  * @author Mark Paluch
+ * @author Marcin Grzejszczak
  */
 @ExtendWith(MockitoExtension.class)
 class ReactiveStringBasedCassandraQueryUnitTests {
@@ -68,8 +66,6 @@ class ReactiveStringBasedCassandraQueryUnitTests {
 	private static final ValueExpressionParser PARSER = ValueExpressionParser.create(SpelExpressionParser::new);
 
 	@Mock private ReactiveCassandraOperations operations;
-	@Mock private ReactiveCqlOperations cqlOperations;
-	@Mock private ReactiveSession reactiveSession;
 
 	private MappingCassandraConverter converter;
 	private ProjectionFactory factory;
@@ -151,7 +147,9 @@ class ReactiveStringBasedCassandraQueryUnitTests {
 
 	@Test // GH-1522
 	void shouldUsePropertyPlaceholder() {
+
 		mockEnvironment.withProperty("someProp", "Walter");
+
 		ReactiveStringBasedCassandraQuery cassandraQuery = getQueryMethod("findByPropertyPlaceholder");
 
 		CassandraParametersParameterAccessor parameterAccessor = new CassandraParametersParameterAccessor(

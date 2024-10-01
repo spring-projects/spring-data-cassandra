@@ -19,7 +19,6 @@ import java.lang.reflect.Method;
 import java.util.Optional;
 
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.core.env.StandardEnvironment;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
@@ -28,21 +27,17 @@ import org.springframework.data.cassandra.repository.query.CassandraEntityInform
 import org.springframework.data.cassandra.repository.query.CassandraQueryMethod;
 import org.springframework.data.cassandra.repository.query.PartTreeCassandraQuery;
 import org.springframework.data.cassandra.repository.query.StringBasedCassandraQuery;
-import org.springframework.data.expression.ValueExpressionParser;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
+import org.springframework.data.repository.query.CachingValueExpressionDelegate;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
-import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
-import org.springframework.data.repository.query.QueryMethodValueEvaluationContextAccessor;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.query.ValueExpressionDelegate;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -55,8 +50,6 @@ import org.springframework.util.Assert;
  * @author John Blum
  */
 public class CassandraRepositoryFactory extends RepositoryFactorySupport {
-
-	private static final ValueExpressionParser EXPRESSION_PARSER = ValueExpressionParser.create(SpelExpressionParser::new);
 
 	private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
 
@@ -102,33 +95,19 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 		return new MappingCassandraEntityInformation<>((CassandraPersistentEntity<T>) entity, operations.getConverter());
 	}
 
-	@Override protected Optional<QueryLookupStrategy> getQueryLookupStrategy(Key key,
-			ValueExpressionDelegate valueExpressionDelegate) {
-		return Optional.of(new CassandraQueryLookupStrategy(operations, valueExpressionDelegate, mappingContext));
-	}
-
 	@Override
-	protected Optional<QueryLookupStrategy> getQueryLookupStrategy(@Nullable Key key,
-			QueryMethodEvaluationContextProvider evaluationContextProvider) {
-		return Optional.of(new CassandraQueryLookupStrategy(operations, new ValueExpressionDelegate(new QueryMethodValueEvaluationContextAccessor(new StandardEnvironment(), evaluationContextProvider.getEvaluationContextProvider()), EXPRESSION_PARSER), mappingContext));
+	protected Optional<QueryLookupStrategy> getQueryLookupStrategy(Key key,
+			ValueExpressionDelegate valueExpressionDelegate) {
+		return Optional.of(new CassandraQueryLookupStrategy(operations,
+				new CachingValueExpressionDelegate(valueExpressionDelegate), mappingContext));
 	}
 
-	private static class CassandraQueryLookupStrategy implements QueryLookupStrategy {
 
-		private final ValueExpressionDelegate valueExpressionDelegate;
-
-		private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
-
-		private final CassandraOperations operations;
-
-		CassandraQueryLookupStrategy(CassandraOperations operations,
-				ValueExpressionDelegate valueExpressionDelegate,
-				MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext) {
-
-			this.operations = operations;
-			this.valueExpressionDelegate = valueExpressionDelegate;
-			this.mappingContext = mappingContext;
-		}
+	private record CassandraQueryLookupStrategy(CassandraOperations operations,
+			ValueExpressionDelegate valueExpressionDelegate,
+			MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext)
+			implements
+				QueryLookupStrategy {
 
 		@Override
 		public RepositoryQuery resolveQuery(Method method, RepositoryMetadata metadata, ProjectionFactory factory,

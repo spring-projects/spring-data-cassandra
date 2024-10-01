@@ -15,27 +15,30 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
-import java.util.function.Function;
-
 import org.springframework.data.expression.ValueEvaluationContext;
 import org.springframework.data.expression.ValueExpression;
+import org.springframework.data.expression.ValueExpressionParser;
 import org.springframework.data.mapping.model.ValueExpressionEvaluator;
-import org.springframework.data.repository.query.ValueExpressionDelegate;
 
-class ValueExpressionDelegateValueExpressionEvaluator implements ValueExpressionEvaluator {
+/**
+ * @author Marcin Grzejszczak
+ * @author Mark Paluch
+ */
+class ContextualValueExpressionEvaluator implements ValueExpressionEvaluator {
 
-	private final ValueExpressionDelegate delegate;
-	private final Function<ValueExpression, ValueEvaluationContext> expressionToContext;
+	private final ValueExpressionParser parser;
 
-	ValueExpressionDelegateValueExpressionEvaluator(ValueExpressionDelegate delegate, Function<ValueExpression, ValueEvaluationContext> expressionToContext) {
-		this.delegate = delegate;
-		this.expressionToContext = expressionToContext;
+	public ContextualValueExpressionEvaluator(ValueExpressionParser parser, ValueEvaluationContext evaluationContext) {
+		this.parser = parser;
+		this.evaluationContext = evaluationContext;
 	}
+
+	private final ValueEvaluationContext evaluationContext;
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T evaluate(String expressionString) {
-		ValueExpression expression = delegate.parse(expressionString);
-		return (T) expression.evaluate(expressionToContext.apply(expression));
+		ValueExpression expression = parser.parse(expressionString);
+		return (T) expression.evaluate(evaluationContext);
 	}
 }

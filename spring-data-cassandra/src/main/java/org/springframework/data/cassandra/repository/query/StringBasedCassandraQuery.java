@@ -37,6 +37,7 @@ import com.datastax.oss.driver.api.core.cql.SimpleStatement;
  *
  * @author Matthew Adams
  * @author Mark Paluch
+ * @author Marcin Grzejszczak
  * @see org.springframework.data.cassandra.repository.Query
  * @see org.springframework.data.cassandra.repository.query.AbstractCassandraQuery
  */
@@ -159,7 +160,8 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 		ValueEvaluationContext evaluationContext = valueExpressionDelegate.createValueContextProvider(
 				getQueryMethod().getParameters()).getEvaluationContext(parameterAccessorToUse.getValues(), query.getExpressionDependencies());
 
-		return getQueryStatementCreator().select(query, parameterAccessorToUse, new ValueExpressionDelegateValueExpressionEvaluator(valueExpressionDelegate, valueExpression -> evaluationContext));
+		return getQueryStatementCreator().select(query, parameterAccessorToUse,
+				new ContextualValueExpressionEvaluator(valueExpressionDelegate, evaluationContext));
 	}
 
 	@Override
