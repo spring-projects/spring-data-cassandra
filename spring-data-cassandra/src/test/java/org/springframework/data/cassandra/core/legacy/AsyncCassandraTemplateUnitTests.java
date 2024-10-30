@@ -70,6 +70,7 @@ import com.datastax.oss.driver.internal.core.type.codec.registry.DefaultCodecReg
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
+@SuppressWarnings("removal")
 class AsyncCassandraTemplateUnitTests {
 
 	@Mock CqlSession session;

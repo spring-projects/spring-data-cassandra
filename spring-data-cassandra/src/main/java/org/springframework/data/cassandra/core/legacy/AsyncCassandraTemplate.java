@@ -131,6 +131,7 @@ import com.datastax.oss.driver.api.querybuilder.update.Update;
  *             {@link org.springframework.data.cassandra.core.AsyncCassandraTemplate}.
  */
 @Deprecated(since = "4.0", forRemoval = true)
+@SuppressWarnings("removal")
 public class AsyncCassandraTemplate
 		implements AsyncCassandraOperations, ApplicationEventPublisherAware, ApplicationContextAware {
 

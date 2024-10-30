@@ -46,6 +46,7 @@ import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
  */
 @Deprecated(since = "4.0", forRemoval = true)
 @FunctionalInterface
+@SuppressWarnings("removal")
 public interface AsyncResultSetExtractor<T> {
 
 	/**

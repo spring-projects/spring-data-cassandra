@@ -64,6 +64,7 @@ import com.datastax.oss.driver.api.core.servererrors.InvalidQueryException;
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
+@SuppressWarnings("removal")
 class AsyncCqlTemplateUnitTests {
 
 	@Mock CqlSession session;

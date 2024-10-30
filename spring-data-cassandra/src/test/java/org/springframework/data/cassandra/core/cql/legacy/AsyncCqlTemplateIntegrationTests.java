@@ -35,6 +35,7 @@ import com.datastax.oss.driver.api.core.cql.SimpleStatement;
  *
  * @author Mark Paluch
  */
+@SuppressWarnings("removal")
 class AsyncCqlTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrationTests {
 
 	private static final AtomicBoolean initialized = new AtomicBoolean();

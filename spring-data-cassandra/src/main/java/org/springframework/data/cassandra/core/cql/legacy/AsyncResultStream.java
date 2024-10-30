@@ -36,6 +36,7 @@ import com.datastax.oss.driver.api.core.cql.Row;
  * @since 4.0
  */
 @Deprecated(since = "4.0", forRemoval = true)
+@SuppressWarnings("removal")
 class AsyncResultStream<T> {
 
 	private final AsyncResultSet resultSet;

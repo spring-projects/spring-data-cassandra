@@ -39,6 +39,7 @@ import com.datastax.oss.driver.api.core.DriverException;
  */
 @Deprecated(since = "4.0", forRemoval = true)
 @FunctionalInterface
+@SuppressWarnings("removal")
 public interface AsyncSessionCallback<T> {
 
 	/**

@@ -50,6 +50,7 @@ import com.datastax.oss.driver.api.core.uuid.Uuids;
  *
  * @author Mark Paluch
  */
+@SuppressWarnings("removal")
 class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrationTests {
 
 	private AsyncCassandraTemplate template;

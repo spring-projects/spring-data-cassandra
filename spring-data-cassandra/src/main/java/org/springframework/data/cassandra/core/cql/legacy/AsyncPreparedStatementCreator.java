@@ -48,6 +48,7 @@ import com.datastax.oss.driver.api.core.cql.PreparedStatement;
  */
 @Deprecated(since = "4.0", forRemoval = true)
 @FunctionalInterface
+@SuppressWarnings("removal")
 public interface AsyncPreparedStatementCreator {
 
 	/**

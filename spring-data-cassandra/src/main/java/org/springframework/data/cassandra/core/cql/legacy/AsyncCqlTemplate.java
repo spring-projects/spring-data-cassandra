@@ -89,6 +89,7 @@ import com.datastax.oss.driver.api.core.cql.Statement;
  *             {@link org.springframework.data.cassandra.core.cql.AsyncCqlTemplate}.
  */
 @Deprecated(since = "4.0", forRemoval = true)
+@SuppressWarnings("removal")
 public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOperations {
 
 	/**

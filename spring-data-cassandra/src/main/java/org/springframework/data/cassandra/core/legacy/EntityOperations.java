@@ -49,6 +49,7 @@ import com.datastax.oss.driver.api.querybuilder.update.Update;
  * @since 4.0
  */
 @Deprecated(since = "4.0", forRemoval = true)
+@SuppressWarnings("removal")
 class EntityOperations {
 
 	private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;

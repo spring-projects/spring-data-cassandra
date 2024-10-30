@@ -45,6 +45,7 @@ import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
  * @deprecated since 4.0, use the {@link java.util.concurrent.CompletableFuture}-based variant.
  */
 @Deprecated(since = "4.0", forRemoval = true)
+@SuppressWarnings("removal")
 public class AsyncRowMapperResultSetExtractor<T> implements AsyncResultSetExtractor<List<T>> {
 
 	private final RowMapper<T> rowMapper;

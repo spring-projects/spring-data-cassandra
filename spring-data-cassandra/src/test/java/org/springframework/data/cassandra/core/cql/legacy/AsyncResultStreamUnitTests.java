@@ -36,6 +36,7 @@ import com.datastax.oss.driver.api.core.cql.Row;
  *
  * @author Mark Paluch
  */
+@SuppressWarnings("removal")
 class AsyncResultStreamUnitTests {
 
 	private AsyncResultSet first = mock(AsyncResultSet.class);
