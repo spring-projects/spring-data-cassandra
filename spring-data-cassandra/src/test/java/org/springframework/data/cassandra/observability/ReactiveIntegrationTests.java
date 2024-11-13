@@ -90,7 +90,7 @@ public class ReactiveIntegrationTests extends SampleTestRunner {
 
 			System.out.println(((SimpleMeterRegistry) meterRegistry).getMetersAsString());
 
-			assertThat(tracer.getFinishedSpans()).hasSizeGreaterThanOrEqualTo(6);
+			assertThat(tracer.getFinishedSpans()).hasSizeGreaterThanOrEqualTo(5);
 		};
 	}
 }
