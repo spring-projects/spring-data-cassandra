@@ -116,7 +116,7 @@ public interface CassandraBatchOperations {
 
 		Assert.notNull(entity, "Entity must not be null");
 
-		return insert(Collections.singleton(entity), options);
+		return update(Collections.singleton(entity), options);
 	}
 
 	/**
