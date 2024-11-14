@@ -38,10 +38,10 @@ pipeline {
 						}
 					}
 				}
-				stage('Publish JDK 21 + Cassandra 3.11') {
+				stage('Publish JDK.next + Cassandra 3.11') {
 					when {
 						anyOf {
-							changeset "ci/openjdk21-8-cassandra-3.11/**"
+							changeset "ci/openjdk23-8-cassandra-3.11/**"
 							changeset "ci/pipeline.properties"
 						}
 					}
@@ -49,7 +49,7 @@ pipeline {
 					options { timeout(time: 30, unit: 'MINUTES') }
 					steps {
 						script {
-							def image = docker.build("springci/spring-data-with-cassandra-3.11:${p['java.next.tag']}", "--build-arg BASE=${p['docker.java.next.image']} --build-arg CASSANDRA=${p['docker.cassandra.3.version']} ci/openjdk21-8-cassandra-3.11/")
+							def image = docker.build("springci/spring-data-with-cassandra-3.11:${p['java.next.tag']}", "--build-arg BASE=${p['docker.java.next.image']} --build-arg CASSANDRA=${p['docker.cassandra.3.version']} ci/openjdk23-8-cassandra-3.11/")
 							docker.withRegistry(p['docker.registry'], p['docker.credentials']) {
 								image.push()
 							}
