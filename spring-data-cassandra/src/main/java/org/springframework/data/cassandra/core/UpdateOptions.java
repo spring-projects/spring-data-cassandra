@@ -51,7 +51,8 @@ public class UpdateOptions extends WriteOptions {
 	private UpdateOptions(@Nullable ConsistencyLevel consistencyLevel, ExecutionProfileResolver executionProfileResolver,
 			@Nullable Filter ifCondition, boolean ifExists, @Nullable Boolean idempotent, @Nullable CqlIdentifier keyspace,
 			@Nullable Integer pageSize, @Nullable CqlIdentifier routingKeyspace, @Nullable ByteBuffer routingKey,
-			@Nullable ConsistencyLevel serialConsistencyLevel, Duration timeout, Duration ttl, @Nullable Long timestamp,
+			@Nullable ConsistencyLevel serialConsistencyLevel, Duration timeout, @Nullable Duration ttl,
+			@Nullable Long timestamp,
 			@Nullable Boolean tracing) {
 
 		super(consistencyLevel, executionProfileResolver, idempotent, keyspace, pageSize, routingKeyspace, routingKey,

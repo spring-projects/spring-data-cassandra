@@ -43,14 +43,15 @@ public class WriteOptions extends QueryOptions {
 
 	private static final WriteOptions EMPTY = new WriteOptionsBuilder().build();
 
-	private final Duration ttl;
+	private final @Nullable Duration ttl;
 
 	private final @Nullable Long timestamp;
 
 	protected WriteOptions(@Nullable ConsistencyLevel consistencyLevel, ExecutionProfileResolver executionProfileResolver,
 			@Nullable Boolean idempotent, @Nullable CqlIdentifier keyspace, @Nullable Integer pageSize,
 			@Nullable CqlIdentifier routingKeyspace, @Nullable ByteBuffer routingKey,
-			@Nullable ConsistencyLevel serialConsistencyLevel, Duration timeout, Duration ttl, @Nullable Long timestamp,
+			@Nullable ConsistencyLevel serialConsistencyLevel, Duration timeout, @Nullable Duration ttl,
+			@Nullable Long timestamp,
 			@Nullable Boolean tracing) {
 
 		super(consistencyLevel, executionProfileResolver, idempotent, keyspace, pageSize, routingKeyspace, routingKey,
@@ -92,8 +93,9 @@ public class WriteOptions extends QueryOptions {
 	}
 
 	/**
-	 * @return the time to live, if set.
+	 * @return the time to live, if set, otherwise {@literal null}.
 	 */
+	@Nullable
 	public Duration getTtl() {
 		return this.ttl;
 	}

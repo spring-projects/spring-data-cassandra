@@ -398,11 +398,12 @@ class StatementFactoryUnitTests {
 		StatementBuilder<RegularInsert> insert = statementFactory.insert(person, queryOptions);
 
 		SimpleStatement statement = insert.build();
+		assertThat(statement.getQuery()).isEqualTo("INSERT INTO person (id) VALUES (?)");
 		assertThat(statement.getExecutionProfileName()).isEqualTo("foo");
 		assertThat(statement.getSerialConsistencyLevel()).isEqualTo(DefaultConsistencyLevel.QUORUM);
 	}
 
-	@Test // GH-1401
+	@Test // GH-1401, GH-1535
 	void insertWithOptionsShouldRenderBindMarkers() {
 
 		Person person = new Person();
@@ -417,6 +418,16 @@ class StatementFactoryUnitTests {
 
 		assertThat(statement.getQuery()).isEqualTo("INSERT INTO person (id) VALUES (?) USING TIMESTAMP ? AND TTL ?");
 		assertThat(statement.getPositionalValues()).containsExactly("foo", 1234L, 10);
+
+		queryOptions = WriteOptions.builder() //
+				.ttl(Duration.ZERO).timestamp(1234).build();
+
+		insert = statementFactory.insert(person, queryOptions);
+
+		statement = insert.build(ParameterHandling.BY_INDEX);
+
+		assertThat(statement.getQuery()).isEqualTo("INSERT INTO person (id) VALUES (?) USING TIMESTAMP ? AND TTL ?");
+		assertThat(statement.getPositionalValues()).containsExactly("foo", 1234L, 0);
 	}
 
 	@Test // DATACASS-656

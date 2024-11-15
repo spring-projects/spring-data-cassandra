@@ -19,6 +19,7 @@ import java.time.Duration;
 import java.util.function.BiFunction;
 
 import org.springframework.data.cassandra.core.cql.util.Bindings;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.cql.BatchStatement;
@@ -205,8 +206,8 @@ public abstract class QueryOptionsUtil {
 		return Math.toIntExact(ttl.getSeconds());
 	}
 
-	private static boolean hasTtl(Duration ttl) {
-		return !ttl.isZero() && !ttl.isNegative();
+	private static boolean hasTtl(@Nullable Duration ttl) {
+		return ttl != null && !ttl.isNegative();
 	}
 
 	/**
