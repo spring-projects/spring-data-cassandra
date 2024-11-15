@@ -48,7 +48,8 @@ public class InsertOptions extends WriteOptions {
 			@Nullable Boolean idempotent, @Nullable CqlIdentifier keyspace, @Nullable Integer pageSize,
 			@Nullable CqlIdentifier routingKeyspace, @Nullable ByteBuffer routingKey,
 			@Nullable ConsistencyLevel serialConsistencyLevel,
-			Duration timeout, Duration ttl, @Nullable Long timestamp, @Nullable Boolean tracing, boolean ifNotExists,
+			Duration timeout, @Nullable Duration ttl, @Nullable Long timestamp, @Nullable Boolean tracing,
+			boolean ifNotExists,
 			boolean insertNulls) {
 
 		super(consistencyLevel, executionProfileResolver, idempotent, keyspace, pageSize, routingKeyspace, routingKey,

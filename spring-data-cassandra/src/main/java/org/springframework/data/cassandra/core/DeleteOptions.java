@@ -51,7 +51,7 @@ public class DeleteOptions extends WriteOptions {
 			@Nullable Boolean idempotent, @Nullable CqlIdentifier keyspace, @Nullable Integer pageSize,
 			@Nullable CqlIdentifier routingKeyspace, @Nullable ByteBuffer routingKey,
 			@Nullable ConsistencyLevel serialConsistencyLevel,
-			Duration timeout, Duration ttl, @Nullable Long timestamp, @Nullable Boolean tracing, boolean ifExists,
+			Duration timeout, @Nullable Duration ttl, @Nullable Long timestamp, @Nullable Boolean tracing, boolean ifExists,
 			@Nullable Filter ifCondition) {
 
 		super(consistencyLevel, executionProfileResolver, idempotent, keyspace, pageSize, routingKeyspace, routingKey,
