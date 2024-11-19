@@ -48,7 +48,7 @@ public class CassandraRepositoryConfigurationExtensionUnitTests {
 	private Environment environment = new StandardEnvironment();
 	private BeanDefinitionRegistry registry = new DefaultListableBeanFactory();
 	private RepositoryConfigurationSource configurationSource = new AnnotationRepositoryConfigurationSource(metadata,
-			EnableCassandraRepositories.class, loader, environment, registry);
+			EnableCassandraRepositories.class, loader, environment, registry, null);
 
 	private CassandraRepositoryConfigurationExtension extension;
 

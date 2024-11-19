@@ -18,7 +18,7 @@ package org.springframework.data.cassandra.domain;
 import java.util.Objects;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.PersistenceConstructor;
+import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.cassandra.core.mapping.Table;
 
 /**
@@ -41,7 +41,7 @@ public class User {
 
 	public User() {}
 
-	@PersistenceConstructor
+	@PersistenceCreator
 	public User(String id, String firstname, String lastname) {
 
 		this.id = id;
