@@ -139,19 +139,9 @@ public class EmbeddedEntityOperations {
 		}
 
 		@Override
-		@org.springframework.lang.Nullable
-		public PreferredConstructor<T, CassandraPersistentProperty> getPersistenceConstructor() {
-			return delegate.getPersistenceConstructor();
-		}
-
-		@Override
+		@Nullable
 		public InstanceCreatorMetadata<CassandraPersistentProperty> getInstanceCreatorMetadata() {
 			return delegate.getInstanceCreatorMetadata();
-		}
-
-		@Override
-		public boolean isConstructorArgument(PersistentProperty<?> property) {
-			return delegate.isConstructorArgument(property);
 		}
 
 		@Override

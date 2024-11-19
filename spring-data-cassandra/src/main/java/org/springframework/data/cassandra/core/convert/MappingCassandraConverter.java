@@ -411,7 +411,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		if (mappedEntity.requiresPropertyPopulation()) {
 
 			PersistentPropertyAccessor<R> accessor = mappedEntity.getPropertyAccessor(instance);
-			readProperties(context, mappedEntity, valueProviderToUse, accessor, isConstructorArgument(mappedEntity).negate());
+			readProperties(context, mappedEntity, valueProviderToUse, accessor, isCreatorArgument(mappedEntity).negate());
 			return accessor.getBean();
 		}
 
@@ -590,7 +590,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		}
 
 		ConvertingPropertyAccessor<S> propertyAccessor = newConvertingPropertyAccessor(instance, entity);
-		readProperties(context, entity, valueProvider, propertyAccessor, isConstructorArgument(entity).negate());
+		readProperties(context, entity, valueProvider, propertyAccessor, isCreatorArgument(entity).negate());
 		return propertyAccessor.getBean();
 	}
 
@@ -1306,8 +1306,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		return Map.class.isAssignableFrom(mapType) ? mapType : Map.class;
 	}
 
-	static Predicate<CassandraPersistentProperty> isConstructorArgument(PersistentEntity<?, ?> entity) {
-		return entity::isConstructorArgument;
+	static Predicate<CassandraPersistentProperty> isCreatorArgument(PersistentEntity<?, ?> entity) {
+		return entity::isCreatorArgument;
 	}
 
 	enum NoOpParameterValueProvider implements ParameterValueProvider<CassandraPersistentProperty> {

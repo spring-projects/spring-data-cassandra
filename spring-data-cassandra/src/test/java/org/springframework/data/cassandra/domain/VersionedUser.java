@@ -16,7 +16,7 @@
 package org.springframework.data.cassandra.domain;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.PersistenceConstructor;
+import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.util.ObjectUtils;
@@ -40,7 +40,7 @@ public class VersionedUser {
 	private String firstname;
 	private String lastname;
 
-	@PersistenceConstructor
+	@PersistenceCreator
 	public VersionedUser(String id, String firstname, String lastname) {
 
 		this.id = id;

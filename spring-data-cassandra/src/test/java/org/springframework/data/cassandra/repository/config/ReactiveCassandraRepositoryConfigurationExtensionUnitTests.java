@@ -48,7 +48,7 @@ public class ReactiveCassandraRepositoryConfigurationExtensionUnitTests {
 	private Environment environment = new StandardEnvironment();
 	private BeanDefinitionRegistry registry = new DefaultListableBeanFactory();
 	private RepositoryConfigurationSource configurationSource = new AnnotationRepositoryConfigurationSource(metadata,
-			EnableReactiveCassandraRepositories.class, loader, environment, registry);
+			EnableReactiveCassandraRepositories.class, loader, environment, registry, null);
 
 	private ReactiveCassandraRepositoryConfigurationExtension extension;
 

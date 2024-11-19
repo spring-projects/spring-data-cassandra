@@ -24,8 +24,8 @@ import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
-import org.springframework.data.repository.util.ReactiveWrappers;
 import org.springframework.data.util.Lazy;
+import org.springframework.data.util.ReactiveWrappers;
 
 /**
  * Reactive specific implementation of {@link CassandraQueryMethod}.
