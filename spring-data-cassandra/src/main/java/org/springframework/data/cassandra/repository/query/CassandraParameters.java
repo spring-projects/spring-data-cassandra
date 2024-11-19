@@ -32,7 +32,7 @@ import org.springframework.data.repository.query.Parameters;
 import org.springframework.data.repository.query.ParametersSource;
 import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
-import org.springframework.data.repository.util.ReactiveWrappers;
+import org.springframework.data.util.ReactiveWrappers;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
 

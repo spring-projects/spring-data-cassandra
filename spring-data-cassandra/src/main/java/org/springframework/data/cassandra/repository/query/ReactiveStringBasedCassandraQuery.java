@@ -17,19 +17,13 @@ package org.springframework.data.cassandra.repository.query;
 
 import reactor.core.publisher.Mono;
 
-import org.springframework.core.env.StandardEnvironment;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
 import org.springframework.data.cassandra.repository.Query;
 import org.springframework.data.expression.ReactiveValueEvaluationContextProvider;
 import org.springframework.data.expression.ValueEvaluationContextProvider;
-import org.springframework.data.expression.ValueExpressionParser;
 import org.springframework.data.mapping.model.ValueExpressionEvaluator;
-import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
-import org.springframework.data.repository.query.QueryMethodValueEvaluationContextAccessor;
-import org.springframework.data.repository.query.ReactiveQueryMethodEvaluationContextProvider;
 import org.springframework.data.repository.query.ValueExpressionDelegate;
 import org.springframework.data.spel.ExpressionDependencies;
-import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.util.Assert;
 
@@ -61,50 +55,6 @@ public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandra
 	private final ValueExpressionDelegate delegate;
 
 	private final ReactiveValueEvaluationContextProvider valueEvaluationContextProvider;
-
-	/**
-	 * Create a new {@link ReactiveStringBasedCassandraQuery} for the given {@link CassandraQueryMethod},
-	 * {@link ReactiveCassandraOperations}, {@link SpelExpressionParser}, and
-	 * {@link QueryMethodEvaluationContextProvider}.
-	 *
-	 * @param queryMethod {@link ReactiveCassandraQueryMethod} on which this query is based.
-	 * @param operations {@link ReactiveCassandraOperations} used to perform data access in Cassandra.
-	 * @param expressionParser {@link SpelExpressionParser} used to parse expressions in the query.
-	 * @param evaluationContextProvider {@link QueryMethodEvaluationContextProvider} used to access the potentially shared
-	 *          {@link org.springframework.expression.spel.support.StandardEvaluationContext}.
-	 * @see org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryMethod
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations
-	 * @deprecated since 4.4, use the constructors accepting {@link ValueExpressionDelegate} instead.
-	 */
-	@Deprecated(since = "4.4")
-	public ReactiveStringBasedCassandraQuery(ReactiveCassandraQueryMethod queryMethod,
-			ReactiveCassandraOperations operations, ExpressionParser expressionParser,
-			ReactiveQueryMethodEvaluationContextProvider evaluationContextProvider) {
-
-		this(queryMethod.getRequiredAnnotatedQuery(), queryMethod, operations, expressionParser, evaluationContextProvider);
-	}
-
-	/**
-	 * Create a new {@link ReactiveStringBasedCassandraQuery} for the given {@code query}, {@link CassandraQueryMethod},
-	 * {@link ReactiveCassandraOperations}, {@link SpelExpressionParser}, and
-	 * {@link QueryMethodEvaluationContextProvider}.
-	 *
-	 * @param method {@link ReactiveCassandraQueryMethod} on which this query is based.
-	 * @param operations {@link ReactiveCassandraOperations} used to perform data access in Cassandra.
-	 * @param expressionParser {@link SpelExpressionParser} used to parse expressions in the query.
-	 * @param evaluationContextProvider {@link QueryMethodEvaluationContextProvider} used to access the potentially shared
-	 *          {@link org.springframework.expression.spel.support.StandardEvaluationContext}.
-	 * @see org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryMethod
-	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations
-	 * @deprecated since 4.4, use the constructors accepting {@link ValueExpressionDelegate} instead.
-	 */
-	@Deprecated(since = "4.4")
-	public ReactiveStringBasedCassandraQuery(String query, ReactiveCassandraQueryMethod method,
-			ReactiveCassandraOperations operations, ExpressionParser expressionParser,
-			ReactiveQueryMethodEvaluationContextProvider evaluationContextProvider) {
-
-		this(query, method, operations, new ValueExpressionDelegate(new QueryMethodValueEvaluationContextAccessor(new StandardEnvironment(), evaluationContextProvider.getEvaluationContextProvider()), ValueExpressionParser.create(() -> expressionParser)));
-	}
 
 	/**
 	 * Create a new {@link ReactiveStringBasedCassandraQuery} for the given {@link CassandraQueryMethod},
@@ -145,9 +95,9 @@ public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandra
 
 		this.stringBasedQuery = new StringBasedQuery(query, method.getParameters(), delegate);
 
-		ValueEvaluationContextProvider valueContextProvider = delegate.createValueContextProvider(
-				method.getParameters());
-		Assert.isInstanceOf(ReactiveValueEvaluationContextProvider.class, valueContextProvider, "ValueEvaluationContextProvider must be reactive");
+		ValueEvaluationContextProvider valueContextProvider = delegate.createValueContextProvider(method.getParameters());
+		Assert.isInstanceOf(ReactiveValueEvaluationContextProvider.class, valueContextProvider,
+				"ValueEvaluationContextProvider must be reactive");
 		this.valueEvaluationContextProvider = (ReactiveValueEvaluationContextProvider) valueContextProvider;
 
 		if (method.hasAnnotatedQuery()) {
