@@ -26,11 +26,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.reactivestreams.Publisher;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
-import org.springframework.data.repository.util.ReactiveWrappers;
+import org.springframework.data.util.ReactiveWrappers;
 
 /**
  * Reactive {@link org.springframework.data.repository.query.ParametersParameterAccessor} implementation that subscribes
- * to reactive parameter wrapper types upon creation. This class performs synchronization when acessing parameters.
+ * to reactive parameter wrapper types upon creation. This class performs synchronization when accessing parameters.
  *
  * @author Mark Paluch
  * @since 2.0
