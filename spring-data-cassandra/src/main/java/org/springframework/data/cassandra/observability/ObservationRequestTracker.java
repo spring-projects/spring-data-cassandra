@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.observability;
 
 import io.micrometer.observation.Observation;
+import io.micrometer.observation.Observation.Context;
 import io.micrometer.observation.Observation.Event;
 
 import org.apache.commons.logging.Log;
@@ -85,15 +86,19 @@ public enum ObservationRequestTracker implements RequestTracker {
 		if (request instanceof CassandraObservationSupplier) {
 
 			Observation observation = ((CassandraObservationSupplier) request).getObservation();
+			Context context = observation.getContext();
 
-			((CassandraObservationContext) observation.getContext()).setNode(node);
+			if (context instanceof CassandraObservationContext) {
 
-			observation.highCardinalityKeyValue(
-					String.format(HighCardinalityKeyNames.NODE_ERROR_TAG.asString(), node.getEndPoint()), error.toString());
-			observation.event(Event.of(Events.NODE_ERROR.getValue()));
+				((CassandraObservationContext) context).setNode(node);
 
-			if (log.isDebugEnabled()) {
-				log.debug("Marking node error for [" + observation + "]");
+				observation.highCardinalityKeyValue(
+						String.format(HighCardinalityKeyNames.NODE_ERROR_TAG.asString(), node.getEndPoint()), error.toString());
+				observation.event(Event.of(Events.NODE_ERROR.getValue()));
+
+				if (log.isDebugEnabled()) {
+					log.debug("Marking node error for [" + observation + "]");
+				}
 			}
 		}
 	}
@@ -105,13 +110,17 @@ public enum ObservationRequestTracker implements RequestTracker {
 		if (request instanceof CassandraObservationSupplier) {
 
 			Observation observation = ((CassandraObservationSupplier) request).getObservation();
+			Context context = observation.getContext();
 
-			((CassandraObservationContext) observation.getContext()).setNode(node);
+			if (context instanceof CassandraObservationContext) {
 
-			observation.event(Event.of(Events.NODE_SUCCESS.getValue()));
+				((CassandraObservationContext) context).setNode(node);
 
-			if (log.isDebugEnabled()) {
-				log.debug("Marking node success for [" + observation + "]");
+				observation.event(Event.of(Events.NODE_SUCCESS.getValue()));
+
+				if (log.isDebugEnabled()) {
+					log.debug("Marking node success for [" + observation + "]");
+				}
 			}
 		}
 	}
