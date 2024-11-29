@@ -19,8 +19,11 @@ import io.micrometer.observation.Observation;
 import io.micrometer.observation.Observation.Context;
 import io.micrometer.observation.Observation.Event;
 
+import java.util.function.Consumer;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.data.cassandra.observability.CassandraObservation.Events;
 import org.springframework.data.cassandra.observability.CassandraObservation.HighCardinalityKeyNames;
 import org.springframework.lang.Nullable;
@@ -50,9 +53,9 @@ public enum ObservationRequestTracker implements RequestTracker {
 	public void onSuccess(Request request, long latencyNanos, DriverExecutionProfile executionProfile, Node node,
 			String requestLogPrefix) {
 
-		if (request instanceof CassandraObservationSupplier) {
+		if (request instanceof CassandraObservationSupplier supplier) {
 
-			Observation observation = ((CassandraObservationSupplier) request).getObservation();
+			Observation observation = supplier.getObservation();
 
 			if (log.isDebugEnabled()) {
 				log.debug("Closing observation [" + observation + "]");
@@ -66,9 +69,9 @@ public enum ObservationRequestTracker implements RequestTracker {
 	public void onError(Request request, Throwable error, long latencyNanos, DriverExecutionProfile executionProfile,
 			@Nullable Node node, String requestLogPrefix) {
 
-		if (request instanceof CassandraObservationSupplier) {
+		if (request instanceof CassandraObservationSupplier supplier) {
 
-			Observation observation = ((CassandraObservationSupplier) request).getObservation();
+			Observation observation = supplier.getObservation();
 			observation.error(error);
 
 			if (log.isDebugEnabled()) {
@@ -83,22 +86,17 @@ public enum ObservationRequestTracker implements RequestTracker {
 	public void onNodeError(Request request, Throwable error, long latencyNanos, DriverExecutionProfile executionProfile,
 			Node node, String requestLogPrefix) {
 
-		if (request instanceof CassandraObservationSupplier) {
+		if (request instanceof CassandraObservationSupplier supplier) {
 
-			Observation observation = ((CassandraObservationSupplier) request).getObservation();
-			Context context = observation.getContext();
+			Observation observation = supplier.getObservation();
+			ifContextPresent(observation, CassandraObservationContext.class, context -> context.setNode(node));
 
-			if (context instanceof CassandraObservationContext) {
+			observation.highCardinalityKeyValue(
+					String.format(HighCardinalityKeyNames.NODE_ERROR_TAG.asString(), node.getEndPoint()), error.toString());
+			observation.event(Event.of(Events.NODE_ERROR.getValue()));
 
-				((CassandraObservationContext) context).setNode(node);
-
-				observation.highCardinalityKeyValue(
-						String.format(HighCardinalityKeyNames.NODE_ERROR_TAG.asString(), node.getEndPoint()), error.toString());
-				observation.event(Event.of(Events.NODE_ERROR.getValue()));
-
-				if (log.isDebugEnabled()) {
-					log.debug("Marking node error for [" + observation + "]");
-				}
+			if (log.isDebugEnabled()) {
+				log.debug("Marking node error for [" + observation + "]");
 			}
 		}
 	}
@@ -107,20 +105,15 @@ public enum ObservationRequestTracker implements RequestTracker {
 	public void onNodeSuccess(Request request, long latencyNanos, DriverExecutionProfile executionProfile, Node node,
 			String requestLogPrefix) {
 
-		if (request instanceof CassandraObservationSupplier) {
+		if (request instanceof CassandraObservationSupplier supplier) {
 
-			Observation observation = ((CassandraObservationSupplier) request).getObservation();
-			Context context = observation.getContext();
+			Observation observation = supplier.getObservation();
+			ifContextPresent(observation, CassandraObservationContext.class, context -> context.setNode(node));
 
-			if (context instanceof CassandraObservationContext) {
+			observation.event(Event.of(Events.NODE_SUCCESS.getValue()));
 
-				((CassandraObservationContext) context).setNode(node);
-
-				observation.event(Event.of(Events.NODE_SUCCESS.getValue()));
-
-				if (log.isDebugEnabled()) {
-					log.debug("Marking node success for [" + observation + "]");
-				}
+			if (log.isDebugEnabled()) {
+				log.debug("Marking node success for [" + observation + "]");
 			}
 		}
 	}
@@ -128,6 +121,23 @@ public enum ObservationRequestTracker implements RequestTracker {
 	@Override
 	public void close() throws Exception {
 
+	}
+
+	/**
+	 * If the {@link Observation} is a real observation (i.e. not no-op) and the context is of the given type, apply the
+	 * consumer function to the context.
+	 */
+	static <T extends Context> void ifContextPresent(Observation observation, Class<T> contextType,
+			Consumer<T> contextConsumer) {
+
+		if (observation.isNoop()) {
+			return;
+		}
+
+		Context context = observation.getContext();
+		if (contextType.isInstance(context)) {
+			contextConsumer.accept(contextType.cast(context));
+		}
 	}
 
 }
