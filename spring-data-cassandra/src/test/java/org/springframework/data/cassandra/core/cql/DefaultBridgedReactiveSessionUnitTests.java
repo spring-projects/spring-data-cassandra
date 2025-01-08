@@ -35,9 +35,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+
 import org.springframework.data.cassandra.ReactiveResultSet;
 import org.springframework.data.cassandra.core.cql.session.DefaultBridgedReactiveSession;
-import org.springframework.scheduling.annotation.AsyncResult;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
@@ -57,8 +57,8 @@ class DefaultBridgedReactiveSessionUnitTests {
 
 	@Mock CqlSession sessionMock;
 
-	private CompletableFuture<AsyncResultSet> future = new CompletableFuture<>();
-	private CompletableFuture<PreparedStatement> preparedStatementFuture = new CompletableFuture<>();
+	private final CompletableFuture<AsyncResultSet> future = new CompletableFuture<>();
+	private final CompletableFuture<PreparedStatement> preparedStatementFuture = new CompletableFuture<>();
 
 	private DefaultBridgedReactiveSession reactiveSession;
 
@@ -183,8 +183,6 @@ class DefaultBridgedReactiveSessionUnitTests {
 	@Test // DATACASS-509
 	void shouldFetchMore() {
 
-		Iterator<Row> rows = mockIterator();
-
 		AsyncResultSet resultSet = mock(AsyncResultSet.class);
 
 		when(resultSet.remaining()).thenReturn(10);
@@ -198,7 +196,7 @@ class DefaultBridgedReactiveSessionUnitTests {
 
 		future.complete(resultSet);
 		when(resultSet.hasMorePages()).thenReturn(true, false);
-		when(resultSet.fetchNextPage()).thenReturn(new AsyncResult<>(emptyResultSet).completable());
+		when(resultSet.fetchNextPage()).thenReturn(CompletableFuture.completedFuture(emptyResultSet));
 
 		Flux<Row> flux = reactiveSession.execute(SimpleStatement.newInstance("")).flatMapMany(ReactiveResultSet::rows);
 

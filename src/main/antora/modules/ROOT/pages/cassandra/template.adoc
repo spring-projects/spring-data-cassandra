@@ -31,7 +31,7 @@ xref:cassandra/cql-template.adoc#exception-translation[exception translation] fo
 
 NOTE: The Template API has different execution model flavors.
 The basic `CassandraTemplate` uses a blocking (imperative-synchronous) execution model.
-You can use `AsyncCassandraTemplate` for asynchronous execution and synchronization with `ListenableFuture` instances or `ReactiveCassandraTemplate` for reactive execution.
+You can use `AsyncCassandraTemplate` for asynchronous execution and synchronization with `CompletableFuture` instances or `ReactiveCassandraTemplate` for reactive execution.
 
 [[cassandra.template.instantiating]]
 == Instantiating `CassandraTemplate`

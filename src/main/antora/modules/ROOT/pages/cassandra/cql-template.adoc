@@ -21,7 +21,7 @@ Defaults apply if the particular query option is not set.
 
 NOTE: `CqlTemplate` comes in different execution model flavors.
 The basic `CqlTemplate` uses a blocking execution model.
-You can use `AsyncCqlTemplate` for asynchronous execution and synchronization with `ListenableFuture` instances or
+You can use `AsyncCqlTemplate` for asynchronous execution and synchronization with `CompletableFuture` instances or
 `ReactiveCqlTemplate` for reactive execution.
 
 [[cassandracql-template.examples]]

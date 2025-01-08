@@ -22,7 +22,6 @@ import java.util.function.Consumer;
 import java.util.stream.Collector;
 
 import org.springframework.util.Assert;
-import org.springframework.util.concurrent.ListenableFuture;
 
 import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
@@ -75,7 +74,7 @@ class AsyncResultStream<T> {
 
 	/**
 	 * Performs a mutable reduction operation on the elements of this stream using a {@link Collector} resulting in a
-	 * {@link ListenableFuture}.
+	 * {@link CompletableFuture}.
 	 * <p>
 	 * This is a terminal operation.
 	 *
@@ -97,7 +96,7 @@ class AsyncResultStream<T> {
 	}
 
 	/**
-	 * Performs an action for each element of this stream. This method returns a {@link ListenableFuture} that completes
+	 * Performs an action for each element of this stream. This method returns a {@link CompletableFuture} that completes
 	 * without a value ({@code null}) once all elements have been processed.
 	 * <p>
 	 * This is a terminal operation.
@@ -177,7 +176,7 @@ class AsyncResultStream<T> {
 	class CollectState<A, R> {
 
 		private final AtomicInteger rowNumber = new AtomicInteger();
-		private volatile A intermediate;
+		private final A intermediate;
 		private final Collector<? super T, A, R> collector;
 
 		CollectState(Collector<? super T, A, R> collector) {
