@@ -33,7 +33,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import org.testcontainers.containers.CassandraContainer;
+import org.testcontainers.cassandra.CassandraContainer;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
@@ -61,7 +61,7 @@ import com.datastax.oss.driver.api.core.metadata.Node;
  */
 class CassandraDelegate {
 
-	private static CassandraContainer<?> container;
+	private static CassandraContainer container;
 
 	private static final Logger log = LoggerFactory.getLogger(CassandraDelegate.class);
 
@@ -276,7 +276,8 @@ class CassandraDelegate {
 
 		if (container == null) {
 
-			container = getCassandraDockerImageName().map(CassandraContainer::new).orElseGet(CassandraContainer::new);
+			container = getCassandraDockerImageName().map(CassandraContainer::new)
+					.orElseGet(() -> new CassandraContainer("cassandra:5.0.3"));
 
 			DockerImageName imageName = DockerImageName.parse(container.getDockerImageName());
 			String versionPart = imageName.getVersionPart();

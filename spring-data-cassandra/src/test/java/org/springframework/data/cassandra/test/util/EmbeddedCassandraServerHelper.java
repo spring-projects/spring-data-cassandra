@@ -102,15 +102,6 @@ class EmbeddedCassandraServerHelper {
 	}
 
 	/**
-	 * Get embedded cassandra RPC port.
-	 *
-	 * @return the cassandra RPC port
-	 */
-	public static int getRpcPort() {
-		return DatabaseDescriptor.getRpcPort();
-	}
-
-	/**
 	 * Start an embedded Cassandra instance.
 	 *
 	 * @param yamlResource {@link String location} of a YAML file to configure Cassandra.
