@@ -17,9 +17,10 @@ package org.springframework.data.cassandra.config;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.After;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Configuration;
@@ -51,6 +52,10 @@ class CqlTemplateConfigIntegrationTests extends IntegrationTestsSupport {
 			return CassandraExtension.getResources().getPort();
 		}
 
+		@Override
+		protected String getContactPoints() {
+			return CassandraExtension.getResources().getHost();
+		}
 	}
 
 	private CqlSession session;
@@ -63,7 +68,7 @@ class CqlTemplateConfigIntegrationTests extends IntegrationTestsSupport {
 		this.session = context.getBean(CqlSession.class);
 	}
 
-	@After
+	@AfterEach
 	void tearDown() {
 		context.close();
 	}

@@ -107,10 +107,10 @@ public class CassandraConnectionProperties extends Properties {
 	@Override
 	public String getProperty(String key) {
 
-		String value = super.getProperty(key);
+		String value = System.getProperty(key);
 
 		if (value == null) {
-			value = System.getProperty(key);
+			value = super.getProperty(key);
 		}
 
 		return value;

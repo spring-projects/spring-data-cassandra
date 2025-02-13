@@ -30,7 +30,8 @@
 		</cassandra:entity>
 	</cassandra:mapping>
 
-	<cassandra:session port="${build.cassandra.native_transport_port}"
+	<cassandra:session port="#{systemProperties['build.cassandra.native_transport_port']}"
+	                   contact-points="#{systemProperties['build.cassandra.host']}"
 					   keyspace-name="#{randomKeyspaceName}"
 					   schema-action="RECREATE_DROP_UNUSED"
 					   cassandra-converter-ref="cassandraConverter">

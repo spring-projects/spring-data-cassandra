@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.support;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.config.AbstractSessionConfiguration;
+import org.springframework.data.cassandra.test.util.CassandraExtension;
 
 /**
  * Java-based configuration for integration tests using defaults for a smooth test run.
@@ -27,11 +28,13 @@ import org.springframework.data.cassandra.config.AbstractSessionConfiguration;
 @Configuration
 public abstract class AbstractTestJavaConfig extends AbstractSessionConfiguration {
 
-	private static final CassandraConnectionProperties PROPERTIES = new CassandraConnectionProperties();
-
 	@Override
 	protected int getPort() {
-		return PROPERTIES.getCassandraPort();
+		return CassandraExtension.getResources().getPort();
 	}
 
+	@Override
+	protected String getContactPoints() {
+		return CassandraExtension.getResources().getHost();
+	}
 }

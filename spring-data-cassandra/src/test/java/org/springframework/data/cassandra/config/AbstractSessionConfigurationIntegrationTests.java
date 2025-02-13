@@ -19,9 +19,9 @@ import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
-import org.springframework.data.cassandra.support.CassandraConnectionProperties;
 import org.springframework.data.cassandra.test.util.CassandraExtension;
 import org.springframework.lang.Nullable;
 
@@ -69,7 +69,12 @@ class AbstractSessionConfigurationIntegrationTests {
 
 		@Override
 		protected int getPort() {
-			return new CassandraConnectionProperties().getCassandraPort();
+			return CassandraExtension.getResources().getPort();
+		}
+
+		@Override
+		protected String getContactPoints() {
+			return CassandraExtension.getResources().getHost();
 		}
 
 		@Nullable

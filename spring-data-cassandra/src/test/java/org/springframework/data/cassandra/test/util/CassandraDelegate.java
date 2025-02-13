@@ -30,6 +30,7 @@ import org.springframework.data.cassandra.support.CassandraConnectionProperties;
 import org.springframework.data.cassandra.support.CqlDataSet;
 import org.springframework.data.util.Optionals;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -76,7 +77,8 @@ class CassandraDelegate {
 
 	private CqlSessionBuilder sessionBuilder;
 
-	private Integer cassandraPort;
+	private @Nullable String cassandraHost;
+	private @Nullable Integer cassandraPort;
 
 	private final List<SessionCallback<Void>> after = new ArrayList<>();
 	private final List<SessionCallback<Void>> before = new ArrayList<>();
@@ -110,6 +112,18 @@ class CassandraDelegate {
 
 		this.configurationFilename = yamlConfigurationResource;
 		this.startupTimeout = startupTimeout;
+	}
+
+	/**
+	 * Returns the Cassandra host.
+	 *
+	 * @return the Cassandra host
+	 */
+	public String getHost() {
+
+		Assert.state(this.cassandraHost != null, "Cassandra host was not initialized");
+
+		return this.cassandraHost;
 	}
 
 	/**
@@ -279,6 +293,9 @@ class CassandraDelegate {
 			container = getCassandraDockerImageName().map(CassandraContainer::new)
 					.orElseGet(() -> new CassandraContainer("cassandra:5.0.3"));
 
+			container.withEnv("MAX_HEAP_SIZE", "1500M");
+			container.withEnv("HEAP_NEWSIZE", "300M");
+
 			DockerImageName imageName = DockerImageName.parse(container.getDockerImageName());
 			String versionPart = imageName.getVersionPart();
 			Version version = Version.parse(versionPart);
@@ -289,10 +306,11 @@ class CassandraDelegate {
 			}
 			container.start();
 
-			log.info("Running with Cassandra Docker Testcontainer Image Name [{}]", container.getDockerImageName());
+			log.info("Running with Cassandra Docker Testcontainer Image Name [{}] at [{}]", container.getDockerImageName(),
+					container.getMappedPort(9042));
 
-			this.properties.setCassandraHost(container.getContainerIpAddress());
-			this.properties.setCassandraPort(container.getFirstMappedPort());
+			this.properties.setCassandraHost(container.getContactPoint().getHostString());
+			this.properties.setCassandraPort(container.getMappedPort(9042));
 			this.properties.update();
 		}
 	}
@@ -310,6 +328,7 @@ class CassandraDelegate {
 
 	private synchronized void initializeConnection() {
 
+		this.cassandraHost = resolveHost();
 		this.cassandraPort = resolvePort();
 
 		if (resourceHolder == null) {
@@ -369,7 +388,7 @@ class CassandraDelegate {
 	private int resolvePort() {
 
 		if (isTestcontainers()) {
-			return container.getFirstMappedPort();
+			return container.getMappedPort(9042);
 		}
 
 		return isEmbedded() ? EmbeddedCassandraServerHelper.getNativeTransportPort() : this.properties.getCassandraPort();

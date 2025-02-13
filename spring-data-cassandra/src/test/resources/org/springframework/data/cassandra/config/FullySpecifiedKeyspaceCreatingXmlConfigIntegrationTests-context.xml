@@ -10,9 +10,10 @@
 ">
 
 	<context:property-placeholder
-			location="classpath:/config/cassandra-connection.properties,classpath:/org/springframework/data/cassandra/config/FullySpecifiedKeyspaceCreatingXmlConfigIntegrationTests.properties"/>
+			location="classpath:/org/springframework/data/cassandra/config/FullySpecifiedKeyspaceCreatingXmlConfigIntegrationTests.properties"/>
 
-	<cassandra:session port="${build.cassandra.native_transport_port}"
+	<cassandra:session port="#{systemProperties['build.cassandra.native_transport_port']}"
+	                   contact-points="#{systemProperties['build.cassandra.host']}"
 					   keyspace-name="full1">
 		<cassandra:keyspace action="CREATE_DROP" durable-writes="true" name="full1">
 			<cassandra:replication class="SIMPLE_STRATEGY">

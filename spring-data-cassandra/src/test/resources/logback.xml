@@ -11,8 +11,8 @@
 	<logger name="org.springframework.data.cassandra" level="ERROR" />
 
 	<logger name="org.springframework.data.cassandra.test.util" level="INFO"/>
-
 	<logger name="com.datastax" level="ERROR" />
+	<logger name="container" level="INFO"/>
 
 	<!-- See https://issues.apache.org/jira/browse/CASSANDRA-8220 -->
 	<logger name="org.apache.cassandra.service.CassandraDaemon" level="OFF" />
@@ -21,9 +21,6 @@
 	and an already shut down embedded Cassandra instance because of concurrent shutdown hooks -->
 	<logger name="com.datastax.driver.core.ControlConnection" level="OFF" />
 	<logger name="com.datastax.driver.core.Session" level="OFF" />
-
-	<!-- This one is noisy and subject to be refactored -->
-	<logger name="org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntityMetadataVerifier" level="OFF" />
 
 	<root level="ERROR">
 		<appender-ref ref="console" />

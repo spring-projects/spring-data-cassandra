@@ -107,7 +107,7 @@ public class CassandraExtension implements BeforeAllCallback, AfterAllCallback, 
 
 		CqlSession session = delegate.createSession();
 
-		TEST_RESOURCES.set(new Resources(delegate.getSystemSession(), session, delegate.getPort()));
+		TEST_RESOURCES.set(new Resources(delegate.getSystemSession(), session, delegate.getHost(), delegate.getPort()));
 
 		if (keyspaceName.isPresent()) {
 
@@ -191,16 +191,24 @@ public class CassandraExtension implements BeforeAllCallback, AfterAllCallback, 
 
 		private final CqlSession systemSession;
 		private final CqlSession cqlSession;
+		private final String host;
 		private final int port;
 
-		private Resources(CqlSession systemSession, CqlSession cqlSession, int port) {
+		private Resources(CqlSession systemSession, CqlSession cqlSession, String host, int port) {
 			this.systemSession = systemSession;
 			this.cqlSession = cqlSession;
+			this.host = host;
 			this.port = port;
+		}
+
+		public String getHost() {
+			return host;
 		}
 
 		public int getPort() {
 			return port;
 		}
+
 	}
+
 }

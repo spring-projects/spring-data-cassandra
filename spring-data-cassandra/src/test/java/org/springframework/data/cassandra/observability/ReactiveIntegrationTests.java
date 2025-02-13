@@ -18,7 +18,6 @@ package org.springframework.data.cassandra.observability;
 import static org.assertj.core.api.Assertions.*;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.micrometer.observation.Observation;
 import io.micrometer.observation.ObservationRegistry;
 import io.micrometer.observation.contextpropagation.ObservationThreadLocalAccessor;
@@ -42,7 +41,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
  *
  * @author Mark Paluch
  */
-@ExtendWith({ SpringExtension.class, CassandraExtension.class })
+@ExtendWith({ CassandraExtension.class, SpringExtension.class })
 @ContextConfiguration(classes = TestConfig.class)
 public class ReactiveIntegrationTests extends SampleTestRunner {
 
@@ -88,9 +87,8 @@ public class ReactiveIntegrationTests extends SampleTestRunner {
 						.verifyComplete();
 			});
 
-			System.out.println(((SimpleMeterRegistry) meterRegistry).getMetersAsString());
-
 			assertThat(tracer.getFinishedSpans()).hasSizeGreaterThanOrEqualTo(5);
 		};
 	}
+
 }

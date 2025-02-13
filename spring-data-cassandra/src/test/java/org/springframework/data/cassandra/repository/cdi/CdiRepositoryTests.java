@@ -22,10 +22,11 @@ import jakarta.enterprise.inject.se.SeContainerInitializer;
 
 import java.util.Optional;
 
-import org.junit.AfterClass;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.test.util.IntegrationTestsSupport;
 
@@ -54,7 +55,7 @@ class CdiRepositoryTests extends IntegrationTestsSupport {
 				.initialize();
 	}
 
-	@AfterClass
+	@AfterAll
 	static void shutdown() throws Exception {
 		cdiContainer.close();
 	}

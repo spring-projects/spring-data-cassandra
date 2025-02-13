@@ -17,9 +17,10 @@ package org.springframework.data.cassandra.config;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.After;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.data.cassandra.core.CassandraOperations;
@@ -49,7 +50,7 @@ class MinimalXmlConfigIntegrationTests extends IntegrationTestsSupport {
 		this.session = context.getBean(CqlSession.class);
 	}
 
-	@After
+	@AfterEach
 	void tearDown() {
 		context.close();
 	}

@@ -35,8 +35,8 @@ import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.SimpleUserTypeResolver;
 import org.springframework.data.cassandra.domain.User;
-import org.springframework.data.cassandra.support.CassandraConnectionProperties;
 import org.springframework.data.cassandra.support.RandomKeyspaceName;
+import org.springframework.data.cassandra.test.util.CassandraExtension;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
@@ -51,10 +51,11 @@ class CassandraOperationsProducer {
 	@Produces
 	@Singleton
 	public CqlSession createSession() throws Exception {
-		CassandraConnectionProperties properties = new CassandraConnectionProperties();
+
+		CassandraExtension.Resources resources = CassandraExtension.getResources();
 
 		return CqlSession.builder().addContactPoint(
-				InetSocketAddress.createUnresolved(properties.getCassandraHost(), properties.getCassandraPort())).build();
+				InetSocketAddress.createUnresolved(resources.getHost(), resources.getPort())).build();
 	}
 
 	@Produces

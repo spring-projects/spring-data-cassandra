@@ -28,8 +28,8 @@ import org.springframework.data.cassandra.config.CqlSessionFactoryBean;
 import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateKeyspaceSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.DropKeyspaceSpecification;
-import org.springframework.data.cassandra.support.CassandraConnectionProperties;
 import org.springframework.data.cassandra.support.RandomKeyspaceName;
+import org.springframework.data.cassandra.test.util.CassandraExtension;
 
 /**
  * Setup any spring configuration for unit tests
@@ -41,14 +41,16 @@ import org.springframework.data.cassandra.support.RandomKeyspaceName;
 @Configuration
 public class IntegrationTestConfig extends AbstractReactiveCassandraConfiguration {
 
-	private static final CassandraConnectionProperties PROPS = new CassandraConnectionProperties();
-	private static final int PORT = PROPS.getCassandraPort();
-
 	private String keyspaceName = RandomKeyspaceName.create();
 
 	@Override
 	protected int getPort() {
-		return PORT;
+		return CassandraExtension.getResources().getPort();
+	}
+
+	@Override
+	protected String getContactPoints() {
+		return CassandraExtension.getResources().getHost();
 	}
 
 	@Bean

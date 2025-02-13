@@ -18,12 +18,12 @@ package org.springframework.data.cassandra.observability;
 import static org.assertj.core.api.Assertions.*;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.micrometer.observation.ObservationRegistry;
 import io.micrometer.tracing.exporter.FinishedSpan;
 import io.micrometer.tracing.test.SampleTestRunner;
 
 import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.cassandra.core.cql.CqlTemplate;
 import org.springframework.data.cassandra.test.util.CassandraExtension;
@@ -38,7 +38,7 @@ import com.datastax.oss.driver.api.core.CqlSession;
  * @author Greg Turnquist
  * @author Mark Paluch
  */
-@ExtendWith({ SpringExtension.class, CassandraExtension.class })
+@ExtendWith({ CassandraExtension.class, SpringExtension.class })
 @ContextConfiguration(classes = TestConfig.class)
 public class ImperativeIntegrationTests extends SampleTestRunner {
 
@@ -76,8 +76,6 @@ public class ImperativeIntegrationTests extends SampleTestRunner {
 
 			template.execute("INSERT INTO person (id,firstName,lastName) VALUES(?,?,?)", 1, "Walter", "White");
 
-			System.out.println(((SimpleMeterRegistry) meterRegistry).getMetersAsString());
-
 			assertThat(tracer.getFinishedSpans()).hasSizeGreaterThanOrEqualTo(5);
 
 			for (FinishedSpan finishedSpan : tracer.getFinishedSpans()) {
@@ -88,4 +86,5 @@ public class ImperativeIntegrationTests extends SampleTestRunner {
 			}
 		};
 	}
+
 }
