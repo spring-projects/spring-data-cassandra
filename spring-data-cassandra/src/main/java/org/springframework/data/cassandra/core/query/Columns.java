@@ -134,7 +134,7 @@ public class Columns implements Iterable<ColumnName> {
 	 * @return a new {@link Columns} object containing all column definitions and the TTL for {@code columnName}.
 	 */
 	public Columns ttl(String columnName) {
-		return select(columnName, SelectorBuilder::ttl);
+		return select(columnName, FunctionCall.from("TTL", ColumnSelector.from(columnName)));
 	}
 
 	/**
@@ -145,7 +145,7 @@ public class Columns implements Iterable<ColumnName> {
 	 * @return a new {@link Columns} object containing all column definitions and the TTL for {@code columnName}.
 	 */
 	public Columns ttl(CqlIdentifier columnName) {
-		return select(columnName, SelectorBuilder::ttl);
+		return select(columnName, FunctionCall.from("TTL", ColumnSelector.from(columnName)));
 	}
 
 	/**
@@ -161,7 +161,8 @@ public class Columns implements Iterable<ColumnName> {
 
 	/**
 	 * Include column {@code columnName} with a built {@link Selector}. This column selection overrides an existing
-	 * selection for the column name.
+	 * selection for the column name. {@link SelectorBuilder} uses the given {@code columnName} as column alias to
+	 * represent the selection in the result.
 	 *
 	 * @param columnName must not be {@literal null}.
 	 * @return a new {@link Columns} object containing all column definitions and the selected {@code columnName}.
@@ -175,7 +176,8 @@ public class Columns implements Iterable<ColumnName> {
 
 	/**
 	 * Include column {@code columnName} with a built {@link Selector}. This column selection overrides an existing
-	 * selection for the column name.
+	 * selection for the column name. {@link SelectorBuilder} uses the given {@code columnName} as column alias to
+	 * represent the selection in the result.
 	 *
 	 * @param columnName must not be {@literal null}.
 	 * @return a new {@link Columns} object containing all column definitions and the selected {@code columnName}.

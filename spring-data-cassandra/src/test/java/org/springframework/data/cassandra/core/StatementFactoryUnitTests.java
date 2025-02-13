@@ -960,7 +960,7 @@ class StatementFactoryUnitTests {
 				.build(ParameterHandling.BY_NAME);
 
 		assertThat(statement.getQuery()).isEqualTo(
-				"SELECT comment,similarity_cosine(vector,[0.2, 0.15, 0.3, 0.2, 0.05]) FROM withvector ORDER BY vector ANN OF [1.2, 1.3]");
+				"SELECT comment,similarity_cosine(vector,[0.2, 0.15, 0.3, 0.2, 0.05]) AS vector FROM withvector ORDER BY vector ANN OF [1.2, 1.3]");
 		assertThat(statement.getNamedValues()).isEmpty();
 	}
 
