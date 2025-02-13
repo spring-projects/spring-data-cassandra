@@ -75,6 +75,11 @@ public abstract class ColumnName {
 	 */
 	public abstract Optional<CqlIdentifier> getCqlIdentifier();
 
+	CqlIdentifier getRequiredCqlIdentifier() {
+		return getCqlIdentifier().or(() -> getColumnName().map(CqlIdentifier::fromCql))
+				.orElseGet(() -> CqlIdentifier.fromCql(toCql()));
+	}
+
 	/**
 	 * Represent the column name as CQL.
 	 *

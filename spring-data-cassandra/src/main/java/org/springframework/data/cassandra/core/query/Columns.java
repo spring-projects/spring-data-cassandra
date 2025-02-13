@@ -480,6 +480,10 @@ public class Columns implements Iterable<ColumnName> {
 			return new FunctionCall(expression, params, alias);
 		}
 
+		FunctionCall as(ColumnName alias) {
+			return new FunctionCall(expression, params, alias.getRequiredCqlIdentifier());
+		}
+
 		@Override
 		public String getExpression() {
 			return expression;
@@ -625,7 +629,7 @@ public class Columns implements Iterable<ColumnName> {
 
 		@Override
 		public Selector ttl() {
-			return FunctionCall.from("TTL", ColumnSelector.from(columnName));
+			return FunctionCall.from("TTL", ColumnSelector.from(columnName)).as(columnName);
 		}
 
 		@Override
@@ -657,7 +661,7 @@ public class Columns implements Iterable<ColumnName> {
 				@Override
 				public Selector using(SimilarityFunction similarityFunction) {
 					return FunctionCall.from("similarity_" + similarityFunction.name().toLowerCase(Locale.ROOT), columnName,
-							vector);
+							vector).as(columnName);
 				}
 			};
 		}
