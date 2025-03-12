@@ -21,6 +21,7 @@ import java.util.stream.Stream;
 
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.cassandra.core.query.Query;
+import org.springframework.lang.Contract;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -83,6 +84,7 @@ public interface ExecutableSelectOperation {
 		 * @see #inTable(CqlIdentifier)
 		 * @see SelectWithProjection
 		 */
+		@Contract("_ -> new")
 		default SelectWithProjection<T> inTable(String table) {
 
 			Assert.hasText(table, "Table name must not be null or empty");
@@ -101,6 +103,7 @@ public interface ExecutableSelectOperation {
 		 * @see com.datastax.oss.driver.api.core.CqlIdentifier
 		 * @see SelectWithProjection
 		 */
+		@Contract("_ -> new")
 		SelectWithProjection<T> inTable(CqlIdentifier table);
 
 	}
@@ -121,6 +124,7 @@ public interface ExecutableSelectOperation {
 		 * @throws IllegalArgumentException if resultType is {@literal null}.
 		 * @see SelectWithQuery
 		 */
+		@Contract("_ -> new")
 		<R> SelectWithQuery<R> as(Class<R> resultType);
 
 	}
@@ -221,6 +225,7 @@ public interface ExecutableSelectOperation {
 		default Stream<T> stream() {
 			return all().stream();
 		}
+
 	}
 
 	/**

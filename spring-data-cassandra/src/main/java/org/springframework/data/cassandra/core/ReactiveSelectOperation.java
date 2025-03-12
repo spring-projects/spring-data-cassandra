@@ -19,6 +19,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import org.springframework.data.cassandra.core.query.Query;
+import org.springframework.lang.Contract;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -80,6 +81,7 @@ public interface ReactiveSelectOperation {
 		 * @see #inTable(CqlIdentifier)
 		 * @see SelectWithProjection
 		 */
+		@Contract("_ -> new")
 		default SelectWithProjection<T> inTable(String table) {
 
 			Assert.hasText(table, "Table name must not be null or empty");
@@ -98,6 +100,7 @@ public interface ReactiveSelectOperation {
 		 * @see com.datastax.oss.driver.api.core.CqlIdentifier
 		 * @see SelectWithProjection
 		 */
+		@Contract("_ -> new")
 		SelectWithProjection<T> inTable(CqlIdentifier table);
 
 	}
@@ -118,6 +121,7 @@ public interface ReactiveSelectOperation {
 		 * @throws IllegalArgumentException if {@link Class resultType} is {@literal null}.
 		 * @see SelectWithQuery
 		 */
+		@Contract("_ -> new")
 		<R> SelectWithQuery<R> as(Class<R> resultType);
 
 	}
@@ -136,6 +140,7 @@ public interface ReactiveSelectOperation {
 		 * @see org.springframework.data.cassandra.core.query.Query
 		 * @see TerminatingSelect
 		 */
+		@Contract("_ -> new")
 		TerminatingSelect<T> matching(Query query);
 
 	}

@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.core;
 
 import reactor.core.publisher.Mono;
 
+import org.springframework.lang.Contract;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -70,6 +71,7 @@ public interface ReactiveInsertOperation {
 		 * @see #inTable(CqlIdentifier)
 		 * @see InsertWithOptions
 		 */
+		@Contract("_ -> new")
 		default InsertWithOptions<T> inTable(String table) {
 
 			Assert.hasText(table, "Table must not be null or empty");
@@ -88,6 +90,7 @@ public interface ReactiveInsertOperation {
 		 * @see com.datastax.oss.driver.api.core.CqlIdentifier
 		 * @see InsertWithOptions
 		 */
+		@Contract("_ -> new")
 		InsertWithOptions<T> inTable(CqlIdentifier table);
 
 	}
@@ -106,6 +109,7 @@ public interface ReactiveInsertOperation {
 		 * @see org.springframework.data.cassandra.core.InsertOptions
 		 * @see TerminatingInsert
 		 */
+		@Contract("_ -> new")
 		TerminatingInsert<T> withOptions(InsertOptions insertOptions);
 
 	}

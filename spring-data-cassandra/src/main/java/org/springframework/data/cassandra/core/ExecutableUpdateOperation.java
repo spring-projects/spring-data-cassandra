@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.core;
 
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.core.query.Update;
+import org.springframework.lang.Contract;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -75,6 +76,7 @@ public interface ExecutableUpdateOperation {
 		 * @see #inTable(CqlIdentifier)
 		 * @see UpdateWithQuery
 		 */
+		@Contract("_ -> new")
 		default UpdateWithQuery inTable(String table) {
 
 			Assert.hasText(table, "Table name must not be null or empty");
@@ -93,6 +95,7 @@ public interface ExecutableUpdateOperation {
 		 * @see com.datastax.oss.driver.api.core.CqlIdentifier
 		 * @see UpdateWithQuery
 		 */
+		@Contract("_ -> new")
 		UpdateWithQuery inTable(CqlIdentifier table);
 
 	}
@@ -110,6 +113,7 @@ public interface ExecutableUpdateOperation {
 		 * @throws IllegalArgumentException if {@link Query} is {@literal null}.
 		 * @see TerminatingUpdate
 		 */
+		@Contract("_ -> new")
 		TerminatingUpdate matching(Query query);
 
 	}

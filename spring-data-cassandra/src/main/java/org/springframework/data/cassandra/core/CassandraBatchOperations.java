@@ -19,6 +19,7 @@ import java.util.Collections;
 
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
+import org.springframework.lang.Contract;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.cql.BatchableStatement;
@@ -58,6 +59,7 @@ public interface CassandraBatchOperations {
 	 * @return {@code this} {@link CassandraBatchOperations}.
 	 * @throws IllegalStateException if the batch was already executed.
 	 */
+	@Contract("_ -> this")
 	CassandraBatchOperations withTimestamp(long timestamp);
 
 	/**
@@ -68,6 +70,7 @@ public interface CassandraBatchOperations {
 	 * @throws IllegalStateException if the batch was already executed.
 	 * @since 4.4
 	 */
+	@Contract("_ -> this")
 	CassandraBatchOperations withQueryOptions(QueryOptions options);
 
 	/**
@@ -78,6 +81,7 @@ public interface CassandraBatchOperations {
 	 * @throws IllegalStateException if the batch was already executed.
 	 * @since 4.4
 	 */
+	@Contract("_ -> this")
 	CassandraBatchOperations addStatement(BatchableStatement<?> statement);
 
 	/**
@@ -88,6 +92,7 @@ public interface CassandraBatchOperations {
 	 * @throws IllegalStateException if the batch was already executed.
 	 * @since 4.4
 	 */
+	@Contract("_ -> this")
 	CassandraBatchOperations addStatements(BatchableStatement<?>... statements);
 
 	/**
@@ -98,6 +103,7 @@ public interface CassandraBatchOperations {
 	 * @throws IllegalStateException if the batch was already executed.
 	 * @since 4.4
 	 */
+	@Contract("_ -> this")
 	CassandraBatchOperations addStatements(Iterable<? extends BatchableStatement<?>> statements);
 
 	/**
@@ -109,6 +115,7 @@ public interface CassandraBatchOperations {
 	 * @throws IllegalStateException if the batch was already executed.
 	 * @since 3.2.2
 	 */
+	@Contract("_, _ -> this")
 	default CassandraBatchOperations insert(Object entity, WriteOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
@@ -123,6 +130,7 @@ public interface CassandraBatchOperations {
 	 * @return {@code this} {@link CassandraBatchOperations}.
 	 * @throws IllegalStateException if the batch was already executed.
 	 */
+	@Contract("_ -> this")
 	CassandraBatchOperations insert(Object... entities);
 
 	/**
@@ -132,6 +140,7 @@ public interface CassandraBatchOperations {
 	 * @return {@code this} {@link CassandraBatchOperations}.
 	 * @throws IllegalStateException if the batch was already executed.
 	 */
+	@Contract("_ -> this")
 	CassandraBatchOperations insert(Iterable<?> entities);
 
 	/**
@@ -144,6 +153,7 @@ public interface CassandraBatchOperations {
 	 * @since 2.0
 	 * @see InsertOptions
 	 */
+	@Contract("_, _ -> this")
 	CassandraBatchOperations insert(Iterable<?> entities, WriteOptions options);
 
 	/**
@@ -155,6 +165,7 @@ public interface CassandraBatchOperations {
 	 * @throws IllegalStateException if the batch was already executed.
 	 * @since 3.2.2
 	 */
+	@Contract("_, _ -> this")
 	default CassandraBatchOperations update(Object entity, WriteOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
@@ -169,6 +180,7 @@ public interface CassandraBatchOperations {
 	 * @return {@code this} {@link CassandraBatchOperations}.
 	 * @throws IllegalStateException if the batch was already executed.
 	 */
+	@Contract("_ -> this")
 	CassandraBatchOperations update(Object... entities);
 
 	/**
@@ -178,6 +190,7 @@ public interface CassandraBatchOperations {
 	 * @return {@code this} {@link CassandraBatchOperations}.
 	 * @throws IllegalStateException if the batch was already executed.
 	 */
+	@Contract("_ -> this")
 	CassandraBatchOperations update(Iterable<?> entities);
 
 	/**
@@ -190,6 +203,7 @@ public interface CassandraBatchOperations {
 	 * @since 2.0
 	 * @see UpdateOptions
 	 */
+	@Contract("_, _ -> this")
 	CassandraBatchOperations update(Iterable<?> entities, WriteOptions options);
 
 	/**
@@ -201,6 +215,7 @@ public interface CassandraBatchOperations {
 	 * @throws IllegalStateException if the batch was already executed.
 	 * @since 3.2.2
 	 */
+	@Contract("_, _ -> this")
 	default CassandraBatchOperations delete(Object entity, WriteOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
@@ -215,6 +230,7 @@ public interface CassandraBatchOperations {
 	 * @return {@code this} {@link CassandraBatchOperations}.
 	 * @throws IllegalStateException if the batch was already executed.
 	 */
+	@Contract("_ -> this")
 	CassandraBatchOperations delete(Object... entities);
 
 	/**
@@ -224,6 +240,7 @@ public interface CassandraBatchOperations {
 	 * @return {@code this} {@link CassandraBatchOperations}.
 	 * @throws IllegalStateException if the batch was already executed.
 	 */
+	@Contract("_ -> this")
 	CassandraBatchOperations delete(Iterable<?> entities);
 
 	/**
@@ -236,5 +253,6 @@ public interface CassandraBatchOperations {
 	 * @since 2.2
 	 * @see DeleteOptions
 	 */
+	@Contract("_, _ -> this")
 	CassandraBatchOperations delete(Iterable<?> entities, WriteOptions options);
 }
