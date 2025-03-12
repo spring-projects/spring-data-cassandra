@@ -39,4 +39,5 @@ public class CassandraNamespaceHandler extends NamespaceHandlerSupport {
 		registerBeanDefinitionParser("mapping", new CassandraMappingContextParser());
 		registerBeanDefinitionParser("initialize-keyspace", new InitializeKeyspaceBeanDefinitionParser());
 	}
+
 }

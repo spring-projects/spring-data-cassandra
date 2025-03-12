@@ -45,4 +45,5 @@ public abstract class ColumnChangeCqlGenerator<T extends ColumnChangeSpecificati
 	protected T spec() {
 		return getSpecification();
 	}
+
 }

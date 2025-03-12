@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -49,7 +50,6 @@ import org.springframework.data.cassandra.core.cql.keyspace.CreateKeyspaceSpecif
 import org.springframework.data.cassandra.core.cql.keyspace.DropKeyspaceSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceActionSpecification;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.CollectionUtils;
@@ -220,8 +220,7 @@ public class CqlSessionFactoryBean
 	/**
 	 * @return the configured {@link CassandraConverter}.
 	 */
-	@Nullable
-	public CassandraConverter getConverter() {
+	public @Nullable CassandraConverter getConverter() {
 		return this.converter;
 	}
 
@@ -294,8 +293,7 @@ public class CqlSessionFactoryBean
 	 * @return the name of the Cassandra Keyspace to connect to as a String.
 	 * @see #setKeyspaceName(String)
 	 */
-	@Nullable
-	protected String getKeyspaceName() {
+	protected @Nullable String getKeyspaceName() {
 		return this.keyspaceName;
 	}
 
@@ -638,6 +636,9 @@ public class CqlSessionFactoryBean
 	 */
 	protected void createTables(boolean drop, boolean dropUnused, boolean ifNotExists) {
 
+		Assert.state(this.session != null, "CqlSession must be initialized");
+		Assert.state(this.converter != null, "CassandraConverter must be initialized");
+
 		CassandraAdminTemplate adminTemplate = new CassandraAdminTemplate(this.session, this.converter);
 
 		performSchemaActions(drop, dropUnused, ifNotExists, adminTemplate);
@@ -664,7 +665,7 @@ public class CqlSessionFactoryBean
 	}
 
 	@Override
-	public CqlSession getObject() {
+	public @Nullable CqlSession getObject() {
 		return this.session;
 	}
 
@@ -673,13 +674,13 @@ public class CqlSessionFactoryBean
 		return CqlSession.class;
 	}
 
-	@Nullable
 	@Override
-	public DataAccessException translateExceptionIfPossible(RuntimeException e) {
+	public @Nullable DataAccessException translateExceptionIfPossible(RuntimeException e) {
 		return EXCEPTION_TRANSLATOR.translateExceptionIfPossible(e);
 	}
 
 	@Override
+	@SuppressWarnings("NullAway")
 	public void destroy() {
 
 		if (this.session != null) {
@@ -689,12 +690,17 @@ public class CqlSessionFactoryBean
 			};
 
 			Runnable systemSchemaActionRunnable = () -> {
-				executeSpecificationsAndScripts(this.keyspaceDrops, this.keyspaceShutdownScripts, this.systemSession);
+				if (this.systemSession != null) {
+					executeSpecificationsAndScripts(this.keyspaceDrops, this.keyspaceShutdownScripts, this.systemSession);
+				}
 			};
 
 			if (this.suspendLifecycleSchemaRefresh) {
 				SchemaUtils.withSuspendedAsyncSchemaRefresh(this.session, schemaActionRunnable);
+
+				if (this.systemSession != null) {
 				SchemaUtils.withSuspendedAsyncSchemaRefresh(this.systemSession, systemSchemaActionRunnable);
+			}
 			} else {
 				schemaActionRunnable.run();
 				systemSchemaActionRunnable.run();
@@ -709,14 +715,18 @@ public class CqlSessionFactoryBean
 	 * Close the regular session object.
 	 */
 	protected void closeSession() {
-		this.session.close();
+		if (this.session != null) {
+			this.session.close();
+		}
 	}
 
 	/**
 	 * Close the system session object.
 	 */
 	protected void closeSystemSession() {
-		this.systemSession.close();
+		if (this.systemSession != null) {
+			this.systemSession.close();
+		}
 	}
 
 	/**
@@ -860,5 +870,7 @@ public class CqlSessionFactoryBean
 		public int getPort() {
 			return port;
 		}
+
 	}
+
 }

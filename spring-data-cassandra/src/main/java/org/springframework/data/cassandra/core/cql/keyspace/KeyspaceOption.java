@@ -17,7 +17,7 @@ package org.springframework.data.cassandra.core.cql.keyspace;
 
 import java.util.Map;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public enum KeyspaceOption implements Option {
 
@@ -25,7 +25,7 @@ public enum KeyspaceOption implements Option {
 
 	DURABLE_WRITES("durable_writes", Boolean.class, false, false, false);
 
-	private Option delegate;
+	private final Option delegate;
 
 	KeyspaceOption(String name, Class<?> type, boolean requiresValue, boolean escapesValue, boolean quotesValue) {
 		this.delegate = new DefaultOption(name, type, requiresValue, escapesValue, quotesValue);
@@ -79,7 +79,7 @@ public enum KeyspaceOption implements Option {
 	public enum ReplicationStrategy {
 		SIMPLE_STRATEGY("SimpleStrategy"), NETWORK_TOPOLOGY_STRATEGY("NetworkTopologyStrategy");
 
-		private String value;
+		private final String value;
 
 		ReplicationStrategy(String value) {
 			this.value = value;

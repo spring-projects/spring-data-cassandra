@@ -20,9 +20,10 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.core.query.CriteriaDefinition.Operator;
-import org.springframework.lang.Nullable;
+import org.springframework.lang.Contract;
 
 import com.datastax.oss.driver.api.core.type.codec.TypeCodec;
 import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
@@ -46,8 +47,8 @@ abstract class SerializationUtils {
 	 * @param criteria may be {@literal null}.
 	 * @return may be {@literal null}.
 	 */
-	@Nullable
-	public static String serializeToCqlSafely(@Nullable CriteriaDefinition criteria) {
+	@Contract("null -> null; !null -> !null")
+	public @Nullable static String serializeToCqlSafely(@Nullable CriteriaDefinition criteria) {
 
 		if (criteria == null) {
 			return null;
@@ -67,8 +68,8 @@ abstract class SerializationUtils {
 	 * @param value value to serialize to CQL, may be {@literal null}.
 	 * @return the value as a serialized CQL {@link String}, may be {@literal null}.
 	 */
-	@Nullable
-	public static String serializeToCqlSafely(@Nullable Object value) {
+	@Contract("null -> null; !null -> !null")
+	public static @Nullable String serializeToCqlSafely(@Nullable Object value) {
 
 		if (value == null) {
 			return null;
@@ -143,4 +144,5 @@ abstract class SerializationUtils {
 
 		return builder.append(postfix).toString();
 	}
+
 }

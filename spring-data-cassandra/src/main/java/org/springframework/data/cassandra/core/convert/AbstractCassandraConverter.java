@@ -64,7 +64,6 @@ public abstract class AbstractCassandraConverter implements CassandraConverter, 
 		this.instantiators = instantiators;
 	}
 
-
 	@Override
 	public ConversionService getConversionService() {
 		return this.conversionService;
@@ -99,4 +98,5 @@ public abstract class AbstractCassandraConverter implements CassandraConverter, 
 			getCustomConversions().registerConvertersIn((GenericConversionService) conversionService);
 		}
 	}
+
 }

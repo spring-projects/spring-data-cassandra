@@ -29,7 +29,6 @@ import org.springframework.data.cassandra.core.cql.SessionCallback;
 import org.springframework.data.cassandra.support.CassandraConnectionProperties;
 import org.springframework.data.cassandra.support.CqlDataSet;
 import org.springframework.data.util.Optionals;
-import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -92,7 +91,7 @@ class CassandraDelegate {
 	 *          {@literal empty}.
 	 * @see #CassandraDelegate(String, long)
 	 */
-	public CassandraDelegate(@NonNull String yamlConfigurationResource) {
+	public CassandraDelegate(String yamlConfigurationResource) {
 		this(yamlConfigurationResource, EmbeddedCassandraServerHelper.DEFAULT_STARTUP_TIMEOUT_MS);
 	}
 

@@ -29,7 +29,6 @@ import java.util.List;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;
 import org.springframework.data.convert.WritingConverter;
-import org.springframework.lang.NonNull;
 
 /**
  * Helper class to register JodaTime specific {@link Converter} implementations in case the library is present on the
@@ -118,7 +117,6 @@ public abstract class CassandraJsr310Converters {
 
 		INSTANCE;
 
-		@NonNull
 		@Override
 		public Date convert(Instant source) {
 			return Date.from(source);
@@ -140,4 +138,5 @@ public abstract class CassandraJsr310Converters {
 			return source.atZone(systemDefault()).toInstant();
 		}
 	}
+
 }

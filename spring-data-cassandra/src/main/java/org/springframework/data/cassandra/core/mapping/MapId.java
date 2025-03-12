@@ -17,7 +17,7 @@ package org.springframework.data.cassandra.core.mapping;
 
 import java.util.Map;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Interface that represents the id of a persistent entity, where the keys correspond to the entity's JavaBean
@@ -26,7 +26,7 @@ import org.springframework.lang.Nullable;
  * @author Matthew T. Adams
  * @author Mark Paluch
  */
-public interface MapId extends Map<String, Object> {
+public interface MapId extends Map<String, @Nullable Object> {
 
 	/**
 	 * Builder method that adds the value for the named property, then returns {@code this}.

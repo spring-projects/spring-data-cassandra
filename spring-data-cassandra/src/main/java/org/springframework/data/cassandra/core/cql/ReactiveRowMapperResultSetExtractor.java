@@ -65,4 +65,5 @@ public class ReactiveRowMapperResultSetExtractor<T> implements ReactiveResultSet
 			}
 		});
 	}
+
 }

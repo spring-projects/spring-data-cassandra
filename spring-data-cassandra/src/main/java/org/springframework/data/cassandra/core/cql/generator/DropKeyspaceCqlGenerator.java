@@ -38,4 +38,5 @@ public class DropKeyspaceCqlGenerator extends KeyspaceNameCqlGenerator<DropKeysp
 				.append(spec().getName().asCql(true))
 				.append(";");
 	}
+
 }

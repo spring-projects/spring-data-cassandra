@@ -156,4 +156,5 @@ public abstract class AbstractCassandraEventListener<E> implements ApplicationLi
 			log.debug(String.format("onAfterConvert(%s)", event.getSource()));
 		}
 	}
+
 }

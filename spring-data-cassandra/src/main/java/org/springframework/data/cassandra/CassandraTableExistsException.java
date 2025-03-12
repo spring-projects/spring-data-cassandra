@@ -24,7 +24,7 @@ import java.io.Serial;
  */
 public class CassandraTableExistsException extends CassandraSchemaElementExistsException {
 
-	@Serial private static final long serialVersionUID = 6032967419751410352L;
+	private static final @Serial long serialVersionUID = 6032967419751410352L;
 
 	/**
 	 * Constructor for {@link CassandraTableExistsException}.
@@ -37,6 +37,7 @@ public class CassandraTableExistsException extends CassandraSchemaElementExistsE
 		super(tableName, ElementType.TABLE, msg, cause);
 	}
 
+	@SuppressWarnings("NullAway")
 	public String getTableName() {
 		return getElementName();
 	}

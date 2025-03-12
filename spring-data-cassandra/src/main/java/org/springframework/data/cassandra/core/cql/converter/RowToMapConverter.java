@@ -18,6 +18,8 @@ package org.springframework.data.cassandra.core.cql.converter;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;
 
@@ -38,10 +40,10 @@ public enum RowToMapConverter implements Converter<Row, Map<String, Object>> {
 	INSTANCE;
 
 	@Override
-	public Map<String, Object> convert(Row row) {
+	public Map<String, @Nullable Object> convert(Row row) {
 
 		ColumnDefinitions cols = row.getColumnDefinitions();
-		Map<String, Object> map = new HashMap<>(cols.size());
+		Map<String, @Nullable Object> map = new HashMap<>(cols.size());
 
 		cols.forEach(columnDefinition -> {
 			map.put(columnDefinition.getName().toString(),

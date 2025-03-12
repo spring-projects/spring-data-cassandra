@@ -17,6 +17,8 @@ package org.springframework.data.cassandra.core.cql.converter;
 
 import java.math.BigDecimal;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.convert.converter.Converter;
 
 import com.datastax.oss.driver.api.core.cql.ResultSet;
@@ -31,7 +33,7 @@ public class ResultSetToBigDecimalConverter extends AbstractResultSetToBasicFixe
 	public static final ResultSetToBigDecimalConverter INSTANCE = new ResultSetToBigDecimalConverter();
 
 	@Override
-	protected BigDecimal doConvertSingleValue(Object object) {
+	protected @Nullable BigDecimal doConvertSingleValue(Object object) {
 		return CONVERTER.convert(object, BigDecimal.class);
 	}
 

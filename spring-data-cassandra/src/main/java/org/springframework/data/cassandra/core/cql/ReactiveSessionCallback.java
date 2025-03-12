@@ -54,4 +54,5 @@ public interface ReactiveSessionCallback<T> {
 	 * @see ReactiveCqlTemplate#execute(ReactivePreparedStatementCreator, ReactivePreparedStatementCallback)
 	 */
 	Publisher<T> doInSession(ReactiveSession session) throws DriverException, DataAccessException;
+
 }

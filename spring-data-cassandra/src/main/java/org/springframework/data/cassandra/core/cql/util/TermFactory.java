@@ -18,7 +18,7 @@ package org.springframework.data.cassandra.core.cql.util;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import com.datastax.oss.driver.api.querybuilder.term.Term;
 

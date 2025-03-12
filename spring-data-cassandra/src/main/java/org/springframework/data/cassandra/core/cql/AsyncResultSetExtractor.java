@@ -17,6 +17,8 @@ package org.springframework.data.cassandra.core.cql;
 
 import java.util.concurrent.CompletableFuture;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.dao.DataAccessException;
 
 import com.datastax.oss.driver.api.core.DriverException;
@@ -40,7 +42,7 @@ import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
  * @see RowMapper
  */
 @FunctionalInterface
-public interface AsyncResultSetExtractor<T> {
+public interface AsyncResultSetExtractor<T extends @Nullable Object> {
 
 	/**
 	 * Implementations must implement this method to process the entire {@link AsyncResultSet}.
@@ -53,4 +55,5 @@ public interface AsyncResultSetExtractor<T> {
 	 * @throws DataAccessException in case of custom exceptions
 	 */
 	CompletableFuture<T> extractData(AsyncResultSet resultSet) throws DriverException, DataAccessException;
+
 }

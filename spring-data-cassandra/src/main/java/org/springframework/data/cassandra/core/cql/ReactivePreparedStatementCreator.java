@@ -53,4 +53,5 @@ public interface ReactivePreparedStatementCreator {
 	 *           method. The {@link ReactiveCqlTemplate} class will handle them.
 	 */
 	Mono<PreparedStatement> createPreparedStatement(ReactiveSession session) throws DriverException;
+
 }

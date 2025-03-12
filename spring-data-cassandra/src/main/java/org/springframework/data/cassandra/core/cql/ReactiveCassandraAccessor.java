@@ -17,11 +17,12 @@ package org.springframework.data.cassandra.core.cql;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.cassandra.ReactiveSession;
 import org.springframework.data.cassandra.ReactiveSessionFactory;
-import org.springframework.lang.Nullable;
+import org.springframework.lang.Contract;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.DriverException;
@@ -134,7 +135,7 @@ public abstract class ReactiveCassandraAccessor implements InitializingBean {
 	 * subsequent cast) is considered reliable when expecting Cassandra-based access to have happened.
 	 *
 	 * @param task readable text describing the task being attempted
-	 * @param cql CQL query or update that caused the problem (may be {@literal null})
+	 * @param cql CQL query or update that caused the problem (can be {@literal null})
 	 * @param ex the offending {@link DriverException}
 	 * @return the DataAccessException, wrapping the {@code DriverException}
 	 * @see org.springframework.dao.DataAccessException#getRootCause()
@@ -157,8 +158,8 @@ public abstract class ReactiveCassandraAccessor implements InitializingBean {
 	 * @see CqlProvider
 	 * @since 3.2.7
 	 */
-	@Nullable
-	protected static String toCql(@Nullable Object cqlProvider) {
+	@Contract("null -> null; !null -> !null")
+	protected @Nullable static String toCql(@Nullable Object cqlProvider) {
 		return QueryExtractorDelegate.getCql(cqlProvider);
 	}
 }

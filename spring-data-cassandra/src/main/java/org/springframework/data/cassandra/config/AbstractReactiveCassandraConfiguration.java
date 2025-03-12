@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.config;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.annotation.Bean;
@@ -27,7 +28,6 @@ import org.springframework.data.cassandra.core.cql.ReactiveCqlOperations;
 import org.springframework.data.cassandra.core.cql.ReactiveCqlTemplate;
 import org.springframework.data.cassandra.core.cql.session.DefaultBridgedReactiveSession;
 import org.springframework.data.cassandra.core.cql.session.DefaultReactiveSessionFactory;
-import org.springframework.lang.Nullable;
 
 /**
  * Extension to {@link AbstractCassandraConfiguration} providing Spring Data Cassandra configuration for Spring Data's
@@ -63,7 +63,7 @@ public abstract class AbstractReactiveCassandraConfiguration extends AbstractCas
 	 */
 	@Bean
 	public ReactiveSessionFactory reactiveCassandraSessionFactory() {
-		return new DefaultReactiveSessionFactory(beanFactory.getBean(ReactiveSession.class));
+		return new DefaultReactiveSessionFactory(getBean(ReactiveSession.class));
 	}
 
 	/**
@@ -75,8 +75,7 @@ public abstract class AbstractReactiveCassandraConfiguration extends AbstractCas
 	 */
 	@Bean
 	public ReactiveCassandraTemplate reactiveCassandraTemplate() {
-		return new ReactiveCassandraTemplate(beanFactory.getBean(ReactiveSessionFactory.class),
-				beanFactory.getBean(CassandraConverter.class));
+		return new ReactiveCassandraTemplate(getBean(ReactiveSessionFactory.class), getBean(CassandraConverter.class));
 	}
 
 	/**
@@ -87,7 +86,7 @@ public abstract class AbstractReactiveCassandraConfiguration extends AbstractCas
 	 */
 	@Bean
 	public ReactiveCqlTemplate reactiveCqlTemplate() {
-		return new ReactiveCqlTemplate(beanFactory.getBean(ReactiveSessionFactory.class));
+		return new ReactiveCqlTemplate(getBean(ReactiveSessionFactory.class));
 	}
 
 	@Override
@@ -95,4 +94,14 @@ public abstract class AbstractReactiveCassandraConfiguration extends AbstractCas
 		this.beanFactory = beanFactory;
 		super.setBeanFactory(beanFactory);
 	}
+
+	private <T> T getBean(Class<T> requiredType) {
+
+		if (beanFactory == null) {
+			throw new IllegalStateException("BeanFactory must not be null");
+		}
+
+		return beanFactory.getBean(requiredType);
+	}
+
 }

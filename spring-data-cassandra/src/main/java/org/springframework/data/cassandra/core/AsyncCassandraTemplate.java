@@ -27,7 +27,7 @@ import java.util.stream.StreamSupport;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -61,7 +61,6 @@ import org.springframework.data.projection.EntityProjection;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.util.Streamable;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -500,11 +499,11 @@ public class AsyncCassandraTemplate
 
 		SimpleStatement statement = countStatement.build();
 
-		CompletableFuture<Long> result = doExecute(statement, it -> {
+		CompletableFuture<@Nullable Long> result = doExecute(statement, it -> {
 
-			SingleColumnRowMapper<Long> mapper = SingleColumnRowMapper.newInstance(Long.class);
+			SingleColumnRowMapper<@Nullable Long> mapper = SingleColumnRowMapper.newInstance(Long.class);
 
-			Row row = DataAccessUtils.nullableSingleResult(Streamable.of(it.currentPage()).toList());
+			Row row = DataAccessUtils.requiredUniqueResult(Streamable.of(it.currentPage()).toList());
 			return mapper.mapRow(row, 0);
 		});
 
@@ -827,7 +826,8 @@ public class AsyncCassandraTemplate
 		return doExecute(statement, Function.identity());
 	}
 
-	private <T> CompletableFuture<T> doExecute(Statement<?> statement, Function<AsyncResultSet, T> mappingFunction) {
+	private <T extends @Nullable Object> CompletableFuture<T> doExecute(Statement<?> statement,
+			Function<AsyncResultSet, T> mappingFunction) {
 
 		if (PreparedStatementDelegate.canPrepare(isUsePreparedStatements(), statement, log)) {
 
@@ -861,6 +861,7 @@ public class AsyncCassandraTemplate
 				return accessor.getPageSize();
 			}
 		}
+
 		class GetConfiguredPageSize implements AsyncSessionCallback<Integer>, CqlProvider {
 			@Override
 			public CompletableFuture<Integer> doInSession(CqlSession session) {
@@ -876,7 +877,6 @@ public class AsyncCassandraTemplate
 		return getAsyncCqlOperations().execute(new GetConfiguredPageSize()).join();
 	}
 
-	@SuppressWarnings("unchecked")
 	private <T> Function<Row, T> getMapper(Class<?> entityType, Class<T> targetType, CqlIdentifier tableName) {
 
 		EntityProjection<T, ?> projection = entityOperations.introspectProjection(targetType, entityType);

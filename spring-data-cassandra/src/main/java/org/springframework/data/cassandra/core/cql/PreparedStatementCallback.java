@@ -15,8 +15,8 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.dao.DataAccessException;
-import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.DriverException;
@@ -41,7 +41,7 @@ import com.datastax.oss.driver.api.core.cql.Statement;
  * @see CqlTemplate#execute(PreparedStatementCreator, PreparedStatementCallback)
  */
 @FunctionalInterface
-public interface PreparedStatementCallback<T> {
+public interface PreparedStatementCallback<T extends @Nullable Object> {
 
 	/**
 	 * Gets called by {@link CqlTemplate#execute(String, PreparedStatementCallback)} with an active CQL session and
@@ -63,7 +63,7 @@ public interface PreparedStatementCallback<T> {
 	 * @see CqlTemplate#queryForObject(String, Class, Object...)
 	 * @see CqlTemplate#queryForList(String, Object...)
 	 */
-	@Nullable
 	T doInPreparedStatement(CqlSession session, PreparedStatement preparedStatement)
 			throws DriverException, DataAccessException;
+
 }

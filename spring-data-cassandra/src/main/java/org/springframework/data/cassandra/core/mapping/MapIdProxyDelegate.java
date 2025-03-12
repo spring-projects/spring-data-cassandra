@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.springframework.util.StringUtils;
 
 /**
@@ -43,16 +43,16 @@ class MapIdProxyDelegate implements InvocationHandler {
 
 	}
 
-	private MapId delegate = new BasicMapId();
-	private Class<?> idInterface;
+	private final MapId delegate = new BasicMapId();
+	private final Class<?> idInterface;
 
 	MapIdProxyDelegate(Class<?> idInterface) {
 		this.idInterface = idInterface;
 	}
 
-	@Nullable
 	@Override
-	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+	@SuppressWarnings("NullAway")
+	public @Nullable Object invoke(Object proxy, Method method, @Nullable Object @Nullable [] args) throws Throwable {
 
 		if (isMapIdMethod(method)) {
 			return method.invoke(delegate, args);
@@ -76,7 +76,7 @@ class MapIdProxyDelegate implements InvocationHandler {
 		return MAP_ID_SIGNATURES.containsKey(new Signature(method, true));
 	}
 
-	private Object invokeGetter(Method method) {
+	private @Nullable Object invokeGetter(Method method) {
 
 		String name = method.getName();
 		if (name.startsWith("get")) {
@@ -118,9 +118,10 @@ class MapIdProxyDelegate implements InvocationHandler {
 	}
 
 	static class Signature {
-		private String name;
-		private @Nullable Class<?>[] argTypes;
-		private @Nullable Class<?> returnType;
+
+		private final String name;
+		private final Class<?>[] argTypes;
+		private final @Nullable Class<?> returnType;
 
 		Signature(Method method, boolean includeReturnType) {
 			this(method.getName(), method.getParameterTypes(), includeReturnType ? method.getReturnType() : null);
@@ -146,17 +147,16 @@ class MapIdProxyDelegate implements InvocationHandler {
 			if (this == that) {
 				return true;
 			}
-			if (!(that instanceof Signature)) {
+			if (!(that instanceof Signature that_)) {
 				return false;
 			}
-			Signature that_ = (Signature) that;
 			if (!this.name.equals(that_.name)) {
 				return false;
 			}
 			if ((this.argTypes == null && that_.argTypes != null) || (this.argTypes != null && that_.argTypes == null)) {
 				return false;
 			}
-			if (this.argTypes != null) {
+			if (this.argTypes != null && that_.argTypes != null) {
 				if (this.argTypes.length != that_.argTypes.length) {
 					return false;
 				}
@@ -185,5 +185,7 @@ class MapIdProxyDelegate implements InvocationHandler {
 			}
 			return hash;
 		}
+
 	}
+
 }

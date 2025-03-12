@@ -46,4 +46,5 @@ public interface BeforeSaveCallback<T> extends EntityCallback<T> {
 	 * @return the domain object to be persisted.
 	 */
 	T onBeforeSave(T entity, CqlIdentifier tableName, Statement<?> statement);
+
 }

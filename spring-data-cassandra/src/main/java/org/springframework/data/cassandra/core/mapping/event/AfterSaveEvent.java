@@ -28,7 +28,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  */
 public class AfterSaveEvent<E> extends CassandraMappingEvent<E> {
 
-	@Serial private static final long serialVersionUID = 1L;
+	private static final @Serial long serialVersionUID = 1L;
 
 	/**
 	 * Creates a new {@link AfterSaveEvent}.
@@ -39,4 +39,5 @@ public class AfterSaveEvent<E> extends CassandraMappingEvent<E> {
 	public AfterSaveEvent(E source, CqlIdentifier tableName) {
 		super(source, tableName);
 	}
+
 }

@@ -60,4 +60,5 @@ public abstract class UserTypeNameCqlGenerator<T extends UserTypeNameSpecificati
 	}
 
 	public abstract StringBuilder toCql(StringBuilder cql);
+
 }

@@ -15,11 +15,11 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.core.query.CassandraScrollPosition;
 import org.springframework.data.repository.query.ParameterAccessor;
-import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.core.type.DataType;
 
@@ -54,6 +54,7 @@ public interface CassandraParameterAccessor extends ParameterAccessor {
 	 * @see org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder
 	 * @see org.springframework.data.cassandra.core.mapping.CassandraType
 	 */
+	@Nullable
 	DataType getDataType(int index);
 
 	/**

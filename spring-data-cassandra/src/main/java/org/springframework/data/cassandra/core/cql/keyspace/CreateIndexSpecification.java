@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -128,7 +128,7 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 	}
 
 	@Override
-	public CqlIdentifier getTableName() {
+	public @Nullable CqlIdentifier getTableName() {
 		return this.tableName;
 	}
 
@@ -159,6 +159,9 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 
 	@Override
 	public CqlIdentifier getColumnName() {
+
+		Assert.state(columnName != null, "ColumnName must not be null");
+
 		return this.columnName;
 	}
 

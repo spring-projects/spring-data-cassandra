@@ -42,6 +42,7 @@ public class CreateIndexCqlGenerator extends IndexNameCqlGenerator<CreateIndexSp
 	}
 
 	@Override
+	@SuppressWarnings("NullAway")
 	public StringBuilder toCql(StringBuilder cql) {
 
 		cql.append("CREATE").append(spec().isCustom() ? " CUSTOM" : "").append(" INDEX")

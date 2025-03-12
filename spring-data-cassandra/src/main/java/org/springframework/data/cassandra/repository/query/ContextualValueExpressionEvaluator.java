@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.expression.ValueEvaluationContext;
 import org.springframework.data.expression.ValueExpression;
 import org.springframework.data.expression.ValueExpressionParser;
@@ -37,8 +39,9 @@ class ContextualValueExpressionEvaluator implements ValueExpressionEvaluator {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> T evaluate(String expressionString) {
+	public <T> @Nullable T evaluate(String expressionString) {
 		ValueExpression expression = parser.parse(expressionString);
 		return (T) expression.evaluate(evaluationContext);
 	}
+
 }

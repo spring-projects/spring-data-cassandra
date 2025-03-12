@@ -18,8 +18,8 @@ package org.springframework.data.cassandra.core.mapping;
 import java.io.Serial;
 import java.lang.reflect.Method;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.mapping.MappingException;
-import org.springframework.lang.Nullable;
 
 /**
  * Exception thrown on incorrect mapping of an Id interface.
@@ -29,7 +29,7 @@ import org.springframework.lang.Nullable;
  */
 public class IdInterfaceException extends MappingException {
 
-	@Serial private static final long serialVersionUID = -1635695314254522703L;
+	private static final @Serial long serialVersionUID = -1635695314254522703L;
 
 	private final String idInterfaceName;
 

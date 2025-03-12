@@ -86,4 +86,5 @@ class UserTypeUtil {
 	private static boolean isNonFrozenUdt(DataType dataType) {
 		return dataType instanceof UserDefinedType && !((UserDefinedType) dataType).isFrozen();
 	}
+
 }

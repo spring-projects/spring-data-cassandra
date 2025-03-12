@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.CollectionExecution;
@@ -29,7 +30,6 @@ import org.springframework.data.cassandra.repository.query.CassandraQueryExecuti
 import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.query.ResultProcessor;
-import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.Statement;
@@ -69,9 +69,8 @@ public abstract class AbstractCassandraQuery extends CassandraRepositoryQuerySup
 		return this.operations;
 	}
 
-	@Nullable
 	@Override
-	public Object execute(Object[] parameters) {
+	public @Nullable Object execute(Object[] parameters) {
 
 		CassandraParameterAccessor parameterAccessor = new CassandraParametersParameterAccessor(getQueryMethod(),
 				parameters);

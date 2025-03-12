@@ -20,12 +20,13 @@ import io.micrometer.core.instrument.observation.DefaultMeterObservationHandler;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.micrometer.observation.ObservationRegistry;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.cassandra.config.SessionBuilderConfigurer;
 import org.springframework.data.cassandra.support.AbstractTestJavaConfig;
-import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 
@@ -56,15 +57,13 @@ class TestConfig extends AbstractTestJavaConfig {
 		return new DefaultCassandraObservationConvention();
 	}
 
-	@Nullable
 	@Override
-	protected SessionBuilderConfigurer getSessionBuilderConfigurer() {
+	protected @Nullable SessionBuilderConfigurer getSessionBuilderConfigurer() {
 		return sessionBuilder -> sessionBuilder.addRequestTracker(ObservationRequestTracker.INSTANCE);
 	}
 
-	@Nullable
 	@Override
-	protected Resource getDriverConfigurationResource() {
+	protected @Nullable Resource getDriverConfigurationResource() {
 		return new ClassPathResource("application.conf");
 	}
 

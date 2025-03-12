@@ -20,7 +20,7 @@ import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
 
-import org.springframework.lang.NonNull;
+import org.jspecify.annotations.NonNull;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;

@@ -15,12 +15,12 @@
  */
 package org.springframework.data.cassandra.config;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.cassandra.SessionFactory;
 import org.springframework.data.cassandra.core.cql.CqlTemplate;
 import org.springframework.data.cassandra.core.cql.session.DefaultSessionFactory;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlSession;
@@ -39,6 +39,9 @@ public class CassandraCqlTemplateFactoryBean implements FactoryBean<CqlTemplate>
 
 	@Override
 	public CqlTemplate getObject() {
+
+		Assert.state(this.template != null, "CqlTemplate has not been initialized");
+
 		return template;
 	}
 
@@ -89,4 +92,5 @@ public class CassandraCqlTemplateFactoryBean implements FactoryBean<CqlTemplate>
 
 		this.sessionFactory = sessionFactory;
 	}
+
 }

@@ -15,12 +15,13 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.convert.ValueConversionContext;
 import org.springframework.data.mapping.model.PropertyValueProvider;
 import org.springframework.data.mapping.model.SpELContext;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.core.cql.Row;
 
@@ -36,7 +37,7 @@ public class CassandraConversionContext implements ValueConversionContext<Cassan
 	private final CassandraPersistentProperty persistentProperty;
 	private final CassandraConverter cassandraConverter;
 
-	@Nullable private final SpELContext spELContext;
+	private final @Nullable SpELContext spELContext;
 
 	public CassandraConversionContext(PropertyValueProvider<CassandraPersistentProperty> accessor,
 			CassandraPersistentProperty persistentProperty, CassandraConverter CassandraConverter) {
@@ -58,25 +59,29 @@ public class CassandraConversionContext implements ValueConversionContext<Cassan
 		return persistentProperty;
 	}
 
-	@Nullable
-	public Object getValue(String propertyPath) {
+	public @Nullable Object getValue(String propertyPath) {
 		return accessor.getPropertyValue(persistentProperty.getOwner().getRequiredPersistentProperty(propertyPath));
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public <T> T write(@Nullable Object value, TypeInformation<T> target) {
+	public <T> @Nullable T write(@Nullable Object value, TypeInformation<T> target) {
+
+		if (value == null) {
+			return null;
+		}
+
 		return (T) cassandraConverter.convertToColumnType(value, target);
 	}
 
 	@Override
-	public <T> T read(@Nullable Object value, TypeInformation<T> target) {
+	public <T> @Nullable T read(@Nullable Object value, TypeInformation<T> target) {
 		return value instanceof Row row ? cassandraConverter.read(target.getType(), row)
 				: ValueConversionContext.super.read(value, target);
 	}
 
-	@Nullable
-	public SpELContext getSpELContext() {
+	public @Nullable SpELContext getSpELContext() {
 		return spELContext;
 	}
+
 }

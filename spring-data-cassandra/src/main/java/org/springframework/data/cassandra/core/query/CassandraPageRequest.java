@@ -18,11 +18,11 @@ package org.springframework.data.cassandra.core.query;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**

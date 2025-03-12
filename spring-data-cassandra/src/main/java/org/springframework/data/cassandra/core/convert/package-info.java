@@ -1,7 +1,7 @@
 /**
  * Spring Data Cassandra specific converter infrastructure.
  */
-@NonNullApi
+@org.jspecify.annotations.NullMarked
 package org.springframework.data.cassandra.core.convert;
 
-import org.springframework.lang.NonNullApi;
+

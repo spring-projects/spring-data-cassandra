@@ -17,6 +17,8 @@ package org.springframework.data.cassandra.core.cql.converter;
 
 import java.util.UUID;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.convert.converter.Converter;
 
 import com.datastax.oss.driver.api.core.cql.ResultSet;
@@ -31,7 +33,7 @@ public class ResultSetToUuidConverter extends AbstractResultSetToBasicFixedTypeC
 	public static final ResultSetToUuidConverter INSTANCE = new ResultSetToUuidConverter();
 
 	@Override
-	protected UUID doConvertSingleValue(Object object) {
+	protected @Nullable UUID doConvertSingleValue(Object object) {
 		return CONVERTER.convert(object, UUID.class);
 	}
 

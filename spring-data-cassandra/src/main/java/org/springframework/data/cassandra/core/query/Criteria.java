@@ -18,8 +18,8 @@ package org.springframework.data.cassandra.core.query;
 import java.util.Arrays;
 import java.util.Collection;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
@@ -192,7 +192,7 @@ public class Criteria implements CriteriaDefinition {
 	 * @param values the values to match against.
 	 * @return {@literal this} {@link Criteria} object.
 	 */
-	public CriteriaDefinition in(Object... values) {
+	public CriteriaDefinition in(@Nullable Object... values) {
 
 		Assert.notNull(values, "Value must not be null");
 
@@ -270,7 +270,8 @@ public class Criteria implements CriteriaDefinition {
 	/**
 	 * @return the {@link Predicate}.
 	 */
-	@SuppressWarnings({ "ConstantConditions", "NullableProblems" }) // Predicate not accessible when in null state.
+	@SuppressWarnings({ "ConstantConditions", "NullableProblems", "NullAway" }) // Predicate not accessible when in null
+																																							// state.
 	public Predicate getPredicate() {
 		return predicate;
 	}
@@ -308,7 +309,9 @@ public class Criteria implements CriteriaDefinition {
 	}
 
 	@Override
+	@SuppressWarnings("NullAway")
 	public String toString() {
 		return SerializationUtils.serializeToCqlSafely(this);
 	}
+
 }

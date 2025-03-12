@@ -50,4 +50,5 @@ public class RenameColumnCqlGenerator extends ColumnChangeCqlGenerator<RenameCol
 		return cql.append(keyword).append(' ').append(spec().getName().asCql(true)).append(" TO ")
 				.append(spec().getTargetName().asCql(true));
 	}
+
 }

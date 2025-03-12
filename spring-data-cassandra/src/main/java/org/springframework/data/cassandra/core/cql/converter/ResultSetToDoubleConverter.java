@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.core.cql.converter;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.convert.converter.Converter;
 
 import com.datastax.oss.driver.api.core.cql.ResultSet;
@@ -29,7 +31,7 @@ public class ResultSetToDoubleConverter extends AbstractResultSetToBasicFixedTyp
 	public static final ResultSetToDoubleConverter INSTANCE = new ResultSetToDoubleConverter();
 
 	@Override
-	protected Double doConvertSingleValue(Object object) {
+	protected @Nullable Double doConvertSingleValue(Object object) {
 		return CONVERTER.convert(object, Double.class);
 	}
 

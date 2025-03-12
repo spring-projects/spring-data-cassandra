@@ -23,6 +23,7 @@ import reactor.core.publisher.Mono;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,7 +48,6 @@ import org.springframework.data.repository.query.ValueExpressionDelegate;
 import org.springframework.data.spel.spi.EvaluationContextExtension;
 import org.springframework.data.spel.spi.ReactiveEvaluationContextExtension;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.lang.Nullable;
 import org.springframework.mock.env.MockEnvironment;
 import org.springframework.util.ReflectionUtils;
 
@@ -203,9 +203,8 @@ class ReactiveStringBasedCassandraQueryUnitTests {
 			return "ext-1";
 		}
 
-		@Nullable
 		@Override
-		public MyReactiveExtensionObject getRootObject() {
+		public @Nullable MyReactiveExtensionObject getRootObject() {
 			return this;
 		}
 	}
@@ -221,9 +220,8 @@ class ReactiveStringBasedCassandraQueryUnitTests {
 			return "ext-1";
 		}
 
-		@Nullable
 		@Override
-		public DefunctExtensionObject getRootObject() {
+		public @Nullable DefunctExtensionObject getRootObject() {
 			throw new IllegalStateException();
 		}
 	}

@@ -15,11 +15,11 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.cassandra.core.cql.Ordering;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.model.Property;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -52,8 +52,7 @@ public class BasicCassandraPersistentTupleProperty extends BasicCassandraPersist
 		this.ordinal = findOrdinal();
 	}
 
-	@Nullable
-	private Integer findOrdinal() {
+	private @Nullable Integer findOrdinal() {
 
 		if (isTransient()) {
 			return null;
@@ -79,7 +78,7 @@ public class BasicCassandraPersistentTupleProperty extends BasicCassandraPersist
 	}
 
 	@Override
-	public CqlIdentifier getColumnName() {
+	public @Nullable CqlIdentifier getColumnName() {
 		return null;
 	}
 
@@ -129,4 +128,5 @@ public class BasicCassandraPersistentTupleProperty extends BasicCassandraPersist
 	public void setColumnName(CqlIdentifier columnName) {
 		throw new UnsupportedOperationException("Cannot set a column name on a property representing a tuple element");
 	}
+
 }

@@ -46,4 +46,5 @@ public abstract class ColumnChangeSpecification {
 	public CqlIdentifier getName() {
 		return name;
 	}
+
 }

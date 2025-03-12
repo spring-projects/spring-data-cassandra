@@ -49,4 +49,5 @@ public interface PreparedStatementBinder {
 	 *           {@link DriverException})
 	 */
 	BoundStatement bindValues(PreparedStatement ps) throws DriverException;
+
 }

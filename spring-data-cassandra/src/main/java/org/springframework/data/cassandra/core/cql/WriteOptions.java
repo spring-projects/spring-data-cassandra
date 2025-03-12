@@ -20,7 +20,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
@@ -95,8 +95,7 @@ public class WriteOptions extends QueryOptions {
 	/**
 	 * @return the time to live, if set, otherwise {@literal null}.
 	 */
-	@Nullable
-	public Duration getTtl() {
+	public @Nullable Duration getTtl() {
 		return this.ttl;
 	}
 
@@ -104,8 +103,7 @@ public class WriteOptions extends QueryOptions {
 	 * @return mutation timestamp in microseconds.
 	 * @since 2.1
 	 */
-	@Nullable
-	public Long getTimestamp() {
+	public @Nullable Long getTimestamp() {
 		return this.timestamp;
 	}
 
@@ -152,9 +150,9 @@ public class WriteOptions extends QueryOptions {
 	 */
 	public static class WriteOptionsBuilder extends QueryOptionsBuilder {
 
-		protected Duration ttl = Duration.ofMillis(-1);
+		protected @Nullable Duration ttl;
 
-		protected Long timestamp = null;
+		protected @Nullable Long timestamp = null;
 
 		protected WriteOptionsBuilder() {}
 
@@ -341,5 +339,7 @@ public class WriteOptions extends QueryOptions {
 					this.pageSize, this.routingKeyspace, this.routingKey, this.serialConsistencyLevel, this.timeout, this.ttl,
 					this.timestamp, this.tracing);
 		}
+
 	}
+
 }

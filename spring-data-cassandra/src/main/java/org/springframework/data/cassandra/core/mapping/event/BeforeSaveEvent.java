@@ -32,7 +32,7 @@ import com.datastax.oss.driver.api.core.cql.Statement;
  */
 public class BeforeSaveEvent<E> extends AbstractStatementAwareMappingEvent<E> {
 
-	@Serial private static final long serialVersionUID = 1L;
+	private static final @Serial long serialVersionUID = 1L;
 
 	/**
 	 * Create a new {@link BeforeSaveEvent}.
@@ -44,4 +44,5 @@ public class BeforeSaveEvent<E> extends AbstractStatementAwareMappingEvent<E> {
 	public BeforeSaveEvent(E source, CqlIdentifier table, Statement<?> statement) {
 		super(source, statement, table);
 	}
+
 }

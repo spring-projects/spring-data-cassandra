@@ -18,8 +18,9 @@ package org.springframework.data.cassandra.core.cql;
 import java.time.Duration;
 import java.util.function.BiFunction;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.cassandra.core.cql.util.Bindings;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.cql.BatchStatement;
@@ -117,6 +118,7 @@ public abstract class QueryOptionsUtil {
 	 * @param writeOptions write options (e.g. consistency level) to add to the CQL statement.
 	 * @return the given {@link Insert}.
 	 */
+	@SuppressWarnings("NullAway")
 	public static Insert addWriteOptions(Insert insert, WriteOptions writeOptions) {
 
 		Assert.notNull(insert, "Insert must not be null");
@@ -142,6 +144,7 @@ public abstract class QueryOptionsUtil {
 	 * @param writeOptions write options (e.g. consistency level) to add to the CQL statement.
 	 * @return the given {@link Update}.
 	 */
+	@SuppressWarnings("NullAway")
 	public static Update addWriteOptions(Update update, WriteOptions writeOptions) {
 
 		Assert.notNull(update, "Update must not be null");
@@ -186,6 +189,7 @@ public abstract class QueryOptionsUtil {
 	 * @return the resulting statement.
 	 * @since 4.2
 	 */
+	@SuppressWarnings("NullAway")
 	public static <T> T addWriteOptions(CqlStatementOptionsAccessor<T> accessor, WriteOptions writeOptions) {
 
 		Assert.notNull(accessor, "CqlStatementOptionsAccessor must not be null");

@@ -15,8 +15,8 @@
  */
 package org.springframework.data.cassandra.core.cql.session.init;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.dao.DataAccessException;
-import org.springframework.lang.Nullable;
 
 /**
  * Root of the hierarchy of data access exceptions that are related to processing of CQL scripts.

@@ -54,4 +54,5 @@ public class AlterColumnSpecification extends ColumnTypeChangeSpecification {
 	public static AlterColumnSpecification alterColumn(CqlIdentifier name, DataType type) {
 		return new AlterColumnSpecification(name, type);
 	}
+
 }

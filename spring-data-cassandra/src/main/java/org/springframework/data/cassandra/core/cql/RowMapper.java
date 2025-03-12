@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import com.datastax.oss.driver.api.core.DriverException;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
@@ -36,7 +36,7 @@ import com.datastax.oss.driver.api.core.cql.Row;
  * @see ResultSetExtractor
  */
 @FunctionalInterface
-public interface RowMapper<T> {
+public interface RowMapper<T extends @Nullable Object> {
 
 	/**
 	 * Implementations must implement this method to map each row of data in the {@link ResultSet}.
@@ -47,6 +47,6 @@ public interface RowMapper<T> {
 	 * @throws DriverException if a {@link DriverException} is encountered getting column values (that is, there's no need
 	 *           to catch {@link DriverException})
 	 */
-	@Nullable
 	T mapRow(Row row, int rowNum) throws DriverException;
+
 }

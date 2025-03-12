@@ -21,12 +21,12 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.dao.TransientDataAccessResourceException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.data.cassandra.*;
-import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
@@ -50,7 +50,6 @@ import com.datastax.oss.driver.api.core.servererrors.*;
  * @author Mark Paluch
  * @author Mikhail Polivakha
  */
-@SuppressWarnings("unchecked")
 public class CassandraExceptionTranslator implements CqlExceptionTranslator {
 
 	private static final Set<String> CONNECTION_FAILURE_TYPES = new HashSet<>(
@@ -61,8 +60,7 @@ public class CassandraExceptionTranslator implements CqlExceptionTranslator {
 			Arrays.asList("ReadFailureException", "WriteFailureException", "FunctionExecutionException"));
 
 	@Override
-	@Nullable
-	public DataAccessException translateExceptionIfPossible(RuntimeException exception) {
+	public @Nullable DataAccessException translateExceptionIfPossible(RuntimeException exception) {
 
 		if (exception instanceof DataAccessException) {
 			return (DataAccessException) exception;
@@ -72,7 +70,9 @@ public class CassandraExceptionTranslator implements CqlExceptionTranslator {
 	}
 
 	@Override
-	public DataAccessException translate(@Nullable String task, @Nullable String cql, RuntimeException exception) {
+	@SuppressWarnings("NullAway")
+	public @Nullable DataAccessException translate(@Nullable String task, @Nullable String cql,
+			RuntimeException exception) {
 
 		String message = buildMessage(task, cql, exception);
 
@@ -161,6 +161,7 @@ public class CassandraExceptionTranslator implements CqlExceptionTranslator {
 			// unknown or unhandled exception
 			return new CassandraUncategorizedException(message, exception);
 		}
+
 		return null;
 	}
 
@@ -175,6 +176,7 @@ public class CassandraExceptionTranslator implements CqlExceptionTranslator {
 	 * @param ex the offending {@code DriverException}
 	 * @return the message {@code String} to use
 	 */
+	@SuppressWarnings("NullAway")
 	protected String buildMessage(@Nullable String task, @Nullable String cql, RuntimeException ex) {
 
 		if (StringUtils.hasText(task) || StringUtils.hasText(cql)) {
@@ -183,4 +185,5 @@ public class CassandraExceptionTranslator implements CqlExceptionTranslator {
 
 		return ex.getMessage();
 	}
+
 }

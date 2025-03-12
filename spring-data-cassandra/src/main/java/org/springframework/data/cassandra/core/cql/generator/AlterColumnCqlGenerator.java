@@ -34,4 +34,5 @@ public class AlterColumnCqlGenerator extends ColumnChangeCqlGenerator<AlterColum
 		return cql.append("ALTER ").append(spec().getName().asCql(true)).append(" TYPE ")
 				.append(spec().getType().asCql(true, true));
 	}
+
 }

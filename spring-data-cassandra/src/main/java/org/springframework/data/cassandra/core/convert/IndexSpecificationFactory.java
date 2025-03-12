@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.SpecificationBuilder;
@@ -35,7 +37,6 @@ import org.springframework.data.cassandra.core.mapping.SASI.NonTokenizingAnalyze
 import org.springframework.data.cassandra.core.mapping.SASI.Normalization;
 import org.springframework.data.cassandra.core.mapping.SASI.StandardAnalyzed;
 import org.springframework.data.mapping.MappingException;
-import org.springframework.lang.Nullable;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
@@ -81,7 +82,7 @@ class IndexSpecificationFactory {
 
 		if (property.isAnnotationPresent(Indexed.class)) {
 
-			CreateIndexSpecification index = createIndexSpecification(keyspace, property.findAnnotation(Indexed.class),
+			CreateIndexSpecification index = createIndexSpecification(keyspace, property.getRequiredAnnotation(Indexed.class),
 					property);
 
 			if (property.isMapLike()) {
@@ -92,16 +93,15 @@ class IndexSpecificationFactory {
 		}
 
 		if (property.isAnnotationPresent(SASI.class)) {
-			indexes.add(createIndexSpecification(keyspace, property.findAnnotation(SASI.class), property));
+			indexes.add(createIndexSpecification(keyspace, property.getRequiredAnnotation(SASI.class), property));
 		}
 
 		if (property.isMapLike()) {
 
 			AnnotatedType type = property.findAnnotatedType(Indexed.class);
 
-			if (type instanceof AnnotatedParameterizedType) {
+			if (type instanceof AnnotatedParameterizedType parameterizedType) {
 
-				AnnotatedParameterizedType parameterizedType = (AnnotatedParameterizedType) type;
 				AnnotatedType[] typeArgs = parameterizedType.getAnnotatedActualTypeArguments();
 
 				Indexed keyIndex = typeArgs.length == 2 ? AnnotatedElementUtils.getMergedAnnotation(typeArgs[0], Indexed.class)
@@ -210,6 +210,7 @@ class IndexSpecificationFactory {
 				index.withOption("tokenization_skip_stop_words", "" + standardAnalyzed.skipStopWords());
 			}
 		}
+
 	}
 
 	enum NonTokenizingAnalyzedConfigurer implements CreateIndexConfigurer<NonTokenizingAnalyzed> {
@@ -231,5 +232,7 @@ class IndexSpecificationFactory {
 				index.withOption("normalize_uppercase", "true");
 			}
 		}
+
 	}
+
 }

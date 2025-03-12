@@ -19,8 +19,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.cassandra.SessionFactory;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**

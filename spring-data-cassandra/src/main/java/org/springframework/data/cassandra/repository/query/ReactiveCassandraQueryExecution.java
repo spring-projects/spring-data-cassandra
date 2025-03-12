@@ -91,9 +91,9 @@ interface ReactiveCassandraQueryExecution {
 
 				CassandraPageRequest cassandraPageRequest = (CassandraPageRequest) it.getPageable();
 				return new SliceImpl<>(it.getContent(), cassandraPageRequest.withSort(pageable.getSort()), it.hasNext());
-
 			});
 		}
+
 	}
 
 	/**
@@ -116,6 +116,7 @@ interface ReactiveCassandraQueryExecution {
 		}
 
 		@Override
+		@SuppressWarnings("NullAway")
 		public Publisher<? extends Object> execute(Statement<?> statement, Class<?> type) {
 
 			Statement<?> statementToUse = limit.isLimited() ? statement.setPageSize(limit.max()) : statement;
@@ -128,6 +129,7 @@ interface ReactiveCassandraQueryExecution {
 
 			return slice.map(WindowUtil::of);
 		}
+
 	}
 
 	/**
@@ -147,6 +149,7 @@ interface ReactiveCassandraQueryExecution {
 		public Publisher<? extends Object> execute(Statement<?> statement, Class<?> type) {
 			return operations.select(statement, type);
 		}
+
 	}
 
 	/**
@@ -181,6 +184,7 @@ interface ReactiveCassandraQueryExecution {
 				sink.error(new IncorrectResultSizeDataAccessException(1, objects.size()));
 			});
 		}
+
 	}
 
 	/**
@@ -224,6 +228,7 @@ interface ReactiveCassandraQueryExecution {
 				return true;
 			}).switchIfEmpty(Mono.just(false));
 		}
+
 	}
 
 	/**
@@ -243,9 +248,11 @@ interface ReactiveCassandraQueryExecution {
 		}
 
 		@Override
+		@SuppressWarnings("NullAway")
 		public Publisher<? extends Object> execute(Statement<?> statement, Class<?> type) {
 			return (Publisher) converter.convert(delegate.execute(statement, type));
 		}
+
 	}
 
 	/**
@@ -268,6 +275,7 @@ interface ReactiveCassandraQueryExecution {
 		}
 
 		@Override
+		@SuppressWarnings("NullAway")
 		public Object convert(Object source) {
 
 			ReturnedType returnedType = processor.getReturnedType();
@@ -296,5 +304,7 @@ interface ReactiveCassandraQueryExecution {
 
 			return processor.processResult(source, converter);
 		}
+
 	}
+
 }

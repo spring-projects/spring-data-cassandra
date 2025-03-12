@@ -15,8 +15,8 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.cassandra.core.cql.KeyspaceIdentifier;
-import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 

@@ -100,4 +100,5 @@ public class AlterUserTypeCqlGenerator extends UserTypeNameCqlGenerator<AlterUse
 		throw new IllegalArgumentException(
 				String.format("Unknown ColumnChangeSpecification type: %s", change.getClass().getName()));
 	}
+
 }

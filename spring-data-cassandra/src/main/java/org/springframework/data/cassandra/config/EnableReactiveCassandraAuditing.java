@@ -67,4 +67,5 @@ public @interface EnableReactiveCassandraAuditing {
 	 * @return
 	 */
 	String dateTimeProviderRef() default "";
+
 }

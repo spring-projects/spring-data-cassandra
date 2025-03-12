@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.cql.util;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import com.datastax.oss.driver.api.querybuilder.BindMarker;
 

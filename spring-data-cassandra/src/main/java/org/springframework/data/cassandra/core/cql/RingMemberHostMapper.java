@@ -41,4 +41,5 @@ public enum RingMemberHostMapper implements HostMapper<RingMember> {
 
 		return StreamSupport.stream(hosts.spliterator(), false).map(RingMember::from).collect(Collectors.toList());
 	}
+
 }

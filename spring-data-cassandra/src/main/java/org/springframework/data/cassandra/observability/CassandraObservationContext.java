@@ -19,7 +19,7 @@ import io.micrometer.observation.Observation;
 import io.micrometer.observation.transport.Kind;
 import io.micrometer.observation.transport.SenderContext;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.Statement;
@@ -81,8 +81,7 @@ public class CassandraObservationContext extends SenderContext<Object> {
 		this.node = node;
 	}
 
-	@Nullable
-	public Node getNode() {
+	public @Nullable Node getNode() {
 		return node;
 	}
 }

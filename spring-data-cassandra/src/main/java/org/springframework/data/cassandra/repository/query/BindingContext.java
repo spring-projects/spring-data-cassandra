@@ -19,10 +19,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.mapping.model.ValueExpressionEvaluator;
 import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.ParameterAccessor;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -88,8 +88,7 @@ class BindingContext {
 	 * @param binding must not be {@literal null}.
 	 * @return the value used for the given {@link ParameterBinding}.
 	 */
-	@Nullable
-	private Object getParameterValueForBinding(ParameterBinding binding) {
+	private @Nullable Object getParameterValueForBinding(ParameterBinding binding) {
 
 		if (binding.isExpression()) {
 			return evaluator.evaluate(binding.getRequiredExpression());

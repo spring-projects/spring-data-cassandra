@@ -46,4 +46,5 @@ public class DropUserTypeCqlGenerator extends UserTypeNameCqlGenerator<DropUserT
 				.append(CqlIdentifierUtil.renderName(spec()))
 				.append(";");
 	}
+
 }

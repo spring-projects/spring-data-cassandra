@@ -23,6 +23,8 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -34,7 +36,6 @@ import org.springframework.data.mapping.model.Property;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.Optionals;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
@@ -57,7 +58,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	private final CqlIdentifierGenerator namingAccessor = new CqlIdentifierGenerator();
 
 	// Indicates whether this property has been explicitly instructed to force quoted column names.
-	private Boolean forceQuote;
+	private @Nullable Boolean forceQuote;
 
 	private @Nullable CqlIdentifier columnName;
 
@@ -83,7 +84,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	}
 
 	@Override
-	public CqlIdentifier getColumnName() {
+	public @Nullable CqlIdentifier getColumnName() {
 
 		if (this.columnName == null) {
 			this.columnName = determineColumnName();
@@ -211,7 +212,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 	@Override
 	public Association<CassandraPersistentProperty> getAssociation() {
-		return null;
+		throw new UnsupportedOperationException("Cassandra does not support associations");
 	}
 
 	@Override
@@ -225,7 +226,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	}
 
 	@Override
-	public AnnotatedType findAnnotatedType(Class<? extends Annotation> annotationType) {
+	public @Nullable AnnotatedType findAnnotatedType(Class<? extends Annotation> annotationType) {
 
 		return Optionals
 				.toStream(Optional.ofNullable(getField()).map(Field::getAnnotatedType),

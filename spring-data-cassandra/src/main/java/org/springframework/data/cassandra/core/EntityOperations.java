@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.core;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.cql.util.StatementBuilder;
@@ -27,7 +28,6 @@ import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
 import org.springframework.data.projection.EntityProjection;
 import org.springframework.data.projection.EntityProjectionIntrospector;
 import org.springframework.data.projection.ProjectionFactory;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
@@ -182,7 +182,8 @@ class EntityOperations {
 		 * @param currentVersionNumber previous version number.
 		 * @return the altered {@link Update} containing the {@code IF} condition for optimistic locking.
 		 */
-		StatementBuilder<Update> appendVersionCondition(StatementBuilder<Update> update, Number currentVersionNumber);
+		StatementBuilder<Update> appendVersionCondition(StatementBuilder<Update> update,
+				@Nullable Number currentVersionNumber);
 
 		/**
 		 * Appends a {@code IF} condition to an {@link Delete} statement for optimistic locking to perform the delete only
@@ -262,8 +263,7 @@ class EntityOperations {
 		}
 
 		@Override
-		@Nullable
-		public Object getVersion() {
+		public @Nullable Object getVersion() {
 			return this.propertyAccessor.getProperty(this.entity.getRequiredVersionProperty());
 		}
 	}
@@ -294,7 +294,7 @@ class EntityOperations {
 
 		@Override
 		public StatementBuilder<Update> appendVersionCondition(StatementBuilder<Update> update,
-				Number currentVersionNumber) {
+				@Nullable Number currentVersionNumber) {
 
 			return update.bind((statement, factory) -> {
 				return statement.if_(Condition.column(getVersionColumnName()).isEqualTo(factory.create(currentVersionNumber)));
@@ -336,8 +336,7 @@ class EntityOperations {
 		}
 
 		@Override
-		@Nullable
-		public Number getVersion() {
+		public @Nullable Number getVersion() {
 
 			CassandraPersistentProperty versionProperty = this.entity.getRequiredVersionProperty();
 
@@ -350,7 +349,8 @@ class EntityOperations {
 		}
 
 		private CqlIdentifier getVersionColumnName() {
-			return this.entity.getRequiredVersionProperty().getColumnName();
+			return this.entity.getRequiredVersionProperty().getRequiredColumnName();
 		}
+
 	}
 }

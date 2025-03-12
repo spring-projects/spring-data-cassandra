@@ -15,9 +15,9 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.mapping.model.ValueExpressionEvaluator;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.cql.Row;
@@ -51,10 +51,9 @@ public class RowValueProvider implements CassandraValueProvider {
 		this.evaluator = evaluator;
 	}
 
-	@Nullable
 	@Override
 	@SuppressWarnings("unchecked")
-	public <T> T getPropertyValue(CassandraPersistentProperty property) {
+	public <T> @Nullable T getPropertyValue(CassandraPersistentProperty property) {
 
 		String spelExpression = property.getSpelExpression();
 
@@ -74,4 +73,5 @@ public class RowValueProvider implements CassandraValueProvider {
 	public Object getSource() {
 		return this.reader.getRow();
 	}
+
 }

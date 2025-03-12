@@ -30,7 +30,7 @@ import com.datastax.oss.driver.api.core.cql.Row;
  */
 public class AfterConvertEvent<E> extends CassandraMappingEvent<E> {
 
-	@Serial private static final long serialVersionUID = 1L;
+	private static final @Serial long serialVersionUID = 1L;
 
 	private final Row row;
 
@@ -56,4 +56,5 @@ public class AfterConvertEvent<E> extends CassandraMappingEvent<E> {
 	public Row getRow() {
 		return row;
 	}
+
 }

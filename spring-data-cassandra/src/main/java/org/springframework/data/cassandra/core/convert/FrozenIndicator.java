@@ -55,4 +55,5 @@ class FrozenIndicator {
 	FrozenIndicator getFrozen(int parameterIndex) {
 		return parameterIndex < this.nested.size() ? this.nested.get(parameterIndex) : NOT_FROZEN;
 	}
+
 }

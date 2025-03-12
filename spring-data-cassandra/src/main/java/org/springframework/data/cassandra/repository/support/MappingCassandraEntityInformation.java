@@ -15,13 +15,13 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.mapping.MapId;
 import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;
 import org.springframework.data.repository.core.support.PersistentEntityInformation;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -56,8 +56,7 @@ public class MappingCassandraEntityInformation<T, ID> extends PersistentEntityIn
 
 	@SuppressWarnings("unchecked")
 	@Override
-	@Nullable
-	public ID getId(T entity) {
+	public @Nullable ID getId(T entity) {
 
 		Assert.notNull(entity, "Entity must not be null");
 

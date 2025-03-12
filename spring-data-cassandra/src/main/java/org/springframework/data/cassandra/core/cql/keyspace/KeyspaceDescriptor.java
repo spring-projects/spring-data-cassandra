@@ -36,4 +36,5 @@ public interface KeyspaceDescriptor {
 	 * Returns an unmodifiable {@link Map} of keyspace options.
 	 */
 	Map<String, Object> getOptions();
+
 }

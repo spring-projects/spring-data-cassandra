@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.core.cql.converter;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.convert.converter.Converter;
 
 import com.datastax.oss.driver.api.core.cql.ResultSet;
@@ -29,7 +31,7 @@ public class ResultSetToBooleanConverter extends AbstractResultSetToBasicFixedTy
 	public static final ResultSetToBooleanConverter INSTANCE = new ResultSetToBooleanConverter();
 
 	@Override
-	protected Boolean doConvertSingleValue(Object object) {
+	protected @Nullable Boolean doConvertSingleValue(Object object) {
 		return CONVERTER.convert(object, Boolean.class);
 	}
 

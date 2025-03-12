@@ -37,4 +37,5 @@ public class AddColumnCqlGenerator extends ColumnChangeCqlGenerator<AddColumnSpe
 		return cql.append("ADD ").append(spec().getName().asCql(true)).append(' ')
 				.append(spec().getType().asCql(true, true));
 	}
+
 }

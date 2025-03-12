@@ -159,6 +159,7 @@ public class CassandraPersistentEntitySchemaCreator {
 	 * @param ifNotExists {@literal true} to create types using {@code IF NOT EXISTS}.
 	 * @return {@link List} of {@link CreateUserTypeSpecification}.
 	 */
+	@SuppressWarnings("NullAway")
 	protected List<CreateUserTypeSpecification> createUserTypeSpecifications(boolean ifNotExists) {
 
 		List<? extends CassandraPersistentEntity<?>> entities = new ArrayList<>(

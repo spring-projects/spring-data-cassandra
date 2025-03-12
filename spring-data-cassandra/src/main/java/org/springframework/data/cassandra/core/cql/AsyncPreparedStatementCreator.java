@@ -53,4 +53,5 @@ public interface AsyncPreparedStatementCreator {
 	 *           method. The {@link AsyncCqlTemplate} class will handle them.
 	 */
 	CompletionStage<PreparedStatement> createPreparedStatement(CqlSession session) throws DriverException;
+
 }

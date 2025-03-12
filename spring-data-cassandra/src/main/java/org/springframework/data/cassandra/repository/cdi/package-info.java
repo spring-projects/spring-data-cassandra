@@ -1,7 +1,7 @@
 /**
  * CDI support for Apache Cassandra specific repository implementation.
  */
-@NonNullApi
+@org.jspecify.annotations.NullMarked
 package org.springframework.data.cassandra.repository.cdi;
 
-import org.springframework.lang.NonNullApi;
+

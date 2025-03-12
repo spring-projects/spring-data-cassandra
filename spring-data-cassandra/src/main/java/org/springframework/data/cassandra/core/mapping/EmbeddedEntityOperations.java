@@ -26,13 +26,13 @@ import java.util.Spliterator;
 import java.util.function.Consumer;
 
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.cassandra.core.cql.Ordering;
 import org.springframework.data.mapping.*;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.lang.Nullable;
 import org.springframework.util.StringUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -54,10 +54,10 @@ public class EmbeddedEntityOperations {
 	}
 
 	public CassandraPersistentEntity<?> getEntity(CassandraPersistentProperty property) {
-		return withPrefix(getPrefix(property), mappingContext.getPersistentEntity(property));
+		return withPrefix(getPrefix(property), mappingContext.getRequiredPersistentEntity(property));
 	}
 
-	static <T> CassandraPersistentEntity<T> withPrefix(@org.springframework.lang.Nullable String prefix,
+	static <T> CassandraPersistentEntity<T> withPrefix(@Nullable String prefix,
 			CassandraPersistentEntity<T> source) {
 
 		if (!StringUtils.hasText(prefix)) {
@@ -160,7 +160,7 @@ public class EmbeddedEntityOperations {
 		}
 
 		@Override
-		@org.springframework.lang.Nullable
+		@Nullable
 		public CassandraPersistentProperty getIdProperty() {
 			return delegate.getIdProperty();
 		}
@@ -171,7 +171,7 @@ public class EmbeddedEntityOperations {
 		}
 
 		@Override
-		@org.springframework.lang.Nullable
+		@Nullable
 		public CassandraPersistentProperty getVersionProperty() {
 			return delegate.getVersionProperty();
 		}
@@ -182,7 +182,7 @@ public class EmbeddedEntityOperations {
 		}
 
 		@Override
-		@org.springframework.lang.Nullable
+		@Nullable
 		public CassandraPersistentProperty getPersistentProperty(String name) {
 
 			CassandraPersistentProperty property = delegate.getPersistentProperty(name);
@@ -196,7 +196,7 @@ public class EmbeddedEntityOperations {
 		}
 
 		@Override
-		@org.springframework.lang.Nullable
+		@Nullable
 		public CassandraPersistentProperty getPersistentProperty(Class<? extends Annotation> annotationType) {
 
 			CassandraPersistentProperty property = delegate.getPersistentProperty(annotationType);
@@ -267,7 +267,7 @@ public class EmbeddedEntityOperations {
 		}
 
 		@Override
-		@org.springframework.lang.Nullable
+		@Nullable
 		public <A extends Annotation> A findAnnotation(Class<A> annotationType) {
 			return delegate.findAnnotation(annotationType);
 		}
@@ -388,7 +388,7 @@ public class EmbeddedEntityOperations {
 
 		@Override
 		public CqlIdentifier getColumnName() {
-			return CqlIdentifier.fromInternal(prefix + delegate.getColumnName().asInternal());
+			return CqlIdentifier.fromInternal(prefix + delegate.getRequiredColumnName().asInternal());
 		}
 
 		@Override
@@ -403,7 +403,7 @@ public class EmbeddedEntityOperations {
 		}
 
 		@Override
-		@org.springframework.lang.Nullable
+		@Nullable
 		public Integer getOrdinal() {
 			return delegate.getOrdinal();
 		}
@@ -414,7 +414,7 @@ public class EmbeddedEntityOperations {
 		}
 
 		@Override
-		@org.springframework.lang.Nullable
+		@Nullable
 		public Ordering getPrimaryKeyOrdering() {
 			return delegate.getPrimaryKeyOrdering();
 		}
@@ -455,7 +455,7 @@ public class EmbeddedEntityOperations {
 		}
 
 		@Override
-		@org.springframework.lang.Nullable
+		@Nullable
 		public AnnotatedType findAnnotatedType(Class<? extends Annotation> annotationType) {
 			return delegate.findAnnotatedType(annotationType);
 		}
@@ -481,7 +481,7 @@ public class EmbeddedEntityOperations {
 		}
 
 		@Override
-		@org.springframework.lang.Nullable
+		@Nullable
 		public Method getGetter() {
 			return delegate.getGetter();
 		}
@@ -492,7 +492,7 @@ public class EmbeddedEntityOperations {
 		}
 
 		@Override
-		@org.springframework.lang.Nullable
+		@Nullable
 		public Method getSetter() {
 			return delegate.getSetter();
 		}
@@ -503,7 +503,7 @@ public class EmbeddedEntityOperations {
 		}
 
 		@Override
-		@org.springframework.lang.Nullable
+		@Nullable
 		public Method getWither() {
 			return delegate.getWither();
 		}
@@ -514,7 +514,7 @@ public class EmbeddedEntityOperations {
 		}
 
 		@Override
-		@org.springframework.lang.Nullable
+		@Nullable
 		public Field getField() {
 			return delegate.getField();
 		}
@@ -525,13 +525,13 @@ public class EmbeddedEntityOperations {
 		}
 
 		@Override
-		@org.springframework.lang.Nullable
+		@Nullable
 		public String getSpelExpression() {
 			return delegate.getSpelExpression();
 		}
 
 		@Override
-		@org.springframework.lang.Nullable
+		@Nullable
 		public Association<CassandraPersistentProperty> getAssociation() {
 			return delegate.getAssociation();
 		}
@@ -597,7 +597,7 @@ public class EmbeddedEntityOperations {
 		}
 
 		@Override
-		@org.springframework.lang.Nullable
+		@Nullable
 		public Class<?> getComponentType() {
 			return delegate.getComponentType();
 		}
@@ -608,7 +608,7 @@ public class EmbeddedEntityOperations {
 		}
 
 		@Override
-		@org.springframework.lang.Nullable
+		@Nullable
 		public Class<?> getMapValueType() {
 			return delegate.getMapValueType();
 		}
@@ -619,7 +619,7 @@ public class EmbeddedEntityOperations {
 		}
 
 		@Override
-		@org.springframework.lang.Nullable
+		@Nullable
 		public <A extends Annotation> A findAnnotation(Class<A> annotationType) {
 			return delegate.findAnnotation(annotationType);
 		}
@@ -630,7 +630,7 @@ public class EmbeddedEntityOperations {
 		}
 
 		@Override
-		@org.springframework.lang.Nullable
+		@Nullable
 		public <A extends Annotation> A findPropertyOrOwnerAnnotation(Class<A> annotationType) {
 			return delegate.findPropertyOrOwnerAnnotation(annotationType);
 		}
@@ -651,7 +651,7 @@ public class EmbeddedEntityOperations {
 		}
 
 		@Override
-		@org.springframework.lang.Nullable
+		@Nullable
 		public Class<?> getAssociationTargetType() {
 			return delegate.getAssociationTargetType();
 		}

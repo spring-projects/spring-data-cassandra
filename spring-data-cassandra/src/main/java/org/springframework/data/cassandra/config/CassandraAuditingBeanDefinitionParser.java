@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.config;
 
 import static org.springframework.data.config.ParsingUtils.*;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -28,7 +29,6 @@ import org.springframework.data.auditing.config.IsNewAwareAuditingHandlerBeanDef
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.event.AuditingEntityCallback;
 import org.springframework.data.cassandra.core.mapping.event.ReactiveAuditingEntityCallback;
-import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
@@ -42,7 +42,7 @@ import org.w3c.dom.Element;
  */
 public class CassandraAuditingBeanDefinitionParser extends AbstractSingleBeanDefinitionParser {
 
-	private static boolean PROJECT_REACTOR_AVAILABLE = ClassUtils.isPresent("reactor.core.publisher.Mono",
+	private static final boolean PROJECT_REACTOR_AVAILABLE = ClassUtils.isPresent("reactor.core.publisher.Mono",
 			CassandraAuditingRegistrar.class.getClassLoader());
 
 	@Override
@@ -56,6 +56,7 @@ public class CassandraAuditingBeanDefinitionParser extends AbstractSingleBeanDef
 	}
 
 	@Override
+	@SuppressWarnings("NullAway")
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 
 		String mappingContextRef = element.getAttribute("mapping-context-ref");
@@ -96,4 +97,5 @@ public class CassandraAuditingBeanDefinitionParser extends AbstractSingleBeanDef
 
 		registry.registerBeanDefinition(ReactiveAuditingEntityCallback.class.getName(), builder.getBeanDefinition());
 	}
+
 }

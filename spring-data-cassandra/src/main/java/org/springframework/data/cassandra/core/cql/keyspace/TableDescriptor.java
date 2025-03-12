@@ -70,4 +70,5 @@ public interface TableDescriptor {
 	 * Returns an unmodifiable {@link Map} of table options.
 	 */
 	Map<String, Object> getOptions();
+
 }

@@ -23,8 +23,8 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.cassandra.core.query.Update.AddToOp.Mode;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -617,8 +617,7 @@ public class Update {
 			this.value = value;
 		}
 
-		@Nullable
-		public Object getValue() {
+		public @Nullable Object getValue() {
 			return value;
 		}
 

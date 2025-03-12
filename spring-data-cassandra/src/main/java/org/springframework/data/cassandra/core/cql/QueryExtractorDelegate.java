@@ -15,7 +15,9 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
+
+import org.springframework.lang.Contract;
 import org.springframework.util.ObjectUtils;
 
 import com.datastax.oss.driver.api.core.cql.BatchStatement;
@@ -34,51 +36,103 @@ import com.datastax.oss.driver.api.core.cql.Statement;
 public class QueryExtractorDelegate {
 
 	/**
+	 * Extract the {@link CqlProvider#getCql() CQL query}.
+	 *
+	 * @param statement the statement object.
+	 * @return the CQL query when {@code statement} is not {@code null}.
+	 */
+	static String getCql(CqlProvider statement) {
+		return statement.getCql();
+	}
+
+	/**
+	 * Extract the {@link SimpleStatement#getQuery() CQL query}.
+	 *
+	 * @param statement the statement object.
+	 * @return the CQL query when {@code statement} is not {@code null}.
+	 */
+	static String getCql(SimpleStatement statement) {
+		return statement.getQuery();
+	}
+
+	/**
+	 * Extract the {@link PreparedStatement#getQuery() CQL query}.
+	 *
+	 * @param statement the statement object.
+	 * @return the CQL query when {@code statement} is not {@code null}.
+	 */
+	static String getCql(PreparedStatement statement) {
+		return statement.getQuery();
+	}
+
+	/**
+	 * Extract the {@link BoundStatement CQL query}.
+	 *
+	 * @param statement the statement object.
+	 * @return the CQL query when {@code statement} is not {@code null}.
+	 */
+	static String getCql(BoundStatement statement) {
+		return getCql(statement.getPreparedStatement());
+	}
+
+	/**
+	 * Extract the {@link BatchStatement CQL query}.
+	 *
+	 * @param statement the statement object.
+	 * @return the CQL query when {@code statement} is not {@code null}.
+	 */
+	static String getCql(BatchStatement statement) {
+
+		StringBuilder builder = new StringBuilder();
+
+		for (BatchableStatement<?> batchableStatement : ((BatchStatement) statement)) {
+
+			String query = getCql(batchableStatement);
+			builder.append(query);
+
+			if (!ObjectUtils.isEmpty(query)) {
+				builder.append(query.endsWith(";") ? "" : ";");
+			}
+		}
+
+		return builder.toString();
+	}
+
+	/**
 	 * Try to extract the {@link SimpleStatement#getQuery() CQL query} from a statement object.
 	 *
 	 * @param statement the statement object.
 	 * @return the CQL query when {@code statement} is not {@code null}.
 	 */
-	@Nullable
-	public static String getCql(@Nullable Object statement) {
+
+	@Contract("null -> null; !null -> !null")
+	public static @Nullable String getCql(@Nullable Object statement) {
 
 		if (statement == null) {
 			return null;
 		}
 
-		if (statement instanceof CqlProvider) {
-			return ((CqlProvider) statement).getCql();
+		if (statement instanceof CqlProvider cp) {
+			return getCql(cp);
 		}
 
-		if (statement instanceof SimpleStatement) {
-			return ((SimpleStatement) statement).getQuery();
+		if (statement instanceof SimpleStatement st) {
+			return getCql(st);
 		}
 
-		if (statement instanceof PreparedStatement) {
-			return ((PreparedStatement) statement).getQuery();
+		if (statement instanceof PreparedStatement pst) {
+			return getCql(pst);
 		}
 
-		if (statement instanceof BoundStatement) {
-			return getCql(((BoundStatement) statement).getPreparedStatement());
+		if (statement instanceof BoundStatement bst) {
+			return getCql(bst);
 		}
 
-		if (statement instanceof BatchStatement) {
-
-			StringBuilder builder = new StringBuilder();
-
-			for (BatchableStatement<?> batchableStatement : ((BatchStatement) statement)) {
-
-				String query = getCql(batchableStatement);
-				builder.append(query);
-
-				if (!ObjectUtils.isEmpty(query)) {
-					builder.append(query.endsWith(";") ? "" : ";");
-				}
-			}
-
-			return builder.toString();
+		if (statement instanceof BatchStatement bst) {
+			return getCql(bst);
 		}
 
 		return "Unknown: " + statement;
 	}
+
 }

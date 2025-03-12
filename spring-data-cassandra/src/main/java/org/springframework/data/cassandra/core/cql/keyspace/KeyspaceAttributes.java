@@ -98,4 +98,5 @@ public class KeyspaceAttributes {
 	public void setDurableWrites(boolean durableWrites) {
 		this.durableWrites = durableWrites;
 	}
+
 }

@@ -19,6 +19,8 @@ import static org.springframework.data.cassandra.core.cql.keyspace.CqlStringUtil
 
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.cassandra.core.cql.keyspace.Option;
 
 /**
@@ -27,7 +29,7 @@ import org.springframework.data.cassandra.core.cql.keyspace.Option;
  */
 class OptionRenderUtil {
 
-	static String render(Map<Option, Object> valueMap) {
+	static String render(Map<Option, @Nullable Object> valueMap) {
 
 		if (valueMap.isEmpty()) {
 			return "";
@@ -39,7 +41,7 @@ class OptionRenderUtil {
 		// append { 'name' : 'value', ... }
 		cql.append("{ ");
 		boolean mapFirst = true;
-		for (Map.Entry<Option, Object> entry : valueMap.entrySet()) {
+		for (Map.Entry<Option, @Nullable Object> entry : valueMap.entrySet()) {
 			if (mapFirst) {
 				mapFirst = false;
 			} else {

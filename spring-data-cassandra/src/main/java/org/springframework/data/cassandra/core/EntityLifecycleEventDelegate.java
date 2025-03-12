@@ -17,8 +17,8 @@ package org.springframework.data.cassandra.core;
 
 import java.util.function.Supplier;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.lang.Nullable;
 
 /**
  * Delegate class to encapsulate lifecycle event configuration and publishing. Event creation is deferred within an
@@ -50,6 +50,7 @@ class EntityLifecycleEventDelegate {
 	 *
 	 * @param eventSupplier the supplier for application events.
 	 */
+	@SuppressWarnings("NullAway")
 	public void publishEvent(Supplier<?> eventSupplier) {
 
 		if (canPublishEvent()) {

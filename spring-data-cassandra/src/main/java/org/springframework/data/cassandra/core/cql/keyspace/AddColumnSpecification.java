@@ -53,4 +53,5 @@ public class AddColumnSpecification extends ColumnTypeChangeSpecification {
 	public static AddColumnSpecification addColumn(CqlIdentifier name, DataType type) {
 		return new AddColumnSpecification(name, type);
 	}
+
 }

@@ -15,9 +15,10 @@
  */
 package org.springframework.data.cassandra.core.cql.generator;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.cassandra.core.cql.keyspace.TableNameSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.UserTypeNameSpecification;
-import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 

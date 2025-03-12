@@ -50,4 +50,5 @@ public class AlterKeyspaceSpecification extends KeyspaceOptionsSpecification<Alt
 	public static AlterKeyspaceSpecification alterKeyspace(CqlIdentifier name) {
 		return new AlterKeyspaceSpecification(name);
 	}
+
 }

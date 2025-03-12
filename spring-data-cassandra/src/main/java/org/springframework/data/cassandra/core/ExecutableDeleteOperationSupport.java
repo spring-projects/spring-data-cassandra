@@ -15,8 +15,8 @@
  */
 package org.springframework.data.cassandra.core;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.cassandra.core.query.Query;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -53,10 +53,10 @@ class ExecutableDeleteOperationSupport implements ExecutableDeleteOperation {
 
 		private final Query query;
 
-		@Nullable private final CqlIdentifier tableName;
+		private final @Nullable CqlIdentifier tableName;
 
 		public ExecutableDeleteSupport(CassandraTemplate template, Class<?> domainType, Query query,
-				CqlIdentifier tableName) {
+				@Nullable CqlIdentifier tableName) {
 			this.template = template;
 			this.domainType = domainType;
 			this.query = query;
@@ -86,5 +86,7 @@ class ExecutableDeleteOperationSupport implements ExecutableDeleteOperation {
 		private CqlIdentifier getTableName() {
 			return this.tableName != null ? this.tableName : this.template.getTableName(this.domainType);
 		}
+
 	}
+
 }

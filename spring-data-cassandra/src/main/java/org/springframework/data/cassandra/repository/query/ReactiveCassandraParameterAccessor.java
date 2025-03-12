@@ -24,7 +24,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.jspecify.annotations.Nullable;
 import org.reactivestreams.Publisher;
+
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.data.util.ReactiveWrappers;
 
@@ -37,10 +39,10 @@ import org.springframework.data.util.ReactiveWrappers;
  */
 class ReactiveCassandraParameterAccessor extends CassandraParametersParameterAccessor {
 
-	private final Object[] values;
+	private final @Nullable Object[] values;
 	private final CassandraQueryMethod method;
 
-	ReactiveCassandraParameterAccessor(CassandraQueryMethod method, Object[] values) {
+	ReactiveCassandraParameterAccessor(CassandraQueryMethod method, @Nullable Object[] values) {
 
 		super(method, values);
 		this.method = method;
@@ -48,8 +50,9 @@ class ReactiveCassandraParameterAccessor extends CassandraParametersParameterAcc
 	}
 
 	@Override
-	public Object[] getValues() {
+	public @Nullable Object[] getValues() {
 
+		@Nullable
 		Object[] result = new Object[values.length];
 
 		for (int index = 0; index < result.length; index++) {
@@ -59,7 +62,7 @@ class ReactiveCassandraParameterAccessor extends CassandraParametersParameterAcc
 		return result;
 	}
 
-	public Object getBindableValue(int index) {
+	public @Nullable Object getBindableValue(int index) {
 		return getValue(getParameters().getBindableParameter(index).getIndex());
 	}
 
@@ -87,6 +90,7 @@ class ReactiveCassandraParameterAccessor extends CassandraParametersParameterAcc
 			return Mono.just(this);
 		}
 
+		@Nullable
 		Object[] resolved = new Object[values.length];
 		Map<Integer, Optional<?>> holder = new ConcurrentHashMap<>();
 		List<Publisher<?>> publishers = new ArrayList<>();
@@ -119,4 +123,5 @@ class ReactiveCassandraParameterAccessor extends CassandraParametersParameterAcc
 			return new ReactiveCassandraParameterAccessor(method, values);
 		});
 	}
+
 }

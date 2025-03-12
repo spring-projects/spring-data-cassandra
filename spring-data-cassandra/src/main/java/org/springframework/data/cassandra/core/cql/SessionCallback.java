@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.dao.DataAccessException;
 
 import com.datastax.oss.driver.api.core.CqlSession;
@@ -35,7 +37,7 @@ import com.datastax.oss.driver.api.core.DriverException;
  * @see CqlTemplate#execute(String)
  */
 @FunctionalInterface
-public interface SessionCallback<T> {
+public interface SessionCallback<T extends @Nullable Object> {
 
 	/**
 	 * Gets called by {@link CqlTemplate#execute} with an active Cassandra {@link CqlSession}. Does not need to care about
@@ -54,4 +56,5 @@ public interface SessionCallback<T> {
 	 * @see CqlTemplate#queryForResultSet(String)
 	 */
 	T doInSession(CqlSession session) throws DriverException, DataAccessException;
+
 }

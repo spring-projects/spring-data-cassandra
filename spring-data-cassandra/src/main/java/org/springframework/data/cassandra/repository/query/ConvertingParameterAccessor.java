@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.repository.query;
 
 import java.util.Iterator;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
@@ -25,7 +26,6 @@ import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Range;
 import org.springframework.data.domain.Sort;
-import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.core.type.DataType;
 
@@ -69,24 +69,23 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 		return this.delegate.getLimit();
 	}
 
-	@Nullable
 	@Override
-	public Class<?> findDynamicProjection() {
+	public @Nullable Class<?> findDynamicProjection() {
 		return this.delegate.findDynamicProjection();
 	}
 
 	@Override
-	public Object getBindableValue(int index) {
+	public @Nullable Object getBindableValue(int index) {
 		return potentiallyConvert(index, this.delegate.getBindableValue(index));
 	}
 
 	@Override
-	public CassandraType findCassandraType(int index) {
+	public @Nullable CassandraType findCassandraType(int index) {
 		return this.delegate.findCassandraType(index);
 	}
 
 	@Override
-	public DataType getDataType(int index) {
+	public @Nullable DataType getDataType(int index) {
 		return this.delegate.getDataType(index);
 	}
 
@@ -95,9 +94,8 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 		return this.delegate.getParameterType(index);
 	}
 
-	@Nullable
 	@Override
-	public QueryOptions getQueryOptions() {
+	public @Nullable QueryOptions getQueryOptions() {
 		return this.delegate.getQueryOptions();
 	}
 
@@ -115,7 +113,6 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 		return this.delegate.getValues();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Nullable
 	Object potentiallyConvert(int index, @Nullable Object bindableValue) {
 
@@ -160,8 +157,7 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 			return this.delegate.hasNext();
 		}
 
-		@Nullable
-		public Object next() {
+		public @Nullable Object next() {
 			return potentiallyConvert(this.index++, this.delegate.next());
 		}
 
@@ -170,4 +166,5 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 		}
 
 	}
+
 }

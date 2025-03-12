@@ -1,7 +1,7 @@
 /**
  * Query derivation mechanism for Apache Cassandra specific repositories.
  */
-@NonNullApi
+@org.jspecify.annotations.NullMarked
 package org.springframework.data.cassandra.repository.query;
 
-import org.springframework.lang.NonNullApi;
+

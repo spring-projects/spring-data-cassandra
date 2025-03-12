@@ -22,6 +22,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.core.InsertOptions;
@@ -115,7 +117,7 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 		return Optional.ofNullable(doFindOne(id));
 	}
 
-	private T doFindOne(ID id) {
+	private @Nullable T doFindOne(ID id) {
 		return this.operations.selectOneById(id, this.entityInformation.getJavaType());
 	}
 

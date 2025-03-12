@@ -17,9 +17,11 @@ package org.springframework.data.cassandra.core.convert;
 
 import java.util.LinkedHashMap;
 
+import org.jspecify.annotations.Nullable;
+
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
  * @author Mark Paluch
  */
-public class Where extends LinkedHashMap<CqlIdentifier, Object> {}
+public class Where extends LinkedHashMap<CqlIdentifier, @Nullable Object> {}

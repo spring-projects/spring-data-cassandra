@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.Set;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,7 +39,6 @@ import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.mapping.context.MappingContext;
-import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
@@ -255,8 +255,7 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 	 * @return the {@link KeyspacePopulator} or {@code null} if none configured.
 	 * @see org.springframework.data.cassandra.core.cql.session.init.ResourceKeyspacePopulator
 	 */
-	@Nullable
-	protected KeyspacePopulator keyspaceCleaner() {
+	protected @Nullable KeyspacePopulator keyspaceCleaner() {
 		return null;
 	}
 
@@ -266,8 +265,7 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 	 * @return the {@link KeyspacePopulator} or {@code null} if none configured.
 	 * @see org.springframework.data.cassandra.core.cql.session.init.ResourceKeyspacePopulator
 	 */
-	@Nullable
-	protected KeyspacePopulator keyspacePopulator() {
+	protected @Nullable KeyspacePopulator keyspacePopulator() {
 		return null;
 	}
 
@@ -293,4 +291,5 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 	protected UserTypeResolver userTypeResolver(CqlSession cqlSession) {
 		return new SimpleUserTypeResolver(cqlSession, CqlIdentifier.fromCql(getKeyspaceName()));
 	}
+
 }

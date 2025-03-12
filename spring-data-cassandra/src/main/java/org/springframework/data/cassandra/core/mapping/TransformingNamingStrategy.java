@@ -17,7 +17,7 @@ package org.springframework.data.cassandra.core.mapping;
 
 import java.util.function.Function;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * {@link NamingStrategy} that applies a transformation {@link Function} after invoking a delegate
