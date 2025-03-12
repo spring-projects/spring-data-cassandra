@@ -111,4 +111,5 @@ public class CreateKeyspaceCqlGenerator extends KeyspaceOptionsCqlGenerator<Crea
 		}
 		// end options
 	}
+
 }

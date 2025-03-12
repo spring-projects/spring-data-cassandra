@@ -26,8 +26,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
-import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.data.CqlDuration;
@@ -186,8 +186,7 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 	 * @param javaType must not be {@literal null}.
 	 * @return the {@link DataType} for {@code javaClass} if resolvable, otherwise {@literal null}.
 	 */
-	@Nullable
-	public static DataType getDataTypeFor(Class<?> javaType) {
+	public static @Nullable DataType getDataTypeFor(Class<?> javaType) {
 		return javaType.isEnum() ? DataTypes.TEXT : classToDataType.get(javaType);
 	}
 
@@ -219,8 +218,7 @@ public class CassandraSimpleTypeHolder extends SimpleTypeHolder {
 	 * @param dataTypeName must not be {@literal null}.
 	 * @return the {@link DataType} for {@link CassandraType.Name}.
 	 */
-	@Nullable
-	public static DataType getDataTypeFor(CassandraType.Name dataTypeName) {
+	public static @Nullable DataType getDataTypeFor(CassandraType.Name dataTypeName) {
 		return nameToDataType.get(dataTypeName);
 	}
 

@@ -26,7 +26,7 @@ import org.springframework.dao.PermissionDeniedDataAccessException;
  */
 public class CassandraUnauthorizedException extends PermissionDeniedDataAccessException {
 
-	@Serial private static final long serialVersionUID = 4618185356687726647L;
+	private static final @Serial long serialVersionUID = 4618185356687726647L;
 
 	/**
 	 * Constructor for {@link CassandraUnauthorizedException}.

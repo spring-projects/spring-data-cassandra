@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.repository.query;
 import java.util.Arrays;
 import java.util.Iterator;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
@@ -25,7 +26,6 @@ import org.springframework.data.cassandra.core.query.CassandraScrollPosition;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.ParameterAccessor;
-import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.core.type.DataType;
 import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;

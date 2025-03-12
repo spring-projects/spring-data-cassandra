@@ -42,4 +42,5 @@ public interface BeforeConvertCallback<T> extends EntityCallback<T> {
 	 * @return the domain object to be persisted.
 	 */
 	T onBeforeConvert(T entity, CqlIdentifier tableName);
+
 }

@@ -19,7 +19,7 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.regex.Pattern;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -40,7 +40,7 @@ import org.springframework.util.Assert;
 @Deprecated
 public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializable {
 
-	@Serial private static final long serialVersionUID = -974441606330912437L;
+	private static final @Serial long serialVersionUID = -974441606330912437L;
 
 	public static final String UNQUOTED_REGEX = "(?i)[a-z][\\w]*";
 

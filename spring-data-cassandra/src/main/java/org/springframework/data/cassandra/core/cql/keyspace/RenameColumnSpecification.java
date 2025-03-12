@@ -51,4 +51,5 @@ public class RenameColumnSpecification extends ColumnChangeSpecification {
 	public CqlIdentifier getTargetName() {
 		return targetName;
 	}
+
 }

@@ -15,12 +15,12 @@
  */
 package org.springframework.data.cassandra.example;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.cassandra.config.AbstractCassandraConfiguration;
 import org.springframework.data.cassandra.core.cql.session.init.KeyspacePopulator;
 import org.springframework.data.cassandra.core.cql.session.init.ResourceKeyspacePopulator;
-import org.springframework.lang.Nullable;
 
 // tag::class[]
 @Configuration

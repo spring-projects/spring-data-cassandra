@@ -19,7 +19,7 @@ import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
@@ -580,5 +580,7 @@ public class QueryOptions {
 					this.pageSize, this.routingKeyspace, this.routingKey, this.serialConsistencyLevel, this.timeout,
 					this.tracing);
 		}
+
 	}
+
 }

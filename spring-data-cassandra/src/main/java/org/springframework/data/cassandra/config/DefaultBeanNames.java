@@ -25,4 +25,5 @@ public interface DefaultBeanNames extends DefaultCqlBeanNames {
 	String CONVERTER = "cassandraConverter";
 	String CONTEXT = "cassandraMappingContext";
 	String USER_TYPE_RESOLVER = "userTypeResolver";
+
 }

@@ -18,11 +18,11 @@ package org.springframework.data.cassandra.core.mapping;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.expression.ValueEvaluationContext;
 import org.springframework.data.expression.ValueExpression;
 import org.springframework.data.expression.ValueExpressionParser;
 import org.springframework.data.spel.ExpressionDependencies;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -135,8 +135,7 @@ class CqlIdentifierGenerator {
 			return name;
 		}
 
-		@Nullable
-		public CqlIdentifier getIdentifier() {
+		public @Nullable CqlIdentifier getIdentifier() {
 			return hasName() ? identifierFunction.apply(this) : null;
 		}
 

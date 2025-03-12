@@ -52,4 +52,5 @@ public interface CassandraColumnType extends ColumnType {
 	default boolean isUserDefinedType() {
 		return getDataType() instanceof UserDefinedType;
 	}
+
 }

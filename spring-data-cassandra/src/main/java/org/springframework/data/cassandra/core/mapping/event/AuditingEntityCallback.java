@@ -56,4 +56,5 @@ public class AuditingEntityCallback implements BeforeConvertCallback<Object>, Or
 	public int getOrder() {
 		return 100;
 	}
+
 }

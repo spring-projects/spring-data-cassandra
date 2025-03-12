@@ -24,7 +24,7 @@ import java.io.Serial;
  */
 public class CassandraKeyspaceExistsException extends CassandraSchemaElementExistsException {
 
-	@Serial private static final long serialVersionUID = 6032967419751410352L;
+	private static final @Serial long serialVersionUID = 6032967419751410352L;
 
 	/**
 	 * Constructor for {@link CassandraKeyspaceExistsException}.
@@ -37,6 +37,7 @@ public class CassandraKeyspaceExistsException extends CassandraSchemaElementExis
 		super(keyspaceName, ElementType.KEYSPACE, msg, cause);
 	}
 
+	@SuppressWarnings("NullAway")
 	public String getKeyspaceName() {
 		return getElementName();
 	}

@@ -168,6 +168,7 @@ class AsyncResultStream<T> {
 				});
 			}
 		}
+
 	}
 
 	/**
@@ -230,5 +231,7 @@ class AsyncResultStream<T> {
 				});
 			}
 		}
+
 	}
+
 }

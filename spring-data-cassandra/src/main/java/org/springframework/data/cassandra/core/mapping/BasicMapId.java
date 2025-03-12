@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -36,7 +36,7 @@ import org.springframework.util.Assert;
 @SuppressWarnings("serial")
 public class BasicMapId implements MapId {
 
-	private final Map<String, Object> map = new HashMap<>();
+	private final Map<String, @Nullable Object> map = new HashMap<>();
 
 	/**
 	 * Create a new and empty {@link BasicMapId}.
@@ -122,7 +122,7 @@ public class BasicMapId implements MapId {
 	}
 
 	@Override
-	public Object get(Object name) {
+	public @Nullable Object get(Object name) {
 		return map.get(name);
 	}
 
@@ -142,7 +142,7 @@ public class BasicMapId implements MapId {
 	}
 
 	@Override
-	public Object put(String name, Object value) {
+	public Object put(String name, @Nullable Object value) {
 		return map.put(name, value);
 	}
 

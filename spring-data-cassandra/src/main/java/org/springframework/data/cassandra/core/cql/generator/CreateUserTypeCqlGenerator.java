@@ -83,4 +83,5 @@ public class CreateUserTypeCqlGenerator extends UserTypeNameCqlGenerator<CreateU
 
 		return cql;
 	}
+
 }

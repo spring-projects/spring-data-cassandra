@@ -26,6 +26,8 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.SpecificationBuilder;
@@ -38,7 +40,6 @@ import org.springframework.data.cassandra.core.mapping.SASI.StandardAnalyzed;
 import org.springframework.data.cassandra.core.mapping.SaiIndexed;
 import org.springframework.data.domain.Vector;
 import org.springframework.data.mapping.MappingException;
-import org.springframework.lang.Nullable;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
@@ -86,7 +87,7 @@ class IndexSpecificationFactory {
 
 		if (property.isAnnotationPresent(Indexed.class)) {
 
-			CreateIndexSpecification index = createIndexSpecification(keyspace, property.findAnnotation(Indexed.class),
+			CreateIndexSpecification index = createIndexSpecification(keyspace, property.getRequiredAnnotation(Indexed.class),
 					property);
 
 			if (property.isMapLike()) {
@@ -264,6 +265,7 @@ class IndexSpecificationFactory {
 				index.withOption("tokenization_skip_stop_words", "" + standardAnalyzed.skipStopWords());
 			}
 		}
+
 	}
 
 	enum NonTokenizingAnalyzedConfigurer implements CreateIndexConfigurer<NonTokenizingAnalyzed> {
@@ -285,5 +287,7 @@ class IndexSpecificationFactory {
 				index.withOption("normalize_uppercase", "true");
 			}
 		}
+
 	}
+
 }

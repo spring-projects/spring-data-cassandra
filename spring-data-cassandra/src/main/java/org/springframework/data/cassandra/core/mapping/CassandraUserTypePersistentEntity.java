@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.core.mapping;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.util.TypeInformation;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -48,7 +50,7 @@ public class CassandraUserTypePersistentEntity<T> extends BasicCassandraPersiste
 	}
 
 	@Override
-	protected CqlIdentifier determineKeyspace() {
+	protected @Nullable CqlIdentifier determineKeyspace() {
 		return determineName(NamingStrategy::getKeyspace, findAnnotation(UserDefinedType.class), "keyspace")
 				.getIdentifier();
 	}
@@ -57,4 +59,5 @@ public class CassandraUserTypePersistentEntity<T> extends BasicCassandraPersiste
 	public boolean isUserDefinedType() {
 		return true;
 	}
+
 }

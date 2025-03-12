@@ -18,10 +18,10 @@ package org.springframework.data.cassandra.core.mapping;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedType;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.cassandra.core.cql.Ordering;
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;

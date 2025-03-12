@@ -18,9 +18,9 @@ package org.springframework.data.cassandra.core;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.cassandra.core.query.Query;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -62,7 +62,7 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 		private final @Nullable CqlIdentifier tableName;
 
 		public ReactiveSelectSupport(ReactiveCassandraTemplate template, Class<?> domainType, Class<T> returnType,
-				Query query, CqlIdentifier tableName) {
+				Query query, @Nullable CqlIdentifier tableName) {
 			this.template = template;
 			this.domainType = domainType;
 			this.returnType = returnType;
@@ -139,5 +139,7 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 		private CqlIdentifier getTableName() {
 			return this.tableName != null ? this.tableName : this.template.getTableName(this.domainType);
 		}
+
 	}
+
 }

@@ -20,6 +20,7 @@ import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.MergedAnnotation;
@@ -28,7 +29,6 @@ import org.springframework.data.cassandra.core.cql.Ordering;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.lang.Nullable;
 import org.springframework.util.ObjectUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -55,8 +55,7 @@ class AnnotatedCassandraConstructorProperty implements CassandraPersistentProper
 	}
 
 	@Override
-	@Nullable
-	public CqlIdentifier getColumnName() {
+	public @Nullable CqlIdentifier getColumnName() {
 		return column.isPresent() ? CqlIdentifier.fromCql(column.getString("value")) : delegate.getColumnName();
 	}
 
@@ -66,14 +65,12 @@ class AnnotatedCassandraConstructorProperty implements CassandraPersistentProper
 	}
 
 	@Override
-	@Nullable
-	public Integer getOrdinal() {
+	public @Nullable Integer getOrdinal() {
 		return element.isPresent() ? Integer.valueOf(element.getInt("value")) : delegate.getOrdinal();
 	}
 
 	@Override
-	@Nullable
-	public Ordering getPrimaryKeyOrdering() {
+	public @Nullable Ordering getPrimaryKeyOrdering() {
 		return delegate.getPrimaryKeyOrdering();
 	}
 
@@ -108,8 +105,7 @@ class AnnotatedCassandraConstructorProperty implements CassandraPersistentProper
 	}
 
 	@Override
-	@Nullable
-	public AnnotatedType findAnnotatedType(Class<? extends Annotation> annotationType) {
+	public @Nullable AnnotatedType findAnnotatedType(Class<? extends Annotation> annotationType) {
 		return delegate.findAnnotatedType(annotationType);
 	}
 
@@ -134,38 +130,32 @@ class AnnotatedCassandraConstructorProperty implements CassandraPersistentProper
 	}
 
 	@Override
-	@Nullable
-	public Method getGetter() {
+	public @Nullable Method getGetter() {
 		return delegate.getGetter();
 	}
 
 	@Override
-	@Nullable
-	public Method getSetter() {
+	public @Nullable Method getSetter() {
 		return delegate.getSetter();
 	}
 
 	@Override
-	@Nullable
-	public Method getWither() {
+	public @Nullable Method getWither() {
 		return delegate.getWither();
 	}
 
 	@Override
-	@Nullable
-	public Field getField() {
+	public @Nullable Field getField() {
 		return delegate.getField();
 	}
 
 	@Override
-	@Nullable
-	public String getSpelExpression() {
+	public @Nullable String getSpelExpression() {
 		return delegate.getSpelExpression();
 	}
 
 	@Override
-	@Nullable
-	public Association<CassandraPersistentProperty> getAssociation() {
+	public @Nullable Association<CassandraPersistentProperty> getAssociation() {
 		return delegate.getAssociation();
 	}
 
@@ -225,8 +215,7 @@ class AnnotatedCassandraConstructorProperty implements CassandraPersistentProper
 	}
 
 	@Override
-	@Nullable
-	public Class<?> getComponentType() {
+	public @Nullable Class<?> getComponentType() {
 		return delegate.getComponentType();
 	}
 
@@ -236,8 +225,7 @@ class AnnotatedCassandraConstructorProperty implements CassandraPersistentProper
 	}
 
 	@Override
-	@Nullable
-	public Class<?> getMapValueType() {
+	public @Nullable Class<?> getMapValueType() {
 		return delegate.getMapValueType();
 	}
 
@@ -247,14 +235,12 @@ class AnnotatedCassandraConstructorProperty implements CassandraPersistentProper
 	}
 
 	@Override
-	@Nullable
-	public <A extends Annotation> A findAnnotation(Class<A> annotationType) {
+	public <A extends Annotation> @Nullable A findAnnotation(Class<A> annotationType) {
 		return delegate.findAnnotation(annotationType);
 	}
 
 	@Override
-	@Nullable
-	public <A extends Annotation> A findPropertyOrOwnerAnnotation(Class<A> annotationType) {
+	public <A extends Annotation> @Nullable A findPropertyOrOwnerAnnotation(Class<A> annotationType) {
 		return delegate.findPropertyOrOwnerAnnotation(annotationType);
 	}
 
@@ -269,8 +255,7 @@ class AnnotatedCassandraConstructorProperty implements CassandraPersistentProper
 	}
 
 	@Override
-	@Nullable
-	public Class<?> getAssociationTargetType() {
+	public @Nullable Class<?> getAssociationTargetType() {
 		return delegate.getAssociationTargetType();
 	}
 
@@ -279,9 +264,8 @@ class AnnotatedCassandraConstructorProperty implements CassandraPersistentProper
 		return delegate.getPersistentEntityTypeInformation();
 	}
 
-	@Nullable
 	@Override
-	public TypeInformation<?> getAssociationTargetTypeInformation() {
+	public @Nullable TypeInformation<?> getAssociationTargetTypeInformation() {
 		return delegate.getAssociationTargetTypeInformation();
 	}
 

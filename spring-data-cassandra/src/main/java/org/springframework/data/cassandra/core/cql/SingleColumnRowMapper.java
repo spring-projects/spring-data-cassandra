@@ -15,8 +15,8 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.dao.TypeMismatchDataAccessException;
-import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.NumberUtils;
 
@@ -41,7 +41,7 @@ import com.datastax.oss.driver.api.core.cql.Row;
  * @see ReactiveCqlTemplate#queryForFlux(String, Class)
  * @see ReactiveCqlTemplate#queryForObject(String, Class)
  */
-public class SingleColumnRowMapper<T> implements RowMapper<T> {
+public class SingleColumnRowMapper<T extends @Nullable Object> implements RowMapper<T> {
 
 	private @Nullable Class<?> requiredType;
 
@@ -83,7 +83,7 @@ public class SingleColumnRowMapper<T> implements RowMapper<T> {
 	 * @see #getColumnValue(Row, int, Class)
 	 * @see #convertValueToRequiredType(Object, Class)
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "NullAway" })
 	@Override
 	public T mapRow(Row row, int rowNum) throws DriverException {
 
@@ -130,8 +130,8 @@ public class SingleColumnRowMapper<T> implements RowMapper<T> {
 	 * @see RowUtils#getRowValue(Row, int, Class)
 	 * @see #getColumnValue(Row, int)
 	 */
-	@Nullable
-	protected Object getColumnValue(Row row, int index, @Nullable Class<?> requiredType) throws DriverException {
+	protected @Nullable Object getColumnValue(Row row, int index, @Nullable Class<?> requiredType)
+			throws DriverException {
 
 		if (requiredType != null) {
 			return RowUtils.getRowValue(row, index, requiredType);
@@ -154,8 +154,7 @@ public class SingleColumnRowMapper<T> implements RowMapper<T> {
 	 * @throws DriverException in case of extraction failure.
 	 * @see RowUtils#getRowValue(Row, int, Class)
 	 */
-	@Nullable
-	protected Object getColumnValue(Row row, int index) {
+	protected @Nullable Object getColumnValue(Row row, int index) {
 		return RowUtils.getRowValue(row, index, null);
 	}
 
@@ -200,4 +199,5 @@ public class SingleColumnRowMapper<T> implements RowMapper<T> {
 	public static <T> SingleColumnRowMapper<T> newInstance(Class<T> requiredType) {
 		return new SingleColumnRowMapper<>(requiredType);
 	}
+
 }

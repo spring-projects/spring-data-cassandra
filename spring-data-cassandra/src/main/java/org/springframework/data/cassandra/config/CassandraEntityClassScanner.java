@@ -23,10 +23,10 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.cassandra.core.mapping.PrimaryKeyClass;
 import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.util.TypeScanner;
-import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
 
@@ -199,7 +199,8 @@ public class CassandraEntityClassScanner {
 		if (this.beanClassLoader != null) {
 			scanner = TypeScanner.typeScanner(this.beanClassLoader);
 		} else {
-			scanner = TypeScanner.typeScanner(ClassUtils.getDefaultClassLoader());
+			ClassLoader cl = ClassUtils.getDefaultClassLoader();
+			scanner = TypeScanner.typeScanner(cl != null ? cl : getClass().getClassLoader());
 		}
 
 		return scanner.forTypesAnnotatedWith(getEntityAnnotations()).scanPackages(getEntityBasePackages()).collectAsSet();
@@ -214,4 +215,5 @@ public class CassandraEntityClassScanner {
 	protected Class<? extends Annotation>[] getEntityAnnotations() {
 		return new Class[] { Table.class, PrimaryKeyClass.class };
 	}
+
 }

@@ -34,4 +34,5 @@ public class DropColumnCqlGenerator extends ColumnChangeCqlGenerator<DropColumnS
 	public StringBuilder toCql(StringBuilder cql) {
 		return cql.append("DROP ").append(spec().getName().asCql(true));
 	}
+
 }

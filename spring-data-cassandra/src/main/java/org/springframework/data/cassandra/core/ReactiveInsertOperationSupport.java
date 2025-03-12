@@ -17,7 +17,7 @@ package org.springframework.data.cassandra.core;
 
 import reactor.core.publisher.Mono;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -55,7 +55,7 @@ class ReactiveInsertOperationSupport implements ReactiveInsertOperation {
 		private final @Nullable CqlIdentifier tableName;
 
 		public ReactiveInsertSupport(ReactiveCassandraTemplate template, Class<T> domainType, InsertOptions insertOptions,
-				CqlIdentifier tableName) {
+				@Nullable CqlIdentifier tableName) {
 			this.template = template;
 			this.domainType = domainType;
 			this.insertOptions = insertOptions;
@@ -89,5 +89,7 @@ class ReactiveInsertOperationSupport implements ReactiveInsertOperation {
 		private CqlIdentifier getTableName() {
 			return this.tableName != null ? this.tableName : this.template.getTableName(this.domainType);
 		}
+
 	}
+
 }

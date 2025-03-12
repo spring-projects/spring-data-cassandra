@@ -18,9 +18,9 @@ package org.springframework.data.cassandra.core.cql.keyspace;
 import static org.springframework.data.cassandra.core.cql.Ordering.*;
 import static org.springframework.data.cassandra.core.cql.PrimaryKeyType.*;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.cassandra.core.cql.Ordering;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;

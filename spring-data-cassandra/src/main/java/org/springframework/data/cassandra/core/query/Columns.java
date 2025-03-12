@@ -29,7 +29,7 @@ import java.util.function.Function;
 import org.springframework.data.cassandra.core.convert.CassandraVector;
 import org.springframework.data.cassandra.core.mapping.SimilarityFunction;
 import org.springframework.data.domain.Vector;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;

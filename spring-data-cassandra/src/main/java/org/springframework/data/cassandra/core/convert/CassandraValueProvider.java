@@ -43,4 +43,5 @@ public interface CassandraValueProvider extends PropertyValueProvider<CassandraP
 	 * @since 3.0
 	 */
 	Object getSource();
+
 }

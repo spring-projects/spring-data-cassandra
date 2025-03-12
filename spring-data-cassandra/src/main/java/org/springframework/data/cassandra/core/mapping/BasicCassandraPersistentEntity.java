@@ -22,6 +22,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.ApplicationContext;
@@ -41,7 +42,6 @@ import org.springframework.data.util.TypeInformation;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -65,13 +65,13 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 
 	private @Nullable ApplicationContext applicationContext;
 
-	private Boolean forceQuote;
+	private @Nullable Boolean forceQuote;
 
 	private CassandraPersistentEntityMetadataVerifier verifier = DEFAULT_VERIFIER;
 
 	private @Nullable CqlIdentifier keyspace;
 
-	private CqlIdentifier tableName;
+	private @Nullable CqlIdentifier tableName;
 
 	private final Map<Parameter<?, CassandraPersistentProperty>, CassandraPersistentProperty> constructorProperties = new ConcurrentHashMap<>();
 
@@ -120,13 +120,13 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 		return determineName(NamingStrategy::getTableName, findAnnotation(Table.class), "value").getRequiredIdentifier();
 	}
 
-	@Nullable
-	protected CqlIdentifier determineKeyspace() {
+	protected @Nullable CqlIdentifier determineKeyspace() {
 		return determineName(NamingStrategy::getKeyspace, findAnnotation(Table.class), "keyspace").getIdentifier();
 	}
 
+	@SuppressWarnings("NullAway")
 	CqlIdentifierGenerator.GeneratedName determineName(
-			BiFunction<NamingStrategy, CassandraPersistentEntity<?>, String> defaultNameGenerator,
+			BiFunction<NamingStrategy, CassandraPersistentEntity<?>, @Nullable String> defaultNameGenerator,
 			@Nullable Annotation annotation, String annotationAttribute) {
 
 		if (annotation != null) {
@@ -140,16 +140,15 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	}
 
 	@Override
-	protected EvaluationContext getEvaluationContext(Object rootObject) {
+	protected EvaluationContext getEvaluationContext(@Nullable Object rootObject) {
 		return postProcess(super.getEvaluationContext(rootObject == null ? applicationContext : rootObject));
 	}
 
 	@Override
-	protected EvaluationContext getEvaluationContext(Object rootObject, ExpressionDependencies dependencies) {
+	protected EvaluationContext getEvaluationContext(@Nullable Object rootObject, ExpressionDependencies dependencies) {
 		return postProcess(super.getEvaluationContext(rootObject == null ? applicationContext : rootObject, dependencies));
 	}
 
-	// TODO: Do we want to keep the Context customization? Ideally, we align with EvaluationContextProvider.
 	private EvaluationContext postProcess(EvaluationContext evaluationContext) {
 
 		if (evaluationContext instanceof StandardEvaluationContext sec) {
@@ -163,12 +162,13 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	}
 
 	@Override
-	protected ValueEvaluationContext getValueEvaluationContext(Object rootObject) {
+	protected ValueEvaluationContext getValueEvaluationContext(@Nullable Object rootObject) {
 		return super.getValueEvaluationContext(rootObject);
 	}
 
 	@Override
-	protected ValueEvaluationContext getValueEvaluationContext(Object rootObject, ExpressionDependencies dependencies) {
+	protected ValueEvaluationContext getValueEvaluationContext(@Nullable Object rootObject,
+			ExpressionDependencies dependencies) {
 		return super.getValueEvaluationContext(rootObject, dependencies);
 	}
 
@@ -207,6 +207,7 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	}
 
 	@Override
+	@SuppressWarnings("NullAway")
 	public void setForceQuote(boolean forceQuote) {
 
 		boolean changed = !Boolean.valueOf(forceQuote).equals(this.forceQuote);
@@ -222,14 +223,13 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 		}
 	}
 
-	@Nullable
 	@Override
-	public CqlIdentifier getKeyspace() {
+	public @Nullable CqlIdentifier getKeyspace() {
 		return Optional.ofNullable(this.keyspace).orElseGet(this::determineKeyspace);
 	}
 
 	@Override
-	public void setKeyspace(CqlIdentifier keyspace) {
+	public void setKeyspace(@Nullable CqlIdentifier keyspace) {
 		this.keyspace = keyspace;
 	}
 
@@ -282,7 +282,8 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	}
 
 	@Override
-	public CassandraPersistentProperty getProperty(Parameter<?, CassandraPersistentProperty> parameter) {
+	@SuppressWarnings("NullAway")
+	public @Nullable CassandraPersistentProperty getProperty(Parameter<?, CassandraPersistentProperty> parameter) {
 
 		if (parameter.getName() == null) {
 			return null;
@@ -306,4 +307,5 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	public String toString() {
 		return getName();
 	}
+
 }

@@ -51,4 +51,5 @@ public abstract class KeyspaceNameCqlGenerator<T extends KeyspaceActionSpecifica
 	}
 
 	public abstract StringBuilder toCql(StringBuilder cql);
+
 }

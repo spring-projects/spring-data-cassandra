@@ -17,6 +17,8 @@ package org.springframework.data.cassandra.core.cql.converter;
 
 import java.math.BigInteger;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.convert.converter.Converter;
 
 import com.datastax.oss.driver.api.core.cql.ResultSet;
@@ -31,7 +33,7 @@ public class ResultSetToBigIntegerConverter extends AbstractResultSetToBasicFixe
 	public static final ResultSetToBigIntegerConverter INSTANCE = new ResultSetToBigIntegerConverter();
 
 	@Override
-	protected BigInteger doConvertSingleValue(Object object) {
+	protected @Nullable BigInteger doConvertSingleValue(Object object) {
 		return CONVERTER.convert(object, BigInteger.class);
 	}
 

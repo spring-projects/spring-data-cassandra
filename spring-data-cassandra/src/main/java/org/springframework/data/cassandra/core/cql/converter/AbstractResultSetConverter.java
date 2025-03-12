@@ -18,8 +18,8 @@ package org.springframework.data.cassandra.core.cql.converter;
 import java.util.List;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 
@@ -50,7 +50,7 @@ public abstract class AbstractResultSetConverter<T> implements Converter<ResultS
 	/**
 	 * Converts the given value to this converter's type or throws {@link IllegalArgumentException}.
 	 */
-	protected abstract T doConvertSingleValue(Object object);
+	protected abstract @Nullable T doConvertSingleValue(Object object);
 
 	/**
 	 * @return the target type.
@@ -60,36 +60,33 @@ public abstract class AbstractResultSetConverter<T> implements Converter<ResultS
 	/**
 	 * @return surrogate value if the {@link ResultSet} is {@literal null}.
 	 */
-	@Nullable
-	protected T getNullResultSetValue() {
+	protected @Nullable T getNullResultSetValue() {
 		return null;
 	}
 
 	/**
 	 * @return surrogate value if the {@link ResultSet} is {@link ResultSet#isFullyFetched()}}.
 	 */
-	@Nullable
-	protected T getExhaustedResultSetValue() {
+	protected @Nullable T getExhaustedResultSetValue() {
 		return null;
 	}
 
 	@Override
-	public T convert(ResultSet source) {
+	@SuppressWarnings("NullAway")
+	public @Nullable T convert(ResultSet source) {
 
 		if (source.getAvailableWithoutFetching() == 0 && source.isFullyFetched()) {
 			return getExhaustedResultSetValue();
 		}
 
-		List<Map<String, Object>> list = converter.convert(source);
-
-		if (list == null) {
-			return getNullResultSetValue();
-		}
+		List<@Nullable Map<String, Object>> list = converter.convert(source);
 
 		if (list.size() == 1) {
 
 			Map<String, Object> map = list.get(0);
-			return map.size() == 1 ? doConvertSingleValue(map.get(map.keySet().iterator().next())) : doConvertSingleRow(map);
+			return map != null
+					? (map.size() == 1 ? doConvertSingleValue(map.get(map.keySet().iterator().next())) : doConvertSingleRow(map))
+					: getNullResultSetValue();
 		}
 
 		return doConvertResultSet(list);
@@ -99,7 +96,7 @@ public abstract class AbstractResultSetConverter<T> implements Converter<ResultS
 	 * Converts the given result set (as a {@link List}&lt;{@link Map}&lt;String,Object&gt;&gt;) to this converter's type
 	 * or throws {@link IllegalArgumentException}. This default implementation simply throws.
 	 */
-	protected T doConvertResultSet(List<Map<String, Object>> resultSet) {
+	protected T doConvertResultSet(List<@Nullable Map<String, Object>> resultSet) {
 
 		throw new IllegalArgumentException(
 				String.format("Cannot convert %s to desired type [%s]", "result set", getType().getName()));

@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.aot;
 import java.util.Arrays;
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.aop.SpringProxy;
 import org.springframework.aop.framework.Advised;
 import org.springframework.aot.hint.MemberCategory;
@@ -32,7 +33,6 @@ import org.springframework.data.cassandra.observability.CassandraObservationSupp
 import org.springframework.data.cassandra.repository.support.SimpleCassandraRepository;
 import org.springframework.data.cassandra.repository.support.SimpleReactiveCassandraRepository;
 import org.springframework.data.util.ReactiveWrappers;
-import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 
 import com.datastax.oss.driver.api.core.CqlSession;
@@ -106,4 +106,5 @@ class CassandraRuntimeHints implements RuntimeHintsRegistrar {
 			}
 		}
 	}
+
 }

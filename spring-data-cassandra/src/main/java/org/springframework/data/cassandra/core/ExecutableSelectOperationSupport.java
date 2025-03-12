@@ -18,9 +18,9 @@ package org.springframework.data.cassandra.core;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.cassandra.core.query.Query;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
@@ -63,7 +63,7 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 		private final @Nullable CqlIdentifier tableName;
 
 		public ExecutableSelectSupport(CassandraTemplate template, Class<?> domainType, Class<T> returnType, Query query,
-				CqlIdentifier tableName) {
+				@Nullable CqlIdentifier tableName) {
 			this.template = template;
 			this.domainType = domainType;
 			this.returnType = returnType;
@@ -106,7 +106,7 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 		}
 
 		@Override
-		public T firstValue() {
+		public @Nullable T firstValue() {
 
 			List<T> result = this.template.doSelect(this.query.limit(1), this.domainType, getTableName(), this.returnType);
 
@@ -114,7 +114,7 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 		}
 
 		@Override
-		public T oneValue() {
+		public @Nullable T oneValue() {
 
 			List<T> result = this.template.doSelect(this.query.limit(2), this.domainType, getTableName(), this.returnType);
 
@@ -143,5 +143,7 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 		private CqlIdentifier getTableName() {
 			return this.tableName != null ? this.tableName : this.template.getTableName(this.domainType);
 		}
+
 	}
+
 }

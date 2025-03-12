@@ -102,7 +102,7 @@ public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandra
 
 		if (method.hasAnnotatedQuery()) {
 
-			Query queryAnnotation = method.getQueryAnnotation().orElse(null);
+			Query queryAnnotation = method.getRequiredQueryAnnotation();
 
 			this.isCountQuery = queryAnnotation.count();
 			this.isExistsQuery = queryAnnotation.exists();
@@ -116,7 +116,7 @@ public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandra
 		}
 	}
 
-	protected StringBasedQuery getStringBasedQuery() {
+	StringBasedQuery getStringBasedQuery() {
 		return this.stringBasedQuery;
 	}
 

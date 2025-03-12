@@ -15,8 +15,8 @@
  */
 package org.springframework.data.cassandra.core.cql.session.init;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.core.io.support.EncodedResource;
-import org.springframework.lang.Nullable;
 
 /**
  * Thrown by {@link ScriptUtils} if a CQL script cannot be properly parsed.

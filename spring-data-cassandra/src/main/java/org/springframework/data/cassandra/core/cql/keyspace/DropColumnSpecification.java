@@ -46,4 +46,5 @@ public class DropColumnSpecification extends ColumnChangeSpecification {
 	public static DropColumnSpecification dropColumn(CqlIdentifier name) {
 		return new DropColumnSpecification(name);
 	}
+
 }

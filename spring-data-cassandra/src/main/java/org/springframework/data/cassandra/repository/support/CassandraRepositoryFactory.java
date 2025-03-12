@@ -18,6 +18,8 @@ package org.springframework.data.cassandra.repository.support;
 import java.lang.reflect.Method;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
@@ -69,7 +71,8 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 	}
 
 	@Override
-	protected ProjectionFactory getProjectionFactory(ClassLoader classLoader, BeanFactory beanFactory) {
+	protected ProjectionFactory getProjectionFactory(@Nullable ClassLoader classLoader,
+			@Nullable BeanFactory beanFactory) {
 		return this.operations.getConverter().getProjectionFactory();
 	}
 
@@ -96,7 +99,7 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 	}
 
 	@Override
-	protected Optional<QueryLookupStrategy> getQueryLookupStrategy(Key key,
+	protected Optional<QueryLookupStrategy> getQueryLookupStrategy(@Nullable Key key,
 			ValueExpressionDelegate valueExpressionDelegate) {
 		return Optional.of(new CassandraQueryLookupStrategy(operations,
 				new CachingValueExpressionDelegate(valueExpressionDelegate), mappingContext));
@@ -125,6 +128,8 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 				return new PartTreeCassandraQuery(queryMethod, operations);
 			}
 		}
+
 	}
+
 }
 

@@ -15,6 +15,8 @@
  */
 package org.springframework.data.cassandra.core.cql.converter;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.convert.converter.Converter;
 
 import com.datastax.oss.driver.api.core.cql.ResultSet;
@@ -29,7 +31,7 @@ public class ResultSetToFloatConverter extends AbstractResultSetToBasicFixedType
 	public static final ResultSetToFloatConverter INSTANCE = new ResultSetToFloatConverter();
 
 	@Override
-	protected Float doConvertSingleValue(Object object) {
+	protected @Nullable Float doConvertSingleValue(Object object) {
 		return CONVERTER.convert(object, Float.class);
 	}
 

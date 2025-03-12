@@ -46,4 +46,5 @@ public class PersistentEntitiesFactoryBean implements FactoryBean<PersistentEnti
 	public Class<?> getObjectType() {
 		return PersistentEntities.class;
 	}
+
 }

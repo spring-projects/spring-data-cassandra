@@ -30,4 +30,5 @@ public interface DefaultCqlBeanNames {
 	String SESSION = "cassandraSession";
 	String SESSION_FACTORY = "cassandraSessionFactory";
 	String TEMPLATE = "cqlTemplate";
+
 }

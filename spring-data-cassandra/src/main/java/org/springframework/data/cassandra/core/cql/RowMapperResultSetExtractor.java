@@ -82,4 +82,5 @@ public class RowMapperResultSetExtractor<T> implements ResultSetExtractor<List<T
 
 		return results;
 	}
+
 }

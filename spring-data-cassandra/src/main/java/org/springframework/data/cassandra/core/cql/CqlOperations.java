@@ -20,9 +20,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
-import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
@@ -56,8 +56,7 @@ public interface CqlOperations {
 	 * @return a result object returned by the action, or {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	@Nullable
-	<T> T execute(SessionCallback<T> action) throws DataAccessException;
+	<T extends @Nullable Object> T execute(SessionCallback<T> action) throws DataAccessException;
 
 	// -------------------------------------------------------------------------
 	// Methods dealing with static CQL
@@ -111,8 +110,7 @@ public interface CqlOperations {
 	 * @return a result object returned by the action, or {@literal null}
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	@Nullable
-	<T> T execute(String cql, PreparedStatementCallback<T> action) throws DataAccessException;
+	<T extends @Nullable Object> T execute(String cql, PreparedStatementCallback<T> action) throws DataAccessException;
 
 	/**
 	 * Execute a query given static CQL, reading the {@link ResultSet} with a {@link ResultSetExtractor}.
@@ -126,8 +124,7 @@ public interface CqlOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #query(String, ResultSetExtractor, Object...)
 	 */
-	@Nullable
-	<T> T query(String cql, ResultSetExtractor<T> resultSetExtractor) throws DataAccessException;
+	<T extends @Nullable Object> T query(String cql, ResultSetExtractor<T> resultSetExtractor) throws DataAccessException;
 
 	/**
 	 * Execute a query given static CQL, reading the {@link ResultSet} on a per-row basis with a
@@ -155,7 +152,7 @@ public interface CqlOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #query(String, RowMapper, Object[])
 	 */
-	<T> List<T> query(String cql, RowMapper<T> rowMapper) throws DataAccessException;
+	<T extends @Nullable Object> List<T> query(String cql, RowMapper<T> rowMapper) throws DataAccessException;
 
 	/**
 	 * Query given CQL to create a prepared statement from CQL and a list of arguments to bind to the query, reading the
@@ -168,8 +165,8 @@ public interface CqlOperations {
 	 * @return an arbitrary result object, as returned by the {@link ResultSetExtractor}
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	@Nullable
-	<T> T query(String cql, ResultSetExtractor<T> resultSetExtractor, Object... args) throws DataAccessException;
+	<T extends @Nullable Object> T query(String cql, ResultSetExtractor<T> resultSetExtractor, Object... args)
+			throws DataAccessException;
 
 	/**
 	 * Query given CQL to create a prepared statement from CQL and a list of arguments to bind to the query, reading the
@@ -194,7 +191,8 @@ public interface CqlOperations {
 	 * @return the result {@link List}, containing mapped objects
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> List<T> query(String cql, RowMapper<T> rowMapper, Object... args) throws DataAccessException;
+	<T extends @Nullable Object> List<T> query(String cql, RowMapper<T> rowMapper, Object... args)
+			throws DataAccessException;
 
 	/**
 	 * Query given CQL to create a prepared statement from CQL and a list of arguments to bind to the query, mapping each
@@ -221,8 +219,8 @@ public interface CqlOperations {
 	 * @return an arbitrary result object, as returned by the {@link ResultSetExtractor}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	@Nullable
-	<T> T query(String cql, @Nullable PreparedStatementBinder psb, ResultSetExtractor<T> resultSetExtractor)
+	<T extends @Nullable Object> T query(String cql, @Nullable PreparedStatementBinder psb,
+			ResultSetExtractor<T> resultSetExtractor)
 			throws DataAccessException;
 
 	/**
@@ -252,7 +250,7 @@ public interface CqlOperations {
 	 * @return the result {@link List}, containing mapped objects.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> List<T> query(String cql, @Nullable PreparedStatementBinder psb, RowMapper<T> rowMapper)
+	<T extends @Nullable Object> List<T> query(String cql, @Nullable PreparedStatementBinder psb, RowMapper<T> rowMapper)
 			throws DataAccessException;
 
 	/**
@@ -344,6 +342,7 @@ public interface CqlOperations {
 	 * @see #queryForMap(String, Object[])
 	 * @see ColumnMapRowMapper
 	 */
+	@Nullable
 	Map<String, Object> queryForMap(String cql) throws DataAccessException;
 
 	/**
@@ -363,6 +362,7 @@ public interface CqlOperations {
 	 * @see #queryForMap(String)
 	 * @see ColumnMapRowMapper
 	 */
+	@Nullable
 	Map<String, Object> queryForMap(String cql, Object... args) throws DataAccessException;
 
 	/**
@@ -383,7 +383,7 @@ public interface CqlOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #queryForObject(String, Class, Object[])
 	 */
-	<T> T queryForObject(String cql, Class<T> requiredType) throws DataAccessException;
+	<T extends @Nullable Object> @Nullable T queryForObject(String cql, Class<T> requiredType) throws DataAccessException;
 
 	/**
 	 * Query given CQL to create a prepared statement from CQL and a list of arguments to bind to the query, expecting a
@@ -402,7 +402,8 @@ public interface CqlOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #queryForObject(String, Class)
 	 */
-	<T> T queryForObject(String cql, Class<T> requiredType, Object... args) throws DataAccessException;
+	<T extends @Nullable Object> @Nullable T queryForObject(String cql, Class<T> requiredType, Object... args)
+			throws DataAccessException;
 
 	/**
 	 * Execute a query given static CQL, mapping a single result row to a Java object via a {@link RowMapper}.
@@ -418,7 +419,8 @@ public interface CqlOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #queryForObject(String, RowMapper, Object[])
 	 */
-	<T> T queryForObject(String cql, RowMapper<T> rowMapper) throws DataAccessException;
+	<T extends @Nullable Object> @Nullable T queryForObject(String cql, RowMapper<T> rowMapper)
+			throws DataAccessException;
 
 	/**
 	 * Query given CQL to create a prepared statement from CQL and a list of arguments to bind to the query, mapping a
@@ -432,7 +434,8 @@ public interface CqlOperations {
 	 * @throws IncorrectResultSizeDataAccessException if the query does not return exactly one row.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> T queryForObject(String cql, RowMapper<T> rowMapper, Object... args) throws DataAccessException;
+	<T extends @Nullable Object> @Nullable T queryForObject(String cql, RowMapper<T> rowMapper, Object... args)
+			throws DataAccessException;
 
 	/**
 	 * Execute a query for a ResultSet, given static CQL.
@@ -521,8 +524,8 @@ public interface CqlOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #query(String, ResultSetExtractor, Object...)
 	 */
-	@Nullable
-	<T> T query(Statement<?> statement, ResultSetExtractor<T> resultSetExtractor) throws DataAccessException;
+	<T extends @Nullable Object> T query(Statement<?> statement, ResultSetExtractor<T> resultSetExtractor)
+			throws DataAccessException;
 
 	/**
 	 * Execute a query given static CQL, reading the {@link ResultSet} on a per-row basis with a
@@ -550,7 +553,7 @@ public interface CqlOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #query(String, RowMapper, Object[])
 	 */
-	<T> List<T> query(Statement<?> statement, RowMapper<T> rowMapper) throws DataAccessException;
+	<T extends @Nullable Object> List<T> query(Statement<?> statement, RowMapper<T> rowMapper) throws DataAccessException;
 
 	/**
 	 * Execute a query given static CQL, mapping each row to a Java object via a {@link RowMapper} and turning it into an
@@ -602,7 +605,8 @@ public interface CqlOperations {
 	 * @see #queryForList(String, Class, Object[])
 	 * @see SingleColumnRowMapper
 	 */
-	<T> List<T> queryForList(Statement<?> statement, Class<T> elementType) throws DataAccessException;
+	<T extends @Nullable Object> List<T> queryForList(Statement<?> statement, Class<T> elementType)
+			throws DataAccessException;
 
 	/**
 	 * Execute a query for a result Map, given static CQL.
@@ -621,6 +625,7 @@ public interface CqlOperations {
 	 * @see #queryForMap(String, Object[])
 	 * @see ColumnMapRowMapper
 	 */
+	@Nullable
 	Map<String, Object> queryForMap(Statement<?> statement) throws DataAccessException;
 
 	/**
@@ -641,7 +646,8 @@ public interface CqlOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #queryForObject(String, Class, Object[])
 	 */
-	<T> T queryForObject(Statement<?> statement, Class<T> requiredType) throws DataAccessException;
+	<T extends @Nullable Object> T queryForObject(Statement<?> statement, Class<T> requiredType)
+			throws DataAccessException;
 
 	/**
 	 * Execute a query given static CQL, mapping a single result row to a Java object via a {@link RowMapper}.
@@ -657,7 +663,8 @@ public interface CqlOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #queryForObject(String, RowMapper, Object[])
 	 */
-	<T> T queryForObject(Statement<?> statement, RowMapper<T> rowMapper) throws DataAccessException;
+	<T extends @Nullable Object> T queryForObject(Statement<?> statement, RowMapper<T> rowMapper)
+			throws DataAccessException;
 
 	/**
 	 * Execute a query for a ResultSet, given static CQL.
@@ -719,8 +726,8 @@ public interface CqlOperations {
 	 * @return a result object returned by the action, or {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	@Nullable
-	<T> T execute(PreparedStatementCreator preparedStatementCreator, PreparedStatementCallback<T> action)
+	<T extends @Nullable Object> T execute(PreparedStatementCreator preparedStatementCreator,
+			PreparedStatementCallback<T> action)
 			throws DataAccessException;
 
 	/**
@@ -732,8 +739,8 @@ public interface CqlOperations {
 	 * @return an arbitrary result object, as returned by the {@link ResultSetExtractor}
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	@Nullable
-	<T> T query(PreparedStatementCreator preparedStatementCreator, ResultSetExtractor<T> resultSetExtractor)
+	<T extends @Nullable Object> T query(PreparedStatementCreator preparedStatementCreator,
+			ResultSetExtractor<T> resultSetExtractor)
 			throws DataAccessException;
 
 	/**
@@ -757,7 +764,7 @@ public interface CqlOperations {
 	 * @return the result {@link List}, containing mapped objects.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> List<T> query(PreparedStatementCreator preparedStatementCreator, RowMapper<T> rowMapper)
+	<T extends @Nullable Object> List<T> query(PreparedStatementCreator preparedStatementCreator, RowMapper<T> rowMapper)
 			throws DataAccessException;
 
 	/**
@@ -787,8 +794,8 @@ public interface CqlOperations {
 	 * @return an arbitrary result object, as returned by the {@link ResultSetExtractor}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	@Nullable
-	<T> T query(PreparedStatementCreator preparedStatementCreator, @Nullable PreparedStatementBinder psb,
+	<T extends @Nullable Object> T query(PreparedStatementCreator preparedStatementCreator,
+			@Nullable PreparedStatementBinder psb,
 			ResultSetExtractor<T> resultSetExtractor) throws DataAccessException;
 
 	/**
@@ -819,7 +826,8 @@ public interface CqlOperations {
 	 * @return the result {@link List}, containing mapped objects.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> List<T> query(PreparedStatementCreator preparedStatementCreator, @Nullable PreparedStatementBinder psb,
+	<T extends @Nullable Object> List<T> query(PreparedStatementCreator preparedStatementCreator,
+			@Nullable PreparedStatementBinder psb,
 			RowMapper<T> rowMapper) throws DataAccessException;
 
 	/**
@@ -862,4 +870,5 @@ public interface CqlOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	<T> Collection<T> describeRing(HostMapper<T> hostMapper) throws DataAccessException;
+
 }

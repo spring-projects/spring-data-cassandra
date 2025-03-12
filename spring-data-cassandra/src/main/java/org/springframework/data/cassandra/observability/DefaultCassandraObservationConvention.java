@@ -20,9 +20,10 @@ import io.micrometer.common.KeyValues;
 import java.net.InetSocketAddress;
 import java.util.StringJoiner;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.cassandra.observability.CassandraObservation.HighCardinalityKeyNames;
 import org.springframework.data.cassandra.observability.CassandraObservation.LowCardinalityKeyNames;
-import org.springframework.lang.Nullable;
 import org.springframework.util.StringUtils;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
@@ -105,8 +106,7 @@ public class DefaultCassandraObservationConvention implements CassandraObservati
 		return keyValues;
 	}
 
-	@Nullable
-	protected InetSocketAddress tryGetSocketAddress(EndPoint endPoint) {
+	protected @Nullable InetSocketAddress tryGetSocketAddress(EndPoint endPoint) {
 
 		try {
 			if (endPoint.resolve() instanceof InetSocketAddress inet) {

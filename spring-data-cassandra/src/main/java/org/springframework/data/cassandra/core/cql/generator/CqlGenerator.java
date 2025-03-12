@@ -90,4 +90,5 @@ public final class CqlGenerator {
 
 		throw new UnsupportedOperationException(String.format("CQL specification %s is not supported", specification));
 	}
+
 }

@@ -62,4 +62,5 @@ public class DataCenterReplication {
 		return "DataCenterReplication(dataCenter=" + this.getDataCenter() + ", replicationFactor="
 				+ this.getReplicationFactor() + ")";
 	}
+
 }

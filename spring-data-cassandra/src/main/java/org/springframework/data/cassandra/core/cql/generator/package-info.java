@@ -1,7 +1,7 @@
 /**
  * CQL generators for Keyspace object actions.
  */
-@NonNullApi
+@org.jspecify.annotations.NullMarked
 package org.springframework.data.cassandra.core.cql.generator;
 
-import org.springframework.lang.NonNullApi;
+

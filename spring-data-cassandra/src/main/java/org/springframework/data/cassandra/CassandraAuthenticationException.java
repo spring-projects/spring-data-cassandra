@@ -28,7 +28,7 @@ import com.datastax.oss.driver.api.core.metadata.EndPoint;
  */
 public class CassandraAuthenticationException extends PermissionDeniedDataAccessException {
 
-	@Serial private static final long serialVersionUID = 8556304586797273927L;
+	private static final @Serial long serialVersionUID = 8556304586797273927L;
 
 	private final EndPoint host;
 

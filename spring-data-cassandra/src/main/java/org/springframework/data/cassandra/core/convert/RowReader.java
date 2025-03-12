@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -124,16 +124,14 @@ class RowReader {
 	 *
 	 * @throws ClassCastException if the value cannot be converted to the requested type.
 	 */
-	@Nullable
-	public <T> T get(int columnIndex, Class<T> requestedType) {
+	public <T> @Nullable T get(int columnIndex, Class<T> requestedType) {
 
 		Object value = get(columnIndex);
 
 		return requestedType.cast(value);
 	}
 
-	@Nullable
-	private Object getCollection(int index, DataType type) {
+	private @Nullable Object getCollection(int index, DataType type) {
 
 		if (type instanceof ListType) {
 
@@ -178,4 +176,5 @@ class RowReader {
 	public boolean contains(CqlIdentifier columnName) {
 		return row.getColumnDefinitions().contains(columnName);
 	}
+
 }

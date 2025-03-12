@@ -15,9 +15,9 @@
  */
 package org.springframework.data.cassandra.aot;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.aot.ManagedTypesBeanRegistrationAotProcessor;
 import org.springframework.data.cassandra.CassandraManagedTypes;
-import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 
 /**

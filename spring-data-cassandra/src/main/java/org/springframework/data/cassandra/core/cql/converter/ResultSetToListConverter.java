@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.util.Assert;
 
@@ -54,9 +56,9 @@ public class ResultSetToListConverter implements Converter<ResultSet, List<Map<S
 	}
 
 	@Override
-	public List<Map<String, Object>> convert(ResultSet resultSet) {
+	public List<@Nullable Map<String, @Nullable Object>> convert(ResultSet resultSet) {
 
-		List<Map<String, Object>> list = new ArrayList<>();
+		List<@Nullable Map<String, Object>> list = new ArrayList<>();
 		for (Row row : resultSet) {
 			list.add(rowConverter.convert(row));
 		}

@@ -19,13 +19,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.cassandra.config.KeyspaceActionSpecificationFactory.KeyspaceActionSpecificationFactoryBuilder;
 import org.springframework.data.cassandra.core.cql.keyspace.DataCenterReplication;
 import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceActionSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceOption.ReplicationStrategy;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -101,7 +101,7 @@ public class KeyspaceActionSpecificationFactoryBean implements FactoryBean<Keysp
 	}
 
 	@Override
-	public KeyspaceActions getObject() {
+	public @Nullable KeyspaceActions getObject() {
 		return actions;
 	}
 
@@ -118,8 +118,7 @@ public class KeyspaceActionSpecificationFactoryBean implements FactoryBean<Keysp
 	/**
 	 * @return Returns the name.
 	 */
-	@Nullable
-	public String getName() {
+	public @Nullable String getName() {
 		return name;
 	}
 
@@ -147,7 +146,6 @@ public class KeyspaceActionSpecificationFactoryBean implements FactoryBean<Keysp
 	/**
 	 * @return Returns the action.
 	 */
-	@Nullable
 	public KeyspaceAction getAction() {
 		return action;
 	}
@@ -176,7 +174,6 @@ public class KeyspaceActionSpecificationFactoryBean implements FactoryBean<Keysp
 	/**
 	 * @return Returns the replicationStrategy.
 	 */
-	@Nullable
 	public ReplicationStrategy getReplicationStrategy() {
 		return replicationStrategy;
 	}
@@ -229,4 +226,5 @@ public class KeyspaceActionSpecificationFactoryBean implements FactoryBean<Keysp
 	public void setReplicationFactor(int replicationFactor) {
 		this.replicationFactor = replicationFactor;
 	}
+
 }

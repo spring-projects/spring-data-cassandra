@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
@@ -35,6 +37,7 @@ import org.springframework.data.cassandra.core.mapping.SimpleUserTypeResolver;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
+
 import org.w3c.dom.Element;
 
 /**
@@ -65,7 +68,7 @@ class CassandraMappingContextParser extends AbstractSingleBeanDefinitionParser {
 		builder.getRawBeanDefinition().setSource(element);
 	}
 
-	private void parseMapping(Element element, BeanDefinitionBuilder builder, ClassLoader classLoader) {
+	private void parseMapping(Element element, BeanDefinitionBuilder builder, @Nullable ClassLoader classLoader) {
 
 		String packages = element.getAttribute("entity-base-packages");
 
@@ -186,4 +189,5 @@ class CassandraMappingContextParser extends AbstractSingleBeanDefinitionParser {
 
 		return propertyMappings;
 	}
+
 }

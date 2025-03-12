@@ -25,6 +25,8 @@ import java.util.function.Function;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.aop.TargetSource;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -62,7 +64,7 @@ final class CqlSessionObservationInterceptor implements MethodInterceptor {
 	}
 
 	@Override
-	public Object invoke(MethodInvocation invocation) throws Throwable {
+	public @Nullable Object invoke(MethodInvocation invocation) throws Throwable {
 
 		Method method = invocation.getMethod();
 		Object[] args = invocation.getArguments();
@@ -196,4 +198,5 @@ final class CqlSessionObservationInterceptor implements MethodInterceptor {
 	public interface ObservationDecoratedProxy extends TargetSource {
 
 	}
+
 }

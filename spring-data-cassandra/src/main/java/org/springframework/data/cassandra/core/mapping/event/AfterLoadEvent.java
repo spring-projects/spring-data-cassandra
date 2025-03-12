@@ -31,7 +31,7 @@ import com.datastax.oss.driver.api.core.cql.Row;
  */
 public class AfterLoadEvent<T> extends CassandraMappingEvent<Row> {
 
-	@Serial private static final long serialVersionUID = 1L;
+	private static final @Serial long serialVersionUID = 1L;
 
 	private final Class<T> type;
 
@@ -58,4 +58,5 @@ public class AfterLoadEvent<T> extends CassandraMappingEvent<Row> {
 	public Class<T> getType() {
 		return type;
 	}
+
 }

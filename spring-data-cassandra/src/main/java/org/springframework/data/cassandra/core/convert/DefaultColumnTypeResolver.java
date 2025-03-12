@@ -28,6 +28,8 @@ import java.util.stream.StreamSupport;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
@@ -47,7 +49,6 @@ import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.util.Lazy;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
@@ -234,8 +235,7 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 		return customConversions.get().getCustomWriteTarget(typeInformation.getType());
 	}
 
-	@Nullable
-	private DataType tryResolve(Class<?> type) {
+	private @Nullable DataType tryResolve(Class<?> type) {
 
 		if (TupleValue.class.isAssignableFrom(type)) {
 			return null;
@@ -266,6 +266,11 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 
 		Name type = annotation.type();
 
+		return doGetColumnType(annotation, type);
+	}
+
+	private CassandraColumnType doGetColumnType(CassandraType annotation, Name type) {
+
 		switch (type) {
 			case MAP:
 				assertTypeArguments(annotation.typeArguments().length, 2);
@@ -289,7 +294,8 @@ class DefaultColumnTypeResolver implements ColumnTypeResolver {
 
 			case TUPLE:
 
-				DataType[] dataTypes = Arrays.stream(annotation.typeArguments()).map(CassandraSimpleTypeHolder::getDataTypeFor)
+				DataType[] dataTypes = Arrays.stream(annotation.typeArguments())
+						.map(dataTypeName -> doGetColumnType(annotation, dataTypeName).getDataType())
 						.toArray(DataType[]::new);
 
 				return ColumnType.tupleOf(DataTypes.tupleOf(dataTypes));

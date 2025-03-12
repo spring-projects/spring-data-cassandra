@@ -22,6 +22,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -34,8 +36,6 @@ import org.springframework.data.cassandra.core.cql.CqlTemplate;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateKeyspaceSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.DropKeyspaceSpecification;
 import org.springframework.data.cassandra.core.cql.session.DefaultSessionFactory;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -99,7 +99,7 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 	 * @see org.springframework.beans.factory.BeanFactory#getBean(Class)
 	 * @see #getBeanFactory()
 	 */
-	protected <T> T requireBeanOfType(@NonNull Class<T> beanType) {
+	protected <T> T requireBeanOfType(Class<T> beanType) {
 		return getBeanFactory().getBean(beanType);
 	}
 
@@ -110,9 +110,8 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 	 * @deprecated since 3.0, use {@link #getSessionName()} instead.
 	 * @since 1.5
 	 */
-	@Nullable
 	@Deprecated
-	protected String getClusterName() {
+	protected @Nullable String getClusterName() {
 		return null;
 	}
 
@@ -130,8 +129,7 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 	 *
 	 * @return the local data center name. Can be {@literal null} when using an Astra connection bundle.
 	 */
-	@Nullable
-	protected String getLocalDataCenter() {
+	protected @Nullable String getLocalDataCenter() {
 		return "datacenter1";
 	}
 
@@ -141,8 +139,7 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 	 * @return the session name; may be {@literal null}.
 	 * @since 3.0
 	 */
-	@Nullable
-	protected String getSessionName() {
+	protected @Nullable String getSessionName() {
 		return null;
 	}
 
@@ -151,8 +148,7 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 	 *
 	 * @return the {@link CompressionType}, may be {@literal null}.
 	 */
-	@Nullable
-	protected CompressionType getCompressionType() {
+	protected @Nullable CompressionType getCompressionType() {
 		return null;
 	}
 
@@ -236,8 +232,7 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 	 * @return the {@link DriverConfigLoaderBuilderConfigurer}; may be {@literal null}.
 	 * @since 3.1.2
 	 */
-	@Nullable
-	protected DriverConfigLoaderBuilderConfigurer getDriverConfigLoaderBuilderConfigurer() {
+	protected @Nullable DriverConfigLoaderBuilderConfigurer getDriverConfigLoaderBuilderConfigurer() {
 		return null;
 	}
 
@@ -250,8 +245,7 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 	 * @see <a href="https://docs.datastax.com/en/developer/java-driver/4.9/manual/core/configuration/">Driver
 	 *      Configuration</a>
 	 */
-	@Nullable
-	protected Resource getDriverConfigurationResource() {
+	protected @Nullable Resource getDriverConfigurationResource() {
 		return null;
 	}
 
@@ -395,4 +389,5 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 		}
 
 	}
+
 }

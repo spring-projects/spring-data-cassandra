@@ -23,8 +23,8 @@ import javax.annotation.Nonnull;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.jspecify.annotations.Nullable;
 import org.springframework.aop.framework.ProxyFactory;
-import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 
 import com.datastax.oss.driver.api.core.cql.Statement;
@@ -75,9 +75,8 @@ final class ObservationStatement implements MethodInterceptor {
 		return statement instanceof CassandraObservationSupplier;
 	}
 
-	@Nullable
 	@Override
-	public Object invoke(@Nonnull MethodInvocation invocation) throws Throwable {
+	public @Nullable Object invoke(@Nonnull MethodInvocation invocation) throws Throwable {
 
 		Method method = invocation.getMethod();
 

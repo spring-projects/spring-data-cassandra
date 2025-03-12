@@ -19,6 +19,7 @@ import static org.springframework.data.cassandra.config.ParsingUtils.*;
 
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.BeanMetadataElement;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.TypedStringValue;
@@ -30,7 +31,6 @@ import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.cassandra.core.cql.session.init.CompositeKeyspacePopulator;
 import org.springframework.data.cassandra.core.cql.session.init.ResourceKeyspacePopulator;
 import org.springframework.data.cassandra.core.cql.session.init.SessionFactoryInitializer;
-import org.springframework.lang.Nullable;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
@@ -137,4 +137,5 @@ class InitializeKeyspaceBeanDefinitionParser extends AbstractBeanDefinitionParse
 
 		return null;
 	}
+
 }

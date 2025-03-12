@@ -15,10 +15,10 @@
  */
 package org.springframework.data.cassandra.core.convert;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.PropertyAccessor;
 import org.springframework.expression.TypedValue;
-import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.core.cql.Row;
 
@@ -68,4 +68,5 @@ enum RowReaderPropertyAccessor implements PropertyAccessor {
 	public void write(EvaluationContext context, @Nullable Object target, String name, @Nullable Object newValue) {
 		throw new UnsupportedOperationException();
 	}
+
 }

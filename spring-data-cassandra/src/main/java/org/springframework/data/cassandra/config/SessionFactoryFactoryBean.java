@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.config;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.data.cassandra.SessionFactory;
 import org.springframework.data.cassandra.core.CassandraAdminOperations;
@@ -26,7 +27,6 @@ import org.springframework.data.cassandra.core.cql.session.DefaultSessionFactory
 import org.springframework.data.cassandra.core.cql.session.init.KeyspacePopulator;
 import org.springframework.data.cassandra.core.cql.session.init.SessionFactoryInitializer;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlSession;
@@ -47,9 +47,9 @@ public class SessionFactoryFactoryBean extends AbstractFactoryBean<SessionFactor
 	protected static final boolean DEFAULT_DROP_TABLES = false;
 	protected static final boolean DEFAULT_DROP_UNUSED_TABLES = false;
 
-	private CassandraConverter converter;
+	private @Nullable CassandraConverter converter;
 
-	private CqlSession session;
+	private @Nullable CqlSession session;
 
 	private @Nullable KeyspacePopulator keyspaceCleaner;
 	private @Nullable KeyspacePopulator keyspacePopulator;
@@ -166,6 +166,9 @@ public class SessionFactoryFactoryBean extends AbstractFactoryBean<SessionFactor
 
 	@Override
 	protected SessionFactory createInstance() {
+
+		Assert.state(this.session != null, "CqlSession must be initialized");
+
 		return new DefaultSessionFactory(this.session);
 	}
 
@@ -190,9 +193,8 @@ public class SessionFactoryFactoryBean extends AbstractFactoryBean<SessionFactor
 		}
 	}
 
-	@Nullable
 	@Override
-	public Class<?> getObjectType() {
+	public @Nullable Class<?> getObjectType() {
 		return SessionFactory.class;
 	}
 

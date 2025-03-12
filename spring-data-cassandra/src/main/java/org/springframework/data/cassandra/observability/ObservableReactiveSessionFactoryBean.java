@@ -17,12 +17,13 @@ package org.springframework.data.cassandra.observability;
 
 import io.micrometer.observation.ObservationRegistry;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.aop.TargetSource;
 import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.data.cassandra.ReactiveSession;
 import org.springframework.data.cassandra.core.cql.session.DefaultBridgedReactiveSession;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
@@ -76,6 +77,7 @@ public class ObservableReactiveSessionFactoryBean extends AbstractFactoryBean<Re
 	 * @param cqlSession must not be {@literal null}.
 	 * @param observationRegistry must not be {@literal null}.
 	 */
+	@SuppressWarnings("NullAway")
 	public ObservableReactiveSessionFactoryBean(CqlSession cqlSession, ObservationRegistry observationRegistry) {
 
 		Assert.notNull(cqlSession, "CqlSession must not be null");
@@ -87,8 +89,7 @@ public class ObservableReactiveSessionFactoryBean extends AbstractFactoryBean<Re
 		this.observationRegistry = observationRegistry;
 	}
 
-	@Nullable
-	public String getRemoteServiceName() {
+	public @Nullable String getRemoteServiceName() {
 		return remoteServiceName;
 	}
 
