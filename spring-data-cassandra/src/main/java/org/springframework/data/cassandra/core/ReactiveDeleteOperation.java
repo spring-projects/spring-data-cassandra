@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.core;
 import reactor.core.publisher.Mono;
 
 import org.springframework.data.cassandra.core.query.Query;
+import org.springframework.lang.Contract;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -73,6 +74,7 @@ public interface ReactiveDeleteOperation {
 		 * @see #inTable(CqlIdentifier)
 		 * @see DeleteWithQuery
 		 */
+		@Contract("_ -> new")
 		default DeleteWithQuery inTable(String table) {
 
 			Assert.hasText(table, "Table name must not be null or empty");
@@ -91,7 +93,9 @@ public interface ReactiveDeleteOperation {
 		 * @see com.datastax.oss.driver.api.core.CqlIdentifier
 		 * @see DeleteWithQuery
 		 */
+		@Contract("_ -> new")
 		DeleteWithQuery inTable(CqlIdentifier table);
+
 	}
 
 	/**
@@ -107,6 +111,7 @@ public interface ReactiveDeleteOperation {
 		 * @throws IllegalArgumentException if {@link Query} is {@literal null}.
 		 * @see TerminatingDelete
 		 */
+		@Contract("_ -> new")
 		TerminatingDelete matching(Query query);
 
 	}

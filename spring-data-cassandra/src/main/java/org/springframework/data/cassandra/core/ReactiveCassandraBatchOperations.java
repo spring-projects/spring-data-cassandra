@@ -24,6 +24,7 @@ import org.reactivestreams.Subscriber;
 
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
+import org.springframework.lang.Contract;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.cql.BatchableStatement;
@@ -64,6 +65,7 @@ public interface ReactiveCassandraBatchOperations {
 	 * @return {@code this} {@link ReactiveCassandraBatchOperations}.
 	 * @throws IllegalStateException if the batch was already executed.
 	 */
+	@Contract("_ -> this")
 	ReactiveCassandraBatchOperations withTimestamp(long timestamp);
 
 	/**
@@ -74,6 +76,7 @@ public interface ReactiveCassandraBatchOperations {
 	 * @throws IllegalStateException if the batch was already executed.
 	 * @since 4.4
 	 */
+	@Contract("_ -> this")
 	ReactiveCassandraBatchOperations withQueryOptions(QueryOptions options);
 
 	/**
@@ -84,6 +87,7 @@ public interface ReactiveCassandraBatchOperations {
 	 * @throws IllegalStateException if the batch was already executed.
 	 * @since 4.4
 	 */
+	@Contract("_ -> this")
 	default ReactiveCassandraBatchOperations addStatement(BatchableStatement<?> statement) {
 		return addStatement(Mono.just(statement));
 	}
@@ -96,6 +100,7 @@ public interface ReactiveCassandraBatchOperations {
 	 * @throws IllegalStateException if the batch was already executed.
 	 * @since 4.4
 	 */
+	@Contract("_ -> this")
 	ReactiveCassandraBatchOperations addStatement(Mono<? extends BatchableStatement<?>> statement);
 
 	/**
@@ -106,6 +111,7 @@ public interface ReactiveCassandraBatchOperations {
 	 * @throws IllegalStateException if the batch was already executed.
 	 * @since 4.4
 	 */
+	@Contract("_ -> this")
 	default ReactiveCassandraBatchOperations addStatements(BatchableStatement<?>... statements) {
 		return addStatements(Flux.fromArray(statements).toIterable());
 	}
@@ -118,6 +124,7 @@ public interface ReactiveCassandraBatchOperations {
 	 * @throws IllegalStateException if the batch was already executed.
 	 * @since 4.4
 	 */
+	@Contract("_ -> this")
 	default ReactiveCassandraBatchOperations addStatements(Iterable<? extends BatchableStatement<?>> statements) {
 		return addStatements(Mono.just(statements));
 	}
@@ -130,6 +137,7 @@ public interface ReactiveCassandraBatchOperations {
 	 * @throws IllegalStateException if the batch was already executed.
 	 * @since 4.4
 	 */
+	@Contract("_ -> this")
 	ReactiveCassandraBatchOperations addStatements(Mono<? extends Iterable<? extends BatchableStatement<?>>> statements);
 
 	/**
@@ -141,6 +149,7 @@ public interface ReactiveCassandraBatchOperations {
 	 * @throws IllegalStateException if the batch was already executed.
 	 * @since 3.2.2
 	 */
+	@Contract("_, _ -> this")
 	default ReactiveCassandraBatchOperations insert(Object entity, WriteOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
@@ -155,6 +164,7 @@ public interface ReactiveCassandraBatchOperations {
 	 * @return {@code this} {@link ReactiveCassandraBatchOperations}.
 	 * @throws IllegalStateException if the batch was already executed.
 	 */
+	@Contract("_ -> this")
 	ReactiveCassandraBatchOperations insert(Object... entities);
 
 	/**
@@ -164,6 +174,7 @@ public interface ReactiveCassandraBatchOperations {
 	 * @return {@code this} {@link ReactiveCassandraBatchOperations}.
 	 * @throws IllegalStateException if the batch was already executed.
 	 */
+	@Contract("_ -> this")
 	ReactiveCassandraBatchOperations insert(Iterable<?> entities);
 
 	/**
@@ -173,6 +184,7 @@ public interface ReactiveCassandraBatchOperations {
 	 * @return {@code this} {@link ReactiveCassandraBatchOperations}.
 	 * @throws IllegalStateException if the batch was already executed.
 	 */
+	@Contract("_ -> this")
 	ReactiveCassandraBatchOperations insert(Mono<? extends Iterable<?>> entities);
 
 	/**
@@ -184,6 +196,7 @@ public interface ReactiveCassandraBatchOperations {
 	 * @throws IllegalStateException if the batch was already executed.
 	 * @see InsertOptions
 	 */
+	@Contract("_, _ -> this")
 	ReactiveCassandraBatchOperations insert(Iterable<?> entities, WriteOptions options);
 
 	/**
@@ -195,6 +208,7 @@ public interface ReactiveCassandraBatchOperations {
 	 * @throws IllegalStateException if the batch was already executed.
 	 * @see InsertOptions
 	 */
+	@Contract("_, _ -> this")
 	ReactiveCassandraBatchOperations insert(Mono<? extends Iterable<?>> entities, WriteOptions options);
 
 	/**
@@ -206,6 +220,7 @@ public interface ReactiveCassandraBatchOperations {
 	 * @throws IllegalStateException if the batch was already executed.
 	 * @since 3.2.2
 	 */
+	@Contract("_, _ -> this")
 	default ReactiveCassandraBatchOperations update(Object entity, WriteOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
@@ -220,6 +235,7 @@ public interface ReactiveCassandraBatchOperations {
 	 * @return {@code this} {@link ReactiveCassandraBatchOperations}.
 	 * @throws IllegalStateException if the batch was already executed.
 	 */
+	@Contract("_ -> this")
 	ReactiveCassandraBatchOperations update(Object... entities);
 
 	/**
@@ -229,6 +245,7 @@ public interface ReactiveCassandraBatchOperations {
 	 * @return {@code this} {@link ReactiveCassandraBatchOperations}.
 	 * @throws IllegalStateException if the batch was already executed.
 	 */
+	@Contract("_ -> this")
 	ReactiveCassandraBatchOperations update(Iterable<?> entities);
 
 	/**
@@ -238,6 +255,7 @@ public interface ReactiveCassandraBatchOperations {
 	 * @return {@code this} {@link ReactiveCassandraBatchOperations}.
 	 * @throws IllegalStateException if the batch was already executed.
 	 */
+	@Contract("_ -> this")
 	ReactiveCassandraBatchOperations update(Mono<? extends Iterable<?>> entities);
 
 	/**
@@ -249,6 +267,7 @@ public interface ReactiveCassandraBatchOperations {
 	 * @throws IllegalStateException if the batch was already executed.
 	 * @see UpdateOptions
 	 */
+	@Contract("_, _ -> this")
 	ReactiveCassandraBatchOperations update(Iterable<?> entities, WriteOptions options);
 
 	/**
@@ -260,6 +279,7 @@ public interface ReactiveCassandraBatchOperations {
 	 * @throws IllegalStateException if the batch was already executed.
 	 * @see UpdateOptions
 	 */
+	@Contract("_ -> this")
 	ReactiveCassandraBatchOperations update(Mono<? extends Iterable<?>> entities, WriteOptions options);
 
 	/**
@@ -271,6 +291,7 @@ public interface ReactiveCassandraBatchOperations {
 	 * @throws IllegalStateException if the batch was already executed.
 	 * @since 3.2.2
 	 */
+	@Contract("_ -> this")
 	default ReactiveCassandraBatchOperations delete(Object entity, WriteOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");
@@ -285,6 +306,7 @@ public interface ReactiveCassandraBatchOperations {
 	 * @return {@code this} {@link ReactiveCassandraBatchOperations}.
 	 * @throws IllegalStateException if the batch was already executed.
 	 */
+	@Contract("_ -> this")
 	ReactiveCassandraBatchOperations delete(Object... entities);
 
 	/**
@@ -294,6 +316,7 @@ public interface ReactiveCassandraBatchOperations {
 	 * @return {@code this} {@link ReactiveCassandraBatchOperations}.
 	 * @throws IllegalStateException if the batch was already executed.
 	 */
+	@Contract("_ -> this")
 	ReactiveCassandraBatchOperations delete(Iterable<?> entities);
 
 	/**
@@ -303,6 +326,7 @@ public interface ReactiveCassandraBatchOperations {
 	 * @return {@code this} {@link ReactiveCassandraBatchOperations}.
 	 * @throws IllegalStateException if the batch was already executed.
 	 */
+	@Contract("_ -> this")
 	ReactiveCassandraBatchOperations delete(Mono<? extends Iterable<?>> entities);
 
 	/**
@@ -315,6 +339,7 @@ public interface ReactiveCassandraBatchOperations {
 	 * @since 2.2
 	 * @see DeleteOptions
 	 */
+	@Contract("_, _ -> this")
 	ReactiveCassandraBatchOperations delete(Iterable<?> entities, WriteOptions options);
 
 	/**
@@ -327,5 +352,7 @@ public interface ReactiveCassandraBatchOperations {
 	 * @since 2.2
 	 * @see DeleteOptions
 	 */
+	@Contract("_, _ -> this")
 	ReactiveCassandraBatchOperations delete(Mono<? extends Iterable<?>> entities, WriteOptions options);
+
 }

@@ -28,6 +28,9 @@ import java.util.function.UnaryOperator;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+
+import org.springframework.lang.CheckReturnValue;
+import org.springframework.lang.Contract;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
@@ -135,6 +138,7 @@ public class StatementBuilder<S extends BuildableQuery> {
 	 * @param action the bind function to be applied to the statement.
 	 * @return {@code this} {@link StatementBuilder}.
 	 */
+	@Contract("_ -> this")
 	public StatementBuilder<S> bind(BindFunction<S> action) {
 
 		Assert.notNull(action, "BindFunction must not be null");
@@ -151,6 +155,7 @@ public class StatementBuilder<S extends BuildableQuery> {
 	 * @return {@code this} {@link StatementBuilder}.
 	 */
 	@SuppressWarnings("unchecked")
+	@Contract("_ -> this")
 	public <R extends BuildableQuery> StatementBuilder<S> apply(Function<S, R> action) {
 
 		Assert.notNull(action, "BindFunction must not be null");
@@ -168,6 +173,7 @@ public class StatementBuilder<S extends BuildableQuery> {
 	 * @param action the {@link Consumer} function that gets notified on {@link #build()}.
 	 * @return {@code this} {@link StatementBuilder}.
 	 */
+	@Contract("_ -> this")
 	public StatementBuilder<S> onBuild(Consumer<SimpleStatementBuilder> action) {
 
 		Assert.notNull(action, "Consumer must not be null");
@@ -185,6 +191,7 @@ public class StatementBuilder<S extends BuildableQuery> {
 	 * @param mappingFunction the {@link UnaryOperator} function that gets notified on {@link #build()}.
 	 * @return {@code this} {@link StatementBuilder}.
 	 */
+	@Contract("_ -> this")
 	public StatementBuilder<S> transform(UnaryOperator<SimpleStatement> mappingFunction) {
 
 		Assert.notNull(mappingFunction, "Mapping function must not be null");
@@ -200,6 +207,7 @@ public class StatementBuilder<S extends BuildableQuery> {
 	 *
 	 * @return the built {@link SimpleStatement}.
 	 */
+	@CheckReturnValue
 	public SimpleStatement build() {
 		return build(ParameterHandling.BY_INDEX, this.registry);
 	}
@@ -211,6 +219,7 @@ public class StatementBuilder<S extends BuildableQuery> {
 	 * @param parameterHandling {@link ParameterHandling} used to determine how to render parameters.
 	 * @return the built {@link SimpleStatement}.
 	 */
+	@CheckReturnValue
 	public SimpleStatement build(ParameterHandling parameterHandling) {
 		return build(parameterHandling, this.registry);
 	}
@@ -223,6 +232,7 @@ public class StatementBuilder<S extends BuildableQuery> {
 	 * @param codecRegistry registry of Apache Cassandra codecs for converting to/from Java types and CQL types.
 	 * @return the built {@link SimpleStatement}.
 	 */
+	@CheckReturnValue
 	public SimpleStatement build(ParameterHandling parameterHandling, CodecRegistry codecRegistry) {
 
 		Assert.notNull(parameterHandling, "ParameterHandling must not be null");
@@ -383,6 +393,7 @@ public class StatementBuilder<S extends BuildableQuery> {
 		 * @return the modified statement instance.
 		 */
 		S bind(S statement, TermFactory factory);
+
 	}
 
 	@FunctionalInterface
@@ -409,6 +420,7 @@ public class StatementBuilder<S extends BuildableQuery> {
 		 * Named bind markers.
 		 */
 		BY_NAME
+
 	}
 
 	static class ListTerm implements Term {
@@ -439,6 +451,7 @@ public class StatementBuilder<S extends BuildableQuery> {
 			}
 			return true;
 		}
+
 	}
 
 	static class SetTerm implements Term {
@@ -469,6 +482,7 @@ public class StatementBuilder<S extends BuildableQuery> {
 			}
 			return true;
 		}
+
 	}
 
 	static class MapTerm implements Term {
@@ -518,5 +532,7 @@ public class StatementBuilder<S extends BuildableQuery> {
 			}
 			return true;
 		}
+
 	}
+
 }

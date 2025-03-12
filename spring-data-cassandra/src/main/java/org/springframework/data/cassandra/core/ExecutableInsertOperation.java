@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.core;
 
+import org.springframework.lang.Contract;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -66,6 +67,7 @@ public interface ExecutableInsertOperation {
 		 * @throws IllegalArgumentException if {@link String table} is {@literal null} or empty.
 		 * @see InsertWithOptions
 		 */
+		@Contract("_ -> new")
 		default InsertWithOptions<T> inTable(String table) {
 
 			Assert.hasText(table, "Table name must not be null or empty");
@@ -84,6 +86,7 @@ public interface ExecutableInsertOperation {
 		 * @see com.datastax.oss.driver.api.core.CqlIdentifier
 		 * @see InsertWithOptions
 		 */
+		@Contract("_ -> new")
 		InsertWithOptions<T> inTable(CqlIdentifier table);
 
 	}
@@ -102,6 +105,7 @@ public interface ExecutableInsertOperation {
 		 * @see org.springframework.data.cassandra.core.InsertOptions
 		 * @see TerminatingInsert
 		 */
+		@Contract("_ -> new")
 		TerminatingInsert<T> withOptions(InsertOptions insertOptions);
 
 	}

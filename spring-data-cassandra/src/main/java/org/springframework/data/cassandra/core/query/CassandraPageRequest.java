@@ -23,6 +23,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.lang.CheckReturnValue;
+import org.springframework.lang.Contract;
 import org.springframework.util.Assert;
 
 /**
@@ -215,6 +217,8 @@ public class CassandraPageRequest extends PageRequest {
 	 * @return a new {@link CassandraPageRequest} associated with the given {@link Sort}.
 	 * @since 2.1.13
 	 */
+	@Contract("_ -> new")
+	@CheckReturnValue
 	public CassandraPageRequest withSort(Sort sort) {
 
 		Assert.notNull(sort, "Sort must not be null");
