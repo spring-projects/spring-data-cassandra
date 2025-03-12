@@ -21,7 +21,7 @@ import org.springframework.dao.InvalidDataAccessApiUsageException;
 
 public class UnsupportedCassandraOperationException extends InvalidDataAccessApiUsageException {
 
-	@Serial private static final long serialVersionUID = 4921001859094231277L;
+	private static final @Serial long serialVersionUID = 4921001859094231277L;
 
 	public UnsupportedCassandraOperationException(String msg) {
 		super(msg);

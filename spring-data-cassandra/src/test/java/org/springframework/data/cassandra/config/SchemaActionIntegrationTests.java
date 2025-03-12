@@ -21,7 +21,9 @@ import static org.assertj.core.api.Assertions.*;
 import java.util.Collections;
 import java.util.Set;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -34,8 +36,6 @@ import org.springframework.data.cassandra.core.cql.session.init.ResourceKeyspace
 import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.cassandra.repository.support.IntegrationTestConfig;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
-import org.springframework.data.cassandra.test.util.IntegrationTestsSupport;
-import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;

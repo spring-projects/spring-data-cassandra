@@ -21,10 +21,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.cassandra.core.cql.Ordering;
 import org.springframework.data.mapping.model.Property;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
-import org.springframework.lang.Nullable;
 
 /**
  * {@link BasicCassandraPersistentProperty} that pre-computes primary key and embedded flags.
@@ -94,8 +94,9 @@ public class CachingCassandraPersistentProperty extends BasicCassandraPersistent
 	}
 
 	@Override
-	public AnnotatedType findAnnotatedType(Class<? extends Annotation> annotationType) {
+	public @Nullable AnnotatedType findAnnotatedType(Class<? extends Annotation> annotationType) {
 		return findAnnotatedTypeCache
 				.computeIfAbsent(annotationType, key -> Optional.ofNullable(super.findAnnotatedType(key))).orElse(null);
 	}
+
 }

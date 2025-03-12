@@ -17,8 +17,7 @@ package org.springframework.data.cassandra.core.cql.keyspace;
 
 import java.util.Map;
 
-import org.springframework.lang.Nullable;
-import org.springframework.util.StringUtils;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Enumeration that represents all known table options. If a table option is not listed here, but is supported by

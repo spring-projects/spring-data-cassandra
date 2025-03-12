@@ -94,4 +94,5 @@ public class AlterKeyspaceCqlGenerator extends KeyspaceOptionsCqlGenerator<Alter
 		}
 		// end options
 	}
+
 }

@@ -31,7 +31,7 @@ import com.datastax.oss.driver.api.core.metadata.Node;
  */
 public class CassandraConnectionFailureException extends DataAccessResourceFailureException {
 
-	@Serial private static final long serialVersionUID = 6299912054261646552L;
+	private static final @Serial long serialVersionUID = 6299912054261646552L;
 
 	private final Map<Node, Throwable> messagesByHost;
 

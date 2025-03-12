@@ -17,7 +17,8 @@ package org.springframework.data.cassandra.repository.query;
 
 import java.lang.reflect.Method;
 import java.util.Locale;
-import java.util.Optional;
+
+import org.jspecify.annotations.Nullable;
 
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
@@ -31,7 +32,6 @@ import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
@@ -53,9 +53,9 @@ public class CassandraQueryMethod extends QueryMethod {
 
 	private final MappingContext<? extends CassandraPersistentEntity<?>, ? extends CassandraPersistentProperty> mappingContext;
 
-	private final Optional<Query> query;
+	private final @Nullable Query query;
 
-	private final Optional<Consistency> consistency;
+	private final @Nullable Consistency consistency;
 
 	private @Nullable CassandraEntityMetadata<?> entityMetadata;
 
@@ -78,8 +78,8 @@ public class CassandraQueryMethod extends QueryMethod {
 
 		this.method = method;
 		this.mappingContext = mappingContext;
-		this.query = Optional.ofNullable(AnnotatedElementUtils.findMergedAnnotation(method, Query.class));
-		this.consistency = Optional.ofNullable(AnnotatedElementUtils.findMergedAnnotation(method, Consistency.class));
+		this.query = AnnotatedElementUtils.findMergedAnnotation(method, Query.class);
+		this.consistency = AnnotatedElementUtils.findMergedAnnotation(method, Consistency.class);
 	}
 
 	/**
@@ -131,7 +131,7 @@ public class CassandraQueryMethod extends QueryMethod {
 	 * Returns whether the method has an annotated query.
 	 */
 	public boolean hasAnnotatedQuery() {
-		return this.query.map(Query::value).filter(StringUtils::hasText).isPresent();
+		return this.query != null && StringUtils.hasText(this.query.value());
 	}
 
 	/**
@@ -140,9 +140,8 @@ public class CassandraQueryMethod extends QueryMethod {
 	 *
 	 * @return the query string or {@literal null} if no query string present.
 	 */
-	@Nullable
-	public String getAnnotatedQuery() {
-		return this.query.map(Query::value).orElse(null);
+	public @Nullable String getAnnotatedQuery() {
+		return this.query != null ? this.query.value() : null;
 	}
 
 	/**
@@ -150,7 +149,7 @@ public class CassandraQueryMethod extends QueryMethod {
 	 * @since 2.0
 	 */
 	public boolean hasConsistencyLevel() {
-		return consistency.isPresent();
+		return this.consistency != null;
 	}
 
 	/**
@@ -161,8 +160,12 @@ public class CassandraQueryMethod extends QueryMethod {
 	 * @throws IllegalStateException if the required annotation was not found.
 	 */
 	public ConsistencyLevel getRequiredAnnotatedConsistencyLevel() throws IllegalStateException {
-		return this.consistency.map(Consistency::value)
-				.orElseThrow(() -> new IllegalStateException("No @Consistency annotation found"));
+
+		if (this.consistency == null) {
+			throw new IllegalStateException("No @Consistency annotation found");
+		}
+
+		return this.consistency.value();
 	}
 
 	/**
@@ -173,17 +176,35 @@ public class CassandraQueryMethod extends QueryMethod {
 	 * @throws IllegalStateException in case query method has no annotated query.
 	 */
 	public String getRequiredAnnotatedQuery() {
-		return this.query.map(Query::value)
-				.orElseThrow(() -> new IllegalStateException("Query method " + this + " has no annotated query"));
+
+		if (this.query == null) {
+			throw new IllegalStateException("Query method " + this + " has no annotated query");
+		}
+
+		return this.query.value();
 	}
 
 	/**
-	 * Returns the {@link Query} annotation that is applied to the method or {@literal null} if none available.
-	 *
-	 * @return the optional query annotation.
+	 * Returns the {@link Query} annotation that is applied to the method.
 	 */
-	Optional<Query> getQueryAnnotation() {
+	@Nullable
+	Query getQueryAnnotation() {
 		return this.query;
+	}
+
+	/**
+	 * Returns the {@link Query} annotation that is applied to the method.
+	 *
+	 * @return the required query annotation.
+	 */
+	Query getRequiredQueryAnnotation() {
+
+		Query query = getQueryAnnotation();
+		if (query == null) {
+			throw new IllegalStateException("No @Consistency annotation found");
+		}
+
+		return query;
 	}
 
 	@Override
@@ -212,19 +233,23 @@ public class CassandraQueryMethod extends QueryMethod {
 	 * @return Query {@link Idempotency}. Defaults to {@link Idempotency#IDEMPOTENT} for {@code SELECT} queries.
 	 */
 	Idempotency getIdempotency() {
-		return this.query.filter(it -> it.idempotent() != Idempotency.UNDEFINED) //
-				.map(Query::idempotent) //
-				.orElseGet(() -> {
 
-					String cql = getAnnotatedQuery();
-					if (StringUtils.hasText(cql)) {
+		if (this.query == null) {
+			return Idempotency.UNDEFINED;
+		}
 
-						if (cql.trim().toUpperCase(Locale.ENGLISH).startsWith("SELECT ")) {
-							return Idempotency.IDEMPOTENT;
-						}
-					}
+		if (this.query.idempotent() != Idempotency.UNDEFINED) {
+			return this.query.idempotent();
+		}
 
-					return Idempotency.UNDEFINED;
-				});
+		String cql = getAnnotatedQuery();
+		if (StringUtils.hasText(cql)) {
+
+			if (cql.trim().toUpperCase(Locale.ENGLISH).startsWith("SELECT ")) {
+				return Idempotency.IDEMPOTENT;
+			}
+		}
+
+		return Idempotency.UNDEFINED;
 	}
 }

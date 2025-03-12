@@ -15,12 +15,12 @@
  */
 package org.springframework.data.cassandra.util;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.ParserContext;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.lang.Nullable;
 
 /**
  * Evaluates a SpEL expression.

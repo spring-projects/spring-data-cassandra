@@ -19,11 +19,11 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.cassandra.SessionFactory;
 import org.springframework.data.cassandra.core.cql.session.DefaultSessionFactory;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
@@ -438,7 +438,7 @@ public class CassandraAccessor implements InitializingBean {
 	 * @return the RowMapper to use
 	 * @see ColumnMapRowMapper
 	 */
-	protected RowMapper<Map<String, Object>> newColumnMapRowMapper() {
+	protected RowMapper<Map<String, @Nullable Object>> newColumnMapRowMapper() {
 		return new ColumnMapRowMapper();
 	}
 
@@ -464,4 +464,5 @@ public class CassandraAccessor implements InitializingBean {
 	protected static String toCql(@Nullable Object cqlProvider) {
 		return QueryExtractorDelegate.getCql(cqlProvider);
 	}
+
 }

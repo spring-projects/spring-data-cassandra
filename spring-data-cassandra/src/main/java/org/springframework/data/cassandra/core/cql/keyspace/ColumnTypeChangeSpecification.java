@@ -51,4 +51,5 @@ public abstract class ColumnTypeChangeSpecification extends ColumnChangeSpecific
 	public DataType getType() {
 		return type;
 	}
+
 }

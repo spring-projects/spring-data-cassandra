@@ -31,4 +31,5 @@ public class CqlNamespaceHandler extends NamespaceHandlerSupport {
 		registerBeanDefinitionParser("session", new CqlSessionParser());
 		registerBeanDefinitionParser("template", new CassandraCqlTemplateParser());
 	}
+
 }

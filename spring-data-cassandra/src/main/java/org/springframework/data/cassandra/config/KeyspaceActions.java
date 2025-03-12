@@ -18,8 +18,8 @@ package org.springframework.data.cassandra.config;
 import java.util.Arrays;
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceActionSpecification;
-import org.springframework.lang.Nullable;
 import org.springframework.util.ObjectUtils;
 
 /**
@@ -68,4 +68,5 @@ public final class KeyspaceActions {
 	public String toString() {
 		return "KeyspaceActions(actions=" + this.getActions() + ")";
 	}
+
 }

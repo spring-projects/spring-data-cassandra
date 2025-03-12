@@ -52,4 +52,5 @@ public interface ReactiveResultSetExtractor<T> {
 	 * @throws DataAccessException in case of custom exceptions.
 	 */
 	Publisher<T> extractData(ReactiveResultSet resultSet) throws DriverException, DataAccessException;
+
 }

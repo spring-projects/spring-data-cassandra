@@ -18,6 +18,8 @@ package org.springframework.data.cassandra.core.cql.converter;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;
 
@@ -38,10 +40,10 @@ public enum RowToListConverter implements Converter<Row, List<Object>> {
 	INSTANCE;
 
 	@Override
-	public List<Object> convert(Row row) {
+	public List<@Nullable Object> convert(Row row) {
 
 		ColumnDefinitions cols = row.getColumnDefinitions();
-		List<Object> objects = new ArrayList<>();
+		List<@Nullable Object> objects = new ArrayList<>();
 
 		cols.forEach(columnDefinition -> {
 			objects.add(row.isNull(columnDefinition.getName()) ? null : row.getObject(columnDefinition.getName()));

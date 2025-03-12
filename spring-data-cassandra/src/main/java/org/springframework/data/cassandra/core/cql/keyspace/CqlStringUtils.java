@@ -15,7 +15,9 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
+
+import org.springframework.lang.Contract;
 
 public class CqlStringUtils {
 
@@ -26,6 +28,7 @@ public class CqlStringUtils {
 	 * Doubles single quote characters (' -&gt; ''). Given {@literal null}, returns <code>null</code>.
 	 */
 	@Nullable
+	@Contract("null -> null; !null -> !null")
 	public static String escapeSingle(@Nullable Object thing) {
 		return (thing == null ? null : thing.toString().replace(SINGLE_QUOTE, DOUBLE_SINGLE_QUOTE));
 	}
@@ -35,6 +38,7 @@ public class CqlStringUtils {
 	 * {@literal null}.
 	 */
 	@Nullable
+	@Contract("null -> null; !null -> !null")
 	public static String singleQuote(@Nullable Object thing) {
 		return (thing == null ? null : SINGLE_QUOTE.concat(thing.toString()).concat(SINGLE_QUOTE));
 	}

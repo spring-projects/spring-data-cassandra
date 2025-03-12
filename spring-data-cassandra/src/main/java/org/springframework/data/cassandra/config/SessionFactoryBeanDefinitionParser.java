@@ -56,4 +56,5 @@ class SessionFactoryBeanDefinitionParser extends AbstractSingleBeanDefinitionPar
 		InitializeKeyspaceBeanDefinitionParser.parseKeyspacePopulator(element, builder);
 		builder.getRawBeanDefinition().setSource(element);
 	}
+
 }

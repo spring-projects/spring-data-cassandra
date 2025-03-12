@@ -23,11 +23,11 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.data.cassandra.SessionFactory;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlSession;
@@ -118,7 +118,8 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 	// -------------------------------------------------------------------------
 
 	@Override
-	public <T> CompletableFuture<T> execute(AsyncSessionCallback<T> action) throws DataAccessException {
+	public <T extends @Nullable Object> CompletableFuture<T> execute(AsyncSessionCallback<T> action)
+			throws DataAccessException {
 
 		Assert.notNull(action, "Callback object must not be null");
 
@@ -142,7 +143,8 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 	}
 
 	@Override
-	public <T> CompletableFuture<T> query(String cql, AsyncResultSetExtractor<T> resultSetExtractor)
+	public <T extends @Nullable Object> CompletableFuture<T> query(String cql,
+			AsyncResultSetExtractor<T> resultSetExtractor)
 			throws DataAccessException {
 
 		Assert.hasText(cql, "CQL must not be empty");
@@ -173,7 +175,8 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 	}
 
 	@Override
-	public <T> CompletableFuture<List<T>> query(String cql, RowMapper<T> rowMapper) throws DataAccessException {
+	public <T extends @Nullable Object> CompletableFuture<List<T>> query(String cql, RowMapper<T> rowMapper)
+			throws DataAccessException {
 		return query(cql, newAsyncResultSetExtractor(rowMapper));
 	}
 
@@ -183,7 +186,8 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 	}
 
 	@Override
-	public <T> CompletableFuture<List<T>> queryForList(String cql, Class<T> elementType) throws DataAccessException {
+	public <T extends @Nullable Object> CompletableFuture<List<T>> queryForList(String cql, Class<T> elementType)
+			throws DataAccessException {
 		return query(cql, newAsyncResultSetExtractor(newSingleColumnRowMapper(elementType)));
 	}
 
@@ -193,12 +197,14 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 	}
 
 	@Override
-	public <T> CompletableFuture<T> queryForObject(String cql, Class<T> requiredType) throws DataAccessException {
+	public <T extends @Nullable Object> CompletableFuture<T> queryForObject(String cql, Class<T> requiredType)
+			throws DataAccessException {
 		return queryForObject(cql, newSingleColumnRowMapper(requiredType));
 	}
 
 	@Override
-	public <T> CompletableFuture<T> queryForObject(String cql, RowMapper<T> rowMapper) throws DataAccessException {
+	public <T extends @Nullable Object> CompletableFuture<T> queryForObject(String cql, RowMapper<T> rowMapper)
+			throws DataAccessException {
 
 		CompletableFuture<List<T>> results = query(cql, newAsyncResultSetExtractor(rowMapper));
 
@@ -223,7 +229,8 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 	}
 
 	@Override
-	public <T> CompletableFuture<T> query(Statement<?> statement, AsyncResultSetExtractor<T> resultSetExtractor)
+	public <T extends @Nullable Object> CompletableFuture<T> query(Statement<?> statement,
+			AsyncResultSetExtractor<T> resultSetExtractor)
 			throws DataAccessException {
 
 		Assert.notNull(statement, "CQL Statement must not be null");
@@ -257,7 +264,7 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 	}
 
 	@Override
-	public <T> CompletableFuture<List<T>> query(Statement<?> statement, RowMapper<T> rowMapper)
+	public <T extends @Nullable Object> CompletableFuture<List<T>> query(Statement<?> statement, RowMapper<T> rowMapper)
 			throws DataAccessException {
 		return query(statement, newAsyncResultSetExtractor(rowMapper));
 	}
@@ -268,7 +275,8 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 	}
 
 	@Override
-	public <T> CompletableFuture<List<T>> queryForList(Statement<?> statement, Class<T> elementType)
+	public <T extends @Nullable Object> CompletableFuture<List<T>> queryForList(Statement<?> statement,
+			Class<T> elementType)
 			throws DataAccessException {
 		return query(statement, newAsyncResultSetExtractor(newSingleColumnRowMapper(elementType)));
 	}
@@ -279,13 +287,14 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 	}
 
 	@Override
-	public <T> CompletableFuture<T> queryForObject(Statement<?> statement, Class<T> requiredType)
+	public <T extends @Nullable Object> CompletableFuture<T> queryForObject(Statement<?> statement, Class<T> requiredType)
 			throws DataAccessException {
 		return queryForObject(statement, newSingleColumnRowMapper(requiredType));
 	}
 
 	@Override
-	public <T> CompletableFuture<T> queryForObject(Statement<?> statement, RowMapper<T> rowMapper)
+	public <T extends @Nullable Object> CompletableFuture<T> queryForObject(Statement<?> statement,
+			RowMapper<T> rowMapper)
 			throws DataAccessException {
 
 		CompletableFuture<List<T>> results = query(statement, newAsyncResultSetExtractor(rowMapper));
@@ -323,12 +332,14 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 	}
 
 	@Override
-	public <T> CompletableFuture<T> execute(String cql, PreparedStatementCallback<T> action) throws DataAccessException {
+	public <T extends @Nullable Object> CompletableFuture<T> execute(String cql, PreparedStatementCallback<T> action)
+			throws DataAccessException {
 		return execute(newAsyncPreparedStatementCreator(cql), action);
 	}
 
 	@Override
-	public <T> CompletableFuture<T> execute(AsyncPreparedStatementCreator preparedStatementCreator,
+	public <T extends @Nullable Object> CompletableFuture<T> execute(
+			AsyncPreparedStatementCreator preparedStatementCreator,
 			PreparedStatementCallback<T> action) throws DataAccessException {
 
 		Assert.notNull(preparedStatementCreator, "PreparedStatementCreator must not be null");
@@ -359,7 +370,7 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 	}
 
 	@Override
-	public <T> CompletableFuture<T> query(AsyncPreparedStatementCreator preparedStatementCreator,
+	public <T extends @Nullable Object> CompletableFuture<T> query(AsyncPreparedStatementCreator preparedStatementCreator,
 			AsyncResultSetExtractor<T> resultSetExtractor) throws DataAccessException {
 
 		return query(preparedStatementCreator, null, resultSetExtractor);
@@ -376,14 +387,15 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 	}
 
 	@Override
-	public <T> CompletableFuture<List<T>> query(AsyncPreparedStatementCreator preparedStatementCreator,
+	public <T extends @Nullable Object> CompletableFuture<List<T>> query(
+			AsyncPreparedStatementCreator preparedStatementCreator,
 			RowMapper<T> rowMapper) throws DataAccessException {
 
 		return query(preparedStatementCreator, null, newAsyncResultSetExtractor(rowMapper));
 	}
 
 	@Override
-	public <T> CompletableFuture<T> query(AsyncPreparedStatementCreator preparedStatementCreator,
+	public <T extends @Nullable Object> CompletableFuture<T> query(AsyncPreparedStatementCreator preparedStatementCreator,
 			@Nullable PreparedStatementBinder psb, AsyncResultSetExtractor<T> resultSetExtractor) throws DataAccessException {
 
 		Assert.notNull(preparedStatementCreator, "AsyncPreparedStatementCreator must not be null");
@@ -431,13 +443,15 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 	}
 
 	@Override
-	public <T> CompletableFuture<List<T>> query(AsyncPreparedStatementCreator preparedStatementCreator,
+	public <T extends @Nullable Object> CompletableFuture<List<T>> query(
+			AsyncPreparedStatementCreator preparedStatementCreator,
 			@Nullable PreparedStatementBinder psb, RowMapper<T> rowMapper) throws DataAccessException {
 		return query(preparedStatementCreator, psb, newAsyncResultSetExtractor(rowMapper));
 	}
 
 	@Override
-	public <T> CompletableFuture<T> query(String cql, AsyncResultSetExtractor<T> resultSetExtractor, Object... args)
+	public <T extends @Nullable Object> CompletableFuture<T> query(String cql,
+			AsyncResultSetExtractor<T> resultSetExtractor, Object... args)
 			throws DataAccessException {
 		return query(newAsyncPreparedStatementCreator(cql), newPreparedStatementBinder(args), resultSetExtractor);
 	}
@@ -453,14 +467,15 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 	}
 
 	@Override
-	public <T> CompletableFuture<List<T>> query(String cql, RowMapper<T> rowMapper, Object... args)
+	public <T extends @Nullable Object> CompletableFuture<List<T>> query(String cql, RowMapper<T> rowMapper,
+			Object... args)
 			throws DataAccessException {
 		return query(newAsyncPreparedStatementCreator(cql), newPreparedStatementBinder(args),
 				newAsyncResultSetExtractor(rowMapper));
 	}
 
 	@Override
-	public <T> CompletableFuture<T> query(String cql, @Nullable PreparedStatementBinder psb,
+	public <T extends @Nullable Object> CompletableFuture<T> query(String cql, @Nullable PreparedStatementBinder psb,
 			AsyncResultSetExtractor<T> resultSetExtractor) throws DataAccessException {
 
 		return query(newAsyncPreparedStatementCreator(cql), psb, resultSetExtractor);
@@ -477,7 +492,8 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 	}
 
 	@Override
-	public <T> CompletableFuture<List<T>> query(String cql, @Nullable PreparedStatementBinder psb, RowMapper<T> rowMapper)
+	public <T extends @Nullable Object> CompletableFuture<List<T>> query(String cql,
+			@Nullable PreparedStatementBinder psb, RowMapper<T> rowMapper)
 			throws DataAccessException {
 
 		return query(newAsyncPreparedStatementCreator(cql), psb, newAsyncResultSetExtractor(rowMapper));
@@ -492,7 +508,8 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 	}
 
 	@Override
-	public <T> CompletableFuture<List<T>> queryForList(String cql, Class<T> elementType, Object... args)
+	public <T extends @Nullable Object> CompletableFuture<List<T>> queryForList(String cql, Class<T> elementType,
+			Object... args)
 			throws DataAccessException {
 
 		return query(newAsyncPreparedStatementCreator(cql), newPreparedStatementBinder(args),
@@ -505,14 +522,16 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 	}
 
 	@Override
-	public <T> CompletableFuture<T> queryForObject(String cql, Class<T> requiredType, Object... args)
+	public <T extends @Nullable Object> CompletableFuture<T> queryForObject(String cql, Class<T> requiredType,
+			Object... args)
 			throws DataAccessException {
 
 		return queryForObject(cql, newSingleColumnRowMapper(requiredType), args);
 	}
 
 	@Override
-	public <T> CompletableFuture<T> queryForObject(String cql, RowMapper<T> rowMapper, Object... args)
+	public <T extends @Nullable Object> CompletableFuture<T> queryForObject(String cql, RowMapper<T> rowMapper,
+			Object... args)
 			throws DataAccessException {
 
 		CompletableFuture<List<T>> results = query(newAsyncPreparedStatementCreator(cql), newPreparedStatementBinder(args),
@@ -593,7 +612,8 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 	 * @see RowMapper
 	 * @see RowMapperResultSetExtractor
 	 */
-	protected <T> AsyncRowMapperResultSetExtractor<T> newAsyncResultSetExtractor(RowMapper<T> rowMapper) {
+	protected <T extends @Nullable Object> AsyncRowMapperResultSetExtractor<T> newAsyncResultSetExtractor(
+			RowMapper<T> rowMapper) {
 		return new AsyncRowMapperResultSetExtractor<>(rowMapper);
 	}
 
@@ -606,7 +626,7 @@ public class AsyncCqlTemplate extends CassandraAccessor implements AsyncCqlOpera
 		return sessionFactory.getSession();
 	}
 
-	private static <T> Function<Throwable, CompletionStage<T>> exceptionComposition(
+	private static <T extends @Nullable Object> Function<Throwable, CompletionStage<T>> exceptionComposition(
 			Function<RuntimeException, Exception> exceptionTranslator) {
 		return throwable -> {
 

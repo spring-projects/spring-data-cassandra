@@ -34,6 +34,6 @@ public enum RowToArrayConverter implements Converter<Row, Object[]> {
 	public Object[] convert(Row row) {
 
 		List<Object> list = RowToListConverter.INSTANCE.convert(row);
-		return list == null ? null : list.toArray();
+		return list.toArray();
 	}
 }

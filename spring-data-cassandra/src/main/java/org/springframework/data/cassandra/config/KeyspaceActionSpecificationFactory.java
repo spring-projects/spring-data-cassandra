@@ -260,5 +260,7 @@ class KeyspaceActionSpecificationFactory {
 			return new KeyspaceActionSpecificationFactory(name, new ArrayList<>(replications), replicationStrategy,
 					replicationFactor, durableWrites);
 		}
+
 	}
+
 }

@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.config;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.cassandra.SessionFactory;
@@ -23,7 +24,6 @@ import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.CqlOperations;
 import org.springframework.data.cassandra.core.cql.session.DefaultSessionFactory;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlSession;
@@ -57,9 +57,13 @@ public class CassandraTemplateFactoryBean implements FactoryBean<CassandraTempla
 	@Override
 	public CassandraTemplate getObject() throws Exception {
 
+		Assert.state(converter != null, "CassandraConverter is not initialized");
+
 		if (cqlOperations != null) {
 			return new CassandraTemplate(cqlOperations, converter);
 		}
+
+		Assert.state(sessionFactory != null, "Either CqlSessionFactory or CqlOperations must be set");
 
 		return new CassandraTemplate(sessionFactory, converter);
 	}
@@ -127,4 +131,5 @@ public class CassandraTemplateFactoryBean implements FactoryBean<CassandraTempla
 
 		this.converter = converter;
 	}
+
 }

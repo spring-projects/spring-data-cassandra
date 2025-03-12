@@ -1,7 +1,7 @@
 /**
  * Provides extensible support for initializing databases through scripts.
  */
-@NonNullApi
+@org.jspecify.annotations.NullMarked
 package org.springframework.data.cassandra.core.cql.session.init;
 
-import org.springframework.lang.NonNullApi;
+

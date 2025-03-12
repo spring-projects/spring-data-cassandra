@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
@@ -49,7 +50,6 @@ import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.model.PropertyValueProvider;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -145,8 +145,7 @@ public class QueryMapper {
 		return Filter.from(result);
 	}
 
-	@Nullable
-	private Object getMappedValue(Field field, CriteriaDefinition.Operator operator, Object value) {
+	private @Nullable Object getMappedValue(Field field, CriteriaDefinition.Operator operator, Object value) {
 
 		if (field.getProperty().isPresent()
 				&& field.getProperty().filter(it -> converter.getCustomConversions().hasValueConverter(it)).isPresent()) {
@@ -160,7 +159,7 @@ public class QueryMapper {
 			}, property, converter);
 
 			PropertyValueConverter<Object, Object, ValueConversionContext<CassandraPersistentProperty>> valueConverter = converter
-					.getCustomConversions().getPropertyValueConversions().getValueConverter(property);
+					.getCustomConversions().getRequiredValueConverter(property);
 
 			/* might be an $in clause with multiple entries */
 			if (!property.isCollectionLike() && value instanceof List<?> collection) {
@@ -233,18 +232,14 @@ public class QueryMapper {
 
 	private Selector getMappedSelector(Selector selector, CqlIdentifier cqlIdentifier, Field field) {
 
-		if (selector instanceof ColumnSelector) {
-
-			ColumnSelector columnSelector = (ColumnSelector) selector;
+		if (selector instanceof ColumnSelector columnSelector) {
 
 			ColumnSelector mappedColumnSelector = ColumnSelector.from(cqlIdentifier);
 
 			return columnSelector.getAlias().map(mappedColumnSelector::as).orElse(mappedColumnSelector);
 		}
 
-		if (selector instanceof FunctionCall) {
-
-			FunctionCall functionCall = (FunctionCall) selector;
+		if (selector instanceof FunctionCall functionCall) {
 
 			FunctionCall mappedFunctionCall = FunctionCall.from(functionCall.getExpression(),
 					functionCall.getParameters().stream().map(obj -> {
@@ -662,9 +657,10 @@ public class QueryMapper {
 		}
 
 		@Override
+		@SuppressWarnings("NullAway")
 		public ColumnName getMappedKey() {
 
-			if (!path.isPresent()) {
+			if (path.isEmpty()) {
 				return name;
 			}
 
@@ -691,4 +687,5 @@ public class QueryMapper {
 			return ColumnName.from(leafProperty.getColumnName());
 		}
 	}
+
 }

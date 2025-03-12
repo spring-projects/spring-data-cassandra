@@ -76,4 +76,5 @@ public class FieldSpecification {
 	public String toString() {
 		return toCql(new StringBuilder()).toString();
 	}
+
 }

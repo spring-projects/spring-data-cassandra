@@ -17,6 +17,8 @@ package org.springframework.data.cassandra.core.cql;
 
 import java.util.concurrent.CompletableFuture;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.dao.DataAccessException;
 
 import com.datastax.oss.driver.api.core.CqlSession;
@@ -38,7 +40,7 @@ import com.datastax.oss.driver.api.core.DriverException;
  * @see AsyncCqlTemplate#execute(String)
  */
 @FunctionalInterface
-public interface AsyncSessionCallback<T> {
+public interface AsyncSessionCallback<T extends @Nullable Object> {
 
 	/**
 	 * Gets called by {@link AsyncCqlTemplate#execute} with an active Cassandra {@link CqlSession}. Does not need to care
@@ -57,4 +59,5 @@ public interface AsyncSessionCallback<T> {
 	 * @see AsyncCqlTemplate#queryForResultSet(String)
 	 */
 	CompletableFuture<T> doInSession(CqlSession session) throws DriverException, DataAccessException;
+
 }

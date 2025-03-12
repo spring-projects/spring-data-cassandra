@@ -21,7 +21,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.springframework.util.ObjectUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -42,7 +42,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
 public abstract class KeyspaceOptionsSpecification<T extends KeyspaceOptionsSpecification<T>>
 		extends KeyspaceActionSpecification {
 
-	protected Map<String, Object> options = new LinkedHashMap<>();
+	protected Map<String, @Nullable Object> options = new LinkedHashMap<>();
 
 	protected KeyspaceOptionsSpecification(CqlIdentifier name) {
 		super(name);

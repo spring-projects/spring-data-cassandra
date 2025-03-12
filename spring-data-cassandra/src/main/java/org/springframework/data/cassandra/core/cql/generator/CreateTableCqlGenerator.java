@@ -202,4 +202,5 @@ public class CreateTableCqlGenerator extends TableOptionsCqlGenerator<TableSpeci
 			str.append(col.getName().asCql(true));
 		}
 	}
+
 }

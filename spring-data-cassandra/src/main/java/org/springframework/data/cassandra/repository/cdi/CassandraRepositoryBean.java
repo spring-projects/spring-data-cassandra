@@ -23,11 +23,12 @@ import java.lang.annotation.Annotation;
 import java.util.Optional;
 import java.util.Set;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.repository.support.CassandraRepositoryFactory;
 import org.springframework.data.repository.cdi.CdiRepositoryBean;
 import org.springframework.data.repository.config.CustomRepositoryImplementationDetector;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**

@@ -56,4 +56,5 @@ class CassandraMappingConverterParser extends AbstractSingleBeanDefinitionParser
 		builder.addConstructorArgReference(mappingRef);
 		builder.getRawBeanDefinition().setSource(element);
 	}
+
 }

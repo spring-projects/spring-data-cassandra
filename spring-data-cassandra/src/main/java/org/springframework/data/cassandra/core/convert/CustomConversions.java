@@ -40,4 +40,5 @@ public class CustomConversions extends CassandraCustomConversions {
 	private CustomConversions(List<?> converters) {
 		super(converters);
 	}
+
 }

@@ -17,9 +17,9 @@ package org.springframework.data.cassandra.core;
 
 import reactor.core.publisher.Mono;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.core.query.Update;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -60,7 +60,7 @@ class ReactiveUpdateOperationSupport implements ReactiveUpdateOperation {
 		private final @Nullable CqlIdentifier tableName;
 
 		public ReactiveUpdateSupport(ReactiveCassandraTemplate template, Class<?> domainType, Query query,
-				CqlIdentifier tableName) {
+				@Nullable CqlIdentifier tableName) {
 			this.template = template;
 			this.domainType = domainType;
 			this.query = query;

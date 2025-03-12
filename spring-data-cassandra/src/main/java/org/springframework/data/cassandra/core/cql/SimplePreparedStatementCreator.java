@@ -67,4 +67,5 @@ public class SimplePreparedStatementCreator implements PreparedStatementCreator,
 	public String getCql() {
 		return this.statement.getQuery();
 	}
+
 }

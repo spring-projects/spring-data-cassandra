@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -59,13 +59,12 @@ public abstract class IndexNameSpecification<T extends IndexNameSpecification<T>
 		this.name = name;
 	}
 
-	@Nullable
-	public CqlIdentifier getKeyspace() {
+	public @Nullable CqlIdentifier getKeyspace() {
 		return keyspace;
 	}
 
-	@Nullable
-	public CqlIdentifier getName() {
+	public @Nullable CqlIdentifier getName() {
 		return this.name;
 	}
+
 }

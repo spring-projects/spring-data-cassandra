@@ -53,4 +53,5 @@ public class AbstractDeleteEvent<T> extends AbstractStatementAwareMappingEvent<S
 	public Class<T> getType() {
 		return type;
 	}
+
 }

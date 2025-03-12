@@ -91,13 +91,13 @@ fun <T : Any> AsyncCqlOperations.queryForObject(
 	statement: Statement<*>,
 	entityClass: KClass<T>
 ): CompletableFuture<T?> =
-	queryForObject(statement, entityClass.java)
+	queryForObject(statement, entityClass.java) as CompletableFuture<T?>
 
 /**
  * Extension for [AsyncCqlOperations.queryForObject] leveraging reified type parameters.
  */
 inline fun <reified T : Any> AsyncCqlOperations.queryForObject(statement: Statement<*>): CompletableFuture<T?> =
-	queryForObject(statement, T::class.java)
+	queryForObject(statement, T::class.java) as CompletableFuture<T?>
 
 /**
  * Extension for [AsyncCqlOperations.queryForList] leveraging reified type parameters.
@@ -145,7 +145,7 @@ inline fun <reified T : Any> AsyncCqlOperations.query(
 	vararg args: Any,
 	crossinline function: (AsyncResultSet) -> CompletableFuture<T>
 ): CompletableFuture<T?> =
-	query(cql, AsyncResultSetExtractor { function(it) }, *args)
+	query(cql, AsyncResultSetExtractor { function(it) }, *args) as CompletableFuture<T?>
 
 /**
  * Extension for [AsyncCqlOperations.query] providing a RowMapper-like function

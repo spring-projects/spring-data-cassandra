@@ -48,4 +48,5 @@ public enum SchemaAction {
 	 * Drop <em>all</em> tables in the keyspace, then create each table as necessary.
 	 */
 	RECREATE_DROP_UNUSED
+
 }

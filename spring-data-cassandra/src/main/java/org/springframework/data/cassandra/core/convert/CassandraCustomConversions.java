@@ -287,4 +287,5 @@ public class CassandraCustomConversions extends org.springframework.data.convert
 			return propertyValueConversions == internalValueConversion;
 		}
 	}
+
 }

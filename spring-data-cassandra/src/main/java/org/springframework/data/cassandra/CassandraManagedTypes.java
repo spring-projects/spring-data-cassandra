@@ -80,4 +80,5 @@ public final class CassandraManagedTypes implements ManagedTypes {
 	public void forEach(Consumer<Class<?>> action) {
 		delegate.forEach(action);
 	}
+
 }

@@ -15,8 +15,8 @@
  */
 package org.springframework.data.cassandra.core.cql;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.dao.DataAccessException;
-import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.core.DriverException;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
@@ -41,7 +41,7 @@ import com.datastax.oss.driver.api.core.cql.ResultSet;
  * @see RowMapper
  */
 @FunctionalInterface
-public interface ResultSetExtractor<T> {
+public interface ResultSetExtractor<T extends @Nullable Object> {
 
 	/**
 	 * Implementations must implement this method to process the entire {@link ResultSet}.
@@ -53,6 +53,6 @@ public interface ResultSetExtractor<T> {
 	 *           there's no need to catch {@link DriverException})
 	 * @throws DataAccessException in case of custom exceptions
 	 */
-	@Nullable
 	T extractData(ResultSet resultSet) throws DriverException, DataAccessException;
+
 }

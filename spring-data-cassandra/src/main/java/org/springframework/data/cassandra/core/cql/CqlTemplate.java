@@ -25,10 +25,10 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.data.cassandra.SessionFactory;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlSession;
@@ -122,7 +122,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	// -------------------------------------------------------------------------
 
 	@Override
-	public <T> T execute(SessionCallback<T> action) throws DataAccessException {
+	public <T extends @Nullable Object> T execute(SessionCallback<T> action) throws DataAccessException {
 
 		Assert.notNull(action, "Callback object must not be null");
 
@@ -146,8 +146,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	@Nullable
-	public <T> T query(String cql, ResultSetExtractor<T> resultSetExtractor) throws DataAccessException {
+	public <T extends @Nullable Object> T query(String cql, ResultSetExtractor<T> resultSetExtractor)
+			throws DataAccessException {
 
 		Assert.hasText(cql, "CQL must not be empty");
 		Assert.notNull(resultSetExtractor, "ResultSetExtractor must not be null");
@@ -173,41 +173,40 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public <T> List<T> query(String cql, RowMapper<T> rowMapper) throws DataAccessException {
-		// noinspection ConstantConditions
+	public <T extends @Nullable Object> List<T> query(String cql, RowMapper<T> rowMapper) throws DataAccessException {
 		return query(cql, newResultSetExtractor(rowMapper));
 	}
 
 	@Override
 	public List<Map<String, Object>> queryForList(String cql) throws DataAccessException {
-		// noinspection ConstantConditions
 		return query(cql, newResultSetExtractor(newColumnMapRowMapper()));
 	}
 
 	@Override
-	public <T> List<T> queryForList(String cql, Class<T> elementType) throws DataAccessException {
-		// noinspection ConstantConditions
+	public <T extends @Nullable Object> List<T> queryForList(String cql, Class<T> elementType)
+			throws DataAccessException {
 		return query(cql, newResultSetExtractor(newSingleColumnRowMapper(elementType)));
 	}
 
 	@Override
-	public Map<String, Object> queryForMap(String cql) throws DataAccessException {
+	public @Nullable Map<String, Object> queryForMap(String cql) throws DataAccessException {
 		return queryForObject(cql, newColumnMapRowMapper());
 	}
 
 	@Override
-	public <T> T queryForObject(String cql, Class<T> requiredType) throws DataAccessException {
+	public <T extends @Nullable Object> @Nullable T queryForObject(String cql, Class<T> requiredType)
+			throws DataAccessException {
 		return queryForObject(cql, newSingleColumnRowMapper(requiredType));
 	}
 
 	@Override
-	public <T> T queryForObject(String cql, RowMapper<T> rowMapper) throws DataAccessException {
+	public <T extends @Nullable Object> @Nullable T queryForObject(String cql, RowMapper<T> rowMapper)
+			throws DataAccessException {
 		return DataAccessUtils.nullableSingleResult(query(cql, newResultSetExtractor(rowMapper)));
 	}
 
 	@Override
 	public ResultSet queryForResultSet(String cql) throws DataAccessException {
-		// noinspection ConstantConditions
 		return query(cql, rs -> rs);
 	}
 
@@ -229,7 +228,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public <T> T query(Statement<?> statement, ResultSetExtractor<T> resultSetExtractor) throws DataAccessException {
+	public <T extends @Nullable Object> T query(Statement<?> statement, ResultSetExtractor<T> resultSetExtractor)
+			throws DataAccessException {
 
 		Assert.notNull(statement, "CQL Statement must not be null");
 		Assert.notNull(resultSetExtractor, "ResultSetExtractor must not be null");
@@ -251,26 +251,25 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public <T> List<T> query(Statement<?> statement, RowMapper<T> rowMapper) throws DataAccessException {
-		// noinspection ConstantConditions
+	public <T extends @Nullable Object> List<T> query(Statement<?> statement, RowMapper<T> rowMapper)
+			throws DataAccessException {
 		return query(statement, newResultSetExtractor(rowMapper));
 	}
 
 	@Override
-	public <T> Stream<T> queryForStream(Statement<?> statement, RowMapper<T> rowMapper) throws DataAccessException {
-		// noinspection ConstantConditions
+	public <T extends @Nullable Object> Stream<T> queryForStream(Statement<?> statement, RowMapper<T> rowMapper)
+			throws DataAccessException {
 		return query(statement, newStreamExtractor(rowMapper));
 	}
 
 	@Override
 	public List<Map<String, Object>> queryForList(Statement<?> statement) throws DataAccessException {
-		// noinspection ConstantConditions
 		return query(statement, newResultSetExtractor(newColumnMapRowMapper()));
 	}
 
 	@Override
-	public <T> List<T> queryForList(Statement<?> statement, Class<T> elementType) throws DataAccessException {
-		// noinspection ConstantConditions
+	public <T extends @Nullable Object> List<T> queryForList(Statement<?> statement, Class<T> elementType)
+			throws DataAccessException {
 		return query(statement, newResultSetExtractor(newSingleColumnRowMapper(elementType)));
 	}
 
@@ -280,18 +279,21 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public <T> T queryForObject(Statement<?> statement, Class<T> requiredType) throws DataAccessException {
+	public <T extends @Nullable Object> T queryForObject(Statement<?> statement, Class<T> requiredType)
+			throws DataAccessException {
 		return queryForObject(statement, newSingleColumnRowMapper(requiredType));
 	}
 
 	@Override
-	public <T> T queryForObject(Statement<?> statement, RowMapper<T> rowMapper) throws DataAccessException {
+	@SuppressWarnings("NullAway")
+	public <T extends @Nullable Object> T queryForObject(Statement<?> statement, RowMapper<T> rowMapper)
+			throws DataAccessException {
 		return DataAccessUtils.nullableSingleResult(query(statement, newResultSetExtractor(rowMapper)));
 	}
 
 	@Override
+	@SuppressWarnings("NullAway")
 	public ResultSet queryForResultSet(Statement<?> statement) throws DataAccessException {
-		// noinspection ConstantConditions
 		return query(statement, rs -> rs);
 	}
 
@@ -311,33 +313,31 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 
 	@Override
 	public boolean execute(String cql, @Nullable PreparedStatementBinder psb) throws DataAccessException {
-		// noinspection ConstantConditions
 		return query(newPreparedStatementCreator(cql), psb, ResultSet::wasApplied);
 	}
 
-	@Nullable
 	@Override
-	public <T> T execute(String cql, PreparedStatementCallback<T> action) throws DataAccessException {
+	public <T extends @Nullable Object> T execute(String cql, PreparedStatementCallback<T> action)
+			throws DataAccessException {
 		return execute(newPreparedStatementCreator(cql), action);
 	}
 
 	@Override
 	public boolean execute(PreparedStatementCreator preparedStatementCreator) throws DataAccessException {
-		// noinspection ConstantConditions
 		return query(preparedStatementCreator, ResultSet::wasApplied);
 	}
 
 	@Override
-	@Nullable
-	public <T> T execute(PreparedStatementCreator preparedStatementCreator, PreparedStatementCallback<T> action)
-			throws DataAccessException {
+	public <T extends @Nullable Object> T execute(PreparedStatementCreator preparedStatementCreator,
+			PreparedStatementCallback<T> action) throws DataAccessException {
 
 		Assert.notNull(preparedStatementCreator, "PreparedStatementCreator must not be null");
 		Assert.notNull(action, "PreparedStatementCallback object must not be null");
 
 		try {
 			if (logger.isDebugEnabled()) {
-				logger.debug(String.format("Preparing statement [%s] using %s", toCql(preparedStatementCreator), preparedStatementCreator));
+				logger.debug(String.format("Preparing statement [%s] using %s", toCql(preparedStatementCreator),
+						preparedStatementCreator));
 			}
 
 			CqlSession session = getCurrentSession();
@@ -350,8 +350,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public <T> T query(PreparedStatementCreator preparedStatementCreator, ResultSetExtractor<T> resultSetExtractor)
-			throws DataAccessException {
+	public <T extends @Nullable Object> T query(PreparedStatementCreator preparedStatementCreator,
+			ResultSetExtractor<T> resultSetExtractor) throws DataAccessException {
 
 		return query(preparedStatementCreator, null, resultSetExtractor);
 	}
@@ -364,30 +364,28 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public <T> List<T> query(PreparedStatementCreator preparedStatementCreator, RowMapper<T> rowMapper)
-			throws DataAccessException {
-		// noinspection ConstantConditions
+	public <T extends @Nullable Object> List<T> query(PreparedStatementCreator preparedStatementCreator,
+			RowMapper<T> rowMapper) throws DataAccessException {
 		return query(preparedStatementCreator, null, newResultSetExtractor(rowMapper));
 	}
 
 	@Override
 	public <T> Stream<T> queryForStream(PreparedStatementCreator preparedStatementCreator, RowMapper<T> rowMapper)
 			throws DataAccessException {
-		// noinspection ConstantConditions
 		return query(preparedStatementCreator, null, newStreamExtractor(rowMapper));
 	}
 
-	@Nullable
 	@Override
-	public <T> T query(PreparedStatementCreator preparedStatementCreator, @Nullable PreparedStatementBinder psb,
-			ResultSetExtractor<T> resultSetExtractor) throws DataAccessException {
+	public <T extends @Nullable Object> T query(PreparedStatementCreator preparedStatementCreator,
+			@Nullable PreparedStatementBinder psb, ResultSetExtractor<T> resultSetExtractor) throws DataAccessException {
 
 		Assert.notNull(preparedStatementCreator, "PreparedStatementCreator must not be null");
 		Assert.notNull(resultSetExtractor, "ResultSetExtractor object must not be null");
 
 		try {
 			if (logger.isDebugEnabled()) {
-				logger.debug(String.format("Preparing statement [%s] using %s", toCql(preparedStatementCreator), preparedStatementCreator));
+				logger.debug(String.format("Preparing statement [%s] using %s", toCql(preparedStatementCreator),
+						preparedStatementCreator));
 			}
 
 			CqlSession session = getCurrentSession();
@@ -395,7 +393,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 			PreparedStatement preparedStatement = preparedStatementCreator.createPreparedStatement(session);
 
 			if (logger.isDebugEnabled()) {
-				logger.debug(String.format("Executing prepared statement [%s]", QueryExtractorDelegate.getCql(preparedStatement)));
+				logger.debug(
+						String.format("Executing prepared statement [%s]", QueryExtractorDelegate.getCql(preparedStatement)));
 			}
 
 			Statement<?> boundStatement = applyStatementSettings(
@@ -413,27 +412,24 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	@Override
 	public void query(PreparedStatementCreator preparedStatementCreator, @Nullable PreparedStatementBinder psb,
 			RowCallbackHandler rowCallbackHandler) throws DataAccessException {
-
 		query(preparedStatementCreator, psb, newResultSetExtractor(rowCallbackHandler));
 	}
 
 	@Override
-	public <T> List<T> query(PreparedStatementCreator preparedStatementCreator, @Nullable PreparedStatementBinder psb,
-			RowMapper<T> rowMapper) throws DataAccessException {
-		// noinspection ConstantConditions
+	public <T extends @Nullable Object> List<T> query(PreparedStatementCreator preparedStatementCreator,
+			@Nullable PreparedStatementBinder psb, RowMapper<T> rowMapper) throws DataAccessException {
 		return query(preparedStatementCreator, psb, newResultSetExtractor(rowMapper));
 	}
 
 	@Override
 	public <T> Stream<T> queryForStream(PreparedStatementCreator preparedStatementCreator,
 			@Nullable PreparedStatementBinder psb, RowMapper<T> rowMapper) throws DataAccessException {
-		// noinspection ConstantConditions
 		return query(preparedStatementCreator, psb, newStreamExtractor(rowMapper));
 	}
 
 	@Override
-	public <T> T query(String cql, ResultSetExtractor<T> resultSetExtractor, Object... args) throws DataAccessException {
-
+	public <T extends @Nullable Object> T query(String cql, ResultSetExtractor<T> resultSetExtractor, Object... args)
+			throws DataAccessException {
 		return query(newPreparedStatementCreator(cql), newPreparedStatementBinder(args), resultSetExtractor);
 	}
 
@@ -444,21 +440,19 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public <T> List<T> query(String cql, RowMapper<T> rowMapper, Object... args) throws DataAccessException {
-		// noinspection ConstantConditions
+	public <T extends @Nullable Object> List<T> query(String cql, RowMapper<T> rowMapper, Object... args)
+			throws DataAccessException {
 		return query(newPreparedStatementCreator(cql), newPreparedStatementBinder(args), newResultSetExtractor(rowMapper));
 	}
 
 	@Override
 	public <T> Stream<T> queryForStream(String cql, RowMapper<T> rowMapper, Object... args) throws DataAccessException {
-		// noinspection ConstantConditions
 		return query(newPreparedStatementCreator(cql), newPreparedStatementBinder(args), newStreamExtractor(rowMapper));
 	}
 
 	@Override
-	public <T> T query(String cql, @Nullable PreparedStatementBinder psb, ResultSetExtractor<T> resultSetExtractor)
-			throws DataAccessException {
-
+	public <T extends @Nullable Object> T query(String cql, @Nullable PreparedStatementBinder psb,
+			ResultSetExtractor<T> resultSetExtractor) throws DataAccessException {
 		return query(newPreparedStatementCreator(cql), psb, resultSetExtractor);
 	}
 
@@ -469,45 +463,44 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	}
 
 	@Override
-	public <T> List<T> query(String cql, @Nullable PreparedStatementBinder psb, RowMapper<T> rowMapper)
-			throws DataAccessException {
-		// noinspection ConstantConditions
+	public <T extends @Nullable Object> List<T> query(String cql, @Nullable PreparedStatementBinder psb,
+			RowMapper<T> rowMapper) throws DataAccessException {
 		return query(newPreparedStatementCreator(cql), psb, newResultSetExtractor(rowMapper));
 	}
 
 	@Override
 	public List<Map<String, Object>> queryForList(String cql, Object... args) throws DataAccessException {
-		// noinspection ConstantConditions
 		return query(newPreparedStatementCreator(cql), newPreparedStatementBinder(args),
 				newResultSetExtractor(newColumnMapRowMapper()));
 	}
 
 	@Override
-	public <T> List<T> queryForList(String cql, Class<T> elementType, Object... args) throws DataAccessException {
-		// noinspection ConstantConditions
+	public <T extends @Nullable Object> List<T> queryForList(String cql, Class<T> elementType, Object... args)
+			throws DataAccessException {
 		return query(newPreparedStatementCreator(cql), newPreparedStatementBinder(args),
 				newResultSetExtractor(newSingleColumnRowMapper(elementType)));
 	}
 
 	@Override
-	public Map<String, Object> queryForMap(String cql, Object... args) throws DataAccessException {
+	public @Nullable Map<String, Object> queryForMap(String cql, Object... args) throws DataAccessException {
 		return queryForObject(cql, newColumnMapRowMapper(), args);
 	}
 
 	@Override
-	public <T> T queryForObject(String cql, Class<T> requiredType, Object... args) throws DataAccessException {
+	public <T extends @Nullable Object> @Nullable T queryForObject(String cql, Class<T> requiredType, Object... args)
+			throws DataAccessException {
 		return queryForObject(cql, newSingleColumnRowMapper(requiredType), args);
 	}
 
 	@Override
-	public <T> T queryForObject(String cql, RowMapper<T> rowMapper, Object... args) throws DataAccessException {
+	public <T extends @Nullable Object> @Nullable T queryForObject(String cql, RowMapper<T> rowMapper, Object... args)
+			throws DataAccessException {
 		return DataAccessUtils.nullableSingleResult(
 				query(newPreparedStatementCreator(cql), newPreparedStatementBinder(args), newResultSetExtractor(rowMapper, 1)));
 	}
 
 	@Override
 	public ResultSet queryForResultSet(String cql, Object... args) throws DataAccessException {
-		// noinspection ConstantConditions
 		return query(newPreparedStatementCreator(cql), newPreparedStatementBinder(args), rs -> rs);
 	}
 
@@ -585,7 +578,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 * @see RowMapper
 	 * @see RowMapperResultSetExtractor
 	 */
-	protected <T> RowMapperResultSetExtractor<T> newResultSetExtractor(RowMapper<T> rowMapper) {
+	protected <T extends @Nullable Object> RowMapperResultSetExtractor<T> newResultSetExtractor(RowMapper<T> rowMapper) {
 		return new RowMapperResultSetExtractor<>(rowMapper);
 	}
 
@@ -599,7 +592,8 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	 * @see RowMapper
 	 * @see RowMapperResultSetExtractor
 	 */
-	protected <T> RowMapperResultSetExtractor<T> newResultSetExtractor(RowMapper<T> rowMapper, int rowsExpected) {
+	protected <T extends @Nullable Object> RowMapperResultSetExtractor<T> newResultSetExtractor(RowMapper<T> rowMapper,
+			int rowsExpected) {
 		return new RowMapperResultSetExtractor<>(rowMapper, rowsExpected);
 	}
 
@@ -628,7 +622,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 	/**
 	 * Adapter to enable use of a {@link RowCallbackHandler} inside a {@link ResultSetExtractor}.
 	 */
-	protected static class RowCallbackHandlerResultSetExtractor implements ResultSetExtractor<Object> {
+	protected static class RowCallbackHandlerResultSetExtractor implements ResultSetExtractor<@Nullable Void> {
 
 		private final RowCallbackHandler rowCallbackHandler;
 
@@ -637,12 +631,13 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		}
 
 		@Override
-		@Nullable
-		public Object extractData(ResultSet resultSet) {
+		@SuppressWarnings("NullAway")
+		public Void extractData(ResultSet resultSet) {
 
 			resultSet.forEach(rowCallbackHandler::processRow);
 			return null;
 		}
+
 	}
 
 	/**
@@ -676,8 +671,7 @@ public class CqlTemplate extends CassandraAccessor implements CqlOperations {
 		}
 
 		@Override
-		@Nullable
-		public Spliterator<T> trySplit() {
+		public @Nullable Spliterator<T> trySplit() {
 			return new ResultSetSpliterator<>(delegate.trySplit(), this.rowMapper, this.counter);
 		}
 

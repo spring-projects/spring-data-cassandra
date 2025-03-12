@@ -17,6 +17,8 @@ package org.springframework.data.cassandra.core.cql.converter;
 
 import java.net.InetAddress;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.convert.converter.Converter;
 
 import com.datastax.oss.driver.api.core.cql.ResultSet;
@@ -31,7 +33,7 @@ public class ResultSetToInetAddressConverter extends AbstractResultSetToBasicFix
 	public static final ResultSetToInetAddressConverter INSTANCE = new ResultSetToInetAddressConverter();
 
 	@Override
-	protected InetAddress doConvertSingleValue(Object object) {
+	protected @Nullable InetAddress doConvertSingleValue(Object object) {
 		return CONVERTER.convert(object, InetAddress.class);
 	}
 

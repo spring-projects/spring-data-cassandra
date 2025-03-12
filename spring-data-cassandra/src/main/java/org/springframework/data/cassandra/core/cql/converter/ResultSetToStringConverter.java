@@ -18,6 +18,8 @@ package org.springframework.data.cassandra.core.cql.converter;
 import java.util.List;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.convert.converter.Converter;
 
 import com.datastax.oss.driver.api.core.cql.ResultSet;
@@ -37,7 +39,7 @@ public class ResultSetToStringConverter extends AbstractResultSetConverter<Strin
 	}
 
 	@Override
-	protected String doConvertSingleRow(Map<String, Object> row) {
+	protected String doConvertSingleRow(Map<@Nullable String, Object> row) {
 
 		StringBuilder s = new StringBuilder();
 
@@ -60,7 +62,7 @@ public class ResultSetToStringConverter extends AbstractResultSetConverter<Strin
 	}
 
 	@Override
-	protected String doConvertResultSet(List<Map<String, Object>> resultSet) {
+	protected String doConvertResultSet(List<@Nullable Map<String, Object>> resultSet) {
 
 		boolean firstElement = true;
 		StringBuilder s = new StringBuilder("{ ");

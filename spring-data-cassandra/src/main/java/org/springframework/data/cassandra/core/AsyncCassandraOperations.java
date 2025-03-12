@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.cql.AsyncCqlOperations;
@@ -97,7 +99,7 @@ public interface AsyncCassandraOperations {
 	 * @return the converted object or {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> CompletableFuture<T> selectOne(String cql, Class<T> entityClass) throws DataAccessException;
+	<T> CompletableFuture<@Nullable T> selectOne(String cql, Class<T> entityClass) throws DataAccessException;
 
 	// -------------------------------------------------------------------------
 	// Methods dealing with com.datastax.oss.driver.api.core.cql.Statement
@@ -157,7 +159,7 @@ public interface AsyncCassandraOperations {
 	 * @return the converted object or {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> CompletableFuture<T> selectOne(Statement<?> statement, Class<T> entityClass) throws DataAccessException;
+	<T> CompletableFuture<@Nullable T> selectOne(Statement<?> statement, Class<T> entityClass) throws DataAccessException;
 
 	// -------------------------------------------------------------------------
 	// Methods dealing with org.springframework.data.cassandra.core.query.Query
@@ -205,7 +207,7 @@ public interface AsyncCassandraOperations {
 	 * @return the converted object or {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> CompletableFuture<T> selectOne(Query query, Class<T> entityClass) throws DataAccessException;
+	<T> CompletableFuture<@Nullable T> selectOne(Query query, Class<T> entityClass) throws DataAccessException;
 
 	/**
 	 * Update the queried entities and return {@literal true} if the update was applied.
@@ -286,7 +288,7 @@ public interface AsyncCassandraOperations {
 	 * @return the converted object or {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> CompletableFuture<T> selectOneById(Object id, Class<T> entityClass) throws DataAccessException;
+	<T> CompletableFuture<@Nullable T> selectOneById(Object id, Class<T> entityClass) throws DataAccessException;
 
 	/**
 	 * Insert the given entity and return the entity if the insert was applied.
@@ -295,7 +297,7 @@ public interface AsyncCassandraOperations {
 	 * @return the inserted entity.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> CompletableFuture<T> insert(T entity) throws DataAccessException;
+	<T> CompletableFuture<@Nullable T> insert(T entity) throws DataAccessException;
 
 	/**
 	 * Insert the given entity applying {@link WriteOptions} and return the entity if the insert was applied.

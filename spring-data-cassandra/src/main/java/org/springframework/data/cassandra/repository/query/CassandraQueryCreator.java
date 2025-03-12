@@ -23,6 +23,8 @@ import java.util.Optional;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
@@ -128,7 +130,7 @@ class CassandraQueryCreator extends AbstractQueryCreator<Query, Filter> {
 	}
 
 	@Override
-	protected Query complete(Filter criteria, Sort sort) {
+	protected Query complete(@Nullable Filter criteria, Sort sort) {
 
 		if (criteria != null) {
 

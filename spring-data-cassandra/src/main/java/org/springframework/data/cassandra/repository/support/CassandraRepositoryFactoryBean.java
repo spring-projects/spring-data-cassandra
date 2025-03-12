@@ -15,13 +15,13 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**

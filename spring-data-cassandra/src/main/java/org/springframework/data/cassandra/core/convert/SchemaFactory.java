@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateUserTypeSpecification;
@@ -33,7 +34,6 @@ import org.springframework.data.domain.Vector;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -136,6 +136,7 @@ public class SchemaFactory {
 	 * @return
 	 * @since 2.2
 	 */
+	@SuppressWarnings("NullAway")
 	public CreateTableSpecification getCreateTableSpecificationFor(CassandraPersistentEntity<?> entity,
 			CqlIdentifier tableName) {
 
@@ -280,7 +281,7 @@ public class SchemaFactory {
 			if (property.isEmbedded()) {
 
 				if (property.isAnnotationPresent(Indexed.class)) {
-					Indexed indexed = property.findAnnotation(Indexed.class);
+					Indexed indexed = property.getRequiredAnnotation(Indexed.class);
 					for (CassandraPersistentProperty embeddedProperty : embeddedEntityOperations.getEntity(property)) {
 						indexes.add(IndexSpecificationFactory.createIndexSpecification(keyspace, indexed, embeddedProperty));
 					}
@@ -337,6 +338,7 @@ public class SchemaFactory {
 	}
 
 	enum ShallowUserTypeResolver implements UserTypeResolver {
+
 		INSTANCE;
 
 		@Override
@@ -367,9 +369,8 @@ public class SchemaFactory {
 			this.frozen = frozen;
 		}
 
-		@Nullable
 		@Override
-		public CqlIdentifier getKeyspace() {
+		public @Nullable CqlIdentifier getKeyspace() {
 			return keyspace;
 		}
 
@@ -461,4 +462,5 @@ public class SchemaFactory {
 			return "UDT(" + name.asCql(true) + ")";
 		}
 	}
+
 }

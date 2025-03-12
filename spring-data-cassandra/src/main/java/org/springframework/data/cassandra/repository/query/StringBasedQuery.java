@@ -23,11 +23,12 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.cassandra.repository.query.BindingContext.ParameterBinding;
 import org.springframework.data.mapping.model.ValueExpressionEvaluator;
 import org.springframework.data.repository.query.ValueExpressionDelegate;
 import org.springframework.data.spel.ExpressionDependencies;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -271,8 +272,7 @@ class StringBasedQuery {
 			return VALUE_EXPRESSION_PATTERNS.contains(matcher.pattern());
 		}
 
-		@Nullable
-		private static Matcher findNextBindingOrExpression(String input, int startPosition) {
+		private static @Nullable Matcher findNextBindingOrExpression(String input, int startPosition) {
 
 			List<Matcher> matchers = new ArrayList<>(6);
 

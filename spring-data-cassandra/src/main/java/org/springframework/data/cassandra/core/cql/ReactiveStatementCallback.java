@@ -53,4 +53,5 @@ public interface ReactiveStatementCallback<T> {
 	 * @see ReactiveCqlTemplate#query(Statement, ReactiveResultSetExtractor)
 	 */
 	Publisher<T> doInStatement(ReactiveSession session, Statement<?> stmt) throws DriverException, DataAccessException;
+
 }

@@ -16,7 +16,7 @@
 package org.springframework.data.cassandra.core;
 
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -52,10 +52,10 @@ class ExecutableInsertOperationSupport implements ExecutableInsertOperation {
 
 		private final InsertOptions insertOptions;
 
-		@Nullable private final CqlIdentifier tableName;
+		private final @Nullable CqlIdentifier tableName;
 
 		public ExecutableInsertSupport(CassandraTemplate template, Class<T> domainType, InsertOptions insertOptions,
-				CqlIdentifier tableName) {
+				@Nullable CqlIdentifier tableName) {
 			this.template = template;
 			this.domainType = domainType;
 			this.insertOptions = insertOptions;
@@ -89,5 +89,7 @@ class ExecutableInsertOperationSupport implements ExecutableInsertOperation {
 		private CqlIdentifier getTableName() {
 			return this.tableName != null ? this.tableName : this.template.getTableName(this.domainType);
 		}
+
 	}
+
 }

@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 
@@ -64,4 +64,5 @@ public class DropIndexSpecification extends IndexNameSpecification<DropIndexSpec
 	public static DropIndexSpecification dropIndex(@Nullable CqlIdentifier keyspace, CqlIdentifier indexName) {
 		return new DropIndexSpecification(keyspace, indexName);
 	}
+
 }

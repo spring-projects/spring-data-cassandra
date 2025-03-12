@@ -20,8 +20,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.lang.Nullable;
 
 /**
  * Default {@link ColumnType} implementation.
@@ -70,15 +70,13 @@ class DefaultColumnType implements ColumnType {
 		return typeInformation.isMap();
 	}
 
-	@Nullable
 	@Override
-	public ColumnType getComponentType() {
+	public @Nullable ColumnType getComponentType() {
 		return !parameters.isEmpty() ? parameters.get(0) : null;
 	}
 
-	@Nullable
 	@Override
-	public ColumnType getMapValueType() {
+	public @Nullable ColumnType getMapValueType() {
 		return parameters.size() > 1 ? parameters.get(1) : null;
 	}
 
@@ -92,4 +90,5 @@ class DefaultColumnType implements ColumnType {
 		return String.format("%s<%s>", getType().getName(),
 				parameters.stream().map(Object::toString).collect(Collectors.toList()));
 	}
+
 }

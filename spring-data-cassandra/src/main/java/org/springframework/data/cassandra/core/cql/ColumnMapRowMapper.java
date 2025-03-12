@@ -17,7 +17,7 @@ package org.springframework.data.cassandra.core.cql;
 
 import java.util.Map;
 
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.springframework.util.LinkedCaseInsensitiveMap;
 
 import com.datastax.oss.driver.api.core.cql.ColumnDefinition;
@@ -41,14 +41,14 @@ import com.datastax.oss.driver.api.core.cql.Row;
  * @see ReactiveCqlTemplate#queryForFlux(String)
  * @see ReactiveCqlTemplate#queryForMap(String)
  */
-public class ColumnMapRowMapper implements RowMapper<Map<String, Object>> {
+public class ColumnMapRowMapper implements RowMapper<Map<String, @Nullable Object>> {
 
 	@Override
-	public Map<String, Object> mapRow(Row rs, int rowNum) {
+	public Map<String, @Nullable Object> mapRow(Row rs, int rowNum) {
 
 		ColumnDefinitions columnDefinitions = rs.getColumnDefinitions();
 		int columnCount = columnDefinitions.size();
-		Map<String, Object> mapOfColValues = createColumnMap(columnCount);
+		Map<String, @Nullable Object> mapOfColValues = createColumnMap(columnCount);
 
 		for (int i = 0; i < columnCount; i++) {
 			ColumnDefinition columnDefinition = columnDefinitions.get(i);
@@ -94,8 +94,8 @@ public class ColumnMapRowMapper implements RowMapper<Map<String, Object>> {
 	 * @param index is the column index.
 	 * @return the Object returned
 	 */
-	@Nullable
-	protected Object getColumnValue(Row row, int index) {
+	protected @Nullable Object getColumnValue(Row row, int index) {
 		return row.getObject(index);
 	}
+
 }

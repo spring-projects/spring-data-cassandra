@@ -87,7 +87,7 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 
 		if (method.hasAnnotatedQuery()) {
 
-			Query queryAnnotation = method.getQueryAnnotation().orElse(null);
+			Query queryAnnotation = method.getRequiredQueryAnnotation();
 
 			this.isCountQuery = queryAnnotation.count();
 			this.isExistsQuery = queryAnnotation.exists();
@@ -138,4 +138,5 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 	protected boolean isModifyingQuery() {
 		return false;
 	}
+
 }

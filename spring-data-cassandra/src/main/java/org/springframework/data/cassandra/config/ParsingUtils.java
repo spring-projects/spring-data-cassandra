@@ -15,11 +15,11 @@
  */
 package org.springframework.data.cassandra.config;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Attr;
@@ -217,7 +217,7 @@ abstract class ParsingUtils {
 	 * @return a raw {@link BeanDefinition} built by the given {@link BeanDefinitionBuilder}.
 	 * @throws IllegalArgumentException if {@link BeanDefinitionBuilder} is null.
 	 */
-	public static AbstractBeanDefinition getSourceBeanDefinition(BeanDefinitionBuilder builder, Object source) {
+	public static AbstractBeanDefinition getSourceBeanDefinition(BeanDefinitionBuilder builder, @Nullable Object source) {
 
 		Assert.notNull(builder, "BeanDefinitionBuilder must not be null");
 

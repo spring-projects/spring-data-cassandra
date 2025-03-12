@@ -27,6 +27,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.QueryMapper;
 import org.springframework.data.cassandra.core.convert.UpdateMapper;
@@ -67,8 +69,6 @@ import org.springframework.data.projection.EntityProjection;
 import org.springframework.data.projection.ProjectionInformation;
 import org.springframework.data.util.Predicates;
 import org.springframework.data.util.ProxyUtils;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
@@ -611,6 +611,7 @@ public class StatementFactory {
 	 * @return {@link Columns} with columns to be included.
 	 * @since 2.2
 	 */
+	@SuppressWarnings("NullAway")
 	Columns computeColumnsForProjection(EntityProjection<?, ?> projection, Columns columns,
 			CassandraPersistentEntity<?> domainType, Class<?> returnType) {
 
@@ -682,8 +683,7 @@ public class StatementFactory {
 		return select;
 	}
 
-	@Nullable
-	private CqlIdentifier getKeyspace(CassandraPersistentEntity<?> entity, CqlIdentifier tableName) {
+	private @Nullable CqlIdentifier getKeyspace(CassandraPersistentEntity<?> entity, CqlIdentifier tableName) {
 		return keyspaceProvider.getKeyspace(entity, tableName);
 	}
 
@@ -1213,15 +1213,14 @@ public class StatementFactory {
 			this.selector = selector;
 		}
 
-		@NonNull
+
 		@Override
-		public com.datastax.oss.driver.api.querybuilder.select.Selector as(@NonNull CqlIdentifier alias) {
+		public com.datastax.oss.driver.api.querybuilder.select.@NonNull Selector as(@NonNull CqlIdentifier alias) {
 			throw new UnsupportedOperationException();
 		}
 
-		@Nullable
 		@Override
-		public CqlIdentifier getAlias() {
+		public @Nullable CqlIdentifier getAlias() {
 			return null;
 		}
 
@@ -1296,9 +1295,8 @@ public class StatementFactory {
 		 * Derive the keyspace from the given {@link CassandraPersistentEntity}.
 		 */
 		ENTITY_KEYSPACE {
-			@Nullable
 			@Override
-			public CqlIdentifier getKeyspace(CassandraPersistentEntity<?> entity, CqlIdentifier tableName) {
+			public @Nullable CqlIdentifier getKeyspace(CassandraPersistentEntity<?> entity, CqlIdentifier tableName) {
 				return entity.getKeyspace();
 			}
 		},
@@ -1307,9 +1305,8 @@ public class StatementFactory {
 		 * Use the session's keyspace.
 		 */
 		EMPTY_KEYSPACE {
-			@Nullable
 			@Override
-			public CqlIdentifier getKeyspace(CassandraPersistentEntity<?> entity, CqlIdentifier tableName) {
+			public @Nullable CqlIdentifier getKeyspace(CassandraPersistentEntity<?> entity, CqlIdentifier tableName) {
 				return null;
 			}
 		}

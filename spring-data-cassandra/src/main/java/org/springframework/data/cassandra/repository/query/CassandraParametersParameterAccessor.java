@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
@@ -23,7 +24,6 @@ import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.data.repository.query.ParametersParameterAccessor;
-import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.core.type.DataType;
 
@@ -44,24 +44,23 @@ public class CassandraParametersParameterAccessor extends ParametersParameterAcc
 	 * @param method must not be {@literal null}.
 	 * @param values must not be {@literal null}.
 	 */
-	public CassandraParametersParameterAccessor(CassandraQueryMethod method, Object... values) {
+	public CassandraParametersParameterAccessor(CassandraQueryMethod method, @Nullable Object... values) {
 
 		super(method.getParameters(), values);
 	}
 
 	@Override
-	public DataType getDataType(int index) {
+	public @Nullable DataType getDataType(int index) {
 
 		// TODO: Vector
 		CassandraType cassandraType = findCassandraType(index);
 
-		return (cassandraType != null ? CassandraSimpleTypeHolder.getDataTypeFor(cassandraType.type())
-				: CassandraSimpleTypeHolder.getDataTypeFor(getParameterType(index)));
+		return cassandraType != null ? CassandraSimpleTypeHolder.getDataTypeFor(cassandraType.type())
+				: CassandraSimpleTypeHolder.getDataTypeFor(getParameterType(index));
 	}
 
-	@Nullable
 	@Override
-	public CassandraType findCassandraType(int index) {
+	public @Nullable CassandraType findCassandraType(int index) {
 		return getParameters().getParameter(index).getCassandraType();
 	}
 
@@ -76,7 +75,7 @@ public class CassandraParametersParameterAccessor extends ParametersParameterAcc
 	}
 
 	@Override
-	public Object[] getValues() {
+	public @Nullable Object[] getValues() {
 		return super.getValues();
 	}
 
@@ -106,9 +105,8 @@ public class CassandraParametersParameterAccessor extends ParametersParameterAcc
 		return super.getLimit();
 	}
 
-	@Nullable
 	@Override
-	public QueryOptions getQueryOptions() {
+	public @Nullable QueryOptions getQueryOptions() {
 
 		int queryOptionsIndex = getParameters().getQueryOptionsIndex();
 
@@ -116,4 +114,5 @@ public class CassandraParametersParameterAccessor extends ParametersParameterAcc
 
 		return (QueryOptions) value;
 	}
+
 }

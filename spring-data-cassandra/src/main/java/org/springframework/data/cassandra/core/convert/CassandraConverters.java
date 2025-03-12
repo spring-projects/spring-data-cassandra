@@ -26,6 +26,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.ConverterFactory;
 import org.springframework.data.cassandra.core.cql.converter.RowToListConverter;
@@ -105,7 +107,7 @@ public abstract class CassandraConverters {
 		INSTANCE;
 
 		@Override
-		public Date convert(Row row) {
+		public @Nullable Date convert(Row row) {
 
 			Instant instant = row.getInstant(0);
 
@@ -124,7 +126,7 @@ public abstract class CassandraConverters {
 		INSTANCE;
 
 		@Override
-		public Instant convert(Row row) {
+		public @Nullable Instant convert(Row row) {
 			return row.getInstant(0);
 		}
 	}
@@ -140,7 +142,7 @@ public abstract class CassandraConverters {
 		INSTANCE;
 
 		@Override
-		public InetAddress convert(Row row) {
+		public @Nullable InetAddress convert(Row row) {
 			return row.getInetAddress(0);
 		}
 	}
@@ -180,7 +182,7 @@ public abstract class CassandraConverters {
 			}
 
 			@Override
-			public T convert(Row source) {
+			public @Nullable T convert(Row source) {
 
 				Object object = source.getObject(0);
 
@@ -200,7 +202,7 @@ public abstract class CassandraConverters {
 		INSTANCE;
 
 		@Override
-		public String convert(Row row) {
+		public @Nullable String convert(Row row) {
 			return row.getString(0);
 		}
 	}
@@ -216,7 +218,7 @@ public abstract class CassandraConverters {
 		INSTANCE;
 
 		@Override
-		public UUID convert(Row row) {
+		public @Nullable UUID convert(Row row) {
 			return row.getUuid(0);
 		}
 	}
@@ -232,7 +234,7 @@ public abstract class CassandraConverters {
 		INSTANCE;
 
 		@Override
-		public LocalDate convert(Row row) {
+		public @Nullable LocalDate convert(Row row) {
 			return row.getLocalDate(0);
 		}
 	}

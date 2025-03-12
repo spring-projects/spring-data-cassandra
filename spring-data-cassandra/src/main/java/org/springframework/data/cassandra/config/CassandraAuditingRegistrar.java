@@ -78,4 +78,5 @@ class CassandraAuditingRegistrar extends AuditingBeanDefinitionRegistrarSupport 
 		registerInfrastructureBeanWithId(listenerBeanDefinitionBuilder.getBeanDefinition(),
 				AuditingEntityCallback.class.getName(), registry);
 	}
+
 }

@@ -19,9 +19,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
-import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
@@ -58,7 +58,7 @@ public interface AsyncCqlOperations {
 	 * @return a result object returned by the action, or {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> CompletableFuture<T> execute(AsyncSessionCallback<T> action) throws DataAccessException;
+	<T extends @Nullable Object> CompletableFuture<T> execute(AsyncSessionCallback<T> action) throws DataAccessException;
 
 	// -------------------------------------------------------------------------
 	// Methods dealing with static CQL
@@ -112,7 +112,8 @@ public interface AsyncCqlOperations {
 	 * @return a result object returned by the action, or {@literal null}
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> CompletableFuture<T> execute(String cql, PreparedStatementCallback<T> action) throws DataAccessException;
+	<T extends @Nullable Object> CompletableFuture<T> execute(String cql, PreparedStatementCallback<T> action)
+			throws DataAccessException;
 
 	/**
 	 * Execute a query given static CQL, reading the {@link ResultSet} with a {@link AsyncResultSetExtractor}.
@@ -126,7 +127,8 @@ public interface AsyncCqlOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #query(String, AsyncResultSetExtractor, Object...)
 	 */
-	<T> CompletableFuture<T> query(String cql, AsyncResultSetExtractor<T> resultSetExtractor) throws DataAccessException;
+	<T extends @Nullable Object> CompletableFuture<T> query(String cql, AsyncResultSetExtractor<T> resultSetExtractor)
+			throws DataAccessException;
 
 	/**
 	 * Execute a query given static CQL, reading the {@link ResultSet} on a per-row basis with a
@@ -154,7 +156,8 @@ public interface AsyncCqlOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #query(String, RowMapper, Object[])
 	 */
-	<T> CompletableFuture<List<T>> query(String cql, RowMapper<T> rowMapper) throws DataAccessException;
+	<T extends @Nullable Object> CompletableFuture<List<T>> query(String cql, RowMapper<T> rowMapper)
+			throws DataAccessException;
 
 	/**
 	 * Query given CQL to create a prepared statement from CQL and a list of arguments to bind to the query, reading the
@@ -167,7 +170,8 @@ public interface AsyncCqlOperations {
 	 * @return an arbitrary result object, as returned by the {@link AsyncResultSetExtractor}
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> CompletableFuture<T> query(String cql, AsyncResultSetExtractor<T> resultSetExtractor, Object... args)
+	<T extends @Nullable Object> CompletableFuture<T> query(String cql, AsyncResultSetExtractor<T> resultSetExtractor,
+			Object... args)
 			throws DataAccessException;
 
 	/**
@@ -194,7 +198,8 @@ public interface AsyncCqlOperations {
 	 * @return the result {@link List}, containing mapped objects
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> CompletableFuture<List<T>> query(String cql, RowMapper<T> rowMapper, Object... args) throws DataAccessException;
+	<T extends @Nullable Object> CompletableFuture<List<T>> query(String cql, RowMapper<T> rowMapper, Object... args)
+			throws DataAccessException;
 
 	/**
 	 * Query using a prepared statement, reading the {@link ResultSet} with a {@link AsyncResultSetExtractor}.
@@ -207,7 +212,7 @@ public interface AsyncCqlOperations {
 	 * @return an arbitrary result object, as returned by the {@link AsyncResultSetExtractor}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> CompletableFuture<T> query(String cql, @Nullable PreparedStatementBinder psb,
+	<T extends @Nullable Object> CompletableFuture<T> query(String cql, @Nullable PreparedStatementBinder psb,
 			AsyncResultSetExtractor<T> resultSetExtractor) throws DataAccessException;
 
 	/**
@@ -237,7 +242,8 @@ public interface AsyncCqlOperations {
 	 * @return the result {@link List}, containing mapped objects.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> CompletableFuture<List<T>> query(String cql, @Nullable PreparedStatementBinder psb, RowMapper<T> rowMapper)
+	<T extends @Nullable Object> CompletableFuture<List<T>> query(String cql, @Nullable PreparedStatementBinder psb,
+			RowMapper<T> rowMapper)
 			throws DataAccessException;
 
 	/**
@@ -330,7 +336,7 @@ public interface AsyncCqlOperations {
 	 * @see #queryForMap(String, Object[])
 	 * @see ColumnMapRowMapper
 	 */
-	CompletableFuture<Map<String, Object>> queryForMap(String cql) throws DataAccessException;
+	CompletableFuture<@Nullable Map<String, Object>> queryForMap(String cql) throws DataAccessException;
 
 	/**
 	 * Query given CQL to create a prepared statement from CQL and a list of arguments to bind to the query, expecting a
@@ -349,7 +355,7 @@ public interface AsyncCqlOperations {
 	 * @see #queryForMap(String)
 	 * @see ColumnMapRowMapper
 	 */
-	CompletableFuture<Map<String, Object>> queryForMap(String cql, Object... args) throws DataAccessException;
+	CompletableFuture<@Nullable Map<String, Object>> queryForMap(String cql, Object... args) throws DataAccessException;
 
 	/**
 	 * Execute a query for a result object, given static CQL.
@@ -369,7 +375,7 @@ public interface AsyncCqlOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #queryForObject(String, Class, Object[])
 	 */
-	<T> CompletableFuture<T> queryForObject(String cql, Class<T> requiredType) throws DataAccessException;
+	<T> CompletableFuture<@Nullable T> queryForObject(String cql, Class<T> requiredType) throws DataAccessException;
 
 	/**
 	 * Query given CQL to create a prepared statement from CQL and a list of arguments to bind to the query, expecting a
@@ -388,7 +394,8 @@ public interface AsyncCqlOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #queryForObject(String, Class)
 	 */
-	<T> CompletableFuture<T> queryForObject(String cql, Class<T> requiredType, Object... args) throws DataAccessException;
+	<T> CompletableFuture<@Nullable T> queryForObject(String cql, Class<T> requiredType, Object... args)
+			throws DataAccessException;
 
 	/**
 	 * Execute a query given static CQL, mapping a single result row to a Java object via a {@link RowMapper}.
@@ -404,7 +411,8 @@ public interface AsyncCqlOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #queryForObject(String, RowMapper, Object[])
 	 */
-	<T> CompletableFuture<T> queryForObject(String cql, RowMapper<T> rowMapper) throws DataAccessException;
+	<T extends @Nullable Object> CompletableFuture<T> queryForObject(String cql, RowMapper<T> rowMapper)
+			throws DataAccessException;
 
 	/**
 	 * Query given CQL to create a prepared statement from CQL and a list of arguments to bind to the query, mapping a
@@ -418,7 +426,7 @@ public interface AsyncCqlOperations {
 	 * @throws IncorrectResultSizeDataAccessException if the query does not return exactly one row.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> CompletableFuture<T> queryForObject(String cql, RowMapper<T> rowMapper, Object... args)
+	<T extends @Nullable Object> CompletableFuture<T> queryForObject(String cql, RowMapper<T> rowMapper, Object... args)
 			throws DataAccessException;
 
 	/**
@@ -477,7 +485,8 @@ public interface AsyncCqlOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #query(String, AsyncResultSetExtractor, Object...)
 	 */
-	<T> CompletableFuture<T> query(Statement<?> statement, AsyncResultSetExtractor<T> resultSetExtractor)
+	<T extends @Nullable Object> CompletableFuture<T> query(Statement<?> statement,
+			AsyncResultSetExtractor<T> resultSetExtractor)
 			throws DataAccessException;
 
 	/**
@@ -507,7 +516,8 @@ public interface AsyncCqlOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #query(String, RowMapper, Object[])
 	 */
-	<T> CompletableFuture<List<T>> query(Statement<?> statement, RowMapper<T> rowMapper) throws DataAccessException;
+	<T extends @Nullable Object> CompletableFuture<List<T>> query(Statement<?> statement, RowMapper<T> rowMapper)
+			throws DataAccessException;
 
 	/**
 	 * Execute a query for a result {@link List}, given static CQL.
@@ -582,7 +592,8 @@ public interface AsyncCqlOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #queryForObject(String, Class, Object[])
 	 */
-	<T> CompletableFuture<T> queryForObject(Statement<?> statement, Class<T> requiredType) throws DataAccessException;
+	<T extends @Nullable Object> CompletableFuture<T> queryForObject(Statement<?> statement, Class<T> requiredType)
+			throws DataAccessException;
 
 	/**
 	 * Execute a query given static CQL, mapping a single result row to a Java object via a {@link RowMapper}.
@@ -598,7 +609,8 @@ public interface AsyncCqlOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @see #queryForObject(String, RowMapper, Object[])
 	 */
-	<T> CompletableFuture<T> queryForObject(Statement<?> statement, RowMapper<T> rowMapper) throws DataAccessException;
+	<T extends @Nullable Object> CompletableFuture<T> queryForObject(Statement<?> statement, RowMapper<T> rowMapper)
+			throws DataAccessException;
 
 	/**
 	 * Execute a query for a ResultSet, given static CQL.
@@ -644,7 +656,7 @@ public interface AsyncCqlOperations {
 	 * @return a result object returned by the action, or {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> CompletableFuture<T> execute(AsyncPreparedStatementCreator preparedStatementCreator,
+	<T extends @Nullable Object> CompletableFuture<T> execute(AsyncPreparedStatementCreator preparedStatementCreator,
 			PreparedStatementCallback<T> action) throws DataAccessException;
 
 	/**
@@ -656,7 +668,7 @@ public interface AsyncCqlOperations {
 	 * @return an arbitrary result object, as returned by the {@link AsyncResultSetExtractor}
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> CompletableFuture<T> query(AsyncPreparedStatementCreator preparedStatementCreator,
+	<T extends @Nullable Object> CompletableFuture<T> query(AsyncPreparedStatementCreator preparedStatementCreator,
 			AsyncResultSetExtractor<T> resultSetExtractor) throws DataAccessException;
 
 	/**
@@ -680,7 +692,8 @@ public interface AsyncCqlOperations {
 	 * @return the result {@link List}, containing mapped objects.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> CompletableFuture<List<T>> query(AsyncPreparedStatementCreator preparedStatementCreator, RowMapper<T> rowMapper)
+	<T extends @Nullable Object> CompletableFuture<List<T>> query(AsyncPreparedStatementCreator preparedStatementCreator,
+			RowMapper<T> rowMapper)
 			throws DataAccessException;
 
 	/**
@@ -696,7 +709,7 @@ public interface AsyncCqlOperations {
 	 * @return an arbitrary result object, as returned by the {@link AsyncResultSetExtractor}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> CompletableFuture<T> query(AsyncPreparedStatementCreator preparedStatementCreator,
+	<T extends @Nullable Object> CompletableFuture<T> query(AsyncPreparedStatementCreator preparedStatementCreator,
 			@Nullable PreparedStatementBinder psb, AsyncResultSetExtractor<T> resultSetExtractor) throws DataAccessException;
 
 	/**
@@ -727,6 +740,7 @@ public interface AsyncCqlOperations {
 	 * @return the result {@link List}, containing mapped objects.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	<T> CompletableFuture<List<T>> query(AsyncPreparedStatementCreator preparedStatementCreator,
+	<T extends @Nullable Object> CompletableFuture<List<T>> query(AsyncPreparedStatementCreator preparedStatementCreator,
 			@Nullable PreparedStatementBinder psb, RowMapper<T> rowMapper) throws DataAccessException;
+
 }

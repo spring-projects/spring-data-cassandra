@@ -1,7 +1,7 @@
 /**
  * CQL specific converters.
  */
-@NonNullApi
+@org.jspecify.annotations.NullMarked
 package org.springframework.data.cassandra.core.cql.converter;
 
-import org.springframework.lang.NonNullApi;
+

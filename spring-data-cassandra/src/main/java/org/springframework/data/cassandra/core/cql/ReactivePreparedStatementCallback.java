@@ -61,4 +61,5 @@ public interface ReactivePreparedStatementCallback<T> {
 	 */
 	Publisher<T> doInPreparedStatement(ReactiveSession session, PreparedStatement ps)
 			throws DriverException, DataAccessException;
+
 }

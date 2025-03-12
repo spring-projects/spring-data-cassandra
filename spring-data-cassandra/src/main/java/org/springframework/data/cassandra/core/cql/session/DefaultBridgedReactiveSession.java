@@ -83,6 +83,7 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 	 * @param session must not be {@literal null}.
 	 * @since 2.1
 	 */
+	@SuppressWarnings("NullAway")
 	public DefaultBridgedReactiveSession(CqlSession session) {
 
 		Assert.notNull(session, "Session must not be null");
@@ -97,6 +98,10 @@ public class DefaultBridgedReactiveSession implements ReactiveSession {
 					session = (CqlSession) AopProxyUtils.getSingletonTarget(session);
 				}
 			}
+		}
+
+		if (session == null) {
+			throw new IllegalArgumentException("Cannot extract CqlSession from %s".formatted(session));
 		}
 
 		this.session = session;

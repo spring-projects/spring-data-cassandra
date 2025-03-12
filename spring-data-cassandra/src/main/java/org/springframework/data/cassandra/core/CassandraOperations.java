@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.cql.CqlOperations;
@@ -28,7 +29,6 @@ import org.springframework.data.cassandra.core.query.CassandraPageRequest;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.core.query.Update;
 import org.springframework.data.domain.Slice;
-import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.cql.BatchType;
@@ -133,8 +133,7 @@ public interface CassandraOperations extends FluentCassandraOperations {
 	 * @return the converted object or {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	@Nullable
-	<T> T selectOne(String cql, Class<T> entityClass) throws DataAccessException;
+	<T> @Nullable T selectOne(String cql, Class<T> entityClass) throws DataAccessException;
 
 	// -------------------------------------------------------------------------
 	// Methods dealing with com.datastax.oss.driver.api.core.cql.Statement
@@ -195,8 +194,7 @@ public interface CassandraOperations extends FluentCassandraOperations {
 	 * @return the converted object or {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	@Nullable
-	<T> T selectOne(Statement<?> statement, Class<T> entityClass) throws DataAccessException;
+	<T> @Nullable T selectOne(Statement<?> statement, Class<T> entityClass) throws DataAccessException;
 
 	// -------------------------------------------------------------------------
 	// Methods dealing with org.springframework.data.cassandra.core.query.Query
@@ -248,8 +246,7 @@ public interface CassandraOperations extends FluentCassandraOperations {
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @since 2.0
 	 */
-	@Nullable
-	<T> T selectOne(Query query, Class<T> entityClass) throws DataAccessException;
+	<T> @Nullable T selectOne(Query query, Class<T> entityClass) throws DataAccessException;
 
 	/**
 	 * Update the queried entities and return {@literal true} if the update was applied.
@@ -329,8 +326,7 @@ public interface CassandraOperations extends FluentCassandraOperations {
 	 * @return the converted object or {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
-	@Nullable
-	<T> T selectOneById(Object id, Class<T> entityClass) throws DataAccessException;
+	<T> @Nullable T selectOneById(Object id, Class<T> entityClass) throws DataAccessException;
 
 	/**
 	 * Insert the given entity and return the entity if the insert was applied.

@@ -24,9 +24,10 @@ import reactor.util.context.ContextView;
 import java.util.Map;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.cassandra.ReactiveResultSet;
 import org.springframework.data.cassandra.ReactiveSession;
-import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.context.DriverContext;
@@ -195,8 +196,7 @@ public class ObservableReactiveSession implements ReactiveSession {
 		return observation.start();
 	}
 
-	@Nullable
-	private static Observation getParentObservation(ContextView contextView) {
+	private static @Nullable Observation getParentObservation(ContextView contextView) {
 		return contextView.getOrDefault(ObservationThreadLocalAccessor.KEY, null);
 	}
 

@@ -58,4 +58,5 @@ class CassandraCqlTemplateParser extends AbstractSingleBeanDefinitionParser {
 
 		builder.getRawBeanDefinition().setSource(element);
 	}
+
 }

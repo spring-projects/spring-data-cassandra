@@ -17,8 +17,8 @@ package org.springframework.data.cassandra.core;
 
 import reactor.core.publisher.Mono;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.cassandra.core.query.Query;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -58,7 +58,7 @@ class ReactiveDeleteOperationSupport implements ReactiveDeleteOperation {
 		private final @Nullable CqlIdentifier tableName;
 
 		public ReactiveDeleteSupport(ReactiveCassandraTemplate template, Class<?> domainType, Query query,
-				CqlIdentifier tableName) {
+				@Nullable CqlIdentifier tableName) {
 			this.template = template;
 			this.domainType = domainType;
 			this.query = query;
@@ -88,5 +88,7 @@ class ReactiveDeleteOperationSupport implements ReactiveDeleteOperation {
 		private CqlIdentifier getTableName() {
 			return this.tableName != null ? this.tableName : this.template.getTableName(this.domainType);
 		}
+
 	}
+
 }

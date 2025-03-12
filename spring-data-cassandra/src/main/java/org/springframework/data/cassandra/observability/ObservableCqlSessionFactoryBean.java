@@ -17,8 +17,9 @@ package org.springframework.data.cassandra.observability;
 
 import io.micrometer.observation.ObservationRegistry;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.factory.config.AbstractFactoryBean;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
@@ -60,8 +61,7 @@ public class ObservableCqlSessionFactoryBean extends AbstractFactoryBean<CqlSess
 		this.observationRegistry = observationRegistry;
 	}
 
-	@Nullable
-	public String getRemoteServiceName() {
+	public @Nullable String getRemoteServiceName() {
 		return remoteServiceName;
 	}
 

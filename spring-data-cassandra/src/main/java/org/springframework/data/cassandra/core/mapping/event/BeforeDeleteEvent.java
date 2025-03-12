@@ -29,7 +29,7 @@ import com.datastax.oss.driver.api.core.cql.Statement;
  */
 public class BeforeDeleteEvent<T> extends AbstractDeleteEvent<T> {
 
-	@Serial private static final long serialVersionUID = 1L;
+	private static final @Serial long serialVersionUID = 1L;
 
 	/**
 	 * Create a new {@link BeforeDeleteEvent}.
@@ -41,4 +41,5 @@ public class BeforeDeleteEvent<T> extends AbstractDeleteEvent<T> {
 	public BeforeDeleteEvent(Statement<?> source, Class<T> type, CqlIdentifier tableName) {
 		super(source, type, tableName);
 	}
+
 }

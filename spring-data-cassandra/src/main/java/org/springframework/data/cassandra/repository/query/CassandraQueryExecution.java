@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.repository.query;
 
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.cassandra.core.CassandraOperations;
@@ -33,7 +34,6 @@ import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.model.EntityInstantiators;
 import org.springframework.data.repository.query.ResultProcessor;
 import org.springframework.data.repository.query.ReturnedType;
-import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 
 import com.datastax.oss.driver.api.core.cql.Row;
@@ -70,6 +70,7 @@ interface CassandraQueryExecution {
 		public Object execute(Statement<?> statement, Class<?> type) {
 			return operations.stream(statement, type).map(resultProcessing::convert);
 		}
+
 	}
 
 	/**
@@ -108,6 +109,7 @@ interface CassandraQueryExecution {
 			CassandraPageRequest cassandraPageRequest = (CassandraPageRequest) slice.getPageable();
 			return new SliceImpl<>(slice.getContent(), cassandraPageRequest.withSort(pageable.getSort()), slice.hasNext());
 		}
+
 	}
 
 	/**
@@ -139,6 +141,7 @@ interface CassandraQueryExecution {
 
 			return WindowUtil.of(operations.slice(statementToUse, type));
 		}
+
 	}
 
 	/**
@@ -158,6 +161,7 @@ interface CassandraQueryExecution {
 		public Object execute(Statement<?> statement, Class<?> type) {
 			return operations.select(statement, type);
 		}
+
 	}
 
 	/**
@@ -177,7 +181,7 @@ interface CassandraQueryExecution {
 
 		@Override
 		@SuppressWarnings("unchecked")
-		public Object execute(Statement<?> statement, Class<?> type) {
+		public @Nullable Object execute(Statement<?> statement, Class<?> type) {
 
 			List<Object> objects = operations.select(statement, (Class) type);
 
@@ -191,6 +195,7 @@ interface CassandraQueryExecution {
 
 			throw new IncorrectResultSizeDataAccessException(1, objects.size());
 		}
+
 	}
 
 	/**
@@ -222,7 +227,7 @@ interface CassandraQueryExecution {
 
 				Object object = row.getObject(0);
 
-				return ((Number) object).longValue() > 0;
+				return object != null && ((Number) object).longValue() > 0;
 			}
 
 			return true;
@@ -243,9 +248,10 @@ interface CassandraQueryExecution {
 		}
 
 		@Override
-		public Object execute(Statement<?> statement, Class<?> type) {
+		public @Nullable Object execute(Statement<?> statement, Class<?> type) {
 			return operations.execute(statement);
 		}
+
 	}
 
 	/**
@@ -263,14 +269,14 @@ interface CassandraQueryExecution {
 			this.converter = converter;
 		}
 
-		@Nullable
 		@Override
-		public Object execute(Statement<?> statement, Class<?> type) {
+		public @Nullable Object execute(Statement<?> statement, Class<?> type) {
 
 			Object result = delegate.execute(statement, type);
 
 			return result != null ? converter.convert(result) : null;
 		}
+
 	}
 
 	/**
@@ -293,7 +299,7 @@ interface CassandraQueryExecution {
 		}
 
 		@Override
-		public Object convert(@Nullable Object source) {
+		public @Nullable Object convert(@Nullable Object source) {
 
 			ReturnedType returnedType = processor.getReturnedType();
 
@@ -310,5 +316,7 @@ interface CassandraQueryExecution {
 
 			return processor.processResult(source, converter);
 		}
+
 	}
+
 }

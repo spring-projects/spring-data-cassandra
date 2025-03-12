@@ -27,7 +27,7 @@ import org.springframework.dao.InvalidDataAccessApiUsageException;
  */
 public class CassandraInvalidConfigurationInQueryException extends InvalidDataAccessApiUsageException {
 
-	@Serial private static final long serialVersionUID = 4594321191806182918L;
+	private static final @Serial long serialVersionUID = 4594321191806182918L;
 
 	/**
 	 * Constructor for {@link CassandraInvalidConfigurationInQueryException}.

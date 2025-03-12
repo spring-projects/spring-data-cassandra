@@ -31,7 +31,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  */
 public class CassandraMappingEvent<T> extends ApplicationEvent {
 
-	@Serial private static final long serialVersionUID = 1L;
+	private static final @Serial long serialVersionUID = 1L;
 
 	private final CqlIdentifier tableName;
 

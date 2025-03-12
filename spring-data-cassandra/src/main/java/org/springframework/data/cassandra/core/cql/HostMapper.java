@@ -41,4 +41,5 @@ public interface HostMapper<T> {
 	 *           catch {@link DriverException}).
 	 */
 	Collection<T> mapHosts(Iterable<Node> hosts) throws DriverException;
+
 }

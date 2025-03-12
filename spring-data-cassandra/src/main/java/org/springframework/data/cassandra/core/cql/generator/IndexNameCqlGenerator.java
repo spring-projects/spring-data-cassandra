@@ -51,4 +51,5 @@ public abstract class IndexNameCqlGenerator<T extends IndexNameSpecification<T>>
 	}
 
 	public abstract StringBuilder toCql(StringBuilder cql);
+
 }

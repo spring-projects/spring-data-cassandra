@@ -32,7 +32,7 @@ import com.datastax.oss.driver.api.core.metadata.Node;
  */
 public final class RingMember implements Serializable {
 
-	@Serial private static final long serialVersionUID = -2582309141903132916L;
+	private static final @Serial long serialVersionUID = -2582309141903132916L;
 
 	/*
 	 * Ring attributes
@@ -81,4 +81,5 @@ public final class RingMember implements Serializable {
 	public String getRack() {
 		return rack;
 	}
+
 }

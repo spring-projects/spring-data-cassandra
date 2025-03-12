@@ -23,10 +23,10 @@ import java.util.function.Consumer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jspecify.annotations.Nullable;
 
 import org.springframework.data.cassandra.observability.CassandraObservation.Events;
 import org.springframework.data.cassandra.observability.CassandraObservation.HighCardinalityKeyNames;
-import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.core.config.DriverExecutionProfile;
 import com.datastax.oss.driver.api.core.metadata.Node;

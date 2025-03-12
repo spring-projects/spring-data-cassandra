@@ -162,4 +162,5 @@ public class AlterTableCqlGenerator extends TableOptionsCqlGenerator<AlterTableS
 			cql.append(value);
 		}
 	}
+
 }

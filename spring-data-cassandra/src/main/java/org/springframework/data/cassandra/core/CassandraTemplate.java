@@ -23,6 +23,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jspecify.annotations.Nullable;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -57,7 +58,6 @@ import org.springframework.data.mapping.callback.EntityCallbacks;
 import org.springframework.data.projection.EntityProjection;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -318,7 +318,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	}
 
 	@Override
-	public <T> T selectOne(String cql, Class<T> entityClass) {
+	public <T> @Nullable T selectOne(String cql, Class<T> entityClass) {
 
 		Assert.hasText(cql, "CQL must not be empty");
 		Assert.notNull(entityClass, "Entity type must not be null");
@@ -360,7 +360,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	}
 
 	@Override
-	public <T> T selectOne(Statement<?> statement, Class<T> entityClass) {
+	public <T> @Nullable T selectOne(Statement<?> statement, Class<T> entityClass) {
 
 		List<T> result = select(statement, entityClass);
 		return result.isEmpty() ? null : result.get(0);
@@ -421,7 +421,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	}
 
 	@Override
-	public <T> T selectOne(Query query, Class<T> entityClass) throws DataAccessException {
+	public <T> @Nullable T selectOne(Query query, Class<T> entityClass) throws DataAccessException {
 
 		List<T> result = select(query, entityClass);
 
@@ -472,7 +472,6 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		return doExecute(updateStatement.build()).wasApplied();
 	}
 
-	@Nullable
 	WriteResult doUpdate(Query query, org.springframework.data.cassandra.core.query.Update update, Class<?> entityClass,
 			CqlIdentifier tableName) {
 
@@ -493,7 +492,6 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		return result != null && result.wasApplied();
 	}
 
-	@Nullable
 	WriteResult doDelete(Query query, Class<?> entityClass, CqlIdentifier tableName) {
 
 		StatementBuilder<Delete> delete = getStatementFactory().delete(query, getRequiredPersistentEntity(entityClass),
@@ -535,7 +533,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		StatementBuilder<Select> countStatement = getStatementFactory().count(query,
 				getRequiredPersistentEntity(entityClass), tableName);
 
-		return doQueryForObject(countStatement.build(), Long.class);
+		return doQueryForRequiredObject(countStatement.build(), Long.class);
 	}
 
 	@Override
@@ -568,7 +566,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	}
 
 	@Override
-	public <T> T selectOneById(Object id, Class<T> entityClass) {
+	public <T> @Nullable T selectOneById(Object id, Class<T> entityClass) {
 
 		Assert.notNull(id, "Id must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
@@ -702,7 +700,6 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		return source.isVersionedEntity()
 				? doDeleteVersioned(source.appendVersionCondition(builder).build(), entity, source, tableName)
 				: doDelete(builder.build(), entity, tableName);
-
 	}
 
 	private WriteResult doDeleteVersioned(SimpleStatement statement, Object entity, AdaptibleEntity<Object> source,
@@ -845,8 +842,8 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		return getCqlOperations().query(statement, rowMapper);
 	}
 
-	private <T> T doQueryForObject(Statement<?> statement, Class<T> resultType) {
-		return DataAccessUtils.nullableSingleResult(doQuery(statement, SingleColumnRowMapper.newInstance(resultType)));
+	private <T> T doQueryForRequiredObject(Statement<?> statement, Class<T> resultType) {
+		return DataAccessUtils.requiredSingleResult(doQuery(statement, SingleColumnRowMapper.newInstance(resultType)));
 	}
 
 	private <T> Stream<T> doQueryForStream(Statement<?> statement, RowMapper<T> rowMapper) {
@@ -890,9 +887,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 			return statement.getPageSize();
 		}
 
-		if (getCqlOperations() instanceof CassandraAccessor) {
-
-			CassandraAccessor accessor = (CassandraAccessor) getCqlOperations();
+		if (getCqlOperations() instanceof CassandraAccessor accessor) {
 
 			if (accessor.getFetchSize() != -1) {
 				return accessor.getFetchSize();
@@ -925,9 +920,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 
 			T result = getConverter().project(projection, row);
 
-			if (result != null) {
-				maybeEmitEvent(() -> new AfterConvertEvent<>(row, result, tableName));
-			}
+			maybeEmitEvent(() -> new AfterConvertEvent<>(row, result, tableName));
 
 			return result;
 		};
@@ -998,5 +991,7 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		public String getCql() {
 			return statement.getQuery();
 		}
+
 	}
+
 }

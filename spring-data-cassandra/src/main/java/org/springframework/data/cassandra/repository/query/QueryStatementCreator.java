@@ -187,6 +187,7 @@ class QueryStatementCreator {
 	 * @param function callback function must not be {@literal null}.
 	 * @return the {@literal SELECT} {@link Statement}.
 	 */
+	@SuppressWarnings("NullAway")
 	<T> T doWithQuery(CassandraParameterAccessor parameterAccessor, PartTree tree,
 			Function<Query, ? extends T> function) {
 
@@ -237,8 +238,9 @@ class QueryStatementCreator {
 	}
 
 	private boolean allowsFiltering() {
-		return this.queryMethod.getQueryAnnotation()
-				.map(org.springframework.data.cassandra.repository.Query::allowFiltering).orElse(false);
+
+		org.springframework.data.cassandra.repository.Query query = this.queryMethod.getQueryAnnotation();
+		return query != null && query.allowFiltering();
 	}
 
 	/**

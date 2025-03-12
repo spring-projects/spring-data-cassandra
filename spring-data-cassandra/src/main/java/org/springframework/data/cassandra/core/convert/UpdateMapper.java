@@ -147,9 +147,7 @@ public class UpdateMapper extends QueryMapper {
 				updateOp instanceof SetAtIndexOp ? ColumnTypeTransformer.COLLECTION_COMPONENT_TYPE
 						: ColumnTypeTransformer.AS_IS);
 
-		if (updateOp instanceof SetAtIndexOp) {
-
-			SetAtIndexOp op = (SetAtIndexOp) updateOp;
+		if (updateOp instanceof SetAtIndexOp op) {
 
 			Assert.state(op.getValue() != null,
 					() -> String.format("SetAtIndexOp for %s attempts to set null", field.getProperty()));
@@ -159,9 +157,7 @@ public class UpdateMapper extends QueryMapper {
 			return new SetAtIndexOp(field.getMappedKey(), op.getIndex(), mappedValue);
 		}
 
-		if (rawValue instanceof Collection && descriptor.isCollectionLike()) {
-
-			Collection<?> collection = (Collection) rawValue;
+		if (rawValue instanceof Collection<?> collection && descriptor.isCollectionLike()) {
 
 			if (collection.isEmpty()) {
 
@@ -254,4 +250,5 @@ public class UpdateMapper extends QueryMapper {
 
 		return new AddToMapOp(field.getMappedKey(), result);
 	}
+
 }

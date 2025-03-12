@@ -21,6 +21,8 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -34,7 +36,6 @@ import org.springframework.data.repository.util.QueryExecutionConverters;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.data.util.ReactiveWrappers;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.lang.Nullable;
 
 /**
  * Custom extension of {@link Parameters} discovering additional properties of query method parameters.
@@ -117,8 +118,7 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 		 *
 		 * @return the {@link CassandraType} or {@literal null}.
 		 */
-		@Nullable
-		public CassandraType getCassandraType() {
+		public @Nullable CassandraType getCassandraType() {
 			return this.cassandraType;
 		}
 
@@ -138,7 +138,9 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 			Class<?> originalType = parameter.getParameterType();
 
 			if (isWrapped(parameter) && shouldUnwrap(parameter)) {
-				return ResolvableType.forMethodParameter(parameter).getGeneric(0).getRawClass();
+
+				Class<?> rawClass = ResolvableType.forMethodParameter(parameter).getGeneric(0).getRawClass();
+				return rawClass == null ? Object.class : rawClass;
 			}
 
 			return originalType;
@@ -184,8 +186,7 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 		 * @inheritDoc
 		 */
 		@Override
-		@Nullable
-		public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
+		public <T extends Annotation> @Nullable T getAnnotation(Class<T> annotationClass) {
 			return methodParameter.getParameterAnnotation(annotationClass);
 		}
 
@@ -204,5 +205,7 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 		public Annotation[] getDeclaredAnnotations() {
 			return methodParameter.getParameterAnnotations();
 		}
+
 	}
+
 }

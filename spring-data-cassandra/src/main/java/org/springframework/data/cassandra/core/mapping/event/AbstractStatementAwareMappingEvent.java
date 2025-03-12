@@ -45,7 +45,8 @@ public abstract class AbstractStatementAwareMappingEvent<T> extends CassandraMap
 	/**
 	 * @return CQL statement that is going to be executed.
 	 */
-	public Statement getStatement() {
+	public Statement<?> getStatement() {
 		return statement;
 	}
+
 }

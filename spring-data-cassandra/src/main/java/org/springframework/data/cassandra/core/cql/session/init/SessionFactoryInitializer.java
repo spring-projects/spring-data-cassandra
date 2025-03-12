@@ -15,10 +15,10 @@
  */
 package org.springframework.data.cassandra.core.cql.session.init;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.cassandra.SessionFactory;
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**

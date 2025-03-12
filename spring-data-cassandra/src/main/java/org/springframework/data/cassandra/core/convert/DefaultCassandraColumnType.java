@@ -78,4 +78,5 @@ class DefaultCassandraColumnType extends DefaultColumnType implements CassandraC
 
 		return builder.toString();
 	}
+
 }
