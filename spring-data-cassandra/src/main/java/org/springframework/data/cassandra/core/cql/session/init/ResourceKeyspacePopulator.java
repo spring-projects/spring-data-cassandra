@@ -19,8 +19,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.datastax.oss.driver.api.core.session.Session;
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.EncodedResource;
 import org.springframework.data.cassandra.SessionFactory;
@@ -259,7 +259,7 @@ public class ResourceKeyspacePopulator implements KeyspacePopulator {
 	 *
 	 * @param sessionFactory the {@link SessionFactory} to execute against (never {@literal null})
 	 * @throws ScriptException if an error occurs
-	 * @see #populate(Session)
+	 * @see #populate(CqlSession)
 	 */
 	public void execute(SessionFactory sessionFactory) throws ScriptException {
 		populate(sessionFactory.getSession());
