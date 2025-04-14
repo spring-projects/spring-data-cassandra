@@ -233,7 +233,7 @@ public class ColumnSpecification {
 			return "vector<%s, %d>".formatted(vt.getElementType().asCql(true, true), vt.getDimensions());
 		}
 
-		return type.asCql(true, true);
+		return type != null ? type.asCql(true, true) : "";
 	}
 
 	@Override
