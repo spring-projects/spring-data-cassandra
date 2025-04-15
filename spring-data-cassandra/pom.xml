@@ -167,6 +167,14 @@
 					<groupId>javax.inject</groupId>
 					<artifactId>javax.inject</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>org.perfkit.sjk.parsers</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.jrockit.mc</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 
@@ -196,11 +204,6 @@
 		<dependency>
 			<groupId>edu.umd.cs.mtc</groupId>
 			<artifactId>multithreadedtc</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>com.carrotsearch</groupId>
-			<artifactId>hppc</artifactId>
 		</dependency>
 
 		<!-- Kotlin extension -->
