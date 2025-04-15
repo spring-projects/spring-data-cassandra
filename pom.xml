@@ -92,11 +92,7 @@
 		<cassandra.version>5.0.3</cassandra.version>
 		<cassandra-driver.version>4.19.0</cassandra-driver.version>
 		<dist.id>spring-data-cassandra</dist.id>
-		<el.version>1.0</el.version>
-		<!-- NOTE: com.carrotsearch:hppc dependency version set to same version as Apache Cassandra 3.11.5 -->
-		<hppc.version>0.5.4</hppc.version>
 		<multithreadedtc.version>1.01</multithreadedtc.version>
-		<project.type>multi</project.type>
 		<springdata.commons>4.0.0-SNAPSHOT</springdata.commons>
 	</properties>
 
@@ -155,13 +151,6 @@
 				<groupId>org.xerial.snappy</groupId>
 				<artifactId>snappy-java</artifactId>
 				<version>1.1.10.5</version>
-				<scope>test</scope>
-			</dependency>
-
-			<dependency>
-				<groupId>com.carrotsearch</groupId>
-				<artifactId>hppc</artifactId>
-				<version>${hppc.version}</version>
 				<scope>test</scope>
 			</dependency>
 
