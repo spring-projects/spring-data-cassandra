@@ -17,7 +17,6 @@ package org.springframework.data.cassandra.core;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
 import org.jspecify.annotations.Nullable;
@@ -35,7 +34,6 @@ import org.springframework.data.domain.Slice;
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.cql.BatchType;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
-import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.Statement;
 
 /**
@@ -164,22 +162,8 @@ public interface CassandraOperations extends FluentCassandraOperations {
 	<T> List<T> select(Statement<?> statement, Class<T> entityClass) throws DataAccessException;
 
 	/**
-	 * Execute a {@code SELECT} query and convert the resulting items to a {@link List} of entities considering the given
-	 * {@link BiFunction mapping function}.
-	 *
-	 * @param statement must not be {@literal null}.
-	 * @param entityClass the entity type must not be {@literal null}.
-	 * @param mapper mapping function invoked after materializing {@code entityClass} must not be {@literal null}.
-	 * @return the converted results
-	 * @throws DataAccessException if there is any problem executing the query.
-	 * @since 5.0
-	 */
-	<S, T> List<T> select(Statement<?> statement, Class<S> entityClass, BiFunction<S, Row, T> mapper)
-			throws DataAccessException;
-
-	/**
 	 * Execute a {@code SELECT} query with paging and convert the result set to a {@link Slice} of entities. A sliced
-	 * query translates the effective {@link Statement#getFetchSize() fetch size} to the page size.
+	 * query translates the effective {@link Statement#getPageSize()} to the page size.
 	 *
 	 * @param statement the CQL statement, must not be {@literal null}.
 	 * @param entityClass the entity type must not be {@literal null}.

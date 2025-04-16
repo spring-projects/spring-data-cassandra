@@ -306,8 +306,7 @@ class CassandraTemplateUnitTests {
 		assertThat(beforeSave).isSameAs(user);
 	}
 
-	@Test
-		// GH-1295
+	@Test // GH-1295
 	void insertShouldConsiderEntityAfterCallback() {
 
 		when(resultSet.wasApplied()).thenReturn(true);
@@ -325,8 +324,7 @@ class CassandraTemplateUnitTests {
 				.isEqualTo("INSERT INTO users (id,firstname,lastname) VALUES ('ww','Walter','White')");
 	}
 
-	@Test
-		// DATACASS-618
+	@Test // DATACASS-618
 	void insertShouldInsertVersionedEntity() {
 
 		when(resultSet.wasApplied()).thenReturn(true);
@@ -342,8 +340,7 @@ class CassandraTemplateUnitTests {
 		assertThat(beforeSave).isSameAs(user);
 	}
 
-	@Test
-		// GH-1295
+	@Test // GH-1295
 	void insertShouldInsertVersionedEntityAfterCallback() {
 
 		when(resultSet.wasApplied()).thenReturn(true);
@@ -361,8 +358,7 @@ class CassandraTemplateUnitTests {
 				"INSERT INTO vusers (id,version,firstname,lastname) VALUES ('ww',0,'Walter','White') IF NOT EXISTS");
 	}
 
-	@Test
-		// DATACASS-250
+	@Test // DATACASS-250
 	void insertShouldInsertWithOptionsEntity() {
 
 		InsertOptions insertOptions = InsertOptions.builder().withIfNotExists().build();

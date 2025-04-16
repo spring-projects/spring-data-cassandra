@@ -185,25 +185,26 @@ interface CassandraQueryExecution {
 
 			ScoringFunction function = accessor.getScoringFunction();
 
-			List<SearchResult<?>> results = operations.select(statement, type, (o, row) -> {
+			List<SearchResult<Object>> results = operations.query(statement).as(type).map((row, reader) -> {
 
+				Object entity = reader.get();
 				if (row.getColumnDefinitions().contains("__score__")) {
-					return new SearchResult<>(o, getScore(row, "__score__", function));
+					return new SearchResult<>(entity, getScore(row, "__score__", function));
 				}
 
 				if (row.getColumnDefinitions().contains("score")) {
-					return new SearchResult<>(o, getScore(row, "score", function));
+					return new SearchResult<>(entity, getScore(row, "score", function));
 				}
-				return new SearchResult<>(o, 0);
-			});
+				return new SearchResult<>(entity, 0);
+			}).all();
 
-			return new SearchResults(results);
+			return new SearchResults<>(results);
 		}
 
-		private Score getScore(Row row, String columnName, ScoringFunction function) {
+		private Score getScore(Row row, String columnName, @Nullable ScoringFunction function) {
 
 			Object object = row.getObject(columnName);
-			return Score.of(((Number) object).doubleValue(), function);
+			return Score.of(((Number) object).doubleValue(), function == null ? ScoringFunction.UNSPECIFIED : function);
 		}
 	}
 

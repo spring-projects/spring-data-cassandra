@@ -66,6 +66,7 @@ import org.springframework.data.mapping.callback.ReactiveEntityCallbacks;
 import org.springframework.data.projection.EntityProjection;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
+import org.springframework.data.util.Lazy;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -391,10 +392,11 @@ public class ReactiveCassandraTemplate
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return doSelect(query, entityClass, getTableName(entityClass), entityClass);
+		return doSelect(query, entityClass, getTableName(entityClass), entityClass, QueryResultConverter.entity());
 	}
 
-	<T> Flux<T> doSelect(Query query, Class<?> entityClass, CqlIdentifier tableName, Class<T> returnType) {
+	<T, R> Flux<R> doSelect(Query query, Class<?> entityClass, CqlIdentifier tableName, Class<T> returnType,
+			QueryResultConverter<? super T, ? extends R> mappingFunction) {
 
 		CassandraPersistentEntity<?> persistentEntity = getRequiredPersistentEntity(entityClass);
 		EntityProjection<T, ?> projection = entityOperations.introspectProjection(returnType, entityClass);
@@ -404,9 +406,9 @@ public class ReactiveCassandraTemplate
 		Query queryToUse = query.columns(columns);
 
 		StatementBuilder<Select> select = getStatementFactory().select(queryToUse, persistentEntity, tableName);
-		Function<Row, T> mapper = getMapper(projection, tableName);
+		RowMapper<R> mapper = getRowMapper(projection, tableName, mappingFunction);
 
-		return doQuery(select.build(), (row, rowNum) -> mapper.apply(row));
+		return doQuery(select.build(), mapper);
 	}
 
 	@Override
@@ -761,6 +763,16 @@ public class ReactiveCassandraTemplate
 	}
 
 	@Override
+	public UntypedSelect query(String cql) {
+		return new ReactiveSelectOperationSupport(this).query(cql);
+	}
+
+	@Override
+	public UntypedSelect query(Statement<?> statement) {
+		return new ReactiveSelectOperationSupport(this).query(statement);
+	}
+
+	@Override
 	public ReactiveUpdate update(Class<?> domainType) {
 		return new ReactiveUpdateOperationSupport(this).update(domainType);
 	}
@@ -879,6 +891,32 @@ public class ReactiveCassandraTemplate
 		}
 
 		return getReactiveCqlOperations().execute(new GetConfiguredPageSize()).single();
+	}
+
+	@SuppressWarnings("unchecked")
+	<T, R> RowMapper<R> getRowMapper(EntityProjection<T, ?> projection, CqlIdentifier tableName,
+			QueryResultConverter<? super T, ? extends R> mappingFunction) {
+
+		Function<Row, T> mapper = getMapper(projection, tableName);
+
+		return mappingFunction == QueryResultConverter.entity() ? (row, rowNum) -> (R) mapper.apply(row)
+				: (row, rowNum) -> {
+					Lazy<T> reader = Lazy.of(() -> mapper.apply(row));
+					return mappingFunction.mapRow(row, reader::get);
+				};
+	}
+
+	@SuppressWarnings("unchecked")
+	<T, R> RowMapper<R> getRowMapper(Class<T> domainClass, CqlIdentifier tableName,
+			QueryResultConverter<? super T, ? extends R> mappingFunction) {
+
+		Function<Row, T> mapper = getMapper(EntityProjection.nonProjecting(domainClass), tableName);
+
+		return mappingFunction == QueryResultConverter.entity() ? (row, rowNum) -> (R) mapper.apply(row)
+				: (row, rowNum) -> {
+					Lazy<T> reader = Lazy.of(() -> mapper.apply(row));
+					return mappingFunction.mapRow(row, reader::get);
+				};
 	}
 
 	@SuppressWarnings("unchecked")

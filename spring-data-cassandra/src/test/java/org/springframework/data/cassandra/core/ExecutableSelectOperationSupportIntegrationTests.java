@@ -19,10 +19,13 @@ import static org.assertj.core.api.Assertions.*;
 import static org.springframework.data.cassandra.core.query.Criteria.*;
 import static org.springframework.data.cassandra.core.query.Query.*;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.annotation.Id;
@@ -34,6 +37,7 @@ import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
+import org.springframework.data.domain.SearchResult;
 import org.springframework.util.ObjectUtils;
 
 /**
@@ -81,7 +85,7 @@ class ExecutableSelectOperationSupportIntegrationTests extends AbstractKeyspaceC
 
 	@Test // DATACASS-485
 	void domainTypeIsRequired() {
-		assertThatIllegalArgumentException().isThrownBy(() -> this.template.query(null));
+		assertThatIllegalArgumentException().isThrownBy(() -> this.template.query((Class<? extends Object>) null));
 	}
 
 	@Test // DATACASS-485
@@ -135,6 +139,27 @@ class ExecutableSelectOperationSupportIntegrationTests extends AbstractKeyspaceC
 	void findAllByWithProjection() {
 
 		assertThat(this.template.query(Person.class).as(Jedi.class).all()).hasOnlyElementsOfType(Jedi.class).isNotEmpty();
+	}
+
+	@Test // GH-1568
+	void findAllByWithResultConverter() {
+
+		List<SearchResult<Jedi>> results = this.template.query(Person.class).as(Jedi.class)
+				.map((row, reader) -> new SearchResult<>(reader.get(), 0)).all();
+
+		assertThat(results).hasOnlyElementsOfType(SearchResult.class).isNotEmpty();
+		assertThat(results).extracting(SearchResult::getContent).hasOnlyElementsOfType(Jedi.class);
+	}
+
+	@Test // GH-1568
+	void findAllByWithStagedResultConverter() {
+
+		List<Optional<SearchResult<Jedi>>> results = this.template.query(Person.class).as(Jedi.class)
+				.map((row, reader) -> new SearchResult<>(reader.get(), 0)).map((row, reader) -> Optional.of(reader.get()))
+				.all();
+
+		assertThat(results).hasOnlyElementsOfType(Optional.class).isNotEmpty();
+		assertThat(results).extracting(Optional::get).hasOnlyElementsOfType(SearchResult.class);
 	}
 
 	@Test // DATACASS-485

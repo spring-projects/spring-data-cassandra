@@ -19,12 +19,18 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
+import org.springframework.data.cassandra.core.cql.QueryExtractorDelegate;
+import org.springframework.data.cassandra.core.cql.RowMapper;
 import org.springframework.data.cassandra.core.query.Query;
+import org.springframework.data.domain.Slice;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.cql.Statement;
 
 /**
  * Implementation of {@link ExecutableSelectOperation}.
@@ -47,28 +53,173 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 
 		Assert.notNull(domainType, "DomainType must not be null");
 
-		return new ExecutableSelectSupport<>(this.template, domainType, domainType, Query.empty(), null);
+		return new ExecutableSelectSupport<>(this.template, domainType, domainType, QueryResultConverter.entity(),
+				Query.empty(), null);
 	}
 
-	static class ExecutableSelectSupport<T> implements ExecutableSelect<T> {
+	@Override
+	public UntypedSelect query(String cql) {
+
+		Assert.hasText(cql, "CQL must not be empty");
+
+		return new UntypedSelectSupport(this.template, SimpleStatement.newInstance(cql));
+	}
+
+	@Override
+	public UntypedSelect query(Statement<?> statement) {
+
+		Assert.notNull(statement, "Statement must not be null");
+
+		return new UntypedSelectSupport(this.template, statement);
+	}
+
+	private record UntypedSelectSupport(CassandraTemplate template, Statement<?> statement) implements UntypedSelect {
+
+		@Override
+		public <T> TerminatingResults<T> as(Class<T> resultType) {
+
+			Assert.notNull(resultType, "Result type must not be null");
+
+			return new TypedSelectSupport<>(template, statement, resultType);
+		}
+
+		@Override
+		public <T> TerminatingResults<T> map(RowMapper<T> mapper) {
+
+			Assert.notNull(mapper, "RowMapper must not be null");
+
+			return new TerminatingSelectResultSupport<>(template, statement, mapper);
+		}
+
+	}
+
+	static class TypedSelectSupport<T> extends TerminatingSelectResultSupport<T, T> implements TerminatingResults<T> {
+
+		private final Class<T> domainType;
+
+		TypedSelectSupport(CassandraTemplate template, Statement<?> statement, Class<T> domainType) {
+			super(template, statement,
+					template.getRowMapper(domainType, EntityQueryUtils.getTableName(statement), QueryResultConverter.entity()));
+
+			this.domainType = domainType;
+		}
+
+		@Override
+		public <R> TerminatingResults<R> map(QueryResultConverter<? super T, ? extends R> converter) {
+
+			Assert.notNull(converter, "Mapping function must not be null");
+
+			return new TerminatingSelectResultSupport<>(this.template, this.statement, this.domainType, converter);
+		}
+
+	}
+
+	static class TerminatingSelectResultSupport<S, T> implements TerminatingResults<T> {
+
+		final CassandraTemplate template;
+
+		final Statement<?> statement;
+
+		final RowMapper<T> rowMapper;
+
+		TerminatingSelectResultSupport(CassandraTemplate template, Statement<?> statement, RowMapper<T> rowMapper) {
+			this.template = template;
+			this.statement = statement;
+			this.rowMapper = rowMapper;
+		}
+
+		TerminatingSelectResultSupport(CassandraTemplate template, Statement<?> statement, Class<S> domainType,
+				QueryResultConverter<? super S, ? extends T> mappingFunction) {
+			this(template, statement,
+					template.getRowMapper(domainType, EntityQueryUtils.getTableName(statement), mappingFunction));
+		}
+
+		@Override
+		public <R> TerminatingResults<R> map(QueryResultConverter<? super T, ? extends R> converter) {
+
+			return new TerminatingSelectResultSupport<>(this.template, this.statement, (row, rowNum) -> {
+
+				return converter.mapRow(row, () -> {
+					return this.rowMapper.mapRow(row, rowNum);
+				});
+			});
+		}
+
+		@Override
+		public @Nullable T firstValue() {
+
+			List<T> result = this.template.getCqlOperations().query(this.statement, this.rowMapper);
+
+			return ObjectUtils.isEmpty(result) ? null : result.iterator().next();
+		}
+
+		@Override
+		public @Nullable T oneValue() {
+
+			List<T> result = this.template.getCqlOperations().query(this.statement, this.rowMapper);
+
+			if (ObjectUtils.isEmpty(result)) {
+				return null;
+			}
+
+			if (result.size() > 1) {
+				throw new IncorrectResultSizeDataAccessException(
+						String.format("Query [%s] returned non unique result", QueryExtractorDelegate.getCql(this.statement)), 1);
+			}
+
+			return result.iterator().next();
+		}
+
+		@Override
+		public List<T> all() {
+			return this.template.getCqlOperations().query(this.statement, this.rowMapper);
+		}
+
+		@Override
+		public Slice<T> slice() {
+			return this.template.doSlice(this.statement, this.rowMapper);
+		}
+
+		@Override
+		public Stream<T> stream() {
+			return this.template.getCqlOperations().queryForStream(this.statement, this.rowMapper);
+		}
+
+	}
+
+	static class ExecutableSelectSupport<S, T> implements ExecutableSelect<T> {
 
 		private final CassandraTemplate template;
 
 		private final Class<?> domainType;
 
-		private final Class<T> returnType;
+		private final Class<S> returnType;
+
+		private final QueryResultConverter<? super S, ? extends T> mappingFunction;
 
 		private final Query query;
 
 		private final @Nullable CqlIdentifier tableName;
 
-		public ExecutableSelectSupport(CassandraTemplate template, Class<?> domainType, Class<T> returnType, Query query,
+		public ExecutableSelectSupport(CassandraTemplate template, Class<?> domainType, Class<S> returnType,
+				QueryResultConverter<? super S, ? extends T> mappingFunction, Query query,
 				@Nullable CqlIdentifier tableName) {
+
 			this.template = template;
 			this.domainType = domainType;
 			this.returnType = returnType;
+			this.mappingFunction = mappingFunction;
 			this.query = query;
 			this.tableName = tableName;
+		}
+
+		@Override
+		public <R> TerminatingResults<R> map(QueryResultConverter<? super T, ? extends R> converter) {
+
+			Assert.notNull(converter, "Mapping function name must not be null");
+
+			return new ExecutableSelectSupport<>(this.template, this.domainType, this.returnType,
+					this.mappingFunction.andThen(converter), this.query, tableName);
 		}
 
 		@Override
@@ -76,7 +227,8 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 
 			Assert.notNull(tableName, "Table name must not be null");
 
-			return new ExecutableSelectSupport<>(this.template, this.domainType, this.returnType, this.query, tableName);
+			return new ExecutableSelectSupport<>(this.template, this.domainType, this.returnType, this.mappingFunction,
+					this.query, tableName);
 		}
 
 		@Override
@@ -84,7 +236,8 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 
 			Assert.notNull(returnType, "ReturnType must not be null");
 
-			return new ExecutableSelectSupport<>(this.template, this.domainType, returnType, this.query, this.tableName);
+			return new ExecutableSelectSupport<>(this.template, this.domainType, returnType, QueryResultConverter.entity(),
+					this.query, this.tableName);
 		}
 
 		@Override
@@ -92,7 +245,8 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 
 			Assert.notNull(query, "Query must not be null");
 
-			return new ExecutableSelectSupport<>(this.template, this.domainType, this.returnType, query, this.tableName);
+			return new ExecutableSelectSupport<>(this.template, this.domainType, this.returnType, this.mappingFunction, query,
+					this.tableName);
 		}
 
 		@Override
@@ -108,7 +262,8 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 		@Override
 		public @Nullable T firstValue() {
 
-			List<T> result = this.template.doSelect(this.query.limit(1), this.domainType, getTableName(), this.returnType);
+			List<T> result = this.template.doSelect(this.query.limit(1), this.domainType, getTableName(), this.returnType,
+					this.mappingFunction);
 
 			return ObjectUtils.isEmpty(result) ? null : result.iterator().next();
 		}
@@ -116,7 +271,8 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 		@Override
 		public @Nullable T oneValue() {
 
-			List<T> result = this.template.doSelect(this.query.limit(2), this.domainType, getTableName(), this.returnType);
+			List<T> result = this.template.doSelect(this.query.limit(2), this.domainType, getTableName(), this.returnType,
+					this.mappingFunction);
 
 			if (ObjectUtils.isEmpty(result)) {
 				return null;
@@ -132,12 +288,17 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 
 		@Override
 		public List<T> all() {
-			return this.template.doSelect(this.query, this.domainType, getTableName(), this.returnType);
+			return this.template.doSelect(this.query, this.domainType, getTableName(), this.returnType, this.mappingFunction);
+		}
+
+		@Override
+		public Slice<T> slice() {
+			return this.template.doSlice(this.query, this.domainType, getTableName(), this.returnType, this.mappingFunction);
 		}
 
 		@Override
 		public Stream<T> stream() {
-			return this.template.doStream(this.query, this.domainType, getTableName(), this.returnType);
+			return this.template.doStream(this.query, this.domainType, getTableName(), this.returnType, this.mappingFunction);
 		}
 
 		private CqlIdentifier getTableName() {
@@ -145,5 +306,6 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 		}
 
 	}
+
 
 }
