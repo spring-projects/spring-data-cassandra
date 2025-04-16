@@ -32,9 +32,12 @@ import org.springframework.data.cassandra.core.query.Criteria;
 import org.springframework.data.cassandra.core.query.CriteriaDefinition;
 import org.springframework.data.cassandra.core.query.Filter;
 import org.springframework.data.cassandra.core.query.Query;
+import org.springframework.data.cassandra.core.query.VectorSort;
 import org.springframework.data.domain.Range;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Vector;
 import org.springframework.data.mapping.PersistentPropertyPath;
+import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.query.parser.AbstractQueryCreator;
 import org.springframework.data.repository.query.parser.Part;
@@ -56,6 +59,8 @@ class CassandraQueryCreator extends AbstractQueryCreator<Query, Filter> {
 	private final MappingContext<?, CassandraPersistentProperty> mappingContext;
 
 	private final QueryBuilder queryBuilder = new QueryBuilder();
+	private final CassandraParameterAccessor parameterAccessor;
+	private final PartTree tree;
 
 	/**
 	 * Create a new {@link CassandraQueryCreator} from the given {@link PartTree}, {@link ConvertingParameterAccessor} and
@@ -72,6 +77,8 @@ class CassandraQueryCreator extends AbstractQueryCreator<Query, Filter> {
 
 		Assert.notNull(mappingContext, "CassandraMappingContext must not be null");
 
+		this.tree = tree;
+		this.parameterAccessor = parameterAccessor;
 		this.mappingContext = mappingContext;
 	}
 
@@ -102,9 +109,6 @@ class CassandraQueryCreator extends AbstractQueryCreator<Query, Filter> {
 				.getPersistentPropertyPath(part.getProperty());
 
 		CassandraPersistentProperty property = path.getLeafProperty();
-
-		Assert.state(property != null && path.toDotPath() != null, "Leaf property must not be null");
-
 		Object filterOrCriteria = from(part, property, Criteria.where(path.toDotPath()), iterator);
 
 		if (filterOrCriteria instanceof CriteriaDefinition) {
@@ -115,10 +119,12 @@ class CassandraQueryCreator extends AbstractQueryCreator<Query, Filter> {
 	}
 
 	@Override
-	protected Filter and(Part part, Filter base, Iterator<Object> iterator) {
+	protected Filter and(Part part, @Nullable Filter base, Iterator<Object> iterator) {
 
-		for (CriteriaDefinition criterion : base) {
-			getQueryBuilder().and(criterion);
+		if (base != null) {
+			for (CriteriaDefinition criterion : base) {
+				getQueryBuilder().and(criterion);
+			}
 		}
 
 		return create(part, iterator);
@@ -139,7 +145,8 @@ class CassandraQueryCreator extends AbstractQueryCreator<Query, Filter> {
 			}
 		}
 
-		Query query = getQueryBuilder().create(sort);
+		Query query = sort.isUnsorted() && parameterAccessor.getVector() != null ? getQueryBuilder().create(getVectorSort())
+				: getQueryBuilder().create(sort);
 
 		if (LOG.isDebugEnabled()) {
 			LOG.debug(String.format("Created query [%s]", query));
@@ -148,10 +155,29 @@ class CassandraQueryCreator extends AbstractQueryCreator<Query, Filter> {
 		return query;
 	}
 
+	private Sort getVectorSort() {
+		return VectorSort.ann(getVectorProperty().toDotPath(), parameterAccessor.getVector());
+	}
+
+	PropertyPath getVectorProperty() {
+
+		for (PartTree.OrPart parts : tree) {
+			for (Part part : parts) {
+
+				if (part.getType() == Type.NEAR || part.getType() == Type.WITHIN) {
+					return part.getProperty();
+				}
+			}
+		}
+
+		throw new IllegalArgumentException("No Near/Within property found");
+	}
+
 	/**
 	 * Returns a {@link Filter} or {@link CriteriaDefinition} object representing the criterion for a {@link Part}.
 	 */
-	private Object from(Part part, CassandraPersistentProperty property, Criteria where, Iterator<Object> parameters) {
+	private @Nullable Object from(Part part, CassandraPersistentProperty property, Criteria where,
+			Iterator<Object> parameters) {
 
 		Type type = part.getType();
 
@@ -182,10 +208,24 @@ class CassandraQueryCreator extends AbstractQueryCreator<Query, Filter> {
 				return where.is(false);
 			case SIMPLE_PROPERTY:
 				return where.is(parameters.next());
+
+			case NEAR:
+			case WITHIN:
+
+				Object next = parameters.next();
+
+				if (!(next instanceof Vector)) {
+
+					throw new IllegalArgumentException("Expected a Vector for Near/Within keyword but got [%s]"
+							.formatted(next == null ? "null" : next.getClass()));
+				}
+
+				return null;
 			default:
 				throw new InvalidDataAccessApiUsageException(
 						String.format("Unsupported keyword [%s] in part [%s]", type, part));
 		}
+
 	}
 
 	/**
@@ -280,7 +320,7 @@ class CassandraQueryCreator extends AbstractQueryCreator<Query, Filter> {
 	 */
 	static class QueryBuilder {
 
-		private List<CriteriaDefinition> criterias = new ArrayList<>();
+		private final List<CriteriaDefinition> criterias = new ArrayList<>();
 
 		CriteriaDefinition and(CriteriaDefinition clause) {
 			criterias.add(clause);

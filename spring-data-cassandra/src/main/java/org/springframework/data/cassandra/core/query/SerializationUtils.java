@@ -57,7 +57,7 @@ abstract class SerializationUtils {
 		CriteriaDefinition.Predicate predicate = criteria.getPredicate();
 
 		return String.format("%s %s", criteria.getColumnName(),
-				predicate.getOperator().toCql(serializeToCqlSafely(predicate.getValue())));
+				predicate.getOperator().toCql(predicate != null ? serializeToCqlSafely(predicate.getValue()) : ""));
 	}
 
 	/**

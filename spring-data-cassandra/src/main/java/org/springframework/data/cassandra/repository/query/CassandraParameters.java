@@ -29,6 +29,9 @@ import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.repository.query.CassandraParameters.CassandraParameter;
+import org.springframework.data.domain.Range;
+import org.springframework.data.domain.Score;
+import org.springframework.data.domain.ScoringFunction;
 import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.Parameters;
 import org.springframework.data.repository.query.ParametersSource;
@@ -46,6 +49,7 @@ import org.springframework.data.util.TypeInformation;
 public class CassandraParameters extends Parameters<CassandraParameters, CassandraParameter> {
 
 	private final @Nullable Integer queryOptionsIndex;
+	private final @Nullable Integer scoringFunctionIndex;
 
 	/**
 	 * Create a new {@link CassandraParameters} instance from the given {@link Method}.
@@ -58,18 +62,23 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 
 		this.queryOptionsIndex = Arrays.asList(parametersSource.getMethod().getParameterTypes())
 				.indexOf(QueryOptions.class);
+
+		this.scoringFunctionIndex = Arrays.asList(parametersSource.getMethod().getParameterTypes())
+				.indexOf(ScoringFunction.class);
 	}
 
-	private CassandraParameters(List<CassandraParameter> originals, @Nullable Integer queryOptionsIndex) {
+	private CassandraParameters(List<CassandraParameter> originals, @Nullable Integer queryOptionsIndex,
+			@Nullable Integer scoringFunctionIndex) {
 
 		super(originals);
 
 		this.queryOptionsIndex = queryOptionsIndex;
+		this.scoringFunctionIndex = scoringFunctionIndex;
 	}
 
 	@Override
 	protected CassandraParameters createFrom(List<CassandraParameter> parameters) {
-		return new CassandraParameters(parameters, queryOptionsIndex);
+		return new CassandraParameters(parameters, queryOptionsIndex, scoringFunctionIndex);
 	}
 
 	/**
@@ -83,6 +92,16 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 	}
 
 	/**
+	 * Returns the index of the {@link ScoringFunction} parameter to be applied to queries.
+	 *
+	 * @return
+	 * @since 5.0
+	 */
+	public int getScoringFunctionIndex() {
+		return (scoringFunctionIndex != null ? scoringFunctionIndex : -1);
+	}
+
+	/**
 	 * Custom {@link Parameter} implementation adding {@link CassandraType} support.
 	 *
 	 * @author Mark Paluch
@@ -91,6 +110,8 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 
 		private final @Nullable CassandraType cassandraType;
 		private final Class<?> parameterType;
+		private final boolean isScoreRange;
+		private final boolean isScoringFunction;
 
 		CassandraParameter(MethodParameter parameter, TypeInformation<?> domainType) {
 
@@ -104,12 +125,17 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 				this.cassandraType = null;
 			}
 
-			parameterType = potentiallyUnwrapParameterType(parameter);
+			this.parameterType = potentiallyUnwrapParameterType(parameter);
+
+			ResolvableType type = ResolvableType.forMethodParameter(parameter);
+			this.isScoreRange = Range.class.isAssignableFrom(getType()) && type.getGeneric(0).isAssignableFrom(Score.class);
+			this.isScoringFunction = ScoringFunction.class.isAssignableFrom(getType());
 		}
 
 		@Override
 		public boolean isSpecialParameter() {
-			return super.isSpecialParameter() || QueryOptions.class.isAssignableFrom(getType());
+			return super.isSpecialParameter() || isScoreRange || isScoringFunction || Score.class.isAssignableFrom(getType())
+					|| QueryOptions.class.isAssignableFrom(getType());
 		}
 
 		/**

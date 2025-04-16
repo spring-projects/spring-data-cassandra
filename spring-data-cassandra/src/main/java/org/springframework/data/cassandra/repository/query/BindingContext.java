@@ -20,9 +20,9 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jspecify.annotations.Nullable;
+
+import org.springframework.data.domain.Limit;
 import org.springframework.data.mapping.model.ValueExpressionEvaluator;
-import org.springframework.data.repository.query.Parameter;
-import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.util.Assert;
 
 /**
@@ -35,7 +35,7 @@ class BindingContext {
 
 	private final CassandraParameters parameters;
 
-	private final ParameterAccessor parameterAccessor;
+	private final CassandraParameterAccessor parameterAccessor;
 
 	private final List<ParameterBinding> bindings;
 
@@ -44,7 +44,7 @@ class BindingContext {
 	/**
 	 * Create new {@link BindingContext}.
 	 */
-	BindingContext(CassandraParameters parameters, ParameterAccessor parameterAccessor,
+	BindingContext(CassandraParameters parameters, CassandraParameterAccessor parameterAccessor,
 			List<ParameterBinding> bindings, ValueExpressionEvaluator evaluator) {
 
 		this.parameters = parameters;
@@ -75,8 +75,9 @@ class BindingContext {
 		List<Object> parameters = new ArrayList<>(bindings.size());
 
 		for (ParameterBinding binding : bindings) {
+
 			Object parameterValueForBinding = getParameterValueForBinding(binding);
-			parameters.add(parameterValueForBinding);
+			parameters.add(binding.prepareValue(parameterValueForBinding));
 		}
 
 		return parameters;
@@ -95,20 +96,20 @@ class BindingContext {
 		}
 
 		return binding.isNamed()
-				? parameterAccessor.getBindableValue(getParameterIndex(parameters, binding.getRequiredParameterName()))
+				? parameterAccessor.getValue(getParameterIndex(parameters, binding.getRequiredParameterName()))
 				: parameterAccessor.getBindableValue(binding.getParameterIndex());
 	}
 
 	private int getParameterIndex(CassandraParameters parameters, String parameterName) {
 
-		return parameters.stream() //
-				.filter(cassandraParameter -> cassandraParameter //
-						.getName().filter(s -> s.equals(parameterName)) //
-						.isPresent()) //
-				.mapToInt(Parameter::getIndex) //
-				.findFirst() //
-				.orElseThrow(() -> new IllegalArgumentException(
-						String.format("Invalid parameter name; Cannot resolve parameter [%s]", parameterName)));
+		for (CassandraParameters.CassandraParameter parameter : parameters) {
+			if (parameter.getName().filter(s -> s.equals(parameterName)).isPresent()) {
+				return parameter.getIndex();
+			}
+		}
+
+		throw new IllegalArgumentException(
+				String.format("Invalid parameter name; Cannot resolve parameter [%s]", parameterName));
 	}
 
 	/**
@@ -129,31 +130,31 @@ class BindingContext {
 			this.parameterName = parameterName;
 		}
 
-		static ParameterBinding expression(String expression, boolean quoted) {
+		public static ParameterBinding expression(String expression, boolean quoted) {
 			return new ParameterBinding(-1, expression, null);
 		}
 
-		static ParameterBinding indexed(int parameterIndex) {
+		public static ParameterBinding indexed(int parameterIndex) {
 			return new ParameterBinding(parameterIndex, null, null);
 		}
 
-		static ParameterBinding named(String name) {
+		public static ParameterBinding named(String name) {
 			return new ParameterBinding(-1, null, name);
 		}
 
-		boolean isNamed() {
+		public boolean isNamed() {
 			return (parameterName != null);
 		}
 
-		int getParameterIndex() {
+		public int getParameterIndex() {
 			return parameterIndex;
 		}
 
-		String getParameter() {
+		public String getParameter() {
 			return ("?" + (isExpression() ? "expr" : "") + parameterIndex);
 		}
 
-		String getRequiredExpression() {
+		public String getRequiredExpression() {
 
 			Assert.state(expression != null, "ParameterBinding is not an expression");
 			return expression;
@@ -168,6 +169,25 @@ class BindingContext {
 			Assert.state(parameterName != null, "ParameterBinding is not named");
 
 			return parameterName;
+		}
+
+		/**
+		 * Prepare a value before binding it to the query.
+		 *
+		 * @param value
+		 * @return
+		 */
+		public @Nullable Object prepareValue(@Nullable Object value) {
+
+			if (value == null) {
+				return value;
+			}
+
+			if (value instanceof Limit limit) {
+				return limit.max();
+			}
+
+			return value;
 		}
 	}
 }

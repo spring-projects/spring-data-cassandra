@@ -26,10 +26,11 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.cassandra.core.convert.CassandraVector;
 import org.springframework.data.cassandra.core.mapping.SimilarityFunction;
 import org.springframework.data.domain.Vector;
-import org.jspecify.annotations.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -340,6 +341,9 @@ public class Columns implements Iterable<ColumnName> {
 		 */
 		Selector as(CqlIdentifier alias);
 
+		/**
+		 * @return the expression that forms this selection.
+		 */
 		String getExpression();
 
 		Optional<CqlIdentifier> getAlias();
@@ -408,6 +412,10 @@ public class Columns implements Iterable<ColumnName> {
 		@Override
 		public Optional<CqlIdentifier> getAlias() {
 			return alias;
+		}
+
+		public CqlIdentifier getIdentifier() {
+			return columnName.getCqlIdentifier().orElseGet(() -> CqlIdentifier.fromCql(columnName.toCql()));
 		}
 
 		@Override

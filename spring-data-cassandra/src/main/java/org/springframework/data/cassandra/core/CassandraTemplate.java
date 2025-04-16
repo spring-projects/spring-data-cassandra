@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.core;
 
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -349,14 +350,25 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 
 	@Override
 	public <T> List<T> select(Statement<?> statement, Class<T> entityClass) {
+		return select(statement, entityClass, (t, row) -> t);
+	}
+
+	@Override
+	public <S, T> List<T> select(Statement<?> statement, Class<S> entityClass, BiFunction<S, Row, T> mapper)
+			throws DataAccessException {
 
 		Assert.notNull(statement, "Statement must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
+		Assert.notNull(mapper, "Row Mapper function must not be null");
 
-		Function<Row, T> mapper = getMapper(EntityProjection.nonProjecting(entityClass),
+		Function<Row, S> defaultMapper = getMapper(EntityProjection.nonProjecting(entityClass),
 				EntityQueryUtils.getTableName(statement));
 
-		return doQuery(statement, (row, rowNum) -> mapper.apply(row));
+		return doQuery(statement, (row, rowNum) -> {
+
+			S intermediate = defaultMapper.apply(row);
+			return mapper.apply(intermediate, row);
+		});
 	}
 
 	@Override
