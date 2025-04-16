@@ -58,6 +58,7 @@ import org.springframework.data.mapping.callback.EntityCallbacks;
 import org.springframework.data.projection.EntityProjection;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
+import org.springframework.data.util.Lazy;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -353,10 +354,17 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		Assert.notNull(statement, "Statement must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		Function<Row, T> mapper = getMapper(EntityProjection.nonProjecting(entityClass),
-				EntityQueryUtils.getTableName(statement));
+		return doSelect(statement, entityClass, getTableName(entityClass), entityClass, QueryResultConverter.entity());
+	}
 
-		return doQuery(statement, (row, rowNum) -> mapper.apply(row));
+	<T, R> List<R> doSelect(Statement<?> statement, Class<?> entityClass, CqlIdentifier tableName, Class<T> returnType,
+			QueryResultConverter<T, R> mappingFunction) {
+
+		EntityProjection<T, ?> projection = entityOperations.introspectProjection(returnType, entityClass);
+
+		RowMapper<R> rowMapper = getRowMapper(projection, tableName, mappingFunction);
+
+		return doQuery(statement, rowMapper);
 	}
 
 	@Override
@@ -372,13 +380,14 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		Assert.notNull(statement, "Statement must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
+		return doSlice(statement,
+				getRowMapper(entityClass, EntityQueryUtils.getTableName(statement), QueryResultConverter.entity()));
+	}
+
+	<T> Slice<T> doSlice(Statement<?> statement, RowMapper<T> mapper) {
+
 		ResultSet resultSet = doQueryForResultSet(statement);
-
-		Function<Row, T> mapper = getMapper(EntityProjection.nonProjecting(entityClass),
-				EntityQueryUtils.getTableName(statement));
-
-		return EntityQueryUtils.readSlice(resultSet, (row, rowNum) -> mapper.apply(row), 0,
-				getEffectivePageSize(statement));
+		return EntityQueryUtils.readSlice(resultSet, mapper, 0, getEffectivePageSize(statement));
 	}
 
 	@Override
@@ -387,9 +396,17 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		Assert.notNull(statement, "Statement must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		Function<Row, T> mapper = getMapper(EntityProjection.nonProjecting(entityClass),
-				EntityQueryUtils.getTableName(statement));
-		return doQueryForStream(statement, (row, rowNum) -> mapper.apply(row));
+		return doStream(statement, entityClass, EntityQueryUtils.getTableName(statement), entityClass,
+				QueryResultConverter.entity());
+	}
+
+	<T, R> Stream<R> doStream(Statement<?> statement, Class<?> entityClass, CqlIdentifier tableName, Class<T> returnType,
+			QueryResultConverter<T, R> mappingFunction) {
+
+		EntityProjection<T, ?> projection = entityOperations.introspectProjection(returnType, entityClass);
+
+		RowMapper<R> rowMapper = getRowMapper(projection, tableName, mappingFunction);
+		return doQueryForStream(statement, rowMapper);
 	}
 
 	// -------------------------------------------------------------------------
@@ -402,10 +419,11 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return doSelect(query, entityClass, getTableName(entityClass), entityClass);
+		return doSelect(query, entityClass, getTableName(entityClass), entityClass, QueryResultConverter.entity());
 	}
 
-	<T> List<T> doSelect(Query query, Class<?> entityClass, CqlIdentifier tableName, Class<T> returnType) {
+	<T, R> List<R> doSelect(Query query, Class<?> entityClass, CqlIdentifier tableName, Class<T> returnType,
+			QueryResultConverter<? super T, ? extends R> mappingFunction) {
 
 		CassandraPersistentEntity<?> entity = getRequiredPersistentEntity(entityClass);
 		EntityProjection<T, ?> projection = entityOperations.introspectProjection(returnType, entityClass);
@@ -415,9 +433,9 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		Query queryToUse = query.columns(columns);
 
 		StatementBuilder<Select> select = getStatementFactory().select(queryToUse, entity, tableName);
-		Function<Row, T> mapper = getMapper(projection, tableName);
+		RowMapper<R> rowMapper = getRowMapper(projection, tableName, mappingFunction);
 
-		return doQuery(select.build(), (row, rowNum) -> mapper.apply(row));
+		return doQuery(select.build(), rowMapper);
 	}
 
 	@Override
@@ -434,9 +452,24 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		StatementBuilder<Select> select = getStatementFactory().select(query, getRequiredPersistentEntity(entityClass));
+		return doSlice(query, entityClass, getRequiredPersistentEntity(entityClass).getTableName(), entityClass,
+				QueryResultConverter.entity());
+	}
 
-		return slice(select.build(), entityClass);
+	<T, R> Slice<R> doSlice(Query query, Class<?> entityClass, CqlIdentifier tableName, Class<T> returnType,
+			QueryResultConverter<? super T, ? extends R> mappingFunction) {
+
+		CassandraPersistentEntity<?> entity = getRequiredPersistentEntity(entityClass);
+		EntityProjection<T, ?> projection = entityOperations.introspectProjection(returnType, entityClass);
+		Columns columns = getStatementFactory().computeColumnsForProjection(projection, query.getColumns(), entity,
+				returnType);
+
+		Query queryToUse = query.columns(columns);
+
+		StatementBuilder<Select> select = getStatementFactory().select(queryToUse, entity, tableName);
+		RowMapper<R> rowMapper = getRowMapper(projection, tableName, mappingFunction);
+
+		return doSlice(select.build(), rowMapper);
 	}
 
 	@Override
@@ -445,17 +478,19 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return doStream(query, entityClass, getTableName(entityClass), entityClass);
+		return doStream(query, entityClass, getTableName(entityClass), entityClass, QueryResultConverter.entity());
 	}
 
-	<T> Stream<T> doStream(Query query, Class<?> entityClass, CqlIdentifier tableName, Class<T> returnType) {
+	<T, R> Stream<R> doStream(Query query, Class<?> entityClass, CqlIdentifier tableName, Class<T> returnType,
+			QueryResultConverter<? super T, ? extends R> mappingFunction) {
 
 		StatementBuilder<Select> select = getStatementFactory().select(query, getRequiredPersistentEntity(entityClass),
 				tableName);
 		EntityProjection<T, ?> projection = entityOperations.introspectProjection(returnType, entityClass);
 
-		Function<Row, T> mapper = getMapper(projection, tableName);
-		return doQueryForStream(select.build(), (row, rowNum) -> mapper.apply(row));
+		RowMapper<R> rowMapper = getRowMapper(projection, tableName, mappingFunction);
+
+		return doQueryForStream(select.build(), rowMapper);
 	}
 
 	@Override
@@ -768,6 +803,16 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	}
 
 	@Override
+	public UntypedSelect query(String cql) {
+		return new ExecutableSelectOperationSupport(this).query(cql);
+	}
+
+	@Override
+	public UntypedSelect query(Statement<?> statement) {
+		return new ExecutableSelectOperationSupport(this).query(statement);
+	}
+
+	@Override
 	public <T> ExecutableInsert<T> insert(Class<T> domainType) {
 		return new ExecutableInsertOperationSupport(this).insert(domainType);
 	}
@@ -907,6 +952,32 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		}
 
 		return getCqlOperations().execute(new GetConfiguredPageSize());
+	}
+
+	@SuppressWarnings("unchecked")
+	<T, R> RowMapper<R> getRowMapper(EntityProjection<T, ?> projection, CqlIdentifier tableName,
+			QueryResultConverter<? super T, ? extends R> mappingFunction) {
+
+		Function<Row, T> mapper = getMapper(projection, tableName);
+
+		return mappingFunction == QueryResultConverter.entity() ? (row, rowNum) -> (R) mapper.apply(row)
+				: (row, rowNum) -> {
+					Lazy<T> reader = Lazy.of(() -> mapper.apply(row));
+					return mappingFunction.mapRow(row, reader::get);
+				};
+	}
+
+	@SuppressWarnings("unchecked")
+	<T, R> RowMapper<R> getRowMapper(Class<T> domainClass, CqlIdentifier tableName,
+			QueryResultConverter<? super T, ? extends R> mappingFunction) {
+
+		Function<Row, T> mapper = getMapper(EntityProjection.nonProjecting(domainClass), tableName);
+
+		return mappingFunction == QueryResultConverter.entity() ? (row, rowNum) -> (R) mapper.apply(row)
+				: (row, rowNum) -> {
+					Lazy<T> reader = Lazy.of(() -> mapper.apply(row));
+					return mappingFunction.mapRow(row, reader::get);
+				};
 	}
 
 	@SuppressWarnings("unchecked")

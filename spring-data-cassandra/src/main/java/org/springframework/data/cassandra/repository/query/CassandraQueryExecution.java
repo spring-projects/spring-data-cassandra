@@ -164,6 +164,44 @@ interface CassandraQueryExecution {
 
 	}
 
+	final class SearchExecution implements CassandraQueryExecution {
+
+		private final CassandraOperations operations;
+		private final CassandraParameterAccessor accessor;
+
+		public SearchExecution(CassandraOperations operations, CassandraParameterAccessor accessor) {
+
+			this.operations = operations;
+			this.accessor = accessor;
+		}
+
+		@Override
+		public Object execute(Statement<?> statement, Class<?> type) {
+
+			ScoringFunction function = accessor.getScoringFunction();
+
+			List<SearchResult<?>> results = operations.select(statement, type, (o, row) -> {
+
+				if (row.getColumnDefinitions().contains("__score__")) {
+					return new SearchResult<>(o, getScore(row, "__score__", function));
+				}
+
+				if (row.getColumnDefinitions().contains("score")) {
+					return new SearchResult<>(o, getScore(row, "score", function));
+				}
+				return new SearchResult<>(o, 0);
+			});
+
+			return new SearchResults(results);
+		}
+
+		private Score getScore(Row row, String columnName, ScoringFunction function) {
+
+			Object object = row.getObject(columnName);
+			return Score.of(((Number) object).doubleValue(), function);
+		}
+	}
+
 	/**
 	 * {@link CassandraQueryExecution} to return a single entity.
 	 *

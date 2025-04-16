@@ -23,8 +23,11 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.annotation.Id;
@@ -84,7 +87,7 @@ class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeyspaceCre
 
 	@Test // DATACASS-485
 	void domainTypeIsRequired() {
-		assertThatIllegalArgumentException().isThrownBy(() -> this.template.query(null));
+		assertThatIllegalArgumentException().isThrownBy(() -> this.template.query((Class<? extends Object>) null));
 	}
 
 	@Test // DATACASS-485
@@ -165,6 +168,18 @@ class ReactiveSelectOperationSupportIntegrationTests extends AbstractKeyspaceCre
 
 		result.collectList().as(StepVerifier::create)
 				.assertNext(actual -> assertThat(actual).isNotEmpty().hasOnlyElementsOfType(Jedi.class)).verifyComplete();
+	}
+
+	@Test // GH-1568
+	void findAllByWithResultConverter() {
+
+		Flux<Optional<Jedi>> result = this.template.query(Person.class).as(Jedi.class)
+				.map((row, reader) -> Optional.of(reader.get())).all();
+
+		result.collectList().as(StepVerifier::create)
+				.assertNext(
+						actual -> assertThat(actual).extracting(Optional::get).isNotEmpty().hasOnlyElementsOfType(Jedi.class))
+				.verifyComplete();
 	}
 
 	@Test // DATACASS-485

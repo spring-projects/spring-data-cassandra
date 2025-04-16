@@ -129,7 +129,7 @@ public interface ReactiveCassandraOperations extends ReactiveFluentCassandraOper
 
 	/**
 	 * Execute a {@code SELECT} query with paging and convert the result set to a {@link Slice} of entities. A sliced
-	 * query translates the effective {@link Statement#getFetchSize() fetch size} to the page size.
+	 * query translates the effective {@link Statement#getPageSize() fetch size} to the page size.
 	 *
 	 * @param statement the CQL statement, must not be {@literal null}.
 	 * @param entityClass The entity type must not be {@literal null}.
