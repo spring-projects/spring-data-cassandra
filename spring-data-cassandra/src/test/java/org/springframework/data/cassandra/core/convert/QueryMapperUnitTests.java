@@ -21,7 +21,6 @@ import static org.springframework.data.domain.Sort.Order.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Currency;
@@ -65,6 +64,7 @@ import org.springframework.data.convert.ValueConverter;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
+import org.springframework.data.domain.Vector;
 import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -368,6 +368,31 @@ public class QueryMapperUnitTests {
 		assertThat(mappedObject).contains(CqlIdentifier.fromCql("first_name"));
 	}
 
+	@Test //
+	void shouldMapMultipleColumnNames() {
+
+		Columns columnNames = Columns.from("array").select("array",
+				selectorBuilder -> selectorBuilder.similarity(Vector.of(1, 2)).cosine().as("score"));
+
+		List<CqlIdentifier> mappedObject = queryMapper.getMappedColumnNames(columnNames,
+				mappingContext.getRequiredPersistentEntity(WithVector.class));
+
+		assertThat(mappedObject).contains(CqlIdentifier.fromCql("array"));
+	}
+
+	@Test //
+	void shouldMapMultipleSelectorsNames() {
+
+		Columns columnNames = Columns.from("array").select("array",
+				selectorBuilder -> selectorBuilder.similarity(Vector.of(1, 2)).cosine().as("score"));
+
+		List<Selector> mappedObject = queryMapper.getMappedSelectors(columnNames,
+				mappingContext.getRequiredPersistentEntity(WithVector.class));
+
+		assertThat(mappedObject).extracting(Selector::toString).contains("array",
+				"similarity_cosine(array, [1.0, 2.0]) AS score");
+	}
+
 	@Test // DATACASS-523
 	@SuppressWarnings("all")
 	void shouldMapTuple() {
@@ -440,7 +465,7 @@ public class QueryMapperUnitTests {
 		assertThat(mappedObject.iterator().next().getPredicate().getValue()).isEqualTo(42L);
 	}
 
-	@Test //
+	@Test // GH-1504
 	void shouldConvertVectorValues() {
 
 		Filter filter = Filter.from(Criteria.where("array").is(new float[] { 1.1f, 2.2f }));
@@ -452,23 +477,13 @@ public class QueryMapperUnitTests {
 		assertThat(mappedObject.iterator().next().getPredicate().getValue()).isEqualTo(new float[] { 1.1f, 2.2f });
 	}
 
-	@Test // GH-1504
-	void shouldConvertVectorValuesFromList() {
-
-		Filter filter = Filter.from(Criteria.where("list").is(Arrays.asList(1.1f, 2.2f)));
-
-		Filter mappedObject = this.queryMapper.getMappedObject(filter,
-				this.mappingContext.getRequiredPersistentEntity(WithVector.class));
-
-		assertThat(mappedObject.iterator().next().getColumnName()).isEqualTo(ColumnName.from("list"));
-		assertThat(mappedObject.iterator().next().getPredicate().getValue()).isEqualTo(CqlVector.newInstance(1.1f, 2.2f));
-	}
 
 	@Test // GH-1504
 	void shouldConvertVectorSelectorFunction() {
 
 		Columns columns = Columns.empty();
-		Columns.FunctionCall similarity = Columns.FunctionCall.from("similarity_cosine", CqlIdentifier.fromCql("array"), Arrays.asList(1.1f, 2.2f));
+		Columns.FunctionCall similarity = Columns.FunctionCall.from("similarity_cosine", CqlIdentifier.fromCql("array"),
+				CqlVector.newInstance(1.1f, 2.2f));
 
 		Query query = Query.empty().columns(columns.select("array", similarity));
 

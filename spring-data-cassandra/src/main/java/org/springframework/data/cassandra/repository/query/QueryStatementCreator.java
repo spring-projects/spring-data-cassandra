@@ -15,11 +15,16 @@
  */
 package org.springframework.data.cassandra.repository.query;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.cassandra.core.StatementFactory;
 import org.springframework.data.cassandra.core.cql.QueryExtractorDelegate;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
@@ -27,10 +32,15 @@ import org.springframework.data.cassandra.core.cql.QueryOptions.QueryOptionsBuil
 import org.springframework.data.cassandra.core.cql.QueryOptionsUtil;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
+import org.springframework.data.cassandra.core.mapping.SimilarityFunction;
 import org.springframework.data.cassandra.core.query.Columns;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.repository.Query.Idempotency;
 import org.springframework.data.domain.Limit;
+import org.springframework.data.domain.ScoringFunction;
+import org.springframework.data.domain.Vector;
+import org.springframework.data.domain.VectorScoringFunctions;
+import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.model.ValueExpressionEvaluator;
 import org.springframework.data.repository.query.QueryCreationException;
@@ -49,6 +59,11 @@ import com.datastax.oss.driver.api.core.cql.Statement;
  * @since 2.0
  */
 class QueryStatementCreator {
+
+	private static final Map<ScoringFunction, SimilarityFunction> SIMILARITY_FUNCTIONS = Map.of(
+			VectorScoringFunctions.COSINE, SimilarityFunction.COSINE, //
+			VectorScoringFunctions.EUCLIDEAN, SimilarityFunction.EUCLIDEAN, //
+			VectorScoringFunctions.DOT_PRODUCT, SimilarityFunction.DOT_PRODUCT);
 
 	private static final Log LOG = LogFactory.getLog(QueryStatementCreator.class);
 
@@ -81,9 +96,28 @@ class QueryStatementCreator {
 
 			ReturnedType returnedType = processor.withDynamicProjection(parameterAccessor).getReturnedType();
 
+			Columns columns = null;
 			if (returnedType.needsCustomConstruction()) {
+				columns = Columns.from(returnedType.getInputProperties().toArray(new String[0]));
+			} else if (queryMethod.isSearchQuery()) {
+				columns = getColumns(returnedType.getReturnedType());
+			}
 
-				Columns columns = Columns.from(returnedType.getInputProperties().toArray(new String[0]));
+			if (columns != null) {
+
+				if (queryMethod.isSearchQuery()) {
+
+					CassandraQueryCreator queryCreator = new CassandraQueryCreator(tree, parameterAccessor, this.mappingContext);
+
+					PropertyPath vectorProperty = queryCreator.getVectorProperty();
+					Vector vector = parameterAccessor.getVector();
+					SimilarityFunction similarityFunction = getSimilarityFunction(parameterAccessor.getScoringFunction());
+
+					columns = columns.select(vectorProperty.toDotPath(),
+							selectorBuilder -> selectorBuilder.similarity(vector).using(similarityFunction).as("\"__score__\""));
+				}
+
+
 				query = query.columns(columns);
 			}
 
@@ -97,6 +131,34 @@ class QueryStatementCreator {
 		};
 
 		return doWithQuery(parameterAccessor, tree, function);
+	}
+
+	private Columns getColumns(Class<?> returnedType) {
+
+		CassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(returnedType);
+		List<String> names = new ArrayList<>();
+		for (CassandraPersistentProperty property : entity) {
+			names.add(property.getName());
+		}
+
+		return Columns.from(names.toArray(new String[0]));
+	}
+
+	private SimilarityFunction getSimilarityFunction(@Nullable ScoringFunction function) {
+
+		if (function == null) {
+			throw new IllegalStateException(
+					"Cannot determine ScoringFunction. No ScoringFunction, Score/Similarity or bounded Score Range parameters provided.");
+		}
+
+		SimilarityFunction similarityFunction = SIMILARITY_FUNCTIONS.get(function);
+
+		if (similarityFunction == null) {
+			throw new IllegalArgumentException(
+					"Cannot determine SimilarityFunction from ScoreFunction '%s'".formatted(function));
+		}
+
+		return similarityFunction;
 	}
 
 	/**

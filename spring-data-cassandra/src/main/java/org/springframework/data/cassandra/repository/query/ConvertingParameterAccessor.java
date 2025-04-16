@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.repository.query;
 import java.util.Iterator;
 
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
@@ -25,7 +26,10 @@ import org.springframework.data.cassandra.core.query.CassandraScrollPosition;
 import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Range;
+import org.springframework.data.domain.Score;
+import org.springframework.data.domain.ScoringFunction;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Vector;
 
 import com.datastax.oss.driver.api.core.type.DataType;
 
@@ -52,6 +56,26 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 	@Override
 	public CassandraScrollPosition getScrollPosition() {
 		return delegate.getScrollPosition();
+	}
+
+	@Override
+	public ScoringFunction getScoringFunction() {
+		return delegate.getScoringFunction();
+	}
+
+	@Override
+	public @Nullable Vector getVector() {
+		return delegate.getVector();
+	}
+
+	@Override
+	public @Nullable Score getScore() {
+		return delegate.getScore();
+	}
+
+	@Override
+	public @Nullable Range<Score> getScoreRange() {
+		return delegate.getScoreRange();
 	}
 
 	@Override
@@ -111,6 +135,11 @@ class ConvertingParameterAccessor implements CassandraParameterAccessor {
 	@Override
 	public Object[] getValues() {
 		return this.delegate.getValues();
+	}
+
+	@Override
+	public @Nullable Object getValue(int parameterIndex) {
+		return potentiallyConvert(parameterIndex, this.delegate.getValue(parameterIndex));
 	}
 
 	@Nullable

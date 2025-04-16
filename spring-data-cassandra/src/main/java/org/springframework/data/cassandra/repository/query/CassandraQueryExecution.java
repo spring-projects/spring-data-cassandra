@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.repository.query;
 import java.util.List;
 
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.cassandra.core.CassandraOperations;
@@ -28,6 +29,11 @@ import org.springframework.data.cassandra.core.query.CassandraScrollPosition;
 import org.springframework.data.convert.DtoInstantiatingConverter;
 import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Score;
+import org.springframework.data.domain.ScoringFunction;
+import org.springframework.data.domain.SearchResult;
+import org.springframework.data.domain.SearchResults;
+import org.springframework.data.domain.Similarity;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.mapping.context.MappingContext;
@@ -180,8 +186,9 @@ interface CassandraQueryExecution {
 
 			ScoringFunction function = accessor.getScoringFunction();
 
-			List<SearchResult<?>> results = operations.select(statement, type, (o, row) -> {
+			List<SearchResult<Object>> results = operations.query(statement).as(type).map((row, reader) -> {
 
+				Object o = reader.get();
 				if (row.getColumnDefinitions().contains("__score__")) {
 					return new SearchResult<>(o, getScore(row, "__score__", function));
 				}
@@ -189,17 +196,20 @@ interface CassandraQueryExecution {
 				if (row.getColumnDefinitions().contains("score")) {
 					return new SearchResult<>(o, getScore(row, "score", function));
 				}
-				return new SearchResult<>(o, 0);
-			});
 
-			return new SearchResults(results);
+				return new SearchResult<>(o, Similarity.of(0));
+			}).all();
+
+			return new SearchResults<>(results);
 		}
 
-		private Score getScore(Row row, String columnName, ScoringFunction function) {
+		private Score getScore(Row row, String columnName, @Nullable ScoringFunction function) {
 
 			Object object = row.getObject(columnName);
-			return Score.of(((Number) object).doubleValue(), function);
+			return Similarity.raw(((Number) object).doubleValue(),
+					function == null ? ScoringFunction.unspecified() : function);
 		}
+
 	}
 
 	/**

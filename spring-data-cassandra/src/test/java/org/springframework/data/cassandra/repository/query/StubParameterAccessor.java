@@ -24,7 +24,11 @@ import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.core.query.CassandraScrollPosition;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Range;
+import org.springframework.data.domain.Score;
+import org.springframework.data.domain.ScoringFunction;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Vector;
 import org.springframework.data.repository.query.ParameterAccessor;
 
 import com.datastax.oss.driver.api.core.type.DataType;
@@ -78,6 +82,26 @@ class StubParameterAccessor implements CassandraParameterAccessor {
 	}
 
 	@Override
+	public ScoringFunction getScoringFunction() {
+		return null;
+	}
+
+	@Override
+	public @Nullable Vector getVector() {
+		return null;
+	}
+
+	@Override
+	public @Nullable Score getScore() {
+		return null;
+	}
+
+	@Override
+	public @Nullable Range<Score> getScoreRange() {
+		return null;
+	}
+
+	@Override
 	public Pageable getPageable() {
 		return null;
 	}
@@ -116,5 +140,10 @@ class StubParameterAccessor implements CassandraParameterAccessor {
 	@Override
 	public Object[] getValues() {
 		return new Object[0];
+	}
+
+	@Override
+	public @Nullable Object getValue(int parameterIndex) {
+		return null;
 	}
 }

@@ -199,7 +199,7 @@ public class QueryMapper {
 
 			Field field = createPropertyField(entity, column);
 
-			columns.getSelector(column).ifPresent(selector -> {
+			columns.getSelector(column).forEach(selector -> {
 
 				List<CqlIdentifier> mappedColumnNames = getCqlIdentifier(column, field);
 
@@ -301,8 +301,12 @@ public class QueryMapper {
 			Field field = createPropertyField(entity, column);
 			field.getProperty().ifPresent(seen::add);
 
-			columns.getSelector(column).filter(selector -> selector instanceof ColumnSelector)
-					.ifPresent(columnSelector -> columnNames.addAll(getCqlIdentifier(column, field)));
+			columns.getSelector(column).forEach(columnSelector -> {
+
+				if (columnSelector instanceof ColumnSelector) {
+					columnNames.addAll(getCqlIdentifier(column, field));
+				}
+			});
 		}
 
 		if (columns.isEmpty()) {

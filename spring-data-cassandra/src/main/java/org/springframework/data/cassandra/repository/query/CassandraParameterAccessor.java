@@ -16,9 +16,11 @@
 package org.springframework.data.cassandra.repository.query;
 
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.core.query.CassandraScrollPosition;
+import org.springframework.data.domain.ScoringFunction;
 import org.springframework.data.repository.query.ParameterAccessor;
 
 import com.datastax.oss.driver.api.core.type.DataType;
@@ -66,6 +68,17 @@ public interface CassandraParameterAccessor extends ParameterAccessor {
 	Class<?> getParameterType(int index);
 
 	/**
+	 * Get the value of the parameter at the given index. In contrast to {@link #getBindableValue(int)}, this method has
+	 * access to all parameters.
+	 *
+	 * @param parameterIndex
+	 * @return
+	 * @since 5.0
+	 */
+	@Nullable
+	Object getValue(int parameterIndex);
+
+	/**
 	 * Returns the raw parameter values of the underlying query method.
 	 *
 	 * @return the raw parameter values passed to the underlying query method.
@@ -77,6 +90,16 @@ public interface CassandraParameterAccessor extends ParameterAccessor {
 	CassandraScrollPosition getScrollPosition();
 
 	/**
+	 * Returns the {@link ScoringFunction} from a {@link org.springframework.data.domain.Score} or
+	 * {@link org.springframework.data.domain.Range} of scores if such a parameter is declared.
+	 *
+	 * @return the scoring function or {@literal null} if none is provided.
+	 * @since 5.0
+	 */
+	@Nullable
+	ScoringFunction getScoringFunction();
+
+	/**
 	 * Returns the {@link QueryOptions} associated with the associated Repository query method.
 	 *
 	 * @return the {@link QueryOptions} or {@literal null} if none.
@@ -84,5 +107,6 @@ public interface CassandraParameterAccessor extends ParameterAccessor {
 	 */
 	@Nullable
 	QueryOptions getQueryOptions();
+
 
 }

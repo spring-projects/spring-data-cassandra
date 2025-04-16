@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.cql.CqlOperations;
@@ -92,7 +93,7 @@ public interface CassandraOperations extends FluentCassandraOperations {
 	/**
 	 * The table name used for the specified class by this template.
 	 *
-	 * @param entityClass The entity type must not be {@literal null}.
+	 * @param entityClass the entity type must not be {@literal null}.
 	 * @return the {@link CqlIdentifier}
 	 */
 	CqlIdentifier getTableName(Class<?> entityClass);
@@ -105,7 +106,7 @@ public interface CassandraOperations extends FluentCassandraOperations {
 	 * Execute a {@code SELECT} query and convert the resulting items to a {@link List} of entities.
 	 *
 	 * @param cql must not be {@literal null}.
-	 * @param entityClass The entity type must not be {@literal null}.
+	 * @param entityClass the entity type must not be {@literal null}.
 	 * @return the converted results
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
@@ -129,7 +130,7 @@ public interface CassandraOperations extends FluentCassandraOperations {
 	 * Execute a {@code SELECT} query and convert the resulting item to an entity.
 	 *
 	 * @param cql must not be {@literal null}.
-	 * @param entityClass The entity type must not be {@literal null}.
+	 * @param entityClass the entity type must not be {@literal null}.
 	 * @return the converted object or {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
@@ -154,7 +155,7 @@ public interface CassandraOperations extends FluentCassandraOperations {
 	 * Execute a {@code SELECT} query and convert the resulting items to a {@link List} of entities.
 	 *
 	 * @param statement must not be {@literal null}.
-	 * @param entityClass The entity type must not be {@literal null}.
+	 * @param entityClass the entity type must not be {@literal null}.
 	 * @return the converted results
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
@@ -165,7 +166,7 @@ public interface CassandraOperations extends FluentCassandraOperations {
 	 * query translates the effective {@link Statement#getPageSize()} to the page size.
 	 *
 	 * @param statement the CQL statement, must not be {@literal null}.
-	 * @param entityClass The entity type must not be {@literal null}.
+	 * @param entityClass the entity type must not be {@literal null}.
 	 * @return the converted results
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @since 2.0
@@ -190,7 +191,7 @@ public interface CassandraOperations extends FluentCassandraOperations {
 	 * Execute a {@code SELECT} query and convert the resulting item to an entity.
 	 *
 	 * @param statement must not be {@literal null}.
-	 * @param entityClass The entity type must not be {@literal null}.
+	 * @param entityClass the entity type must not be {@literal null}.
 	 * @return the converted object or {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
@@ -204,7 +205,7 @@ public interface CassandraOperations extends FluentCassandraOperations {
 	 * Execute a {@code SELECT} query and convert the resulting items to a {@link List} of entities.
 	 *
 	 * @param query must not be {@literal null}.
-	 * @param entityClass The entity type must not be {@literal null}.
+	 * @param entityClass the entity type must not be {@literal null}.
 	 * @return the converted results
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @since 2.0
@@ -215,7 +216,7 @@ public interface CassandraOperations extends FluentCassandraOperations {
 	 * Execute a {@code SELECT} query with paging and convert the result set to a {@link Slice} of entities.
 	 *
 	 * @param query the query object used to create a CQL statement, must not be {@literal null}.
-	 * @param entityClass The entity type must not be {@literal null}.
+	 * @param entityClass the entity type must not be {@literal null}.
 	 * @return the converted results
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @since 2.0
@@ -241,7 +242,7 @@ public interface CassandraOperations extends FluentCassandraOperations {
 	 * Execute a {@code SELECT} query and convert the resulting item to an entity.
 	 *
 	 * @param query must not be {@literal null}.
-	 * @param entityClass The entity type must not be {@literal null}.
+	 * @param entityClass the entity type must not be {@literal null}.
 	 * @return the converted object or {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 * @since 2.0
@@ -253,7 +254,7 @@ public interface CassandraOperations extends FluentCassandraOperations {
 	 *
 	 * @param query must not be {@literal null}.
 	 * @param update must not be {@literal null}.
-	 * @param entityClass The entity type must not be {@literal null}.
+	 * @param entityClass the entity type must not be {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	boolean update(Query query, Update update, Class<?> entityClass) throws DataAccessException;
@@ -262,7 +263,7 @@ public interface CassandraOperations extends FluentCassandraOperations {
 	 * Remove entities (rows)/columns from the table by {@link Query}.
 	 *
 	 * @param query must not be {@literal null}.
-	 * @param entityClass The entity type must not be {@literal null}.
+	 * @param entityClass the entity type must not be {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	boolean delete(Query query, Class<?> entityClass) throws DataAccessException;
@@ -322,7 +323,7 @@ public interface CassandraOperations extends FluentCassandraOperations {
 	 * @param id the Id value. For single primary keys it's the plain value. For composite primary keys either the
 	 *          {@link org.springframework.data.cassandra.core.mapping.PrimaryKeyClass} or
 	 *          {@link org.springframework.data.cassandra.core.mapping.MapId}. Must not be {@literal null}.
-	 * @param entityClass The entity type must not be {@literal null}.
+	 * @param entityClass the entity type must not be {@literal null}.
 	 * @return the converted object or {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
@@ -407,7 +408,7 @@ public interface CassandraOperations extends FluentCassandraOperations {
 	 * @param id the Id value. For single primary keys it's the plain value. For composite primary keys either the
 	 *          {@link org.springframework.data.cassandra.core.mapping.PrimaryKeyClass} or
 	 *          {@link org.springframework.data.cassandra.core.mapping.MapId}. Must not be {@literal null}.
-	 * @param entityClass The entity type must not be {@literal null}.
+	 * @param entityClass the entity type must not be {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	boolean deleteById(Object id, Class<?> entityClass) throws DataAccessException;
@@ -415,7 +416,7 @@ public interface CassandraOperations extends FluentCassandraOperations {
 	/**
 	 * Execute a {@code TRUNCATE} query to remove all entities of a given class.
 	 *
-	 * @param entityClass The entity type must not be {@literal null}.
+	 * @param entityClass the entity type must not be {@literal null}.
 	 * @throws DataAccessException if there is any problem executing the query.
 	 */
 	void truncate(Class<?> entityClass) throws DataAccessException;

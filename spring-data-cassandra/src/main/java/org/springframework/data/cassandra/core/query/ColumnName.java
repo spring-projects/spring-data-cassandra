@@ -169,7 +169,7 @@ public abstract class ColumnName {
 
 		@Override
 		public String toCql() {
-			return this.cqlIdentifier.toString();
+			return this.cqlIdentifier.asInternal();
 		}
 
 		@Override

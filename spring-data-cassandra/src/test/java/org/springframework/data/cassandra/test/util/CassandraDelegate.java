@@ -290,7 +290,7 @@ class CassandraDelegate {
 		if (container == null) {
 
 			container = getCassandraDockerImageName().map(CassandraContainer::new)
-					.orElseGet(() -> new CassandraContainer("cassandra:5.0.3"));
+					.orElseGet(() -> new CassandraContainer("cassandra:5.0.3")).withReuse(true);
 
 			container.withEnv("MAX_HEAP_SIZE", "1500M");
 			container.withEnv("HEAP_NEWSIZE", "300M");

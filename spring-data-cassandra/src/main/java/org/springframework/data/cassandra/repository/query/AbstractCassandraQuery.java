@@ -16,17 +16,10 @@
 package org.springframework.data.cassandra.repository.query;
 
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.core.CassandraOperations;
-import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.CollectionExecution;
-import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.ExistsExecution;
-import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.ResultProcessingConverter;
-import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.ResultProcessingExecution;
-import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.ResultSetQuery;
-import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.SingleEntityExecution;
-import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.SlicedExecution;
-import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.StreamExecution;
-import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.WindowExecution;
+import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.*;
 import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.query.ResultProcessor;
@@ -120,6 +113,8 @@ public abstract class AbstractCassandraQuery extends CassandraRepositoryQuerySup
 			return new SlicedExecution(getOperations(), parameterAccessor.getPageable());
 		} else if (getQueryMethod().isScrollQuery()) {
 			return new WindowExecution(getOperations(), parameterAccessor.getScrollPosition(), parameterAccessor.getLimit());
+		} else if (getQueryMethod().isSearchQuery()) {
+			return new SearchExecution(getOperations(), parameterAccessor);
 		} else if (getQueryMethod().isCollectionQuery()) {
 			return new CollectionExecution(getOperations());
 		} else if (getQueryMethod().isResultSetQuery()) {

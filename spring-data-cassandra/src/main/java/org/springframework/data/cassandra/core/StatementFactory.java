@@ -767,12 +767,11 @@ public class StatementFactory {
 					.stream().map(param -> {
 
 						if (param instanceof ColumnSelector s) {
-
-							return com.datastax.oss.driver.api.querybuilder.select.Selector.column(s.getExpression());
+							return com.datastax.oss.driver.api.querybuilder.select.Selector.column(s.getIdentifier());
 						}
 
 						if (param instanceof CqlIdentifier i) {
-							return com.datastax.oss.driver.api.querybuilder.select.Selector.column(i.toString());
+							return com.datastax.oss.driver.api.querybuilder.select.Selector.column(i);
 						}
 
 						return new SimpleSelector(param.toString());

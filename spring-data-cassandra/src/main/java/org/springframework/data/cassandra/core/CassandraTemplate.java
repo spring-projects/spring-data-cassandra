@@ -354,7 +354,8 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		Assert.notNull(statement, "Statement must not be null");
 		Assert.notNull(entityClass, "Entity type must not be null");
 
-		return doSelect(statement, entityClass, getTableName(entityClass), entityClass, QueryResultConverter.entity());
+		return doSelect(statement, entityClass, EntityQueryUtils.getTableName(statement), entityClass,
+				QueryResultConverter.entity());
 	}
 
 	<T, R> List<R> doSelect(Statement<?> statement, Class<?> entityClass, CqlIdentifier tableName, Class<T> returnType,

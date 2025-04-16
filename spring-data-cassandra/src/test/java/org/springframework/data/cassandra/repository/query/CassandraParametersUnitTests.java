@@ -26,10 +26,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.domain.Person;
+import org.springframework.data.domain.ScoringFunction;
 import org.springframework.data.repository.Repository;
-import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
 import org.springframework.data.repository.query.ParametersSource;
 
 /**
@@ -89,6 +90,15 @@ class CassandraParametersUnitTests {
 		assertThat(cassandraParameters.getParameter(0).getCassandraType().type()).isEqualTo(Name.BOOLEAN);
 	}
 
+	@Test // GH-
+	void considersScoringFunctionIndex() throws Exception {
+
+		Method method = PersonRepository.class.getMethod("findByObject", ScoringFunction.class);
+		CassandraParameters cassandraParameters = new CassandraParameters(ParametersSource.of(method));
+
+		assertThat(cassandraParameters.getScoringFunctionIndex()).isEqualTo(0);
+	}
+
 	interface PersonRepository extends Repository<Person, String> {
 
 		Person findByFirstname(String firstname);
@@ -96,6 +106,8 @@ class CassandraParametersUnitTests {
 		Person findByFirstTime(@CassandraType(type = Name.TIME) String firstname);
 
 		Person findByObject(Object firstname);
+
+		Person findByObject(ScoringFunction firstname);
 
 		Person findByAnnotatedObject(@CassandraType(type = Name.TIME) Object firstname);
 

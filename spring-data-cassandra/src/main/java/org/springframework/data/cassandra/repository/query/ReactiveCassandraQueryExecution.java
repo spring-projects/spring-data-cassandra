@@ -20,7 +20,9 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
 import org.reactivestreams.Publisher;
+
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
@@ -31,6 +33,10 @@ import org.springframework.data.cassandra.core.query.CassandraScrollPosition;
 import org.springframework.data.convert.DtoInstantiatingConverter;
 import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Score;
+import org.springframework.data.domain.ScoringFunction;
+import org.springframework.data.domain.SearchResult;
+import org.springframework.data.domain.Similarity;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.mapping.context.MappingContext;
@@ -148,6 +154,45 @@ interface ReactiveCassandraQueryExecution {
 		@Override
 		public Publisher<? extends Object> execute(Statement<?> statement, Class<?> type) {
 			return operations.select(statement, type);
+		}
+
+	}
+
+	final class SearchExecution implements ReactiveCassandraQueryExecution {
+
+		private final ReactiveCassandraOperations operations;
+		private final CassandraParameterAccessor accessor;
+
+		public SearchExecution(ReactiveCassandraOperations operations, CassandraParameterAccessor accessor) {
+
+			this.operations = operations;
+			this.accessor = accessor;
+		}
+
+		@Override
+		public Publisher<? extends Object> execute(Statement<?> statement, Class<?> type) {
+
+			ScoringFunction function = accessor.getScoringFunction();
+
+			return operations.query(statement).as(type).map((row, reader) -> {
+
+				Object entity = reader.get();
+				if (row.getColumnDefinitions().contains("__score__")) {
+					return new SearchResult<>(entity, getScore(row, "__score__", function));
+				}
+
+				if (row.getColumnDefinitions().contains("score")) {
+					return new SearchResult<>(entity, getScore(row, "score", function));
+				}
+				return new SearchResult<>(entity, 0);
+			}).all();
+		}
+
+		private Score getScore(Row row, String columnName, @Nullable ScoringFunction function) {
+
+			Object object = row.getObject(columnName);
+			return Similarity.raw(((Number) object).doubleValue(),
+					function == null ? ScoringFunction.unspecified() : function);
 		}
 
 	}

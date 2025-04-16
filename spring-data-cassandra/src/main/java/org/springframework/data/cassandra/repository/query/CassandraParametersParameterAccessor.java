@@ -16,11 +16,15 @@
 package org.springframework.data.cassandra.repository.query;
 
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.mapping.CassandraSimpleTypeHolder;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
 import org.springframework.data.cassandra.core.query.CassandraScrollPosition;
 import org.springframework.data.domain.Limit;
+import org.springframework.data.domain.Range;
+import org.springframework.data.domain.Score;
+import org.springframework.data.domain.ScoringFunction;
 import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.data.repository.query.ParametersParameterAccessor;
@@ -80,6 +84,11 @@ public class CassandraParametersParameterAccessor extends ParametersParameterAcc
 	}
 
 	@Override
+	public @Nullable Object getValue(int parameterIndex) {
+		return super.getValue(parameterIndex);
+	}
+
+	@Override
 	public CassandraScrollPosition getScrollPosition() {
 
 		ScrollPosition scrollPosition = super.getScrollPosition();
@@ -93,6 +102,36 @@ public class CassandraParametersParameterAccessor extends ParametersParameterAcc
 
 		throw new IllegalArgumentException(
 				"Unsupported scroll position " + scrollPosition + ". Only CassandraScrollPosition supported.");
+	}
+
+	@Override
+	public @Nullable ScoringFunction getScoringFunction() {
+
+		Score score = getScore();
+
+		if (score != null) {
+			return score.getFunction();
+		}
+
+		Range<Score> range = getScoreRange();
+
+		if (range != null) {
+
+			if (range.getLowerBound().isBounded()) {
+				return range.getLowerBound().getValue().get().getFunction();
+			}
+
+			if (range.getUpperBound().isBounded()) {
+				return range.getUpperBound().getValue().get().getFunction();
+			}
+		}
+
+		int scoringFunctionIndex = getParameters().getScoringFunctionIndex();
+		if (scoringFunctionIndex != -1) {
+			return (ScoringFunction) getValue(scoringFunctionIndex);
+		}
+
+		return null;
 	}
 
 	@Override
