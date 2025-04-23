@@ -30,8 +30,8 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.cassandra.config.SchemaAction;
-import org.springframework.data.cassandra.core.mapping.Indexed;
 import org.springframework.data.cassandra.core.mapping.SaiIndexed;
 import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.core.mapping.VectorType;
@@ -55,14 +55,16 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 @SpringJUnitConfig
 class VectorSearchIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
 
+	Vector VECTOR = Vector.of(0.2001f, 0.32345f, 0.43456f, 0.54567f, 0.65678f);
+
 	@Configuration
-	@EnableCassandraRepositories(basePackageClasses = CommentsRepository.class, considerNestedRepositories = true,
-			includeFilters = @ComponentScan.Filter(classes = CommentsRepository.class, type = FilterType.ASSIGNABLE_TYPE))
+	@EnableCassandraRepositories(basePackageClasses = VectorSearchRepository.class, considerNestedRepositories = true,
+			includeFilters = @ComponentScan.Filter(classes = VectorSearchRepository.class, type = FilterType.ASSIGNABLE_TYPE))
 	public static class Config extends IntegrationTestConfig {
 
 		@Override
 		protected Set<Class<?>> getInitialEntitySet() {
-			return Collections.singleton(Comments.class);
+			return Collections.singleton(WithVectorFields.class);
 		}
 
 		@Override
@@ -71,33 +73,21 @@ class VectorSearchIntegrationTests extends AbstractSpringDataEmbeddedCassandraIn
 		}
 	}
 
-	@Autowired CommentsRepository repository;
+	@Autowired VectorSearchRepository repository;
 
 	@BeforeEach
 	void setUp() {
 
 		repository.deleteAll();
 
-		Comments one = new Comments();
-		one.setId(UUID.randomUUID());
-		one.setLanguage("en");
-		one.setEmbedding(Vector.of(0.45f, 0.09f, 0.01f, 0.2f, 0.11f));
-		one.setComment("Raining too hard should have postponed");
+		WithVectorFields w1 = new WithVectorFields("de", "one", Vector.of(0.1001f, 0.22345f, 0.33456f, 0.44567f, 0.55678f));
+		WithVectorFields w2 = new WithVectorFields("de", "two", Vector.of(0.2001f, 0.32345f, 0.43456f, 0.54567f, 0.65678f));
+		WithVectorFields w3 = new WithVectorFields("en", "three",
+				Vector.of(0.9001f, 0.82345f, 0.73456f, 0.64567f, 0.55678f));
+		WithVectorFields w4 = new WithVectorFields("de", "four",
+				Vector.of(0.9001f, 0.92345f, 0.93456f, 0.94567f, 0.95678f));
 
-		Comments two = new Comments();
-		two.setId(UUID.randomUUID());
-		two.setLanguage("en");
-		two.setEmbedding(Vector.of(0.99f, 0.5f, -10.99f, -100.1f, 0.34f));
-		two.setComment("Second rest stop was out of water");
-
-		Comments three = new Comments();
-		three.setId(UUID.randomUUID());
-		three.setLanguage("en");
-		three.setEmbedding(Vector.of(0.9f, 0.54f, 0.12f, 0.1f, 0.95f));
-		three.setComment("LATE RIDERS SHOULD NOT DELAY THE START");
-
-		repository.saveAll(List.of(one, two, three));
-
+		repository.saveAll(List.of(w1, w2, w3, w4));
 	}
 
 	@Test // GH-
@@ -105,98 +95,99 @@ class VectorSearchIntegrationTests extends AbstractSpringDataEmbeddedCassandraIn
 
 		Vector vector = Vector.of(0.9f, 0.54f, 0.12f, 0.1f, 0.95f);
 
-		SearchResults<Comments> result = repository.searchByEmbeddingNear(vector,
+		SearchResults<WithVectorFields> results = repository.searchByEmbeddingNear(vector,
 				VectorScoringFunctions.COSINE, Limit.of(100));
 
-		assertThat(result).hasSize(3);
-		for (SearchResult<Comments> commentSearch : result) {
-			assertThat(commentSearch.getScore().getValue()).isNotCloseTo(0d, offset(0.1d));
+		assertThat(results).hasSize(4);
+		for (SearchResult<WithVectorFields> result : results) {
+			assertThat(result.getScore().getValue()).isNotCloseTo(0d, offset(0.1d));
 		}
 
-		result = repository.searchByEmbeddingNear(vector, VectorScoringFunctions.EUCLIDEAN, Limit.of(100));
+		results = repository.searchByEmbeddingNear(VECTOR, VectorScoringFunctions.EUCLIDEAN, Limit.of(100));
 
-		assertThat(result).hasSize(3);
-		for (SearchResult<Comments> commentSearch : result) {
-			assertThat(commentSearch.getScore().getValue()).isNotCloseTo(0.3d, offset(0.1d));
+		assertThat(results).hasSize(4);
+		for (SearchResult<WithVectorFields> result : results) {
+			assertThat(result.getScore().getValue()).isNotCloseTo(0.3d, offset(0.1d));
 		}
 	}
 
 	@Test // GH-
 	void shouldRunAnnotatedSearchByVector() {
 
-		Vector vector = Vector.of(0.9f, 0.54f, 0.12f, 0.1f, 0.95f);
+		SearchResults<WithVectorFields> results = repository.searchAnnotatedByEmbeddingNear(VECTOR, Limit.of(100));
 
-		SearchResults<Comments> result = repository.searchAnnotatedByEmbeddingNear(vector, Limit.of(100));
 
-		assertThat(result).hasSize(3);
-		for (SearchResult<Comments> commentSearch : result) {
-			assertThat(commentSearch.getScore().getValue()).isNotCloseTo(0d, offset(0.1d));
+		assertThat(results).hasSize(4);
+		for (SearchResult<WithVectorFields> result : results) {
+			assertThat(result.getScore().getValue()).isNotCloseTo(0d, offset(0.1d));
 		}
 	}
 
 	@Test // GH-
 	void shouldFindByVector() {
 
-		Vector vector = Vector.of(0.9f, 0.54f, 0.12f, 0.1f, 0.95f);
+		List<WithVectorFields> result = repository.findByEmbeddingNear(VECTOR, Limit.of(100));
 
-		List<Comments> result = repository.findByEmbeddingNear(vector, Limit.of(100));
+		assertThat(result).hasSize(4);
+	}
 
-		assertThat(result).hasSize(3);
+	interface VectorSearchRepository extends CrudRepository<WithVectorFields, UUID> {
+
+		SearchResults<WithVectorFields> searchByEmbeddingNear(Vector embedding, ScoringFunction function, Limit limit);
+
+		List<WithVectorFields> findByEmbeddingNear(Vector embedding, Limit limit);
+
+		@Query("SELECT id,description,country,similarity_cosine(embedding,:embedding) AS score FROM withvectorfields ORDER BY embedding ANN OF :embedding LIMIT :limit")
+		SearchResults<WithVectorFields> searchAnnotatedByEmbeddingNear(Vector embedding, Limit limit);
+
 	}
 
 	@Table
-	static class Comments {
+	static class WithVectorFields {
 
-		@Id UUID id;
-		String comment;
-
-		@Indexed String language;
+		@Id String id;
+		String country;
+		String description;
 
 		@VectorType(dimensions = 5)
 		@SaiIndexed Vector embedding;
 
-		public UUID getId() {
+		@PersistenceCreator
+		public WithVectorFields(String id, String country, String description, Vector embedding) {
+			this.id = id;
+			this.country = country;
+			this.description = description;
+			this.embedding = embedding;
+		}
+
+		public WithVectorFields(String country, String description, Vector embedding) {
+			this.id = UUID.randomUUID().toString();
+			this.country = country;
+			this.description = description;
+			this.embedding = embedding;
+		}
+
+		public String getId() {
 			return id;
 		}
 
-		public void setId(UUID id) {
-			this.id = id;
+		public String getCountry() {
+			return country;
 		}
 
-		public String getLanguage() {
-			return language;
-		}
-
-		public void setLanguage(String language) {
-			this.language = language;
-		}
-
-		public String getComment() {
-			return comment;
-		}
-
-		public void setComment(String comment) {
-			this.comment = comment;
+		public String getDescription() {
+			return description;
 		}
 
 		public Vector getEmbedding() {
 			return embedding;
 		}
 
-		public void setEmbedding(Vector embedding) {
-			this.embedding = embedding;
+		@Override
+		public String toString() {
+			return "WithVectorFields{" + "id='" + id + '\'' + ", country='" + country + '\'' + ", description='" + description
+					+ '\'' + '}';
 		}
-	}
-
-	interface CommentsRepository extends CrudRepository<Comments, UUID> {
-
-		SearchResults<Comments> searchByEmbeddingNear(Vector embedding, ScoringFunction function, Limit limit);
-
-		List<Comments> findByEmbeddingNear(Vector embedding, Limit limit);
-
-		@Query("SELECT id,comment,language,similarity_cosine(embedding,:embedding) AS score FROM comments ORDER BY embedding ANN OF :embedding LIMIT :limit")
-		SearchResults<Comments> searchAnnotatedByEmbeddingNear(Vector embedding, Limit limit);
-
 	}
 
 }

@@ -126,8 +126,6 @@ class QueryStatementCreator {
 				LOG.debug(String.format("Created query [%s]", statement));
 			}
 
-			System.out.println(statement.getQuery());
-
 			return statement;
 		};
 
