@@ -65,6 +65,7 @@ import org.springframework.data.convert.ValueConverter;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
+import org.springframework.data.domain.Vector;
 import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -366,6 +367,31 @@ public class QueryMapperUnitTests {
 				mappingContext.getRequiredPersistentEntity(TypeWithKeyClass.class));
 
 		assertThat(mappedObject).contains(CqlIdentifier.fromCql("first_name"));
+	}
+
+	@Test //
+	void shouldMapMultipleColumnNames() {
+
+		Columns columnNames = Columns.from("array").select("array",
+				selectorBuilder -> selectorBuilder.similarity(Vector.of(1, 2)).cosine().as("score"));
+
+		List<CqlIdentifier> mappedObject = queryMapper.getMappedColumnNames(columnNames,
+				mappingContext.getRequiredPersistentEntity(WithVector.class));
+
+		assertThat(mappedObject).contains(CqlIdentifier.fromCql("array"));
+	}
+
+	@Test //
+	void shouldMapMultipleSelectorsNames() {
+
+		Columns columnNames = Columns.from("array").select("array",
+				selectorBuilder -> selectorBuilder.similarity(Vector.of(1, 2)).cosine().as("score"));
+
+		List<Selector> mappedObject = queryMapper.getMappedSelectors(columnNames,
+				mappingContext.getRequiredPersistentEntity(WithVector.class));
+
+		assertThat(mappedObject).extracting(Selector::toString).contains("array",
+				"similarity_cosine(array, [1.0, 2.0]) AS score");
 	}
 
 	@Test // DATACASS-523

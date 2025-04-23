@@ -62,7 +62,8 @@ class QueryStatementCreator {
 
 	private static final Map<ScoringFunction, SimilarityFunction> SIMILARITY_FUNCTIONS = Map.of(
 			VectorScoringFunctions.COSINE, SimilarityFunction.COSINE, VectorScoringFunctions.EUCLIDEAN,
-			SimilarityFunction.EUCLIDEAN, VectorScoringFunctions.DOT, SimilarityFunction.DOT_PRODUCT);
+			SimilarityFunction.EUCLIDEAN, VectorScoringFunctions.DOT, SimilarityFunction.DOT_PRODUCT,
+			VectorScoringFunctions.INNER_PRODUCT, SimilarityFunction.DOT_PRODUCT);
 
 	private static final Log LOG = LogFactory.getLog(QueryStatementCreator.class);
 

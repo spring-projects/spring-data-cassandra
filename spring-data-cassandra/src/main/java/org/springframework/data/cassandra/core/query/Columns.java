@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.core.query;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
@@ -52,9 +53,9 @@ import com.datastax.oss.driver.api.core.data.CqlVector;
  */
 public class Columns implements Iterable<ColumnName> {
 
-	private final Map<ColumnName, Selector> columns;
+	private final Map<ColumnName, List<Selector>> columns;
 
-	private Columns(Map<ColumnName, Selector> columns) {
+	private Columns(Map<ColumnName, List<Selector>> columns) {
 		this.columns = Collections.unmodifiableMap(columns);
 	}
 
@@ -77,10 +78,10 @@ public class Columns implements Iterable<ColumnName> {
 
 		Assert.notNull(columnNames, "Column names must not be null");
 
-		Map<ColumnName, Selector> columns = new LinkedHashMap<>(columnNames.length, 1);
+		Map<ColumnName, List<Selector>> columns = new LinkedHashMap<>(columnNames.length, 1);
 
 		for (String columnName : columnNames) {
-			columns.put(ColumnName.from(columnName), ColumnSelector.from(columnName));
+			columns.put(ColumnName.from(columnName), new ArrayList<>(List.of(ColumnSelector.from(columnName))));
 		}
 
 		return new Columns(columns);
@@ -96,10 +97,10 @@ public class Columns implements Iterable<ColumnName> {
 
 		Assert.notNull(columnNames, "Column names must not be null");
 
-		Map<ColumnName, Selector> columns = new LinkedHashMap<>(columnNames.length, 1);
+		Map<ColumnName, List<Selector>> columns = new LinkedHashMap<>(columnNames.length, 1);
 
 		for (CqlIdentifier cqlId : columnNames) {
-			columns.put(ColumnName.from(cqlId), ColumnSelector.from(cqlId));
+			columns.put(ColumnName.from(cqlId), new ArrayList<>(List.of(ColumnSelector.from(cqlId))));
 		}
 
 		return new Columns(columns);
@@ -210,8 +211,8 @@ public class Columns implements Iterable<ColumnName> {
 	 */
 	private Columns select(ColumnName columnName, Selector selector) {
 
-		Map<ColumnName, Selector> result = new LinkedHashMap<>(this.columns);
-		result.put(columnName, selector);
+		Map<ColumnName, List<Selector>> result = new LinkedHashMap<>(this.columns);
+		result.computeIfAbsent(columnName, it -> new ArrayList<>()).add(selector);
 
 		return new Columns(result);
 	}
@@ -232,9 +233,10 @@ public class Columns implements Iterable<ColumnName> {
 	 */
 	public Columns and(Columns columns) {
 
-		Map<ColumnName, Selector> result = new LinkedHashMap<>(this.columns);
+		Map<ColumnName, List<Selector>> result = new LinkedHashMap<>(this.columns);
 
-		result.putAll(columns.columns);
+		columns.columns
+				.forEach((col, selectors) -> result.computeIfAbsent(col, columnName -> new ArrayList<>()).addAll(selectors));
 
 		return new Columns(result);
 	}
@@ -248,11 +250,12 @@ public class Columns implements Iterable<ColumnName> {
 	 * @param columnName must not be {@literal null}.
 	 * @return the {@link Optional} {@link Selector} for {@link ColumnName}.
 	 */
-	public Optional<Selector> getSelector(ColumnName columnName) {
+	public List<Selector> getSelector(ColumnName columnName) {
 
 		Assert.notNull(columnName, "ColumnName must not be null");
 
-		return Optional.ofNullable(this.columns.get(columnName));
+		List<Selector> selectors = this.columns.get(columnName);
+		return selectors == null ? List.of() : selectors;
 	}
 
 	@Override
@@ -281,7 +284,7 @@ public class Columns implements Iterable<ColumnName> {
 	@Override
 	public String toString() {
 
-		Iterator<Entry<ColumnName, Selector>> iterator = this.columns.entrySet().iterator();
+		Iterator<Entry<ColumnName, List<Selector>>> iterator = this.columns.entrySet().iterator();
 		StringBuilder builder = toString(iterator);
 
 		if (builder.isEmpty()) {
@@ -291,24 +294,26 @@ public class Columns implements Iterable<ColumnName> {
 		return builder.toString();
 	}
 
-	private StringBuilder toString(Iterator<Entry<ColumnName, Selector>> iterator) {
+	private StringBuilder toString(Iterator<Entry<ColumnName, List<Selector>>> iterator) {
 
 		StringBuilder builder = new StringBuilder();
 		boolean first = true;
 
 		while (iterator.hasNext()) {
 
-			Entry<ColumnName, Selector> entry = iterator.next();
+			Entry<ColumnName, List<Selector>> entry = iterator.next();
 
-			Selector expression = entry.getValue();
+			for (Selector selector : entry.getValue()) {
 
-			if (first) {
-				first = false;
-			} else {
-				builder.append(", ");
+				if (first) {
+					first = false;
+				} else {
+					builder.append(", ");
+				}
+
+				builder.append(selector);
 			}
 
-			builder.append(expression.toString());
 		}
 
 		return builder;
@@ -670,8 +675,9 @@ public class Columns implements Iterable<ColumnName> {
 
 				@Override
 				public Selector using(SimilarityFunction similarityFunction) {
-					return FunctionCall.from("similarity_" + similarityFunction.name().toLowerCase(Locale.ROOT), columnName,
-							vector).as(columnName);
+					return FunctionCall
+							.from("similarity_" + similarityFunction.name().toLowerCase(Locale.ROOT), columnName, vector)
+							.as(columnName);
 				}
 			};
 		}
