@@ -17,6 +17,9 @@ package org.springframework.data.cassandra.repository;
 
 import static org.assertj.core.api.Assertions.*;
 
+import reactor.core.publisher.Flux;
+import reactor.test.StepVerifier;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -35,33 +38,33 @@ import org.springframework.data.cassandra.config.SchemaAction;
 import org.springframework.data.cassandra.core.mapping.SaiIndexed;
 import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.core.mapping.VectorType;
-import org.springframework.data.cassandra.repository.config.EnableCassandraRepositories;
+import org.springframework.data.cassandra.repository.config.EnableReactiveCassandraRepositories;
 import org.springframework.data.cassandra.repository.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.data.cassandra.repository.support.IntegrationTestConfig;
 import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.ScoringFunction;
 import org.springframework.data.domain.SearchResult;
-import org.springframework.data.domain.SearchResults;
 import org.springframework.data.domain.Similarity;
 import org.springframework.data.domain.Vector;
 import org.springframework.data.domain.VectorScoringFunctions;
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.query.QueryCreationException;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 /**
- * Integration tests for Vector Search using repositories.
+ * Integration tests for Vector Search using reactive repositories.
  *
  * @author Mark Paluch
  */
 @SpringJUnitConfig
-class VectorSearchIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
+class ReactiveVectorSearchIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
 
 	Vector VECTOR = Vector.of(0.2001f, 0.32345f, 0.43456f, 0.54567f, 0.65678f);
 
 	@Configuration
-	@EnableCassandraRepositories(basePackageClasses = VectorSearchRepository.class, considerNestedRepositories = true,
-			includeFilters = @ComponentScan.Filter(classes = VectorSearchRepository.class, type = FilterType.ASSIGNABLE_TYPE))
+	@EnableReactiveCassandraRepositories(basePackageClasses = ReactiveVectorSearchRepository.class,
+			considerNestedRepositories = true,
+			includeFilters = @ComponentScan.Filter(classes = ReactiveVectorSearchRepository.class,
+					type = FilterType.ASSIGNABLE_TYPE))
 	public static class Config extends IntegrationTestConfig {
 
 		@Override
@@ -75,12 +78,12 @@ class VectorSearchIntegrationTests extends AbstractSpringDataEmbeddedCassandraIn
 		}
 	}
 
-	@Autowired VectorSearchRepository repository;
+	@Autowired ReactiveVectorSearchRepository repository;
 
 	@BeforeEach
 	void setUp() {
 
-		repository.deleteAll();
+		repository.deleteAll().as(StepVerifier::create).verifyComplete();
 
 		WithVectorFields w1 = new WithVectorFields("de", "one", Vector.of(0.1001f, 0.22345f, 0.33456f, 0.44567f, 0.55678f));
 		WithVectorFields w2 = new WithVectorFields("de", "two", Vector.of(0.2001f, 0.32345f, 0.43456f, 0.54567f, 0.65678f));
@@ -89,34 +92,28 @@ class VectorSearchIntegrationTests extends AbstractSpringDataEmbeddedCassandraIn
 		WithVectorFields w4 = new WithVectorFields("de", "four",
 				Vector.of(0.9001f, 0.92345f, 0.93456f, 0.94567f, 0.95678f));
 
-		repository.saveAll(List.of(w1, w2, w3, w4));
-	}
-
-	@Test // GH-
-	void searchWithoutScoringFunctionShouldFail() {
-		assertThatExceptionOfType(QueryCreationException.class)
-				.isThrownBy(() -> repository.searchByEmbeddingNear(VECTOR, Limit.of(100)));
+		repository.saveAll(List.of(w1, w2, w3, w4)).as(StepVerifier::create).expectNextCount(4).verifyComplete();
 	}
 
 	@Test // GH-
 	void shouldConsiderScoringFunction() {
 
-		SearchResults<WithVectorFields> results = repository.searchByEmbeddingNear(VECTOR,
-				ScoringFunction.dotProduct(), Limit.of(100));
+		Vector vector = Vector.of(0.9f, 0.54f, 0.12f, 0.1f, 0.95f);
+
+		List<SearchResult<WithVectorFields>> results = repository
+				.searchByEmbeddingNear(vector, VectorScoringFunctions.COSINE, Limit.of(100)).collectList().block();
 
 		assertThat(results).hasSize(4);
-
 		for (SearchResult<WithVectorFields> result : results) {
 			assertThat(result.getScore()).isInstanceOf(Similarity.class);
 			assertThat(result.getScore().getValue()).isNotCloseTo(0d, offset(0.1d));
 		}
 
-		results = repository.searchByEmbeddingNear(VECTOR, VectorScoringFunctions.EUCLIDEAN, Limit.of(100));
+		results = repository.searchByEmbeddingNear(VECTOR, VectorScoringFunctions.EUCLIDEAN, Limit.of(100)).collectList()
+				.block();
 
 		assertThat(results).hasSize(4);
-
 		for (SearchResult<WithVectorFields> result : results) {
-
 			assertThat(result.getScore()).isInstanceOf(Similarity.class);
 			assertThat(result.getScore().getValue()).isNotCloseTo(0.3d, offset(0.1d));
 		}
@@ -125,7 +122,8 @@ class VectorSearchIntegrationTests extends AbstractSpringDataEmbeddedCassandraIn
 	@Test // GH-
 	void shouldRunAnnotatedSearchByVector() {
 
-		SearchResults<WithVectorFields> results = repository.searchAnnotatedByEmbeddingNear(VECTOR, Limit.of(100));
+		List<SearchResult<WithVectorFields>> results = repository.searchAnnotatedByEmbeddingNear(VECTOR, Limit.of(100))
+				.collectList().block();
 
 		assertThat(results).hasSize(4);
 		for (SearchResult<WithVectorFields> result : results) {
@@ -137,21 +135,19 @@ class VectorSearchIntegrationTests extends AbstractSpringDataEmbeddedCassandraIn
 	@Test // GH-
 	void shouldFindByVector() {
 
-		List<WithVectorFields> result = repository.findByEmbeddingNear(VECTOR, Limit.of(100));
+		List<WithVectorFields> result = repository.findByEmbeddingNear(VECTOR, Limit.of(100)).collectList().block();
 
 		assertThat(result).hasSize(4);
 	}
 
-	interface VectorSearchRepository extends CrudRepository<WithVectorFields, UUID> {
+	interface ReactiveVectorSearchRepository extends ReactiveCrudRepository<WithVectorFields, UUID> {
 
-		SearchResults<WithVectorFields> searchByEmbeddingNear(Vector embedding, ScoringFunction function, Limit limit);
+		Flux<SearchResult<WithVectorFields>> searchByEmbeddingNear(Vector embedding, ScoringFunction function, Limit limit);
 
-		SearchResults<WithVectorFields> searchByEmbeddingNear(Vector embedding, Limit limit);
-
-		List<WithVectorFields> findByEmbeddingNear(Vector embedding, Limit limit);
+		Flux<WithVectorFields> findByEmbeddingNear(Vector embedding, Limit limit);
 
 		@Query("SELECT id,description,country,similarity_cosine(embedding,:embedding) AS score FROM withvectorfields ORDER BY embedding ANN OF :embedding LIMIT :limit")
-		SearchResults<WithVectorFields> searchAnnotatedByEmbeddingNear(Vector embedding, Limit limit);
+		Flux<SearchResult<WithVectorFields>> searchAnnotatedByEmbeddingNear(Vector embedding, Limit limit);
 
 	}
 
@@ -201,7 +197,6 @@ class VectorSearchIntegrationTests extends AbstractSpringDataEmbeddedCassandraIn
 			return "WithVectorFields{" + "id='" + id + '\'' + ", country='" + country + '\'' + ", description='" + description
 					+ '\'' + '}';
 		}
-
 	}
 
 }

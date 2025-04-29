@@ -61,9 +61,9 @@ import com.datastax.oss.driver.api.core.cql.Statement;
 class QueryStatementCreator {
 
 	private static final Map<ScoringFunction, SimilarityFunction> SIMILARITY_FUNCTIONS = Map.of(
-			VectorScoringFunctions.COSINE, SimilarityFunction.COSINE, VectorScoringFunctions.EUCLIDEAN,
-			SimilarityFunction.EUCLIDEAN, VectorScoringFunctions.DOT, SimilarityFunction.DOT_PRODUCT,
-			VectorScoringFunctions.INNER_PRODUCT, SimilarityFunction.DOT_PRODUCT);
+			VectorScoringFunctions.COSINE, SimilarityFunction.COSINE, //
+			VectorScoringFunctions.EUCLIDEAN, SimilarityFunction.EUCLIDEAN, //
+			VectorScoringFunctions.DOT_PRODUCT, SimilarityFunction.DOT_PRODUCT);
 
 	private static final Log LOG = LogFactory.getLog(QueryStatementCreator.class);
 
@@ -148,7 +148,7 @@ class QueryStatementCreator {
 
 		if (function == null) {
 			throw new IllegalStateException(
-					"Cannot determine ScoringFunction. No Score or bounded Score Range parameters provided.");
+					"Cannot determine ScoringFunction. No ScoringFunction, Score/Similarity or bounded Score Range parameters provided.");
 		}
 
 		SimilarityFunction similarityFunction = SIMILARITY_FUNCTIONS.get(function);

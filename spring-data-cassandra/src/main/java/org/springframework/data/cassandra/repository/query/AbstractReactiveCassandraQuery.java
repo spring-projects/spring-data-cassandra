@@ -18,6 +18,7 @@ package org.springframework.data.cassandra.repository.query;
 import reactor.core.publisher.Mono;
 
 import org.reactivestreams.Publisher;
+
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.ReactiveResultSet;
 import org.springframework.data.cassandra.core.CassandraOperations;
@@ -26,6 +27,7 @@ import org.springframework.data.cassandra.repository.query.ReactiveCassandraQuer
 import org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution.ExistsExecution;
 import org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution.ResultProcessingConverter;
 import org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution.ResultProcessingExecution;
+import org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution.SearchExecution;
 import org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution.SingleEntityExecution;
 import org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution.SlicedExecution;
 import org.springframework.data.cassandra.repository.query.ReactiveCassandraQueryExecution.WindowExecution;
@@ -126,6 +128,8 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 		} else if (getQueryMethod().isScrollQuery()) {
 			return new WindowExecution(getReactiveCassandraOperations(), parameterAccessor.getScrollPosition(),
 					parameterAccessor.getLimit());
+		} else if (getQueryMethod().isSearchQuery()) {
+			return new SearchExecution(getReactiveCassandraOperations(), parameterAccessor);
 		} else if (getQueryMethod().isCollectionQuery()) {
 			return new CollectionExecution(getReactiveCassandraOperations());
 		} else if (isCountQuery()) {

@@ -33,6 +33,7 @@ import org.springframework.data.domain.Score;
 import org.springframework.data.domain.ScoringFunction;
 import org.springframework.data.domain.SearchResult;
 import org.springframework.data.domain.SearchResults;
+import org.springframework.data.domain.Similarity;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.mapping.context.MappingContext;
@@ -204,8 +205,10 @@ interface CassandraQueryExecution {
 		private Score getScore(Row row, String columnName, @Nullable ScoringFunction function) {
 
 			Object object = row.getObject(columnName);
-			return Score.of(((Number) object).doubleValue(), function == null ? ScoringFunction.UNSPECIFIED : function);
+			return Similarity.raw(((Number) object).doubleValue(),
+					function == null ? ScoringFunction.unspecified() : function);
 		}
+
 	}
 
 	/**
