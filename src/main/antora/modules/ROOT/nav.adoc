@@ -28,6 +28,7 @@
 ** xref:repositories/create-instances.adoc[]
 ** xref:repositories/query-methods-details.adoc[]
 ** xref:cassandra/repositories/query-methods.adoc[]
+** xref:cassandra/repositories/vector-search.adoc[]
 ** xref:repositories/projections.adoc[]
 ** xref:repositories/custom-implementations.adoc[]
 ** xref:repositories/core-domain-events.adoc[]

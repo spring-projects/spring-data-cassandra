@@ -1,0 +1,19 @@
+.Using `@Query`
+====
+[source,java]
+----
+interface CommentRepository extends Repository<Comment, String> {
+
+  @Query("""
+         SELECT id, description, country, similarity_cosine(embedding,:embedding) AS score
+         FROM comments
+         ORDER BY embedding ANN OF :embedding LIMIT :limit
+         """)
+  SearchResults<WithVectorFields> searchAnnotatedByEmbeddingNear(Vector embedding, Limit limit);
+}
+----
+====
+
+Cassandra does not allow to limit search results by their score.
+Declared search methods can include a `score` projection column if you wish to return the score value.
+You can declare a `ScoringFunction` argument to specify which scoring function to use to calculate similarity.

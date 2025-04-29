@@ -1,0 +1,13 @@
+.Using `SearchResults<T>` in a Repository Search Method
+====
+[source,java]
+----
+interface CommentRepository extends Repository<Comment, String> {
+
+  SearchResults<Comment> searchByEmbeddingNear(Vector vector, ScoringFunction function, Limit limit);
+
+}
+
+SearchResults<Comment> results = repository.searchByEmbeddingNear(Vector.of(…), ScoringFunction.cosine(), Limit.of(10));
+----
+====
