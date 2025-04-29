@@ -1,0 +1,16 @@
+.Using `Near` and `Within` Keywords in Repository Search Methods
+====
+[source,java]
+----
+interface CommentRepository extends Repository<Comment, String> {
+
+  List<Comment> searchByEmbeddingNear(Vector vector);
+
+  SearchResults<Comment> searchByEmbeddingNear(Vector vector, ScoringFunction function);
+
+}
+----
+====
+
+Cassandra does not allow to limit search results by their score.
+You can declare a `ScoringFunction` argument to specify which scoring function to use to calculate similarity.

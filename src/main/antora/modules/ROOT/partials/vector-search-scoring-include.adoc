@@ -1,0 +1,20 @@
+Cassandra reports the score directly as similarity value through `similarity_euclidean`, `similarity_cosine`, and `similarity_dot_product` functions.
+
+.Using `ScoringFunction` in a Repository Search Methods
+====
+[source,java]
+----
+interface CommentRepository extends Repository<Comment, String> {
+
+  SearchResults<Comment> searchByEmbeddingNear(Vector vector, ScoringFunction function);
+}
+
+repository.searchByEmbeddingNear(Vector.of(…), ScoringFunction.cosine());     <1>
+
+repository.searchByEmbeddingNear(Vector.of(…), ScoringFunction.euclidean());  <2>
+----
+
+<1> Run a search and return results using the Cosine distance function to compute similarity.
+<2> Run a search and return results using the Euclidean distance function to compute similarity.
+====
+

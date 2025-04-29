@@ -1,0 +1,19 @@
+====
+[source,java]
+----
+class Comment {
+
+  @Id String id;
+  String country;
+  String comment;
+
+  @VectorType(dimensions = 5)
+  @SaiIndexed
+  Vector embedding;
+
+  // getters, setters, …
+}
+----
+====
+
+`@VectorType` and `@SaiIndexed` annotations are used to help with schema generation and type hints.
