@@ -73,11 +73,9 @@ public abstract class CassandraConverters {
 
 		converters.add(VectorToFloatArrayConverter.INSTANCE);
 		converters.add(VectorToDoubleArrayConverter.INSTANCE);
-		converters.add(VectorToFloatListConverter.INSTANCE);
 
 		converters.add(FloatArrayToVectorConverter.INSTANCE);
 		converters.add(DoubleArrayToVectorConverter.INSTANCE);
-		converters.add(NumberListToVectorConverter.INSTANCE);
 
 		converters.add(VectorToCqlVectorConverter.INSTANCE);
 		converters.add(CqlVectorToVectorConverter.INSTANCE);
@@ -308,17 +306,6 @@ public abstract class CassandraConverters {
 	}
 
 	@ReadingConverter
-	public enum NumberListToVectorConverter implements Converter<List<Number>, CqlVector<Number>> {
-
-		INSTANCE;
-
-		@Override
-		public CqlVector<Number> convert(List<Number> source) {
-			return CqlVector.newInstance(source);
-		}
-	}
-
-	@ReadingConverter
 	public enum VectorToFloatArrayConverter implements Converter<CqlVector<Number>, float[]> {
 
 		INSTANCE;
@@ -348,18 +335,4 @@ public abstract class CassandraConverters {
 		}
 	}
 
-	@ReadingConverter
-	public enum VectorToFloatListConverter implements Converter<CqlVector<Number>, List<Float>> {
-
-		INSTANCE;
-
-		@Override
-		public List<Float> convert(CqlVector<Number> source) {
-			List<Float> values = new ArrayList<>(source.size());
-			for (int i = 0; i < source.size(); i++) {
-				values.add(source.get(i).floatValue());
-			}
-			return values;
-		}
-	}
 }

@@ -921,16 +921,14 @@ class StatementFactoryUnitTests {
 		withVector.id = "foo";
 		withVector.vector = CqlVector.newInstance(1.2f, 1.3f);
 		withVector.array = new float[] { 2.2f, 2.3f };
-		withVector.list = Arrays.asList(3.2f, 3.3f);
 
 		SimpleStatement statement = statementFactory.update(withVector, WriteOptions.empty())
 				.build(ParameterHandling.BY_NAME);
 
-		assertThat(statement.getQuery()).isEqualTo("UPDATE withvector SET vector=:p0, array=:p1, list=:p2 WHERE id=:p3");
+		assertThat(statement.getQuery()).isEqualTo("UPDATE withvector SET vector=:p0, array=:p1 WHERE id=:p2");
 
 		assertThat(statement.getNamedValues().get(CqlIdentifier.fromCql("p0"))).isInstanceOf(CqlVector.class).hasToString("[1.2, 1.3]");
 		assertThat(statement.getNamedValues().get(CqlIdentifier.fromCql("p1"))).isInstanceOf(CqlVector.class).hasToString("[2.2, 2.3]");
-		assertThat(statement.getNamedValues().get(CqlIdentifier.fromCql("p2"))).isInstanceOf(CqlVector.class).hasToString("[3.2, 3.3]");
 	}
 
 	@Test // GH-1504
@@ -990,6 +988,5 @@ class StatementFactoryUnitTests {
 
 		@VectorType(dimensions = 12) CqlVector<Number> vector;
 		@VectorType(dimensions = 12) float[] array;
-		@VectorType(dimensions = 12) List<Float> list;
 	}
 }
