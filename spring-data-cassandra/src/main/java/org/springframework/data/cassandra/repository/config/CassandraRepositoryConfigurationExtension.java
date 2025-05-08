@@ -25,6 +25,7 @@ import org.springframework.data.cassandra.config.DefaultBeanNames;
 import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.cassandra.repository.support.CassandraRepositoryFactoryBean;
+import org.springframework.data.cassandra.repository.support.SimpleCassandraRepository;
 import org.springframework.data.repository.config.AnnotationRepositoryConfigurationSource;
 import org.springframework.data.repository.config.RepositoryConfigurationExtension;
 import org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport;
@@ -40,6 +41,7 @@ import org.w3c.dom.Element;
  * @author Mark Paluch
  * @author Christoph Strobl
  * @author Mateusz Szymczak
+ * @author Chris Bono
  */
 public class CassandraRepositoryConfigurationExtension extends RepositoryConfigurationExtensionSupport {
 
@@ -53,6 +55,11 @@ public class CassandraRepositoryConfigurationExtension extends RepositoryConfigu
 	@Override
 	protected String getModulePrefix() {
 		return "cassandra";
+	}
+
+	@Override
+	public String getRepositoryBaseClassName() {
+		return SimpleCassandraRepository.class.getName();
 	}
 
 	@Override
