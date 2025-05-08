@@ -34,6 +34,7 @@ import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.repository.core.support.RepositoryComposition.RepositoryFragments;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 import org.springframework.data.repository.query.CachingValueExpressionDelegate;
 import org.springframework.data.repository.query.QueryLookupStrategy;
@@ -50,12 +51,15 @@ import org.springframework.util.Assert;
  * @author Thomas Darimont
  * @author Mark Paluch
  * @author John Blum
+ * @author Chris Bono
  */
 public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 
 	private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
 
 	private final CassandraOperations operations;
+
+	private CassandraRepositoryFragmentsContributor fragmentsContributor = CassandraRepositoryFragmentsContributor.DEFAULT;
 
 	/**
 	 * Create a new {@link CassandraRepositoryFactory} with the given {@link CassandraOperations}.
@@ -68,6 +72,17 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 
 		this.operations = operations;
 		this.mappingContext = operations.getConverter().getMappingContext();
+	}
+
+	/**
+	 * Configures the {@link CassandraRepositoryFragmentsContributor} to be used. Defaults to
+	 * {@link CassandraRepositoryFragmentsContributor#DEFAULT}.
+	 *
+	 * @param fragmentsContributor
+	 * @since 5.0
+	 */
+	public void setFragmentsContributor(CassandraRepositoryFragmentsContributor fragmentsContributor) {
+		this.fragmentsContributor = fragmentsContributor;
 	}
 
 	@Override
@@ -105,6 +120,23 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 				new CachingValueExpressionDelegate(valueExpressionDelegate), mappingContext));
 	}
 
+	@Override
+	protected RepositoryFragments getRepositoryFragments(RepositoryMetadata metadata) {
+		return getRepositoryFragments(metadata, operations);
+	}
+
+	/**
+	 * Creates {@link RepositoryFragments} based on {@link RepositoryMetadata} to add Cassandra-specific extensions.
+	 * Built-in fragment contribution can be customized by configuring {@link CassandraRepositoryFragmentsContributor}.
+	 *
+	 * @param metadata repository metadata.
+	 * @param operations the Cassandra operations manager.
+	 * @return {@link RepositoryFragments} to be added to the repository.
+	 * @since 5.0
+	 */
+	protected RepositoryFragments getRepositoryFragments(RepositoryMetadata metadata, CassandraOperations operations) {
+		return fragmentsContributor.contribute(metadata, getEntityInformation(metadata.getDomainType()), operations);
+	}
 
 	private record CassandraQueryLookupStrategy(CassandraOperations operations,
 			ValueExpressionDelegate valueExpressionDelegate,
@@ -132,4 +164,3 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 	}
 
 }
-

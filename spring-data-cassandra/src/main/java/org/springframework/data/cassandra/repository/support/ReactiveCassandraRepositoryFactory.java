@@ -34,6 +34,7 @@ import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.ReactiveRepositoryFactorySupport;
+import org.springframework.data.repository.core.support.RepositoryComposition.RepositoryFragments;
 import org.springframework.data.repository.query.CachingValueExpressionDelegate;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
@@ -46,6 +47,7 @@ import org.springframework.util.Assert;
  *
  * @author Mark Paluch
  * @author Marcin Grzejszczak
+ * @author Chris Bono
  * @since 2.0
  */
 public class ReactiveCassandraRepositoryFactory extends ReactiveRepositoryFactorySupport {
@@ -53,6 +55,8 @@ public class ReactiveCassandraRepositoryFactory extends ReactiveRepositoryFactor
 	private final ReactiveCassandraOperations operations;
 
 	private final MappingContext<? extends CassandraPersistentEntity<?>, ? extends CassandraPersistentProperty> mappingContext;
+
+	private ReactiveCassandraRepositoryFragmentsContributor fragmentsContributor = ReactiveCassandraRepositoryFragmentsContributor.DEFAULT;
 
 	/**
 	 * Create a new {@link ReactiveCassandraRepositoryFactory} with the given {@link ReactiveCassandraOperations}.
@@ -65,6 +69,17 @@ public class ReactiveCassandraRepositoryFactory extends ReactiveRepositoryFactor
 
 		this.operations = cassandraOperations;
 		this.mappingContext = cassandraOperations.getConverter().getMappingContext();
+	}
+
+	/**
+	 * Configures the {@link ReactiveCassandraRepositoryFragmentsContributor} to be used. Defaults to
+	 * {@link ReactiveCassandraRepositoryFragmentsContributor#DEFAULT}.
+	 *
+	 * @param fragmentsContributor
+	 * @since 5.0
+	 */
+	public void setFragmentsContributor(ReactiveCassandraRepositoryFragmentsContributor fragmentsContributor) {
+		this.fragmentsContributor = fragmentsContributor;
 	}
 
 	@Override
@@ -99,6 +114,24 @@ public class ReactiveCassandraRepositoryFactory extends ReactiveRepositoryFactor
 		CassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(domainClass);
 
 		return new MappingCassandraEntityInformation<>((CassandraPersistentEntity<T>) entity, operations.getConverter());
+	}
+
+	@Override
+	protected RepositoryFragments getRepositoryFragments(RepositoryMetadata metadata) {
+		return getRepositoryFragments(metadata, operations);
+	}
+
+	/**
+	 * Creates {@link RepositoryFragments} based on {@link RepositoryMetadata} to add Cassandra-specific extensions.
+	 * Built-in fragment contribution can be customized by configuring {@link CassandraRepositoryFragmentsContributor}.
+	 *
+	 * @param metadata repository metadata.
+	 * @param operations the Cassandra operations manager.
+	 * @return {@link RepositoryFragments} to be added to the repository.
+	 * @since 5.0
+	 */
+	protected RepositoryFragments getRepositoryFragments(RepositoryMetadata metadata, ReactiveCassandraOperations operations) {
+		return fragmentsContributor.contribute(metadata, getEntityInformation(metadata.getDomainType()), operations);
 	}
 
 	/**

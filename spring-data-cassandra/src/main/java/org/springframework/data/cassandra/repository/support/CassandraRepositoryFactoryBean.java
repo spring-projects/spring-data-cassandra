@@ -19,6 +19,7 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.repository.CassandraRepository;
+import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
@@ -31,11 +32,16 @@ import org.springframework.util.Assert;
  * @author John Blum
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Chris Bono
  */
 public class CassandraRepositoryFactoryBean<T extends Repository<S, ID>, S, ID>
 		extends RepositoryFactoryBeanSupport<T, S, ID> {
 
+	private boolean mappingContextConfigured = false;
+
 	private @Nullable CassandraOperations cassandraOperations;
+
+	private CassandraRepositoryFragmentsContributor repositoryFragmentsContributor = CassandraRepositoryFragmentsContributor.DEFAULT;
 
 	/**
 	 * Create a new {@link CassandraRepositoryFactoryBean} for the given repository interface.
@@ -51,7 +57,35 @@ public class CassandraRepositoryFactoryBean<T extends Repository<S, ID>, S, ID>
 
 		Assert.state(cassandraOperations != null, "CassandraOperations must not be null");
 
-		return new CassandraRepositoryFactory(cassandraOperations);
+		CassandraRepositoryFactory factory = getFactoryInstance(cassandraOperations);
+		factory.setFragmentsContributor(repositoryFragmentsContributor);
+		return factory;
+	}
+
+	/**
+	 * Creates and initializes a {@link CassandraRepositoryFactory} instance.
+	 *
+	 * @param operations the Cassandra operations
+	 * @return new {@link CassandraRepositoryFactory} instance
+	 */
+	protected CassandraRepositoryFactory getFactoryInstance(CassandraOperations operations) {
+		return new CassandraRepositoryFactory(operations);
+	}
+
+	@Override
+	public CassandraRepositoryFragmentsContributor getRepositoryFragmentsContributor() {
+		return this.repositoryFragmentsContributor;
+	}
+
+	/**
+	 * Configures the {@link CassandraRepositoryFragmentsContributor} to contribute built-in fragment functionality to the
+	 * repository.
+	 *
+	 * @param repositoryFragmentsContributor must not be {@literal null}.
+	 * @since 5.0
+	 */
+	public void setRepositoryFragmentsContributor(CassandraRepositoryFragmentsContributor repositoryFragmentsContributor) {
+		this.repositoryFragmentsContributor = repositoryFragmentsContributor;
 	}
 
 	/**
@@ -61,9 +95,15 @@ public class CassandraRepositoryFactoryBean<T extends Repository<S, ID>, S, ID>
 	 *          on Apache Cassandra.
 	 */
 	public void setCassandraTemplate(CassandraTemplate cassandraTemplate) {
-
 		this.cassandraOperations = cassandraTemplate;
-		setMappingContext(cassandraTemplate.getConverter().getMappingContext());
+	}
+
+	@Override
+	protected void setMappingContext(MappingContext<?, ?> mappingContext) {
+
+		super.setMappingContext(mappingContext);
+
+		this.mappingContextConfigured = true;
 	}
 
 	@Override
@@ -72,5 +112,9 @@ public class CassandraRepositoryFactoryBean<T extends Repository<S, ID>, S, ID>
 		super.afterPropertiesSet();
 
 		Assert.notNull(cassandraOperations, "CassandraOperations must not be null");
+
+		if (!mappingContextConfigured) {
+			setMappingContext(cassandraOperations.getConverter().getMappingContext());
+		}
 	}
 }

@@ -21,6 +21,7 @@ import java.util.Collections;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.data.cassandra.repository.ReactiveCassandraRepository;
 import org.springframework.data.cassandra.repository.support.ReactiveCassandraRepositoryFactoryBean;
+import org.springframework.data.cassandra.repository.support.SimpleReactiveCassandraRepository;
 import org.springframework.data.repository.config.AnnotationRepositoryConfigurationSource;
 import org.springframework.data.repository.config.RepositoryConfigurationExtension;
 import org.springframework.data.repository.core.RepositoryMetadata;
@@ -30,6 +31,7 @@ import org.springframework.util.StringUtils;
  * {@link RepositoryConfigurationExtension} for Cassandra.
  *
  * @author Mark Paluch
+ * @author Chris Bono
  * @since 2.0
  */
 public class ReactiveCassandraRepositoryConfigurationExtension extends CassandraRepositoryConfigurationExtension {
@@ -37,6 +39,11 @@ public class ReactiveCassandraRepositoryConfigurationExtension extends Cassandra
 	@Override
 	public String getModuleName() {
 		return "Reactive Cassandra";
+	}
+
+	@Override
+	public String getRepositoryBaseClassName() {
+		return SimpleReactiveCassandraRepository.class.getName();
 	}
 
 	@Override

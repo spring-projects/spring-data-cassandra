@@ -29,6 +29,7 @@ import org.springframework.util.Assert;
  * {@link org.springframework.data.cassandra.repository.ReactiveCassandraRepository} instances.
  *
  * @author Mark Paluch
+ * @author Chris Bono
  * @since 2.0
  * @see org.springframework.data.repository.reactive.ReactiveSortingRepository
  */
@@ -38,6 +39,8 @@ public class ReactiveCassandraRepositoryFactoryBean<T extends Repository<S, ID>,
 	private boolean mappingContextConfigured = false;
 
 	private @Nullable ReactiveCassandraOperations operations;
+
+	private ReactiveCassandraRepositoryFragmentsContributor repositoryFragmentsContributor = ReactiveCassandraRepositoryFragmentsContributor.DEFAULT;
 
 	/**
 	 * Create a new {@link ReactiveCassandraRepositoryFactoryBean} for the given repository interface.
@@ -71,7 +74,9 @@ public class ReactiveCassandraRepositoryFactoryBean<T extends Repository<S, ID>,
 
 		Assert.state(operations != null, "ReactiveCassandraOperations must not be null");
 
-		return getFactoryInstance(operations);
+		ReactiveCassandraRepositoryFactory factory = getFactoryInstance(operations);
+		factory.setFragmentsContributor(repositoryFragmentsContributor);
+		return factory;
 	}
 
 	/**
@@ -80,8 +85,24 @@ public class ReactiveCassandraRepositoryFactoryBean<T extends Repository<S, ID>,
 	 * @param operations
 	 * @return
 	 */
-	protected RepositoryFactorySupport getFactoryInstance(ReactiveCassandraOperations operations) {
+	protected ReactiveCassandraRepositoryFactory getFactoryInstance(ReactiveCassandraOperations operations) {
 		return new ReactiveCassandraRepositoryFactory(operations);
+	}
+
+	@Override
+	public ReactiveCassandraRepositoryFragmentsContributor getRepositoryFragmentsContributor() {
+		return this.repositoryFragmentsContributor;
+	}
+
+	/**
+	 * Configures the {@link ReactiveCassandraRepositoryFragmentsContributor} to contribute built-in fragment
+	 * functionality to the repository.
+	 *
+	 * @param repositoryFragmentsContributor must not be {@literal null}.
+	 * @since 5.0
+	 */
+	public void setRepositoryFragmentsContributor(ReactiveCassandraRepositoryFragmentsContributor repositoryFragmentsContributor) {
+		this.repositoryFragmentsContributor = repositoryFragmentsContributor;
 	}
 
 	@Override
