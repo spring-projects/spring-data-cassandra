@@ -2,7 +2,6 @@
 = Spring Data Cassandra
 :revnumber: {version}
 :revdate: {localdate}
-:feature-scroll: true
 
 _Spring Data for Apache Cassandra provides repository support for the Apache Cassandra database.
 It eases development of applications with a consistent programming model that need to access Cassandra data sources._
