@@ -74,25 +74,4 @@ public interface CassandraRepositoryFragmentsContributor extends RepositoryFragm
 	RepositoryFragments contribute(RepositoryMetadata metadata,
 			CassandraEntityInformation<?, ?> entityInformation, CassandraOperations operations);
 
-	/**
-	 * Implementation of {@link CassandraRepositoryFragmentsContributor} that contributes empty fragments by default.
-	 *
-	 * @author Chris Bono
-	 * @since 5.0
-	 */
-	enum DefaultCassandraRepositoryFragmentsContributor implements CassandraRepositoryFragmentsContributor {
-
-		INSTANCE;
-
-		@Override
-		public RepositoryFragments contribute(RepositoryMetadata metadata,
-				CassandraEntityInformation<?, ?> entityInformation, CassandraOperations operations) {
-			return RepositoryFragments.empty();
-		}
-
-		@Override
-		public RepositoryFragments describe(RepositoryMetadata metadata) {
-			return RepositoryFragments.empty();
-		}
-	}
 }
