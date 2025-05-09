@@ -32,7 +32,7 @@ import org.springframework.util.Assert;
  */
 public interface CassandraRepositoryFragmentsContributor extends RepositoryFragmentsContributor {
 
-	CassandraRepositoryFragmentsContributor DEFAULT = DefaultCassandraRepositoryFragmentsContributor.INSTANCE;
+	CassandraRepositoryFragmentsContributor DEFAULT = EmptyFragmentsContributor.INSTANCE;
 
 	/**
 	 * Returns a composed {@code CassandraRepositoryFragmentsContributor} that first applies this contributor to its inputs,

@@ -27,7 +27,7 @@ import org.springframework.data.repository.core.support.RepositoryComposition;
  * @author Chris Bono
  * @since 5.0
  */
-enum DefaultReactiveCassandraRepositoryFragmentsContributor implements ReactiveCassandraRepositoryFragmentsContributor {
+enum ReactiveEmptyFragmentsContributor implements ReactiveCassandraRepositoryFragmentsContributor {
 
 	INSTANCE;
 

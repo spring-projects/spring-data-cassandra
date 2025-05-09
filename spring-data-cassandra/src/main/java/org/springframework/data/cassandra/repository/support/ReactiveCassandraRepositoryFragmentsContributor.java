@@ -32,7 +32,7 @@ import org.springframework.util.Assert;
  */
 public interface ReactiveCassandraRepositoryFragmentsContributor extends RepositoryFragmentsContributor {
 
-	ReactiveCassandraRepositoryFragmentsContributor DEFAULT = DefaultReactiveCassandraRepositoryFragmentsContributor.INSTANCE;
+	ReactiveCassandraRepositoryFragmentsContributor DEFAULT = ReactiveEmptyFragmentsContributor.INSTANCE;
 
 	/**
 	 * Returns a composed {@code ReactiveCassandraRepositoryFragmentsContributor} that first applies this contributor to

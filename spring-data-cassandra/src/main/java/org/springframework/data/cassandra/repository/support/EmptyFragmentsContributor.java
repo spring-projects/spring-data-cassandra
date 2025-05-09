@@ -26,7 +26,7 @@ import org.springframework.data.repository.core.support.RepositoryComposition;
  * @author Chris Bono
  * @since 5.0
  */
-enum DefaultCassandraRepositoryFragmentsContributor implements CassandraRepositoryFragmentsContributor {
+enum EmptyFragmentsContributor implements CassandraRepositoryFragmentsContributor {
 
 	INSTANCE;
 
