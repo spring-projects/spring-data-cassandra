@@ -21,4 +21,4 @@ As in Java, `characters` in Kotlin is strongly typed, but Kotlin's clever type i
 Spring Data for Apache Cassandra provides the following extensions:
 
 * Reified generics support for `CassandraOperations` (including async and reactive variants), `CqlOperations` (including async and reactive variants)`FluentCassandraOperations`, `ReactiveFluentCassandraOperations`, `Criteria`, and `Query`.
-* <<kotlin.coroutines>> extensions for `ReactiveFluentCassandraOperations`.
+* xref:page$kotlin/coroutines.adoc[Coroutines] extensions for `ReactiveFluentCassandraOperations`.
