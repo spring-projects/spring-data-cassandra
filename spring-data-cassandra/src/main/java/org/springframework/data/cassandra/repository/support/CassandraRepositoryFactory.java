@@ -84,18 +84,16 @@ public class CassandraRepositoryFactory extends RepositoryFactorySupport {
 	@Override
 	protected Object getTargetRepository(RepositoryInformation information) {
 
-		CassandraEntityInformation<?, Object> entityInformation = getEntityInformation(information.getDomainType());
+		CassandraEntityInformation<?, ?> entityInformation = getEntityInformation(information);
 
 		return getTargetRepositoryViaReflection(information, entityInformation, operations);
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
-	public <T, ID> CassandraEntityInformation<T, ID> getEntityInformation(Class<T> domainClass) {
+	public CassandraEntityInformation<?, ?> getEntityInformation(RepositoryMetadata metadata) {
 
-		CassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(domainClass);
-
-		return new MappingCassandraEntityInformation<>((CassandraPersistentEntity<T>) entity, operations.getConverter());
+		CassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(metadata.getDomainType());
+		return new MappingCassandraEntityInformation<>(entity, operations.getConverter());
 	}
 
 	@Override

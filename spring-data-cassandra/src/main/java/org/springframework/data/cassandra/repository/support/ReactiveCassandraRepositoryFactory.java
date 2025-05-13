@@ -81,7 +81,7 @@ public class ReactiveCassandraRepositoryFactory extends ReactiveRepositoryFactor
 	@Override
 	protected Object getTargetRepository(RepositoryInformation information) {
 
-		CassandraEntityInformation<?, Object> entityInformation = getEntityInformation(information.getDomainType());
+		CassandraEntityInformation<?, ?> entityInformation = getEntityInformation(information);
 
 		return getTargetRepositoryViaReflection(information, entityInformation, operations);
 	}
@@ -93,12 +93,11 @@ public class ReactiveCassandraRepositoryFactory extends ReactiveRepositoryFactor
 				new CachingValueExpressionDelegate(valueExpressionDelegate), mappingContext));
 	}
 
-	@SuppressWarnings("unchecked")
-	public <T, ID> CassandraEntityInformation<T, ID> getEntityInformation(Class<T> domainClass) {
+	@Override
+	public CassandraEntityInformation<?, ?> getEntityInformation(RepositoryMetadata metadata) {
 
-		CassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(domainClass);
-
-		return new MappingCassandraEntityInformation<>((CassandraPersistentEntity<T>) entity, operations.getConverter());
+		CassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(metadata.getDomainType());
+		return new MappingCassandraEntityInformation<>(entity, operations.getConverter());
 	}
 
 	/**

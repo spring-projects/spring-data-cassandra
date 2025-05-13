@@ -18,8 +18,6 @@ package org.springframework.data.cassandra.repository.support;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import java.io.Serializable;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,14 +25,16 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.domain.Person;
-import org.springframework.data.cassandra.repository.query.CassandraEntityInformation;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.core.EntityInformation;
+import org.springframework.data.repository.core.support.AbstractRepositoryMetadata;
 
 /**
  * Unit tests for {@link CassandraRepositoryFactory}.
@@ -66,8 +66,8 @@ public class CassandraRepositoryFactoryUnitTests {
 
 		CassandraRepositoryFactory repositoryFactory = new CassandraRepositoryFactory(template);
 
-		CassandraEntityInformation<Person, Serializable> entityInformation = repositoryFactory
-				.getEntityInformation(Person.class);
+		EntityInformation<?, ?> entityInformation = repositoryFactory
+				.getEntityInformation(AbstractRepositoryMetadata.getMetadata(MyPersonRepository.class));
 
 		assertThat(entityInformation).isInstanceOf(MappingCassandraEntityInformation.class);
 	}
