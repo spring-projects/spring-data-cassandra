@@ -130,7 +130,7 @@ public class ReactiveCassandraRepositoryFactory extends ReactiveRepositoryFactor
 	 * @since 5.0
 	 */
 	protected RepositoryFragments getRepositoryFragments(RepositoryMetadata metadata, ReactiveCassandraOperations operations) {
-		return fragmentsContributor.contribute(metadata, getEntityInformation(metadata.getDomainType()), operations);
+		return fragmentsContributor.contribute(metadata, getEntityInformation(metadata), operations);
 	}
 
 	/**
