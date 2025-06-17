@@ -15,6 +15,9 @@
 	<artifactId>spring-data-cassandra-distribution</artifactId>
 	<packaging>pom</packaging>
 
+	<name>Spring Data for Apache Cassandra Distribution</name>
+	<description>Distribution build for Spring Data Cassandra</description>
+
 	<properties>
 		<project.root>${basedir}/..</project.root>
 		<antora.playbook>${project.basedir}/../src/main/antora/antora-playbook.yml</antora.playbook>
