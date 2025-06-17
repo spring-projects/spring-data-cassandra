@@ -16,9 +16,6 @@
 
 	<name>Spring Data for Apache Cassandra Core</name>
 	<description>Cassandra support for Spring Data</description>
-	<url>
-		https://github.com/spring-projects/spring-data-cassandra/tree/master/spring-data-cassandra
-	</url>
 
 	<properties>
 		<java-module-name>spring.data.cassandra</java-module-name>
