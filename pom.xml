@@ -77,6 +77,20 @@
 		</developer>
 	</developers>
 
+	<scm>
+		<connection>scm:git:https://github.com/spring-projects/spring-data-cassandra.git
+		</connection>
+		<developerConnection>
+			scm:git:git@github.com:spring-projects/spring-data-cassandra.git
+		</developerConnection>
+		<url>https://github.com/spring-projects/spring-data-cassandra</url>
+	</scm>
+
+	<issueManagement>
+		<system>GitHub</system>
+		<url>https://github.com/spring-projects/spring-data-cassandra/issues</url>
+	</issueManagement>
+
 	<modules>
 		<module>spring-data-cassandra</module>
 		<module>spring-data-cassandra-distribution</module>
