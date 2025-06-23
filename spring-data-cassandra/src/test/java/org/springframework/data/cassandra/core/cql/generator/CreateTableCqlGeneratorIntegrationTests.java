@@ -35,6 +35,7 @@ import com.datastax.oss.driver.api.core.type.DataTypes;
  * @author Matthew T. Adams
  * @author Oliver Gierke
  * @author Mark Paluch
+ * @author Seungho Kang
  */
 class CreateTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCreatingIntegrationTests {
 
@@ -107,5 +108,40 @@ class CreateTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCreatingIn
 				.get();
 		assertThat(person.getPartitionKey()).hasSize(1);
 		assertThat(person.getClusteringColumns()).hasSize(1);
+	}
+
+	@Test // GH-1584
+	void shouldGenerateTableWithOptions() {
+
+		CreateTableSpecification spec = CreateTableSpecification.createTable("person")
+				.partitionKeyColumn("id", DataTypes.INT) //
+				.clusteredKeyColumn("date_of_birth", DataTypes.DATE, Ordering.ASCENDING) //
+				.column("name", DataTypes.ASCII) //
+				.with(TableOption.GC_GRACE_SECONDS, 86400L).with(TableOption.DEFAULT_TIME_TO_LIVE, 3600L)
+				.with(TableOption.CDC, true).with(TableOption.SPECULATIVE_RETRY, "99PERCENTILE")
+				.with(TableOption.MEMTABLE_FLUSH_PERIOD_IN_MS, 10000L).with(TableOption.CRC_CHECK_CHANCE, 0.9d)
+				.with(TableOption.MIN_INDEX_INTERVAL, 128L).with(TableOption.MAX_INDEX_INTERVAL, 2048L)
+				.with(TableOption.READ_REPAIR, "BLOCKING");
+
+		session.execute(CqlGenerator.toCql(spec));
+
+		TableMetadata meta = session.getMetadata().getKeyspace(getKeyspace()).flatMap(it -> it.getTable("person")).get();
+		assertThat(meta.getOptions()) //
+				.containsEntry(CqlIdentifier.fromCql(TableOption.GC_GRACE_SECONDS.getName()), 86400);
+
+		assertThat(meta.getOptions()) //
+				.containsEntry(CqlIdentifier.fromCql(TableOption.DEFAULT_TIME_TO_LIVE.getName()), 3600);
+		assertThat(meta.getOptions()) //
+				.containsEntry(CqlIdentifier.fromCql(TableOption.SPECULATIVE_RETRY.getName()), "99p");
+		assertThat(meta.getOptions()) //
+				.containsEntry(CqlIdentifier.fromCql(TableOption.MEMTABLE_FLUSH_PERIOD_IN_MS.getName()), 10000);
+		assertThat(meta.getOptions()) //
+				.containsEntry(CqlIdentifier.fromCql(TableOption.CRC_CHECK_CHANCE.getName()), 0.9);
+		assertThat(meta.getOptions()) //
+				.containsEntry(CqlIdentifier.fromCql(TableOption.MIN_INDEX_INTERVAL.getName()), 128);
+		assertThat(meta.getOptions()) //
+				.containsEntry(CqlIdentifier.fromCql(TableOption.MAX_INDEX_INTERVAL.getName()), 2048);
+		assertThat(meta.getOptions()) //
+				.containsEntry(CqlIdentifier.fromCql(TableOption.READ_REPAIR.getName()), "BLOCKING");
 	}
 }
