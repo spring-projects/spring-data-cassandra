@@ -135,6 +135,23 @@ public enum TableOption implements Option {
 		throw new IllegalArgumentException(String.format("Unable to recognize specified Table option '%s'", optionName));
 	}
 
+	/**
+	 * Look up {@link TableOption} by name using case-insensitive lookups.
+	 *
+	 * @param optionName name of the option.
+	 * @return the matching {@link TableOption}, or {@code null} if no match is found
+	 * @since 4.5.2
+	 */
+	@Nullable
+	public static TableOption findByNameIgnoreCase(String optionName) {
+		for (TableOption value : values()) {
+			if (value.getName().equalsIgnoreCase(optionName)) {
+				return value;
+			}
+		}
+		return null;
+	}
+
 	@Override
 	public Class<?> getType() {
 		return this.delegate.getType();
