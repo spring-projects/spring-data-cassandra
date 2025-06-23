@@ -41,6 +41,7 @@ import com.datastax.oss.driver.api.core.type.DataTypes;
  * @author David Webb
  * @author Mark Paluch
  * @author Aleksei Zotov
+ * @author Seungho Kang
  */
 class CreateTableCqlGeneratorUnitTests {
 
@@ -108,7 +109,7 @@ class CreateTableCqlGeneratorUnitTests {
 		assertDoubleOption(TableOption.READ_REPAIR_CHANCE.getName(), readRepairChance, cql);
 	}
 
-	@Test
+	@Test // GH-1584
 	void shouldGenerateMultipleOptions() {
 
 		CqlIdentifier name = CqlIdentifier.fromCql("timeseries_table");
@@ -121,8 +122,15 @@ class CreateTableCqlGeneratorUnitTests {
 		Double readRepairChance = 0.5;
 		Double dcLocalReadRepairChance = 0.7;
 		Double bloomFilterFpChance = 0.001;
-		Boolean replcateOnWrite = Boolean.FALSE;
 		Long gcGraceSeconds = 600l;
+		Long defaultTimeToLive = 864_00L;
+		Boolean cdc = Boolean.TRUE;
+		String speculative_retry = "99percentile";
+		Long memtableFlushPeriodInMs = 600L;
+		Double crcCheckChance = 0.9;
+		Long maxIndexInterval = 2048L;
+		Long minIndexInterval = 128L;
+
 		String comment = "This is My Table";
 		Map<Option, Object> compactionMap = new LinkedHashMap<>();
 		Map<Option, Object> compressionMap = new LinkedHashMap<>();
@@ -146,7 +154,11 @@ class CreateTableCqlGeneratorUnitTests {
 				.with(TableOption.COMPRESSION, compressionMap).with(TableOption.BLOOM_FILTER_FP_CHANCE, bloomFilterFpChance)
 				.with(TableOption.CACHING, cachingMap).with(TableOption.COMMENT, comment)
 				.with(TableOption.DCLOCAL_READ_REPAIR_CHANCE, dcLocalReadRepairChance)
-				.with(TableOption.GC_GRACE_SECONDS, gcGraceSeconds);
+				.with(TableOption.GC_GRACE_SECONDS, gcGraceSeconds).with(TableOption.DEFAULT_TIME_TO_LIVE, defaultTimeToLive)
+				.with(TableOption.CDC, cdc).with(TableOption.SPECULATIVE_RETRY, speculative_retry)
+				.with(TableOption.MEMTABLE_FLUSH_PERIOD_IN_MS, memtableFlushPeriodInMs)
+				.with(TableOption.CRC_CHECK_CHANCE, crcCheckChance).with(TableOption.MAX_INDEX_INTERVAL, maxIndexInterval)
+				.with(TableOption.MIN_INDEX_INTERVAL, minIndexInterval).with(TableOption.READ_REPAIR, "BLOCKING");
 
 		String cql = CqlGenerator.toCql(table);
 
@@ -159,6 +171,14 @@ class CreateTableCqlGeneratorUnitTests {
 		assertDoubleOption(TableOption.BLOOM_FILTER_FP_CHANCE.getName(), bloomFilterFpChance, cql);
 		assertStringOption(TableOption.COMMENT.getName(), comment, cql);
 		assertLongOption(TableOption.GC_GRACE_SECONDS.getName(), gcGraceSeconds, cql);
+		assertLongOption(TableOption.DEFAULT_TIME_TO_LIVE.getName(), defaultTimeToLive, cql);
+		assertBooleanOption(TableOption.CDC.getName(), cdc, cql);
+		assertStringOption(TableOption.SPECULATIVE_RETRY.getName(), speculative_retry, cql);
+		assertLongOption(TableOption.MEMTABLE_FLUSH_PERIOD_IN_MS.getName(), memtableFlushPeriodInMs, cql);
+		assertDoubleOption(TableOption.CRC_CHECK_CHANCE.getName(), crcCheckChance, cql);
+		assertLongOption(TableOption.MAX_INDEX_INTERVAL.getName(), maxIndexInterval, cql);
+		assertLongOption(TableOption.MIN_INDEX_INTERVAL.getName(), minIndexInterval, cql);
+		assertStringOption(TableOption.READ_REPAIR.getName(), "BLOCKING", cql);
 	}
 
 	@Test // DATACASS-518
@@ -251,6 +271,10 @@ class CreateTableCqlGeneratorUnitTests {
 	}
 
 	private static void assertLongOption(String name, Long value, String cql) {
+		assertThat(cql).contains(name + " = " + value);
+	}
+
+	private static void assertBooleanOption(String name, Boolean value, String cql) {
 		assertThat(cql).contains(name + " = " + value);
 	}
 
