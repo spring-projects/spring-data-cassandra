@@ -107,6 +107,46 @@ class CassandraAdminTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 				.isEqualTo("BLOCKING");
 	}
 
+	@Test // GH-359, GH-1584
+	void shouldApplyTableOptions_with_raw() {
+
+		Map<String, Object> options = Map.of(TableOption.COMMENT.getName(), "This is comment for table", //
+				"bloom_filter_fp_chance", "0.3", //
+				"default_time_to_live", "864000", //
+				"cdc", true, //
+				"speculative_retry", "90percentile", //
+				"memtable_flush_period_in_ms", "1000", //
+				"crc_check_chance", "0.9", //
+				"min_index_interval", "128", //
+				"max_index_interval", "2048", //
+				"read_repair", "BLOCKING");
+
+		CqlIdentifier tableName = CqlIdentifier.fromCql("someTable");
+		cassandraAdminTemplate.createTable(true, tableName, SomeTable.class, options);
+
+		TableMetadata someTable = getKeyspaceMetadata().getTables().get(tableName);
+
+		assertThat(someTable).isNotNull();
+		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.COMMENT.getName()))) //
+				.isEqualTo("This is comment for table");
+		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.BLOOM_FILTER_FP_CHANCE.getName()))) //
+				.isEqualTo(0.3);
+		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.DEFAULT_TIME_TO_LIVE.getName()))) //
+				.isEqualTo(864_000);
+		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.SPECULATIVE_RETRY.getName()))) //
+				.isEqualTo("90p");
+		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.MEMTABLE_FLUSH_PERIOD_IN_MS.getName()))) //
+				.isEqualTo(1000);
+		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.CRC_CHECK_CHANCE.getName()))) //
+				.isEqualTo(0.9);
+		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.MIN_INDEX_INTERVAL.getName()))) //
+				.isEqualTo(128);
+		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.MAX_INDEX_INTERVAL.getName()))) //
+				.isEqualTo(2048);
+		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.READ_REPAIR.getName()))) //
+				.isEqualTo("BLOCKING");
+	}
+
 	@Test // GH-1388
 	void shouldCreateTableWithNameDerivedFromEntityClass() {
 

@@ -181,6 +181,71 @@ class CreateTableCqlGeneratorUnitTests {
 		assertStringOption(TableOption.READ_REPAIR.getName(), "BLOCKING", cql);
 	}
 
+	@Test // GH-1584
+	void shouldGenerateMultipleOptions_usingRawStringKeys() {
+
+		CqlIdentifier name = CqlIdentifier.fromCql("timeseries_table");
+		DataType partitionKeyType0 = DataTypes.TIMEUUID;
+		CqlIdentifier partitionKey0 = CqlIdentifier.fromCql("tid");
+		DataType partitionKeyType1 = DataTypes.TIMESTAMP;
+		CqlIdentifier partitionKey1 = CqlIdentifier.fromCql("create_timestamp");
+		DataType columnType1 = DataTypes.TEXT;
+		CqlIdentifier column1 = CqlIdentifier.fromCql("data_point");
+		Double readRepairChance = 0.5;
+		Double dcLocalReadRepairChance = 0.7;
+		Double bloomFilterFpChance = 0.001;
+		Long gcGraceSeconds = 600l;
+		Long defaultTimeToLive = 864_00L;
+		Boolean cdc = Boolean.TRUE;
+		String speculative_retry = "99percentile";
+		Long memtableFlushPeriodInMs = 600L;
+		Double crcCheckChance = 0.9;
+		Long maxIndexInterval = 2048L;
+		Long minIndexInterval = 128L;
+
+		String comment = "This is My Table";
+		Map<Option, Object> compactionMap = new LinkedHashMap<>();
+		Map<Option, Object> compressionMap = new LinkedHashMap<>();
+		Map<Option, Object> cachingMap = new LinkedHashMap<>();
+
+		// Compaction
+		compactionMap.put(CompactionOption.CLASS, "SizeTieredCompactionStrategy");
+		compactionMap.put(CompactionOption.MIN_THRESHOLD, "4");
+		// Compression
+		compressionMap.put(CompressionOption.SSTABLE_COMPRESSION, "SnappyCompressor");
+		compressionMap.put(CompressionOption.CHUNK_LENGTH_KB, 128);
+		compressionMap.put(CompressionOption.CRC_CHECK_CHANCE, 0.75);
+		// Caching
+		cachingMap.put(CachingOption.KEYS, KeyCachingOption.ALL);
+		cachingMap.put(CachingOption.ROWS_PER_PARTITION, "NONE");
+
+		CreateTableSpecification table = CreateTableSpecification.createTable(name)
+				.partitionKeyColumn(partitionKey0, partitionKeyType0).partitionKeyColumn(partitionKey1, partitionKeyType1)
+				.column(column1, columnType1).with("compact_storage", null, false, false)
+				.with("read_repair_chance", readRepairChance, false, false).with("compaction", compactionMap, false, false)
+				.with("compression", compressionMap, false, false)
+				.with("bloom_filter_fp_chance", bloomFilterFpChance, false, false).with("caching", cachingMap, false, false)
+				.with("comment", comment, true, true).with("dclocal_read_repair_chance", dcLocalReadRepairChance, false, false)
+				.with("gc_grace_seconds", gcGraceSeconds, false, false)
+				.with("default_time_to_live", defaultTimeToLive, false, false).with("cdc", cdc, false, false)
+				.with("speculative_retry", speculative_retry, true, true)
+				.with("memtable_flush_period_in_ms", memtableFlushPeriodInMs, false, false)
+				.with("crc_check_chance", crcCheckChance, false, false)
+				.with("max_index_interval", maxIndexInterval, false, false)
+				.with("min_index_interval", minIndexInterval, false, false).with("read_repair", "BLOCKING", true, true);
+
+		String cql = CqlGenerator.toCql(table);
+
+		assertPreamble(name, cql);
+		assertColumns("tid timeuuid, create_timestamp timestamp, data_point text", cql);
+		assertPrimaryKey(String.format("(%s, %s)", partitionKey0, partitionKey1), cql);
+		assertDoubleOption(TableOption.READ_REPAIR_CHANCE.getName(), readRepairChance, cql);
+		assertDoubleOption(TableOption.DCLOCAL_READ_REPAIR_CHANCE.getName(), dcLocalReadRepairChance, cql);
+		assertDoubleOption(TableOption.BLOOM_FILTER_FP_CHANCE.getName(), bloomFilterFpChance, cql);
+		assertStringOption(TableOption.COMMENT.getName(), comment, cql);
+		assertLongOption(TableOption.GC_GRACE_SECONDS.getName(), gcGraceSeconds, cql);
+	}
+
 	@Test // DATACASS-518
 	void createTableWithOrderedClustering() {
 

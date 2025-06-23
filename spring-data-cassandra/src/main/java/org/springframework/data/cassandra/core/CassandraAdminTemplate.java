@@ -44,6 +44,7 @@ import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
  * @author John Blum
  * @author Vagif Zeynalov
  * @author Mikhail Polivakha
+ * @author Seungho Kang
  */
 public class CassandraAdminTemplate extends CassandraTemplate implements CassandraAdminOperations {
 
@@ -115,8 +116,10 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 
 		if (!CollectionUtils.isEmpty(optionsByName)) {
 			optionsByName.forEach((key, value) -> {
-				TableOption tableOption = TableOption.valueOfIgnoreCase(key);
-				if (tableOption.requiresValue()) {
+				TableOption tableOption = TableOption.findByNameIgnoreCase(key);
+				if (tableOption == null) {
+					addRawTableOption(key, value, createTableSpecification);
+				} else if (tableOption.requiresValue()) {
 					createTableSpecification.with(tableOption, value);
 				} else {
 					createTableSpecification.with(tableOption);
@@ -125,6 +128,14 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 		}
 
 		getCqlOperations().execute(CqlGenerator.toCql(createTableSpecification));
+	}
+
+	private void addRawTableOption(String key, Object value, CreateTableSpecification createTableSpecification) {
+		if (value instanceof String) {
+			createTableSpecification.with(key, value, true, true);
+			return;
+		}
+		createTableSpecification.with(key, value, false, false);
 	}
 
 	@Override
