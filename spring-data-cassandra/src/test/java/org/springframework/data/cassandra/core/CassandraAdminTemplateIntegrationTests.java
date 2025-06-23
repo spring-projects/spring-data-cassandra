@@ -43,6 +43,7 @@ import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
  *
  * @author Mark Paluch
  * @author Mikhail Polivakha
+ * @author Seungho Kang
  */
 class CassandraAdminTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrationTests {
 
@@ -66,11 +67,19 @@ class CassandraAdminTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 		return getSession().getKeyspace().flatMap(metadata::getKeyspace).get();
 	}
 
-	@Test // GH-359
+	@Test // GH-359, GH-1584
 	void shouldApplyTableOptions() {
 
 		Map<String, Object> options = Map.of(TableOption.COMMENT.getName(), "This is comment for table", //
-				TableOption.BLOOM_FILTER_FP_CHANCE.getName(), "0.3");
+				TableOption.BLOOM_FILTER_FP_CHANCE.getName(), "0.3", //
+				TableOption.DEFAULT_TIME_TO_LIVE.getName(), "864000", //
+				TableOption.CDC.getName(), true, //
+				TableOption.SPECULATIVE_RETRY.getName(), "90percentile", //
+				TableOption.MEMTABLE_FLUSH_PERIOD_IN_MS.getName(), "1000", //
+				TableOption.CRC_CHECK_CHANCE.getName(), "0.9", //
+				TableOption.MIN_INDEX_INTERVAL.getName(), "128", //
+				TableOption.MAX_INDEX_INTERVAL.getName(), "2048", //
+				TableOption.READ_REPAIR.getName(), "BLOCKING");
 
 		CqlIdentifier tableName = CqlIdentifier.fromCql("someTable");
 		cassandraAdminTemplate.createTable(true, tableName, SomeTable.class, options);
@@ -78,10 +87,24 @@ class CassandraAdminTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 		TableMetadata someTable = getKeyspaceMetadata().getTables().get(tableName);
 
 		assertThat(someTable).isNotNull();
-		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.COMMENT.getName())))
+		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.COMMENT.getName()))) //
 				.isEqualTo("This is comment for table");
-		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.BLOOM_FILTER_FP_CHANCE.getName())))
+		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.BLOOM_FILTER_FP_CHANCE.getName()))) //
 				.isEqualTo(0.3);
+		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.DEFAULT_TIME_TO_LIVE.getName()))) //
+				.isEqualTo(864_000);
+		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.SPECULATIVE_RETRY.getName()))) //
+				.isEqualTo("90p");
+		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.MEMTABLE_FLUSH_PERIOD_IN_MS.getName()))) //
+				.isEqualTo(1000);
+		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.CRC_CHECK_CHANCE.getName()))) //
+				.isEqualTo(0.9);
+		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.MIN_INDEX_INTERVAL.getName()))) //
+				.isEqualTo(128);
+		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.MAX_INDEX_INTERVAL.getName()))) //
+				.isEqualTo(2048);
+		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.READ_REPAIR.getName()))) //
+				.isEqualTo("BLOCKING");
 	}
 
 	@Test // GH-1388

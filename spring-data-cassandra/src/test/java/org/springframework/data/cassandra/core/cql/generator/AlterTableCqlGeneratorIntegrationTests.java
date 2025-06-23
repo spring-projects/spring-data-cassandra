@@ -32,6 +32,7 @@ import org.springframework.data.cassandra.support.CassandraVersion;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
 import org.springframework.data.util.Version;
 
+import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.metadata.schema.ColumnMetadata;
 import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;
 import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
@@ -41,6 +42,7 @@ import com.datastax.oss.driver.api.core.type.DataTypes;
  * Integration tests tests for {@link AlterTableCqlGenerator}.
  *
  * @author Mark Paluch
+ * @author Seungho Kang
  */
 class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCreatingIntegrationTests {
 
@@ -163,6 +165,39 @@ class AlterTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCreatingInt
 		execute(spec);
 
 		assertThat(getTableMetadata("users").getOptions().toString()).contains("caching").contains("keys").contains("NONE");
+	}
+
+	@Test // GH-1584
+	void alterTableWithAllOptionsTest() {
+
+		session.execute("CREATE TABLE users (user_name varchar PRIMARY KEY);");
+		AlterTableSpecification spec = SpecificationBuilder.alterTable("users") //
+				.with(TableOption.GC_GRACE_SECONDS, 86400L).with(TableOption.DEFAULT_TIME_TO_LIVE, 36000L)
+				.with(TableOption.CDC, true).with(TableOption.SPECULATIVE_RETRY, "95PERCENTILE")
+				.with(TableOption.MEMTABLE_FLUSH_PERIOD_IN_MS, 20000L).with(TableOption.CRC_CHECK_CHANCE, 0.85d)
+				.with(TableOption.MIN_INDEX_INTERVAL, 256L).with(TableOption.MAX_INDEX_INTERVAL, 1048L)
+				.with(TableOption.READ_REPAIR, "NONE");
+
+		execute(spec);
+
+		TableMetadata meta = getTableMetadata("users");
+
+		assertThat(meta.getOptions()) //
+				.containsEntry(CqlIdentifier.fromCql(TableOption.GC_GRACE_SECONDS.getName()), 86400);
+		assertThat(meta.getOptions()) //
+				.containsEntry(CqlIdentifier.fromCql(TableOption.DEFAULT_TIME_TO_LIVE.getName()), 36000);
+		assertThat(meta.getOptions()) //
+				.containsEntry(CqlIdentifier.fromCql(TableOption.SPECULATIVE_RETRY.getName()), "95p");
+		assertThat(meta.getOptions()) //
+				.containsEntry(CqlIdentifier.fromCql(TableOption.MEMTABLE_FLUSH_PERIOD_IN_MS.getName()), 20000);
+		assertThat(meta.getOptions()) //
+				.containsEntry(CqlIdentifier.fromCql(TableOption.CRC_CHECK_CHANCE.getName()), 0.85);
+		assertThat(meta.getOptions()) //
+				.containsEntry(CqlIdentifier.fromCql(TableOption.MIN_INDEX_INTERVAL.getName()), 256);
+		assertThat(meta.getOptions()) //
+				.containsEntry(CqlIdentifier.fromCql(TableOption.MAX_INDEX_INTERVAL.getName()), 1048);
+		assertThat(meta.getOptions()) //
+				.containsEntry(CqlIdentifier.fromCql(TableOption.READ_REPAIR.getName()), "NONE");
 	}
 
 	private void execute(AlterTableSpecification spec) {

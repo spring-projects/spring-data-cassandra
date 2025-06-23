@@ -27,6 +27,7 @@ import org.jspecify.annotations.Nullable;
  * @author Matthew T. Adams
  * @author Mark Paluch
  * @author Mikhail Polivakha
+ * @author Seungho Kang
  * @see CompactionOption
  * @see CompressionOption
  * @see CachingOption
@@ -77,7 +78,39 @@ public enum TableOption implements Option {
 	/**
 	 * {@code gc_grace_seconds}
 	 */
-	GC_GRACE_SECONDS("gc_grace_seconds", Long.class, true, false, false);
+	GC_GRACE_SECONDS("gc_grace_seconds", Long.class, true, false, false),
+	/**
+	 * {@code default_time_to_live}
+	 */
+	DEFAULT_TIME_TO_LIVE("default_time_to_live", Long.class, true, false, false),
+	/**
+	 * {@code cdc}
+	 */
+	CDC("cdc", Boolean.class, true, false, false),
+	/**
+	 * {@code speculative_retry}
+	 */
+	SPECULATIVE_RETRY("speculative_retry", String.class, true, true, true),
+	/**
+	 * {@code memtable_flush_period_in_ms}
+	 */
+	MEMTABLE_FLUSH_PERIOD_IN_MS("memtable_flush_period_in_ms", Long.class, true, false, false),
+	/**
+	 * {@code crc_check_chance}
+	 */
+	CRC_CHECK_CHANCE("crc_check_chance", Double.class, true, false, false),
+	/**
+	 * {@code min_index_interval}
+	 */
+	MIN_INDEX_INTERVAL("min_index_interval", Long.class, true, false, false),
+	/**
+	 * {@code max_index_interval}
+	 */
+	MAX_INDEX_INTERVAL("max_index_interval", Long.class, true, false, false),
+	/**
+	 * {@code read_repair}
+	 */
+	READ_REPAIR("read_repair", String.class, true, true, true);
 
 	private Option delegate;
 
