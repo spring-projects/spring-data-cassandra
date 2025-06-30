@@ -49,8 +49,18 @@ public class CassandraParametersParameterAccessor extends ParametersParameterAcc
 	 * @param values must not be {@literal null}.
 	 */
 	public CassandraParametersParameterAccessor(CassandraQueryMethod method, @Nullable Object... values) {
+		this(method.getParameters(), values);
+	}
 
-		super(method.getParameters(), values);
+	/**
+	 * Create a new {@link CassandraParametersParameterAccessor}.
+	 *
+	 * @param parameters must not be {@literal null}.
+	 * @param values must not be {@literal null}.
+	 * @since 5.0
+	 */
+	public CassandraParametersParameterAccessor(CassandraParameters parameters, @Nullable Object... values) {
+		super(parameters, values);
 	}
 
 	@Override

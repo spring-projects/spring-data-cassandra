@@ -50,6 +50,12 @@
 			<artifactId>spring-tx</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+
 		<!-- Spring Data -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
@@ -199,6 +205,13 @@
 		</dependency>
 
 		<dependency>
+			<groupId>net.javacrumbs.json-unit</groupId>
+			<artifactId>json-unit-assertj</artifactId>
+			<version>4.1.0</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
 			<groupId>edu.umd.cs.mtc</groupId>
 			<artifactId>multithreadedtc</artifactId>
 		</dependency>
@@ -226,11 +239,6 @@
 			<groupId>org.jetbrains.kotlinx</groupId>
 			<artifactId>kotlinx-coroutines-reactor</artifactId>
 			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.jspecify</groupId>
-			<artifactId>jspecify</artifactId>
-			<version>1.0.0</version>
 		</dependency>
 
 		<dependency>

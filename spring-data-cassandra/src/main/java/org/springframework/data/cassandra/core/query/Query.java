@@ -232,6 +232,10 @@ public class Query implements Filter {
 
 		CassandraPageRequest.validatePageable(pageable);
 
+		if (pageable.isUnpaged()) {
+			return this;
+		}
+
 		CassandraScrollPosition scrollPosition = getScrollPosition();
 
 		if (pageable instanceof CassandraPageRequest cpr) {

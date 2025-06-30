@@ -49,7 +49,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  * @author Mark Paluch
  */
-abstract class ParameterConversionTestSupport extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
+public abstract class ParameterConversionTestSupport extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
 
 	@Configuration
 	@EnableCassandraRepositories(considerNestedRepositories = true)

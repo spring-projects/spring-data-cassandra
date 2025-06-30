@@ -39,7 +39,12 @@ class ContextualValueExpressionEvaluator implements ValueExpressionEvaluator {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> @Nullable T evaluate(String expressionString) {
+	public <T> @Nullable T evaluate(String rawExpressionString) {
+
+		String expressionString = rawExpressionString.contains("#{") || rawExpressionString.contains("${")
+				? rawExpressionString
+				: "#{" + rawExpressionString + "}";
+
 		ValueExpression expression = parser.parse(expressionString);
 		return (T) expression.evaluate(evaluationContext);
 	}

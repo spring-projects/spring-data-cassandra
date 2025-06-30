@@ -25,7 +25,8 @@ import java.util.regex.Pattern;
 
 import org.jspecify.annotations.Nullable;
 
-import org.springframework.data.cassandra.repository.query.BindingContext.ParameterBinding;
+import org.springframework.data.expression.ValueExpression;
+import org.springframework.data.expression.ValueExpressionParser;
 import org.springframework.data.mapping.model.ValueExpressionEvaluator;
 import org.springframework.data.repository.query.ValueExpressionDelegate;
 import org.springframework.data.spel.ExpressionDependencies;
@@ -41,31 +42,30 @@ import com.datastax.oss.driver.api.core.cql.SimpleStatement;
  * @author Marcin Grzejszczak
  * @since 2.0
  */
-class StringBasedQuery {
+public class StringBasedQuery {
 
 	private final String query;
 
 	private final CassandraParameters parameters;
-
-	private final ValueExpressionDelegate expressionParser;
 
 	private final List<ParameterBinding> queryParameterBindings = new ArrayList<>();
 
 	private final ExpressionDependencies expressionDependencies;
 
 	/**
-	 * Create a new {@link StringBasedQuery} given {@code query}, {@link CassandraParameters} and {@link ValueExpressionDelegate}.
+	 * Create a new {@link StringBasedQuery} given {@code query}, {@link CassandraParameters} and
+	 * {@link ValueExpressionDelegate}.
 	 *
 	 * @param query must not be empty.
 	 * @param parameters must not be {@literal null}.
 	 * @param expressionParser must not be {@literal null}.
 	 */
-	StringBasedQuery(String query, CassandraParameters parameters, ValueExpressionDelegate expressionParser) {
+	public StringBasedQuery(String query, CassandraParameters parameters, ValueExpressionParser expressionParser) {
 
-		this.query = ParameterBindingParser.INSTANCE.parseAndCollectParameterBindingsFromQueryIntoBindings(query,
+		this.query = ParameterBindingParser.INSTANCE.parseAndCollectParameterBindingsFromQueryIntoBindings(expressionParser,
+				query,
 				this.queryParameterBindings);
 		this.parameters = parameters;
-		this.expressionParser = expressionParser;
 		this.expressionDependencies = createExpressionDependencies();
 	}
 
@@ -78,9 +78,8 @@ class StringBasedQuery {
 		List<ExpressionDependencies> dependencies = new ArrayList<>();
 
 		for (ParameterBinding binding : queryParameterBindings) {
-			if (binding.isExpression()) {
-				dependencies
-						.add(expressionParser.parse(binding.getRequiredExpression()).getExpressionDependencies());
+			if (binding.getOrigin().isExpression() && binding.getOrigin() instanceof ParameterBinding.Expression expr) {
+				dependencies.add(expr.expression().getExpressionDependencies());
 			}
 		}
 
@@ -94,6 +93,19 @@ class StringBasedQuery {
 	 */
 	public ExpressionDependencies getExpressionDependencies() {
 		return expressionDependencies;
+	}
+
+	/**
+	 * Returns the query with parameter bindings replaced with anonymous {@code ?} placeholders.
+	 *
+	 * @return
+	 */
+	public String getPostProcessedQuery() {
+		return query.replaceAll(Pattern.quote(ParameterBinder.ARGUMENT_PLACEHOLDER), "?");
+	}
+
+	public List<ParameterBinding> getQueryParameterBindings() {
+		return queryParameterBindings;
 	}
 
 	/**
@@ -125,8 +137,8 @@ class StringBasedQuery {
 
 		INSTANCE;
 
-		private static final String ARGUMENT_PLACEHOLDER = "?_param_?";
-		private static final Pattern ARGUMENT_PLACEHOLDER_PATTERN = Pattern.compile(Pattern.quote(ARGUMENT_PLACEHOLDER));
+		static final String ARGUMENT_PLACEHOLDER = "?_param_?";
+		static final Pattern ARGUMENT_PLACEHOLDER_PATTERN = Pattern.compile(Pattern.quote(ARGUMENT_PLACEHOLDER));
 
 		public SimpleStatement bind(String input, List<Object> parameters) {
 
@@ -182,7 +194,9 @@ class StringBasedQuery {
 		private static final Pattern INDEX_BASED_PROPERTY_PLACEHOLDER_PATTERN = Pattern.compile("\\?\\$\\{");
 		private static final Pattern NAME_BASED_PROPERTY_PLACEHOLDER_PATTERN = Pattern.compile("\\:\\$\\{");
 
-		private static final Set<Pattern> VALUE_EXPRESSION_PATTERNS = Set.of(INDEX_BASED_EXPRESSION_PATTERN, NAME_BASED_EXPRESSION_PATTERN, INDEX_BASED_PROPERTY_PLACEHOLDER_PATTERN, NAME_BASED_PROPERTY_PLACEHOLDER_PATTERN);
+		private static final Set<Pattern> VALUE_EXPRESSION_PATTERNS = Set.of(INDEX_BASED_EXPRESSION_PATTERN,
+				NAME_BASED_EXPRESSION_PATTERN, INDEX_BASED_PROPERTY_PLACEHOLDER_PATTERN,
+				NAME_BASED_PROPERTY_PLACEHOLDER_PATTERN);
 
 		private static final String ARGUMENT_PLACEHOLDER = "?_param_?";
 
@@ -193,7 +207,8 @@ class StringBasedQuery {
 		 * @param bindings must not be {@literal null}.
 		 * @return a list of {@link ParameterBinding}s found in the given {@code input}.
 		 */
-		public String parseAndCollectParameterBindingsFromQueryIntoBindings(String input, List<ParameterBinding> bindings) {
+		public String parseAndCollectParameterBindingsFromQueryIntoBindings(ValueExpressionParser expressionParser,
+				String input, List<ParameterBinding> bindings) {
 
 			if (!StringUtils.hasText(input)) {
 				return input;
@@ -201,11 +216,11 @@ class StringBasedQuery {
 
 			Assert.notNull(bindings, "Parameter bindings must not be null");
 
-			return transformQueryAndCollectExpressionParametersIntoBindings(input, bindings);
+			return transformQueryAndCollectExpressionParametersIntoBindings(expressionParser, input, bindings);
 		}
 
-		private static String transformQueryAndCollectExpressionParametersIntoBindings(String input,
-				List<ParameterBinding> bindings) {
+		private static String transformQueryAndCollectExpressionParametersIntoBindings(
+				ValueExpressionParser expressionParser, String input, List<ParameterBinding> bindings) {
 
 			StringBuilder result = new StringBuilder();
 
@@ -248,15 +263,14 @@ class StringBasedQuery {
 				result.append(ARGUMENT_PLACEHOLDER);
 
 				if (isValueExpression(matcher)) {
-					bindings.add(
-							BindingContext.ParameterBinding
-							.expression(input.substring(exprStart + 1, currentPosition), true));
+
+					ValueExpression expression = expressionParser.parse(input.substring(exprStart + 1, currentPosition));
+					bindings.add(ParameterBinding.expression(expression));
 				} else {
 					if (matcher.pattern() == INDEX_PARAMETER_BINDING_PATTERN) {
-						bindings
-								.add(BindingContext.ParameterBinding.indexed(Integer.parseInt(matcher.group(1))));
+						bindings.add(ParameterBinding.indexed(Integer.parseInt(matcher.group(1))));
 					} else {
-						bindings.add(BindingContext.ParameterBinding.named(matcher.group(1)));
+						bindings.add(ParameterBinding.named(matcher.group(1)));
 					}
 
 					currentPosition = matcher.end();

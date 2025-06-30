@@ -106,7 +106,7 @@ public class CassandraParameters extends Parameters<CassandraParameters, Cassand
 	 *
 	 * @author Mark Paluch
 	 */
-	static class CassandraParameter extends Parameter {
+	public static class CassandraParameter extends Parameter {
 
 		private final @Nullable CassandraType cassandraType;
 		private final Class<?> parameterType;

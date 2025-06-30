@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.QueryMapper;
 import org.springframework.data.cassandra.core.convert.UpdateMapper;
@@ -73,6 +74,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.data.CqlVector;
 import com.datastax.oss.driver.api.core.metadata.schema.ClusteringOrder;
 import com.datastax.oss.driver.api.querybuilder.BindMarker;
@@ -615,7 +617,8 @@ public class StatementFactory {
 	Columns computeColumnsForProjection(EntityProjection<?, ?> projection, Columns columns,
 			CassandraPersistentEntity<?> domainType, Class<?> returnType) {
 
-		if (!columns.isEmpty() || ClassUtils.isAssignable(domainType.getType(), returnType)) {
+		if (!columns.isEmpty() || ClassUtils.isAssignable(domainType.getType(), returnType)
+				|| ClassUtils.isAssignable(Map.class, returnType) || ClassUtils.isAssignable(ResultSet.class, returnType)) {
 			return columns;
 		}
 

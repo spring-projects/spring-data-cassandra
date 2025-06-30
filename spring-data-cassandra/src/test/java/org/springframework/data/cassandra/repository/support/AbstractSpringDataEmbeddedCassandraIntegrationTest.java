@@ -31,7 +31,7 @@ public abstract class AbstractSpringDataEmbeddedCassandraIntegrationTest
 		extends IntegrationTestsSupport {
 
 	@Autowired @SuppressWarnings("unused")
-	private CassandraOperations template;
+	protected CassandraOperations template;
 
 	/**
 	 * Truncate tables for all known {@link org.springframework.data.mapping.PersistentEntity entities}.

@@ -28,7 +28,7 @@ import org.springframework.util.ObjectUtils;
  * @author Mark Paluch
  */
 @Table
-class Contact {
+public class Contact {
 
 	@Id String id;
 

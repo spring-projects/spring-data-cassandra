@@ -103,7 +103,7 @@ public interface ExecutableSelectOperation {
 	 *
 	 * @since 5.0
 	 */
-	interface UntypedSelect {
+	interface UntypedSelect extends TerminatingProjections {
 
 		/**
 		 * Define the {@link Class result target type} that the Cassandra Row fields should be mapped to.

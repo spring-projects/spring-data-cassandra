@@ -145,7 +145,7 @@ public class QueryMapper {
 		return Filter.from(result);
 	}
 
-	private @Nullable Object getMappedValue(Field field, CriteriaDefinition.Operator operator, Object value) {
+	protected @Nullable Object getMappedValue(Field field, CriteriaDefinition.Operator operator, Object value) {
 
 		if (field.getProperty().isPresent()
 				&& field.getProperty().filter(it -> converter.getCustomConversions().hasValueConverter(it)).isPresent()) {
