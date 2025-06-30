@@ -19,11 +19,12 @@ import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
-
+import org.springframework.beans.factory.aot.BeanRegistrationAotProcessor;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.data.cassandra.config.DefaultBeanNames;
 import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.repository.CassandraRepository;
+import org.springframework.data.cassandra.repository.aot.CassandraRepositoryRegistrationAotProcessor;
 import org.springframework.data.cassandra.repository.support.CassandraRepositoryFactoryBean;
 import org.springframework.data.cassandra.repository.support.SimpleCassandraRepository;
 import org.springframework.data.repository.config.AnnotationRepositoryConfigurationSource;
@@ -65,6 +66,11 @@ public class CassandraRepositoryConfigurationExtension extends RepositoryConfigu
 	@Override
 	public String getRepositoryFactoryBeanClassName() {
 		return CassandraRepositoryFactoryBean.class.getName();
+	}
+
+	@Override
+	public Class<? extends BeanRegistrationAotProcessor> getRepositoryAotProcessor() {
+		return CassandraRepositoryRegistrationAotProcessor.class;
 	}
 
 	@Override

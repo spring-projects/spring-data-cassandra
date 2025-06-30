@@ -47,12 +47,15 @@ import org.springframework.util.Assert;
 
 /**
  * Custom query creator to create Cassandra criteria.
+ * <p>
+ * Only intended for internal use.
  *
  * @author Matthew Adams
  * @author Mark Paluch
  * @author John Blum
+ * @author Chris Bono
  */
-class CassandraQueryCreator extends AbstractQueryCreator<Query, Filter> {
+public class CassandraQueryCreator extends AbstractQueryCreator<Query, Filter> {
 
 	private static final Log LOG = LogFactory.getLog(CassandraQueryCreator.class);
 
