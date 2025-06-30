@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.core;
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -421,6 +422,27 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 		RowMapper<R> rowMapper = getRowMapper(projection, tableName, mappingFunction);
 
 		return doQuery(select.build(), rowMapper);
+	}
+
+	ResultSet doSelectResultSet(Query query, Class<?> entityClass, CqlIdentifier tableName) {
+
+		CassandraPersistentEntity<?> entity = getRequiredPersistentEntity(entityClass);
+
+		StatementBuilder<Select> select = getStatementFactory().select(query, entity, tableName);
+		SimpleStatement statement = select.build();
+
+		return queryForResultSet(statement);
+	}
+
+	ResultSet queryForResultSet(Statement<?> statement) {
+
+		if (PreparedStatementDelegate.canPrepare(isUsePreparedStatements(), statement, log)) {
+
+			PreparedStatementHandler statementHandler = createPreparedStatementHandler(statement);
+			return getCqlOperations().query(statementHandler, statementHandler, resultSet -> resultSet);
+		}
+
+		return getCqlOperations().queryForResultSet(statement);
 	}
 
 	@Override
@@ -969,6 +991,11 @@ public class CassandraTemplate implements CassandraOperations, ApplicationEventP
 	private <T> Function<Row, T> getMapper(EntityProjection<T, ?> projection, CqlIdentifier tableName) {
 
 		Class<T> targetType = projection.getMappedType().getType();
+
+		if (Map.class.isAssignableFrom(targetType)) {
+			ColumnMapRowMapper columnMapRowMapper = new ColumnMapRowMapper();
+			return row -> (T) columnMapRowMapper.mapRow(row, 0);
+		}
 
 		return row -> {
 

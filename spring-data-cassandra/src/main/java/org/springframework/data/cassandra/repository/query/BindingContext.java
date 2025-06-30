@@ -21,9 +21,7 @@ import java.util.List;
 
 import org.jspecify.annotations.Nullable;
 
-import org.springframework.data.domain.Limit;
 import org.springframework.data.mapping.model.ValueExpressionEvaluator;
-import org.springframework.util.Assert;
 
 /**
  * Value object capturing the binding context to provide {@link #getBindingValues() binding values} for queries.
@@ -91,13 +89,21 @@ class BindingContext {
 	 */
 	private @Nullable Object getParameterValueForBinding(ParameterBinding binding) {
 
-		if (binding.isExpression()) {
-			return evaluator.evaluate(binding.getRequiredExpression());
+		ParameterBinding.ParameterOrigin origin = binding.getOrigin();
+
+		if (origin.isExpression() && origin instanceof ParameterBinding.Expression expression) {
+			return evaluator.evaluate(expression.expression().getExpressionString());
 		}
 
-		return binding.isNamed()
-				? parameterAccessor.getValue(getParameterIndex(parameters, binding.getRequiredParameterName()))
-				: parameterAccessor.getBindableValue(binding.getParameterIndex());
+		if (origin instanceof ParameterBinding.MethodInvocationArgument invocationArgument) {
+
+			ParameterBinding.BindingIdentifier argument = invocationArgument.identifier();
+
+			return argument.hasName() ? parameterAccessor.getValue(getParameterIndex(parameters, argument.getName()))
+					: parameterAccessor.getBindableValue(argument.getPosition());
+		}
+
+		throw new UnsupportedOperationException("Unsupported parameter origin '%s'".formatted(origin));
 	}
 
 	private int getParameterIndex(CassandraParameters parameters, String parameterName) {
@@ -112,82 +118,4 @@ class BindingContext {
 				String.format("Invalid parameter name; Cannot resolve parameter [%s]", parameterName));
 	}
 
-	/**
-	 * A generic parameter binding with name or position information.
-	 *
-	 * @author Mark Paluch
-	 */
-	static class ParameterBinding {
-
-		private final int parameterIndex;
-		private final @Nullable String expression;
-		private final @Nullable String parameterName;
-
-		private ParameterBinding(int parameterIndex, @Nullable String expression, @Nullable String parameterName) {
-
-			this.parameterIndex = parameterIndex;
-			this.expression = expression;
-			this.parameterName = parameterName;
-		}
-
-		public static ParameterBinding expression(String expression, boolean quoted) {
-			return new ParameterBinding(-1, expression, null);
-		}
-
-		public static ParameterBinding indexed(int parameterIndex) {
-			return new ParameterBinding(parameterIndex, null, null);
-		}
-
-		public static ParameterBinding named(String name) {
-			return new ParameterBinding(-1, null, name);
-		}
-
-		public boolean isNamed() {
-			return (parameterName != null);
-		}
-
-		public int getParameterIndex() {
-			return parameterIndex;
-		}
-
-		public String getParameter() {
-			return ("?" + (isExpression() ? "expr" : "") + parameterIndex);
-		}
-
-		public String getRequiredExpression() {
-
-			Assert.state(expression != null, "ParameterBinding is not an expression");
-			return expression;
-		}
-
-		boolean isExpression() {
-			return (this.expression != null);
-		}
-
-		String getRequiredParameterName() {
-
-			Assert.state(parameterName != null, "ParameterBinding is not named");
-
-			return parameterName;
-		}
-
-		/**
-		 * Prepare a value before binding it to the query.
-		 *
-		 * @param value
-		 * @return
-		 */
-		public @Nullable Object prepareValue(@Nullable Object value) {
-
-			if (value == null) {
-				return value;
-			}
-
-			if (value instanceof Limit limit) {
-				return limit.max();
-			}
-
-			return value;
-		}
-	}
 }

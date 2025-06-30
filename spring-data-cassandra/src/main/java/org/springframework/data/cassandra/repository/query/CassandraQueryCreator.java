@@ -47,12 +47,15 @@ import org.springframework.util.Assert;
 
 /**
  * Custom query creator to create Cassandra criteria.
+ * <p>
+ * Only intended for internal use.
  *
  * @author Matthew Adams
  * @author Mark Paluch
  * @author John Blum
+ * @author Chris Bono
  */
-class CassandraQueryCreator extends AbstractQueryCreator<Query, Filter> {
+public class CassandraQueryCreator extends AbstractQueryCreator<Query, Filter> {
 
 	private static final Log LOG = LogFactory.getLog(CassandraQueryCreator.class);
 
@@ -283,20 +286,17 @@ class CassandraQueryCreator extends AbstractQueryCreator<Query, Filter> {
 		return where.like(like(Type.CONTAINING, bindableValue));
 	}
 
-	private Object like(Type type, Object value) {
+	protected Object like(Type type, Object value) {
 
-		switch (type) {
-			case LIKE:
-				return value;
-			case CONTAINING:
-				return "%" + value + "%";
-			case STARTING_WITH:
-				return value + "%";
-			case ENDING_WITH:
-				return "%" + value;
-		}
+		return switch (type) {
+			case LIKE -> value;
+			case CONTAINING -> "%" + value + "%";
+			case STARTING_WITH -> value + "%";
+			case ENDING_WITH -> "%" + value;
+			default ->
+				throw new IllegalArgumentException(String.format("Part Type [%s] not supported with like queries", type));
+		};
 
-		throw new IllegalArgumentException(String.format("Part Type [%s] not supported with like queries", type));
 	}
 
 	private Object[] nextAsArray(Iterator<Object> iterator) {

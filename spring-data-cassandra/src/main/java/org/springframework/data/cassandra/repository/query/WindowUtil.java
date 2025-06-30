@@ -26,9 +26,9 @@ import org.springframework.data.domain.Window;
  *
  * @author Mark Paluch
  */
-class WindowUtil {
+public class WindowUtil {
 
-	static <T> Window<T> of(Slice<T> slice) {
+	public static <T> Window<T> of(Slice<T> slice) {
 
 		List<T> content = slice.getContent();
 		CassandraPageRequest pageable = (CassandraPageRequest) slice.getPageable();

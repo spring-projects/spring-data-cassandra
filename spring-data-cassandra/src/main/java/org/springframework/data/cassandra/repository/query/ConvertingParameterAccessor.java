@@ -36,18 +36,21 @@ import com.datastax.oss.driver.api.core.type.DataType;
 /**
  * Custom {@link org.springframework.data.repository.query.ParameterAccessor} that uses a {@link CassandraConverter} to
  * convert parameters.
+ * <p>
+ * Only intended for internal use.
  *
  * @author Mark Paluch
+ * @author Chris Bono
  * @see org.springframework.data.cassandra.repository.query.ConvertingParameterAccessor
  * @since 1.5
  */
-class ConvertingParameterAccessor implements CassandraParameterAccessor {
+public class ConvertingParameterAccessor implements CassandraParameterAccessor {
 
 	private final CassandraConverter converter;
 
 	private final CassandraParameterAccessor delegate;
 
-	ConvertingParameterAccessor(CassandraConverter converter, CassandraParameterAccessor delegate) {
+	public ConvertingParameterAccessor(CassandraConverter converter, CassandraParameterAccessor delegate) {
 
 		this.converter = converter;
 		this.delegate = delegate;

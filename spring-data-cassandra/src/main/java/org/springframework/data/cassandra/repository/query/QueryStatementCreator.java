@@ -316,9 +316,7 @@ class QueryStatementCreator {
 			ValueExpressionEvaluator evaluator) {
 
 		try {
-
 			SimpleStatement boundQuery = stringBasedQuery.bindQuery(parameterAccessor, evaluator);
-
 			Optional<QueryOptions> queryOptions = Optional.ofNullable(parameterAccessor.getQueryOptions());
 
 			SimpleStatement queryToUse = boundQuery;

@@ -447,7 +447,7 @@ class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedCassandr
 	/**
 	 * @author Mark Paluch
 	 */
-	static interface PersonRepository extends MapIdCassandraRepository<Person> {
+	public static interface PersonRepository extends MapIdCassandraRepository<Person> {
 
 		List<Person> findByLastname(String lastname);
 
@@ -504,14 +504,14 @@ class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedCassandr
 			ZERO, ONE, TWO,
 		}
 
-		interface PersonProjection {
+		public interface PersonProjection {
 
 			String getFirstname();
 
 			String getLastname();
 		}
 
-		class PersonDto {
+		public class PersonDto {
 
 			public String firstname, lastname;
 
@@ -525,14 +525,14 @@ class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedCassandr
 	/**
 	 * @author Christoph Strobl
 	 */
-	static interface EmbeddedPersonRepository extends CassandraRepository<PersonWithEmbedded, String> {
+	public static interface EmbeddedPersonRepository extends CassandraRepository<PersonWithEmbedded, String> {
 
 		PersonWithEmbedded findByName_Firstname(String firstname);
 
 	}
 
 	@Table
-	static class PersonWithEmbedded {
+	public static class PersonWithEmbedded {
 
 		@Id String id;
 		@Embedded.Nullable Name name;

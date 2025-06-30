@@ -11,6 +11,7 @@
 	<logger name="org.springframework.data.cassandra" level="ERROR" />
 
 	<logger name="org.springframework.data.cassandra.test.util" level="INFO"/>
+	<logger name="org.springframework.data.repository.aot.generate" level="INFO"/>
 	<logger name="com.datastax" level="ERROR" />
 	<logger name="container" level="INFO"/>
 

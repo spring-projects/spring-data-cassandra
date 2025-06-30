@@ -36,6 +36,7 @@
 ** xref:cassandra/repositories/cdi-integration.adoc[]
 ** xref:repositories/query-keywords-reference.adoc[]
 ** xref:repositories/query-return-types-reference.adoc[]
+** xref:cassandra/repositories/aot.adoc[]
 
 * xref:observability.adoc[]
 

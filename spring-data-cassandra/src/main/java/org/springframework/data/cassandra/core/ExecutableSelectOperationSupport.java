@@ -29,6 +29,8 @@ import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.Statement;
 
@@ -91,6 +93,21 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 			return new TerminatingSelectResultSupport<>(template, statement, mapper);
 		}
 
+		@Override
+		public long count() {
+
+			List<Row> rows = template.select(statement, Row.class);
+
+			if (rows.size() == 1) {
+
+				Object object = rows.get(0).getObject(0);
+
+				return ((Number) object).longValue();
+			}
+
+			return 0;
+		}
+
 	}
 
 	static class TypedSelectSupport<T> extends TerminatingSelectResultSupport<T, T> implements TerminatingResults<T> {
@@ -99,7 +116,9 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 
 		TypedSelectSupport(CassandraTemplate template, Statement<?> statement, Class<T> domainType) {
 			super(template, statement,
-					template.getRowMapper(domainType, EntityQueryUtils.getTableName(statement), QueryResultConverter.entity()));
+					ResultSet.class.isAssignableFrom(domainType) ? null
+							: template.getRowMapper(domainType, EntityQueryUtils.getTableName(statement),
+									QueryResultConverter.entity()));
 
 			this.domainType = domainType;
 		}
@@ -120,9 +139,10 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 
 		final Statement<?> statement;
 
-		final RowMapper<T> rowMapper;
+		final @Nullable RowMapper<T> rowMapper;
 
-		TerminatingSelectResultSupport(CassandraTemplate template, Statement<?> statement, RowMapper<T> rowMapper) {
+		TerminatingSelectResultSupport(CassandraTemplate template, Statement<?> statement,
+				@Nullable RowMapper<T> rowMapper) {
 			this.template = template;
 			this.statement = statement;
 			this.rowMapper = rowMapper;
@@ -155,6 +175,10 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 
 		@Override
 		public @Nullable T oneValue() {
+
+			if (this.rowMapper == null) {
+				return (T) this.template.queryForResultSet(this.statement);
+			}
 
 			List<T> result = this.template.getCqlOperations().query(this.statement, this.rowMapper);
 
@@ -271,6 +295,10 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 		@Override
 		public @Nullable T oneValue() {
 
+			if (this.returnType.equals(ResultSet.class)) {
+				return (T) this.template.doSelectResultSet(this.query.limit(2), this.domainType, getTableName());
+			}
+
 			List<T> result = this.template.doSelect(this.query.limit(2), this.domainType, getTableName(), this.returnType,
 					this.mappingFunction);
 
@@ -279,8 +307,8 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 			}
 
 			if (result.size() > 1) {
-				throw new IncorrectResultSizeDataAccessException(
-						String.format("Query [%s] returned non unique result", this.query), 1);
+				throw new IncorrectResultSizeDataAccessException(1, result.size());
+
 			}
 
 			return result.iterator().next();
