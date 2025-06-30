@@ -37,82 +37,126 @@ public enum TableOption implements Option {
 	/**
 	 * {@code comment}
 	 */
-	COMMENT("comment", String.class, true, true, true),
+	COMMENT("comment", String.class, true),
+
 	/**
 	 * {@code COMPACT STORAGE}
 	 *
 	 * @deprecated since 2.2. Cassandra 4.x has deprecated compact storage.
 	 */
 	@Deprecated
-	COMPACT_STORAGE("COMPACT STORAGE", Void.class, false, false, false),
+	COMPACT_STORAGE("COMPACT STORAGE"),
+
 	/**
 	 * {@code compaction}. Value is a <code>Map&lt;CompactionOption,Object&gt;</code>.
 	 *
 	 * @see CompactionOption
 	 */
-	COMPACTION("compaction", Map.class, true, false, false),
+	COMPACTION("compaction", Map.class),
+
 	/**
 	 * {@code compression}. Value is a <code>Map&lt;CompressionOption,Object&gt;</code>.
 	 *
 	 * @see CompressionOption
 	 */
-	COMPRESSION("compression", Map.class, true, false, false),
+	COMPRESSION("compression", Map.class),
+
 	/**
 	 * {@code caching}
 	 *
 	 * @see CachingOption
 	 */
-	CACHING("caching", Map.class, true, false, false),
+	CACHING("caching", Map.class),
+
 	/**
 	 * {@code bloom_filter_fp_chance}
 	 */
-	BLOOM_FILTER_FP_CHANCE("bloom_filter_fp_chance", Double.class, true, false, false),
+	BLOOM_FILTER_FP_CHANCE("bloom_filter_fp_chance", Double.class),
+
 	/**
 	 * {@code read_repair_chance}
 	 */
-	READ_REPAIR_CHANCE("read_repair_chance", Double.class, true, false, false),
+	READ_REPAIR_CHANCE("read_repair_chance", Double.class),
+
 	/**
 	 * {@code dclocal_read_repair_chance}
 	 */
-	DCLOCAL_READ_REPAIR_CHANCE("dclocal_read_repair_chance", Double.class, true, false, false),
+	DCLOCAL_READ_REPAIR_CHANCE("dclocal_read_repair_chance", Double.class),
+
 	/**
 	 * {@code gc_grace_seconds}
 	 */
-	GC_GRACE_SECONDS("gc_grace_seconds", Long.class, true, false, false),
+	GC_GRACE_SECONDS("gc_grace_seconds", Long.class),
+
 	/**
 	 * {@code default_time_to_live}
+	 *
+	 * @since 5.0
 	 */
-	DEFAULT_TIME_TO_LIVE("default_time_to_live", Long.class, true, false, false),
+	DEFAULT_TIME_TO_LIVE("default_time_to_live", Long.class),
+
 	/**
 	 * {@code cdc}
+	 *
+	 * @since 5.0
 	 */
-	CDC("cdc", Boolean.class, true, false, false),
+	CDC("cdc", Boolean.class),
+
 	/**
 	 * {@code speculative_retry}
+	 *
+	 * @since 5.0
 	 */
-	SPECULATIVE_RETRY("speculative_retry", String.class, true, true, true),
+	SPECULATIVE_RETRY("speculative_retry", String.class, true),
+
 	/**
 	 * {@code memtable_flush_period_in_ms}
+	 *
+	 * @since 5.0
 	 */
-	MEMTABLE_FLUSH_PERIOD_IN_MS("memtable_flush_period_in_ms", Long.class, true, false, false),
+	MEMTABLE_FLUSH_PERIOD_IN_MS("memtable_flush_period_in_ms", Long.class),
+
 	/**
 	 * {@code crc_check_chance}
+	 *
+	 * @since 5.0
 	 */
-	CRC_CHECK_CHANCE("crc_check_chance", Double.class, true, false, false),
+	CRC_CHECK_CHANCE("crc_check_chance", Double.class),
+
 	/**
 	 * {@code min_index_interval}
+	 *
+	 * @since 5.0
 	 */
-	MIN_INDEX_INTERVAL("min_index_interval", Long.class, true, false, false),
+	MIN_INDEX_INTERVAL("min_index_interval", Long.class),
+
 	/**
 	 * {@code max_index_interval}
+	 *
+	 * @since 5.0
 	 */
-	MAX_INDEX_INTERVAL("max_index_interval", Long.class, true, false, false),
+	MAX_INDEX_INTERVAL("max_index_interval", Long.class),
+
 	/**
 	 * {@code read_repair}
+	 *
+	 * @since 5.0
 	 */
-	READ_REPAIR("read_repair", String.class, true, true, true);
+	READ_REPAIR("read_repair", String.class, true);
 
-	private Option delegate;
+	private final Option delegate;
+
+	TableOption(String name) {
+		this(name, Void.class, false, false, false);
+	}
+
+	TableOption(String name, Class<?> type) {
+		this(name, type, true, false, false);
+	}
+
+	TableOption(String name, Class<?> type, boolean escapeAndQuote) {
+		this(name, type, true, escapeAndQuote, escapeAndQuote);
+	}
 
 	TableOption(String name, Class<?> type, boolean requiresValue, boolean escapesValue, boolean quotesValue) {
 		this.delegate = new DefaultOption(name, type, requiresValue, escapesValue, quotesValue);
@@ -127,11 +171,13 @@ public enum TableOption implements Option {
 	 * @since 4.1.1
 	 */
 	public static TableOption valueOfIgnoreCase(String optionName) {
-		for (TableOption value : values()) {
-			if (value.getName().equalsIgnoreCase(optionName)) {
-				return value;
-			}
+
+		TableOption tableOption = findByName(optionName);
+
+		if (tableOption != null) {
+			return tableOption;
 		}
+
 		throw new IllegalArgumentException(String.format("Unable to recognize specified Table option '%s'", optionName));
 	}
 
@@ -139,16 +185,17 @@ public enum TableOption implements Option {
 	 * Look up {@link TableOption} by name using case-insensitive lookups.
 	 *
 	 * @param optionName name of the option.
-	 * @return the matching {@link TableOption}, or {@code null} if no match is found
-	 * @since 4.5.2
+	 * @return the matching {@link TableOption}, or {@literal null} if no match is found.
+	 * @since 5.0
 	 */
-	@Nullable
-	public static TableOption findByNameIgnoreCase(String optionName) {
+	public static @Nullable TableOption findByName(String optionName) {
+
 		for (TableOption value : values()) {
 			if (value.getName().equalsIgnoreCase(optionName)) {
 				return value;
 			}
 		}
+
 		return null;
 	}
 
@@ -212,7 +259,7 @@ public enum TableOption implements Option {
 
 		ALL("all"), NONE("none");
 
-		private String value;
+		private final String value;
 
 		KeyCachingOption(String value) {
 			this.value = value;
@@ -241,7 +288,7 @@ public enum TableOption implements Option {
 
 		ROWS_PER_PARTITION("rows_per_partition", String.class, true, false, true);
 
-		private Option delegate;
+		private final Option delegate;
 
 		CachingOption(String name, Class<?> type, boolean requiresValue, boolean escapesValue, boolean quotesValue) {
 			this.delegate = new DefaultOption(name, type, requiresValue, escapesValue, quotesValue);
@@ -310,40 +357,52 @@ public enum TableOption implements Option {
 		 * {@code class}
 		 */
 		CLASS("class", String.class, true, false, true),
+
 		/**
 		 * {@code tombstone_threshold}
 		 */
-		TOMBSTONE_THRESHOLD("tombstone_threshold", Double.class, true, false, false),
+		TOMBSTONE_THRESHOLD("tombstone_threshold", Double.class),
+
 		/**
 		 * {@code tombstone_compaction_interval}
 		 */
-		TOMBSTONE_COMPACTION_INTERVAL("tombstone_compaction_interval", Double.class, true, false, false),
+		TOMBSTONE_COMPACTION_INTERVAL("tombstone_compaction_interval", Double.class),
+
 		/**
 		 * {@code min_sstable_size}
 		 */
-		MIN_SSTABLE_SIZE("min_sstable_size", Long.class, true, false, false),
+		MIN_SSTABLE_SIZE("min_sstable_size", Long.class),
+
 		/**
 		 * {@code min_threshold}
 		 */
-		MIN_THRESHOLD("min_threshold", Long.class, true, false, false),
+		MIN_THRESHOLD("min_threshold", Long.class),
+
 		/**
 		 * {@code max_threshold}
 		 */
-		MAX_THRESHOLD("max_threshold", Long.class, true, false, false),
+		MAX_THRESHOLD("max_threshold", Long.class),
+
 		/**
 		 * {@code bucket_low}
 		 */
-		BUCKET_LOW("bucket_low", Double.class, true, false, false),
+		BUCKET_LOW("bucket_low", Double.class),
+
 		/**
 		 * {@code bucket_high}
 		 */
-		BUCKET_HIGH("bucket_high", Double.class, true, false, false),
+		BUCKET_HIGH("bucket_high", Double.class),
+
 		/**
 		 * {@code sstable_size_in_mb}
 		 */
-		SSTABLE_SIZE_IN_MB("sstable_size_in_mb", Long.class, true, false, false);
+		SSTABLE_SIZE_IN_MB("sstable_size_in_mb", Long.class);
 
-		private Option delegate;
+		private final Option delegate;
+
+		CompactionOption(String name, Class<?> type) {
+			this(name, type, true, false, false);
+		}
 
 		CompactionOption(String name, Class<?> type, boolean requiresValue, boolean escapesValue, boolean quotesValue) {
 			this.delegate = new DefaultOption(name, type, requiresValue, escapesValue, quotesValue);
@@ -411,16 +470,18 @@ public enum TableOption implements Option {
 		 * {@code sstable_compression}
 		 */
 		SSTABLE_COMPRESSION("sstable_compression", String.class, true, false, true),
+
 		/**
 		 * {@code chunk_length_kb}
 		 */
 		CHUNK_LENGTH_KB("chunk_length_kb", Long.class, true, false, false),
+
 		/**
 		 * {@code crc_check_chance}
 		 */
 		CRC_CHECK_CHANCE("crc_check_chance", Double.class, true, false, false);
 
-		private Option delegate;
+		private final Option delegate;
 
 		CompressionOption(String name, Class<?> type, boolean requiresValue, boolean escapesValue, boolean quotesValue) {
 			this.delegate = new DefaultOption(name, type, requiresValue, escapesValue, quotesValue);

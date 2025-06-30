@@ -26,7 +26,9 @@ import org.junit.jupiter.api.Test;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
+import org.springframework.data.cassandra.core.cql.CqlTestUtils;
 import org.springframework.data.cassandra.core.cql.generator.CqlGenerator;
+import org.springframework.data.cassandra.core.cql.keyspace.Option;
 import org.springframework.data.cassandra.core.cql.keyspace.SpecificationBuilder;
 import org.springframework.data.cassandra.core.cql.keyspace.TableOption;
 import org.springframework.data.cassandra.core.mapping.Table;
@@ -85,26 +87,17 @@ class CassandraAdminTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 		cassandraAdminTemplate.createTable(true, tableName, SomeTable.class, options);
 
 		TableMetadata someTable = getKeyspaceMetadata().getTables().get(tableName);
+		Map<Option, Object> tableOptions = CqlTestUtils.toOptions(someTable.getOptions());
 
-		assertThat(someTable).isNotNull();
-		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.COMMENT.getName()))) //
-				.isEqualTo("This is comment for table");
-		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.BLOOM_FILTER_FP_CHANCE.getName()))) //
-				.isEqualTo(0.3);
-		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.DEFAULT_TIME_TO_LIVE.getName()))) //
-				.isEqualTo(864_000);
-		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.SPECULATIVE_RETRY.getName()))) //
-				.isEqualTo("90p");
-		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.MEMTABLE_FLUSH_PERIOD_IN_MS.getName()))) //
-				.isEqualTo(1000);
-		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.CRC_CHECK_CHANCE.getName()))) //
-				.isEqualTo(0.9);
-		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.MIN_INDEX_INTERVAL.getName()))) //
-				.isEqualTo(128);
-		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.MAX_INDEX_INTERVAL.getName()))) //
-				.isEqualTo(2048);
-		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.READ_REPAIR.getName()))) //
-				.isEqualTo("BLOCKING");
+		assertThat(tableOptions).containsEntry(TableOption.COMMENT, "This is comment for table");
+		assertThat(tableOptions).containsEntry(TableOption.BLOOM_FILTER_FP_CHANCE, 0.3);
+		assertThat(tableOptions).containsEntry(TableOption.DEFAULT_TIME_TO_LIVE, 864_000);
+		assertThat(tableOptions).containsEntry(TableOption.SPECULATIVE_RETRY, "90p");
+		assertThat(tableOptions).containsEntry(TableOption.MEMTABLE_FLUSH_PERIOD_IN_MS, 1000);
+		assertThat(tableOptions).containsEntry(TableOption.CRC_CHECK_CHANCE, 0.9);
+		assertThat(tableOptions).containsEntry(TableOption.MIN_INDEX_INTERVAL, 128);
+		assertThat(tableOptions).containsEntry(TableOption.MAX_INDEX_INTERVAL, 2048);
+		assertThat(tableOptions).containsEntry(TableOption.READ_REPAIR, "BLOCKING");
 	}
 
 	@Test // GH-359, GH-1584
@@ -125,26 +118,17 @@ class CassandraAdminTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 		cassandraAdminTemplate.createTable(true, tableName, SomeTable.class, options);
 
 		TableMetadata someTable = getKeyspaceMetadata().getTables().get(tableName);
+		Map<Option, Object> tableOptions = CqlTestUtils.toOptions(someTable.getOptions());
 
-		assertThat(someTable).isNotNull();
-		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.COMMENT.getName()))) //
-				.isEqualTo("This is comment for table");
-		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.BLOOM_FILTER_FP_CHANCE.getName()))) //
-				.isEqualTo(0.3);
-		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.DEFAULT_TIME_TO_LIVE.getName()))) //
-				.isEqualTo(864_000);
-		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.SPECULATIVE_RETRY.getName()))) //
-				.isEqualTo("90p");
-		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.MEMTABLE_FLUSH_PERIOD_IN_MS.getName()))) //
-				.isEqualTo(1000);
-		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.CRC_CHECK_CHANCE.getName()))) //
-				.isEqualTo(0.9);
-		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.MIN_INDEX_INTERVAL.getName()))) //
-				.isEqualTo(128);
-		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.MAX_INDEX_INTERVAL.getName()))) //
-				.isEqualTo(2048);
-		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.READ_REPAIR.getName()))) //
-				.isEqualTo("BLOCKING");
+		assertThat(tableOptions).containsEntry(TableOption.COMMENT, "This is comment for table");
+		assertThat(tableOptions).containsEntry(TableOption.BLOOM_FILTER_FP_CHANCE, 0.3);
+		assertThat(tableOptions).containsEntry(TableOption.DEFAULT_TIME_TO_LIVE, 864_000);
+		assertThat(tableOptions).containsEntry(TableOption.SPECULATIVE_RETRY, "90p");
+		assertThat(tableOptions).containsEntry(TableOption.MEMTABLE_FLUSH_PERIOD_IN_MS, 1000);
+		assertThat(tableOptions).containsEntry(TableOption.CRC_CHECK_CHANCE, 0.9);
+		assertThat(tableOptions).containsEntry(TableOption.MIN_INDEX_INTERVAL, 128);
+		assertThat(tableOptions).containsEntry(TableOption.MAX_INDEX_INTERVAL, 2048);
+		assertThat(tableOptions).containsEntry(TableOption.READ_REPAIR, "BLOCKING");
 	}
 
 	@Test // GH-1388
@@ -154,10 +138,9 @@ class CassandraAdminTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 				"This is comment for table", TableOption.BLOOM_FILTER_FP_CHANCE.getName(), "0.3"));
 
 		TableMetadata someTable = getKeyspaceMetadata().getTables().values().stream().findFirst().orElse(null);
+		Map<Option, Object> tableOptions = CqlTestUtils.toOptions(someTable.getOptions());
 
-		assertThat(someTable).isNotNull();
-		assertThat(someTable.getOptions().get(CqlIdentifier.fromCql(TableOption.COMMENT.getName())))
-				.isEqualTo("This is comment for table");
+		assertThat(tableOptions).containsEntry(TableOption.COMMENT, "This is comment for table");
 	}
 
 	@Test // DATACASS-173
@@ -186,6 +169,7 @@ class CassandraAdminTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 
 		assertThat(getKeyspaceMetadata().getTables()).hasSize(0);
 	}
+
 
 	@Table("someTable")
 	private static class SomeTable {

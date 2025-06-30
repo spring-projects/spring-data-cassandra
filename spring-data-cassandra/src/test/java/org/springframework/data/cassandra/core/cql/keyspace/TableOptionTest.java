@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2025 the original author or authors.
+ * Copyright 2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ class TableOptionTest {
 	@Test // GH-1584
 	void shouldResolveKnownTableOptionByName() {
 
-		TableOption tableOption = TableOption.findByNameIgnoreCase("bloom_filter_fp_chance");
+		TableOption tableOption = TableOption.findByName("bloom_filter_fp_chance");
 
 		assertThat(tableOption).isEqualTo(TableOption.BLOOM_FILTER_FP_CHANCE);
 	}
@@ -53,7 +53,7 @@ class TableOptionTest {
 	@Test // GH-1584
 	void shouldReturnNullForUnknownTableOption() {
 
-		TableOption tableOption = TableOption.findByNameIgnoreCase("unknown_option");
+		TableOption tableOption = TableOption.findByName("unknown_option");
 
 		assertThat(tableOption).isNull();
 	}

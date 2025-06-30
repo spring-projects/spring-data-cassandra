@@ -23,6 +23,8 @@ import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
 
+import org.springframework.util.ClassUtils;
+
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
@@ -40,7 +42,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  */
 public abstract class TableOptionsSpecification<T extends TableOptionsSpecification<T>> extends TableNameSpecification {
 
-	private final Map<String, Object> options = new LinkedHashMap<>();
+	private final Map<String, @Nullable Object> options = new LinkedHashMap<>();
 
 	protected TableOptionsSpecification(CqlIdentifier name) {
 		super(name);
@@ -51,12 +53,18 @@ public abstract class TableOptionsSpecification<T extends TableOptionsSpecificat
 	}
 
 	/**
-	 * Convenience method that calls {@code with(option, null)}.
+	 * Convenience method that calls {@code #with(TableOption, null)} or {@code #with(TableOption, true)} if the option
+	 * requires a {@code boolean} value.
 	 *
 	 * @return this
 	 */
 	public T with(TableOption option) {
-		return with(option.getName(), null, option.escapesValue(), option.quotesValue());
+
+		if (option.requiresValue() && ClassUtils.resolvePrimitiveIfNecessary(option.getType()) == Boolean.class) {
+			return with(option.getName(), true, option.escapesValue(), option.quotesValue());
+		}
+
+		return with(option.getName(), null);
 	}
 
 	/**
@@ -64,8 +72,8 @@ public abstract class TableOptionsSpecification<T extends TableOptionsSpecificat
 	 * {@link #with(String, Object, boolean, boolean)} appropriately from the given {@link TableOption} and value for that
 	 * option.
 	 *
-	 * @param option The option to set.
-	 * @param value The value of the option. Must be type-compatible with the {@link TableOption}.
+	 * @param option the option to set.
+	 * @param value the value of the option. Must be type-compatible with the {@link TableOption}.
 	 * @return this
 	 * @see #with(String, Object, boolean, boolean)
 	 */
@@ -79,15 +87,33 @@ public abstract class TableOptionsSpecification<T extends TableOptionsSpecificat
 	 * <p>
 	 * Options that have {@literal null} values are considered single string options where the name of the option is the
 	 * string to be used. Otherwise, the result of {@link Object#toString()} is considered to be the value of the option
+	 * with the given name. Values that require escaping or quoting should be handled by the specification must be either
+	 * quoted and escaped already or provided through {@link #with(String, Object, boolean, boolean)}.
+	 *
+	 * @param name the name of the option
+	 * @param value the value of the option. If {@literal null}, the value is ignored and the option is considered to be
+	 *          composed of only the name, otherwise the value's {@link Object#toString()} value is used.
+	 * @return this
+	 * @since 5.0
+	 */
+	public T with(String name, @Nullable Object value) {
+		return with(name, value, false, true);
+	}
+
+	/**
+	 * Adds the given option by name to this table's options.
+	 * <p>
+	 * Options that have {@literal null} values are considered single string options where the name of the option is the
+	 * string to be used. Otherwise, the result of {@link Object#toString()} is considered to be the value of the option
 	 * with the given name. The value, after conversion to string, may have embedded single quotes escaped according to
 	 * parameter {@code escape} and may be single-quoted according to parameter <code>quote</code>.
 	 *
-	 * @param name The name of the option
-	 * @param value The value of the option. If {@literal null}, the value is ignored and the option is considered to be
+	 * @param name the name of the option
+	 * @param value the value of the option. If {@literal null}, the value is ignored and the option is considered to be
 	 *          composed of only the name, otherwise the value's {@link Object#toString()} value is used.
-	 * @param escape Whether to escape the value via {@link CqlStringUtils#escapeSingle(Object)}. Ignored if given value
+	 * @param escape whether to escape the value via {@link CqlStringUtils#escapeSingle(Object)}. Ignored if given value
 	 *          is an instance of a {@link Map}.
-	 * @param quote Whether to quote the value via {@link CqlStringUtils#singleQuote(Object)}. Ignored if given value is
+	 * @param quote whether to quote the value via {@link CqlStringUtils#singleQuote(Object)}. Ignored if given value is
 	 *          an instance of a {@link Map}.
 	 * @return this
 	 */
@@ -108,7 +134,7 @@ public abstract class TableOptionsSpecification<T extends TableOptionsSpecificat
 		return (T) this;
 	}
 
-	public Map<String, Object> getOptions() {
+	public Map<String, @Nullable Object> getOptions() {
 		return Collections.unmodifiableMap(this.options);
 	}
 }

@@ -17,11 +17,15 @@ package org.springframework.data.cassandra.core.cql.generator;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.util.Map;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.springframework.data.cassandra.core.cql.CqlTestUtils;
 import org.springframework.data.cassandra.core.cql.Ordering;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
+import org.springframework.data.cassandra.core.cql.keyspace.Option;
 import org.springframework.data.cassandra.core.cql.keyspace.TableOption;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
 
@@ -117,31 +121,29 @@ class CreateTableCqlGeneratorIntegrationTests extends AbstractKeyspaceCreatingIn
 				.partitionKeyColumn("id", DataTypes.INT) //
 				.clusteredKeyColumn("date_of_birth", DataTypes.DATE, Ordering.ASCENDING) //
 				.column("name", DataTypes.ASCII) //
-				.with(TableOption.GC_GRACE_SECONDS, 86400L).with(TableOption.DEFAULT_TIME_TO_LIVE, 3600L)
-				.with(TableOption.CDC, true).with(TableOption.SPECULATIVE_RETRY, "99PERCENTILE")
-				.with(TableOption.MEMTABLE_FLUSH_PERIOD_IN_MS, 10000L).with(TableOption.CRC_CHECK_CHANCE, 0.9d)
-				.with(TableOption.MIN_INDEX_INTERVAL, 128L).with(TableOption.MAX_INDEX_INTERVAL, 2048L)
+				.with(TableOption.GC_GRACE_SECONDS, 86400L) //
+				.with(TableOption.DEFAULT_TIME_TO_LIVE, 3600L) //
+				.with(TableOption.CDC) //
+				.with(TableOption.SPECULATIVE_RETRY, "99PERCENTILE") //
+				.with(TableOption.MEMTABLE_FLUSH_PERIOD_IN_MS, 10000L) //
+				.with(TableOption.CRC_CHECK_CHANCE, 0.9d) //
+				.with(TableOption.MIN_INDEX_INTERVAL, 128L) //
+				.with(TableOption.MAX_INDEX_INTERVAL, 2048L) //
 				.with(TableOption.READ_REPAIR, "BLOCKING");
 
 		session.execute(CqlGenerator.toCql(spec));
 
-		TableMetadata meta = session.getMetadata().getKeyspace(getKeyspace()).flatMap(it -> it.getTable("person")).get();
-		assertThat(meta.getOptions()) //
-				.containsEntry(CqlIdentifier.fromCql(TableOption.GC_GRACE_SECONDS.getName()), 86400);
+		TableMetadata tableMetadata = session.getMetadata().getKeyspace(getKeyspace()).flatMap(it -> it.getTable("person"))
+				.get();
+		Map<Option, Object> tableOptions = CqlTestUtils.toOptions(tableMetadata.getOptions());
 
-		assertThat(meta.getOptions()) //
-				.containsEntry(CqlIdentifier.fromCql(TableOption.DEFAULT_TIME_TO_LIVE.getName()), 3600);
-		assertThat(meta.getOptions()) //
-				.containsEntry(CqlIdentifier.fromCql(TableOption.SPECULATIVE_RETRY.getName()), "99p");
-		assertThat(meta.getOptions()) //
-				.containsEntry(CqlIdentifier.fromCql(TableOption.MEMTABLE_FLUSH_PERIOD_IN_MS.getName()), 10000);
-		assertThat(meta.getOptions()) //
-				.containsEntry(CqlIdentifier.fromCql(TableOption.CRC_CHECK_CHANCE.getName()), 0.9);
-		assertThat(meta.getOptions()) //
-				.containsEntry(CqlIdentifier.fromCql(TableOption.MIN_INDEX_INTERVAL.getName()), 128);
-		assertThat(meta.getOptions()) //
-				.containsEntry(CqlIdentifier.fromCql(TableOption.MAX_INDEX_INTERVAL.getName()), 2048);
-		assertThat(meta.getOptions()) //
-				.containsEntry(CqlIdentifier.fromCql(TableOption.READ_REPAIR.getName()), "BLOCKING");
+		assertThat(tableOptions).containsEntry(TableOption.GC_GRACE_SECONDS, 86400);
+		assertThat(tableOptions).containsEntry(TableOption.DEFAULT_TIME_TO_LIVE, 3600);
+		assertThat(tableOptions).containsEntry(TableOption.SPECULATIVE_RETRY, "99p");
+		assertThat(tableOptions).containsEntry(TableOption.MEMTABLE_FLUSH_PERIOD_IN_MS, 10000);
+		assertThat(tableOptions).containsEntry(TableOption.CRC_CHECK_CHANCE, 0.9);
+		assertThat(tableOptions).containsEntry(TableOption.MIN_INDEX_INTERVAL, 128);
+		assertThat(tableOptions).containsEntry(TableOption.MAX_INDEX_INTERVAL, 2048);
+		assertThat(tableOptions).containsEntry(TableOption.READ_REPAIR, "BLOCKING");
 	}
 }

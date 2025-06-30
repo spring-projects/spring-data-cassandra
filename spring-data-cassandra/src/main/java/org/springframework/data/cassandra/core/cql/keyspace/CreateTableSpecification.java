@@ -105,6 +105,11 @@ public class CreateTableSpecification extends TableSpecification<CreateTableSpec
 	}
 
 	@Override
+	public CreateTableSpecification with(String name, @Nullable Object value) {
+		return (CreateTableSpecification) super.with(name, value);
+	}
+
+	@Override
 	public CreateTableSpecification with(String name, @Nullable Object value, boolean escape, boolean quote) {
 		return (CreateTableSpecification) super.with(name, value, escape, quote);
 	}

@@ -129,7 +129,7 @@ class AlterTableCqlGeneratorUnitTests {
 
 		AlterTableSpecification spec = SpecificationBuilder.alterTable("users")
 				.with(TableOption.DEFAULT_TIME_TO_LIVE, 3600)
-				.with(TableOption.CDC, true)
+				.with(TableOption.CDC)
 				.with(TableOption.SPECULATIVE_RETRY, "90percentile")
 				.with(TableOption.MEMTABLE_FLUSH_PERIOD_IN_MS, 1000L)
 				.with(TableOption.CRC_CHECK_CHANCE, 0.9)

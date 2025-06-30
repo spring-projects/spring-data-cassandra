@@ -109,16 +109,19 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 	@Override
 	public void createTable(boolean ifNotExists, CqlIdentifier tableName, Class<?> entityClass,
 			Map<String, Object> optionsByName) {
-		CassandraPersistentEntity<?> entity = getConverter().getMappingContext().getRequiredPersistentEntity(entityClass);
 
+		CassandraPersistentEntity<?> entity = getConverter().getMappingContext().getRequiredPersistentEntity(entityClass);
 		CreateTableSpecification createTableSpecification = this.schemaFactory
 				.getCreateTableSpecificationFor(entity, tableName).ifNotExists(ifNotExists);
 
 		if (!CollectionUtils.isEmpty(optionsByName)) {
+
 			optionsByName.forEach((key, value) -> {
-				TableOption tableOption = TableOption.findByNameIgnoreCase(key);
+
+				TableOption tableOption = TableOption.findByName(key);
+
 				if (tableOption == null) {
-					addRawTableOption(key, value, createTableSpecification);
+					createTableSpecification.with(key, value);
 				} else if (tableOption.requiresValue()) {
 					createTableSpecification.with(tableOption, value);
 				} else {
@@ -128,14 +131,6 @@ public class CassandraAdminTemplate extends CassandraTemplate implements Cassand
 		}
 
 		getCqlOperations().execute(CqlGenerator.toCql(createTableSpecification));
-	}
-
-	private void addRawTableOption(String key, Object value, CreateTableSpecification createTableSpecification) {
-		if (value instanceof String) {
-			createTableSpecification.with(key, value, true, true);
-			return;
-		}
-		createTableSpecification.with(key, value, false, false);
 	}
 
 	@Override
