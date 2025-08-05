@@ -301,7 +301,7 @@ public class ReactiveCassandraTemplate
 	 * @since 2.1
 	 * @deprecated since 3.4, use {@link CassandraConverter#getProjectionFactory()} instead.
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	protected SpelAwareProxyProjectionFactory getProjectionFactory() {
 		return (SpelAwareProxyProjectionFactory) getConverter().getProjectionFactory();
 	}

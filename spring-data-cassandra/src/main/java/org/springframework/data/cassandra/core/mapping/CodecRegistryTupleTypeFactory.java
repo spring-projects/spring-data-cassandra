@@ -30,7 +30,7 @@ import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
  * @since 2.1
  * @deprecated since 3.0, use {@link SimpleTupleTypeFactory} instead.
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 public class CodecRegistryTupleTypeFactory implements TupleTypeFactory {
 
 	/**
@@ -53,7 +53,7 @@ public class CodecRegistryTupleTypeFactory implements TupleTypeFactory {
 	 * @param protocolVersion must not be {@literal null}.
 	 * @param codecRegistry must not be {@literal null}.
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	public CodecRegistryTupleTypeFactory(ProtocolVersion protocolVersion, CodecRegistry codecRegistry) {}
 
 	@Override

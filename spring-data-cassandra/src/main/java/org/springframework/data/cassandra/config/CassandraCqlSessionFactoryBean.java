@@ -33,7 +33,7 @@ import org.springframework.data.cassandra.core.cql.CqlTemplate;
  * @see CassandraExceptionTranslator
  * @deprecated since 3.0, use {@link CqlSessionFactoryBean} directly.
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 public class CassandraCqlSessionFactoryBean extends CqlSessionFactoryBean {
 
 }

@@ -29,8 +29,9 @@ import com.datastax.oss.driver.internal.core.type.DefaultTupleType;
  *
  * @author Mark Paluch
  * @since 3.0
+ * @deprecated since 4.5 in alignment with the deprecation of {@link TupleTypeFactory}.
  */
-
+@Deprecated(forRemoval = true)
 public enum SimpleTupleTypeFactory implements TupleTypeFactory {
 
 	/**

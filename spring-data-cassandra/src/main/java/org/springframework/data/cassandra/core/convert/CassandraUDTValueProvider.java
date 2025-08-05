@@ -28,7 +28,7 @@ import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
  * @since 1.5
  * @deprecated since 3.0, use {@link UdtValueProvider} directly.
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 public class CassandraUDTValueProvider extends UdtValueProvider {
 
 	/**
@@ -52,7 +52,7 @@ public class CassandraUDTValueProvider extends UdtValueProvider {
 	 * @param evaluator must not be {@literal null}.
 	 * @deprecated since 2.1, use {@link #CassandraUDTValueProvider(UdtValue, CodecRegistry, SpELExpressionEvaluator)}
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	public CassandraUDTValueProvider(UdtValue udtValue, CodecRegistry codecRegistry,
 			DefaultSpELExpressionEvaluator evaluator) {
 		super(udtValue, evaluator);

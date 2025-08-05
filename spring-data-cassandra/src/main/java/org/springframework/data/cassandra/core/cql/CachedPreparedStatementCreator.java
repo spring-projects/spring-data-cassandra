@@ -39,7 +39,7 @@ import com.datastax.oss.driver.api.core.cql.PreparedStatement;
  * @author Mark Paluch
  * @deprecated since 2.0. This class uses an unsafe, static held cache.
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 public class CachedPreparedStatementCreator implements PreparedStatementCreator {
 
 	private static final Map<CqlSession, Map<String, PreparedStatement>> CACHE = new ConcurrentHashMap<>();

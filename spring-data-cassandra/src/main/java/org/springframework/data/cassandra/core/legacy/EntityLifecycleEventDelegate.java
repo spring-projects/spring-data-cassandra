@@ -28,7 +28,7 @@ import org.springframework.lang.Nullable;
  * @since 4.0
  * @see ApplicationEventPublisher
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 class EntityLifecycleEventDelegate {
 
 	private @Nullable ApplicationEventPublisher publisher;

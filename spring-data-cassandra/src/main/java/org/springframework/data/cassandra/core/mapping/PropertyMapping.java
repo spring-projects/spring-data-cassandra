@@ -35,7 +35,7 @@ public class PropertyMapping {
 	 *             hence it no longer requires an indication whether the name should be quoted.
 	 * @see com.datastax.oss.driver.api.core.CqlIdentifier#fromInternal(String)
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	private @Nullable String forceQuote;
 
 	private String propertyName;
@@ -74,12 +74,12 @@ public class PropertyMapping {
 	}
 
 	@Nullable
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	public String getForceQuote() {
 		return this.forceQuote;
 	}
 
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	public void setForceQuote(String forceQuote) {
 		this.forceQuote = forceQuote;
 	}

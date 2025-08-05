@@ -58,7 +58,7 @@ public abstract class CassandraRepositoryQuerySupport implements RepositoryQuery
 	 * @param queryMethod must not be {@literal null}.
 	 * @deprecated use {@link #CassandraRepositoryQuerySupport(CassandraQueryMethod, MappingContext)}
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	public CassandraRepositoryQuerySupport(CassandraQueryMethod queryMethod) {
 		this(queryMethod, new CassandraMappingContext());
 	}

@@ -29,7 +29,7 @@ import org.springframework.data.mapping.model.SimpleTypeHolder;
  * @since 1.5
  * @deprecated since 2.0, use {@link CassandraCustomConversions}.
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 public class CustomConversions extends CassandraCustomConversions {
 
 	/**

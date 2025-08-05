@@ -76,7 +76,7 @@ public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandra
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations
 	 * @deprecated since 4.4, use the constructors accepting {@link ValueExpressionDelegate} instead.
 	 */
-	@Deprecated(since = "4.4")
+	@Deprecated(since = "4.4", forRemoval = true)
 	public ReactiveStringBasedCassandraQuery(ReactiveCassandraQueryMethod queryMethod,
 			ReactiveCassandraOperations operations, ExpressionParser expressionParser,
 			ReactiveQueryMethodEvaluationContextProvider evaluationContextProvider) {
@@ -98,7 +98,7 @@ public class ReactiveStringBasedCassandraQuery extends AbstractReactiveCassandra
 	 * @see org.springframework.data.cassandra.core.ReactiveCassandraOperations
 	 * @deprecated since 4.4, use the constructors accepting {@link ValueExpressionDelegate} instead.
 	 */
-	@Deprecated(since = "4.4")
+	@Deprecated(since = "4.4", forRemoval = true)
 	public ReactiveStringBasedCassandraQuery(String query, ReactiveCassandraQueryMethod method,
 			ReactiveCassandraOperations operations, ExpressionParser expressionParser,
 			ReactiveQueryMethodEvaluationContextProvider evaluationContextProvider) {

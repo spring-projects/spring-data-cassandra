@@ -186,7 +186,7 @@ public class WriteOptions extends QueryOptions {
 		}
 
 		@Override
-		@Deprecated
+		@Deprecated(forRemoval = true)
 		public WriteOptionsBuilder fetchSize(int pageSize) {
 
 			super.fetchSize(pageSize);
@@ -215,7 +215,7 @@ public class WriteOptions extends QueryOptions {
 		}
 
 		@Override
-		@Deprecated
+		@Deprecated(forRemoval = true)
 		public WriteOptionsBuilder readTimeout(long readTimeout) {
 
 			super.readTimeout(readTimeout);
@@ -223,7 +223,7 @@ public class WriteOptions extends QueryOptions {
 		}
 
 		@Override
-		@Deprecated
+		@Deprecated(forRemoval = true)
 		public WriteOptionsBuilder readTimeout(long readTimeout, TimeUnit timeUnit) {
 
 			super.readTimeout(readTimeout, timeUnit);

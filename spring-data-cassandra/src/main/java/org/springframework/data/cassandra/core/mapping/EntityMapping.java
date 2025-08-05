@@ -81,12 +81,12 @@ public class EntityMapping {
 	 * @deprecated since 3.0. The type name gets converted into {@link com.datastax.oss.driver.api.core.CqlIdentifier}
 	 *             hence it no longer requires an indication whether the name should be quoted.
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	public String getForceQuote() {
 		return this.forceQuote;
 	}
 
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	public void setForceQuote(String forceQuote) {
 
 		Assert.notNull(forceQuote, "Force quote must not be null or empty");

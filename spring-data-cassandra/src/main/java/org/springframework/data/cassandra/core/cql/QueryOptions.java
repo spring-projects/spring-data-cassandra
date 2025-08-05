@@ -160,7 +160,7 @@ public class QueryOptions {
 	 * @see com.datastax.oss.driver.api.core.cql.Statement#setTimeout(Duration)
 	 * @deprecated since 3.0, use {@link #getTimeout()} instead.
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	protected Duration getReadTimeout() {
 		return getTimeout();
 	}
@@ -378,7 +378,7 @@ public class QueryOptions {
 		 * @return {@code this} {@link QueryOptionsBuilder}
 		 * @deprecated since 3.0, use {@link #pageSize(int)}.
 		 */
-		@Deprecated
+		@Deprecated(forRemoval = true)
 		public QueryOptionsBuilder fetchSize(int fetchSize) {
 			return pageSize(fetchSize);
 		}
@@ -444,7 +444,7 @@ public class QueryOptions {
 		 * @see com.datastax.oss.driver.api.core.cql.SimpleStatement#setTimeout(Duration)
 		 * @deprecated since 3.0, use {@link #timeout(Duration)}
 		 */
-		@Deprecated
+		@Deprecated(forRemoval = true)
 		public QueryOptionsBuilder readTimeout(long readTimeout) {
 			return timeout(Duration.ofMillis(readTimeout));
 		}
@@ -459,7 +459,7 @@ public class QueryOptions {
 		 * @see com.datastax.oss.driver.api.core.cql.SimpleStatement#setTimeout(Duration)
 		 * @deprecated since 2.0, use {@link #timeout(Duration)}.
 		 */
-		@Deprecated
+		@Deprecated(forRemoval = true)
 		public QueryOptionsBuilder readTimeout(long readTimeout, TimeUnit timeUnit) {
 
 			Assert.isTrue(readTimeout >= 0, "ReadTimeout must be greater than equal to zero");
@@ -478,7 +478,7 @@ public class QueryOptions {
 		 * @since 2.0
 		 * @deprecated since 3.0, use {@link #timeout(Duration)}
 		 */
-		@Deprecated
+		@Deprecated(forRemoval = true)
 		public QueryOptionsBuilder readTimeout(Duration readTimeout) {
 			return timeout(readTimeout);
 		}

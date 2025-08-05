@@ -60,7 +60,7 @@ public @interface PrimaryKey {
 	 *             hence it no longer requires an indication whether the name should be quoted.
 	 * @see com.datastax.oss.driver.api.core.CqlIdentifier#fromInternal(String)
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	@AliasFor(annotation = Column.class, attribute = "forceQuote")
 	boolean forceQuote() default false;
 }

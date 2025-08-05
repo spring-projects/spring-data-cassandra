@@ -182,7 +182,7 @@ public class UpdateOptions extends WriteOptions {
 		}
 
 		@Override
-		@Deprecated
+		@Deprecated(forRemoval = true)
 		public UpdateOptionsBuilder fetchSize(int fetchSize) {
 
 			super.fetchSize(fetchSize);
@@ -211,7 +211,7 @@ public class UpdateOptions extends WriteOptions {
 		}
 
 		@Override
-		@Deprecated
+		@Deprecated(forRemoval = true)
 		public UpdateOptionsBuilder readTimeout(long readTimeout) {
 
 			super.readTimeout(readTimeout);
@@ -219,7 +219,7 @@ public class UpdateOptions extends WriteOptions {
 		}
 
 		@Override
-		@Deprecated
+		@Deprecated(forRemoval = true)
 		public UpdateOptionsBuilder readTimeout(long readTimeout, TimeUnit timeUnit) {
 
 			super.readTimeout(readTimeout, timeUnit);

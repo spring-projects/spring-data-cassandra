@@ -37,7 +37,7 @@ import org.springframework.util.Assert;
  * @see #toString()
  * @deprecated since 3.0, use {@link com.datastax.oss.driver.api.core.CqlIdentifier} instead.
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializable {
 
 	@Serial private static final long serialVersionUID = -974441606330912437L;
@@ -105,7 +105,7 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 	 * @see #CqlIdentifier(CharSequence)
 	 * @deprecated since 2.0, use {@link #of(CharSequence)}
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	public static CqlIdentifier cqlId(CharSequence identifier) {
 		return new CqlIdentifier(identifier);
 	}
@@ -116,7 +116,7 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 	 * @see #CqlIdentifier(CharSequence, boolean)
 	 * @deprecated since 2.0, use {@link #of(CharSequence, boolean)}
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	public static CqlIdentifier cqlId(CharSequence identifier, boolean forceQuote) {
 		return new CqlIdentifier(identifier, forceQuote);
 	}
@@ -145,7 +145,7 @@ public final class CqlIdentifier implements Comparable<CqlIdentifier>, Serializa
 	 * @see #CqlIdentifier(CharSequence, boolean)
 	 * @deprecated since 2.0, use {@link #quoted(CharSequence)}.
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	public static CqlIdentifier quotedCqlId(CharSequence identifier) {
 		return new CqlIdentifier(identifier, true);
 	}

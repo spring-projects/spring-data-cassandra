@@ -30,7 +30,7 @@ import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
  * @author Mark Paluch
  * @deprecated since 3.0, use directly {@link RowValueProvider}.
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 public class BasicCassandraRowValueProvider extends RowValueProvider {
 
 	/**
@@ -54,7 +54,7 @@ public class BasicCassandraRowValueProvider extends RowValueProvider {
 	 * @param evaluator must not be {@literal null}.
 	 * @deprecated since 2.1, use {@link #BasicCassandraRowValueProvider(Row, CodecRegistry, SpELExpressionEvaluator)}
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	public BasicCassandraRowValueProvider(Row source, DefaultSpELExpressionEvaluator evaluator) {
 		super(source, evaluator);
 	}

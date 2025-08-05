@@ -28,7 +28,7 @@ import org.springframework.data.cassandra.core.cql.CqlTemplate;
  * @see CqlTemplate
  * @deprecated since 3.0, use {@link AbstractSessionConfiguration}.
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 public abstract class AbstractCqlTemplateConfiguration extends AbstractSessionConfiguration {
 
 }

@@ -30,7 +30,7 @@ public class CassandraSchemaElementExistsException extends NonTransientDataAcces
 
 	@Serial private static final long serialVersionUID = 7798361273692300162L;
 
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	public enum ElementType {
 		KEYSPACE, TABLE, COLUMN, INDEX
 	}
@@ -46,7 +46,7 @@ public class CassandraSchemaElementExistsException extends NonTransientDataAcces
 	 * @param msg the detail message.
 	 * @param cause the root cause from the underlying data access API.
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	public CassandraSchemaElementExistsException(String elementName, ElementType elementType, String msg,
 			Throwable cause) {
 		super(msg, cause);
@@ -64,13 +64,13 @@ public class CassandraSchemaElementExistsException extends NonTransientDataAcces
 		super(msg, cause);
 	}
 
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	@Nullable
 	public String getElementName() {
 		return elementName;
 	}
 
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	@Nullable
 	public ElementType getElementType() {
 		return elementType;

@@ -57,7 +57,7 @@ public interface CassandraPersistentEntity<T> extends PersistentEntity<T, Cassan
 	 *             hence it no longer requires an indication whether the name should be quoted.
 	 * @see com.datastax.oss.driver.api.core.CqlIdentifier#fromInternal(String)
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	void setForceQuote(boolean forceQuote);
 
 	/**
@@ -71,7 +71,7 @@ public interface CassandraPersistentEntity<T> extends PersistentEntity<T, Cassan
 	 * @param tableName must not be {@literal null}.
 	 * @deprecated since 3.0, use {@link #setTableName(CqlIdentifier)} instead.
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	default void setTableName(org.springframework.data.cassandra.core.cql.CqlIdentifier tableName) {
 
 		Assert.notNull(tableName, "Table name must not be null");

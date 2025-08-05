@@ -30,7 +30,7 @@ import org.springframework.util.StringUtils;
  * @author Mark Paluch
  * @deprecated since 3.0 without replacement.
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 public enum ReservedKeyword {
 
 	ADD, ALTER, AND, ANY, APPLY, ASC, AUTHORIZE, //

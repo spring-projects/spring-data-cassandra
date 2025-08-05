@@ -294,7 +294,7 @@ class CassandraConstructorProperty implements CassandraPersistentProperty {
 	}
 
 	@Override
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	public void setForceQuote(boolean forceQuote) {
 		throw new UnsupportedOperationException();
 	}

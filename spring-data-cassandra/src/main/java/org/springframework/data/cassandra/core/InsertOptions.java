@@ -178,7 +178,7 @@ public class InsertOptions extends WriteOptions {
 		}
 
 		@Override
-		@Deprecated
+		@Deprecated(forRemoval = true)
 		public InsertOptionsBuilder fetchSize(int fetchSize) {
 			return (InsertOptionsBuilder) super.fetchSize(fetchSize);
 		}
@@ -203,7 +203,7 @@ public class InsertOptions extends WriteOptions {
 		}
 
 		@Override
-		@Deprecated
+		@Deprecated(forRemoval = true)
 		public InsertOptionsBuilder readTimeout(long readTimeout) {
 
 			super.readTimeout(readTimeout);
@@ -211,7 +211,7 @@ public class InsertOptions extends WriteOptions {
 		}
 
 		@Override
-		@Deprecated
+		@Deprecated(forRemoval = true)
 		public InsertOptionsBuilder readTimeout(long readTimeout, TimeUnit timeUnit) {
 
 			super.readTimeout(readTimeout, timeUnit);

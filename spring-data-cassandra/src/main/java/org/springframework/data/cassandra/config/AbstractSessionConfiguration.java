@@ -111,7 +111,7 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 	 * @since 1.5
 	 */
 	@Nullable
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	protected String getClusterName() {
 		return null;
 	}
@@ -265,7 +265,7 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 	 *             {@link org.springframework.data.cassandra.core.cql.session.init.SessionFactoryInitializer} bean
 	 *             instead.
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	protected List<String> getStartupScripts() {
 		return Collections.emptyList();
 	}
@@ -279,7 +279,7 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 	 * @deprecated since 3.0; Declare a
 	 * {@link org.springframework.data.cassandra.core.cql.session.init.SessionFactoryInitializer} bean instead.
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	protected List<String> getShutdownScripts() {
 		return Collections.emptyList();
 	}

@@ -91,7 +91,7 @@ public class EmbeddedEntityOperations {
 		}
 
 		@Override
-		@Deprecated
+		@Deprecated(forRemoval = true)
 		public void setForceQuote(boolean forceQuote) {
 			delegate.setForceQuote(forceQuote);
 		}
@@ -102,7 +102,7 @@ public class EmbeddedEntityOperations {
 		}
 
 		@Override
-		@Deprecated
+		@Deprecated(forRemoval = true)
 		public void setTableName(org.springframework.data.cassandra.core.cql.CqlIdentifier tableName) {
 			delegate.setTableName(tableName);
 		}
@@ -386,7 +386,7 @@ public class EmbeddedEntityOperations {
 		}
 
 		@Override
-		@Deprecated
+		@Deprecated(forRemoval = true)
 		public void setColumnName(org.springframework.data.cassandra.core.cql.CqlIdentifier columnName) {
 			delegate.setColumnName(columnName);
 		}
@@ -402,7 +402,7 @@ public class EmbeddedEntityOperations {
 		}
 
 		@Override
-		@Deprecated
+		@Deprecated(forRemoval = true)
 		public void setForceQuote(boolean forceQuote) {
 			delegate.setForceQuote(forceQuote);
 		}

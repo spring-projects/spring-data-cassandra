@@ -27,7 +27,7 @@ import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
  * @since 2.1
  * @deprecated since 3.0, use {@link TupleValueProvider} directly.
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 public class CassandraTupleValueProvider extends TupleValueProvider {
 
 	/**

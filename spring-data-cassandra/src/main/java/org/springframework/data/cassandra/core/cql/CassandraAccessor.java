@@ -183,7 +183,7 @@ public class CassandraAccessor implements InitializingBean {
 	 * @see com.datastax.oss.driver.api.core.cql.SimpleStatementBuilder#setPageSize(int)
 	 * @deprecated since 3.0, use {@link #setPageSize(int)}
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	public void setFetchSize(int fetchSize) {
 		setPageSize(fetchSize);
 	}
@@ -192,7 +192,7 @@ public class CassandraAccessor implements InitializingBean {
 	 * @return the fetch size specified for this template.
 	 * @deprecated since 3.0, use {@link #getPageSize()}.
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	public int getFetchSize() {
 		return getPageSize();
 	}
@@ -285,7 +285,7 @@ public class CassandraAccessor implements InitializingBean {
 	 * @deprecated since 2.0. This class uses a {@link SessionFactory} to dispatch CQL calls amongst different
 	 *             {@link CqlSession}s during its lifecycle.
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	public CqlSession getSession() {
 
 		Assert.state(getSessionFactory() != null, "SessionFactory was not properly initialized");

@@ -81,7 +81,7 @@ class KeyspaceActionSpecificationFactory {
 	 * @return the new {@link KeyspaceActionSpecificationFactoryBuilder} for {@code keyspaceName}.
 	 * @deprecated since 3.0, use {@link #builder(CqlIdentifier)}.
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	public static KeyspaceActionSpecificationFactoryBuilder builder(KeyspaceIdentifier keyspaceName) {
 		return builder(keyspaceName.toCqlIdentifier());
 	}

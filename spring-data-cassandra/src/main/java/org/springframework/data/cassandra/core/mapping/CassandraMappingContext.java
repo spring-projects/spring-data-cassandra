@@ -100,7 +100,7 @@ public class CassandraMappingContext
 	 * @deprecated since 3.0, {@link UserTypeResolver} and {@link TupleTypeFactory} no longer required here as high-level
 	 *             type resolution went into {@link org.springframework.data.cassandra.core.convert.CassandraConverter}.
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	public CassandraMappingContext(UserTypeResolver userTypeResolver, TupleTypeFactory tupleTypeFactory) {
 
 		setUserTypeResolver(userTypeResolver);
@@ -182,7 +182,7 @@ public class CassandraMappingContext
 	 * @deprecated since 3.0. Use custom conversion through
 	 *             {@link org.springframework.data.cassandra.core.convert.MappingCassandraConverter}.
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	public void setCustomConversions(CustomConversions customConversions) {
 
 		Assert.notNull(customConversions, "CustomConversions must not be null");
@@ -194,7 +194,7 @@ public class CassandraMappingContext
 	 * @deprecated since 3.0. Use custom conversion through
 	 *             {@link org.springframework.data.cassandra.core.convert.MappingCassandraConverter}.
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	public CustomConversions getCustomConversions() {
 		return customConversions;
 	}
@@ -237,7 +237,7 @@ public class CassandraMappingContext
 	 * @deprecated since 3.0. Set {@link CodecRegistry} directly on
 	 *             {@link org.springframework.data.cassandra.core.convert.CassandraConverter}.
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	public void setCodecRegistry(CodecRegistry codecRegistry) {
 
 		Assert.notNull(codecRegistry, "CodecRegistry must not be null");
@@ -249,7 +249,7 @@ public class CassandraMappingContext
 	 * @deprecated since 3.0. Retrieve {@link CodecRegistry} directly from
 	 *             {@link org.springframework.data.cassandra.core.convert.CassandraConverter}.
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	public CodecRegistry getCodecRegistry() {
 		return this.codecRegistry;
 	}
@@ -275,7 +275,7 @@ public class CassandraMappingContext
 	 * @deprecated since 3.0. Tuple type creation uses
 	 *             {@link com.datastax.oss.driver.api.core.type.DataTypes#tupleOf(DataType...)}
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	public void setTupleTypeFactory(TupleTypeFactory tupleTypeFactory) {}
 
 	/**
@@ -286,7 +286,7 @@ public class CassandraMappingContext
 	 * @deprecated since 3.0. Set {@link UserTypeResolver} directly on
 	 *             {@link org.springframework.data.cassandra.core.convert.CassandraConverter}.
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	public void setUserTypeResolver(UserTypeResolver userTypeResolver) {
 
 		Assert.notNull(userTypeResolver, "UserTypeResolver must not be null");
@@ -299,7 +299,7 @@ public class CassandraMappingContext
 	 *             {@link org.springframework.data.cassandra.core.convert.CassandraConverter}.
 	 */
 	@Nullable
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	public UserTypeResolver getUserTypeResolver() {
 		return this.userTypeResolver;
 	}

@@ -55,7 +55,7 @@ public class CreateKeyspaceSpecification extends KeyspaceOptionsSpecification<Cr
 	 * @return a new {@link CreateKeyspaceSpecification}.
 	 * @deprecated since 3.0, use {@link #createKeyspace(CqlIdentifier)}
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	public static CreateKeyspaceSpecification createKeyspace(KeyspaceIdentifier name) {
 		return new CreateKeyspaceSpecification(CqlIdentifier.fromCql(name.toCql()));
 	}

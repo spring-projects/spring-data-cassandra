@@ -50,7 +50,7 @@ public interface CassandraPersistentProperty
 	 * @param columnName must not be {@literal null}.
 	 * @deprecated since 3.0, use {@link #setColumnName(CqlIdentifier)}.
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	default void setColumnName(org.springframework.data.cassandra.core.cql.CqlIdentifier columnName) {
 
 		Assert.notNull(columnName, "Column name must not be null");
@@ -98,7 +98,7 @@ public interface CassandraPersistentProperty
 	 *             hence it no longer requires an indication whether the name should be quoted.
 	 * @see com.datastax.oss.driver.api.core.CqlIdentifier#fromInternal(String)
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	void setForceQuote(boolean forceQuote);
 
 	/**

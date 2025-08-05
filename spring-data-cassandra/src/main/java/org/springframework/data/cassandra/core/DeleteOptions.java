@@ -175,7 +175,7 @@ public class DeleteOptions extends WriteOptions {
 		}
 
 		@Override
-		@Deprecated
+		@Deprecated(forRemoval = true)
 		public DeleteOptionsBuilder fetchSize(int fetchSize) {
 
 			super.fetchSize(fetchSize);
@@ -204,7 +204,7 @@ public class DeleteOptions extends WriteOptions {
 		}
 
 		@Override
-		@Deprecated
+		@Deprecated(forRemoval = true)
 		public DeleteOptionsBuilder readTimeout(long readTimeout) {
 
 			super.readTimeout(readTimeout);
@@ -212,7 +212,7 @@ public class DeleteOptions extends WriteOptions {
 		}
 
 		@Override
-		@Deprecated
+		@Deprecated(forRemoval = true)
 		public DeleteOptionsBuilder readTimeout(long readTimeout, TimeUnit timeUnit) {
 
 			super.readTimeout(readTimeout, timeUnit);

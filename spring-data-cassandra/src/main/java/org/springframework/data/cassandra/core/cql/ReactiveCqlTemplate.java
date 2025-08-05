@@ -213,7 +213,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 * @see com.datastax.oss.driver.api.core.cql.SimpleStatementBuilder#setPageSize(int)
 	 * @deprecated since 3.0, use {@link #setPageSize(int)}
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	public void setFetchSize(int fetchSize) {
 		setPageSize(fetchSize);
 	}
@@ -222,7 +222,7 @@ public class ReactiveCqlTemplate extends ReactiveCassandraAccessor implements Re
 	 * @return the fetch size specified for this template.
 	 * @deprecated since 3.0, use {@link #getPageSize()}.
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	public int getFetchSize() {
 		return getPageSize();
 	}

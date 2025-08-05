@@ -47,7 +47,7 @@ public class CassandraReadTimeoutException extends QueryTimeoutException {
 	 * @return whether the actual data was amongst the received replica responses.
 	 * @deprecated since 3.0, use {@link #wasDataPresent()}.
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	public boolean getWasDataReceived() {
 		return wasDataPresent();
 	}

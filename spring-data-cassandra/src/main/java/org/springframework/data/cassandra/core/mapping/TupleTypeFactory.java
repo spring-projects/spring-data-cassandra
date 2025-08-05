@@ -33,7 +33,7 @@ import com.datastax.oss.driver.api.core.type.TupleType;
  * @deprecated since 3.0
  */
 @FunctionalInterface
-@Deprecated
+@Deprecated(forRemoval = true)
 public interface TupleTypeFactory {
 
 	/**

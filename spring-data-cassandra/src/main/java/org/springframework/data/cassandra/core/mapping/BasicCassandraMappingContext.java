@@ -28,5 +28,5 @@ import org.springframework.data.mapping.context.MappingContext;
  * @author Jens Schauder
  * @deprecated since 2.0. Use {@link CassandraMappingContext}.
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 public class BasicCassandraMappingContext extends CassandraMappingContext {}

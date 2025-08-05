@@ -25,7 +25,7 @@ package org.springframework.data.cassandra.config;
  * @author Mark Paluch
  * @deprecated since 3.0, use {@link CqlSessionFactoryBean} directly.
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 public class CassandraSessionFactoryBean extends CqlSessionFactoryBean {
 
 }

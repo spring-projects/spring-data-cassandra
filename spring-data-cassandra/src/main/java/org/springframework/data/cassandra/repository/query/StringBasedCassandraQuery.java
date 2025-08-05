@@ -66,7 +66,7 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 	 * @see org.springframework.data.cassandra.core.CassandraOperations
 	 * @deprecated use the constructor version with {@link ValueExpressionDelegate}
 	 */
-	@Deprecated(since = "4.4")
+	@Deprecated(since = "4.4", forRemoval = true)
 	public StringBasedCassandraQuery(CassandraQueryMethod queryMethod, CassandraOperations operations,
 			ExpressionParser expressionParser, QueryMethodEvaluationContextProvider evaluationContextProvider) {
 
@@ -141,7 +141,7 @@ public class StringBasedCassandraQuery extends AbstractCassandraQuery {
 	 * @see org.springframework.data.cassandra.core.CassandraOperations
 	 * @deprecated use the constructor version with {@link ValueExpressionDelegate}
 	 */
-	@Deprecated(since = "4.4")
+	@Deprecated(since = "4.4", forRemoval = true)
 	public StringBasedCassandraQuery(String query, CassandraQueryMethod method, CassandraOperations operations,
 			ExpressionParser expressionParser, QueryMethodEvaluationContextProvider evaluationContextProvider) {
 		this(query, method, operations, new ValueExpressionDelegate(new QueryMethodValueEvaluationContextAccessor(new StandardEnvironment(), evaluationContextProvider.getEvaluationContextProvider()), ValueExpressionParser.create(() -> expressionParser)));

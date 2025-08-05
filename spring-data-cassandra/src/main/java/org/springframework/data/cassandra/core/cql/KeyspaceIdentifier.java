@@ -33,7 +33,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * @author Matthew T. Adams
  * @deprecated since 3.0, use {@link com.datastax.oss.driver.api.core.CqlIdentifier}.
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 public final class KeyspaceIdentifier implements Comparable<KeyspaceIdentifier> {
 
 	public static final String REGEX = "(?i)[a-z][\\w]{0,47}";
@@ -63,7 +63,7 @@ public final class KeyspaceIdentifier implements Comparable<KeyspaceIdentifier> 
 	 *
 	 * @deprecated since 2.0, use {@link #of(CharSequence)}.
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	public static KeyspaceIdentifier ksId(CharSequence identifier) {
 		return new KeyspaceIdentifier(identifier);
 	}

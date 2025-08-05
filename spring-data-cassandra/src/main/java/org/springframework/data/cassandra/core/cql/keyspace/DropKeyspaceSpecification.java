@@ -50,7 +50,7 @@ public class DropKeyspaceSpecification extends KeyspaceActionSpecification imple
 	 * @return a new {@link DropKeyspaceSpecification}.
 	 * @deprecated since 3.0, use {@link #dropKeyspace(CqlIdentifier)}.
 	 */
-	@Deprecated
+	@Deprecated(forRemoval = true)
 	public static DropKeyspaceSpecification dropKeyspace(KeyspaceIdentifier name) {
 		return dropKeyspace(CqlIdentifier.fromCql(name.toCql()));
 	}
