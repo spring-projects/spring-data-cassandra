@@ -115,7 +115,7 @@ class RepositoryQueryMethodParameterTypesIntegrationTests extends AbstractSpring
 		CustomConversions customConversions = new CassandraCustomConversions(
 				Collections.singletonList(new DateToLocalDateConverter()));
 
-		mappingContext.setCustomConversions(customConversions);
+		mappingContext.setSimpleTypeHolder(customConversions.getSimpleTypeHolder());
 		converter.setCustomConversions(customConversions);
 		converter.afterPropertiesSet();
 

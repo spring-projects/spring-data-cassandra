@@ -36,6 +36,7 @@ import org.assertj.core.data.Percentage;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -63,7 +64,6 @@ import org.springframework.data.convert.ValueConverter;
 import org.springframework.data.projection.EntityProjection;
 import org.springframework.data.projection.EntityProjectionIntrospector;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
-import org.springframework.lang.Nullable;
 import org.springframework.util.ObjectUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;

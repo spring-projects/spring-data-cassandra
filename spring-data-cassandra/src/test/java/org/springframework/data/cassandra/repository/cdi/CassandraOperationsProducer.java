@@ -63,11 +63,11 @@ class CassandraOperationsProducer {
 	public CassandraOperations createCassandraOperations(CqlSession session) throws Exception {
 
 		CassandraMappingContext mappingContext = new CassandraMappingContext();
-		mappingContext.setUserTypeResolver(new SimpleUserTypeResolver(session, CqlIdentifier.fromCql(KEYSPACE_NAME)));
 		mappingContext.setInitialEntitySet(Collections.singleton(User.class));
 		mappingContext.afterPropertiesSet();
 
 		MappingCassandraConverter cassandraConverter = new MappingCassandraConverter(mappingContext);
+		cassandraConverter.setUserTypeResolver(new SimpleUserTypeResolver(session, CqlIdentifier.fromCql(KEYSPACE_NAME)));
 
 		CassandraAdminTemplate cassandraTemplate = new CassandraAdminTemplate(session, cassandraConverter);
 

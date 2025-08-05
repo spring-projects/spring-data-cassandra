@@ -66,8 +66,6 @@ public class IntegrationTestConfig extends AbstractReactiveCassandraConfiguratio
 		bean.setKeyspaceDrops(getKeyspaceDrops());
 
 		bean.setKeyspaceName(getKeyspaceName());
-		bean.setKeyspaceStartupScripts(getStartupScripts());
-		bean.setKeyspaceShutdownScripts(getShutdownScripts());
 
 		return bean;
 	}

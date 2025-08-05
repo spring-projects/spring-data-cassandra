@@ -15,21 +15,12 @@
  */
 package org.springframework.data.cassandra.core
 
-import kotlin.reflect.KClass
-
 /**
  * Extensions for [ExecutableInsertOperation].
  *
  * @author Mark Paluch
  * @since 2.1
  */
-
-/**
- * Extension for [ExecutableInsertOperation.insert] providing a [KClass] based variant.
- */
-@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("insert<T>()"))
-fun <T : Any> ExecutableInsertOperation.insert(entityClass: KClass<T>): ExecutableInsertOperation.ExecutableInsert<T> =
-		insert(entityClass.java)
 
 /**
  * Extension for [ExecutableInsertOperation.insert] leveraging reified type parameters.

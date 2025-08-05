@@ -93,10 +93,9 @@ class StringBasedCassandraQueryUnitTests {
 
 		CassandraMappingContext mappingContext = new CassandraMappingContext();
 
-		mappingContext.setUserTypeResolver(userTypeResolver);
-
 		this.metadata = AbstractRepositoryMetadata.getMetadata(SampleRepository.class);
 		this.converter = new MappingCassandraConverter(mappingContext);
+		this.converter.setUserTypeResolver(userTypeResolver);
 		this.factory = new SpelAwareProxyProjectionFactory();
 
 		this.converter.afterPropertiesSet();

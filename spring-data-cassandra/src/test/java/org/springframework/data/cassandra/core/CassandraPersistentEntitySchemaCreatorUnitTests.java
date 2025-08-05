@@ -89,12 +89,6 @@ class CassandraPersistentEntitySchemaCreatorUnitTests extends CassandraPersisten
 			}
 		};
 
-		context.setUserTypeResolver(typeName -> {
-			// make sure that calls to this method pop up. Calling UserTypeResolver while resolving
-			// to be created user types isn't a good idea because they do not exist at resolution time.
-			throw new IllegalArgumentException(String.format("Type %s not found", typeName));
-		});
-
 		CassandraPersistentEntitySchemaCreator schemaCreator = new CassandraPersistentEntitySchemaCreator(context,
 				adminOperations);
 
@@ -132,11 +126,6 @@ class CassandraPersistentEntitySchemaCreatorUnitTests extends CassandraPersisten
 				return ordered.stream().map(this::getRequiredPersistentEntity).collect(Collectors.toList());
 			}
 		};
-		context.setUserTypeResolver(typeName -> {
-			// make sure that calls to this method pop up. Calling UserTypeResolver while resolving
-			// to be created user types isn't a good idea because they do not exist at resolution time.
-			throw new IllegalArgumentException(String.format("Type %s not found", typeName));
-		});
 
 		CassandraPersistentEntitySchemaCreator schemaCreator = new CassandraPersistentEntitySchemaCreator(context,
 				adminOperations);

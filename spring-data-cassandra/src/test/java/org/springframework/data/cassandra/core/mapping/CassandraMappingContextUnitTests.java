@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.convert.CassandraCustomConversions;
@@ -39,7 +39,6 @@ import org.springframework.data.util.TypeInformation;
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.data.UdtValue;
 import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
-import com.datastax.oss.driver.api.core.type.UserDefinedType;
 
 /**
  * Unit tests for {@link CassandraMappingContext}.
@@ -50,11 +49,6 @@ import com.datastax.oss.driver.api.core.type.UserDefinedType;
 public class CassandraMappingContextUnitTests {
 
 	private CassandraMappingContext mappingContext = new CassandraMappingContext();
-
-	@BeforeEach
-	void before() {
-		this.mappingContext.setUserTypeResolver(typeName -> null);
-	}
 
 	@Test
 	void testGetRequiredPersistentEntityOfTransientType() {
@@ -281,15 +275,16 @@ public class CassandraMappingContextUnitTests {
 	@Test // DATACASS-296
 	void shouldCreatePersistentEntityIfNoConversionRegistered() {
 
-		mappingContext.setCustomConversions(new CassandraCustomConversions(Collections.emptyList()));
+		mappingContext.setSimpleTypeHolder(new CassandraCustomConversions(Collections.emptyList()).getSimpleTypeHolder());
 		assertThat(mappingContext.shouldCreatePersistentEntityFor(TypeInformation.of(Human.class))).isTrue();
 	}
 
 	@Test // DATACASS-296
 	void shouldNotCreateEntitiesForCustomConvertedTypes() {
 
-		mappingContext.setCustomConversions(
-				new CassandraCustomConversions(Collections.singletonList(HumanToStringConverter.INSTANCE)));
+		mappingContext
+				.setSimpleTypeHolder(new CassandraCustomConversions(Collections.singletonList(HumanToStringConverter.INSTANCE))
+						.getSimpleTypeHolder());
 
 		assertThat(mappingContext.shouldCreatePersistentEntityFor(TypeInformation.of(Human.class))).isFalse();
 	}
@@ -346,10 +341,6 @@ public class CassandraMappingContextUnitTests {
 	@Test // DATACASS-172, DATACASS-455
 	void usesTypeShouldReportTypeUsageInMappedUdt() {
 
-		UserDefinedType myTypeMock = mock(UserDefinedType.class, "mappedudt");
-
-		mappingContext.setUserTypeResolver(typeName -> myTypeMock);
-
 		mappingContext.getRequiredPersistentEntity(WithUdt.class);
 
 		assertThat(mappingContext.usesUserType(CqlIdentifier.fromCql("mappedudt"))).isTrue();
@@ -358,12 +349,7 @@ public class CassandraMappingContextUnitTests {
 	@Test // DATACASS-172, DATACASS-455
 	void usesTypeShouldReportTypeUsageInColumn() {
 
-		UserDefinedType myTypeMock = mock(UserDefinedType.class, "mappedudt");
-
-		mappingContext.setUserTypeResolver(typeName -> myTypeMock);
-
 		mappingContext.getRequiredPersistentEntity(MappedUdt.class);
-
 		assertThat(mappingContext.usesUserType(CqlIdentifier.fromCql("mappedudt"))).isTrue();
 	}
 

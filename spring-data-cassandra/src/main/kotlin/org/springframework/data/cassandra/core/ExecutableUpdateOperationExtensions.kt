@@ -15,21 +15,12 @@
  */
 package org.springframework.data.cassandra.core
 
-import kotlin.reflect.KClass
-
 /**
  * Extensions for [ExecutableUpdateOperation].
  *
  * @author Mark Paluch
  * @since 2.1
  */
-
-/**
- * Extension for [ExecutableUpdateOperation.update] providing a [KClass] based variant.
- */
-@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("update<T>()"))
-fun <T : Any> ExecutableUpdateOperation.update(entityClass: KClass<T>): ExecutableUpdateOperation.ExecutableUpdate =
-		update(entityClass.java)
 
 /**
  * Extension for [ExecutableUpdateOperation.update] leveraging reified type parameters.

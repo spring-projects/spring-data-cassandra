@@ -72,12 +72,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class SchemaFactoryUnitTests {
 
-	private final CassandraMappingContext mappingContext = new CassandraMappingContext();
+	CassandraMappingContext mappingContext;
+	MappingCassandraConverter converter;
 
 	private SchemaFactory schemaFactory;
 
 	@BeforeEach
 	void before() {
+
+		mappingContext = new CassandraMappingContext();
+		converter = new MappingCassandraConverter(mappingContext);
 
 		List<Converter<?, ?>> converters = new ArrayList<>();
 		converters.add(new PersonReadConverter());
@@ -85,8 +89,10 @@ public class SchemaFactoryUnitTests {
 		converters.add(HumanToStringConverter.INSTANCE);
 
 		CassandraCustomConversions customConversions = new CassandraCustomConversions(converters);
-		mappingContext.setCustomConversions(customConversions);
-		schemaFactory = new SchemaFactory(new MappingCassandraConverter(mappingContext));
+		mappingContext.setSimpleTypeHolder(customConversions.getSimpleTypeHolder());
+
+		converter.setCustomConversions(customConversions);
+		schemaFactory = new SchemaFactory(converter);
 	}
 
 	@Test // DATACASS-340
@@ -142,7 +148,7 @@ public class SchemaFactoryUnitTests {
 
 		UserDefinedType mappedudt = UserDefinedTypeBuilder.forName("mappedudt").withField("foo", DataTypes.ASCII).build();
 
-		this.mappingContext.setUserTypeResolver(typeName -> mappedudt);
+		this.converter.setUserTypeResolver(typeName -> mappedudt);
 
 		CassandraPersistentEntity<?> persistentEntity = this.mappingContext
 				.getRequiredPersistentEntity(WithMapOfMixedTypes.class);
@@ -525,7 +531,7 @@ public class SchemaFactoryUnitTests {
 
 		UserDefinedType mappedUdt = new SchemaFactory.ShallowUserDefinedType("mappedudt", true);
 
-		mappingContext.setUserTypeResolver(typeName -> {
+		converter.setUserTypeResolver(typeName -> {
 
 			if (typeName.equals(mappedUdt.getName())) {
 				return mappedUdt;
@@ -554,7 +560,7 @@ public class SchemaFactoryUnitTests {
 		when(mappedUdt.asCql(anyBoolean(), anyBoolean())).thenReturn("mappedudt");
 		when(human_udt.asCql(anyBoolean(), anyBoolean())).thenReturn("human_udt");
 
-		mappingContext.setUserTypeResolver(typeName -> {
+		converter.setUserTypeResolver(typeName -> {
 
 			if (typeName.toString().equals(mappedUdt.toString())) {
 				return mappedUdt;
@@ -623,7 +629,7 @@ public class SchemaFactoryUnitTests {
 	private CreateTableSpecification getCreateTableSpecificationFor(Class<?> persistentEntityClass) {
 
 		CassandraCustomConversions customConversions = new CassandraCustomConversions(Collections.emptyList());
-		mappingContext.setCustomConversions(customConversions);
+		converter.setCustomConversions(customConversions);
 
 		CassandraPersistentEntity<?> persistentEntity = mappingContext.getRequiredPersistentEntity(persistentEntityClass);
 		return schemaFactory.getCreateTableSpecificationFor(persistentEntity);

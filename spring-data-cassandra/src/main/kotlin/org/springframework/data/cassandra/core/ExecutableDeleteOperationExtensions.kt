@@ -15,21 +15,12 @@
  */
 package org.springframework.data.cassandra.core
 
-import kotlin.reflect.KClass
-
 /**
  * Extensions for [ExecutableDeleteOperation].
  *
  * @author Mark Paluch
  * @since 2.1
  */
-
-/**
- * Extension for [ExecutableRemoveOperation.delete] providing a [KClass] based variant.
- */
-@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("delete<T>()"))
-fun <T : Any> ExecutableDeleteOperation.delete(entityClass: KClass<T>): ExecutableDeleteOperation.ExecutableDelete =
-		delete(entityClass.java)
 
 /**
  * Extension for [ExecutableRemoveOperation.delete] leveraging reified type parameters.

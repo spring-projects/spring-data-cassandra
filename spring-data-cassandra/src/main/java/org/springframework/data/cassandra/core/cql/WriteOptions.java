@@ -184,14 +184,6 @@ public class WriteOptions extends QueryOptions {
 		}
 
 		@Override
-		@Deprecated
-		public WriteOptionsBuilder fetchSize(int pageSize) {
-
-			super.fetchSize(pageSize);
-			return this;
-		}
-
-		@Override
 		public WriteOptionsBuilder idempotent(boolean idempotent) {
 
 			super.idempotent(idempotent);
@@ -209,22 +201,6 @@ public class WriteOptions extends QueryOptions {
 		public WriteOptionsBuilder pageSize(int pageSize) {
 
 			super.pageSize(pageSize);
-			return this;
-		}
-
-		@Override
-		@Deprecated
-		public WriteOptionsBuilder readTimeout(long readTimeout) {
-
-			super.readTimeout(readTimeout);
-			return this;
-		}
-
-		@Override
-		@Deprecated
-		public WriteOptionsBuilder readTimeout(long readTimeout, TimeUnit timeUnit) {
-
-			super.readTimeout(readTimeout, timeUnit);
 			return this;
 		}
 

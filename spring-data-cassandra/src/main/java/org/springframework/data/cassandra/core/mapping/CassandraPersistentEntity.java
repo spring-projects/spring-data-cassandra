@@ -19,7 +19,6 @@ import org.jspecify.annotations.Nullable;
 
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
-import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 
@@ -51,33 +50,9 @@ public interface CassandraPersistentEntity<T> extends PersistentEntity<T, Cassan
 	boolean isCompositePrimaryKey();
 
 	/**
-	 * Sets whether to enforce quoting when using the {@link #getTableName()} in CQL.
-	 *
-	 * @param forceQuote {@literal true} to enforce quoting; {@literal false} to disable enforced quoting usage.
-	 * @deprecated since 3.0. The table name gets converted into {@link com.datastax.oss.driver.api.core.CqlIdentifier}
-	 *             hence it no longer requires an indication whether the name should be quoted.
-	 * @see com.datastax.oss.driver.api.core.CqlIdentifier#fromInternal(String)
-	 */
-	@Deprecated
-	void setForceQuote(boolean forceQuote);
-
-	/**
 	 * Returns the table name to which the entity shall be persisted.
 	 */
 	CqlIdentifier getTableName();
-
-	/**
-	 * Sets the CQL table name.
-	 *
-	 * @param tableName must not be {@literal null}.
-	 * @deprecated since 3.0, use {@link #setTableName(CqlIdentifier)} instead.
-	 */
-	@Deprecated
-	default void setTableName(org.springframework.data.cassandra.core.cql.CqlIdentifier tableName) {
-
-		Assert.notNull(tableName, "Table name must not be null");
-		setTableName(tableName.toCqlIdentifier());
-	}
 
 	/**
 	 * Sets the CQL table name.

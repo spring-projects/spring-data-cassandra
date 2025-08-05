@@ -26,8 +26,6 @@ import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
 import org.mockito.Answers;
 
-import org.springframework.lang.Nullable;
-
 import com.datastax.oss.driver.api.core.session.Request;
 import com.datastax.oss.driver.internal.core.context.InternalDriverContext;
 import com.datastax.oss.driver.internal.core.metadata.DefaultEndPoint;
@@ -95,11 +93,11 @@ class ObservationRequestTrackerUnitTests {
 		});
 	}
 
-	private static Request mockRequest(@Nullable Observation.Context context) {
+	private static Request mockRequest(Observation.Context context) {
 		return mockRequest(context, observation -> {});
 	}
 
-	private static Request mockRequest(@Nullable Observation.Context context,
+	private static Request mockRequest(Observation.Context context,
 			Consumer<Observation> observationCustomizer) {
 
 		Request request = mock(Request.class, withSettings().extraInterfaces(CassandraObservationSupplier.class));

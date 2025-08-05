@@ -17,7 +17,6 @@ package org.springframework.data.cassandra;
 
 import java.io.Serial;
 
-import org.jspecify.annotations.Nullable;
 import org.springframework.dao.NonTransientDataAccessException;
 
 /**
@@ -30,30 +29,6 @@ public class CassandraSchemaElementExistsException extends NonTransientDataAcces
 
 	private static final @Serial long serialVersionUID = 7798361273692300162L;
 
-	@Deprecated
-	public enum ElementType {
-		KEYSPACE, TABLE, COLUMN, INDEX
-	}
-
-	private @Nullable String elementName;
-	private @Nullable ElementType elementType;
-
-	/**
-	 * Constructor for {@link CassandraSchemaElementExistsException}.
-	 *
-	 * @param elementName the CQL element name.
-	 * @param elementType the CQL element type.
-	 * @param msg the detail message.
-	 * @param cause the root cause from the underlying data access API.
-	 */
-	@Deprecated
-	public CassandraSchemaElementExistsException(String elementName, ElementType elementType, String msg,
-			Throwable cause) {
-		super(msg, cause);
-		this.elementName = elementName;
-		this.elementType = elementType;
-	}
-
 	/**
 	 * Constructor for {@link CassandraSchemaElementExistsException}.
 	 *
@@ -62,16 +37,6 @@ public class CassandraSchemaElementExistsException extends NonTransientDataAcces
 	 */
 	public CassandraSchemaElementExistsException(String msg, Throwable cause) {
 		super(msg, cause);
-	}
-
-	@Deprecated
-	public @Nullable String getElementName() {
-		return elementName;
-	}
-
-	@Deprecated
-	public @Nullable ElementType getElementType() {
-		return elementType;
 	}
 
 }

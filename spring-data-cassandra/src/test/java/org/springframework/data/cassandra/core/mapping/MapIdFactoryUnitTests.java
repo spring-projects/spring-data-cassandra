@@ -57,7 +57,7 @@ public class MapIdFactoryUnitTests {
 	void testHappyExtendingMapId() {
 		Random r = new Random();
 		String s = "" + r.nextInt();
-		Integer i = new Integer(r.nextInt());
+		Integer i = r.nextInt();
 
 		HappyExtendingMapIdAndSerializable id = id(HappyExtendingMapIdAndSerializable.class);
 
@@ -141,7 +141,7 @@ public class MapIdFactoryUnitTests {
 	void testHappyExtendingNothing() {
 		Random r = new Random();
 		String s = "" + r.nextInt();
-		Integer i = new Integer(r.nextInt());
+		Integer i = r.nextInt();
 
 		HappyExtendingNothing id = id(HappyExtendingNothing.class);
 

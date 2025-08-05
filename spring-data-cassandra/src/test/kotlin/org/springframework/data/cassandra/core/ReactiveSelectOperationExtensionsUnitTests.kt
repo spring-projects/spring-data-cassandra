@@ -41,24 +41,10 @@ class ReactiveSelectOperationExtensionsUnitTests {
 	val operationWithProjection = mockk<ReactiveSelectOperation.SelectWithProjection<User>>(relaxed = true)
 
 	@Test // DATACASS-484
-	fun `query(KClass) extension should call its Java counterpart`() {
-
-		operations.query(Person::class);
-		verify { operations.query(Person::class.java) }
-	}
-
-	@Test // DATACASS-484
 	fun `query() with reified type parameter extension should call its Java counterpart`() {
 
 		operations.query<Person>()
 		verify { operations.query(Person::class.java) }
-	}
-
-	@Test // DATACASS-484
-	fun `asType(KClass) extension should call its Java counterpart`() {
-
-		operationWithProjection.asType(User::class);
-		verify { operationWithProjection.`as`(User::class.java) }
 	}
 
 	@Test // DATACASS-484

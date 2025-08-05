@@ -24,6 +24,8 @@ import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.convert.SchemaFactory;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.cassandra.core.cql.keyspace.ColumnSpecification;
@@ -45,6 +47,8 @@ class CassandraCompositePrimaryKeyUnitTests {
 
 	private CassandraMappingContext context;
 
+	private MappingCassandraConverter converter;
+
 	private SchemaFactory schemaFactory;
 
 	private CassandraPersistentEntity<?> entity;
@@ -55,7 +59,8 @@ class CassandraCompositePrimaryKeyUnitTests {
 	void setup() {
 
 		context = new CassandraMappingContext();
-		schemaFactory = new SchemaFactory(context, context.getCustomConversions(), context.getCodecRegistry());
+		converter = new MappingCassandraConverter(context);
+		schemaFactory = new SchemaFactory(context, converter.getCustomConversions(), converter.getCodecRegistry());
 		entity = context.getRequiredPersistentEntity(TypeInformation.of(TypeWithCompositeKey.class));
 		key = context.getRequiredPersistentEntity(TypeInformation.of(CompositeKey.class));
 	}

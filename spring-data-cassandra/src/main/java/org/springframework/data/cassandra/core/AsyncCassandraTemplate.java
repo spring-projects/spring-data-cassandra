@@ -28,6 +28,7 @@ import java.util.stream.StreamSupport;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -58,8 +59,6 @@ import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.mapping.callback.EntityCallbacks;
 import org.springframework.data.projection.EntityProjection;
-import org.springframework.data.projection.ProjectionFactory;
-import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.util.Streamable;
 import org.springframework.util.Assert;
 
@@ -277,21 +276,6 @@ public class AsyncCassandraTemplate
 	 */
 	protected EntityOperations getEntityOperations() {
 		return this.entityOperations;
-	}
-
-	/**
-	 * Returns a reference to the configured {@link ProjectionFactory} used by this template to process CQL query
-	 * projections.
-	 *
-	 * @return a reference to the configured {@link ProjectionFactory} used by this template to process CQL query
-	 *         projections.
-	 * @see org.springframework.data.projection.SpelAwareProxyProjectionFactory
-	 * @since 2.1
-	 * @deprecated since 3.4, use {@link CassandraConverter#getProjectionFactory()} instead.
-	 */
-	@Deprecated
-	protected SpelAwareProxyProjectionFactory getProjectionFactory() {
-		return (SpelAwareProxyProjectionFactory) getConverter().getProjectionFactory();
 	}
 
 	private CassandraPersistentEntity<?> getRequiredPersistentEntity(Class<?> entityType) {

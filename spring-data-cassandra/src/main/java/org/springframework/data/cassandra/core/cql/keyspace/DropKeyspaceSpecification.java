@@ -16,7 +16,6 @@
 package org.springframework.data.cassandra.core.cql.keyspace;
 
 import org.jspecify.annotations.Nullable;
-import org.springframework.data.cassandra.core.cql.KeyspaceIdentifier;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 
@@ -41,18 +40,6 @@ public class DropKeyspaceSpecification extends KeyspaceActionSpecification imple
 	 */
 	public static DropKeyspaceSpecification dropKeyspace(String name) {
 		return dropKeyspace(CqlIdentifier.fromCql(name));
-	}
-
-	/**
-	 * Create a new {@link DropKeyspaceSpecification} for the given {@code name}.
-	 *
-	 * @param name must not be {@literal null}.
-	 * @return a new {@link DropKeyspaceSpecification}.
-	 * @deprecated since 3.0, use {@link #dropKeyspace(CqlIdentifier)}.
-	 */
-	@Deprecated
-	public static DropKeyspaceSpecification dropKeyspace(KeyspaceIdentifier name) {
-		return dropKeyspace(CqlIdentifier.fromCql(name.toCql()));
 	}
 
 	/**

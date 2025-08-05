@@ -16,7 +16,7 @@
 package org.springframework.data.cassandra.core.cql.keyspace;
 
 import org.jspecify.annotations.Nullable;
-import org.springframework.data.cassandra.core.cql.KeyspaceIdentifier;
+
 import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceOption.ReplicationStrategy;
 import org.springframework.data.cassandra.util.MapBuilder;
 
@@ -45,19 +45,6 @@ public class CreateKeyspaceSpecification extends KeyspaceOptionsSpecification<Cr
 	 */
 	public static CreateKeyspaceSpecification createKeyspace(String name) {
 		return new CreateKeyspaceSpecification(CqlIdentifier.fromCql(name));
-	}
-
-	/**
-	 * Entry point into the {@link CreateKeyspaceSpecification}'s fluent API given {@code name} to create a keyspace.
-	 * Convenient if imported statically.
-	 *
-	 * @param name must not be {@literal null}.
-	 * @return a new {@link CreateKeyspaceSpecification}.
-	 * @deprecated since 3.0, use {@link #createKeyspace(CqlIdentifier)}
-	 */
-	@Deprecated
-	public static CreateKeyspaceSpecification createKeyspace(KeyspaceIdentifier name) {
-		return new CreateKeyspaceSpecification(CqlIdentifier.fromCql(name.toCql()));
 	}
 
 	/**

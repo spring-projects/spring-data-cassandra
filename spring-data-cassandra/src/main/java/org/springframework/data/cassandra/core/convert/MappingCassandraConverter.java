@@ -17,7 +17,6 @@ package org.springframework.data.cassandra.core.convert;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +28,7 @@ import java.util.function.Supplier;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.ApplicationContext;
@@ -102,7 +102,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 	private final CassandraMappingContext mappingContext;
 
-	private Supplier<CodecRegistry> codecRegistry;
+	private Supplier<CodecRegistry> codecRegistry = () -> CodecRegistry.DEFAULT;
 
 	private @Nullable UserTypeResolver userTypeResolver;
 
@@ -128,7 +128,9 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 * Create a new {@link MappingCassandraConverter} with a {@link CassandraMappingContext}.
 	 */
 	public MappingCassandraConverter() {
-		this(newDefaultMappingContext());
+		this(new CassandraMappingContext());
+		getMappingContext().setSimpleTypeHolder(getCustomConversions().getSimpleTypeHolder());
+		getMappingContext().afterPropertiesSet();
 	}
 
 	/**
@@ -136,7 +138,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 *
 	 * @param mappingContext must not be {@literal null}.
 	 */
-	@SuppressWarnings({ "deprecation", "NullAway" })
+	@SuppressWarnings({ "NullAway" })
 	public MappingCassandraConverter(CassandraMappingContext mappingContext) {
 
 		super(newConversionService());
@@ -158,8 +160,6 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 		};
 
 		this.mappingContext = mappingContext;
-		this.setCodecRegistry(mappingContext.getCodecRegistry());
-		this.setCustomConversions(mappingContext.getCustomConversions());
 		this.cassandraTypeResolver = new DefaultColumnTypeResolver(mappingContext, userTypeResolver, this::getCodecRegistry,
 				this::getCustomConversions);
 		this.embeddedEntityOperations = new EmbeddedEntityOperations(mappingContext);
@@ -184,22 +184,6 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 	private static ConversionService newConversionService() {
 		return new DefaultConversionService();
-	}
-
-	/**
-	 * Constructs a new instance of a {@link MappingContext} for Cassandra.
-	 *
-	 * @return a new {@link CassandraMappingContext}.
-	 */
-	@SuppressWarnings({ "deprecation" })
-	private static CassandraMappingContext newDefaultMappingContext() {
-
-		CassandraMappingContext mappingContext = new CassandraMappingContext();
-
-		mappingContext.setCustomConversions(new CassandraCustomConversions(Collections.emptyList()));
-		mappingContext.afterPropertiesSet();
-
-		return mappingContext;
 	}
 
 	@Override
@@ -275,11 +259,8 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 * @since 3.0
 	 */
 	@Override
-	@SuppressWarnings({ "deprecation" })
 	public CodecRegistry getCodecRegistry() {
-
-		CodecRegistry registry = this.codecRegistry != null ? this.codecRegistry.get() : null;
-		return registry != null ? registry : getMappingContext().getCodecRegistry();
+		return this.codecRegistry.get();
 	}
 
 	/**
@@ -302,7 +283,12 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 	 */
 	@SuppressWarnings("NullAway")
 	public UserTypeResolver getUserTypeResolver() {
-		return this.userTypeResolver != null ? this.userTypeResolver : getMappingContext().getUserTypeResolver();
+
+		if (this.userTypeResolver == null) {
+			throw new IllegalStateException("UserTypeResolver not set");
+		}
+
+		return this.userTypeResolver;
 	}
 
 	@Override

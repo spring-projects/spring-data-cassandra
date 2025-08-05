@@ -59,7 +59,7 @@ class SimpleReactiveCassandraRepositoryUnitTests {
 
 	@BeforeEach
 	void before() {
-		mappingContext.setUserTypeResolver(userTypeResolver);
+		converter.setUserTypeResolver(userTypeResolver);
 		when(cassandraOperations.getConverter()).thenReturn(converter);
 	}
 

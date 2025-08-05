@@ -94,7 +94,6 @@ class MappingCassandraConverterUDTUnitTests {
 	void setUp() {
 
 		mappingContext = new CassandraMappingContext();
-		mappingContext.setUserTypeResolver(typeResolver);
 
 		CassandraCustomConversions cassandraCustomConversions = new CassandraCustomConversions(
 				Arrays.asList(new UDTToCurrencyConverter(), new CurrencyToUDTConverter(typeResolver)));
@@ -102,6 +101,7 @@ class MappingCassandraConverterUDTUnitTests {
 
 		converter = new MappingCassandraConverter(mappingContext);
 		converter.setCustomConversions(cassandraCustomConversions);
+		converter.setUserTypeResolver(typeResolver);
 		converter.afterPropertiesSet();
 
 		when(typeResolver.resolveType(CqlIdentifier.fromCql("address"))).thenReturn(address);

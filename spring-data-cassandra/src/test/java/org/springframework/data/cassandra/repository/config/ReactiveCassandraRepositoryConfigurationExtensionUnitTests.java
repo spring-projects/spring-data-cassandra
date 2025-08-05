@@ -21,13 +21,14 @@ import java.util.Collection;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.core.type.StandardAnnotationMetadata;
+import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.repository.ReactiveCassandraRepository;
 import org.springframework.data.repository.config.AnnotationRepositoryConfigurationSource;
@@ -43,7 +44,7 @@ import org.springframework.data.repository.reactive.RxJava3CrudRepository;
  */
 public class ReactiveCassandraRepositoryConfigurationExtensionUnitTests {
 
-	private StandardAnnotationMetadata metadata = new StandardAnnotationMetadata(Config.class, true);
+	private AnnotationMetadata metadata = AnnotationMetadata.introspect(Config.class);
 	private ResourceLoader loader = new PathMatchingResourcePatternResolver();
 	private Environment environment = new StandardEnvironment();
 	private BeanDefinitionRegistry registry = new DefaultListableBeanFactory();

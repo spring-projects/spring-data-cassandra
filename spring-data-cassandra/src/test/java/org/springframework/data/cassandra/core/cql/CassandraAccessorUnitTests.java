@@ -94,17 +94,6 @@ class CassandraAccessorUnitTests {
 		}
 	}
 
-	@Test // DATACASS-286, DATACASS-330
-	void getUninitializedSessionThrowsIllegalStateException() {
-
-		try {
-			cassandraAccessor.getSession();
-			fail("Missing IllegalStateException");
-		} catch (IllegalStateException e) {
-			assertThat(e).hasMessageContaining("SessionFactory was not properly initialized");
-		}
-	}
-
 	@Test // DATACASS-767
 	void setAndGetKeyspace() {
 

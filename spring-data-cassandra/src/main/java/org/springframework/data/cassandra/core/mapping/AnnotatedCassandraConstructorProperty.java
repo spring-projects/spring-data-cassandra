@@ -275,12 +275,6 @@ class AnnotatedCassandraConstructorProperty implements CassandraPersistentProper
 	}
 
 	@Override
-	@Deprecated
-	public void setForceQuote(boolean forceQuote) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		throw new UnsupportedOperationException();
 	}

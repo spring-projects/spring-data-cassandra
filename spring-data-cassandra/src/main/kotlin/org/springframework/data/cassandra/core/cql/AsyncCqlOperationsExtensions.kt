@@ -19,7 +19,6 @@ import com.datastax.oss.driver.api.core.cql.AsyncResultSet
 import com.datastax.oss.driver.api.core.cql.Row
 import com.datastax.oss.driver.api.core.cql.Statement
 import java.util.concurrent.CompletableFuture
-import kotlin.reflect.KClass
 
 /**
  * Extensions for [AsyncCqlOperations].
@@ -29,37 +28,10 @@ import kotlin.reflect.KClass
  */
 
 /**
- * Extension for [AsyncCqlOperations.queryForObject] providing a [KClass] based variant.
- */
-@Deprecated(
-	"Since 2.2, use the reified variant",
-	replaceWith = ReplaceWith("queryForObject<T>(cql)")
-)
-fun <T : Any> AsyncCqlOperations.queryForObject(
-	cql: String,
-	entityClass: KClass<T>
-): CompletableFuture<T?> =
-	queryForObject(cql, entityClass.java)
-
-/**
  * Extension for [AsyncCqlOperations.queryForObject] leveraging reified type parameters.
  */
 inline fun <reified T : Any> AsyncCqlOperations.queryForObject(cql: String): CompletableFuture<T?> =
 	queryForObject(cql, T::class.java)
-
-/**
- * Extension for [AsyncCqlOperations.queryForObject] providing a [KClass] based variant.
- */
-@Deprecated(
-	"Since 2.2, use the reified variant",
-	replaceWith = ReplaceWith("queryForObject<T>(cql, args)")
-)
-fun <T : Any> AsyncCqlOperations.queryForObject(
-	cql: String,
-	entityClass: KClass<T>,
-	vararg args: Any
-): CompletableFuture<T?> =
-	queryForObject(cql, entityClass.java, *args)
 
 /**
  * Extension for [AsyncCqlOperations.queryForObject] leveraging reified type parameters.
@@ -79,19 +51,6 @@ fun <T : Any> AsyncCqlOperations.queryForObject(
 	function: (Row, Int) -> T
 ): CompletableFuture<T?> =
 	queryForObject(cql, { row, i -> function(row, i) }, *args)
-
-/**
- * Extension for [AsyncCqlOperations.queryForObject] providing a [KClass] based variant.
- */
-@Deprecated(
-	"Since 2.2, use the reified variant",
-	replaceWith = ReplaceWith("queryForObject<T>(statement)")
-)
-fun <T : Any> AsyncCqlOperations.queryForObject(
-	statement: Statement<*>,
-	entityClass: KClass<T>
-): CompletableFuture<T?> =
-	queryForObject(statement, entityClass.java) as CompletableFuture<T?>
 
 /**
  * Extension for [AsyncCqlOperations.queryForObject] leveraging reified type parameters.
@@ -115,19 +74,6 @@ inline fun <reified T : Any> AsyncCqlOperations.queryForList(
 	vararg args: Any
 ): CompletableFuture<List<T>> =
 	queryForList(cql, T::class.java, *args)
-
-/**
- * Extension for [AsyncCqlOperations.queryForList] providing a [KClass] based variant.
- */
-@Deprecated(
-	"Since 2.2, use the reified variant",
-	replaceWith = ReplaceWith("queryForList<T>(statement)")
-)
-fun <T : Any> AsyncCqlOperations.queryForList(
-	statement: Statement<*>,
-	entityClass: KClass<T>
-): CompletableFuture<List<T>> =
-	queryForList(statement, entityClass.java)
 
 /**
  * Extension for [AsyncCqlOperations.queryForList] leveraging reified type parameters.

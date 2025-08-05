@@ -21,10 +21,12 @@ import java.io.Serial;
  * Spring data access exception for when a Cassandra table being created already exists.
  *
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 public class CassandraTableExistsException extends CassandraSchemaElementExistsException {
 
 	private static final @Serial long serialVersionUID = 6032967419751410352L;
+	private final String tableName;
 
 	/**
 	 * Constructor for {@link CassandraTableExistsException}.
@@ -34,11 +36,12 @@ public class CassandraTableExistsException extends CassandraSchemaElementExistsE
 	 * @param cause the root cause from the underlying data access API.
 	 */
 	public CassandraTableExistsException(String tableName, String msg, Throwable cause) {
-		super(tableName, ElementType.TABLE, msg, cause);
+		super(tableName, cause);
+		this.tableName = tableName;
 	}
 
-	@SuppressWarnings("NullAway")
 	public String getTableName() {
-		return getElementName();
+		return tableName;
 	}
+
 }

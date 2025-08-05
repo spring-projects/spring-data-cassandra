@@ -69,8 +69,6 @@ class CassandraPersistentEntitySchemaDropperUnitTests extends CassandraPersisten
 	@BeforeEach
 	void setUp() {
 
-		context.setUserTypeResolver(typeName -> metadata.getUserDefinedType(typeName).get());
-
 		when(operations.getKeyspaceMetadata()).thenReturn(metadata);
 		when(person.getName()).thenReturn(CqlIdentifier.fromCql("person"));
 		when(contact.getName()).thenReturn(CqlIdentifier.fromCql("contact"));

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2025 the original author or authors.
+ * Copyright 2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,29 +28,15 @@ import java.util.concurrent.CompletableFuture
  *
  * @author Mark Paluch
  */
-class LegacyAsyncCqlOperationsExtensionsUnitTests {
+class AsyncCqlOperationsExtensionsUnitTests {
 
 	val operations = mockk<AsyncCqlOperations>(relaxed = true)
-
-	@Test // DATACASS-484
-	fun `queryForObject(String, KClass) extension should call its Java counterpart`() {
-
-		operations.queryForObject("", Person::class)
-		verify { operations.queryForObject("", Person::class.java) }
-	}
 
 	@Test // DATACASS-484
 	fun `queryForObject(String) extension should call its Java counterpart`() {
 
 		operations.queryForObject<Person>("")
 		verify { operations.queryForObject("", Person::class.java) }
-	}
-
-	@Test // DATACASS-484
-	fun `queryForObject(String, KClass, array) extension should call its Java counterpart`() {
-
-		operations.queryForObject("", Person::class, "foo", "bar")
-		verify { operations.queryForObject("", Person::class.java, "foo", "bar") }
 	}
 
 	@Test // DATACASS-484
@@ -65,15 +51,6 @@ class LegacyAsyncCqlOperationsExtensionsUnitTests {
 
 		operations.queryForObject("", 3) { rs: Row, _: Int -> rs.getInt(1) }
 		verify { operations.queryForObject(eq(""), any<RowMapper<Int>>(), eq(3)) }
-	}
-
-	@Test // DATACASS-484
-	fun `queryForObject(Statement, KClass) extension should call its Java counterpart`() {
-
-		val statement = SimpleStatement.newInstance("SELECT * FROM person")
-
-		operations.queryForObject(statement, Person::class)
-		verify { operations.queryForObject(statement, Person::class.java) }
 	}
 
 	@Test // DATACASS-484
@@ -97,15 +74,6 @@ class LegacyAsyncCqlOperationsExtensionsUnitTests {
 
 		operations.queryForList<Person>("", "foo", "bar")
 		verify { operations.queryForList("", Person::class.java, "foo", "bar") }
-	}
-
-	@Test // DATACASS-484
-	fun `queryForList(Statement, KClass) extension should call its Java counterpart`() {
-
-		val statement = SimpleStatement.newInstance("SELECT * FROM person")
-
-		operations.queryForList(statement, Person::class)
-		verify { operations.queryForList(statement, Person::class.java) }
 	}
 
 	@Test // DATACASS-484

@@ -41,13 +41,13 @@ class CqlIdentifierGenerator {
 
 	private @Nullable NamingStrategy namingStrategy;
 
-	static CqlIdentifier createIdentifier(String simpleName, boolean forceQuote) {
+	static CqlIdentifier createIdentifier(String simpleName) {
 
 		if (Strings.isDoubleQuoted(simpleName)) {
 			return CqlIdentifier.fromCql(simpleName);
 		}
 
-		if (forceQuote || Strings.needsDoubleQuotes(simpleName)) {
+		if (Strings.needsDoubleQuotes(simpleName)) {
 			return CqlIdentifier.fromInternal(simpleName);
 		}
 
@@ -55,7 +55,7 @@ class CqlIdentifierGenerator {
 	}
 
 	private static CqlIdentifier createIdentifier(GeneratedName name) {
-		return createIdentifier(name.getRequiredName(), name.useForceQuote());
+		return createIdentifier(name.getRequiredName());
 	}
 
 	/**
@@ -63,30 +63,27 @@ class CqlIdentifierGenerator {
 	 * generator} using a {@link NamingStrategy}.
 	 *
 	 * @param providedName the name to use if provided.
-	 * @param forceQuote whether to enforce quoting.
 	 * @param defaultNameGenerator the default name generator.
 	 * @param source source to be used for name generation.
 	 * @param parser expression parser.
 	 * @param contextFunction evaluation context provider function.
 	 * @return the generated name or an object without the name if no name could be generated.
 	 */
-	public <T> GeneratedName generate(@Nullable String providedName, boolean forceQuote,
+	public <T> GeneratedName generate(@Nullable String providedName,
 			BiFunction<NamingStrategy, T, String> defaultNameGenerator, T source, ValueExpressionParser parser,
 			BiFunction<Object, ExpressionDependencies, ValueEvaluationContext> contextFunction) {
 
 		String name;
-		boolean useForceQuote = forceQuote;
 
 		if (StringUtils.hasText(providedName)) {
 			ValueExpression expression = parser.parse(providedName);
 			name = ObjectUtils
 					.nullSafeToString(expression.evaluate(contextFunction.apply(null, expression.getExpressionDependencies())));
-			useForceQuote = true;
 		} else {
-			name = defaultNameGenerator.apply(getNamingStrategy(forceQuote), source);
+			name = defaultNameGenerator.apply(getNamingStrategy(), source);
 		}
 
-		return new GeneratedName(name, useForceQuote, source, CqlIdentifierGenerator::createIdentifier);
+		return new GeneratedName(name, source, CqlIdentifierGenerator::createIdentifier);
 	}
 
 	public void setNamingStrategy(@Nullable NamingStrategy namingStrategy) {
@@ -96,14 +93,10 @@ class CqlIdentifierGenerator {
 		this.namingStrategy = namingStrategy;
 	}
 
-	private NamingStrategy getNamingStrategy(boolean forceQuote) {
+	private NamingStrategy getNamingStrategy() {
 
 		if (namingStrategy == null) {
-			if (forceQuote) {
-				return new NamingStrategy() {};
-			} else {
 				return NamingStrategy.INSTANCE;
-			}
 		}
 
 		return namingStrategy;
@@ -117,7 +110,7 @@ class CqlIdentifierGenerator {
 	 * @param source
 	 * @param identifierFunction
 	 */
-	record GeneratedName(@Nullable String name, boolean useForceQuote, Object source,
+	record GeneratedName(@Nullable String name, Object source,
 			Function<GeneratedName, CqlIdentifier> identifierFunction) {
 
 		public boolean hasName() {

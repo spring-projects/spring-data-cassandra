@@ -175,29 +175,6 @@ public class CassandraAccessor implements InitializingBean {
 	}
 
 	/**
-	 * Set the fetch size for this template. This is important for processing large result sets: Setting this higher than
-	 * the default value will increase processing speed at the cost of memory consumption; setting this lower can avoid
-	 * transferring row data that will never be read by the application. Default is -1, indicating to use the CQL driver's
-	 * default configuration (i.e. to not pass a specific fetch size setting on to the driver).
-	 *
-	 * @see com.datastax.oss.driver.api.core.cql.SimpleStatementBuilder#setPageSize(int)
-	 * @deprecated since 3.0, use {@link #setPageSize(int)}
-	 */
-	@Deprecated
-	public void setFetchSize(int fetchSize) {
-		setPageSize(fetchSize);
-	}
-
-	/**
-	 * @return the fetch size specified for this template.
-	 * @deprecated since 3.0, use {@link #getPageSize()}.
-	 */
-	@Deprecated
-	public int getFetchSize() {
-		return getPageSize();
-	}
-
-	/**
 	 * Set the {@link CqlIdentifier keyspace} to be applied on statement-level for this template. If not set, the default
 	 * {@link CqlSession} keyspace will be used.
 	 *
@@ -274,23 +251,6 @@ public class CassandraAccessor implements InitializingBean {
 		Assert.notNull(session, "Session must not be null");
 
 		setSessionFactory(new DefaultSessionFactory(session));
-	}
-
-	/**
-	 * Returns the Cassandra {@link CqlSession} from {@link SessionFactory} used by this template to perform Cassandra
-	 * data access operations.
-	 *
-	 * @return the Cassandra {@link CqlSession} used by this template.
-	 * @see com.datastax.oss.driver.api.core.CqlSession
-	 * @deprecated since 2.0. This class uses a {@link SessionFactory} to dispatch CQL calls amongst different
-	 *             {@link CqlSession}s during its lifecycle.
-	 */
-	@Deprecated
-	public CqlSession getSession() {
-
-		Assert.state(getSessionFactory() != null, "SessionFactory was not properly initialized");
-
-		return getSessionFactory().getSession();
 	}
 
 	/**

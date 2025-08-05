@@ -15,8 +15,6 @@
  */
 package org.springframework.data.cassandra.core
 
-import kotlin.reflect.KClass
-
 /**
  * Extensions for [ExecutableSelectOperation].
  *
@@ -25,24 +23,10 @@ import kotlin.reflect.KClass
  */
 
 /**
- * Extension for [ExecutableSelectOperation.query] providing a [KClass] based variant.
- */
-@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("query<T>()"))
-fun <T : Any> ExecutableSelectOperation.query(entityClass: KClass<T>): ExecutableSelectOperation.ExecutableSelect<T> =
-		query(entityClass.java)
-
-/**
  * Extension for [ExecutableSelectOperation.query] leveraging reified type parameters.
  */
 inline fun <reified T : Any> ExecutableSelectOperation.query(): ExecutableSelectOperation.ExecutableSelect<T> =
 		query(T::class.java)
-
-/**
- * Extension for [ExecutableSelectOperation.SelectWithProjection. as] providing a [KClass] based variant.
- */
-@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("asType<T>()"))
-fun <T : Any> ExecutableSelectOperation.SelectWithProjection<*>.asType(resultType: KClass<T>): ExecutableSelectOperation.SelectWithQuery<T> =
-		`as`(resultType.java)
 
 /**
  * Extension for [ExecutableSelectOperation.FindWithProjection. as] leveraging reified type parameters.

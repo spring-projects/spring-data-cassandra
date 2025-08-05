@@ -65,7 +65,7 @@ class CassandraUserTypePersistentEntityUnitTests {
 	@Test // DATACASS-172
 	void getTableNameShouldReturnDefinedNameUsingForceQuote() {
 
-		CassandraUserTypePersistentEntity<WithForceQuote> type = getEntity(WithForceQuote.class);
+		CassandraUserTypePersistentEntity<WithQuotableName> type = getEntity(WithQuotableName.class);
 
 		assertThat(type.getTableName()).isEqualTo(CqlIdentifier.fromInternal("UpperCase"));
 	}
@@ -88,12 +88,12 @@ class CassandraUserTypePersistentEntityUnitTests {
 	@UserDefinedType("withname")
 	private static class WithName {}
 
-	@UserDefinedType(value = "UpperCase", forceQuote = true)
-	private static class WithForceQuote {}
+	@UserDefinedType(value = "UpperCase")
+	private static class WithQuotableName {}
 
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target({ ElementType.TYPE })
-	@UserDefinedType(forceQuote = true)
+	@UserDefinedType()
 	private @interface ComposedUserDefinedTypeAnnotation {
 
 		@AliasFor(annotation = UserDefinedType.class)

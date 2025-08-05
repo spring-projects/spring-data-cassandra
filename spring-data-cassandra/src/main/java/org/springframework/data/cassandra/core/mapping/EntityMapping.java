@@ -42,26 +42,13 @@ public class EntityMapping {
 	private @Nullable String entityClassName;
 
 	/**
-	 * Whether to force the table name to be quoted.
-	 *
-	 * @deprecated since 3.0. The table name gets converted into {@link com.datastax.oss.driver.api.core.CqlIdentifier}
-	 *             hence it no longer requires an indication whether the name should be quoted.
-	 */
-	private @Deprecated String forceQuote = "false";
-
-	/**
 	 * The name of the table to which the entity is mapped.
 	 */
 	private String tableName = "";
 
 	public EntityMapping(String entityClassName, String tableName) {
-		this(entityClassName, tableName, Boolean.FALSE.toString());
-	}
-
-	public EntityMapping(String entityClassName, String tableName, String forceQuote) {
 		setEntityClassName(entityClassName);
 		setTableName(tableName);
-		setForceQuote(forceQuote);
 	}
 
 	@Nullable
@@ -74,24 +61,6 @@ public class EntityMapping {
 		Assert.hasText(entityClassName, "Entity class name must not be null or empty");
 
 		this.entityClassName = entityClassName;
-	}
-
-	/**
-	 * @return
-	 * @deprecated since 3.0. The type name gets converted into {@link com.datastax.oss.driver.api.core.CqlIdentifier}
-	 *             hence it no longer requires an indication whether the name should be quoted.
-	 */
-	@Deprecated
-	public String getForceQuote() {
-		return this.forceQuote;
-	}
-
-	@Deprecated
-	public void setForceQuote(String forceQuote) {
-
-		Assert.notNull(forceQuote, "Force quote must not be null or empty");
-
-		this.forceQuote = forceQuote;
 	}
 
 	public Map<String, PropertyMapping> getPropertyMappings() {
@@ -127,7 +96,6 @@ public class EntityMapping {
 		EntityMapping that = (EntityMapping) obj;
 
 		return ObjectUtils.nullSafeEquals(this.getEntityClassName(), that.getEntityClassName())
-				&& ObjectUtils.nullSafeEquals(this.getForceQuote(), that.getForceQuote())
 				&& ObjectUtils.nullSafeEquals(this.getTableName(), that.getTableName());
 	}
 
@@ -137,7 +105,6 @@ public class EntityMapping {
 		int hashValue = 17;
 
 		hashValue = 37 * hashValue + ObjectUtils.nullSafeHashCode(this.getEntityClassName());
-		hashValue = 37 * hashValue + ObjectUtils.nullSafeHashCode(this.getForceQuote());
 		hashValue = 37 * hashValue + ObjectUtils.nullSafeHashCode(this.getTableName());
 
 		return hashValue;
@@ -146,8 +113,8 @@ public class EntityMapping {
 	@Override
 	public String toString() {
 		return String.format(
-				"{ @type = %1$s, entityClassName = %2$s, tableName = %3$s, forceQuote = %4$s, propertyMappings = %5$s }",
-				getClass().getName(), getEntityClassName(), getTableName(), getForceQuote(), toString(getPropertyMappings()));
+				"{ @type = %1$s, entityClassName = %2$s, tableName = %3$s, propertyMappings = %4$s }", getClass().getName(),
+				getEntityClassName(), getTableName(), toString(getPropertyMappings()));
 	}
 
 	private String toString(Map<?, ?> map) {

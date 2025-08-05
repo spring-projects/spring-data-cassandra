@@ -18,9 +18,9 @@ package org.springframework.data.cassandra.core;
 import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.concurrent.TimeUnit;
 
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.cassandra.core.cql.ExecutionProfileResolver;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.data.cassandra.core.query.CriteriaDefinition;
@@ -175,14 +175,6 @@ public class DeleteOptions extends WriteOptions {
 		}
 
 		@Override
-		@Deprecated
-		public DeleteOptionsBuilder fetchSize(int fetchSize) {
-
-			super.fetchSize(fetchSize);
-			return this;
-		}
-
-		@Override
 		public DeleteOptionsBuilder idempotent(boolean idempotent) {
 
 			super.idempotent(idempotent);
@@ -200,22 +192,6 @@ public class DeleteOptions extends WriteOptions {
 		public DeleteOptionsBuilder pageSize(int pageSize) {
 
 			super.pageSize(pageSize);
-			return this;
-		}
-
-		@Override
-		@Deprecated
-		public DeleteOptionsBuilder readTimeout(long readTimeout) {
-
-			super.readTimeout(readTimeout);
-			return this;
-		}
-
-		@Override
-		@Deprecated
-		public DeleteOptionsBuilder readTimeout(long readTimeout, TimeUnit timeUnit) {
-
-			super.readTimeout(readTimeout, timeUnit);
 			return this;
 		}
 

@@ -40,7 +40,7 @@ import com.datastax.oss.driver.api.core.CqlSession;
 class CqlTemplateConfigIntegrationTests extends IntegrationTestsSupport {
 
 	@Configuration
-	static class Config extends AbstractCqlTemplateConfiguration {
+	static class Config extends AbstractSessionConfiguration {
 
 		@Override
 		protected String getKeyspaceName() {

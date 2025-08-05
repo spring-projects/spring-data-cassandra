@@ -20,7 +20,6 @@ import static org.mockito.Mockito.*;
 
 import java.nio.ByteBuffer;
 import java.time.Duration;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -90,7 +89,7 @@ class QueryOptionsUtilUnitTests {
 
 		QueryOptions queryOptions = QueryOptions.builder() //
 				.pageSize(10) //
-				.readTimeout(1, TimeUnit.MINUTES) //
+				.timeout(Duration.ofMinutes(1)) //
 				.withTracing() //
 				.idempotent(true) //
 				.routingKeyspace(CqlIdentifier.fromCql("routing_ks")) //

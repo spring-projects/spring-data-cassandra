@@ -751,7 +751,7 @@ class CqlTemplateUnitTests {
 		doTestStrings(fetchSize, consistencyLevel, serialConsistencyLevel, executionProfile, null, cqlTemplateConsumer);
 	}
 
-	private void doTestStrings(@Nullable Integer fetchSize, @Nullable ConsistencyLevel consistencyLevel,
+	private void doTestStrings(@Nullable Integer pageSize, @Nullable ConsistencyLevel consistencyLevel,
 			@Nullable ConsistencyLevel serialConsistencyLevel, @Nullable String executionProfile,
 			@Nullable CqlIdentifier keyspace, Consumer<CqlTemplate> cqlTemplateConsumer) {
 
@@ -769,8 +769,8 @@ class CqlTemplateUnitTests {
 		CqlTemplate template = new CqlTemplate();
 		template.setSession(this.session);
 
-		if (fetchSize != null) {
-			template.setFetchSize(fetchSize);
+		if (pageSize != null) {
+			template.setPageSize(pageSize);
 		}
 
 		if (consistencyLevel != null) {
@@ -796,8 +796,8 @@ class CqlTemplateUnitTests {
 
 		Statement statement = statementArgumentCaptor.getValue();
 
-		if (fetchSize != null) {
-			assertThat(statement.getPageSize()).isEqualTo(fetchSize.intValue());
+		if (pageSize != null) {
+			assertThat(statement.getPageSize()).isEqualTo(pageSize.intValue());
 		}
 
 		if (consistencyLevel != null) {

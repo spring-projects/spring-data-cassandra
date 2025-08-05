@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.data.cassandra.core.cql.KeyspaceIdentifier;
 import org.springframework.data.cassandra.core.cql.keyspace.AlterKeyspaceSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateKeyspaceSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.DataCenterReplication;
@@ -71,19 +70,6 @@ class KeyspaceActionSpecificationFactory {
 	 */
 	public static KeyspaceActionSpecificationFactoryBuilder builder(String keyspaceName) {
 		return builder(CqlIdentifier.fromCql(keyspaceName));
-	}
-
-	/**
-	 * Create a new {@link KeyspaceActionSpecificationFactoryBuilder} to configure a new
-	 * {@link KeyspaceActionSpecificationFactory}.
-	 *
-	 * @param keyspaceName must not be {@literal null} or empty.
-	 * @return the new {@link KeyspaceActionSpecificationFactoryBuilder} for {@code keyspaceName}.
-	 * @deprecated since 3.0, use {@link #builder(CqlIdentifier)}.
-	 */
-	@Deprecated
-	public static KeyspaceActionSpecificationFactoryBuilder builder(KeyspaceIdentifier keyspaceName) {
-		return builder(keyspaceName.toCqlIdentifier());
 	}
 
 	/**

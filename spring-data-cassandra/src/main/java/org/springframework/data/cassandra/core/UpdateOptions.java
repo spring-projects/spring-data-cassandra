@@ -18,9 +18,9 @@ package org.springframework.data.cassandra.core;
 import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.concurrent.TimeUnit;
 
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.cassandra.core.cql.ExecutionProfileResolver;
 import org.springframework.data.cassandra.core.cql.WriteOptions;
 import org.springframework.data.cassandra.core.query.CriteriaDefinition;
@@ -182,14 +182,6 @@ public class UpdateOptions extends WriteOptions {
 		}
 
 		@Override
-		@Deprecated
-		public UpdateOptionsBuilder fetchSize(int fetchSize) {
-
-			super.fetchSize(fetchSize);
-			return this;
-		}
-
-		@Override
 		public UpdateOptionsBuilder idempotent(boolean idempotent) {
 
 			super.idempotent(idempotent);
@@ -207,22 +199,6 @@ public class UpdateOptions extends WriteOptions {
 		public UpdateOptionsBuilder pageSize(int pageSize) {
 
 			super.pageSize(pageSize);
-			return this;
-		}
-
-		@Override
-		@Deprecated
-		public UpdateOptionsBuilder readTimeout(long readTimeout) {
-
-			super.readTimeout(readTimeout);
-			return this;
-		}
-
-		@Override
-		@Deprecated
-		public UpdateOptionsBuilder readTimeout(long readTimeout, TimeUnit timeUnit) {
-
-			super.readTimeout(readTimeout, timeUnit);
 			return this;
 		}
 

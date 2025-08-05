@@ -19,8 +19,8 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.data.cassandra.core.CassandraOperations;
-import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.convert.CustomConversions;
@@ -50,18 +50,6 @@ public abstract class CassandraRepositoryQuerySupport implements RepositoryQuery
 	private final QueryStatementCreator queryStatementCreator;
 
 	private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
-
-	/**
-	 * Create a new {@link AbstractCassandraQuery} from the given {@link CassandraQueryMethod} and
-	 * {@link CassandraOperations}.
-	 *
-	 * @param queryMethod must not be {@literal null}.
-	 * @deprecated use {@link #CassandraRepositoryQuerySupport(CassandraQueryMethod, MappingContext)}
-	 */
-	@Deprecated
-	public CassandraRepositoryQuerySupport(CassandraQueryMethod queryMethod) {
-		this(queryMethod, new CassandraMappingContext());
-	}
 
 	/**
 	 * Create a new {@link AbstractCassandraQuery} from the given {@link CassandraQueryMethod} and

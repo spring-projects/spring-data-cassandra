@@ -32,24 +32,10 @@ class ReactiveCqlOperationsExtensionsUnitTests {
 	val operations = mockk<ReactiveCqlOperations>(relaxed = true)
 
 	@Test // DATACASS-484
-	fun `queryForObject(String, KClass) extension should call its Java counterpart`() {
-
-		operations.queryForObject("", Person::class)
-		verify { operations.queryForObject("", Person::class.java) }
-	}
-
-	@Test // DATACASS-484
 	fun `queryForObject(String) extension should call its Java counterpart`() {
 
 		operations.queryForObject<Person>("")
 		verify { operations.queryForObject("", Person::class.java) }
-	}
-
-	@Test // DATACASS-484
-	fun `queryForObject(String, KClass, array) extension should call its Java counterpart`() {
-
-		operations.queryForObject("", Person::class, "foo", "bar")
-		verify { operations.queryForObject("", Person::class.java, "foo", "bar") }
 	}
 
 	@Test // DATACASS-484
@@ -73,15 +59,6 @@ class ReactiveCqlOperationsExtensionsUnitTests {
 	}
 
 	@Test // DATACASS-484
-	fun `queryForObject(Statement, KClass) extension should call its Java counterpart`() {
-
-		val statement = SimpleStatement.newInstance("SELECT * FROM person")
-
-		operations.queryForObject(statement, Person::class)
-		verify { operations.queryForObject(statement, Person::class.java) }
-	}
-
-	@Test // DATACASS-484
 	fun `queryForObject(Statement) extension should call its Java counterpart`() {
 
 		val statement = SimpleStatement.newInstance("SELECT * FROM person")
@@ -102,15 +79,6 @@ class ReactiveCqlOperationsExtensionsUnitTests {
 
 		operations.queryForFlux<Person>("", "foo", "bar")
 		verify { operations.queryForFlux("", Person::class.java, "foo", "bar") }
-	}
-
-	@Test // DATACASS-484
-	fun `queryForFlux(Statement, KClass) extension should call its Java counterpart`() {
-
-		val statement = SimpleStatement.newInstance("SELECT * FROM person")
-
-		operations.queryForFlux(statement, Person::class)
-		verify { operations.queryForFlux(statement, Person::class.java) }
 	}
 
 	@Test // DATACASS-484

@@ -15,10 +15,11 @@
  */
 package org.springframework.data.cassandra.repository.config;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -57,8 +58,8 @@ public class ReactiveCassandraRepositoriesRegistrarUnitTests {
 		public ReactiveCassandraTemplate reactiveCassandraTemplate() throws Exception {
 
 			CassandraMappingContext mappingContext = new CassandraMappingContext();
-			mappingContext.setUserTypeResolver(mock(UserTypeResolver.class));
 			MappingCassandraConverter converter = new MappingCassandraConverter(mappingContext);
+			converter.setUserTypeResolver(mock(UserTypeResolver.class));
 
 			return new ReactiveCassandraTemplate(mock(ReactiveSession.class), converter);
 		}

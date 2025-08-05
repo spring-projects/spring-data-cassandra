@@ -16,7 +16,6 @@
 package org.springframework.data.cassandra.core
 
 import kotlinx.coroutines.reactive.awaitSingle
-import kotlin.reflect.KClass
 
 /**
  * Extensions for [ReactiveInsertOperation].
@@ -24,13 +23,6 @@ import kotlin.reflect.KClass
  * @author Mark Paluch
  * @since 2.1
  */
-
-/**
- * Extension for [ReactiveInsertOperation.insert] providing a [KClass] based variant.
- */
-@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("insert<T>()"))
-fun <T : Any> ReactiveInsertOperation.insert(entityClass: KClass<T>): ReactiveInsertOperation.ReactiveInsert<T> =
-		insert(entityClass.java)
 
 /**
  * Extension for [ReactiveInsertOperation.insert] leveraging reified type parameters.

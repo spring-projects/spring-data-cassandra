@@ -197,7 +197,7 @@ class CustomConversionIntegrationTests extends AbstractKeyspaceCreatingIntegrati
 		CustomConversions customConversions = new CassandraCustomConversions(converters);
 
 		CassandraMappingContext mappingContext = new CassandraMappingContext();
-		mappingContext.setCustomConversions(customConversions);
+		mappingContext.setSimpleTypeHolder(customConversions.getSimpleTypeHolder());
 		mappingContext.afterPropertiesSet();
 
 		MappingCassandraConverter converter = new MappingCassandraConverter(mappingContext);

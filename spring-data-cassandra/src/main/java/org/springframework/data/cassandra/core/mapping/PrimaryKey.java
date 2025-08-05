@@ -53,14 +53,4 @@ public @interface PrimaryKey {
 	@AliasFor(annotation = Column.class, attribute = "value")
 	String value() default "";
 
-	/**
-	 * Whether to cause the column name to be force-quoted if the primary key is of a simple type, else ignored.
-	 *
-	 * @deprecated since 3.0. The column name gets converted into {@link com.datastax.oss.driver.api.core.CqlIdentifier}
-	 *             hence it no longer requires an indication whether the name should be quoted.
-	 * @see com.datastax.oss.driver.api.core.CqlIdentifier#fromInternal(String)
-	 */
-	@Deprecated
-	@AliasFor(annotation = Column.class, attribute = "forceQuote")
-	boolean forceQuote() default false;
 }

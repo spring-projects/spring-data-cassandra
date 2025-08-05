@@ -17,7 +17,6 @@ package org.springframework.data.cassandra.core
 
 import kotlinx.coroutines.reactive.awaitSingle
 import org.springframework.data.cassandra.core.query.Update
-import kotlin.reflect.KClass
 
 /**
  * Extensions for [ReactiveUpdateOperation].
@@ -25,13 +24,6 @@ import kotlin.reflect.KClass
  * @author Mark Paluch
  * @since 2.1
  */
-
-/**
- * Extension for [ReactiveUpdateOperation.update] providing a [KClass] based variant.
- */
-@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("update<T>()"))
-fun <T : Any> ReactiveUpdateOperation.update(entityClass: KClass<T>): ReactiveUpdateOperation.ReactiveUpdate =
-		update(entityClass.java)
 
 /**
  * Extension for [ReactiveUpdateOperation.update] leveraging reified type parameters.

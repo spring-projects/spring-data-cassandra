@@ -17,6 +17,7 @@ package org.springframework.data.cassandra.core.convert;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +25,9 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.assertj.core.api.SoftAssertions;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
@@ -36,7 +39,6 @@ import org.springframework.data.convert.PropertyValueConverter;
 import org.springframework.data.convert.ValueConverter;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.core.data.TupleValue;
 import com.datastax.oss.driver.api.core.type.DataType;
@@ -57,7 +59,7 @@ public class ColumnTypeResolverUnitTests {
 	private CassandraMappingContext mappingContext = new CassandraMappingContext();
 	private ColumnTypeResolver resolver = new DefaultColumnTypeResolver(mappingContext,
 			SchemaFactory.ShallowUserTypeResolver.INSTANCE, () -> CodecRegistry.DEFAULT,
-			mappingContext::getCustomConversions);
+			() -> new CassandraCustomConversions(Collections.emptyList()));
 
 	@Test // DATACASS-743
 	void shouldResolveSimpleType() {

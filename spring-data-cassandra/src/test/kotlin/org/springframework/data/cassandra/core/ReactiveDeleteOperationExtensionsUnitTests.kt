@@ -34,13 +34,6 @@ class ReactiveDeleteOperationExtensionsUnitTests {
 	val operations = mockk<ReactiveFluentCassandraOperations>(relaxed = true)
 
 	@Test // DATACASS-484
-	fun `delete(KClass) extension should call its Java counterpart`() {
-
-		operations.delete(Person::class);
-		verify { operations.delete(Person::class.java) }
-	}
-
-	@Test // DATACASS-484
 	fun `delete() with reified type parameter extension should call its Java counterpart`() {
 
 		operations.delete<Person>()

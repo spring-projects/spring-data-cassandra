@@ -27,10 +27,10 @@ import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.StatementFactory;
-import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.convert.UpdateMapper;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
@@ -58,15 +58,15 @@ import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
 class CassandraQueryCreatorUnitTests {
 
 	private CassandraMappingContext context;
-	private CassandraConverter converter;
+	private MappingCassandraConverter converter;
 
 	@BeforeEach
 	void setUp() {
 
 		context = new CassandraMappingContext();
-		context.setUserTypeResolver(mock(UserTypeResolver.class));
 
 		converter = new MappingCassandraConverter(context);
+		converter.setUserTypeResolver(mock(UserTypeResolver.class));
 	}
 
 	@Test // DATACASS-7
@@ -257,7 +257,7 @@ class CassandraQueryCreatorUnitTests {
 
 		String query = createQuery("findByIdAndSet", QuotedType.class, "Walter", Arrays.asList("White"));
 
-		assertThat(query).isEqualTo("SELECT * FROM \"myTable\" WHERE my_id='Walter' AND \"set\"={'White'}");
+		assertThat(query).isEqualTo("SELECT * FROM \"myTable\" WHERE \"myId\"='Walter' AND \"set\"={'White'}");
 	}
 
 	@Test // DATACASS-7
@@ -325,10 +325,10 @@ class CassandraQueryCreatorUnitTests {
 		Map<String, String> mymap;
 	}
 
-	@Table(value = "myTable", forceQuote = true)
+	@Table(value = "myTable")
 	private static class QuotedType {
 
-		@PrimaryKey(value = "my_id", forceQuote = true) String id;
+		@PrimaryKey(value = "myId") String id;
 
 		@Column(value = "set") Set<String> set;
 	}

@@ -21,10 +21,13 @@ import java.io.Serial;
  * Spring data access exception for Cassandra when a keyspace being created already exists.
  *
  * @author Matthew T. Adams
+ * @author Mark Paluch
  */
 public class CassandraKeyspaceExistsException extends CassandraSchemaElementExistsException {
 
 	private static final @Serial long serialVersionUID = 6032967419751410352L;
+
+	private final String keyspaceName;
 
 	/**
 	 * Constructor for {@link CassandraKeyspaceExistsException}.
@@ -34,11 +37,12 @@ public class CassandraKeyspaceExistsException extends CassandraSchemaElementExis
 	 * @param cause the root cause from the underlying data access API.
 	 */
 	public CassandraKeyspaceExistsException(String keyspaceName, String msg, Throwable cause) {
-		super(keyspaceName, ElementType.KEYSPACE, msg, cause);
+		super(msg, cause);
+		this.keyspaceName = keyspaceName;
 	}
 
-	@SuppressWarnings("NullAway")
 	public String getKeyspaceName() {
-		return getElementName();
+		return keyspaceName;
 	}
+
 }

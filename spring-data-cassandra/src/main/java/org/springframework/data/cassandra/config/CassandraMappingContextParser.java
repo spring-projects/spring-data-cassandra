@@ -24,7 +24,6 @@ import java.util.Set;
 import org.jspecify.annotations.Nullable;
 
 import org.springframework.beans.factory.BeanDefinitionStoreException;
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
@@ -33,7 +32,6 @@ import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.EntityMapping;
 import org.springframework.data.cassandra.core.mapping.Mapping;
 import org.springframework.data.cassandra.core.mapping.PropertyMapping;
-import org.springframework.data.cassandra.core.mapping.SimpleUserTypeResolver;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
@@ -99,13 +97,13 @@ class CassandraMappingContextParser extends AbstractSingleBeanDefinitionParser {
 		String userTypeResolverRef = element.getAttribute("user-type-resolver-ref");
 
 		if (StringUtils.hasText(userTypeResolverRef)) {
-			Assert.isTrue(userTypeResolvers.isEmpty(), "Must not define user-type-resolver and user-type-resolver-ref");
-			builder.addPropertyReference("userTypeResolver", userTypeResolverRef);
+			throw new IllegalArgumentException(
+					"user-type-resolver-ref attribute is no longer supported. Please configure the user-type-resolver using the Converter.");
 		}
 
 		if (!userTypeResolvers.isEmpty()) {
-			BeanDefinition userTypeResolver = parseUserTypeResolver(userTypeResolvers.get(0));
-			builder.addPropertyValue("userTypeResolver", userTypeResolver);
+			throw new IllegalArgumentException(
+					"user-type-resolver is no longer supported. Please configure the user-type-resolver using the Converter.");
 		}
 
 		Mapping mapping = new Mapping();
@@ -123,41 +121,18 @@ class CassandraMappingContextParser extends AbstractSingleBeanDefinitionParser {
 		Element table = DomUtils.getChildElementByTagName(entity, "table");
 
 		String tableName = "";
-		String forceQuote = "";
 
 		if (table != null) {
 			tableName = table.getAttribute("name");
 			tableName = (StringUtils.hasText(tableName) ? tableName : "");
-			forceQuote = String.valueOf(Boolean.parseBoolean(table.getAttribute("force-quote")));
 		}
 
 		Map<String, PropertyMapping> propertyMappings = parsePropertyMappings(entity);
 
-		EntityMapping entityMapping = new EntityMapping(className, tableName, forceQuote);
+		EntityMapping entityMapping = new EntityMapping(className, tableName);
 		entityMapping.setPropertyMappings(propertyMappings);
 
 		return entityMapping;
-	}
-
-	private BeanDefinition parseUserTypeResolver(Element entity) {
-
-		String sessionRef = entity.getAttribute("session-ref");
-
-		if (StringUtils.hasText(sessionRef)) {
-			BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(SimpleUserTypeResolver.class);
-			builder.addConstructorArgReference(sessionRef);
-			return builder.getBeanDefinition();
-		}
-
-		String keyspaceName = entity.getAttribute("keyspace-name");
-		Assert.state(StringUtils.hasText(keyspaceName), "keyspace-name attribute must not be null or empty");
-		String clusterRef = entity.getAttribute("cluster-ref");
-
-		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(SimpleUserTypeResolver.class);
-		builder.addConstructorArgReference(StringUtils.hasText(clusterRef) ? clusterRef : DefaultCqlBeanNames.CLUSTER);
-		builder.addConstructorArgValue(keyspaceName);
-
-		return builder.getBeanDefinition();
 	}
 
 	private Map<String, PropertyMapping> parsePropertyMappings(Element entity) {
@@ -181,7 +156,7 @@ class CassandraMappingContextParser extends AbstractSingleBeanDefinitionParser {
 			value = property.getAttribute("force-quote");
 
 			if (StringUtils.hasText(value)) {
-				propertyMapping.setForceQuote(value);
+				throw new IllegalArgumentException("force-quote is no longer supported.");
 			}
 
 			propertyMappings.put(propertyMapping.getPropertyName(), propertyMapping);

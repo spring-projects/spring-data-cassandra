@@ -21,15 +21,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 import org.springframework.data.cassandra.core.cql.CqlTemplate;
-import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
-import org.springframework.data.cassandra.core.mapping.SimpleUserTypeResolver;
 import org.springframework.data.cassandra.repository.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
-import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * Integration tests for XML-based Cassandra configuration using the Cassandra namespace parsed with
@@ -51,17 +49,6 @@ class CassandraNamespaceIntegrationTests extends AbstractSpringDataEmbeddedCassa
 		List<Map<String, Object>> result = cqlTemplate.queryForList("SELECT * FROM mytable1");
 
 		assertThat(result).isEmpty();
-	}
-
-	@Test // DATACASS-172
-	void mappingContextShouldHaveUserTypeResolverConfigured() {
-
-		CassandraMappingContext mappingContext = this.applicationContext.getBean(CassandraMappingContext.class);
-
-		SimpleUserTypeResolver userTypeResolver = (SimpleUserTypeResolver) ReflectionTestUtils.getField(mappingContext,
-				"userTypeResolver");
-
-		assertThat(userTypeResolver).isNotNull();
 	}
 
 	@Test // DATACASS-417

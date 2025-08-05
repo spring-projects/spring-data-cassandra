@@ -53,13 +53,4 @@ public @interface Table {
 	 */
 	String value() default "";
 
-	/**
-	 * Whether to cause the table name to be force-quoted.
-	 *
-	 * @deprecated since 3.0. The table name gets converted into {@link com.datastax.oss.driver.api.core.CqlIdentifier}
-	 *             hence it no longer requires an indication whether the name should be quoted.
-	 * @see com.datastax.oss.driver.api.core.CqlIdentifier#fromInternal(String)
-	 */
-	@Deprecated
-	boolean forceQuote() default false;
 }

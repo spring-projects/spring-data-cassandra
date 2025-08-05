@@ -36,15 +36,6 @@ class CassandraOperationsExtensionsUnitTests {
 	val operations = mockk<CassandraOperations>(relaxed = true)
 
 	@Test // DATACASS-484
-	fun `getTableName(KClass) extension should call its Java counterpart`() {
-
-		every { operations.getTableName(Person::class.java) } returns CqlIdentifier.fromCql("person")
-
-		operations.getTableName(Person::class)
-		verify { operations.getTableName(Person::class.java) }
-	}
-
-	@Test // DATACASS-484
 	fun `getTableName() with reified type parameter extension should call its Java counterpart`() {
 
 		every { operations.getTableName(Person::class.java) } returns CqlIdentifier.fromCql("person")
@@ -58,13 +49,6 @@ class CassandraOperationsExtensionsUnitTests {
 	// -------------------------------------------------------------------------
 
 	@Test // DATACASS-484
-	fun `select(String, KClass) extension should call its Java counterpart`() {
-
-		operations.select("SELECT * FROM person", Person::class)
-		verify { operations.select("SELECT * FROM person", Person::class.java) }
-	}
-
-	@Test // DATACASS-484
 	fun `select(String) with reified type parameter extension should call its Java counterpart`() {
 
 		operations.select<Person>("SELECT * FROM person")
@@ -72,26 +56,10 @@ class CassandraOperationsExtensionsUnitTests {
 	}
 
 	@Test // DATACASS-484
-	fun `stream(String, KClass) extension should call its Java counterpart`() {
-
-		operations.stream("SELECT * FROM person", Person::class)
-		verify { operations.stream("SELECT * FROM person", Person::class.java) }
-	}
-
-	@Test // DATACASS-484
 	fun `stream(String) with reified type parameter extension should call its Java counterpart`() {
 
 		operations.stream<Person>("SELECT * FROM person")
 		verify { operations.stream("SELECT * FROM person", Person::class.java) }
-	}
-
-	@Test // DATACASS-484
-	fun `selectOne(String, KClass) extension should call its Java counterpart`() {
-
-		every { operations.selectOne("SELECT * FROM person", Person::class.java) } returns Person("Walter", "White")
-
-		operations.selectOne("SELECT * FROM person", Person::class)
-		verify { operations.selectOne("SELECT * FROM person", Person::class.java) }
 	}
 
 	@Test // DATACASS-484
@@ -108,30 +76,11 @@ class CassandraOperationsExtensionsUnitTests {
 	// -------------------------------------------------------------------------
 
 	@Test // DATACASS-484
-	fun `select(Statement, KClass) extension should call its Java counterpart`() {
-
-		val statement = SimpleStatement.newInstance("SELECT * FROM person")
-
-		operations.select(statement, Person::class)
-		verify { operations.select(statement, Person::class.java) }
-	}
-
-	@Test // DATACASS-484
 	fun `select(Statement) with reified type parameter extension should call its Java counterpart`() {
 
 		val statement = SimpleStatement.newInstance("SELECT * FROM person")
 		operations.select<Person>(statement)
 		verify { operations.select(statement, Person::class.java) }
-	}
-
-	@Test // DATACASS-484
-	fun `slice(Statement, KClass) extension should call its Java counterpart`() {
-
-		val statement = SimpleStatement.newInstance("SELECT * FROM person")
-		every { operations.slice(statement, Person::class.java) } returns SliceImpl(listOf(Person("Walter", "White")))
-
-		operations.slice(statement, Person::class)
-		verify { operations.slice(statement, Person::class.java) }
 	}
 
 	@Test // DATACASS-484
@@ -145,31 +94,12 @@ class CassandraOperationsExtensionsUnitTests {
 	}
 
 	@Test // DATACASS-484
-	fun `stream(Statement, KClass) extension should call its Java counterpart`() {
-
-		val statement = SimpleStatement.newInstance("SELECT * FROM person")
-
-		operations.stream(statement, Person::class)
-		verify { operations.stream(statement, Person::class.java) }
-	}
-
-	@Test // DATACASS-484
 	fun `stream(Statement) with reified type parameter extension should call its Java counterpart`() {
 
 		val statement = SimpleStatement.newInstance("SELECT * FROM person")
 
 		operations.stream<Person>(statement)
 		verify { operations.stream(statement, Person::class.java) }
-	}
-
-	@Test // DATACASS-484
-	fun `selectOne(Statement, KClass) extension should call its Java counterpart`() {
-
-		val statement = SimpleStatement.newInstance("SELECT * FROM person")
-		every { operations.selectOne("SELECT * FROM person", Person::class.java) } returns Person("Walter", "White")
-
-		operations.selectOne(statement, Person::class)
-		verify { operations.selectOne(statement, Person::class.java) }
 	}
 
 	@Test // DATACASS-484
@@ -187,26 +117,10 @@ class CassandraOperationsExtensionsUnitTests {
 	// -------------------------------------------------------------------------
 
 	@Test // DATACASS-484
-	fun `select(Query, KClass) extension should call its Java counterpart`() {
-
-		operations.select(Query.empty(), Person::class)
-		verify { operations.select(Query.empty(), Person::class.java) }
-	}
-
-	@Test // DATACASS-484
 	fun `select(Query) with reified type parameter extension should call its Java counterpart`() {
 
 		operations.select<Person>(Query.empty())
 		verify { operations.select(Query.empty(), Person::class.java) }
-	}
-
-	@Test // DATACASS-484
-	fun `slice(Query, KClass) extension should call its Java counterpart`() {
-
-		every { operations.slice(Query.empty(), Person::class.java) } returns SliceImpl(listOf(Person("Walter", "White")))
-
-		operations.slice(Query.empty(), Person::class)
-		verify { operations.slice(Query.empty(), Person::class.java) }
 	}
 
 	@Test // DATACASS-484
@@ -219,26 +133,10 @@ class CassandraOperationsExtensionsUnitTests {
 	}
 
 	@Test // DATACASS-484
-	fun `stream(Query, KClass) extension should call its Java counterpart`() {
-
-		operations.stream(Query.empty(), Person::class)
-		verify { operations.stream(Query.empty(), Person::class.java) }
-	}
-
-	@Test // DATACASS-484
 	fun `stream(Query) with reified type parameter extension should call its Java counterpart`() {
 
 		operations.stream<Person>(Query.empty())
 		verify { operations.stream(Query.empty(), Person::class.java) }
-	}
-
-	@Test // DATACASS-484
-	fun `selectOne(Query, KClass) extension should call its Java counterpart`() {
-
-		every { operations.selectOne(Query.empty(), Person::class.java) } returns Person("Walter", "White")
-
-		operations.selectOne(Query.empty(), Person::class)
-		verify { operations.selectOne(Query.empty(), Person::class.java) }
 	}
 
 	@Test // DATACASS-484
@@ -251,24 +149,10 @@ class CassandraOperationsExtensionsUnitTests {
 	}
 
 	@Test // DATACASS-484
-	fun `update(Query, Update, KClass) extension should call its Java counterpart`() {
-
-		operations.update(Query.empty(), Update.empty(), Person::class)
-		verify { operations.update(Query.empty(), Update.empty(), Person::class.java) }
-	}
-
-	@Test // DATACASS-484
 	fun `update(Query, Update) with reified type parameter extension should call its Java counterpart`() {
 
 		operations.update<Person>(Query.empty(), Update.empty())
 		verify { operations.update(Query.empty(), Update.empty(), Person::class.java) }
-	}
-
-	@Test // DATACASS-484
-	fun `delete(Query, KClass) extension should call its Java counterpart`() {
-
-		operations.delete(Query.empty(), Person::class)
-		verify { operations.delete(Query.empty(), Person::class.java) }
 	}
 
 	@Test // DATACASS-484
@@ -283,24 +167,10 @@ class CassandraOperationsExtensionsUnitTests {
 	// -------------------------------------------------------------------------
 
 	@Test // DATACASS-484
-	fun `count(KClass) extension should call its Java counterpart`() {
-
-		operations.count(Person::class)
-		verify { operations.count(Person::class.java) }
-	}
-
-	@Test // DATACASS-484
 	fun `count() with reified type parameter extension should call its Java counterpart`() {
 
 		operations.count<Person>()
 		verify { operations.count(Person::class.java) }
-	}
-
-	@Test // DATACASS-484
-	fun `count(Query, KClass) extension should call its Java counterpart`() {
-
-		operations.count(Query.empty(), Person::class)
-		verify { operations.count(Query.empty(), Person::class.java) }
 	}
 
 	@Test // DATACASS-484
@@ -311,13 +181,6 @@ class CassandraOperationsExtensionsUnitTests {
 	}
 
 	@Test // DATACASS-484
-	fun `exists(Any, KClass) extension should call its Java counterpart`() {
-
-		operations.exists("id", Person::class)
-		verify { operations.exists("id", Person::class.java) }
-	}
-
-	@Test // DATACASS-484
 	fun `exists(Any) with reified type parameter extension should call its Java counterpart`() {
 
 		operations.exists<Person>("id")
@@ -325,26 +188,10 @@ class CassandraOperationsExtensionsUnitTests {
 	}
 
 	@Test // DATACASS-484
-	fun `exists(Query, KClass) extension should call its Java counterpart`() {
-
-		operations.exists(Query.empty(), Person::class)
-		verify { operations.exists(Query.empty(), Person::class.java) }
-	}
-
-	@Test // DATACASS-484
 	fun `exists(Query) with reified type parameter extension should call its Java counterpart`() {
 
 		operations.exists<Person>(Query.empty())
 		verify { operations.exists(Query.empty(), Person::class.java) }
-	}
-
-	@Test // DATACASS-484
-	fun `selectOneById(Any, KClass) extension should call its Java counterpart`() {
-
-		every { operations.selectOneById("id", Person::class.java) } returns Person("Walter", "White")
-
-		operations.selectOneById("id", Person::class)
-		verify { operations.selectOneById("id", Person::class.java) }
 	}
 
 	@Test // DATACASS-484
@@ -357,24 +204,10 @@ class CassandraOperationsExtensionsUnitTests {
 	}
 
 	@Test // DATACASS-484
-	fun `deleteById(Any, KClass) extension should call its Java counterpart`() {
-
-		operations.deleteById("id", Person::class)
-		verify { operations.deleteById("id", Person::class.java) }
-	}
-
-	@Test // DATACASS-484
 	fun `deleteById(Any) with reified type parameter extension should call its Java counterpart`() {
 
 		operations.deleteById<Person>("id")
 		verify { operations.deleteById("id", Person::class.java) }
-	}
-
-	@Test // DATACASS-484
-	fun `truncate(KClass) extension should call its Java counterpart`() {
-
-		operations.truncate(Person::class)
-		verify { operations.truncate(Person::class.java) }
 	}
 
 	@Test // DATACASS-484

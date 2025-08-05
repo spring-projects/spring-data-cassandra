@@ -25,13 +25,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.StreamSupport;
 
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.annotation.AnnotatedElementUtils;
-import org.springframework.data.cassandra.core.convert.CassandraCustomConversions;
-import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.mapping.context.AbstractMappingContext;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.model.Property;
@@ -43,8 +42,6 @@ import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
-import com.datastax.oss.driver.api.core.type.DataType;
-import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
 
 /**
  * Default implementation of a {@link MappingContext} for Cassandra using {@link CassandraPersistentEntity} and
@@ -67,15 +64,9 @@ public class CassandraMappingContext
 
 	private @Nullable ClassLoader beanClassLoader;
 
-	private @Deprecated CodecRegistry codecRegistry = CodecRegistry.DEFAULT;
-
-	private @Deprecated CustomConversions customConversions = new CassandraCustomConversions(Collections.emptyList());
-
 	private Mapping mapping = new Mapping();
 
 	private @Nullable NamingStrategy namingStrategy;
-
-	private @Deprecated @Nullable UserTypeResolver userTypeResolver;
 
 	// caches
 	private final Map<CqlIdentifier, Set<CassandraPersistentEntity<?>>> entitySetsByTableName = new ConcurrentHashMap<>();
@@ -88,24 +79,7 @@ public class CassandraMappingContext
 	 * Create a new {@link CassandraMappingContext}.
 	 */
 	public CassandraMappingContext() {
-		setSimpleTypeHolder(customConversions.getSimpleTypeHolder());
-	}
-
-	/**
-	 * Create a new {@link CassandraMappingContext} given {@link UserTypeResolver} and {@link TupleTypeFactory}.
-	 *
-	 * @param userTypeResolver must not be {@literal null}.
-	 * @param tupleTypeFactory must not be {@literal null}.
-	 * @since 2.1
-	 * @deprecated since 3.0, {@link UserTypeResolver} and {@link TupleTypeFactory} no longer required here as high-level
-	 *             type resolution went into {@link org.springframework.data.cassandra.core.convert.CassandraConverter}.
-	 */
-	@Deprecated
-	public CassandraMappingContext(UserTypeResolver userTypeResolver, TupleTypeFactory tupleTypeFactory) {
-
-		setUserTypeResolver(userTypeResolver);
-		setTupleTypeFactory(tupleTypeFactory);
-		setSimpleTypeHolder(customConversions.getSimpleTypeHolder());
+		setSimpleTypeHolder(CassandraSimpleTypeHolder.HOLDER);
 	}
 
 	@Override
@@ -129,7 +103,7 @@ public class CassandraMappingContext
 
 			if (StringUtils.hasText(entityTableName)) {
 				entity.setTableName(
-						CqlIdentifierGenerator.createIdentifier(entityTableName, Boolean.valueOf(entityMapping.getForceQuote())));
+						CqlIdentifierGenerator.createIdentifier(entityTableName));
 			}
 
 			processMappingOverrides(entity, entityMapping);
@@ -156,12 +130,8 @@ public class CassandraMappingContext
 
 		CassandraPersistentProperty property = entity.getRequiredPersistentProperty(mapping.getPropertyName());
 
-		boolean forceQuote = Boolean.parseBoolean(mapping.getForceQuote());
-
-		property.setForceQuote(forceQuote);
-
 		if (StringUtils.hasText(mapping.getColumnName())) {
-			property.setColumnName(CqlIdentifierGenerator.createIdentifier(mapping.getColumnName(), forceQuote));
+			property.setColumnName(CqlIdentifierGenerator.createIdentifier(mapping.getColumnName()));
 		}
 	}
 
@@ -172,31 +142,6 @@ public class CassandraMappingContext
 
 	public void setBeanClassLoader(ClassLoader beanClassLoader) {
 		this.beanClassLoader = beanClassLoader;
-	}
-
-	/**
-	 * Sets the {@link CustomConversions}.
-	 *
-	 * @param customConversions must not be {@literal null}.
-	 * @since 1.5
-	 * @deprecated since 3.0. Use custom conversion through
-	 *             {@link org.springframework.data.cassandra.core.convert.MappingCassandraConverter}.
-	 */
-	@Deprecated
-	public void setCustomConversions(CustomConversions customConversions) {
-
-		Assert.notNull(customConversions, "CustomConversions must not be null");
-
-		this.customConversions = customConversions;
-	}
-
-	/**
-	 * @deprecated since 3.0. Use custom conversion through
-	 *             {@link org.springframework.data.cassandra.core.convert.MappingCassandraConverter}.
-	 */
-	@Deprecated
-	public CustomConversions getCustomConversions() {
-		return customConversions;
 	}
 
 	/**
@@ -230,31 +175,6 @@ public class CassandraMappingContext
 	}
 
 	/**
-	 * Sets the {@link CodecRegistry}.
-	 *
-	 * @param codecRegistry must not be {@literal null}.
-	 * @since 2.2
-	 * @deprecated since 3.0. Set {@link CodecRegistry} directly on
-	 *             {@link org.springframework.data.cassandra.core.convert.CassandraConverter}.
-	 */
-	@Deprecated
-	public void setCodecRegistry(CodecRegistry codecRegistry) {
-
-		Assert.notNull(codecRegistry, "CodecRegistry must not be null");
-
-		this.codecRegistry = codecRegistry;
-	}
-
-	/**
-	 * @deprecated since 3.0. Retrieve {@link CodecRegistry} directly from
-	 *             {@link org.springframework.data.cassandra.core.convert.CassandraConverter}.
-	 */
-	@Deprecated
-	public CodecRegistry getCodecRegistry() {
-		return this.codecRegistry;
-	}
-
-	/**
 	 * Set the {@link NamingStrategy} to use.
 	 *
 	 * @param namingStrategy must not be {@literal null}.
@@ -265,43 +185,6 @@ public class CassandraMappingContext
 		Assert.notNull(namingStrategy, "NamingStrategy must not be null");
 
 		this.namingStrategy = namingStrategy;
-	}
-
-	/**
-	 * Sets the {@link TupleTypeFactory}.
-	 *
-	 * @param tupleTypeFactory must not be {@literal null}.
-	 * @since 2.1
-	 * @deprecated since 3.0. Tuple type creation uses
-	 *             {@link com.datastax.oss.driver.api.core.type.DataTypes#tupleOf(DataType...)}
-	 */
-	@Deprecated
-	public void setTupleTypeFactory(TupleTypeFactory tupleTypeFactory) {}
-
-	/**
-	 * Sets the {@link UserTypeResolver}.
-	 *
-	 * @param userTypeResolver must not be {@literal null}.
-	 * @since 1.5
-	 * @deprecated since 3.0. Set {@link UserTypeResolver} directly on
-	 *             {@link org.springframework.data.cassandra.core.convert.CassandraConverter}.
-	 */
-	@Deprecated
-	public void setUserTypeResolver(UserTypeResolver userTypeResolver) {
-
-		Assert.notNull(userTypeResolver, "UserTypeResolver must not be null");
-
-		this.userTypeResolver = userTypeResolver;
-	}
-
-	/**
-	 * @deprecated since 3.0. Retrieve {@link UserTypeResolver} directly from
-	 *             {@link org.springframework.data.cassandra.core.convert.CassandraConverter}.
-	 */
-	@Nullable
-	@Deprecated
-	public UserTypeResolver getUserTypeResolver() {
-		return this.userTypeResolver;
 	}
 
 	/**
@@ -348,8 +231,7 @@ public class CassandraMappingContext
 
 	@Override
 	protected boolean shouldCreatePersistentEntityFor(TypeInformation<?> typeInfo) {
-		return !this.customConversions.hasCustomWriteTarget(typeInfo.getType())
-				&& super.shouldCreatePersistentEntityFor(typeInfo);
+		return super.shouldCreatePersistentEntityFor(typeInfo);
 	}
 
 	@Override

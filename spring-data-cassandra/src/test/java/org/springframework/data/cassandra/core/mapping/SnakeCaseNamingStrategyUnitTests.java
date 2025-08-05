@@ -34,9 +34,6 @@ class SnakeCaseNamingStrategyUnitTests {
 
 	@BeforeEach
 	void before() {
-		context.setUserTypeResolver(typeName -> {
-			throw new IllegalStateException("");
-		});
 		context.setNamingStrategy(NamingStrategy.SNAKE_CASE);
 	}
 
@@ -99,13 +96,14 @@ class SnakeCaseNamingStrategyUnitTests {
 		String firstName;
 	}
 
-	@Table(forceQuote = true)
+	@Table
 	private static class QuotedPersonTable {
 
-		@Id @PrimaryKey(forceQuote = true) String firstName;
+		@Id
+		@PrimaryKey String firstName;
 	}
 
-	@UserDefinedType(forceQuote = true)
+	@UserDefinedType
 	private static class QuotedMyUserType {
 
 		String firstName;

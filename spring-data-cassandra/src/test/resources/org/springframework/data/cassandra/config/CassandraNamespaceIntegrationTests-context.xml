@@ -21,9 +21,7 @@
 				location="classpath:/org/springframework/data/cassandra/config/schema.cql"/>
 	</cassandra:session-factory>
 
-	<cassandra:mapping>
-		<cassandra:user-type-resolver session-ref="cassandraSession"/>
-	</cassandra:mapping>
+	<cassandra:mapping/>
 
 	<cassandra:converter/>
 

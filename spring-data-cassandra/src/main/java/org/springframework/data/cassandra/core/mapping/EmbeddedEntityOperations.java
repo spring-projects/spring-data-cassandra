@@ -91,20 +91,8 @@ public class EmbeddedEntityOperations {
 		}
 
 		@Override
-		@Deprecated
-		public void setForceQuote(boolean forceQuote) {
-			delegate.setForceQuote(forceQuote);
-		}
-
-		@Override
 		public CqlIdentifier getTableName() {
 			return delegate.getTableName();
-		}
-
-		@Override
-		@Deprecated
-		public void setTableName(org.springframework.data.cassandra.core.cql.CqlIdentifier tableName) {
-			delegate.setTableName(tableName);
 		}
 
 		@Override
@@ -376,12 +364,6 @@ public class EmbeddedEntityOperations {
 		}
 
 		@Override
-		@Deprecated
-		public void setColumnName(org.springframework.data.cassandra.core.cql.CqlIdentifier columnName) {
-			delegate.setColumnName(columnName);
-		}
-
-		@Override
 		public void setColumnName(CqlIdentifier columnName) {
 			delegate.setColumnName(columnName);
 		}
@@ -389,12 +371,6 @@ public class EmbeddedEntityOperations {
 		@Override
 		public CqlIdentifier getColumnName() {
 			return CqlIdentifier.fromInternal(prefix + delegate.getRequiredColumnName().asInternal());
-		}
-
-		@Override
-		@Deprecated
-		public void setForceQuote(boolean forceQuote) {
-			delegate.setForceQuote(forceQuote);
 		}
 
 		@Override

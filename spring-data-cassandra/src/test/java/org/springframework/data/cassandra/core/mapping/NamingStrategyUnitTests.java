@@ -17,8 +17,8 @@ package org.springframework.data.cassandra.core.mapping;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.StringUtils;
@@ -33,13 +33,6 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
 class NamingStrategyUnitTests {
 
 	private CassandraMappingContext context = new CassandraMappingContext();
-
-	@BeforeEach
-	void before() {
-		context.setUserTypeResolver(typeName -> {
-			throw new IllegalStateException("");
-		});
-	}
 
 	@Test
 	void getTableNameGeneratesTableName() {
@@ -107,41 +100,6 @@ class NamingStrategyUnitTests {
 		assertThat(entity.getRequiredIdProperty().getColumnName()).isEqualTo(CqlIdentifier.fromCql("firstname"));
 	}
 
-	@Test // DATACASS-84
-	void shouldDeriveCaseSensitiveTableName() {
-
-		BasicCassandraPersistentEntity<?> entity = context.getRequiredPersistentEntity(QuotedPersonTable.class);
-
-		assertThat(entity.getTableName()).isEqualTo(CqlIdentifier.fromInternal("QuotedPersonTable"));
-	}
-
-	@Test // DATACASS-84
-	void shouldDeriveCaseSensitiveUserDefinedTypeName() {
-
-		BasicCassandraPersistentEntity<?> entity = context.getRequiredPersistentEntity(QuotedMyUserType.class);
-
-		assertThat(entity.getTableName()).isEqualTo(CqlIdentifier.fromInternal("QuotedMyUserType"));
-	}
-
-	@Test // DATACASS-84
-	void shouldDeriveCaseSensitiveColumnName() {
-
-		BasicCassandraPersistentEntity<?> entity = context.getRequiredPersistentEntity(QuotedPersonTable.class);
-
-		assertThat(entity.getRequiredIdProperty().getColumnName()).isEqualTo(CqlIdentifier.fromInternal("firstName"));
-	}
-
-	@Test // DATACASS-84
-	void shouldApplyTransformedNamingStrategy() {
-
-		context.setNamingStrategy(NamingStrategy.INSTANCE.transform(String::toUpperCase));
-
-		BasicCassandraPersistentEntity<?> entity = context.getRequiredPersistentEntity(QuotedPersonTable.class);
-
-		assertThat(entity.getTableName()).isEqualTo(CqlIdentifier.fromInternal("QUOTEDPERSONTABLE"));
-		assertThat(entity.getRequiredIdProperty().getColumnName()).isEqualTo(CqlIdentifier.fromInternal("FIRSTNAME"));
-	}
-
 	private static class PersonTable {
 
 		@Id String firstName;
@@ -160,18 +118,6 @@ class NamingStrategyUnitTests {
 
 	@UserDefinedType
 	private static class MyUserType {
-
-		String firstName;
-	}
-
-	@Table(forceQuote = true)
-	private static class QuotedPersonTable {
-
-		@Id @PrimaryKey(forceQuote = true) String firstName;
-	}
-
-	@UserDefinedType(forceQuote = true)
-	private static class QuotedMyUserType {
 
 		String firstName;
 	}

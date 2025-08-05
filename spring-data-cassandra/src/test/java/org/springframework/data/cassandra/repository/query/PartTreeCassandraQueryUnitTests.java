@@ -32,8 +32,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+
 import org.springframework.data.cassandra.core.CassandraOperations;
-import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
@@ -77,16 +77,16 @@ class PartTreeCassandraQueryUnitTests {
 	private DefaultUdtValue udtValue;
 
 	private CassandraMappingContext mappingContext;
-	private CassandraConverter converter;
+	private MappingCassandraConverter converter;
 
 	@BeforeEach
 	void setUp() {
 
 		this.mappingContext = new CassandraMappingContext();
-		this.mappingContext.setUserTypeResolver(userTypeResolverMock);
 		when(userTypeResolverMock.resolveType(any())).thenReturn(userTypeMock);
 
 		this.converter = new MappingCassandraConverter(mappingContext);
+		this.converter.setUserTypeResolver(userTypeResolverMock);
 
 		when(mockCassandraOperations.getConverter()).thenReturn(converter);
 		when(attachmentPoint.getCodecRegistry()).thenReturn(CodecRegistry.DEFAULT);

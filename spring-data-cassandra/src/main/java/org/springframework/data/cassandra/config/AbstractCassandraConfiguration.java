@@ -33,7 +33,6 @@ import org.springframework.data.cassandra.core.convert.CassandraCustomConversion
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.session.init.KeyspacePopulator;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
-import org.springframework.data.cassandra.core.mapping.SimpleTupleTypeFactory;
 import org.springframework.data.cassandra.core.mapping.SimpleUserTypeResolver;
 import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
@@ -98,32 +97,18 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 	 * Return the {@link MappingContext} instance to map Entities to {@link Object Java Objects}.
 	 *
 	 * @see org.springframework.data.cassandra.core.mapping.CassandraMappingContext
-	 * @deprecated since 4.0, use {@link #cassandraMappingContext(CassandraManagedTypes)} instead.
-	 */
-	@Deprecated(since = "4.0", forRemoval = true)
-	public CassandraMappingContext cassandraMapping() throws ClassNotFoundException {
-		return cassandraMappingContext(cassandraManagedTypes());
-	}
-
-	/**
-	 * Return the {@link MappingContext} instance to map Entities to {@link Object Java Objects}.
-	 *
-	 * @see org.springframework.data.cassandra.core.mapping.CassandraMappingContext
 	 */
 	@Bean
 	public CassandraMappingContext cassandraMappingContext(CassandraManagedTypes cassandraManagedTypes) {
 
 		CqlSession cqlSession = getRequiredSession();
 
-		CassandraMappingContext mappingContext = new CassandraMappingContext(userTypeResolver(cqlSession),
-				SimpleTupleTypeFactory.DEFAULT);
+		CassandraMappingContext mappingContext = new CassandraMappingContext();
 
 		CustomConversions customConversions = requireBeanOfType(CassandraCustomConversions.class);
 
 		getBeanClassLoader().ifPresent(mappingContext::setBeanClassLoader);
 
-		mappingContext.setCodecRegistry(cqlSession.getContext().getCodecRegistry());
-		mappingContext.setCustomConversions(customConversions);
 		mappingContext.setManagedTypes(cassandraManagedTypes);
 		mappingContext.setSimpleTypeHolder(customConversions.getSimpleTypeHolder());
 

@@ -46,7 +46,7 @@ class WriteOptionsUnitTests {
 				.consistencyLevel(DefaultConsistencyLevel.ANY) //
 				.ttl(123) //
 				.timestamp(1519000753) //
-				.readTimeout(1) //
+				.timeout(Duration.ofMillis(1)) //
 				.pageSize(10) //
 				.withTracing() //
 				.keyspace(CqlIdentifier.fromCql("my_keyspace")) //
@@ -85,7 +85,7 @@ class WriteOptionsUnitTests {
 				.consistencyLevel(DefaultConsistencyLevel.ANY) //
 				.ttl(123) //
 				.timestamp(now) //
-				.readTimeout(1) //
+				.timeout(Duration.ofMillis(1)) //
 				.pageSize(10) //
 				.withTracing() //
 				.idempotent(true) //

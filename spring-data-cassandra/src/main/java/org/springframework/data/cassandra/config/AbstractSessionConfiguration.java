@@ -104,18 +104,6 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 	}
 
 	/**
-	 * Returns the {@link String name} of the cluster.
-	 *
-	 * @return the {@link String cluster name}; may be {@literal null}.
-	 * @deprecated since 3.0, use {@link #getSessionName()} instead.
-	 * @since 1.5
-	 */
-	@Deprecated
-	protected @Nullable String getClusterName() {
-		return null;
-	}
-
-	/**
 	 * Return the name of the keyspace to connect to.
 	 *
 	 * @return must not be {@literal null}.
@@ -250,41 +238,10 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 	}
 
 	/**
-	 * Returns the list of CQL scripts to be run on startup after {@link #getKeyspaceCreations() Keyspace creations} and
-	 * after initialization of the {@literal System} Keyspace. return super.getSessionBuilderConfigurer();
-	 *
-	 * @return the list of CQL scripts to be run on startup; may be {@link Collections#emptyList() empty} but never
-	 *         {@literal null}.
-	 * @deprecated since 3.0; Declare a
-	 *             {@link org.springframework.data.cassandra.core.cql.session.init.SessionFactoryInitializer} bean
-	 *             instead.
-	 */
-	@Deprecated
-	protected List<String> getStartupScripts() {
-		return Collections.emptyList();
-	}
-
-	/**
-	 * Returns the list of CQL scripts to be run on shutdown after {@link #getKeyspaceDrops() Keyspace drops}
-	 * and right before shutdown of the {@code System} Keyspace.
-	 *
-	 * @return the list of CQL scripts to be run on shutdown; may be {@link Collections#emptyList() empty}
-	 * but never {@literal null}.
-	 * @deprecated since 3.0; Declare a
-	 * {@link org.springframework.data.cassandra.core.cql.session.init.SessionFactoryInitializer} bean instead.
-	 */
-	@Deprecated
-	protected List<String> getShutdownScripts() {
-		return Collections.emptyList();
-	}
-
-	/**
 	 * Creates a {@link CqlSessionFactoryBean} that provides a Cassandra {@link CqlSession}.
 	 *
 	 * @return the {@link CqlSessionFactoryBean}.
 	 * @see #getKeyspaceName()
-	 * @see #getStartupScripts()
-	 * @see #getShutdownScripts()
 	 */
 	@Bean
 	public CqlSessionFactoryBean cassandraSession() {
@@ -295,8 +252,6 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 		bean.setKeyspaceCreations(getKeyspaceCreations());
 		bean.setKeyspaceDrops(getKeyspaceDrops());
 		bean.setKeyspaceName(getKeyspaceName());
-		bean.setKeyspaceStartupScripts(getStartupScripts());
-		bean.setKeyspaceShutdownScripts(getShutdownScripts());
 		bean.setLocalDatacenter(getLocalDataCenter());
 		bean.setPort(getPort());
 		bean.setSessionBuilderConfigurer(getSessionBuilderConfigurerWrapper());
@@ -318,8 +273,6 @@ public abstract class AbstractSessionConfiguration implements BeanFactoryAware {
 
 				if (StringUtils.hasText(getSessionName())) {
 					options.add(DefaultDriverOption.SESSION_NAME, getSessionName());
-				} else if (StringUtils.hasText(getClusterName())) {
-					options.add(DefaultDriverOption.SESSION_NAME, getClusterName());
 				}
 
 				CompressionType compressionType = getCompressionType();

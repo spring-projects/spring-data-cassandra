@@ -65,8 +65,6 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 
 	private @Nullable ApplicationContext applicationContext;
 
-	private @Nullable Boolean forceQuote;
-
 	private CassandraPersistentEntityMetadataVerifier verifier = DEFAULT_VERIFIER;
 
 	private @Nullable CqlIdentifier keyspace;
@@ -131,11 +129,11 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 
 		if (annotation != null) {
 			return this.namingAccessor.generate((String) AnnotationUtils.getValue(annotation, annotationAttribute),
-					(Boolean) AnnotationUtils.getValue(annotation, "forceQuote"), defaultNameGenerator, this, PARSER,
+					defaultNameGenerator, this, PARSER,
 					this::getValueEvaluationContext);
 		}
 
-		return this.namingAccessor.generate(null, forceQuote != null ? forceQuote : false, defaultNameGenerator, this,
+		return this.namingAccessor.generate(null, defaultNameGenerator, this,
 				PARSER, this::getValueEvaluationContext);
 	}
 
@@ -204,23 +202,6 @@ public class BasicCassandraPersistentEntity<T> extends BasicPersistentEntity<T, 
 	@Override
 	public void setApplicationContext(ApplicationContext context) throws BeansException {
 		this.applicationContext = context;
-	}
-
-	@Override
-	@SuppressWarnings("NullAway")
-	public void setForceQuote(boolean forceQuote) {
-
-		boolean changed = !Boolean.valueOf(forceQuote).equals(this.forceQuote);
-
-		this.forceQuote = forceQuote;
-
-		if (changed) {
-			setTableName(CqlIdentifierGenerator.createIdentifier(getTableName().asInternal(), forceQuote));
-
-			if (hasKeyspace()) {
-				setKeyspace(CqlIdentifierGenerator.createIdentifier(getKeyspace().asInternal(), forceQuote));
-			}
-		}
 	}
 
 	@Override

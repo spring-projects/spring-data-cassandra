@@ -17,7 +17,6 @@ package org.springframework.data.cassandra.core.cql;
 
 import java.nio.ByteBuffer;
 import java.time.Duration;
-import java.util.concurrent.TimeUnit;
 
 import org.jspecify.annotations.Nullable;
 import org.springframework.util.Assert;
@@ -152,17 +151,6 @@ public class QueryOptions {
 	@Nullable
 	protected Integer getPageSize() {
 		return this.pageSize;
-	}
-
-	/**
-	 * @return the command timeout. May be {@link Duration#isNegative() negative} if not set.
-	 * @since 1.5
-	 * @see com.datastax.oss.driver.api.core.cql.Statement#setTimeout(Duration)
-	 * @deprecated since 3.0, use {@link #getTimeout()} instead.
-	 */
-	@Deprecated
-	protected Duration getReadTimeout() {
-		return getTimeout();
 	}
 
 	/**
@@ -367,23 +355,6 @@ public class QueryOptions {
 		}
 
 		/**
-		 * Sets the query fetch size for {@link com.datastax.oss.driver.api.core.cql.ResultSet} chunks.
-		 * <p>
-		 * The fetch size controls how much resulting rows will be retrieved simultaneously (the goal being to avoid loading
-		 * too much results in memory for queries yielding large results). Please note that while value as low as 1 can be
-		 * used, it is *highly* discouraged to use such a low value in practice as it will yield very poor performance.
-		 *
-		 * @param fetchSize the number of rows to fetch per chunking request. To disable chunking of the result set, use
-		 *          {@code fetchSize == Integer.MAX_VALUE}. Negative values are not allowed.
-		 * @return {@code this} {@link QueryOptionsBuilder}
-		 * @deprecated since 3.0, use {@link #pageSize(int)}.
-		 */
-		@Deprecated
-		public QueryOptionsBuilder fetchSize(int fetchSize) {
-			return pageSize(fetchSize);
-		}
-
-		/**
 		 * Set query execution idempotency.
 		 *
 		 * @param idempotent {@literal true} to mark the query as idempotent.
@@ -433,54 +404,6 @@ public class QueryOptions {
 			this.pageSize = pageSize;
 
 			return this;
-		}
-
-		/**
-		 * Sets the read timeout in milliseconds. Overrides the default per-host read timeout.
-		 *
-		 * @param readTimeout the read timeout in milliseconds. Negative values are not allowed. If it is {@code 0}, the
-		 *          read timeout will be disabled for this statement.
-		 * @return {@code this} {@link QueryOptionsBuilder}
-		 * @see com.datastax.oss.driver.api.core.cql.SimpleStatement#setTimeout(Duration)
-		 * @deprecated since 3.0, use {@link #timeout(Duration)}
-		 */
-		@Deprecated
-		public QueryOptionsBuilder readTimeout(long readTimeout) {
-			return timeout(Duration.ofMillis(readTimeout));
-		}
-
-		/**
-		 * Sets the read timeout. Overrides the default per-host read timeout.
-		 *
-		 * @param readTimeout the read timeout value. Negative values are not allowed. If it is {@code 0}, the read timeout
-		 *          will be disabled for this statement.
-		 * @param timeUnit the {@link TimeUnit} for the supplied timeout; must not be {@literal null}.
-		 * @return {@code this} {@link QueryOptionsBuilder}
-		 * @see com.datastax.oss.driver.api.core.cql.SimpleStatement#setTimeout(Duration)
-		 * @deprecated since 2.0, use {@link #timeout(Duration)}.
-		 */
-		@Deprecated
-		public QueryOptionsBuilder readTimeout(long readTimeout, TimeUnit timeUnit) {
-
-			Assert.isTrue(readTimeout >= 0, "ReadTimeout must be greater than equal to zero");
-			Assert.notNull(timeUnit, "TimeUnit must not be null");
-
-			return timeout(Duration.ofMillis(timeUnit.toMillis(readTimeout)));
-		}
-
-		/**
-		 * Sets the read timeout. Overrides the default per-host read timeout.
-		 *
-		 * @param readTimeout the read timeout. Negative values are not allowed. If it is {@code 0}, the read timeout will
-		 *          be disabled for this statement.
-		 * @return {@code this} {@link QueryOptionsBuilder}
-		 * @see com.datastax.oss.driver.api.core.cql.SimpleStatement#setTimeout(Duration)
-		 * @since 2.0
-		 * @deprecated since 3.0, use {@link #timeout(Duration)}
-		 */
-		@Deprecated
-		public QueryOptionsBuilder readTimeout(Duration readTimeout) {
-			return timeout(readTimeout);
 		}
 
 		/**

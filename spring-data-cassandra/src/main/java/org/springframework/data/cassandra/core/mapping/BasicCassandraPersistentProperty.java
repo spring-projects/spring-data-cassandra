@@ -160,12 +160,11 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 		if (column != null) {
 			overriddenName = column.value();
-			forceQuote = column.forceQuote();
 		}
 
 		BasicCassandraPersistentEntity<?> entity = (BasicCassandraPersistentEntity<?>) getOwner();
 
-		return namingAccessor.generate(overriddenName, forceQuote, NamingStrategy::getColumnName, this,
+		return namingAccessor.generate(overriddenName, NamingStrategy::getColumnName, this,
 				BasicCassandraPersistentEntity.PARSER, entity::getValueEvaluationContext).getRequiredIdentifier();
 	}
 
@@ -196,18 +195,6 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 	 */
 	public void setNamingStrategy(NamingStrategy namingStrategy) {
 		this.namingAccessor.setNamingStrategy(namingStrategy);
-	}
-
-	@Override
-	public void setForceQuote(boolean forceQuote) {
-
-		boolean changed = !Boolean.valueOf(forceQuote).equals(this.forceQuote);
-
-		this.forceQuote = forceQuote;
-
-		if (changed) {
-			setColumnName(CqlIdentifierGenerator.createIdentifier(getRequiredColumnName().asInternal(), forceQuote));
-		}
 	}
 
 	@Override

@@ -84,11 +84,11 @@ class UpdateMapperUnitTests {
 		CassandraCustomConversions customConversions = new CassandraCustomConversions(
 				Collections.singletonList(CurrencyConverter.INSTANCE));
 
-		mappingContext.setCustomConversions(customConversions);
-		mappingContext.setUserTypeResolver(userTypeResolver);
+		mappingContext.setSimpleTypeHolder(customConversions.getSimpleTypeHolder());
 
 		cassandraConverter = new MappingCassandraConverter(mappingContext);
 		cassandraConverter.setCustomConversions(customConversions);
+		cassandraConverter.setUserTypeResolver(userTypeResolver);
 		cassandraConverter.afterPropertiesSet();
 
 		updateMapper = new UpdateMapper(cassandraConverter);

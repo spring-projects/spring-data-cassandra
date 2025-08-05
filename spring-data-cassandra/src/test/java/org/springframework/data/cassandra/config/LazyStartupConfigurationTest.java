@@ -87,8 +87,6 @@ class LazyStartupConfigurationTest {
 
 			MappingCassandraConverter converter = new MappingCassandraConverter(mappingContext);
 			converter.setCodecRegistry(() -> cqlSession.getContext().getCodecRegistry());
-			converter.setCustomConversions(mappingContext.getCustomConversions());
-
 			converter.setUserTypeResolver(new SimpleUserTypeResolver(cqlSession));
 			return converter;
 		}

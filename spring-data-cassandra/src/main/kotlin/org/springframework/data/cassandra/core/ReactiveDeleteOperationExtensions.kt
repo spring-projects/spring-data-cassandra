@@ -16,7 +16,6 @@
 package org.springframework.data.cassandra.core
 
 import kotlinx.coroutines.reactive.awaitSingle
-import kotlin.reflect.KClass
 
 /**
  * Extensions for [ReactiveDeleteOperation].
@@ -24,13 +23,6 @@ import kotlin.reflect.KClass
  * @author Mark Paluch
  * @since 2.1
  */
-
-/**
- * Extension for [ReactiveDeleteOperation.delete] providing a [KClass] based variant.
- */
-@Deprecated("Since 2.2, use the reified variant", replaceWith = ReplaceWith("delete<T>()"))
-fun <T : Any> ReactiveDeleteOperation.delete(entityClass: KClass<T>): ReactiveDeleteOperation.ReactiveDelete =
-		delete(entityClass.java)
 
 /**
  * Extension for [ReactiveDeleteOperation.delete] leveraging reified type parameters.

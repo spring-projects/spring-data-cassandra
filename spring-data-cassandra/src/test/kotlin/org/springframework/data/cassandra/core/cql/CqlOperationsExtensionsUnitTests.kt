@@ -32,24 +32,10 @@ class CqlOperationsExtensionsUnitTests {
 	val operations = mockk<CqlOperations>(relaxed = true)
 
 	@Test // DATACASS-484
-	fun `queryForObject(String, KClass) extension should call its Java counterpart`() {
-
-		operations.queryForObject("", Person::class)
-		verify { operations.queryForObject("", Person::class.java) }
-	}
-
-	@Test // DATACASS-484
 	fun `queryForObject(String) extension should call its Java counterpart`() {
 
 		operations.queryForObject<Person>("")
 		verify { operations.queryForObject("", Person::class.java) }
-	}
-
-	@Test // DATACASS-484
-	fun `queryForObject(String, KClass, array) extension should call its Java counterpart`() {
-
-		operations.queryForObject("", Person::class, "foo", "bar")
-		verify { operations.queryForObject("", Person::class.java, "foo", "bar") }
 	}
 
 	@Test // DATACASS-484
@@ -73,15 +59,6 @@ class CqlOperationsExtensionsUnitTests {
 	}
 
 	@Test // DATACASS-484
-	fun `queryForObject(Statement, KClass) extension should call its Java counterpart`() {
-
-		val statement = SimpleStatement.newInstance("SELECT * FROM person")
-
-		operations.queryForObject(statement, Person::class)
-		verify { operations.queryForObject(statement, Person::class.java) }
-	}
-
-	@Test // DATACASS-484
 	fun `queryForObject(Statement) extension should call its Java counterpart`() {
 
 		val statement = SimpleStatement.newInstance("SELECT * FROM person")
@@ -102,15 +79,6 @@ class CqlOperationsExtensionsUnitTests {
 
 		operations.queryForList<Person>("", "foo", "bar")
 		verify { operations.queryForList("", Person::class.java, "foo", "bar") }
-	}
-
-	@Test // DATACASS-484
-	fun `queryForList(Statement, KClass) extension should call its Java counterpart`() {
-
-		val statement = SimpleStatement.newInstance("SELECT * FROM person")
-
-		operations.queryForList(statement, Person::class)
-		verify { operations.queryForList(statement, Person::class.java) }
 	}
 
 	@Test // DATACASS-484

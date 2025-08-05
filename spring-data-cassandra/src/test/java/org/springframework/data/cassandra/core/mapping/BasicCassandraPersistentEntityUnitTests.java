@@ -16,7 +16,6 @@
 package org.springframework.data.cassandra.core.mapping;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.lang.annotation.ElementType;
@@ -28,7 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.DirectFieldAccessor;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.data.mapping.Association;
@@ -86,41 +85,6 @@ class BasicCassandraPersistentEntityUnitTests {
 		entity.setApplicationContext(context);
 
 		assertThat(entity.getTableName()).hasToString(bean.tableName);
-	}
-
-	@Test
-	void setForceQuoteCallsSetTableName() {
-
-		BasicCassandraPersistentEntity<Message> entitySpy = spy(
-				new BasicCassandraPersistentEntity<>(TypeInformation.of(Message.class)));
-
-		DirectFieldAccessor directFieldAccessor = new DirectFieldAccessor(entitySpy);
-
-		entitySpy.setTableName(CqlIdentifier.fromCql("Messages"));
-
-		assertThat(directFieldAccessor.getPropertyValue("forceQuote")).isNull();
-
-		entitySpy.setForceQuote(true);
-
-		assertThat(directFieldAccessor.getPropertyValue("forceQuote")).isEqualTo(true);
-
-		verify(entitySpy, times(2)).setTableName(isA(CqlIdentifier.class));
-	}
-
-	@Test
-	void setForceQuoteDoesNothing() {
-
-		BasicCassandraPersistentEntity<Message> entitySpy = spy(
-				new BasicCassandraPersistentEntity<>(TypeInformation.of(Message.class)));
-
-		DirectFieldAccessor directFieldAccessor = new DirectFieldAccessor(entitySpy);
-
-		directFieldAccessor.setPropertyValue("forceQuote", true);
-		entitySpy.setForceQuote(true);
-
-		assertThat(directFieldAccessor.getPropertyValue("forceQuote")).isEqualTo(true);
-
-		verify(entitySpy, never()).setTableName(isA(CqlIdentifier.class));
 	}
 
 	@Test // DATACASS-172
@@ -196,7 +160,7 @@ class BasicCassandraPersistentEntityUnitTests {
 
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target({ ElementType.TYPE })
-	@Table(forceQuote = true)
+	@Table
 	private @interface ComposedTableAnnotation {
 
 		@AliasFor(annotation = Table.class)

@@ -110,7 +110,7 @@ The comma-delimited base packages in which to scan for entities and their mappin
 			<xsd:attribute name="user-type-resolver-ref" type="xsd:string">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
-The reference to a UserTypeResolver. UserTypeResolver is required when working with User-defined types.
+(Deprecated, no longer supported) The reference to a UserTypeResolver. UserTypeResolver is required when working with User-defined types.
 					]]></xsd:documentation>
 					<xsd:appinfo>
 						<tool:exports

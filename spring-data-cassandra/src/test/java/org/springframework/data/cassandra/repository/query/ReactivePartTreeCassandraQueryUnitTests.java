@@ -66,9 +66,11 @@ class ReactivePartTreeCassandraQueryUnitTests {
 	void setUp() {
 
 		mappingContext = new CassandraMappingContext();
-		mappingContext.setUserTypeResolver(userTypeResolver);
 
-		when(mockCassandraOperations.getConverter()).thenReturn(new MappingCassandraConverter(mappingContext));
+		MappingCassandraConverter converter = new MappingCassandraConverter(mappingContext);
+		converter.setUserTypeResolver(userTypeResolver);
+
+		when(mockCassandraOperations.getConverter()).thenReturn(converter);
 	}
 
 	@Test // DATACASS-335

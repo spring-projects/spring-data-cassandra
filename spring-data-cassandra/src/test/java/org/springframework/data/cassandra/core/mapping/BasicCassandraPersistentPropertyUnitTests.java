@@ -189,7 +189,7 @@ class BasicCassandraPersistentPropertyUnitTests {
 	}
 
 	@Retention(RetentionPolicy.RUNTIME)
-	@Column(forceQuote = true)
+	@Column()
 	private @interface ComposedColumnAnnotation {
 
 		@AliasFor(annotation = Column.class)
@@ -197,7 +197,7 @@ class BasicCassandraPersistentPropertyUnitTests {
 	}
 
 	@Retention(RetentionPolicy.RUNTIME)
-	@PrimaryKey(forceQuote = true)
+	@PrimaryKey()
 	private @interface ComposedPrimaryKeyAnnotation {
 
 		@AliasFor(annotation = PrimaryKey.class)
@@ -205,7 +205,7 @@ class BasicCassandraPersistentPropertyUnitTests {
 	}
 
 	@Retention(RetentionPolicy.RUNTIME)
-	@PrimaryKeyColumn(forceQuote = true)
+	@PrimaryKeyColumn()
 	private @interface ComposedPrimaryKeyColumnAnnotation {
 
 		@AliasFor(annotation = PrimaryKeyColumn.class)

@@ -64,8 +64,6 @@ import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.mapping.callback.EntityCallbacks;
 import org.springframework.data.mapping.callback.ReactiveEntityCallbacks;
 import org.springframework.data.projection.EntityProjection;
-import org.springframework.data.projection.ProjectionFactory;
-import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.util.Lazy;
 import org.springframework.util.Assert;
 
@@ -290,21 +288,6 @@ public class ReactiveCassandraTemplate
 	 */
 	protected EntityOperations getEntityOperations() {
 		return this.entityOperations;
-	}
-
-	/**
-	 * Returns a reference to the configured {@link ProjectionFactory} used by this template to process CQL query
-	 * projections.
-	 *
-	 * @return a reference to the configured {@link ProjectionFactory} used by this template to process CQL query
-	 *         projections.
-	 * @see org.springframework.data.projection.SpelAwareProxyProjectionFactory
-	 * @since 2.1
-	 * @deprecated since 3.4, use {@link CassandraConverter#getProjectionFactory()} instead.
-	 */
-	@Deprecated
-	protected SpelAwareProxyProjectionFactory getProjectionFactory() {
-		return (SpelAwareProxyProjectionFactory) getConverter().getProjectionFactory();
 	}
 
 	private CassandraPersistentEntity<?> getRequiredPersistentEntity(Class<?> entityType) {

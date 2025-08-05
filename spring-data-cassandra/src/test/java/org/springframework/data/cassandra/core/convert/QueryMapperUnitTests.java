@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -65,7 +66,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.domain.Vector;
-import org.springframework.lang.Nullable;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
@@ -104,12 +104,11 @@ public class QueryMapperUnitTests {
 
 		when(userTypeResolver.resolveType(any(CqlIdentifier.class))).thenReturn(userType);
 
-		mappingContext.setCustomConversions(customConversions);
-		mappingContext.setUserTypeResolver(userTypeResolver);
-
+		mappingContext.setSimpleTypeHolder(customConversions.getSimpleTypeHolder());
 		cassandraConverter = new MappingCassandraConverter(mappingContext);
 
 		cassandraConverter.setCustomConversions(customConversions);
+		cassandraConverter.setUserTypeResolver(userTypeResolver);
 		cassandraConverter.afterPropertiesSet();
 
 		queryMapper = new QueryMapper(cassandraConverter);

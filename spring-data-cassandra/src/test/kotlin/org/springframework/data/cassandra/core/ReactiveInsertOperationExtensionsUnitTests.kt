@@ -34,13 +34,6 @@ class ReactiveInsertOperationExtensionsUnitTests {
 	val operations = mockk<ReactiveFluentCassandraOperations>(relaxed = true)
 
 	@Test // DATACASS-484
-	fun `insert(KClass) extension should call its Java counterpart`() {
-
-		operations.insert(Person::class);
-		verify { operations.insert(Person::class.java) }
-	}
-
-	@Test // DATACASS-484
 	fun `insert() with reified type parameter extension should call its Java counterpart`() {
 
 		operations.insert<Person>()
