@@ -125,7 +125,7 @@ public final class SpecificationBuilder {
 	/**
 	 * Entry point into the {@link CreateTableSpecification}'s fluent API given {@code tableName} to create a table.
 	 * Convenient if imported statically. Uses the default keyspace if {@code keyspace} is null; otherwise, of the
-	 * {@code keyspace} is not {@link null}, then the table name is prefixed with {@code keyspace}.
+	 * {@code keyspace} is not {@literal null}, then the table name is prefixed with {@code keyspace}.
 	 *
 	 * @param keyspace can be {@literal null}.
 	 * @param tableName must not be {@literal null}.
@@ -149,7 +149,7 @@ public final class SpecificationBuilder {
 	/**
 	 * Entry point into the {@link CreateTableSpecification}'s fluent API given {@code tableName} to create a table.
 	 * Convenient if imported statically. Uses the default keyspace if {@code keyspace} is null; otherwise, of the
-	 * {@code keyspace} is not {@link null}, then the table name is prefixed with {@code keyspace}.
+	 * {@code keyspace} is not {@literal null}, then the table name is prefixed with {@code keyspace}.
 	 *
 	 * @param keyspace can be {@literal null}.
 	 * @param tableName must not be {@literal null}.
@@ -173,7 +173,7 @@ public final class SpecificationBuilder {
 	/**
 	 * Entry point into the {@link AlterTableSpecification}'s fluent API given {@code tableName} to alter a table.
 	 * Convenient if imported statically. Uses the default keyspace if {@code keyspace} is null; otherwise, of the
-	 * {@code keyspace} is not {@link null}, then the table name is prefixed with {@code keyspace}.
+	 * {@code keyspace} is not {@literal null}, then the table name is prefixed with {@code keyspace}.
 	 *
 	 * @param keyspace can be {@literal null}.
 	 * @param tableName must not be {@literal null}.
@@ -197,7 +197,7 @@ public final class SpecificationBuilder {
 	/**
 	 * Entry point into the {@link AlterTableSpecification}'s fluent API given {@code tableName} to alter a table.
 	 * Convenient if imported statically. Uses the default keyspace if {@code keyspace} is null; otherwise, of the
-	 * {@code keyspace} is not {@link null}, then the table name is prefixed with {@code keyspace}.
+	 * {@code keyspace} is not {@literal null}, then the table name is prefixed with {@code keyspace}.
 	 *
 	 * @param keyspace can be {@literal null}.
 	 * @param tableName must not be {@literal null}.
@@ -221,7 +221,7 @@ public final class SpecificationBuilder {
 	/**
 	 * Entry point into the {@link DropTableSpecification}'s fluent API given {@code tableName} to drop a table.
 	 * Convenient if imported statically. Uses the default keyspace if {@code keyspace} is null; otherwise, of the
-	 * {@code keyspace} is not {@link null}, then the table name is prefixed with {@code keyspace}.
+	 * {@code keyspace} is not {@literal null}, then the table name is prefixed with {@code keyspace}.
 	 *
 	 * @param keyspace can be {@literal null}.
 	 * @param tableName must not be {@literal null}.
@@ -245,7 +245,7 @@ public final class SpecificationBuilder {
 	/**
 	 * Entry point into the {@link DropTableSpecification}'s fluent API given {@code tableName} to drop a table.
 	 * Convenient if imported statically. Uses the default keyspace if {@code keyspace} is null; otherwise, of the
-	 * {@code keyspace} is not {@link null}, then the table name is prefixed with {@code keyspace}.
+	 * {@code keyspace} is not {@literal null}, then the table name is prefixed with {@code keyspace}.
 	 *
 	 * @param keyspace can be {@literal null}.
 	 * @param tableName must not be {@literal null}.
@@ -371,7 +371,7 @@ public final class SpecificationBuilder {
 	/**
 	 * Entry point into the {@link CreateIndexSpecification}'s fluent API given {@code keyspace} and {@code indexName} to
 	 * create an index. Convenient if imported statically. Uses the default keyspace if {@code keyspace} is null;
-	 * otherwise, of the {@code keyspace} is not {@link null}, then the index and table name are prefixed with
+	 * otherwise, of the {@code keyspace} is not {@literal null}, then the index and table name are prefixed with
 	 * {@code keyspace}.
 	 *
 	 * @param keyspace can be {@literal null}.
@@ -395,8 +395,8 @@ public final class SpecificationBuilder {
 
 	/**
 	 * Create a new {@link DropIndexSpecification} for the given {@code indexName}. Uses the default keyspace if
-	 * {@code keyspace} is null; otherwise, of the {@code keyspace} is not {@link null}, then the index name is prefixed
-	 * with {@code keyspace}.
+	 * {@code keyspace} is null; otherwise, of the {@code keyspace} is not {@literal null}, then the index name is
+	 * prefixed with {@code keyspace}.
 	 *
 	 * @param keyspace can be {@literal null}.
 	 * @param indexName must not be {@literal null}.
@@ -418,8 +418,8 @@ public final class SpecificationBuilder {
 
 	/**
 	 * Create a new {@link DropIndexSpecification} for the given {@code indexName}. Uses the default keyspace if
-	 * {@code keyspace} is null; otherwise, of the {@code keyspace} is not {@link null}, then the index name is prefixed
-	 * with {@code keyspace}.
+	 * {@code keyspace} is null; otherwise, of the {@code keyspace} is not {@literal null}, then the index name is
+	 * prefixed with {@code keyspace}.
 	 *
 	 * @param keyspace can be {@literal null}.
 	 * @param indexName must not be {@literal null}.
@@ -447,7 +447,7 @@ public final class SpecificationBuilder {
 	/**
 	 * Entry point into the {@link CreateUserTypeSpecification}'s fluent API given {@code name} to create a type.
 	 * Convenient if imported statically. Uses the default keyspace if {@code keyspace} is null; otherwise, of the
-	 * {@code keyspace} is not {@link null}, then the UDT name is prefixed with {@code keyspace}.
+	 * {@code keyspace} is not {@literal null}, then the UDT name is prefixed with {@code keyspace}.
 	 *
 	 * @param keyspace can be {@literal null}.
 	 * @param typeName must not {@literal null}.
@@ -471,7 +471,7 @@ public final class SpecificationBuilder {
 	/**
 	 * Entry point into the {@link CreateUserTypeSpecification}'s fluent API given {@code typeName} to create a type.
 	 * Convenient if imported statically. Uses the default keyspace if {@code keyspace} is null; otherwise, of the
-	 * {@code keyspace} is not {@link null}, then the UDT name is prefixed with {@code keyspace}.
+	 * {@code keyspace} is not {@literal null}, then the UDT name is prefixed with {@code keyspace}.
 	 *
 	 * @param keyspace can be {@literal null}.
 	 * @param name must not {@literal null}.
@@ -495,7 +495,7 @@ public final class SpecificationBuilder {
 	/**
 	 * Entry point into the {@link AlterUserTypeSpecification}'s fluent API given {@code typeName} to alter a type.
 	 * Convenient if imported statically. Uses the default keyspace if {@code keyspace} is null; otherwise, of the
-	 * {@code keyspace} is not {@link null}, then the table name is prefixed with {@code keyspace}.
+	 * {@code keyspace} is not {@literal null}, then the table name is prefixed with {@code keyspace}.
 	 *
 	 * @param keyspace can be {@literal null}.
 	 * @param typeName must not be {@literal null}.
@@ -519,7 +519,7 @@ public final class SpecificationBuilder {
 	/**
 	 * Entry point into the {@link AlterUserTypeSpecification}'s fluent API given {@code typeName} to alter a type.
 	 * Convenient if imported statically. Uses the default keyspace if {@code keyspace} is null; otherwise, of the
-	 * {@code keyspace} is not {@link null}, then the table name is prefixed with {@code keyspace}.
+	 * {@code keyspace} is not {@literal null}, then the table name is prefixed with {@code keyspace}.
 	 *
 	 * @param keyspace can be {@literal null}.
 	 * @param typeName must not be {@literal null}.
@@ -543,7 +543,7 @@ public final class SpecificationBuilder {
 	/**
 	 * Entry point into the {@link DropUserTypeSpecification}'s fluent API given {@code typeName} to drop a type.
 	 * Convenient if imported statically. Uses the default keyspace if {@code keyspace} is null; otherwise, of the
-	 * {@code keyspace} is not {@link null}, then the UDT name is prefixed with {@code keyspace}.
+	 * {@code keyspace} is not {@literal null}, then the UDT name is prefixed with {@code keyspace}.
 	 *
 	 * @param keyspace can be {@code null}.
 	 * @param typeName must not be {@code null} or empty.
@@ -567,7 +567,7 @@ public final class SpecificationBuilder {
 	/**
 	 * Entry point into the {@link DropUserTypeSpecification}'s fluent API given {@code typeName} to drop a type.
 	 * Convenient if imported statically. Uses the default keyspace if {@code keyspace} is null; otherwise, of the
-	 * {@code keyspace} is not {@link null}, then the UDT name is prefixed with {@code keyspace}.
+	 * {@code keyspace} is not {@literal null}, then the UDT name is prefixed with {@code keyspace}.
 	 *
 	 * @param keyspace can be {@code null}.
 	 * @param typeName must not be {@code null} or empty.

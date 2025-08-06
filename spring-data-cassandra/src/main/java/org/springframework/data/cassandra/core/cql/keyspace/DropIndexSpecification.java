@@ -54,8 +54,8 @@ public class DropIndexSpecification extends IndexNameSpecification<DropIndexSpec
 
 	/**
 	 * Create a new {@link DropIndexSpecification} for the given {@code indexName}. Uses the default keyspace if
-	 * {@code keyspace} is null; otherwise, of the {@code keyspace} is not {@link null}, then the index name is prefixed
-	 * with {@code keyspace}.
+	 * {@code keyspace} is null; otherwise, of the {@code keyspace} is not {@literal null}, then the index name is
+	 * prefixed with {@code keyspace}.
 	 *
 	 * @param keyspace can be {@literal null}.
 	 * @param indexName must not be {@literal null}.

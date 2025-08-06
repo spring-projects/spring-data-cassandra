@@ -59,11 +59,10 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 	private @Nullable ClassLoader beanClassLoader;
 
 	/**
-	 * Creates a {@link CassandraConverter} using the configured {@link #cassandraMapping()}. Will apply all specified
-	 * {@link #customConversions()}.
+	 * Creates a {@link CassandraConverter} using the configured {@link #cassandraMappingContext(CassandraManagedTypes)}.
+	 * Will apply all specified {@link #customConversions()}.
 	 *
 	 * @return {@link CassandraConverter} used to convert Java and Cassandra value types during the mapping process.
-	 * @see #cassandraMapping()
 	 * @see #customConversions()
 	 */
 	@Bean
@@ -153,8 +152,9 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 
 	/**
 	 * Register custom {@link Converter}s in a {@link CustomConversions} object if required. These
-	 * {@link CustomConversions} will be registered with the {@link #cassandraConverter()} and {@link #cassandraMapping()}
-	 * . Returns an empty {@link CustomConversions} instance by default.
+	 * {@link CustomConversions} will be registered with the {@link #cassandraConverter()} and
+	 * {@link #cassandraMappingContext(CassandraManagedTypes)}. Returns an empty {@link CustomConversions} instance by
+	 * default.
 	 *
 	 * @return must not be {@literal null}.
 	 * @since 1.5
@@ -235,7 +235,7 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 	}
 
 	/**
-	 * Creates a {@link KeyspacePopulator} to cleanup the keyspace.
+	 * Creates a {@link KeyspacePopulator} to clean up the keyspace.
 	 *
 	 * @return the {@link KeyspacePopulator} or {@code null} if none configured.
 	 * @see org.springframework.data.cassandra.core.cql.session.init.ResourceKeyspacePopulator

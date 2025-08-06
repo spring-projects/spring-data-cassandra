@@ -65,7 +65,7 @@ public class AlterUserTypeSpecification extends UserTypeNameSpecification implem
 	/**
 	 * Entry point into the {@link AlterUserTypeSpecification}'s fluent API given {@code typeName} to alter a type.
 	 * Convenient if imported statically. Uses the default keyspace if {@code keyspace} is null; otherwise, of the
-	 * {@code keyspace} is not {@link null}, then the table name is prefixed with {@code keyspace}.
+	 * {@code keyspace} is not {@literal null}, then the table name is prefixed with {@code keyspace}.
 	 *
 	 * @param keyspace can be {@literal null}.
 	 * @param typeName must not be {@literal null}.

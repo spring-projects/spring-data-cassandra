@@ -61,7 +61,7 @@ public class DropUserTypeSpecification extends UserTypeNameSpecification impleme
 	/**
 	 * Entry point into the {@link DropUserTypeSpecification}'s fluent API given {@code typeName} to drop a type.
 	 * Convenient if imported statically. Uses the default keyspace if {@code keyspace} is null; otherwise, of the
-	 * {@code keyspace} is not {@link null}, then the UDT name is prefixed with {@code keyspace}.
+	 * {@code keyspace} is not {@literal null}, then the UDT name is prefixed with {@code keyspace}.
 	 *
 	 * @param keyspace can be {@code null}.
 	 * @param typeName must not be {@code null} or empty.

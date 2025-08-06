@@ -58,7 +58,7 @@ public class CreateTableSpecification extends TableSpecification<CreateTableSpec
 	/**
 	 * Entry point into the {@link CreateTableSpecification}'s fluent API given {@code tableName} to create a table.
 	 * Convenient if imported statically. Uses the default keyspace if {@code keyspace} is null; otherwise, of the
-	 * {@code keyspace} is not {@link null}, then the table name is prefixed with {@code keyspace}.
+	 * {@code keyspace} is not {@literal null}, then the table name is prefixed with {@code keyspace}.
 	 *
 	 * @param keyspace can be {@literal null}.
 	 * @param tableName must not be {@literal null}.

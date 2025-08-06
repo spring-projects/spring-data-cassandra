@@ -89,7 +89,7 @@ public class CreateIndexSpecification extends IndexNameSpecification<CreateIndex
 	/**
 	 * Entry point into the {@link CreateIndexSpecification}'s fluent API given {@code keyspace} and {@code indexName} to
 	 * create an index. Convenient if imported statically. Uses the default keyspace if {@code keyspace} is null;
-	 * otherwise, of the {@code keyspace} is not {@link null}, then the index and table name are prefixed with
+	 * otherwise, of the {@code keyspace} is not {@literal null}, then the index and table name are prefixed with
 	 * {@code keyspace}.
 	 *
 	 * @param keyspace can be {@literal null}.
