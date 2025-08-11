@@ -27,13 +27,14 @@ import java.util.Map;
 import org.springframework.data.cassandra.core.query.Update.AddToOp.Mode;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 
 /**
- * Update object representing a set of update operations. {@link Update} objects can be created in a fluent
- * style. Each construction operation creates a new immutable {@link Update} object.
+ * Update object representing a set of update operations. {@link Update} objects can be created in a fluent style. Each
+ * construction operation creates a new immutable {@link Update} object.
  *
  * <pre class="code">
  * Update update = Update.empty().set("foo", "bar").addTo("baz").prependAll(listOfValues);
@@ -68,7 +69,7 @@ public class Update {
 
 		Assert.notNull(assignmentOps, "Update operations must not be null");
 
-		List<AssignmentOp> updateOperations = new ArrayList<>();
+		List<AssignmentOp> updateOperations = new ArrayList<>(assignmentOps instanceof Collection<?> c ? c.size() : 16);
 
 		assignmentOps.forEach(updateOperations::add);
 
@@ -220,50 +221,24 @@ public class Update {
 
 	private Update add(AssignmentOp assignmentOp) {
 
-        List<AssignmentOp> list = new ArrayList<>(this.updateOperations.size() + 1);
+		List<AssignmentOp> list = new ArrayList<>(this.updateOperations.size() + 1);
 
-        for (AssignmentOp existing : this.updateOperations) {
-            if (!conflicts(existing, assignmentOp)) {
-                list.add(existing);
-            }
-        }
-
-        list.add(assignmentOp);
-
-        return new Update(list);
-    }
-
-    /**
-     * Determine whether two assignment operations conflict and should not co-exist in a single {@link Update}.
-     * Conflicts are defined as whole-column operations on the same column or element-level operations targeting
-     * the same element (same map key or same list index) on the same column. In case of conflict, last-wins semantics
-     * apply and the incoming operation replaces the existing one.
-     */
-	private static boolean conflicts(AssignmentOp existing, AssignmentOp incoming) {
-
-		if (!existing.getColumnName().equals(incoming.getColumnName())) {
-			return false;
+		for (AssignmentOp existing : this.updateOperations) {
+			if (!assignmentOp.overrides(existing)) {
+				list.add(existing);
+			}
 		}
 
-		if (existing instanceof SetAtKeyOp e && incoming instanceof SetAtKeyOp i) {
-			return equalsNullSafe(e.getKey(), i.getKey());
-		}
+		list.add(assignmentOp);
 
-		if (existing instanceof SetAtIndexOp e && incoming instanceof SetAtIndexOp i) {
-			return e.getIndex() == i.getIndex();
-		}
-
-		return true;
+		return new Update(list);
 	}
 
-	private static boolean equalsNullSafe(@Nullable Object a, @Nullable Object b) {
-		return a == b || (a != null && a.equals(b));
-	}
 
 	@Override
-    public String toString() {
-        return StringUtils.collectionToDelimitedString(updateOperations, ", ");
-    }
+	public String toString() {
+		return StringUtils.collectionToDelimitedString(updateOperations, ", ");
+	}
 
 	/**
 	 * Builder to add a single element/multiple elements to a collection associated with a {@link ColumnName}.
@@ -574,6 +549,15 @@ public class Update {
 		public CqlIdentifier toCqlIdentifier() {
 			return this.columnName.getCqlIdentifier().orElseGet(() -> CqlIdentifier.fromCql(this.columnName.toCql()));
 		}
+
+		/**
+		 * Determine whether the {@code other} assignment overrides this assignment.
+		 *
+		 * @since 4.5.3
+		 */
+		boolean overrides(AssignmentOp other) {
+			return ObjectUtils.nullSafeEquals(this.columnName, other.columnName);
+		}
 	}
 
 	/**
@@ -681,6 +665,20 @@ public class Update {
 		}
 
 		@Override
+		boolean overrides(AssignmentOp other) {
+
+			if (super.overrides(other)) {
+				if (other instanceof SetAtIndexOp i) {
+					return getIndex() == i.getIndex();
+				} else {
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		@Override
 		public String toString() {
 			return String.format("%s[%d] = %s", getColumnName(), index, serializeToCqlSafely(getValue()));
 		}
@@ -711,6 +709,20 @@ public class Update {
 		@Override
 		public Object getValue() {
 			return value;
+		}
+
+		@Override
+		boolean overrides(AssignmentOp other) {
+
+			if (super.overrides(other)) {
+				if (other instanceof SetAtKeyOp i) {
+					return ObjectUtils.nullSafeEquals(getKey(), i.getKey());
+				} else {
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		@Override
@@ -760,6 +772,11 @@ public class Update {
 
 		public Object getValue() {
 			return value;
+		}
+
+		@Override
+		boolean overrides(AssignmentOp other) {
+			return false;
 		}
 
 		@Override

@@ -93,6 +93,15 @@ class UpdateUnitTests {
 	}
 
 	@Test // DATACASS-343
+	void multipleRemovalsAreRetained() {
+
+		Update update = Update.empty().remove("foo", "bar").remove("foo", "baz");
+
+		assertThat(update.getUpdateOperations()).hasSize(2);
+		assertThat(update).hasToString("foo = foo - ['bar'], foo = foo - ['baz']");
+	}
+
+	@Test // DATACASS-343
 	void shouldClearCollection() {
 
 		Update update = Update.empty().clear("foo");
@@ -185,10 +194,11 @@ class UpdateUnitTests {
 	@Test // GH-1525
 	void shouldUseLastWinsForDuplicateSetAtIndexOnSameIndex() {
 
-		Update update = Update.empty().set("foo").atIndex(1).to("A").set("foo").atIndex(1).to("B");
+		Update update = Update.empty().set("foo").atIndex(1).to("A").set("bar").atIndex(1).to("B").set("foo").atIndex(1)
+				.to("B");
 
-		assertThat(update.getUpdateOperations()).hasSize(1);
-		assertThat(update).hasToString("foo[1] = 'B'");
+		assertThat(update.getUpdateOperations()).hasSize(2);
+		assertThat(update).hasToString("bar[1] = 'B', foo[1] = 'B'");
 	}
 
 	@Test // GH-1525

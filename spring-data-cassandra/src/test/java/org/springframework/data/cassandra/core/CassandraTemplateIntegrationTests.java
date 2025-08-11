@@ -783,7 +783,7 @@ class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrat
 		assertThat(target).isEqualTo(entity);
 	}
 
-	@Test // DATACASS-829
+	@Test // DATACASS-829, GH-1525
 	void shouldPartiallyUpdateListOfMappedUdt() {
 
 		WithMappedUdtList entity = new WithMappedUdtList();
@@ -792,12 +792,14 @@ class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrat
 
 		template.insert(entity);
 
-		Update update = Update.empty().set("mappedUdts").atIndex(1).to(new MappedUdt("replacement"));
+		Update update = Update.empty().set("mappedUdts").atIndex(1).to(new MappedUdt("replacement")).set("mappedUdts")
+				.atIndex(2).to(new MappedUdt("replacement2"));
 
 		template.update(Query.query(where("id").is("id-1")), update, WithMappedUdtList.class);
 
 		WithMappedUdtList updated = template.selectOne(Query.query(where("id").is("id-1")), WithMappedUdtList.class);
-		assertThat(updated.getMappedUdts()).extracting(MappedUdt::name).containsExactly("one", "replacement", "three");
+		assertThat(updated.getMappedUdts()).extracting(MappedUdt::name).containsExactly("one", "replacement",
+				"replacement2");
 	}
 
 	@UserDefinedType
