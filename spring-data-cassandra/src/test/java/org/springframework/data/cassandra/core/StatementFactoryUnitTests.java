@@ -67,6 +67,7 @@ import com.datastax.oss.driver.internal.core.type.codec.registry.DefaultCodecReg
  *
  * @author Mark Paluch
  * @author Sam Lightfoot
+ * @author Jeongjun Min
  */
 class StatementFactoryUnitTests {
 
@@ -962,6 +963,19 @@ class StatementFactoryUnitTests {
 		assertThat(statement.getQuery()).isEqualTo(
 				"SELECT comment,similarity_cosine(vector,[0.2, 0.15, 0.3, 0.2, 0.05]) AS vector FROM withvector ORDER BY vector ANN OF [1.2, 1.3]");
 		assertThat(statement.getNamedValues()).isEmpty();
+	}
+
+	@Test // GH-1525
+	void shouldCreateUpdateWithMultipleOperationsOnSameColumnDifferentKeys() {
+
+		Update update = Update.empty().set("map").atKey("key1").to("value1").set("map").atKey("key2").to("value2");
+
+		StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> updateStatementBuilder = statementFactory
+			.update(Query.empty(), update, personEntity);
+
+		String cql = updateStatementBuilder.build(ParameterHandling.INLINE).getQuery();
+
+		assertThat(cql).isEqualTo("UPDATE person SET map['key1']='value1', map['key2']='value2'");
 	}
 
 	@SuppressWarnings("unused")

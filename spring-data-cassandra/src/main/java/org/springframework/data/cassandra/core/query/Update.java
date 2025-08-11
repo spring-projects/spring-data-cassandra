@@ -17,10 +17,11 @@ package org.springframework.data.cassandra.core.query;
 
 import static org.springframework.data.cassandra.core.query.SerializationUtils.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.data.cassandra.core.query.Update.AddToOp.Mode;
@@ -40,13 +41,14 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  *
  * @author Mark Paluch
  * @author Chema Vinacua
+ * @author Jeongjun Min
  * @since 2.0
  */
 public class Update {
 
-	private static final Update EMPTY = new Update(Collections.emptyMap());
+	private static final Update EMPTY = new Update(Collections.emptyList());
 
-	private final Map<ColumnName, AssignmentOp> updateOperations;
+	private final List<AssignmentOp> updateOperations;
 
 	/**
 	 * Create an empty {@link Update} object.
@@ -66,11 +68,9 @@ public class Update {
 
 		Assert.notNull(assignmentOps, "Update operations must not be null");
 
-		Map<ColumnName, AssignmentOp> updateOperations = assignmentOps instanceof Collection
-				? new LinkedHashMap<>(((Collection<?>) assignmentOps).size())
-				: new LinkedHashMap<>();
+		List<AssignmentOp> updateOperations = new ArrayList<>();
 
-		assignmentOps.forEach(assignmentOp -> updateOperations.put(assignmentOp.getColumnName(), assignmentOp));
+		assignmentOps.forEach(updateOperations::add);
 
 		return new Update(updateOperations);
 	}
@@ -84,7 +84,7 @@ public class Update {
 		return empty().set(columnName, value);
 	}
 
-	private Update(Map<ColumnName, AssignmentOp> updateOperations) {
+	private Update(List<AssignmentOp> updateOperations) {
 		this.updateOperations = updateOperations;
 	}
 
@@ -215,23 +215,55 @@ public class Update {
 	 * @return {@link Collection} of update operations.
 	 */
 	public Collection<AssignmentOp> getUpdateOperations() {
-		return Collections.unmodifiableCollection(updateOperations.values());
+		return Collections.unmodifiableCollection(updateOperations);
 	}
 
 	private Update add(AssignmentOp assignmentOp) {
 
-		Map<ColumnName, AssignmentOp> map = new LinkedHashMap<>(this.updateOperations.size() + 1);
+        List<AssignmentOp> list = new ArrayList<>(this.updateOperations.size() + 1);
 
-		map.putAll(this.updateOperations);
-		map.put(assignmentOp.getColumnName(), assignmentOp);
+        for (AssignmentOp existing : this.updateOperations) {
+            if (!conflicts(existing, assignmentOp)) {
+                list.add(existing);
+            }
+        }
 
-		return new Update(map);
+        list.add(assignmentOp);
+
+        return new Update(list);
+    }
+
+    /**
+     * Determine whether two assignment operations conflict and should not co-exist in a single {@link Update}.
+     * Conflicts are defined as whole-column operations on the same column or element-level operations targeting
+     * the same element (same map key or same list index) on the same column. In case of conflict, last-wins semantics
+     * apply and the incoming operation replaces the existing one.
+     */
+	private static boolean conflicts(AssignmentOp existing, AssignmentOp incoming) {
+
+		if (!existing.getColumnName().equals(incoming.getColumnName())) {
+			return false;
+		}
+
+		if (existing instanceof SetAtKeyOp e && incoming instanceof SetAtKeyOp i) {
+			return equalsNullSafe(e.getKey(), i.getKey());
+		}
+
+		if (existing instanceof SetAtIndexOp e && incoming instanceof SetAtIndexOp i) {
+			return e.getIndex() == i.getIndex();
+		}
+
+		return true;
+	}
+
+	private static boolean equalsNullSafe(@Nullable Object a, @Nullable Object b) {
+		return a == b || (a != null && a.equals(b));
 	}
 
 	@Override
-	public String toString() {
-		return StringUtils.collectionToDelimitedString(updateOperations.values(), ", ");
-	}
+    public String toString() {
+        return StringUtils.collectionToDelimitedString(updateOperations, ", ");
+    }
 
 	/**
 	 * Builder to add a single element/multiple elements to a collection associated with a {@link ColumnName}.
