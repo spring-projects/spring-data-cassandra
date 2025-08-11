@@ -25,6 +25,7 @@ import org.springframework.data.cassandra.core.query.Update.IncrOp;
  *
  * @author Mark Paluch
  * @author Chema Vinacua
+ * @author Jeongjun Min
  */
 class UpdateUnitTests {
 
@@ -152,5 +153,59 @@ class UpdateUnitTests {
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update).hasToString("foo = foo - 2400000000");
+	}
+
+	@Test // GH-1525
+	void shouldAllowMultipleSetAtKeyOperationsOnSameColumn() {
+
+		Update update = Update.empty().set("foo").atKey("k1").to("v1").set("foo").atKey("k2").to("v2");
+
+		assertThat(update.getUpdateOperations()).hasSize(2);
+		assertThat(update).hasToString("foo['k1'] = 'v1', foo['k2'] = 'v2'");
+	}
+
+	@Test // GH-1525
+	void shouldUseLastWinsForDuplicateSetAtKeyOnSameKey() {
+
+		Update update = Update.empty().set("foo").atKey("k1").to("v1").set("foo").atKey("k1").to("v2");
+
+		assertThat(update.getUpdateOperations()).hasSize(1);
+		assertThat(update).hasToString("foo['k1'] = 'v2'");
+	}
+
+	@Test // GH-1525
+	void shouldAllowMultipleSetAtIndexOperationsOnSameColumn() {
+
+		Update update = Update.empty().set("foo").atIndex(1).to("A").set("foo").atIndex(2).to("B");
+
+		assertThat(update.getUpdateOperations()).hasSize(2);
+		assertThat(update).hasToString("foo[1] = 'A', foo[2] = 'B'");
+	}
+
+	@Test // GH-1525
+	void shouldUseLastWinsForDuplicateSetAtIndexOnSameIndex() {
+
+		Update update = Update.empty().set("foo").atIndex(1).to("A").set("foo").atIndex(1).to("B");
+
+		assertThat(update.getUpdateOperations()).hasSize(1);
+		assertThat(update).hasToString("foo[1] = 'B'");
+	}
+
+	@Test // GH-1525
+	void wholeColumnAndElementLevelShouldConflict_LastWinsWholeColumn() {
+
+		Update update = Update.empty().set("foo").atKey("k1").to("v1").set("foo", "ALL");
+
+		assertThat(update.getUpdateOperations()).hasSize(1);
+		assertThat(update).hasToString("foo = 'ALL'");
+	}
+
+	@Test // GH-1525
+	void wholeColumnAndElementLevelShouldConflict_LastWinsElementLevel() {
+
+		Update update = Update.empty().set("foo", "ALL").set("foo").atKey("k1").to("v1");
+
+		assertThat(update.getUpdateOperations()).hasSize(1);
+		assertThat(update).hasToString("foo['k1'] = 'v1'");
 	}
 }
