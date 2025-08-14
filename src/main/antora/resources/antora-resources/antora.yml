@@ -11,8 +11,8 @@ asciidoc:
     springversion: ${spring}
     commons: ${springdata.commons.docs}
     include-xml-namespaces: false
-    spring-data-commons-docs-url: https://docs.spring.io/spring-data/commons/reference/{springdata.commons}
-    spring-data-commons-javadoc-base: https://docs.spring.io/spring-data/commons/reference/{springdata.commons}/api
+    spring-data-commons-docs-url: https://docs.spring.io/spring-data/commons/reference/{commons}
+    spring-data-commons-javadoc-base: '{spring-data-commons-docs-url}/api/java'
     springdocsurl: https://docs.spring.io/spring-framework/reference/{springversionshort}
     spring-framework-docs: '{springdocsurl}'
     springjavadocurl: https://docs.spring.io/spring-framework/docs/${spring}/javadoc-api
