@@ -6,8 +6,8 @@ You can do so either by using Java-based bean metadata or by using XML-based bea
 These are discussed in the following sections.
 
 NOTE: For those not familiar with how to configure the Spring container using Java-based bean metadata instead of XML-based metadata, see the high-level introduction in the reference docs
-https://docs.spring.io/spring/docs/3.2.x/spring-framework-reference/html/new-in-3.0.html#new-java-configuration[here]
-as well as the detailed documentation {springDocsUrl}core.html#beans-java-instantiating-container[here].
+link:{springdocsurl}/core/beans/java.html[here]
+as well as the detailed documentation {springDocsUrl}/core/beans/java/instantiating-container.html[here].
 
 [[cassandra.cassandra-java-config]]
 == Registering a Session Instance by using Java-based Metadata
