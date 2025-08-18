@@ -27,7 +27,7 @@ This approach lets you use the standard `com.datastax.oss.driver.api.core.CqlSes
 An alternative is to register an instance of `com.datastax.oss.driver.api.core.CqlSession` with the container by using Spring's `CqlSessionFactoryBean`.
 As compared to instantiating a `com.datastax.oss.driver.api.core.CqlSession` instance directly, the `FactoryBean` approach has the added advantage of also providing the container with an `ExceptionTranslator` implementation that translates Cassandra exceptions to exceptions in Spring's portable `DataAccessException` hierarchy.
 This hierarchy and the use of
-`@Repository` is described in {springDocsUrl}data-access.html[Spring's DAO support features].
+`@Repository` is described in {springDocsUrl}/data-access/dao.html[Spring's DAO support features].
 
 The following example shows Java-based factory class usage:
 

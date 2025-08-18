@@ -7,8 +7,8 @@ The reactive Cassandra support contains a wide range of features:
 * `ReactiveCqlTemplate` helper class that increases productivity by properly handling common Cassandra data access operations.
 * `ReactiveCassandraTemplate` helper class that increases productivity by using `ReactiveCassandraOperations` in a reactive manner.
 It includes integrated object mapping between tables and POJOs.
-* Exception translation into Spring's portable {springDocsUrl}data-access.html#dao-exceptions[Data Access Exception Hierarchy].
-* Feature rich object mapping integrated with Spring's {springDocsUrl}core.html#core-convert[Conversion Service].
+* Exception translation into Spring's portable {springDocsUrl}/data-access/dao.html#dao-exceptions[Data Access Exception Hierarchy].
+* Feature rich object mapping integrated with Spring's {springDocsUrl}/core/validation/convert.html[Conversion Service].
 * Java-based Query, Criteria, and Update DSLs.
 * Automatic implementation of `Repository` interfaces, including support for custom finder methods.
 
@@ -19,7 +19,7 @@ Reactive usage is broken up into two phases: Composition and Execution.
 
 Calling repository methods lets you compose a reactive sequence by obtaining `Publisher` instances and applying operators.
 No I/O happens until you subscribe.
-Passing the reactive sequence to a reactive execution infrastructure, such as {springDocsUrl}web.html#web-reactive[Spring WebFlux]
+Passing the reactive sequence to a reactive execution infrastructure, such as {springDocsUrl}/web/webflux.html[Spring WebFlux]
 or https://vertx.io/docs/vertx-reactive-streams/java/[Vert.x]), subscribes to the publisher and initiate the actual execution.
 See https://projectreactor.io/docs/core/release/reference/#reactive.subscribe[the Project reactor documentation] for more detail.
 
