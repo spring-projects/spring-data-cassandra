@@ -8,8 +8,8 @@ Spring Data support for Apache Cassandra contains a wide range of features:
 * Spring configuration support with xref:cassandra/configuration.adoc[Java-based `@Configuration` classes or the XML namespace].
 * The xref:cassandra/cql-template.adoc[`CqlTemplate`, `AsyncCqlTemplate`, and `ReactiveCqlTemplate`] helper classes that increases productivity by properly handling common Cassandra data access operations.
 * The xref:cassandra/template.adoc[`CassandraTemplate`, `AsyncCassandraTemplate`, and `ReactiveCassandraTemplate`] helper classes that provide object mapping between CQL Tables and POJOs.
-* xref:cassandra/cql-template.adoc#exception-translation[Exception translation] into Spring's portable {springDocsUrl}data-access.html#dao-exceptions[Data Access Exception Hierarchy].
-* Feature rich xref:object-mapping.adoc[object mapping] integrated with _Spring's_ {springDocsUrl}core.html#core-convert[Conversion Service].
+* xref:cassandra/cql-template.adoc#exception-translation[Exception translation] into Spring's portable {springDocsUrl}/data-access/dao.html#dao-exceptions[Data Access Exception Hierarchy].
+* Feature rich xref:object-mapping.adoc[object mapping] integrated with _Spring's_ {springDocsUrl}/core/validation/convert.html[Conversion Service].
 * xref:object-mapping.adoc#mapping.usage-annotations[Annotation-based mapping] metadata that is extensible to support other metadata formats.
 * Java-based xref:cassandra/template.adoc#cassandra.template.query[query, criteria, and update DSLs].
 * Automatic implementation of xref:repositories.adoc[imperative and reactive `Repository` interfaces] including support for xref:repositories/custom-implementations.adoc[custom query methods].
