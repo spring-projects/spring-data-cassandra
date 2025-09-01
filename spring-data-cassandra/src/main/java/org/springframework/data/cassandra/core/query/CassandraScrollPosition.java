@@ -18,19 +18,20 @@ package org.springframework.data.cassandra.core.query;
 import java.nio.ByteBuffer;
 
 import org.springframework.data.cassandra.core.query.CassandraScrollPosition.Initial;
-import org.springframework.data.cassandra.core.query.CassandraScrollPosition.PagingState;
+import org.springframework.data.cassandra.core.query.CassandraScrollPosition.PagingScrollPosition;
 import org.springframework.data.domain.ScrollPosition;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
+import com.datastax.oss.driver.api.core.cql.PagingState;
+
 /**
- * Cassandra-specific implementation of {@link ScrollPosition} using
- * {@link com.datastax.oss.driver.api.core.cql.PagingState}.
+ * Cassandra-specific implementation of {@link ScrollPosition} using {@link PagingState}.
  *
  * @author Mark Paluch
  * @since 4.2
  */
-public abstract sealed class CassandraScrollPosition implements ScrollPosition permits Initial,PagingState {
+public abstract sealed class CassandraScrollPosition implements ScrollPosition permits Initial, PagingScrollPosition {
 
 	/**
 	 * Returns an initial {@link CassandraScrollPosition}.
@@ -42,6 +43,19 @@ public abstract sealed class CassandraScrollPosition implements ScrollPosition p
 	}
 
 	/**
+	 * Creates a continuation {@link CassandraScrollPosition} given {@link PagingScrollPosition}.
+	 *
+	 * @return a continuation {@link CassandraScrollPosition} given {@link PagingScrollPosition}.
+	 * @since 5.0
+	 */
+	public static CassandraScrollPosition of(PagingState pagingState) {
+
+		Assert.notNull(pagingState, "PagingState must not be null");
+
+		return of(pagingState.getRawPagingState());
+	}
+
+	/**
 	 * Creates a continuation {@link CassandraScrollPosition} given {@code pagingState}.
 	 *
 	 * @return a continuation {@link CassandraScrollPosition} given {@code pagingState}.
@@ -50,7 +64,7 @@ public abstract sealed class CassandraScrollPosition implements ScrollPosition p
 
 		Assert.notNull(pagingState, "PagingState must not be null");
 
-		return new PagingState(pagingState);
+		return new PagingScrollPosition(pagingState);
 	}
 
 	/**
@@ -78,11 +92,11 @@ public abstract sealed class CassandraScrollPosition implements ScrollPosition p
 		}
 	}
 
-	static final class PagingState extends CassandraScrollPosition {
+	static final class PagingScrollPosition extends CassandraScrollPosition {
 
 		private final ByteBuffer pagingState;
 
-		PagingState(ByteBuffer pagingState) {
+		PagingScrollPosition(ByteBuffer pagingState) {
 			this.pagingState = pagingState;
 		}
 
@@ -103,7 +117,7 @@ public abstract sealed class CassandraScrollPosition implements ScrollPosition p
 			if (o == null || getClass() != o.getClass())
 				return false;
 
-			PagingState that = (PagingState) o;
+			PagingScrollPosition that = (PagingScrollPosition) o;
 
 			return ObjectUtils.nullSafeEquals(pagingState, that.pagingState);
 		}

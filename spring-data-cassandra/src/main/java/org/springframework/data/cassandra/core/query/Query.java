@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.domain.Limit;
@@ -35,6 +36,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.util.Assert;
+
+import com.datastax.oss.driver.api.core.cql.PagingState;
 
 /**
  * Query object representing {@link CriteriaDefinition}s, {@link Columns}, {@link Sort}, {@link ByteBuffer paging state}
@@ -254,6 +257,17 @@ public class Query implements Filter {
 
 		return new Query(this.criteriaDefinitions, this.columns, this.sort, scrollPosition, this.queryOptions, this.limit,
 				this.allowFiltering);
+	}
+
+	/**
+	 * Set the {@link PagingState paging state} to skip rows.
+	 *
+	 * @param pagingState must not be {@literal null}.
+	 * @return a new {@link Query} object containing the former settings with {@link PagingState paging state} applied.
+	 * @since 5.0
+	 */
+	public Query pagingState(PagingState pagingState) {
+		return pagingState(CassandraScrollPosition.of(pagingState));
 	}
 
 	/**

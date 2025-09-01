@@ -198,7 +198,8 @@ The `Query` class has some additional methods that you can use to provide option
 * `Query` *limit* `(Limit limit)`: Used to limit the size of the returned results to the provided limit (used `SELECT` limiting).
 * `Query` *limit* `(long limit)`: Used to limit the size of the returned results to the provided limit (used `SELECT` limiting).
 * `Query` *pageRequest* `(Pageable pageRequest)`: Used to associate `Sort`, `PagingState`, and `fetchSize` with the query (used for paging).
-* `Query` *pagingState* `(ByteBuffer pagingState)`: Used to associate a `ByteBuffer` with the query (used for paging).
+* `Query` *pagingState* `(CassandraScrollPosition pagingState)`: Used to associate a `CassandraScrollPosition` with the query (used for paging).
+* `Query` *pagingState* `(ByteBuffer pagingState)`: Used to associate a raw `ByteBuffer` with the query (used for paging).
 * `Query` *queryOptions* `(QueryOptions queryOptions)`: Used to associate `QueryOptions` with the query.
 * `Query` *sort* `(Sort sort)`: Used to provide a sort definition for the results.
 * `Query` *withAllowFiltering* `()`: Used to render `ALLOW FILTERING` queries.

@@ -21,9 +21,12 @@ import static org.springframework.data.domain.Sort.Order.*;
 import java.nio.ByteBuffer;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
+
+import com.datastax.oss.driver.api.core.cql.PagingState;
 
 /**
  * Unit tests for {@link Query}.
@@ -85,4 +88,15 @@ class QueryUnitTests {
 		assertThat(query.getQueryOptions())
 				.hasValueSatisfying(actual -> assertThat(actual).extracting("pageSize").isEqualTo(42));
 	}
+
+	@Test // GH-1585
+	void shouldApplyPagingState() {
+
+		PagingState pagingState = PagingState.fromString("00080006536b796c6572f07ffffffdf07ffffffd");
+		Query query = Query.empty().pagingState(pagingState);
+
+		assertThat(query.getPagingState())
+				.hasValueSatisfying(actual -> assertThat(actual).isEqualByComparingTo(pagingState.getRawPagingState()));
+	}
+
 }
