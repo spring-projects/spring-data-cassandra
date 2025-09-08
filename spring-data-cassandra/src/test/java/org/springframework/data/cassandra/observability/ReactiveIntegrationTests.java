@@ -36,6 +36,8 @@ import org.springframework.data.cassandra.test.util.CassandraExtension;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+
 /**
  * Collection of tests that log metrics and tracing.
  *
@@ -68,7 +70,6 @@ public class ReactiveIntegrationTests extends SampleTestRunner {
 
 			Observation intermediate = Observation.start("intermediate", createObservationRegistry());
 
-
 			Mono<ReactiveResultSet> drop = observableSession.execute("DROP KEYSPACE IF EXISTS ObservationTest");
 			Mono<ReactiveResultSet> create = observableSession.execute("CREATE KEYSPACE ObservationTest " + "WITH "
 					+ "REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };");
@@ -86,6 +87,13 @@ public class ReactiveIntegrationTests extends SampleTestRunner {
 						.expectNextCount(1) //
 						.verifyComplete();
 			});
+
+			PreparedStatement prepare1 = observableSession
+					.prepare("INSERT INTO person (id, firstName, lastName) VALUES (?, ?, ?);").block();
+			PreparedStatement prepare2 = observableSession
+					.prepare("INSERT INTO person (id, firstName, lastName) VALUES (?, ?, ?);").block();
+
+			assertThat(prepare1).isSameAs(prepare2);
 
 			assertThat(tracer.getFinishedSpans()).hasSizeGreaterThanOrEqualTo(5);
 		};
