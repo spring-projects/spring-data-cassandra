@@ -93,7 +93,7 @@ final class CqlSessionObservationInterceptor implements MethodInterceptor {
 			Observation observation = startObservation(statement, true, "prepare");
 
 			try {
-				return this.delegate.prepare((SimpleStatement) ObservationStatement.createProxy(observation, statement));
+				return this.delegate.prepare((SimpleStatement) statement);
 			} catch (RuntimeException e) {
 
 				observation.error(e);
@@ -113,7 +113,7 @@ final class CqlSessionObservationInterceptor implements MethodInterceptor {
 
 			Observation observation = startObservation(statement, true, "prepareAsync");
 
-			return this.delegate.prepareAsync((SimpleStatement) ObservationStatement.createProxy(observation, statement))
+			return this.delegate.prepareAsync((SimpleStatement) statement)
 					.whenComplete((preparedStatement, throwable) -> {
 
 						if (throwable != null) {

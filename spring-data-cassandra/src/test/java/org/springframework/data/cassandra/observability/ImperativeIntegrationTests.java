@@ -31,6 +31,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 
 /**
  * Collection of tests that log metrics and tracing.
@@ -73,6 +74,13 @@ public class ImperativeIntegrationTests extends SampleTestRunner {
 					.execute("CREATE TABLE IF NOT EXISTS person (id int, firstName text, lastName text, PRIMARY KEY(id));");
 
 			CqlTemplate template = new CqlTemplate(observableSession);
+
+			PreparedStatement prepare1 = observableSession
+					.prepare("INSERT INTO person (id, firstName, lastName) VALUES (?, ?, ?);");
+			PreparedStatement prepare2 = observableSession
+					.prepare("INSERT INTO person (id, firstName, lastName) VALUES (?, ?, ?);");
+
+			assertThat(prepare1).isSameAs(prepare2);
 
 			template.execute("INSERT INTO person (id,firstName,lastName) VALUES(?,?,?)", 1, "Walter", "White");
 
