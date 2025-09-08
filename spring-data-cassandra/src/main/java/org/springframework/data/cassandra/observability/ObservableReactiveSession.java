@@ -166,7 +166,7 @@ public class ObservableReactiveSession implements ReactiveSession {
 		return Mono.deferContextual(contextView -> {
 
 			Observation observation = startObservation(getParentObservation(contextView), statement, true, "prepare");
-			return this.delegate.prepare(ObservationStatement.createProxy(observation, statement)) //
+			return this.delegate.prepare(statement) //
 					.doOnError(observation::error) //
 					.doFinally(ignore -> observation.stop());
 		});

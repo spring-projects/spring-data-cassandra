@@ -19,13 +19,12 @@ import io.micrometer.observation.Observation;
 
 import java.lang.reflect.Method;
 
-import javax.annotation.Nonnull;
-
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.ObjectUtils;
 
 import com.datastax.oss.driver.api.core.cql.Statement;
 
@@ -77,23 +76,50 @@ final class ObservationStatement implements MethodInterceptor {
 
 	@Nullable
 	@Override
-	public Object invoke(@Nonnull MethodInvocation invocation) throws Throwable {
+	public Object invoke(MethodInvocation invocation) throws Throwable {
 
 		Method method = invocation.getMethod();
+		Object[] args = invocation.getArguments();
 
-		if (method.getName().equals("getTargetClass")) {
-			return this.delegate.getClass();
-		}
+		String name = method.getName();
 
-		if (method.getName().equals("getObservation")) {
-			return this.observation;
+		switch (name) {
+			case "equals" -> {
+				if (args.length == 1) {
+					return equals(args[0]);
+				}
+			}
+			case "hashCode" -> {
+				return hashCode();
+			}
+
+			case "getTargetClass" -> {
+				return this.delegate.getClass();
+			}
+
+			case "getObservation" -> {
+				return this.observation;
+			}
 		}
 
 		Object result = invocation.proceed();
 		if (result instanceof Statement<?>) {
 			this.delegate = (Statement<?>) result;
 		}
+
 		return result;
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof ObservationStatement that)) {
+			return false;
+		}
+		return ObjectUtils.nullSafeEquals(delegate, that.delegate);
+	}
+
+	@Override
+	public int hashCode() {
+		return ObjectUtils.nullSafeHash(delegate);
+	}
 }
