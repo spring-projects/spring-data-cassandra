@@ -64,14 +64,14 @@ class BasicCassandraPersistentTupleEntityUnitTests {
 	void shouldReportDuplicateMappings() {
 
 		assertThatThrownBy(() -> this.mappingContext.getRequiredPersistentEntity(DuplicateElement.class))
-				.isInstanceOf(MappingException.class).hasMessageContaining("Duplicate ordinal [0]");
+				.isInstanceOf(MappingException.class).cause().hasMessageContaining("Duplicate ordinal [0]");
 	}
 
 	@Test // DATACASS-523
 	void shouldReportMissingOrdinalMappings() {
 
 		assertThatThrownBy(() -> this.mappingContext.getRequiredPersistentEntity(MissingElementOrdinals.class))
-				.isInstanceOf(MappingException.class).hasMessageContaining("Mapped tuple has no")
+				.isInstanceOf(MappingException.class).rootCause().hasMessageContaining("Mapped tuple has no")
 				.hasMessageContaining("for ordinal(s): 0");
 	}
 
@@ -79,6 +79,7 @@ class BasicCassandraPersistentTupleEntityUnitTests {
 	void shouldReportNegativeOrdinalIndex() {
 
 		assertThatThrownBy(() -> this.mappingContext.getRequiredPersistentEntity(NegativeIndex.class))
+				.rootCause()
 				.isInstanceOf(IllegalArgumentException.class)
 				.hasMessageContaining("Element ordinal must be greater or equal to zero for property [street] in entity");
 	}
@@ -88,6 +89,7 @@ class BasicCassandraPersistentTupleEntityUnitTests {
 
 		assertThatThrownBy(() -> this.mappingContext.getRequiredPersistentEntity(NoElements.class))
 				.isInstanceOf(MappingException.class)
+				.rootCause()
 				.hasMessageContaining("Mapped tuple contains no persistent elements annotated");
 	}
 
@@ -96,6 +98,7 @@ class BasicCassandraPersistentTupleEntityUnitTests {
 
 		assertThatThrownBy(() -> this.mappingContext.getRequiredPersistentEntity(MissingAnnotation.class))
 				.isInstanceOf(MappingException.class)
+				.cause()
 				.hasMessageContaining("Missing @Element annotation in mapped tuple type for property [street]");
 	}
 

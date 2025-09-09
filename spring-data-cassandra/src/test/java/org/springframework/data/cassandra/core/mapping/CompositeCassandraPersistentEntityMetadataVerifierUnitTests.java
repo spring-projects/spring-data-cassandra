@@ -67,7 +67,7 @@ class CompositeCassandraPersistentEntityMetadataVerifierUnitTests {
 			verifier.verify(context.getRequiredPersistentEntity(TooManyAnnotations.class));
 			fail("Missing MappingException");
 		} catch (MappingException e) {
-			assertThat(e).hasMessageContaining("Entity cannot be of type @Table and @PrimaryKeyClass");
+			assertThat(e).cause().hasMessageContaining("Entity cannot be of type @Table and @PrimaryKeyClass");
 		}
 	}
 

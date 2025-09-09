@@ -365,7 +365,7 @@ public class CassandraMappingContextUnitTests {
 			mappingContext.getPersistentEntity(InvalidEntityWithIdAndPrimaryKeyColumn.class);
 			fail("Missing MappingException");
 		} catch (MappingException e) {
-			assertThat(e).isInstanceOf(VerifierMappingExceptions.class);
+			assertThat(e).hasCauseInstanceOf(VerifierMappingExceptions.class);
 		}
 
 		assertThat(mappingContext.getUserDefinedTypeEntities()).isEmpty();
