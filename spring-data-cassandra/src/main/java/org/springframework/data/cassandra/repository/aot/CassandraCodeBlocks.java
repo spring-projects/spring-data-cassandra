@@ -17,7 +17,6 @@ package org.springframework.data.cassandra.repository.aot;
 
 import java.nio.ByteBuffer;
 import java.util.Map;
-import java.util.Optional;
 
 import org.jspecify.annotations.NullUnmarked;
 import org.jspecify.annotations.Nullable;
@@ -40,6 +39,7 @@ import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.aot.generate.AotQueryMethodGenerationContext;
+import org.springframework.data.util.ReflectionUtils;
 import org.springframework.javapoet.CodeBlock;
 import org.springframework.javapoet.CodeBlock.Builder;
 import org.springframework.javapoet.TypeName;
@@ -88,7 +88,6 @@ class CassandraCodeBlocks {
 
 		private final AotQueryMethodGenerationContext context;
 		private final CassandraQueryMethod queryMethod;
-		private final String parameterNames;
 
 		private @Nullable AotQuery query;
 		private String queryVariableName;
@@ -98,14 +97,6 @@ class CassandraCodeBlocks {
 
 			this.context = context;
 			this.queryMethod = queryMethod;
-
-			String parameterNames = StringUtils.collectionToDelimitedString(context.getAllParameterNames(), ", ");
-
-			if (StringUtils.hasText(parameterNames)) {
-				this.parameterNames = ", " + parameterNames;
-			} else {
-				this.parameterNames = "";
-			}
 		}
 
 		QueryBlockBuilder query(AotQuery query) {
@@ -178,8 +169,7 @@ class CassandraCodeBlocks {
 			for (ParameterBinding binding : query.getParameterBindings()) {
 
 				// TODO:Conversion, Data type
-				builder.addStatement("$1L[$2L] = $3L", context.localVariable("args"), index++,
-						getParameter(binding.getOrigin()));
+				builder.addStatement("$1L[$2L] = $3L", context.localVariable("args"), index++, getParameter(binding));
 			}
 
 			builder.addStatement("$1T $2L = $1T.newInstance($3S, $4L)", SimpleStatement.class, queryVariableName,
@@ -259,28 +249,18 @@ class CassandraCodeBlocks {
 				return queryBuilder.build();
 			}
 
-			boolean first = true;
-			queryBuilder.add("$[");
-			queryBuilder.add("$1T $2L = $1T.query(", org.springframework.data.cassandra.core.query.Query.class,
-					queryVariableName);
+			LordOfTheStrings.BetterBuilder betterBuilder = LordOfTheStrings.builder(queryBuilder);
+			betterBuilder.addStatement(it -> {
+				it.add("$1T $2L = $1T.query(", org.springframework.data.cassandra.core.query.Query.class, queryVariableName);
 
-			for (CriteriaDefinition criteriaDefinition : query) {
+				it.addAll(query, ".and(", (criteria, builder) -> {
+					builder.add("$1T.where($2S)", Criteria.class, criteria.getColumnName().toCql());
+					appendPredicate(criteria, builder);
+					builder.add(")");
+				});
+			});
 
-				if (first) {
-					first = false;
-				} else {
-					queryBuilder.add(".and(");
-				}
-
-				queryBuilder.add("$1T.where($2S)", Criteria.class, criteriaDefinition.getColumnName().toCql());
-				appendPredicate(criteriaDefinition, queryBuilder);
-
-				queryBuilder.add(")");
-			}
-
-			queryBuilder.add(";\n$]");
-
-			return queryBuilder.build();
+			return betterBuilder.build();
 		}
 
 		private CodeBlock buildColumns(Columns columns) {
@@ -368,27 +348,17 @@ class CassandraCodeBlocks {
 
 		private static CodeBlock buildSort(Sort sort) {
 
-			Builder sortBuilder = CodeBlock.builder();
-			sortBuilder.add("$T.by(", Sort.class);
+			LordOfTheStrings.InvocationBuilder invocation = LordOfTheStrings.invoke("$T.by($L)", Sort.class);
 
-			boolean first = true;
-			for (Sort.Order order : sort) {
+			invocation.arguments(sort, (order, builder) -> {
 
-				sortBuilder.add("$T.$L($S)", Sort.Order.class, order.isAscending() ? "asc" : "desc", order.getProperty());
+				builder.add("$T.$L($S)", Sort.Order.class, order.isAscending() ? "asc" : "desc", order.getProperty());
 				if (order.isIgnoreCase()) {
-					sortBuilder.add(".ignoreCase()");
+					builder.add(".ignoreCase()");
 				}
+			});
 
-				if (first) {
-					first = false;
-				} else {
-					sortBuilder.add(", ");
-				}
-			}
-
-			sortBuilder.add(")");
-
-			return sortBuilder.build();
+			return invocation.build();
 		}
 
 		private CodeBlock buildQueryOptions(DerivedAotQuery derived) {
@@ -456,7 +426,8 @@ class CassandraCodeBlocks {
 			}
 		}
 
-		private void appendPredicate(CriteriaDefinition criteriaDefinition, Builder criteriaBuilder) {
+		private void appendPredicate(CriteriaDefinition criteriaDefinition,
+				LordOfTheStrings.BetterBuilder criteriaBuilder) {
 
 			CriteriaDefinition.Predicate predicate = criteriaDefinition.getPredicate();
 
@@ -524,31 +495,14 @@ class CassandraCodeBlocks {
 			throw new UnsupportedOperationException("Unsupported origin: " + binding.getOrigin());
 		}
 
-		private CodeBlock getParameter(ParameterBinding.ParameterOrigin origin) {
+		private CodeBlock getParameter(ParameterBinding binding) {
 
+			ParameterBinding.ParameterOrigin origin = binding.getOrigin();
 			if (origin.isMethodArgument() && origin instanceof ParameterBinding.MethodInvocationArgument mia) {
-
-				CodeBlock.Builder builder = CodeBlock.builder();
-
-				builder.add("potentiallyConvertBindingValue(");
-
-				if (mia.identifier().hasPosition()) {
-					builder.add("$L", context.getRequiredBindableParameterName(mia.identifier().getPosition()));
-				} else if (mia.identifier().hasName()) {
-					builder.add("$L", context.getMethodParameter(mia.identifier().getName()).getParameterName());
-				}
-				else {
-					throw new IllegalStateException(
-							"MethodInvocationArgument '%s' does not define a name or a position".formatted(mia));
-				}
-				builder.add(")");
-
-				return builder.build();
+				return CodeBlock.of("potentiallyConvertBindingValue($L)", getParameterName(binding));
 			}
 
 			if (origin.isExpression() && origin instanceof ParameterBinding.Expression expr) {
-
-				Builder builder = CodeBlock.builder();
 
 				String expressionString = expr.expression().getExpressionString();
 				// re-wrap expression
@@ -556,10 +510,11 @@ class CassandraCodeBlocks {
 					expressionString = "#{" + expressionString + "}";
 				}
 
-				builder.add("evaluateExpression($L, $S$L)", context.getExpressionMarker().enclosingMethod(), expressionString,
-						parameterNames);
-
-				return builder.build();
+				return LordOfTheStrings.invoke("evaluateExpression($L)")
+						.argument(context.getExpressionMarker().enclosingMethod()) //
+						.argument("$S", expressionString) //
+						.arguments(context.getAllParameterNames()) //
+						.build();
 			}
 
 			throw new UnsupportedOperationException("Not supported yet for: " + origin);
@@ -609,19 +564,25 @@ class CassandraCodeBlocks {
 
 			if (query.isDelete()) {
 
+				LordOfTheStrings.InvocationBuilder method;
 				if (query instanceof StringAotQuery) {
 
-					builder.addStatement("boolean $1L = $2L.getCqlOperations().execute($3L)", context.localVariable("result"),
+					method = LordOfTheStrings.invoke("$L.getCqlOperations().execute($L)",
 							context.fieldNameOf(CassandraOperations.class), queryVariableName);
 				} else {
-					builder.addStatement("boolean $1L = $2L.delete($3L, $4T.class)", context.localVariable("result"),
-							context.fieldNameOf(CassandraOperations.class), queryVariableName, domainType);
+					method = LordOfTheStrings.invoke("$L.delete($L, $T.class)", context.fieldNameOf(CassandraOperations.class),
+							queryVariableName, domainType);
 				}
 
-				if (context.getReturnType().isAssignableFrom(Boolean.class)
-						|| context.getReturnType().isAssignableFrom(Boolean.TYPE)) {
-					builder.addStatement("return $1L", context.localVariable("result"));
+				if (ReflectionUtils.isVoid(context.getReturnType().toClass())) {
+					builder.addStatement(method.build());
+				} else {
+					builder.addStatement(method.assignTo("boolean $L", context.localVariable("result")));
 				}
+
+				builder.addStatement(LordOfTheStrings.returning(context.getReturnType()) //
+						.whenBooleanReturn(context.localVariable("result")) //
+						.build());
 
 				return builder.build();
 			}
@@ -632,9 +593,7 @@ class CassandraCodeBlocks {
 			boolean isMapProjection = Map.class.isAssignableFrom(context.getActualReturnType().toClass());
 			boolean rawProjection = isMapProjection || ResultSet.class.isAssignableFrom(context.getReturnType().toClass());
 
-			TypeName actualReturnType = isMapProjection
-					? TypeName.get(Map.class)
-					: context.getActualReturnTypeName();
+			TypeName actualReturnType = isMapProjection ? TypeName.get(Map.class) : context.getActualReturnTypeName();
 			Object asDynamicTypeNameOrProjectionTypeParameter = actualReturnType;
 
 			if (StringUtils.hasText(context.getDynamicProjectionParameterName())) {
@@ -703,7 +662,7 @@ class CassandraCodeBlocks {
 			} else if (query.isLimited()) {
 				terminatingMethod = "firstValue()";
 			} else {
-				terminatingMethod = Optional.class.isAssignableFrom(context.getReturnType().toClass()) ? "one()" : "oneValue()";
+				terminatingMethod = "oneValue()";
 			}
 
 			Builder execution = CodeBlock.builder();
@@ -723,34 +682,32 @@ class CassandraCodeBlocks {
 				}
 			}
 
+			LordOfTheStrings.TypedReturnBuilder returnBuilder = LordOfTheStrings.returning(context.getReturnType());
 			if (requiresConversion) {
 
-				if (Optional.class.isAssignableFrom(context.getReturnType().toClass())) {
-					builder.addStatement("return ($T) $T.ofNullable(convertOne($L, $T.class))", context.getReturnTypeName(),
-							Optional.class, execution.build(), actualReturnType);
+				String conversionMethod;
+
+				if (queryMethod.isCollectionQuery() || queryMethod.isPageQuery() || queryMethod.isSliceQuery()
+						|| queryMethod.isStreamQuery()) {
+					conversionMethod = "convertMany";
 				} else {
-
-					String conversionMethod;
-
-					if (queryMethod.isCollectionQuery() || queryMethod.isPageQuery() || queryMethod.isSliceQuery()
-							|| queryMethod.isStreamQuery()) {
-						conversionMethod = "convertMany";
-					} else {
-						conversionMethod = "convertOne";
-					}
-
-					builder.addStatement("return ($T) $L($L, $T.class)", context.getReturnTypeName(), conversionMethod,
-							execution.build(), actualReturnType);
+					conversionMethod = "convertOne";
 				}
 
+				builder.addStatement(returnBuilder //
+						.optional("($T) $L($L, $T.class)", context.getReturnTypeName(), conversionMethod, execution.build(),
+								actualReturnType) //
+						.build());
 			} else {
 
-				if (query.isCount() && (context.getReturnType().isAssignableFrom(Integer.class)
-						|| context.getReturnType().isAssignableFrom(int.class))) {
-					builder.addStatement("return (int) $L", execution.build());
-				} else {
-					builder.addStatement("return $L", execution.build());
+				CodeBlock executionBlock = execution.build();
+
+				if (query.isCount()) {
+					returnBuilder.whenPrimitiveOrBoxed(Integer.class, "(int) $L", executionBlock);
 				}
+
+				builder.addStatement(returnBuilder.optional(executionBlock) //
+						.build());
 			}
 
 			return builder.build();
