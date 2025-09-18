@@ -15,9 +15,17 @@
  */
 package org.springframework.data.cassandra.aot;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.function.Predicate;
+
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.aot.ManagedTypesBeanRegistrationAotProcessor;
 import org.springframework.data.cassandra.CassandraManagedTypes;
+import org.springframework.data.util.Predicates;
+import org.springframework.data.util.TypeCollector;
+import org.springframework.data.util.TypeUtils;
 import org.springframework.util.ClassUtils;
 
 /**
@@ -35,4 +43,31 @@ class CassandraManagedTypesBeanRegistrationAotProcessor extends ManagedTypesBean
 	protected boolean matchesByType(@Nullable Class<?> beanType) {
 		return beanType != null && ClassUtils.isAssignable(CassandraManagedTypes.class, beanType);
 	}
+
+	/**
+	 * Type filters to exclude Cassandra driver types.
+	 */
+	static class CassandraTypeFilters implements TypeCollector.TypeCollectorFilters {
+
+		private static final Predicate<Class<?>> CLASS_FILTER = it -> TypeUtils.type(it).isPartOf(
+				"org.springframework.data.cassandra.core", "org.springframework.data.cassandra.repository",
+				"org.apache.cassandra", "com.datastax");
+
+		@Override
+		public Predicate<Class<?>> classPredicate() {
+			return CLASS_FILTER.negate();
+		}
+
+		@Override
+		public Predicate<Field> fieldPredicate() {
+			return Predicates.<Field> declaringClass(CLASS_FILTER).negate();
+		}
+
+		@Override
+		public Predicate<Method> methodPredicate() {
+			return Predicates.<Method> declaringClass(CLASS_FILTER).negate();
+		}
+
+	}
+
 }
