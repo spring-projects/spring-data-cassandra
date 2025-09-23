@@ -1,3 +1,5 @@
+# GitHub Actions for CodeQL Scanning
+
 name: "CodeQL Advanced"
 
 on:
@@ -7,7 +9,9 @@ on:
   schedule:
     # https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#schedule
     - cron: '0 5 * * *'
+
 permissions: read-all
+
 jobs:
   codeql-analysis-call:
     permissions:
