@@ -22,7 +22,6 @@ import java.util.Optional;
 
 import org.jspecify.annotations.Nullable;
 
-import org.springframework.aot.generate.GenerationContext;
 import org.springframework.beans.factory.aot.BeanRegistrationAotProcessor;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.data.cassandra.config.DefaultBeanNames;
@@ -38,7 +37,6 @@ import org.springframework.data.repository.config.RepositoryConfigurationExtensi
 import org.springframework.data.repository.config.RepositoryRegistrationAotProcessor;
 import org.springframework.data.repository.config.XmlRepositoryConfigurationSource;
 import org.springframework.data.repository.core.RepositoryMetadata;
-import org.springframework.data.util.TypeUtils;
 import org.springframework.util.StringUtils;
 
 import org.w3c.dom.Element;
@@ -129,24 +127,13 @@ public class CassandraRepositoryConfigurationExtension extends RepositoryConfigu
 
 		private static final String MODULE_NAME = "cassandra";
 
-		protected @Nullable CassandraRepositoryContributor contribute(AotRepositoryContext repositoryContext,
-				GenerationContext generationContext) {
+		protected @Nullable CassandraRepositoryContributor contributeAotRepository(AotRepositoryContext repositoryContext) {
 
 			if (!repositoryContext.isGeneratedRepositoriesEnabled(MODULE_NAME)) {
 				return null;
 			}
 
 			return new CassandraRepositoryContributor(repositoryContext);
-		}
-
-		@Override
-		protected void contributeType(Class<?> type, GenerationContext generationContext) {
-
-			if (TypeUtils.type(type).isPartOf("org.springframework.data.cassandra", "org.apache.cassandra", "com.datastax")) {
-				return;
-			}
-
-			super.contributeType(type, generationContext);
 		}
 
 	}

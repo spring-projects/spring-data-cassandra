@@ -64,8 +64,9 @@ import org.springframework.util.ReflectionUtils;
 public class AotFragmentTestConfigurationSupport implements BeanFactoryPostProcessor {
 
 	private final Class<?> repositoryInterface;
+	private final Class<?> configClass;
 	private final boolean registerFragmentFacade;
-	private final TestCassandraAotRepositoryContext<?> repositoryContext;
+	private final Class<?>[] additionalFragments;
 
 	public AotFragmentTestConfigurationSupport(Class<?> repositoryInterface, Class<?> configClass) {
 		this(repositoryInterface, configClass, true);
@@ -75,22 +76,23 @@ public class AotFragmentTestConfigurationSupport implements BeanFactoryPostProce
 			boolean registerFragmentFacade, Class<?>... additionalFragments) {
 
 		this.repositoryInterface = repositoryInterface;
-
-		RepositoryComposition composition = RepositoryComposition
-				.of((List) Arrays.stream(additionalFragments).map(RepositoryFragment::structural).toList());
-		this.repositoryContext = new TestCassandraAotRepositoryContext<>(repositoryInterface, composition,
-				new AnnotationRepositoryConfigurationSource(AnnotationMetadata.introspect(configClass),
-						EnableCassandraRepositories.class, new DefaultResourceLoader(), new StandardEnvironment(),
-						Mockito.mock(BeanDefinitionRegistry.class), DefaultBeanNameGenerator.INSTANCE));
+		this.configClass = configClass;
 		this.registerFragmentFacade = registerFragmentFacade;
+		this.additionalFragments = additionalFragments;
 	}
 
 	@Override
 	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
 
-		TestGenerationContext generationContext = new TestGenerationContext(repositoryInterface);
+		RepositoryComposition composition = RepositoryComposition
+				.of((List) Arrays.stream(additionalFragments).map(RepositoryFragment::structural).toList());
+		AnnotationRepositoryConfigurationSource configSource = new AnnotationRepositoryConfigurationSource(
+				AnnotationMetadata.introspect(configClass), EnableCassandraRepositories.class, new DefaultResourceLoader(),
+				new StandardEnvironment(), Mockito.mock(BeanDefinitionRegistry.class), DefaultBeanNameGenerator.INSTANCE);
+		TestCassandraAotRepositoryContext<?> repositoryContext = new TestCassandraAotRepositoryContext<>(beanFactory,
+				repositoryInterface, composition, configSource);
 
-		repositoryContext.setBeanFactory(beanFactory);
+		TestGenerationContext generationContext = new TestGenerationContext(repositoryInterface);
 
 		CassandraRepositoryContributor repositoryContributor = new CassandraRepositoryContributor(repositoryContext);
 		repositoryContributor.contribute(generationContext);

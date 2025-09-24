@@ -16,22 +16,18 @@
 package org.springframework.data.cassandra.repository.aot;
 
 import java.lang.annotation.Annotation;
-import java.util.Collection;
-import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
 
 import org.jspecify.annotations.Nullable;
 
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.core.annotation.MergedAnnotation;
-import org.springframework.core.env.Environment;
-import org.springframework.core.env.StandardEnvironment;
-import org.springframework.data.aot.AotTypeConfiguration;
+import org.springframework.data.aot.AotContext;
 import org.springframework.data.cassandra.core.Person;
 import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.repository.support.SimpleCassandraRepository;
 import org.springframework.data.repository.config.AotRepositoryContext;
+import org.springframework.data.repository.config.AotRepositoryContextSupport;
 import org.springframework.data.repository.config.AotRepositoryInformation;
 import org.springframework.data.repository.config.RepositoryConfigurationSource;
 import org.springframework.data.repository.core.RepositoryInformation;
@@ -44,15 +40,16 @@ import org.springframework.data.repository.core.support.RepositoryComposition;
  *
  * @author Mark Paluch
  */
-public class TestCassandraAotRepositoryContext<T> implements AotRepositoryContext {
+public class TestCassandraAotRepositoryContext<T> extends AotRepositoryContextSupport {
 
 	private final AotRepositoryInformation repositoryInformation;
 	private final Class<T> repositoryInterface;
 	private final RepositoryConfigurationSource configurationSource;
-	private @Nullable ConfigurableListableBeanFactory beanFactory;
 
-	public TestCassandraAotRepositoryContext(Class<T> repositoryInterface, @Nullable RepositoryComposition composition,
+	public TestCassandraAotRepositoryContext(BeanFactory beanFactory, Class<T> repositoryInterface,
+			@Nullable RepositoryComposition composition,
 			RepositoryConfigurationSource configurationSource) {
+		super(AotContext.from(beanFactory));
 		this.repositoryInterface = repositoryInterface;
 		this.configurationSource = configurationSource;
 
@@ -66,31 +63,6 @@ public class TestCassandraAotRepositoryContext<T> implements AotRepositoryContex
 
 	public Class<T> getRepositoryInterface() {
 		return repositoryInterface;
-	}
-
-	@Override
-	public ConfigurableListableBeanFactory getBeanFactory() {
-		return beanFactory;
-	}
-
-	@Override
-	public Environment getEnvironment() {
-		return new StandardEnvironment();
-	}
-
-	@Override
-	public TypeIntrospector introspectType(String typeName) {
-		return null;
-	}
-
-	@Override
-	public IntrospectedBeanDefinition introspectBeanDefinition(String beanName) {
-		return null;
-	}
-
-	@Override
-	public String getBeanName() {
-		return "dummyRepository";
 	}
 
 	@Override
@@ -128,22 +100,4 @@ public class TestCassandraAotRepositoryContext<T> implements AotRepositoryContex
 		return Set.of(Person.class);
 	}
 
-	@Override
-	public Set<Class<?>> getUserDomainTypes() {
-		return Set.of();
-	}
-
-	@Override
-	public void typeConfiguration(Class<?> type, Consumer<AotTypeConfiguration> configurationConsumer) {
-
-	}
-
-	@Override
-	public Collection<AotTypeConfiguration> typeConfigurations() {
-		return List.of();
-	}
-
-	public void setBeanFactory(ConfigurableListableBeanFactory beanFactory) {
-		this.beanFactory = beanFactory;
-	}
 }
