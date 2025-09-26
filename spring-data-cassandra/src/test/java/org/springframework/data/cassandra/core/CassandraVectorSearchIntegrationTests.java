@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.core;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.springframework.data.cassandra.core.query.Criteria.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -86,16 +87,19 @@ class CassandraVectorSearchIntegrationTests extends AbstractKeyspaceCreatingInte
 
 		Comments one = new Comments();
 		one.setId(UUID.randomUUID());
+		one.setLanguage("en");
 		one.setVector(Vector.of(0.45f, 0.09f, 0.01f, 0.2f, 0.11f));
 		one.setComment("Raining too hard should have postponed");
 
 		Comments two = new Comments();
 		two.setId(UUID.randomUUID());
+		two.setLanguage("en");
 		two.setVector(Vector.of(0.99f, 0.5f, 0.99f, 0.1f, 0.34f));
 		two.setComment("Second rest stop was out of water");
 
 		Comments three = new Comments();
 		three.setId(UUID.randomUUID());
+		three.setLanguage("en");
 		three.setVector(Vector.of(0.9f, 0.54f, 0.12f, 0.1f, 0.95f));
 		three.setComment("LATE RIDERS SHOULD NOT DELAY THE START");
 
@@ -107,7 +111,7 @@ class CassandraVectorSearchIntegrationTests extends AbstractKeyspaceCreatingInte
 
 		Columns columns = Columns.empty().include("comment").select("vector",
 				it -> it.similarity(vector).cosine().as("similarity"));
-		Query query = Query.select(columns).limit(3).sort(VectorSort.ann("vector", vector));
+		Query query = Query.select(columns).and(where("language").is("en")).limit(3).sort(VectorSort.ann("vector", vector));
 
 		List<CommentSearch> result = template.query(Comments.class).as(CommentSearch.class).matching(query).all();
 
@@ -134,6 +138,7 @@ class CassandraVectorSearchIntegrationTests extends AbstractKeyspaceCreatingInte
 
 		@Id UUID id;
 		String comment;
+		@SaiIndexed String language;
 
 		@VectorType(dimensions = 5)
 		@SaiIndexed Vector vector;
@@ -152,6 +157,14 @@ class CassandraVectorSearchIntegrationTests extends AbstractKeyspaceCreatingInte
 
 		public void setComment(String comment) {
 			this.comment = comment;
+		}
+
+		public String getLanguage() {
+			return language;
+		}
+
+		public void setLanguage(String language) {
+			this.language = language;
 		}
 
 		public Vector getVector() {

@@ -6,7 +6,7 @@ interface CommentRepository extends Repository<Comment, String> {
 
   List<Comment> searchByEmbeddingNear(Vector vector);
 
-  SearchResults<Comment> searchByEmbeddingNear(Vector vector, ScoringFunction function);
+  SearchResults<Comment> searchByEmbeddingNearAndCountry(Vector vector, ScoringFunction function, String country);
 
 }
 ----

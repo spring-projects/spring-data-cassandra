@@ -60,7 +60,7 @@ ifdef::vector-search-repository-include[]
 include::{vector-search-repository-include}[]
 endif::[]
 
-In this example, the `searchByCountryAndEmbeddingNear` method returns a `SearchResults<Comment>` object, which contains a list of `SearchResult<Comment>` instances.
+In this example, the `searchByEmbeddingNearAndCountry` method returns a `SearchResults<Comment>` object, which contains a list of `SearchResult<Comment>` instances.
 Each result includes the matched `Comment` entity and its relevance score.
 
 Relevance score is a numerical value that indicates how closely the matched vector aligns with the query vector.
@@ -147,21 +147,5 @@ If an annotated query does not define e.g. the score, then the score value in th
 [[vector-search.method.sorting]]
 === Sorting
 
-By default, search results are ordered according to their score.
-You can override sorting by using the `Sort` parameter:
+Cassandra Vector search results are ordered according to their score through the `ORDER BY embedding ANN OF [vector]` clause.
 
-.Using `Sort` in Repository Search Methods
-====
-[source,java]
-----
-interface CommentRepository extends Repository<Comment, String> {
-
-  SearchResults<Comment> searchByEmbeddingNearOrderByCountry(Vector vector, Score score);
-
-  SearchResults<Comment> searchByEmbeddingWithin(Vector vector, Score score, Sort sort);
-}
-----
-====
-
-Please note that custom sorting does not allow expressing the score as a sorting criteria.
-You can only refer to domain properties.

@@ -4,6 +4,8 @@
 class Comment {
 
   @Id String id;
+
+  @SaiIndexed
   String country;
   String comment;
 

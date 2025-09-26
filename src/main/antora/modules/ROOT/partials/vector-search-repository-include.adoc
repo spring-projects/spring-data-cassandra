@@ -4,10 +4,10 @@
 ----
 interface CommentRepository extends Repository<Comment, String> {
 
-  SearchResults<Comment> searchByEmbeddingNear(Vector vector, ScoringFunction function, Limit limit);
+  SearchResults<Comment> searchByEmbeddingNearAndCountry(Vector vector, ScoringFunction function, String country, Limit limit);
 
 }
 
-SearchResults<Comment> results = repository.searchByEmbeddingNear(Vector.of(…), ScoringFunction.cosine(), Limit.of(10));
+SearchResults<Comment> results = repository.searchByEmbeddingNearAndCountry(Vector.of(…), ScoringFunction.cosine(), "…", Limit.of(10));
 ----
 ====

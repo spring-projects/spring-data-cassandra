@@ -7,9 +7,10 @@ interface CommentRepository extends Repository<Comment, String> {
   @Query("""
          SELECT id, description, country, similarity_cosine(embedding,:embedding) AS score
          FROM comments
+         WHERE country = :country
          ORDER BY embedding ANN OF :embedding LIMIT :limit
          """)
-  SearchResults<WithVectorFields> searchAnnotatedByEmbeddingNear(Vector embedding, Limit limit);
+  SearchResults<WithVectorFields> searchByEmbeddingNearAndCountry(Vector embedding, String country, Limit limit);
 }
 ----
 ====

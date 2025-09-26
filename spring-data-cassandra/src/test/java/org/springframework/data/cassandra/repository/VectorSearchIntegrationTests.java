@@ -92,28 +92,28 @@ class VectorSearchIntegrationTests extends AbstractSpringDataEmbeddedCassandraIn
 		repository.saveAll(List.of(w1, w2, w3, w4));
 	}
 
-	@Test // GH-
+	@Test // GH-1573
 	void searchWithoutScoringFunctionShouldFail() {
 		assertThatExceptionOfType(QueryCreationException.class)
 				.isThrownBy(() -> repository.searchByEmbeddingNear(VECTOR, Limit.of(100)));
 	}
 
-	@Test // GH-
+	@Test // GH-1573
 	void shouldConsiderScoringFunction() {
 
-		SearchResults<WithVectorFields> results = repository.searchByEmbeddingNear(VECTOR,
-				ScoringFunction.dotProduct(), Limit.of(100));
+		SearchResults<WithVectorFields> results = repository.searchByEmbeddingNearAndCountry(VECTOR,
+				ScoringFunction.dotProduct(), "de", Limit.of(100));
 
-		assertThat(results).hasSize(4);
+		assertThat(results).hasSize(3);
 
 		for (SearchResult<WithVectorFields> result : results) {
 			assertThat(result.getScore()).isInstanceOf(Similarity.class);
 			assertThat(result.getScore().getValue()).isNotCloseTo(0d, offset(0.1d));
 		}
 
-		results = repository.searchByEmbeddingNear(VECTOR, VectorScoringFunctions.EUCLIDEAN, Limit.of(100));
+		results = repository.searchByEmbeddingNearAndCountry(VECTOR, VectorScoringFunctions.EUCLIDEAN, "de", Limit.of(100));
 
-		assertThat(results).hasSize(4);
+		assertThat(results).hasSize(3);
 
 		for (SearchResult<WithVectorFields> result : results) {
 
@@ -122,19 +122,19 @@ class VectorSearchIntegrationTests extends AbstractSpringDataEmbeddedCassandraIn
 		}
 	}
 
-	@Test // GH-
+	@Test // GH-1573
 	void shouldRunAnnotatedSearchByVector() {
 
-		SearchResults<WithVectorFields> results = repository.searchAnnotatedByEmbeddingNear(VECTOR, Limit.of(100));
+		SearchResults<WithVectorFields> results = repository.searchAnnotatedByEmbeddingNear(VECTOR, "de", Limit.of(100));
 
-		assertThat(results).hasSize(4);
+		assertThat(results).hasSize(3);
 		for (SearchResult<WithVectorFields> result : results) {
 			assertThat(result.getScore()).isInstanceOf(Similarity.class);
 			assertThat(result.getScore().getValue()).isNotCloseTo(0d, offset(0.1d));
 		}
 	}
 
-	@Test // GH-
+	@Test // GH-1573
 	void shouldFindByVector() {
 
 		List<WithVectorFields> result = repository.findByEmbeddingNear(VECTOR, Limit.of(100));
@@ -144,14 +144,21 @@ class VectorSearchIntegrationTests extends AbstractSpringDataEmbeddedCassandraIn
 
 	interface VectorSearchRepository extends CrudRepository<WithVectorFields, UUID> {
 
-		SearchResults<WithVectorFields> searchByEmbeddingNear(Vector embedding, ScoringFunction function, Limit limit);
+		SearchResults<WithVectorFields> searchByEmbeddingNearAndCountry(Vector embedding, ScoringFunction function,
+				String country, Limit limit);
 
 		SearchResults<WithVectorFields> searchByEmbeddingNear(Vector embedding, Limit limit);
 
 		List<WithVectorFields> findByEmbeddingNear(Vector embedding, Limit limit);
 
-		@Query("SELECT id,description,country,similarity_cosine(embedding,:embedding) AS score FROM withvectorfields ORDER BY embedding ANN OF :embedding LIMIT :limit")
-		SearchResults<WithVectorFields> searchAnnotatedByEmbeddingNear(Vector embedding, Limit limit);
+		@Query("""
+				SELECT id,description,country,similarity_cosine(embedding,:embedding) AS score
+				FROM withvectorfields
+				WHERE country = :country
+				ORDER BY embedding ANN OF :embedding
+				LIMIT :limit
+				""")
+		SearchResults<WithVectorFields> searchAnnotatedByEmbeddingNear(Vector embedding, String country, Limit limit);
 
 	}
 
@@ -159,7 +166,7 @@ class VectorSearchIntegrationTests extends AbstractSpringDataEmbeddedCassandraIn
 	static class WithVectorFields {
 
 		@Id String id;
-		String country;
+		@SaiIndexed String country;
 		String description;
 
 		@VectorType(dimensions = 5)
