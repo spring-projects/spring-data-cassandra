@@ -22,7 +22,7 @@ import org.springframework.data.convert.PropertyValueConverter;
  * Cassandra-specific value conversions, for example:
  *
  * <pre class="code">
- * static class MyJsonConverter implements CassandraValueConverter<Person, String> {
+ * static class MyJsonConverter implements CassandraValueConverter&lt;Person, String&gt; {
  *
  * 	&#64;Override
  * 	public Person read(String value, CassandraConversionContext context) {
