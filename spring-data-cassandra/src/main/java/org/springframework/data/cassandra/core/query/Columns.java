@@ -29,6 +29,7 @@ import java.util.function.Function;
 import org.springframework.data.cassandra.core.convert.CassandraVector;
 import org.springframework.data.cassandra.core.mapping.SimilarityFunction;
 import org.springframework.data.domain.Vector;
+import org.springframework.lang.CheckReturnValue;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
@@ -111,6 +112,7 @@ public class Columns implements Iterable<ColumnName> {
 	 * @param columnName must not be {@literal null}.
 	 * @return a new {@link Columns} object containing all column definitions and the included {@code columnName}.
 	 */
+	@CheckReturnValue
 	public Columns include(String columnName) {
 		return select(columnName, ColumnSelector.from(columnName));
 	}
@@ -122,6 +124,7 @@ public class Columns implements Iterable<ColumnName> {
 	 * @param columnName must not be {@literal null}.
 	 * @return a new {@link Columns} object containing all column definitions and the included {@code columnName}.
 	 */
+	@CheckReturnValue
 	public Columns include(CqlIdentifier columnName) {
 		return select(columnName, ColumnSelector.from(columnName));
 	}
@@ -133,6 +136,7 @@ public class Columns implements Iterable<ColumnName> {
 	 * @param columnName must not be {@literal null}.
 	 * @return a new {@link Columns} object containing all column definitions and the TTL for {@code columnName}.
 	 */
+	@CheckReturnValue
 	public Columns ttl(String columnName) {
 		return select(columnName, FunctionCall.from("TTL", ColumnSelector.from(columnName)));
 	}
@@ -144,6 +148,7 @@ public class Columns implements Iterable<ColumnName> {
 	 * @param columnName must not be {@literal null}.
 	 * @return a new {@link Columns} object containing all column definitions and the TTL for {@code columnName}.
 	 */
+	@CheckReturnValue
 	public Columns ttl(CqlIdentifier columnName) {
 		return select(columnName, FunctionCall.from("TTL", ColumnSelector.from(columnName)));
 	}
@@ -155,6 +160,7 @@ public class Columns implements Iterable<ColumnName> {
 	 * @param columnName must not be {@literal null}.
 	 * @return a new {@link Columns} object containing all column definitions and the selected {@code columnName}.
 	 */
+	@CheckReturnValue
 	public Columns select(String columnName, Selector selector) {
 		return select(ColumnName.from(columnName), selector);
 	}
@@ -168,6 +174,7 @@ public class Columns implements Iterable<ColumnName> {
 	 * @return a new {@link Columns} object containing all column definitions and the selected {@code columnName}.
 	 * @since 4.5
 	 */
+	@CheckReturnValue
 	public Columns select(CqlIdentifier columnName, Function<SelectorBuilder, Selector> builder) {
 
 		ColumnName from = ColumnName.from(columnName);
@@ -183,6 +190,7 @@ public class Columns implements Iterable<ColumnName> {
 	 * @return a new {@link Columns} object containing all column definitions and the selected {@code columnName}.
 	 * @since 4.5
 	 */
+	@CheckReturnValue
 	public Columns select(String columnName, Function<SelectorBuilder, Selector> builder) {
 
 		ColumnName from = ColumnName.from(columnName);
@@ -196,6 +204,7 @@ public class Columns implements Iterable<ColumnName> {
 	 * @param columnName must not be {@literal null}.
 	 * @return a new {@link Columns} object containing all column definitions and the selected {@code columnName}.
 	 */
+	@CheckReturnValue
 	public Columns select(CqlIdentifier columnName, Selector selector) {
 		return select(ColumnName.from(columnName), selector);
 	}
@@ -229,6 +238,7 @@ public class Columns implements Iterable<ColumnName> {
 	 * @param columns must not be {@literal null}.
 	 * @return a new {@link Columns} with the merged result of the configured and given {@link Columns}.
 	 */
+	@CheckReturnValue
 	public Columns and(Columns columns) {
 
 		Map<ColumnName, Selector> result = new LinkedHashMap<>(this.columns);

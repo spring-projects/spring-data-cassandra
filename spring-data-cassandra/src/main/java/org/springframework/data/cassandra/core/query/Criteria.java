@@ -25,7 +25,7 @@ import org.springframework.util.ObjectUtils;
 
 /**
  * Basic class for creating queries. It follows a fluent API style so that you can easily create a
- * {@link CriteriaDefinition}. Static import of the 'Criteria.where' method will improve readability.
+ * {@link CriteriaDefinition}. Static import of the {@code Criteria.where} method will improve readability.
  *
  * @author Mark Paluch
  * @since 2.0

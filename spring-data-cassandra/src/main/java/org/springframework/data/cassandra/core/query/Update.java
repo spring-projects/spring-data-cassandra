@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.data.cassandra.core.query.Update.AddToOp.Mode;
+import org.springframework.lang.CheckReturnValue;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
@@ -97,6 +98,7 @@ public class Update {
 	 * @return a new {@link Update} object containing the merge result of the existing assignments and the current
 	 *         assignment.
 	 */
+	@CheckReturnValue
 	public Update set(String columnName, @Nullable Object value) {
 		return add(new SetOp(ColumnName.from(columnName), value));
 	}
@@ -105,8 +107,9 @@ public class Update {
 	 * Create a new {@link SetBuilder} to set a collection item for {@code columnName} in a fluent style.
 	 *
 	 * @param columnName must not be {@literal null}.
-	 * @return a new {@link AddToBuilder} to build an set assignment.
+	 * @return a new {@link AddToBuilder} to build a set assignment.
 	 */
+	@CheckReturnValue
 	public SetBuilder set(String columnName) {
 		return new DefaultSetBuilder(ColumnName.from(columnName));
 	}
@@ -117,6 +120,7 @@ public class Update {
 	 * @param columnName must not be {@literal null}.
 	 * @return a new {@link AddToBuilder} to build an add-to assignment.
 	 */
+	@CheckReturnValue
 	public AddToBuilder addTo(String columnName) {
 		return new DefaultAddToBuilder(ColumnName.from(columnName));
 	}
@@ -128,6 +132,7 @@ public class Update {
 	 * @return a new {@link RemoveFromBuilder} to build an remove-from assignment.
 	 * @since 3.1.4
 	 */
+	@CheckReturnValue
 	public RemoveFromBuilder removeFrom(String columnName) {
 		return new DefaultRemoveFromBuilder(ColumnName.from(columnName));
 	}
@@ -140,6 +145,7 @@ public class Update {
 	 * @return a new {@link Update} object containing the merge result of the existing assignments and the current
 	 *         assignment.
 	 */
+	@CheckReturnValue
 	public Update remove(String columnName, Object value) {
 		return add(new RemoveOp(ColumnName.from(columnName), Collections.singletonList(value)));
 	}
@@ -151,6 +157,7 @@ public class Update {
 	 * @return a new {@link Update} object containing the merge result of the existing assignments and the current
 	 *         assignment.
 	 */
+	@CheckReturnValue
 	public Update clear(String columnName) {
 		return add(new SetOp(ColumnName.from(columnName), Collections.emptyList()));
 	}
@@ -162,6 +169,7 @@ public class Update {
 	 * @return a new {@link Update} object containing the merge result of the existing assignments and the current
 	 *         assignment.
 	 */
+	@CheckReturnValue
 	public Update increment(String columnName) {
 		return increment(columnName, 1);
 	}
@@ -174,6 +182,7 @@ public class Update {
 	 * @return a new {@link Update} object containing the merge result of the existing assignments and the current
 	 *         assignment.
 	 */
+	@CheckReturnValue
 	public Update increment(String columnName, Number delta) {
 		return add(new IncrOp(ColumnName.from(columnName), delta));
 	}
@@ -185,6 +194,7 @@ public class Update {
 	 * @return a new {@link Update} object containing the merge result of the existing assignments and the current
 	 *         assignment.
 	 */
+	@CheckReturnValue
 	public Update decrement(String columnName) {
 		return decrement(columnName, 1);
 	}
@@ -197,6 +207,7 @@ public class Update {
 	 * @return a new {@link Update} object containing the merge result of the existing assignments and the current
 	 *         assignment.
 	 */
+	@CheckReturnValue
 	public Update decrement(String columnName, Number delta) {
 
 		if (delta instanceof Integer || delta instanceof Long) {
