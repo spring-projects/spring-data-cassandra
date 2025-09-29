@@ -98,7 +98,7 @@
 
 	<properties>
 		<build.cassandra.host>localhost</build.cassandra.host>
-		<build.cassandra.mode>embedded</build.cassandra.mode>
+		<build.cassandra.mode>testcontainers</build.cassandra.mode>
 		<build.cassandra.native_transport_port>19042</build.cassandra.native_transport_port>
 		<build.cassandra.rpc_port>19160</build.cassandra.rpc_port>
 		<build.cassandra.ssl_storage_port>17001</build.cassandra.ssl_storage_port>
@@ -120,24 +120,6 @@
 				<version>${cassandra-driver.version}</version>
 				<scope>import</scope>
 				<type>pom</type>
-			</dependency>
-
-			<!-- Test Dependencies -->
-			<dependency>
-				<groupId>org.apache.cassandra</groupId>
-				<artifactId>cassandra-all</artifactId>
-				<version>${cassandra.version}</version>
-				<scope>test</scope>
-				<exclusions>
-					<exclusion>
-						<groupId>ch.qos.logback</groupId>
-						<artifactId>logback-core</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>io.netty</groupId>
-						<artifactId>netty-all</artifactId>
-					</exclusion>
-				</exclusions>
 			</dependency>
 
 			<dependency>
@@ -162,13 +144,6 @@
 			</dependency>
 
 			<dependency>
-				<groupId>org.xerial.snappy</groupId>
-				<artifactId>snappy-java</artifactId>
-				<version>1.1.10.5</version>
-				<scope>test</scope>
-			</dependency>
-
-			<dependency>
 				<groupId>edu.umd.cs.mtc</groupId>
 				<artifactId>multithreadedtc</artifactId>
 				<version>${multithreadedtc.version}</version>
@@ -178,29 +153,8 @@
 		</dependencies>
 	</dependencyManagement>
 
-	<dependencies>
-		<dependency>
-			<groupId>org.assertj</groupId>
-			<artifactId>assertj-core</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
-
 	<build>
 		<plugins>
-			<plugin>
-				<groupId>org.bitstrings.maven.plugins</groupId>
-				<artifactId>dependencypath-maven-plugin</artifactId>
-				<version>1.1.1</version>
-				<executions>
-					<execution>
-						<id>set-all</id>
-						<goals>
-							<goal>set</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
@@ -221,11 +175,6 @@
 						<exclude>**/**IntegrationTests</exclude>
 						<exclude>**/test/performance/**/*</exclude>
 					</excludes>
-					<systemPropertyVariables>
-						<java.util.logging.config.file>
-							src/test/resources/logging.properties
-						</java.util.logging.config.file>
-					</systemPropertyVariables>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -245,11 +194,6 @@
 						<exclude>**/*UnitTests</exclude>
 						<exclude>**/test/performance/**/*</exclude>
 					</excludes>
-					<systemPropertyVariables>
-						<java.util.logging.config.file>
-							src/test/resources/logging.properties
-						</java.util.logging.config.file>
-					</systemPropertyVariables>
 				</configuration>
 				<executions>
 					<execution>
@@ -294,49 +238,8 @@
 
 	<profiles>
 		<profile>
-			<id>embedded-cassandra</id>
-
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-
-			<properties>
-				<build.cassandra.mode>embedded</build.cassandra.mode>
-			</properties>
-
-			<build>
-				<plugins>
-					<plugin>
-						<!-- Random port generation requires embedded-cassandra.yaml and cassandra-connection.properties
-						in both modules -->
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>build-helper-maven-plugin</artifactId>
-						<version>1.8</version>
-						<executions>
-							<execution>
-								<id>reserve-network-port</id>
-								<goals>
-									<goal>reserve-network-port</goal>
-								</goals>
-								<phase>generate-test-resources</phase>
-								<configuration>
-									<portNames>
-										<portName>build.cassandra.native_transport_port
-										</portName>
-										<portName>build.cassandra.rpc_port</portName>
-										<portName>build.cassandra.storage_port</portName>
-										<portName>build.cassandra.ssl_storage_port
-										</portName>
-									</portNames>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-		<profile>
 			<id>external-cassandra</id>
+
 			<properties>
 				<build.cassandra.mode>external</build.cassandra.mode>
 				<build.cassandra.native_transport_port>9042</build.cassandra.native_transport_port>

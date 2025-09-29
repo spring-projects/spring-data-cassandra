@@ -46,9 +46,8 @@ import com.datastax.oss.driver.api.core.config.DriverConfigLoader;
 import com.datastax.oss.driver.api.core.metadata.Node;
 
 /**
- * Delegate used to provide a Cassandra context for integration tests. This rule can use/spin up either an embedded
- * Cassandra instance, a TestContainer or use an external instance. Derives its configuration from
- * {@code /config/cassandra-connection.properties} and {@link System#getenv(String)} {@code CASSANDRA_VERSION} to
+ * Delegate used to provide a Cassandra context for integration tests. This rule can use/spin up either a TestContainer
+ * or use an external instance. Derives its configuration from {@code /config/cassandra-connection.properties} to
  * configure the Cassandra version via Testcontainers.
  *
  * @author Mark Paluch
@@ -67,8 +66,6 @@ class CassandraDelegate {
 
 	private static ResourceHolder resourceHolder;
 
-	private final long startupTimeout;
-
 	private final CassandraConnectionProperties properties = new CassandraConnectionProperties();
 
 	private CqlSession session;
@@ -83,35 +80,6 @@ class CassandraDelegate {
 	private final List<SessionCallback<Void>> before = new ArrayList<>();
 
 	private final Map<SessionCallback<?>, InvocationMode> invocationModeMap = new HashMap<>();
-
-	private final String configurationFilename;
-
-	/**
-	 * Create a new {@link CassandraDelegate} allowing the use of a config file.
-	 *
-	 * @param yamlConfigurationResource {@link String name} of the configuration resource; must not be {@literal null} or
-	 *          {@literal empty}.
-	 * @see #CassandraDelegate(String, long)
-	 */
-	public CassandraDelegate(String yamlConfigurationResource) {
-		this(yamlConfigurationResource, EmbeddedCassandraServerHelper.DEFAULT_STARTUP_TIMEOUT_MS);
-	}
-
-	/**
-	 * Constructs a new instance of {@link CassandraDelegate} initialized with the given YAML configuration resource,
-	 * thereby allowing the use of a configuration file and to provide a startup timeout.
-	 *
-	 * @param yamlConfigurationResource {@link String name} of the configuration resource; must not be {@literal null} or
-	 *          empty.
-	 * @param startupTimeout long value indicating the startup timeout in milliseconds.
-	 */
-	private CassandraDelegate(String yamlConfigurationResource, long startupTimeout) {
-
-		Assert.hasText(yamlConfigurationResource, "YAML configuration resource must not be empty");
-
-		this.configurationFilename = yamlConfigurationResource;
-		this.startupTimeout = startupTimeout;
-	}
 
 	/**
 	 * Returns the Cassandra host.
@@ -256,36 +224,15 @@ class CassandraDelegate {
 	private void startCassandraIfNeeded() throws Exception {
 
 		if (isStartNeeded()) {
-
-			configureRemoteJmxPort();
-
-			if (isEmbedded()) {
-				runEmbeddedCassandra();
-			} else {
-				runTestcontainerCassandra();
-			}
+			startCassandraContainer();
 		}
 	}
 
 	private boolean isStartNeeded() {
-		return isEmbedded() || isTestcontainers();
+		return isTestcontainers();
 	}
 
-	private void configureRemoteJmxPort() {
-
-		if (!System.getProperties().containsKey("com.sun.management.jmxremote.port")) {
-			System.setProperty("com.sun.management.jmxremote.port", "1024");
-		}
-	}
-
-	private void runEmbeddedCassandra() throws Exception {
-
-		if (this.configurationFilename != null) {
-			EmbeddedCassandraServerHelper.startEmbeddedCassandra(this.configurationFilename, this.startupTimeout);
-		}
-	}
-
-	private void runTestcontainerCassandra() {
+	private void startCassandraContainer() {
 
 		if (container == null) {
 
@@ -381,7 +328,7 @@ class CassandraDelegate {
 			return container.getContainerIpAddress();
 		}
 
-		return isEmbedded() ? EmbeddedCassandraServerHelper.getHost() : this.properties.getCassandraHost();
+		return this.properties.getCassandraHost();
 	}
 
 	private int resolvePort() {
@@ -390,7 +337,7 @@ class CassandraDelegate {
 			return container.getMappedPort(9042);
 		}
 
-		return isEmbedded() ? EmbeddedCassandraServerHelper.getNativeTransportPort() : this.properties.getCassandraPort();
+		return this.properties.getCassandraPort();
 	}
 
 	private CqlSession resolveSystemSession() {
@@ -433,10 +380,6 @@ class CassandraDelegate {
 
 	private boolean isClusterReuseEnabled() {
 		return this.properties.getBoolean("build.cassandra.reuse-cluster");
-	}
-
-	private boolean isEmbedded() {
-		return CassandraConnectionProperties.CassandraType.EMBEDDED.equals(this.properties.getCassandraType());
 	}
 
 	private boolean isTestcontainers() {
