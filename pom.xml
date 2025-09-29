@@ -107,8 +107,6 @@
 		<cassandra-driver.version>4.19.0</cassandra-driver.version>
 		<dist.id>spring-data-cassandra</dist.id>
 		<el.version>1.0</el.version>
-		<!-- NOTE: com.carrotsearch:hppc dependency version set to same version as Apache Cassandra 3.11.5 -->
-		<hppc.version>0.5.4</hppc.version>
 		<multithreadedtc.version>1.01</multithreadedtc.version>
 		<project.type>multi</project.type>
 		<springdata.commons>3.5.5-SNAPSHOT</springdata.commons>
@@ -209,6 +207,19 @@
 				</executions>
 			</plugin>
 		</plugins>
+
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-resources-plugin</artifactId>
+					<configuration>
+						<propertiesEncoding>${project.build.sourceEncoding}
+						</propertiesEncoding>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 
 		<resources>
 			<resource>
