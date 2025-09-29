@@ -27,7 +27,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
@@ -65,15 +64,17 @@ import org.springframework.data.cassandra.core.query.Update.SetOp;
 import org.springframework.data.cassandra.core.query.VectorSort;
 import org.springframework.data.convert.EntityWriter;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.projection.EntityProjection;
+import org.springframework.data.projection.EntityProjectionIntrospector;
 import org.springframework.data.projection.ProjectionInformation;
 import org.springframework.data.util.Predicates;
 import org.springframework.data.util.ProxyUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.ConcurrentLruCache;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.data.CqlVector;
 import com.datastax.oss.driver.api.core.metadata.schema.ClusteringOrder;
@@ -114,6 +115,12 @@ public class StatementFactory {
 
 	private final UpdateMapper updateMapper;
 
+	private final EntityProjectionIntrospector introspector;
+
+	private final ConcurrentLruCache<Class<?>, EntityProjection<?, ?>> nonProjectingCache;
+
+	private final ConcurrentLruCache<ProjectionKey, EntityProjection<?, ?>> projectingCache;
+
 	private KeyspaceProvider keyspaceProvider = KeyspaceProviders.ENTITY_KEYSPACE;
 
 	/**
@@ -123,18 +130,11 @@ public class StatementFactory {
 	 * @since 3.0
 	 */
 	public StatementFactory(CassandraConverter converter) {
-
-		Assert.notNull(converter, "CassandraConverter must not be null");
-
-		this.cassandraConverter = converter;
-
-		UpdateMapper updateMapper = new UpdateMapper(converter);
-		this.queryMapper = updateMapper;
-		this.updateMapper = updateMapper;
+		this(new UpdateMapper(converter));
 	}
 
 	/**
-	 * Create {@link StatementFactory} given {@link UpdateMapper}.
+	 * Create {@code StatementFactory} given {@link UpdateMapper}.
 	 *
 	 * @param updateMapper must not be {@literal null}.
 	 */
@@ -143,7 +143,7 @@ public class StatementFactory {
 	}
 
 	/**
-	 * Create {@link StatementFactory} given {@link QueryMapper} and {@link UpdateMapper}.
+	 * Create {@code StatementFactory} given {@link QueryMapper} and {@link UpdateMapper}.
 	 *
 	 * @param queryMapper must not be {@literal null}.
 	 * @param updateMapper must not be {@literal null}.
@@ -156,10 +156,29 @@ public class StatementFactory {
 		this.cassandraConverter = queryMapper.getConverter();
 		this.queryMapper = queryMapper;
 		this.updateMapper = updateMapper;
+
+		this.introspector = EntityProjectionIntrospector.create(this.cassandraConverter.getProjectionFactory(),
+				EntityProjectionIntrospector.ProjectionPredicate.typeHierarchy()
+						.and(((target, underlyingType) -> !this.cassandraConverter.getCustomConversions().isSimpleType(target))),
+				this.cassandraConverter.getMappingContext());
+
+		this.nonProjectingCache = new ConcurrentLruCache<>(128, EntityProjection::nonProjecting);
+		this.projectingCache = new ConcurrentLruCache<>(128,
+				key -> introspector.introspect(key.returnType(), key.domainType()));
 	}
 
 	/**
-	 * Returns the {@link QueryMapper} used to map {@link Query} to CQL-specific data types.
+	 * Cache key for the projection introspection cache.
+	 *
+	 * @param domainType
+	 * @param returnType
+	 * @since 5.0
+	 */
+	record ProjectionKey(Class<?> domainType, Class<?> returnType) {
+	}
+
+	/**
+	 * Return the {@link QueryMapper} used to map {@link Query} to CQL-specific data types.
 	 *
 	 * @return the {@link QueryMapper} used to map {@link Query} to CQL-specific data types.
 	 * @see QueryMapper
@@ -169,7 +188,7 @@ public class StatementFactory {
 	}
 
 	/**
-	 * Returns the {@link UpdateMapper} used to map {@link Update} to CQL-specific data types.
+	 * Return the {@link UpdateMapper} used to map {@link Update} to CQL-specific data types.
 	 *
 	 * @return the {@link UpdateMapper} used to map {@link Update} to CQL-specific data types.
 	 * @see UpdateMapper
@@ -179,7 +198,37 @@ public class StatementFactory {
 	}
 
 	/**
-	 * Sets the {@link KeyspaceProvider} to determine the {@link CqlIdentifier keyspace} for a
+	 * Return a non-projecting {@link EntityProjection} for the given domain class.
+	 *
+	 * @param domainClass underlying domain class.
+	 * @return non-projecting {@link EntityProjection}.
+	 * @since 5.0
+	 */
+	@SuppressWarnings("unchecked")
+	<D> EntityProjection<D, D> getEntityProjection(Class<D> domainClass) {
+		return (EntityProjection<D, D>) nonProjectingCache.get(domainClass);
+	}
+
+	/**
+	 * Return a {@link EntityProjection} for the given domain class and return type.
+	 *
+	 * @param domainClass underlying domain class.
+	 * @param returnType returned (or projection) type.
+	 * @return the {@link EntityProjection}.
+	 * @since 5.0
+	 */
+	@SuppressWarnings("unchecked")
+	<M, D> EntityProjection<M, D> getEntityProjection(Class<D> domainClass, Class<M> returnType) {
+
+		if (returnType.equals(domainClass)) {
+			return (EntityProjection<M, D>) nonProjectingCache.get(returnType);
+		}
+
+		return (EntityProjection<M, D>) projectingCache.get(new ProjectionKey(domainClass, returnType));
+	}
+
+	/**
+	 * Set the {@link KeyspaceProvider} to determine the {@link CqlIdentifier keyspace} for a
 	 * {@link CassandraPersistentEntity entity}-related statement.
 	 *
 	 * @param keyspaceProvider the keyspace provider to use, must not be {@literal null}.
@@ -220,15 +269,30 @@ public class StatementFactory {
 	public StatementBuilder<Select> count(Query query, CassandraPersistentEntity<?> entity, CqlIdentifier tableName) {
 
 		Filter filter = getQueryMapper().getMappedObject(query, entity);
-
 		List<Selector> selectors = Collections.singletonList(FunctionCall.from("COUNT", 1L));
 
 		return createSelect(query, entity, filter, selectors, tableName);
 	}
 
 	/**
-	 * Create an {@literal SELECT} statement by mapping {@code id} to {@literal SELECT … WHERE} considering
-	 * {@link UpdateOptions}.
+	 * Create a {@literal SELECT} statement by mapping {@link Query} to {@link Select} to run an exists query limiting
+	 * results to one.
+	 *
+	 * @param query must not be {@literal null}.
+	 * @param projection must not be {@literal null}.
+	 * @param entity must not be {@literal null}.
+	 * @param tableName must not be {@literal null}.
+	 * @return the select builder.
+	 * @since 5.0
+	 */
+	public StatementBuilder<Select> selectExists(Query query, EntityProjection<?, ?> projection,
+			CassandraPersistentEntity<?> entity, CqlIdentifier tableName) {
+		return select(query.limit(1), projection, entity, tableName);
+	}
+
+	/**
+	 * Create an {@literal SELECT} statement by mapping {@code id} to {@literal SELECT … WHERE}. This method supports
+	 * composite primary keys as part of the entity class itself or as separate primary key class.
 	 *
 	 * @param id must not be {@literal null}.
 	 * @param entity must not be {@literal null}.
@@ -240,12 +304,16 @@ public class StatementFactory {
 
 		Where where = new Where();
 
+		Columns columns = computeColumnsForProjection(getEntityProjection(entity.getType()), Columns.empty(), entity);
+		List<Selector> selectors = getQueryMapper().getMappedSelectors(columns, entity);
+
 		cassandraConverter.write(id, where, entity);
 
-		return StatementBuilder
-				.of(QueryBuilder.selectFrom(getKeyspace(entity, tableName), tableName).all().limit(1),
-						cassandraConverter.getCodecRegistry())
-				.bind((statement, factory) -> statement.where(toRelations(where, factory)));
+		StatementBuilder<Select> builder = StatementBuilder.of((Select) QueryBuilder.selectFrom(tableName),
+				cassandraConverter.getCodecRegistry());
+
+		builder.bind((statement, factory) -> getSelect(selectors, entity, tableName, factory).limit(1));
+		return builder.bind((statement, factory) -> statement.where(toRelations(where, factory)));
 	}
 
 	/**
@@ -273,13 +341,38 @@ public class StatementFactory {
 	 * @since 2.1
 	 */
 	public StatementBuilder<Select> select(Query query, CassandraPersistentEntity<?> entity, CqlIdentifier tableName) {
+		return select(query, getEntityProjection(entity.getType()), entity, tableName);
+	}
+
+	/**
+	 * Create a {@literal SELECT} statement by mapping {@link Query} to {@link Select} considering projections.
+	 *
+	 * @param query must not be {@literal null}.
+	 * @param projection must not be {@literal null}.
+	 * @param entity must not be {@literal null}.
+	 * @param tableName must not be {@literal null}.
+	 * @return the select builder.
+	 * @since 5.0
+	 */
+	public StatementBuilder<Select> select(Query query, EntityProjection<?, ?> projection,
+			CassandraPersistentEntity<?> entity, CqlIdentifier tableName) {
+
+		Assert.notNull(query, "Query must not be null");
+		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
+		Assert.notNull(tableName, "Table name must not be null");
+
+		Columns columns = computeColumnsForProjection(projection, query.getColumns(), entity);
+
+		return doSelect(query.columns(columns), entity, tableName);
+	}
+
+	private StatementBuilder<Select> doSelect(Query query, CassandraPersistentEntity<?> entity, CqlIdentifier tableName) {
 
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
 		Assert.notNull(entity, "Table name must not be null");
 
 		Filter filter = getQueryMapper().getMappedObject(query, entity);
-
 		List<Selector> selectors = getQueryMapper().getMappedSelectors(query.getColumns(), entity);
 
 		return createSelect(query, entity, filter, selectors, tableName);
@@ -604,26 +697,33 @@ public class StatementFactory {
 	}
 
 	/**
-	 * Compute the {@link Columns} to include type if the {@code returnType} is a {@literal DTO projection} or a
-	 * {@literal closed interface projection}.
+	 * Compute the {@link Columns} to include type if the given {@link Columns} is empty.
 	 *
 	 * @param columns must not be {@literal null}.
-	 * @param domainType must not be {@literal null}.
-	 * @param returnType must not be {@literal null}.
+	 * @param projectionFunction must not be {@literal null}.
 	 * @return {@link Columns} with columns to be included.
-	 * @since 2.2
 	 */
 	@SuppressWarnings("NullAway")
 	Columns computeColumnsForProjection(EntityProjection<?, ?> projection, Columns columns,
-			CassandraPersistentEntity<?> domainType, Class<?> returnType) {
+			CassandraPersistentEntity<?> domainType) {
 
-		if (!columns.isEmpty() || ClassUtils.isAssignable(domainType.getType(), returnType)
+		Class<?> returnType = projection.getMappedType().getType();
+		if (!columns.isEmpty()
+				|| ClassUtils.isAssignable(projection.getActualDomainType().getType(), projection.getMappedType().getType())
 				|| ClassUtils.isAssignable(Map.class, returnType) || ClassUtils.isAssignable(ResultSet.class, returnType)) {
 			return columns;
 		}
 
 		if (projection.getMappedType().getType().isInterface()) {
-			projection.forEach(propertyPath -> columns.include(propertyPath.getPropertyPath().getSegment()));
+			ProjectionInformation projectionInformation = cassandraConverter.getProjectionFactory()
+					.getProjectionInformation(projection.getMappedType().getType());
+
+			if (projectionInformation.isClosed()) {
+
+				for (PropertyDescriptor inputProperty : projectionInformation.getInputProperties()) {
+					columns = columns.include(inputProperty.getName());
+				}
+			}
 		} else {
 
 			// DTO projections use merged metadata between domain type and result type
@@ -633,30 +733,11 @@ public class StatementFactory {
 			CassandraPersistentEntity<?> entity = getQueryMapper().getConverter().getMappingContext()
 					.getRequiredPersistentEntity(projection.getMappedType());
 			for (CassandraPersistentProperty property : entity) {
-				columns.include(translator.translate(property).getColumnName());
+				columns = columns.include(translator.translate(property).getColumnName());
 			}
 		}
 
-		Columns projectedColumns = Columns.empty();
-
-		if (returnType.isInterface()) {
-
-			ProjectionInformation projectionInformation = cassandraConverter.getProjectionFactory()
-					.getProjectionInformation(returnType);
-
-			if (projectionInformation.isClosed()) {
-
-				for (PropertyDescriptor inputProperty : projectionInformation.getInputProperties()) {
-					projectedColumns = projectedColumns.include(inputProperty.getName());
-				}
-			}
-		} else {
-			for (PersistentProperty<?> property : domainType) {
-				projectedColumns = projectedColumns.include(property.getName());
-			}
-		}
-
-		return projectedColumns;
+		return columns;
 	}
 
 	private StatementBuilder<Select> createSelect(Query query, CassandraPersistentEntity<?> entity, Filter filter,
@@ -696,28 +777,7 @@ public class StatementFactory {
 		StatementBuilder<Select> builder = StatementBuilder.of((Select) QueryBuilder.selectFrom(from),
 				cassandraConverter.getCodecRegistry());
 
-		builder.bind((statement, factory) -> {
-
-			Select select;
-
-			if (selectors.isEmpty()) {
-				select = QueryBuilder.selectFrom(getKeyspace(entity, from), from).all();
-			} else {
-
-				List<com.datastax.oss.driver.api.querybuilder.select.Selector> mappedSelectors = new ArrayList<>(
-						selectors.size());
-				for (Selector selector : selectors) {
-					com.datastax.oss.driver.api.querybuilder.select.Selector orElseGet = selector.getAlias()
-							.map(it -> getSelection(selector, factory).as(it)).orElseGet(() -> getSelection(selector, factory));
-					mappedSelectors.add(orElseGet);
-				}
-
-				select = QueryBuilder.selectFrom(getKeyspace(entity, from), from).selectors(mappedSelectors);
-			}
-
-			return select;
-		});
-
+		builder.bind((statement, factory) -> getSelect(selectors, entity, from, factory));
 		builder.bind((statement, factory) -> {
 			return statement.where(getRelations(filter, factory));
 		});
@@ -748,6 +808,23 @@ public class StatementFactory {
 		}
 
 		return builder;
+	}
+
+	private Select getSelect(List<Selector> selectors, CassandraPersistentEntity<?> entity, CqlIdentifier from,
+			TermFactory factory) {
+
+		if (selectors.isEmpty()) {
+			return QueryBuilder.selectFrom(getKeyspace(entity, from), from).all();
+		}
+
+		List<com.datastax.oss.driver.api.querybuilder.select.Selector> mappedSelectors = new ArrayList<>(selectors.size());
+		for (Selector selector : selectors) {
+			com.datastax.oss.driver.api.querybuilder.select.Selector orElseGet = selector.getAlias()
+					.map(it -> getSelection(selector, factory).as(it)).orElseGet(() -> getSelection(selector, factory));
+			mappedSelectors.add(orElseGet);
+		}
+
+		return QueryBuilder.selectFrom(getKeyspace(entity, from), from).selectors(mappedSelectors);
 	}
 
 	private static List<Relation> getRelations(Filter filter, TermFactory factory) {
@@ -1215,9 +1292,8 @@ public class StatementFactory {
 			this.selector = selector;
 		}
 
-
 		@Override
-		public com.datastax.oss.driver.api.querybuilder.select.@NonNull Selector as(@NonNull CqlIdentifier alias) {
+		public com.datastax.oss.driver.api.querybuilder.select.Selector as(CqlIdentifier alias) {
 			throw new UnsupportedOperationException();
 		}
 
@@ -1227,7 +1303,7 @@ public class StatementFactory {
 		}
 
 		@Override
-		public void appendTo(@NonNull StringBuilder builder) {
+		public void appendTo(StringBuilder builder) {
 			builder.append(selector);
 		}
 	}
@@ -1265,7 +1341,7 @@ public class StatementFactory {
 	}
 
 	/**
-	 * Function interface to determine a {@link CqlIdentifier keyspace} for a given {@link CassandraPersistentEntity} and
+	 * Strategy interface to determine a {@link CqlIdentifier keyspace} for a given {@link CassandraPersistentEntity} and
 	 * {@code tableName}. Classes implementing this interface can choose to return a keyspace or {@code null} to use the
 	 * default keyspace.
 	 *
@@ -1273,6 +1349,24 @@ public class StatementFactory {
 	 */
 	@FunctionalInterface
 	public interface KeyspaceProvider {
+
+		/**
+		 * Use the current {@link CqlSession#getKeyspace() session keyspace}.
+		 *
+		 * @since 5.0
+		 */
+		static KeyspaceProvider session() {
+			return KeyspaceProviders.SESSION_KEYSPACE;
+		}
+
+		/**
+		 * Use the keyspace that is associated with the {@link CassandraPersistentEntity#getKeyspace() entity}.
+		 *
+		 * @since 5.0
+		 */
+		static KeyspaceProvider entity() {
+			return KeyspaceProviders.SESSION_KEYSPACE;
+		}
 
 		/**
 		 * Determine a {@link CqlIdentifier keyspace} for a given {@link CassandraPersistentEntity} and {@code tableName}.
@@ -1297,21 +1391,26 @@ public class StatementFactory {
 		 * Derive the keyspace from the given {@link CassandraPersistentEntity}.
 		 */
 		ENTITY_KEYSPACE {
+
 			@Override
 			public @Nullable CqlIdentifier getKeyspace(CassandraPersistentEntity<?> entity, CqlIdentifier tableName) {
 				return entity.getKeyspace();
 			}
+
 		},
 
 		/**
 		 * Use the session's keyspace.
 		 */
-		EMPTY_KEYSPACE {
+		SESSION_KEYSPACE {
+
 			@Override
 			public @Nullable CqlIdentifier getKeyspace(CassandraPersistentEntity<?> entity, CqlIdentifier tableName) {
 				return null;
 			}
+
 		}
+
 	}
 
 }

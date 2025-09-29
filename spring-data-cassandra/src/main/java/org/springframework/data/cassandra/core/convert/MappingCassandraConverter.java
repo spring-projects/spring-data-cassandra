@@ -357,7 +357,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 		CassandraPersistentEntity<?> entity = getMappingContext()
 				.getRequiredPersistentEntity(projection.getActualDomainType());
-		TypeInformation<?> mappedType = projection.getActualMappedType();
+		TypeInformation<?> mappedType = projection.getMappedType();
 		CassandraPersistentEntity<R> mappedEntity = (CassandraPersistentEntity<R>) getMappingContext()
 				.getPersistentEntity(mappedType);
 
@@ -369,6 +369,11 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 					.create(new MapPersistentPropertyAccessor(), propertyTranslator);
 
 			readProperties(context, entity, valueProvider, accessor, Predicates.isTrue());
+
+			if (projection.getMappedType().isMap()) {
+				return (R) accessor.getBean();
+			}
+
 			return (R) projectionFactory.createProjection(mappedType.getType(), accessor.getBean());
 		}
 
@@ -1507,7 +1512,7 @@ public class MappingCassandraConverter extends AbstractCassandraConverter
 
 			if (property == null) {
 
-				throw new MappingException(String.format("No property %s found on entity %s to bind constructor parameter to",
+				throw new MappingException(String.format("No property '%s' found on entity %s to bind constructor parameter to",
 						name, entity.getType()));
 			}
 

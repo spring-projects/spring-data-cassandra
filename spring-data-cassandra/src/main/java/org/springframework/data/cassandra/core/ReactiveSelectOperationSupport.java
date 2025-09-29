@@ -45,9 +45,11 @@ import com.datastax.oss.driver.api.core.cql.Statement;
 class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 
 	private final ReactiveCassandraTemplate template;
+	private final QueryOperations queryOperations;
 
-	public ReactiveSelectOperationSupport(ReactiveCassandraTemplate template) {
+	public ReactiveSelectOperationSupport(ReactiveCassandraTemplate template, QueryOperations queryOperations) {
 		this.template = template;
+		this.queryOperations = queryOperations;
 	}
 
 	@Override
@@ -55,7 +57,7 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 
 		Assert.notNull(domainType, "DomainType must not be null");
 
-		return new ReactiveSelectSupport<>(this.template, domainType, domainType, QueryResultConverter.entity(),
+		return new ReactiveSelectSupport<>(domainType, domainType, QueryResultConverter.entity(),
 				Query.empty(), null);
 	}
 
@@ -64,7 +66,7 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 
 		Assert.hasText(cql, "CQL must not be empty");
 
-		return new UntypedSelectSupport(this.template, SimpleStatement.newInstance(cql));
+		return new UntypedSelectSupport(SimpleStatement.newInstance(cql));
 	}
 
 	@Override
@@ -72,18 +74,23 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 
 		Assert.notNull(statement, "Statement must not be null");
 
-		return new UntypedSelectSupport(this.template, statement);
+		return new UntypedSelectSupport(statement);
 	}
 
-	private record UntypedSelectSupport(ReactiveCassandraTemplate template,
-			Statement<?> statement) implements UntypedSelect {
+	class UntypedSelectSupport implements UntypedSelect {
+
+		private final Statement<?> statement;
+
+		private UntypedSelectSupport(Statement<?> statement) {
+			this.statement = statement;
+		}
 
 		@Override
 		public <T> TerminatingResults<T> as(Class<T> resultType) {
 
 			Assert.notNull(resultType, "Result type must not be null");
 
-			return new TypedSelectSupport<>(template, statement, resultType);
+			return new TypedSelectSupport<>(statement, resultType);
 		}
 
 		@Override
@@ -91,19 +98,16 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 
 			Assert.notNull(mapper, "RowMapper must not be null");
 
-			return new TerminatingSelectResultSupport<>(template, statement, mapper);
+			return new TerminatingSelectResultSupport<>(this.statement, mapper);
 		}
-
 	}
 
-	static class TypedSelectSupport<T> extends TerminatingSelectResultSupport<T, T> implements TerminatingResults<T> {
+	class TypedSelectSupport<T> extends TerminatingSelectResultSupport<T, T> implements TerminatingResults<T> {
 
 		private final Class<T> domainType;
 
-		TypedSelectSupport(ReactiveCassandraTemplate template, Statement<?> statement, Class<T> domainType) {
-			super(template, statement,
-					template.getRowMapper(domainType, EntityQueryUtils.getTableName(statement), QueryResultConverter.entity()));
-
+		TypedSelectSupport(Statement<?> statement, Class<T> domainType) {
+			super(statement, queryOperations.getRowMapper(domainType, statement));
 			this.domainType = domainType;
 		}
 
@@ -112,35 +116,31 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 
 			Assert.notNull(converter, "Mapping function must not be null");
 
-			return new TerminatingSelectResultSupport<>(this.template, this.statement, this.domainType, converter);
+			return new TerminatingSelectResultSupport<>(this.statement, this.domainType, converter);
 		}
 
 	}
 
-	static class TerminatingSelectResultSupport<S, T> implements TerminatingResults<T> {
-
-		final ReactiveCassandraTemplate template;
+	class TerminatingSelectResultSupport<S, T> implements TerminatingResults<T> {
 
 		final Statement<?> statement;
 
 		final RowMapper<T> rowMapper;
 
-		TerminatingSelectResultSupport(ReactiveCassandraTemplate template, Statement<?> statement, RowMapper<T> rowMapper) {
-			this.template = template;
+		TerminatingSelectResultSupport(Statement<?> statement, RowMapper<T> rowMapper) {
 			this.statement = statement;
 			this.rowMapper = rowMapper;
 		}
 
-		TerminatingSelectResultSupport(ReactiveCassandraTemplate template, Statement<?> statement, Class<S> domainType,
+		TerminatingSelectResultSupport(Statement<?> statement, Class<S> domainType,
 				QueryResultConverter<? super S, ? extends T> mappingFunction) {
-			this(template, statement,
-					template.getRowMapper(domainType, EntityQueryUtils.getTableName(statement), mappingFunction));
+			this(statement, queryOperations.getRowMapper(domainType, statement, mappingFunction));
 		}
 
 		@Override
 		public <R> TerminatingResults<R> map(QueryResultConverter<? super T, ? extends R> converter) {
 
-			return new TerminatingSelectResultSupport<>(this.template, this.statement, (row, rowNum) -> {
+			return new TerminatingSelectResultSupport<>(this.statement, (row, rowNum) -> {
 
 				return converter.mapRow(row, () -> {
 					return this.rowMapper.mapRow(row, rowNum);
@@ -150,13 +150,13 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 
 		@Override
 		public Mono<T> first() {
-			return this.template.getReactiveCqlOperations().query(this.statement, this.rowMapper).next();
+			return template.getReactiveCqlOperations().query(this.statement, this.rowMapper).next();
 		}
 
 		@Override
 		public Mono<T> one() {
 
-			Flux<T> result = this.template.getReactiveCqlOperations().query(this.statement, this.rowMapper);
+			Flux<T> result = template.getReactiveCqlOperations().query(this.statement, this.rowMapper);
 
 			return result.collectList() //
 					.handle((objects, sink) -> handleOne(objects, sink, () -> QueryExtractorDelegate.getCql(this.statement)));
@@ -164,14 +164,12 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 
 		@Override
 		public Flux<T> all() {
-			return this.template.getReactiveCqlOperations().query(this.statement, this.rowMapper);
+			return template.getReactiveCqlOperations().query(this.statement, this.rowMapper);
 		}
 
 	}
 
-	static class ReactiveSelectSupport<S, T> implements ReactiveSelect<T> {
-
-		private final ReactiveCassandraTemplate template;
+	class ReactiveSelectSupport<S, T> implements ReactiveSelect<T> {
 
 		private final Class<?> domainType;
 
@@ -183,9 +181,8 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 
 		private final @Nullable CqlIdentifier tableName;
 
-		public ReactiveSelectSupport(ReactiveCassandraTemplate template, Class<?> domainType, Class<S> returnType,
+		public ReactiveSelectSupport(Class<?> domainType, Class<S> returnType,
 				QueryResultConverter<? super S, ? extends T> mappingFunction, Query query, @Nullable CqlIdentifier tableName) {
-			this.template = template;
 			this.domainType = domainType;
 			this.returnType = returnType;
 			this.mappingFunction = mappingFunction;
@@ -198,7 +195,7 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 
 			Assert.notNull(converter, "Mapping function name must not be null");
 
-			return new ReactiveSelectSupport<>(this.template, this.domainType, this.returnType,
+			return new ReactiveSelectSupport<>(this.domainType, this.returnType,
 					this.mappingFunction.andThen(converter), this.query, tableName);
 		}
 
@@ -207,7 +204,7 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 
 			Assert.notNull(tableName, "Table name must not be null");
 
-			return new ReactiveSelectSupport<>(this.template, this.domainType, this.returnType, this.mappingFunction,
+			return new ReactiveSelectSupport<>(this.domainType, this.returnType, this.mappingFunction,
 					this.query, tableName);
 		}
 
@@ -216,7 +213,7 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 
 			Assert.notNull(returnType, "ReturnType must not be null");
 
-			return new ReactiveSelectSupport<>(this.template, this.domainType, returnType, QueryResultConverter.entity(),
+			return new ReactiveSelectSupport<>(this.domainType, returnType, QueryResultConverter.entity(),
 					this.query, this.tableName);
 		}
 
@@ -225,25 +222,24 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 
 			Assert.notNull(query, "Query must not be null");
 
-			return new ReactiveSelectSupport<>(this.template, this.domainType, this.returnType, this.mappingFunction, query,
+			return new ReactiveSelectSupport<>(this.domainType, this.returnType, this.mappingFunction, query,
 					this.tableName);
 		}
 
 		@Override
 		public Mono<Long> count() {
-			return this.template.doCount(this.query, this.domainType, getTableName());
+			return template.doCount(this.query, this.domainType, getTableName());
 		}
 
 		@Override
 		public Mono<Boolean> exists() {
-			return this.template.doExists(this.query, this.domainType, getTableName());
+			return template.doExists(this.query, this.domainType, getTableName());
 		}
 
 		@Override
 		public Mono<T> first() {
 
-			Flux<T> one = this.template.doSelect(this.query.limit(1), this.domainType, getTableName(), this.returnType,
-					this.mappingFunction);
+			Flux<T> one = prepare(this.query.limit(1)).select(template::doQuery);
 
 			return one.next();
 		}
@@ -251,8 +247,7 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 		@Override
 		public Mono<T> one() {
 
-			Flux<T> result = this.template.doSelect(this.query.limit(2), this.domainType, getTableName(), this.returnType,
-					this.mappingFunction);
+			Flux<T> result = prepare(this.query.limit(2)).select(template::doQuery);
 
 			return result.collectList() //
 					.handle((objects, sink) -> handleOne(objects, sink, this.query::toString));
@@ -260,11 +255,17 @@ class ReactiveSelectOperationSupport implements ReactiveSelectOperation {
 
 		@Override
 		public Flux<T> all() {
-			return this.template.doSelect(this.query, this.domainType, getTableName(), this.returnType, this.mappingFunction);
+			return prepare(this.query).select(template::doQuery);
+		}
+
+		@SuppressWarnings("unchecked")
+		public QueryOperations.TerminalSelect<T> prepare(Query query) {
+			return (QueryOperations.TerminalSelect<T>) queryOperations.select(this.domainType, getTableName())
+					.project(this.returnType, this.mappingFunction).matching(query);
 		}
 
 		private CqlIdentifier getTableName() {
-			return this.tableName != null ? this.tableName : this.template.getTableName(this.domainType);
+			return this.tableName != null ? this.tableName : queryOperations.getTableName(this.domainType);
 		}
 
 	}

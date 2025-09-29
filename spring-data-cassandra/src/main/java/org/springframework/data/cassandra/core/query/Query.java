@@ -171,6 +171,10 @@ public class Query implements Filter {
 
 		Assert.notNull(columns, "Columns must not be null");
 
+		if (columns.equals(this.columns)) {
+			return this;
+		}
+
 		return new Query(this.criteriaDefinitions, this.columns.and(columns), this.sort, this.scrollPosition,
 				this.queryOptions, this.limit, this.allowFiltering);
 	}
