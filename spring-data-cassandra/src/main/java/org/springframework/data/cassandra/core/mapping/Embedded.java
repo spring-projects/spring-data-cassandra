@@ -21,7 +21,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import javax.annotation.meta.When;
+import org.jspecify.annotations.NonNull;
 
 import org.springframework.core.annotation.AliasFor;
 
@@ -72,7 +72,8 @@ public @interface Embedded {
 	 * as alternative to the more verbose
 	 *
 	 * <pre class="code">
-	 * &#64;Embedded(onEmpty = USE_NULL) &#64;javax.annotation.Nonnull(when = When.MAYBE) private Address address;
+	 * &#64;Embedded(onEmpty = USE_NULL)
+	 * &#64;Nullable private Address address;
 	 * </pre>
 	 *
 	 * @author Christoph Strobl
@@ -82,7 +83,7 @@ public @interface Embedded {
 	@Documented
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target({ ElementType.FIELD, ElementType.METHOD })
-	@javax.annotation.Nonnull(when = When.MAYBE)
+	@org.jspecify.annotations.Nullable
 	@interface Nullable {
 
 		/**
@@ -118,7 +119,7 @@ public @interface Embedded {
 	@Documented
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target({ ElementType.FIELD, ElementType.METHOD })
-	@javax.annotation.Nonnull(when = When.NEVER)
+	@NonNull
 	@interface Empty {
 
 		/**
