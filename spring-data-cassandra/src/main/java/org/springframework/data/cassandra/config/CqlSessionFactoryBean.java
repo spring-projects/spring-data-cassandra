@@ -31,11 +31,11 @@ import java.util.stream.Stream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.DataAccessException;
-import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.data.cassandra.core.CassandraAdminOperations;
 import org.springframework.data.cassandra.core.CassandraAdminTemplate;
 import org.springframework.data.cassandra.core.CassandraPersistentEntitySchemaCreator;
@@ -72,7 +72,7 @@ import com.datastax.oss.driver.internal.core.util.concurrent.CompletableFutures;
  * @since 3.0
  */
 public class CqlSessionFactoryBean
-		implements FactoryBean<CqlSession>, InitializingBean, DisposableBean, PersistenceExceptionTranslator {
+		implements FactoryBean<CqlSession>, InitializingBean, DisposableBean {
 
 	public static final String CASSANDRA_SYSTEM_SESSION = "system";
 	public static final String DEFAULT_CONTACT_POINTS = "localhost";
@@ -674,7 +674,13 @@ public class CqlSessionFactoryBean
 		return CqlSession.class;
 	}
 
-	@Override
+	/**
+	 * @param e
+	 * @return
+	 * @deprecated since 5.0, use {@link CassandraExceptionTranslator#translateExceptionIfPossible(RuntimeException)}
+	 *             directly.
+	 */
+	@Deprecated(since = "5.0", forRemoval = true)
 	public @Nullable DataAccessException translateExceptionIfPossible(RuntimeException e) {
 		return EXCEPTION_TRANSLATOR.translateExceptionIfPossible(e);
 	}
