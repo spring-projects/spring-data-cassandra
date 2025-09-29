@@ -35,6 +35,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
+import org.springframework.lang.CheckReturnValue;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.cql.PagingState;
@@ -136,6 +137,7 @@ public class Query implements Filter {
 	 * @param criteriaDefinition must not be {@literal null}.
 	 * @return a new {@link Query} object containing the former settings with {@link CriteriaDefinition} applied.
 	 */
+	@CheckReturnValue
 	public Query and(CriteriaDefinition criteriaDefinition) {
 
 		Assert.notNull(criteriaDefinition, "Criteria must not be null");
@@ -164,6 +166,7 @@ public class Query implements Filter {
 	 * @param columns must not be {@literal null}.
 	 * @return a new {@link Query} object containing the former settings with {@link Columns} applied.
 	 */
+	@CheckReturnValue
 	public Query columns(Columns columns) {
 
 		Assert.notNull(columns, "Columns must not be null");
@@ -185,6 +188,7 @@ public class Query implements Filter {
 	 * @param sort must not be {@literal null}.
 	 * @return a new {@link Query} object containing the former settings with {@link Sort} applied.
 	 */
+	@CheckReturnValue
 	public Query sort(Sort sort) {
 
 		Assert.notNull(sort, "Sort must not be null");
@@ -226,6 +230,7 @@ public class Query implements Filter {
 	 * @return a new {@link Query} object containing the former settings with {@link PageRequest} applied.
 	 * @see CassandraPageRequest
 	 */
+	@CheckReturnValue
 	public Query pageRequest(Pageable pageable) {
 
 		Assert.notNull(pageable, "Pageable must not be null");
@@ -255,6 +260,7 @@ public class Query implements Filter {
 	 * @param scrollPosition must not be {@literal null}.
 	 * @return a new {@link Query} object containing the former settings with paging state applied.
 	 */
+	@CheckReturnValue
 	public Query pagingState(CassandraScrollPosition scrollPosition) {
 
 		Assert.notNull(scrollPosition, "CassandraScrollPosition must not be null");
@@ -270,6 +276,7 @@ public class Query implements Filter {
 	 * @return a new {@link Query} object containing the former settings with {@link PagingState paging state} applied.
 	 * @since 5.0
 	 */
+	@CheckReturnValue
 	public Query pagingState(PagingState pagingState) {
 		return pagingState(CassandraScrollPosition.of(pagingState));
 	}
@@ -280,6 +287,7 @@ public class Query implements Filter {
 	 * @param pagingState must not be {@literal null}.
 	 * @return a new {@link Query} object containing the former settings with {@link ByteBuffer paging state} applied.
 	 */
+	@CheckReturnValue
 	public Query pagingState(ByteBuffer pagingState) {
 
 		Assert.notNull(pagingState, "PagingState must not be null");
@@ -306,6 +314,7 @@ public class Query implements Filter {
 	 * @param queryOptions must not be {@literal null}.
 	 * @return a new {@link Query} object containing the former settings with {@link QueryOptions} applied.
 	 */
+	@CheckReturnValue
 	public Query queryOptions(QueryOptions queryOptions) {
 
 		Assert.notNull(queryOptions, "QueryOptions must not be null");
@@ -327,6 +336,7 @@ public class Query implements Filter {
 	 * @param limit
 	 * @return a new {@link Query} object containing the former settings with {@code limit} applied.
 	 */
+	@CheckReturnValue
 	public Query limit(long limit) {
 		return new Query(this.criteriaDefinitions, this.columns, this.sort, this.scrollPosition, this.queryOptions,
 				Limit.of(Math.toIntExact(limit)), this.allowFiltering);
@@ -338,6 +348,7 @@ public class Query implements Filter {
 	 * @param limit
 	 * @return a new {@link Query} object containing the former settings with {@code limit} applied.
 	 */
+	@CheckReturnValue
 	public Query limit(Limit limit) {
 		return new Query(this.criteriaDefinitions, this.columns, this.sort, this.scrollPosition, this.queryOptions, limit,
 				this.allowFiltering);
@@ -362,6 +373,7 @@ public class Query implements Filter {
 	 *
 	 * @return a new {@link Query} object containing the former settings with {@code allowFiltering} applied.
 	 */
+	@CheckReturnValue
 	public Query withAllowFiltering() {
 		return new Query(this.criteriaDefinitions, this.columns, this.sort, this.scrollPosition, this.queryOptions,
 				this.limit, true);
