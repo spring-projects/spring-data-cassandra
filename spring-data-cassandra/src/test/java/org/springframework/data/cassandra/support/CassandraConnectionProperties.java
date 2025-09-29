@@ -42,8 +42,8 @@ public class CassandraConnectionProperties extends Properties {
 	private final String resourceName;
 
 	/**
-	 * Construct a new instance of {@link CassandraConnectionProperties} using properties
-	 * from {@code config/cassandra-connection.properties}.
+	 * Construct a new instance of {@link CassandraConnectionProperties} using properties from
+	 * {@code config/cassandra-connection.properties}.
 	 */
 	public CassandraConnectionProperties() {
 		this("/config/cassandra-connection.properties");
@@ -69,8 +69,7 @@ public class CassandraConnectionProperties extends Properties {
 			}
 
 			reload();
-		}
-		catch (Exception cause) {
+		} catch (Exception cause) {
 			cause.printStackTrace();
 			throw new IllegalStateException(cause);
 		}
@@ -94,12 +93,11 @@ public class CassandraConnectionProperties extends Properties {
 
 	private void loadProperties(String resourceName) {
 
-		try (InputStream in = getClass().getResourceAsStream(resourceName)){
+		try (InputStream in = getClass().getResourceAsStream(resourceName)) {
 			if (in != null) {
 				load(in);
 			}
-		}
-		catch (Exception cause) {
+		} catch (Exception cause) {
 			throw new RuntimeException(cause);
 		}
 	}
@@ -166,15 +164,14 @@ public class CassandraConnectionProperties extends Properties {
 	}
 
 	/**
-	 * @return the Cassandra type (Embedded or External)
+	 * @return the Cassandra type (Testcontainers or External)
 	 */
 	public CassandraType getCassandraType() {
 
 		String cassandraType = getProperty("build.cassandra.mode");
 
-		return CassandraType.TESTCONTAINERS.name().equalsIgnoreCase(cassandraType) ? CassandraType.TESTCONTAINERS
-			: CassandraType.EXTERNAL.name().equalsIgnoreCase(cassandraType) ? CassandraType.EXTERNAL
-			: CassandraType.EMBEDDED;
+		return CassandraType.EXTERNAL.name().equalsIgnoreCase(cassandraType) ? CassandraType.EXTERNAL
+				: CassandraType.TESTCONTAINERS;
 	}
 
 	/**
@@ -224,6 +221,6 @@ public class CassandraConnectionProperties extends Properties {
 	}
 
 	public enum CassandraType {
-		EMBEDDED, EXTERNAL, TESTCONTAINERS
+		EXTERNAL, TESTCONTAINERS
 	}
 }

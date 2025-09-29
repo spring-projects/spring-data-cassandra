@@ -19,7 +19,6 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -27,8 +26,11 @@ import org.junit.jupiter.api.extension.TestInstancePostProcessor;
 import org.junit.platform.commons.util.AnnotationUtils;
 import org.junit.platform.commons.util.ReflectionUtils;
 import org.junit.platform.commons.util.StringUtils;
+
 import org.springframework.data.cassandra.support.RandomKeyspaceName;
 import org.springframework.util.Assert;
+
+import org.testcontainers.shaded.org.apache.commons.lang3.reflect.FieldUtils;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 
@@ -59,7 +61,7 @@ public class CassandraExtension implements BeforeAllCallback, AfterAllCallback, 
 
 	private static final ThreadLocal<Resources> TEST_RESOURCES = new ThreadLocal<>();
 
-	private final CassandraDelegate delegate = new CassandraDelegate("embedded-cassandra.yaml");
+	private final CassandraDelegate delegate = new CassandraDelegate();
 
 	/**
 	 * Retrieve the keyspace {@link CqlSession} that is associated with the current {@link Thread}.
@@ -72,7 +74,7 @@ public class CassandraExtension implements BeforeAllCallback, AfterAllCallback, 
 		CqlSession cqlSession = getResources().cqlSession;
 
 		Assert.state(cqlSession != null,
-			"No keyspace-bound session. Make sure to annotate your test class with @TestKeyspaceName");
+				"No keyspace-bound session. Make sure to annotate your test class with @TestKeyspaceName");
 
 		return cqlSession;
 	}
@@ -92,7 +94,7 @@ public class CassandraExtension implements BeforeAllCallback, AfterAllCallback, 
 		Resources resources = TEST_RESOURCES.get();
 
 		Assert.state(resources != null,
-			"No test in progress; Did you annotate your test class with @ExtendWith(CassandraExtension.class)");
+				"No test in progress; Did you annotate your test class with @ExtendWith(CassandraExtension.class)");
 
 		return resources;
 	}
@@ -178,9 +180,8 @@ public class CassandraExtension implements BeforeAllCallback, AfterAllCallback, 
 			Optional<TestKeyspaceName> annotation = AnnotationUtils.findAnnotation(it, TestKeyspaceName.class);
 
 			if (annotation.isPresent()) {
-				return annotation.map(TestKeyspaceName::value)
-					.filter(StringUtils::isNotBlank)
-					.orElseGet(RandomKeyspaceName::create);
+				return annotation.map(TestKeyspaceName::value).filter(StringUtils::isNotBlank)
+						.orElseGet(RandomKeyspaceName::create);
 			}
 
 			return null;

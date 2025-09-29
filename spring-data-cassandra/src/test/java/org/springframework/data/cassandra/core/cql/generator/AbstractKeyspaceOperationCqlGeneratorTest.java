@@ -17,9 +17,12 @@ package org.springframework.data.cassandra.core.cql.generator;
 
 import java.util.UUID;
 
-import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.cassandra.core.cql.keyspace.KeyspaceActionSpecification;
+import org.springframework.data.cassandra.core.cql.keyspace.TableNameSpecification;
+
+import org.testcontainers.shaded.org.apache.commons.lang3.StringUtils;
 
 /**
  * Useful test class that specifies just about as much as you can for a CQL generation test. Intended to be extended by
