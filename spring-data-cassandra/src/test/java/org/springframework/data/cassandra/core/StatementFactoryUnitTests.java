@@ -47,6 +47,7 @@ import org.springframework.data.cassandra.domain.Group;
 import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Vector;
+import org.springframework.data.projection.EntityProjection;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
@@ -89,6 +90,29 @@ class StatementFactoryUnitTests {
 				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
 
 		assertThat(select.build(ParameterHandling.INLINE).getQuery()).isEqualTo("SELECT * FROM group");
+	}
+
+	@Test // GH-1590
+	void shouldMapExistsQuery() {
+
+		StatementBuilder<Select> select = statementFactory.selectExists(Query.empty(),
+				EntityProjection.nonProjecting(Group.class),
+				converter.getMappingContext().getRequiredPersistentEntity(Group.class), CqlIdentifier.fromCql("group"));
+
+		assertThat(select.build(ParameterHandling.INLINE).getQuery())
+				.isEqualTo("SELECT groupname,hash_prefix,username FROM group LIMIT 1");
+	}
+
+	@Test // GH-1590
+	void shouldRenderMappedFields() {
+
+		statementFactory.setProjectionFunction(StatementFactory.ProjectionFunction.mappedProperties());
+
+		StatementBuilder<Select> select = statementFactory.select(Query.empty(),
+				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
+
+		assertThat(select.build(ParameterHandling.INLINE).getQuery())
+				.isEqualTo("SELECT groupname,hash_prefix,username,email,age FROM group");
 	}
 
 	@Test // GH-1275

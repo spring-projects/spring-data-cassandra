@@ -15,7 +15,6 @@
  */
 package org.springframework.data.cassandra.core;
 
-import java.beans.PropertyDescriptor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -64,9 +63,9 @@ import org.springframework.data.cassandra.core.query.Update.SetOp;
 import org.springframework.data.cassandra.core.query.VectorSort;
 import org.springframework.data.convert.EntityWriter;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.projection.EntityProjection;
 import org.springframework.data.projection.EntityProjectionIntrospector;
-import org.springframework.data.projection.ProjectionInformation;
 import org.springframework.data.util.Predicates;
 import org.springframework.data.util.ProxyUtils;
 import org.springframework.util.Assert;
@@ -122,6 +121,8 @@ public class StatementFactory {
 	private final ConcurrentLruCache<ProjectionKey, EntityProjection<?, ?>> projectingCache;
 
 	private KeyspaceProvider keyspaceProvider = KeyspaceProviders.ENTITY_KEYSPACE;
+
+	private ProjectionFunction projectionFunction = ProjectionFunction.projecting();
 
 	/**
 	 * Create {@link StatementFactory} given {@link CassandraConverter}.
@@ -242,6 +243,28 @@ public class StatementFactory {
 	}
 
 	/**
+	 * @return the configured projection function.
+	 * @since 5.0
+	 */
+	public ProjectionFunction getProjectionFunction() {
+		return projectionFunction;
+	}
+
+	/**
+	 * Set the default {@link ProjectionFunction} to determine {@link Columns} for a {@link Select} statement if the query
+	 * did not specify any columns.
+	 *
+	 * @param projectionFunction the projection function to use, must not be {@literal null}.
+	 * @since 5.0
+	 */
+	public void setProjectionFunction(ProjectionFunction projectionFunction) {
+
+		Assert.notNull(projectionFunction, "ProjectionFunction must not be null");
+
+		this.projectionFunction = projectionFunction;
+	}
+
+	/**
 	 * Create a {@literal COUNT} statement by mapping {@link Query} to {@link Select}.
 	 *
 	 * @param query user-defined count {@link Query} to execute; must not be {@literal null}.
@@ -287,7 +310,21 @@ public class StatementFactory {
 	 */
 	public StatementBuilder<Select> selectExists(Query query, EntityProjection<?, ?> projection,
 			CassandraPersistentEntity<?> entity, CqlIdentifier tableName) {
-		return select(query.limit(1), projection, entity, tableName);
+		return select(query.limit(1), projection, entity, tableName, ProjectionFunction.primaryKey());
+	}
+
+	/**
+	 * Create an {@literal SELECT} statement by mapping {@code id} to {@literal SELECT … WHERE}. This method supports
+	 * composite primary keys as part of the entity class itself or as separate primary key class.
+	 *
+	 * @param id must not be {@literal null}.
+	 * @param entity must not be {@literal null}.
+	 * @param tableName must not be {@literal null}.
+	 * @return the select builder.
+	 */
+	public StatementBuilder<Select> selectExists(Object id, CassandraPersistentEntity<?> entity,
+			CqlIdentifier tableName) {
+		return selectOneById(id, entity, tableName, ProjectionFunction.primaryKey());
 	}
 
 	/**
@@ -301,10 +338,25 @@ public class StatementFactory {
 	 */
 	public StatementBuilder<Select> selectOneById(Object id, CassandraPersistentEntity<?> entity,
 			CqlIdentifier tableName) {
+		return selectOneById(id, entity, tableName, ProjectionFunction.empty());
+	}
+
+	/**
+	 * Create an {@literal SELECT} statement by mapping {@code id} to {@literal SELECT … WHERE}. This method supports
+	 * composite primary keys as part of the entity class itself or as separate primary key class.
+	 *
+	 * @param id must not be {@literal null}.
+	 * @param entity must not be {@literal null}.
+	 * @param tableName must not be {@literal null}.
+	 * @return the select builder.
+	 */
+	private StatementBuilder<Select> selectOneById(Object id, CassandraPersistentEntity<?> entity,
+			CqlIdentifier tableName, ProjectionFunction projectionFunction) {
 
 		Where where = new Where();
 
-		Columns columns = computeColumnsForProjection(getEntityProjection(entity.getType()), Columns.empty(), entity);
+		Columns columns = computeColumnsForProjection(getEntityProjection(entity.getType()), Columns.empty(),
+				projectionFunction);
 		List<Selector> selectors = getQueryMapper().getMappedSelectors(columns, entity);
 
 		cassandraConverter.write(id, where, entity);
@@ -341,7 +393,7 @@ public class StatementFactory {
 	 * @since 2.1
 	 */
 	public StatementBuilder<Select> select(Query query, CassandraPersistentEntity<?> entity, CqlIdentifier tableName) {
-		return select(query, getEntityProjection(entity.getType()), entity, tableName);
+		return select(query, getEntityProjection(entity.getType()), entity, tableName, ProjectionFunction.empty());
 	}
 
 	/**
@@ -356,12 +408,18 @@ public class StatementFactory {
 	 */
 	public StatementBuilder<Select> select(Query query, EntityProjection<?, ?> projection,
 			CassandraPersistentEntity<?> entity, CqlIdentifier tableName) {
+		return select(query, projection, entity, tableName, ProjectionFunction.empty());
+	}
+
+	private StatementBuilder<Select> select(Query query, EntityProjection<?, ?> projection,
+			CassandraPersistentEntity<?> entity, CqlIdentifier tableName, ProjectionFunction projectionFunction) {
 
 		Assert.notNull(query, "Query must not be null");
 		Assert.notNull(entity, "CassandraPersistentEntity must not be null");
 		Assert.notNull(tableName, "Table name must not be null");
+		Assert.notNull(projectionFunction, "ProjectionFunction must not be null");
 
-		Columns columns = computeColumnsForProjection(projection, query.getColumns(), entity);
+		Columns columns = computeColumnsForProjection(projection, query.getColumns(), projectionFunction);
 
 		return doSelect(query.columns(columns), entity, tableName);
 	}
@@ -703,38 +761,12 @@ public class StatementFactory {
 	 * @param projectionFunction must not be {@literal null}.
 	 * @return {@link Columns} with columns to be included.
 	 */
-	@SuppressWarnings("NullAway")
-	Columns computeColumnsForProjection(EntityProjection<?, ?> projection, Columns columns,
-			CassandraPersistentEntity<?> domainType) {
+	private Columns computeColumnsForProjection(EntityProjection<?, ?> projection, Columns columns,
+			ProjectionFunction projectionFunction) {
 
-		Class<?> returnType = projection.getMappedType().getType();
-		if (!columns.isEmpty()
-				|| ClassUtils.isAssignable(projection.getActualDomainType().getType(), projection.getMappedType().getType())
-				|| ClassUtils.isAssignable(Map.class, returnType) || ClassUtils.isAssignable(ResultSet.class, returnType)) {
-			return columns;
-		}
-
-		if (projection.getMappedType().getType().isInterface()) {
-			ProjectionInformation projectionInformation = cassandraConverter.getProjectionFactory()
-					.getProjectionInformation(projection.getMappedType().getType());
-
-			if (projectionInformation.isClosed()) {
-
-				for (PropertyDescriptor inputProperty : projectionInformation.getInputProperties()) {
-					columns = columns.include(inputProperty.getName());
-				}
-			}
-		} else {
-
-			// DTO projections use merged metadata between domain type and result type
-			PersistentPropertyTranslator translator = PersistentPropertyTranslator.create(domainType,
-					Predicates.negate(CassandraPersistentProperty::hasExplicitColumnName));
-
-			CassandraPersistentEntity<?> entity = getQueryMapper().getConverter().getMappingContext()
-					.getRequiredPersistentEntity(projection.getMappedType());
-			for (CassandraPersistentProperty property : entity) {
-				columns = columns.include(translator.translate(property).getColumnName());
-			}
+		if (columns.isEmpty()) {
+			return projectionFunction.otherwise(getProjectionFunction()).computeProjection(projection,
+					this.cassandraConverter.getMappingContext());
 		}
 
 		return columns;
@@ -1292,6 +1324,7 @@ public class StatementFactory {
 			this.selector = selector;
 		}
 
+
 		@Override
 		public com.datastax.oss.driver.api.querybuilder.select.Selector as(CqlIdentifier alias) {
 			throw new UnsupportedOperationException();
@@ -1411,6 +1444,193 @@ public class StatementFactory {
 
 		}
 
+	}
+
+	/**
+	 * Strategy interface to compute {@link Columns column projection} to be selected for a query based on a given
+	 * {@link EntityProjection}. A projection function can be composed into a higher-order function using
+	 * {@link #otherwise(ProjectionFunction)} to form a chain of functions that are tried in sequence until one produces a
+	 * non-empty {@link Columns} object.
+	 *
+	 * @since 5.0
+	 */
+	public interface ProjectionFunction {
+
+		/**
+		 * Compute {@link Columns} to be selected for a given {@link EntityProjection}. If the function cannot compute
+		 * columns it should return an empty {@link Columns#empty() Columns} object.
+		 *
+		 * @param projection the projection to compute columns for.
+		 * @param context the mapping context.
+		 * @return the computed {@link Columns} or an empty {@link Columns#empty() Columns} object.
+		 */
+		Columns computeProjection(EntityProjection<?, ?> projection,
+				MappingContext<? extends CassandraPersistentEntity<?>, ? extends CassandraPersistentProperty> context);
+
+		/**
+		 * Compose this projection function with a {@code fallback} function that is invoked when this function returns an
+		 * empty {@link Columns} object.
+		 *
+		 * @param fallback the fallback function.
+		 * @return the composed ProjectionFunction.
+		 */
+		default ProjectionFunction otherwise(ProjectionFunction fallback) {
+
+			return (projection, mappingContext) -> {
+				Columns columns = computeProjection(projection, mappingContext);
+				return columns.isEmpty() ? fallback.computeProjection(projection, mappingContext) : columns;
+			};
+		}
+
+		/**
+		 * Empty projection function that returns {@link Columns#empty()}.
+		 *
+		 * @return a projection function that returns {@link Columns#empty()}.
+		 */
+		static ProjectionFunction empty() {
+			return ProjectionFunctions.EMPTY;
+		}
+
+		/**
+		 * Projection function that selects the primary key.
+		 *
+		 * @return a projection function that selects the primary key.
+		 */
+		static ProjectionFunction primaryKey() {
+			return ProjectionFunctions.PRIMARY_KEY;
+		}
+
+		/**
+		 * Projection function that selects mapped properties only.
+		 *
+		 * @return a projection function that selects mapped properties only.
+		 */
+		static ProjectionFunction mappedProperties() {
+			return ProjectionFunctions.MAPPED_PROPERTIES;
+		}
+
+		/**
+		 * Projection function that computes columns to be selected for DTO and closed interface projections.
+		 *
+		 * @return a projection function that derives columns from DTO and interface projections.
+		 */
+		static ProjectionFunction projecting() {
+			return ProjectionFunctions.PROJECTION;
+		}
+
+	}
+
+	/**
+	 * Collection of projection functions.
+	 *
+	 * @since 5.0
+	 */
+	private enum ProjectionFunctions implements ProjectionFunction {
+
+		/**
+		 * No-op projection function.
+		 */
+		EMPTY {
+
+			@Override
+			public Columns computeProjection(EntityProjection<?, ?> projection,
+					MappingContext<? extends CassandraPersistentEntity<?>, ? extends CassandraPersistentProperty> context) {
+				return Columns.empty();
+			}
+
+			@Override
+			public ProjectionFunction otherwise(ProjectionFunction fallback) {
+				return fallback;
+			}
+		},
+
+		/**
+		 * Mapped properties only (no interface/DTO projections).
+		 */
+		MAPPED_PROPERTIES {
+
+			@Override
+			public Columns computeProjection(EntityProjection<?, ?> projection,
+					MappingContext<? extends CassandraPersistentEntity<?>, ? extends CassandraPersistentProperty> context) {
+
+				CassandraPersistentEntity<?> entity = context.getRequiredPersistentEntity(projection.getActualDomainType());
+
+				List<String> properties = new ArrayList<>();
+
+				for (CassandraPersistentProperty property : entity) {
+					properties.add(property.getName());
+				}
+
+				return Columns.from(properties.toArray(new String[0]));
+			}
+		},
+
+		/**
+		 * Select the primary key.
+		 */
+		PRIMARY_KEY {
+
+			@Override
+			public Columns computeProjection(EntityProjection<?, ?> projection,
+					MappingContext<? extends CassandraPersistentEntity<?>, ? extends CassandraPersistentProperty> context) {
+
+				CassandraPersistentEntity<?> entity = context.getRequiredPersistentEntity(projection.getActualDomainType());
+
+				List<String> primaryKeyColumns = new ArrayList<>();
+
+				for (CassandraPersistentProperty property : entity) {
+					if (property.isIdProperty()) {
+						primaryKeyColumns.add(property.getName());
+					}
+				}
+
+				return Columns.from(primaryKeyColumns.toArray(new String[0]));
+			}
+		},
+
+		/**
+		 * Compute the projection for DTO and closed interface projections.
+		 */
+		PROJECTION {
+
+			@Override
+			public Columns computeProjection(EntityProjection<?, ?> projection,
+					MappingContext<? extends CassandraPersistentEntity<?>, ? extends CassandraPersistentProperty> context) {
+
+				if (!projection.isProjection()) {
+					return Columns.empty();
+				}
+
+				if (ClassUtils.isAssignable(projection.getDomainType().getType(), projection.getMappedType().getType())
+						|| ClassUtils.isAssignable(Map.class, projection.getMappedType().getType()) //
+						|| ClassUtils.isAssignable(ResultSet.class, projection.getMappedType().getType())) {
+					return Columns.empty();
+				}
+
+				Columns columns = Columns.empty();
+
+				if (projection.isClosedProjection()) {
+
+					for (EntityProjection.PropertyProjection<?, ?> propertyProjection : projection) {
+						columns = columns.include(propertyProjection.getPropertyPath().toDotPath());
+					}
+				} else {
+
+					CassandraPersistentEntity<?> mapped = context.getRequiredPersistentEntity(projection.getMappedType());
+
+					// DTO projections use merged metadata between domain type and result type
+					PersistentPropertyTranslator translator = PersistentPropertyTranslator.create(
+							context.getRequiredPersistentEntity(projection.getActualDomainType()),
+							Predicates.negate(CassandraPersistentProperty::hasExplicitColumnName));
+
+					for (CassandraPersistentProperty property : mapped) {
+						columns = columns.include(translator.translate(property).getColumnName());
+					}
+				}
+
+				return columns;
+			}
+		};
 	}
 
 }

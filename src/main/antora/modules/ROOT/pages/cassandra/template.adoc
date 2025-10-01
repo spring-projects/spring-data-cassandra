@@ -222,6 +222,28 @@ The `Query` class has the following methods that return rows:
 
 The query methods must specify the target type `T` that is returned.
 
+[[cassandra.template.query.columns]]
+=== Column Projection
+
+When not specifying `Query.colums(…)`, all columns are selected (`SELECT * FROM …`) to enable access to all available columns from entities through `@Value(…)` and when using open projections.
+
+If you provide more information to a query (e.g. when using closed DTO or Interface projections through <<cassandra.template.query.fluent-template-api>>) then the column selection will be limited.
+
+You can configure the default `ProjectionFunction` on `StatementFactory` for each `CassandraTemplate` instance to influence the default column selection:
+
+====
+[source,java]
+----
+CassandraTemplate template = …;
+template.getStatementFactory().setProjectionFunction(ProjectionFunction.mappedProperties());
+----
+====
+
+Explicitly specifying columns through `ProjectionFunctions.mappedProperties()` will limit the selection to mapped properties of the entity type but its explicit nature will validate queries against the entity mapping when running the query and any undesired schema changes will become visible through exceptions.
+Note that any unmapped properties won't be available to `@Value(…)`.
+
+Using explicit column selection through `Query.columns(…)` will bypass `Columns` computation from projection functions.
+
 [[cassandra.template.query.fluent-template-api]]
 === Fluent Template API
 

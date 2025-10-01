@@ -254,7 +254,7 @@ class AsyncCassandraTemplateUnitTests {
 
 		assertThat(getUninterruptibly(future)).isTrue();
 		verify(session).executeAsync(statementCaptor.capture());
-		assertThat(render(statementCaptor.getValue())).isEqualTo("SELECT * FROM users WHERE id='myid' LIMIT 1");
+		assertThat(render(statementCaptor.getValue())).isEqualTo("SELECT id FROM users WHERE id='myid' LIMIT 1");
 	}
 
 	@Test // DATACASS-292
@@ -264,7 +264,7 @@ class AsyncCassandraTemplateUnitTests {
 
 		assertThat(getUninterruptibly(future)).isFalse();
 		verify(session).executeAsync(statementCaptor.capture());
-		assertThat(render(statementCaptor.getValue())).isEqualTo("SELECT * FROM users WHERE id='myid' LIMIT 1");
+		assertThat(render(statementCaptor.getValue())).isEqualTo("SELECT id FROM users WHERE id='myid' LIMIT 1");
 	}
 
 	@Test // DATACASS-512
@@ -276,7 +276,7 @@ class AsyncCassandraTemplateUnitTests {
 
 		assertThat(getUninterruptibly(future)).isTrue();
 		verify(session).executeAsync(statementCaptor.capture());
-		assertThat(render(statementCaptor.getValue())).isEqualTo("SELECT * FROM users LIMIT 1");
+		assertThat(render(statementCaptor.getValue())).isEqualTo("SELECT id FROM users LIMIT 1");
 	}
 
 	@Test // DATACASS-292

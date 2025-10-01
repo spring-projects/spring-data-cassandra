@@ -218,7 +218,7 @@ class ReactiveCassandraTemplateUnitTests {
 		template.exists("myid", User.class).as(StepVerifier::create).expectNext(true).verifyComplete();
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(render(statementCaptor.getValue())).isEqualTo("SELECT * FROM users WHERE id='myid' LIMIT 1");
+		assertThat(render(statementCaptor.getValue())).isEqualTo("SELECT id FROM users WHERE id='myid' LIMIT 1");
 	}
 
 	@Test // DATACASS-335
@@ -229,7 +229,7 @@ class ReactiveCassandraTemplateUnitTests {
 		template.exists("myid", User.class).as(StepVerifier::create).expectNext(false).verifyComplete();
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(render(statementCaptor.getValue())).isEqualTo("SELECT * FROM users WHERE id='myid' LIMIT 1");
+		assertThat(render(statementCaptor.getValue())).isEqualTo("SELECT id FROM users WHERE id='myid' LIMIT 1");
 	}
 
 	@Test // DATACASS-512
@@ -240,7 +240,7 @@ class ReactiveCassandraTemplateUnitTests {
 		template.exists(Query.empty(), User.class).as(StepVerifier::create).expectNext(true).verifyComplete();
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(render(statementCaptor.getValue())).isEqualTo("SELECT * FROM users LIMIT 1");
+		assertThat(render(statementCaptor.getValue())).isEqualTo("SELECT id FROM users LIMIT 1");
 	}
 
 	@Test // DATACASS-512
@@ -251,7 +251,7 @@ class ReactiveCassandraTemplateUnitTests {
 		template.exists(Query.empty(), User.class).as(StepVerifier::create).expectNext(false).verifyComplete();
 
 		verify(session).execute(statementCaptor.capture());
-		assertThat(render(statementCaptor.getValue())).isEqualTo("SELECT * FROM users LIMIT 1");
+		assertThat(render(statementCaptor.getValue())).isEqualTo("SELECT id FROM users LIMIT 1");
 	}
 
 	@Test // DATACASS-335

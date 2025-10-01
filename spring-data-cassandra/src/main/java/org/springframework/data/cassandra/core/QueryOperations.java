@@ -339,17 +339,17 @@ class QueryOperations {
 		@Override
 		public TerminalSelectExists<T> matchingId(Object identifier) {
 
-			SimpleStatement statement = statementFactory.selectOneById(identifier, persistentEntity, tableName).build();
-
 			return new TerminalSelectExists<>() {
 
 				@Override
 				public <V> V exists(Function<Statement<?>, V> function) {
+					SimpleStatement statement = statementFactory.selectExists(identifier, persistentEntity, tableName).build();
 					return function.apply(statement);
 				}
 
 				@Override
 				public <V> V select(BiFunction<Statement<?>, RowMapper<T>, V> function) {
+					SimpleStatement statement = statementFactory.selectOneById(identifier, persistentEntity, tableName).build();
 					RowMapper<T> rowMapper = getRowMapper(entityClass, tableName, QueryResultConverter.entity());
 					return function.apply(statement, rowMapper);
 				}
