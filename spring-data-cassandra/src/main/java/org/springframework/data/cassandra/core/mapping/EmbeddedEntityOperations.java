@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -307,7 +306,6 @@ public class EmbeddedEntityOperations {
 			return property == null ? null : wrap(property);
 		}
 
-		@NotNull
 		@Override
 		public Iterator<CassandraPersistentProperty> iterator() {
 

@@ -23,8 +23,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.jetbrains.annotations.NotNull;
-
 import org.springframework.data.cassandra.core.cql.generator.CqlGenerator;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
@@ -221,7 +219,6 @@ public class CassandraPersistentEntitySchemaCreator {
 			return false;
 		}
 
-		@NotNull
 		@Override
 		public Iterator<CqlIdentifier> iterator() {
 
