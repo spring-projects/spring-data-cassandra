@@ -133,6 +133,10 @@ public class CassandraRepositoryConfigurationExtension extends RepositoryConfigu
 				return null;
 			}
 
+			if(repositoryContext.getRepositoryInformation().isReactiveRepository()) {
+				return null;
+			}
+
 			return new CassandraRepositoryContributor(repositoryContext);
 		}
 
