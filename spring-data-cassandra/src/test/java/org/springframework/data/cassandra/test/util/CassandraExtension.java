@@ -19,6 +19,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -29,8 +30,6 @@ import org.junit.platform.commons.util.StringUtils;
 
 import org.springframework.data.cassandra.support.RandomKeyspaceName;
 import org.springframework.util.Assert;
-
-import org.testcontainers.shaded.org.apache.commons.lang3.reflect.FieldUtils;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 
