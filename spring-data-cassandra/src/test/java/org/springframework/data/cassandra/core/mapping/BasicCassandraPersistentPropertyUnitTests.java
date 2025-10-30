@@ -30,9 +30,10 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
+
 import org.springframework.core.annotation.AliasFor;
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.mapping.model.Property;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.util.ReflectionUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;

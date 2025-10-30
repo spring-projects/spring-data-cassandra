@@ -17,7 +17,7 @@ package org.springframework.data.cassandra.core.mapping;
 
 import org.jspecify.annotations.Nullable;
 
-import org.springframework.data.util.TypeInformation;
+import org.springframework.data.core.TypeInformation;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 

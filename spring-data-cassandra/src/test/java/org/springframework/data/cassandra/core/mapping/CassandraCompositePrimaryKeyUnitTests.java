@@ -30,8 +30,8 @@ import org.springframework.data.cassandra.core.convert.SchemaFactory;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.cassandra.core.cql.keyspace.ColumnSpecification;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateTableSpecification;
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.mapping.model.Property;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 

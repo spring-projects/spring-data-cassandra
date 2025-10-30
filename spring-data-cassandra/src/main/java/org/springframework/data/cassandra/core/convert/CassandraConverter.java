@@ -16,15 +16,16 @@
 package org.springframework.data.cassandra.core.convert;
 
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.mapping.MapId;
 import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.convert.EntityConverter;
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.projection.EntityProjection;
 import org.springframework.data.projection.ProjectionFactory;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.cql.Row;

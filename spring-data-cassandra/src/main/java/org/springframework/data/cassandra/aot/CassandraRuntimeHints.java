@@ -32,7 +32,7 @@ import org.springframework.data.cassandra.core.mapping.event.ReactiveBeforeSaveC
 import org.springframework.data.cassandra.observability.CassandraObservationSupplier;
 import org.springframework.data.cassandra.repository.support.SimpleCassandraRepository;
 import org.springframework.data.cassandra.repository.support.SimpleReactiveCassandraRepository;
-import org.springframework.data.util.ReactiveWrappers;
+import org.springframework.data.core.ReactiveWrappers;
 import org.springframework.util.ClassUtils;
 
 import com.datastax.oss.driver.api.core.CqlSession;

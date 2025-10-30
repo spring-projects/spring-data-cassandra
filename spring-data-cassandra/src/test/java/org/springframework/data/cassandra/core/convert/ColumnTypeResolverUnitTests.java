@@ -37,8 +37,8 @@ import org.springframework.data.cassandra.core.mapping.Frozen;
 import org.springframework.data.cassandra.core.mapping.UserDefinedType;
 import org.springframework.data.convert.PropertyValueConverter;
 import org.springframework.data.convert.ValueConverter;
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.mapping.MappingException;
-import org.springframework.data.util.TypeInformation;
 
 import com.datastax.oss.driver.api.core.data.TupleValue;
 import com.datastax.oss.driver.api.core.type.DataType;

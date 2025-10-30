@@ -19,9 +19,9 @@ import org.jspecify.annotations.Nullable;
 
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.convert.ValueConversionContext;
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.mapping.model.PropertyValueProvider;
 import org.springframework.data.mapping.model.SpELContext;
-import org.springframework.data.util.TypeInformation;
 
 import com.datastax.oss.driver.api.core.cql.Row;
 

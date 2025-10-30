@@ -18,7 +18,7 @@ package org.springframework.data.cassandra.core.convert;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.mapping.CassandraType;
-import org.springframework.data.util.TypeInformation;
+import org.springframework.data.core.TypeInformation;
 import org.springframework.util.Assert;
 
 /**

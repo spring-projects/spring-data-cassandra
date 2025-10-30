@@ -33,8 +33,8 @@ import org.springframework.data.cassandra.core.convert.CassandraCustomConversion
 import org.springframework.data.cassandra.core.cql.Ordering;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.cassandra.core.cql.keyspace.CreateIndexSpecification;
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.mapping.MappingException;
-import org.springframework.data.util.TypeInformation;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.data.UdtValue;

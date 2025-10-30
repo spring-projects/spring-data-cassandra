@@ -18,8 +18,8 @@ package org.springframework.data.cassandra.core.convert;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.util.Lazy;
-import org.springframework.data.util.TypeInformation;
 
 import com.datastax.oss.driver.api.core.type.DataType;
 import com.datastax.oss.driver.api.core.type.UserDefinedType;

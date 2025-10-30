@@ -27,10 +27,10 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.cassandra.core.cql.Ordering;
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.Parameter;
 import org.springframework.data.mapping.PersistentEntity;
-import org.springframework.data.util.TypeInformation;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 

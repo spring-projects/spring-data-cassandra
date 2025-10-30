@@ -16,7 +16,7 @@
 package org.springframework.data.cassandra.core.convert;
 
 import org.jspecify.annotations.Nullable;
-import org.springframework.data.util.TypeInformation;
+import org.springframework.data.core.TypeInformation;
 
 import com.datastax.oss.driver.api.core.data.TupleValue;
 import com.datastax.oss.driver.api.core.data.UdtValue;

@@ -17,8 +17,8 @@ package org.springframework.data.cassandra.core.mapping;
 
 import java.util.Comparator;
 
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.mapping.MappingException;
-import org.springframework.data.util.TypeInformation;
 
 /**
  * Cassandra Tuple-specific {@link org.springframework.data.mapping.PersistentEntity} for a mapped tuples. Mapped tuples

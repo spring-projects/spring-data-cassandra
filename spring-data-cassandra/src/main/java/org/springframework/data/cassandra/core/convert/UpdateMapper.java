@@ -30,8 +30,8 @@ import java.util.Set;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.query.Filter;
 import org.springframework.data.cassandra.core.query.Update;
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.type.DataType;
@@ -47,7 +47,7 @@ import com.datastax.oss.protocol.internal.ProtocolConstants;
  * @see org.springframework.data.cassandra.core.query.Update
  * @see org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity
  * @see org.springframework.data.mapping.PersistentProperty
- * @see org.springframework.data.util.TypeInformation
+ * @see org.springframework.data.core.TypeInformation
  * @since 2.0
  */
 public class UpdateMapper extends QueryMapper {

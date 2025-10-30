@@ -22,9 +22,10 @@ import java.util.Date;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
+import org.springframework.data.core.TypeInformation;
 import org.springframework.data.mapping.model.Property;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.util.ReflectionUtils;
 
 /**

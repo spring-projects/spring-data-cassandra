@@ -20,12 +20,12 @@ import java.lang.reflect.Method;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.repository.query.CassandraParameters.CassandraParameter;
+import org.springframework.data.core.ReactiveWrappers;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.util.ReactiveWrapperConverters;
 import org.springframework.data.util.Lazy;
-import org.springframework.data.util.ReactiveWrappers;
 
 /**
  * Reactive specific implementation of {@link CassandraQueryMethod}.
