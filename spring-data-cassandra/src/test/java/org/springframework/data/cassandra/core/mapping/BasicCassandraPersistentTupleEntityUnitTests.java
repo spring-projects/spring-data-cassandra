@@ -135,6 +135,5 @@ class BasicCassandraPersistentTupleEntityUnitTests {
 	private static class MissingAnnotation {
 
 		String street;
-		String city;
 	}
 }
