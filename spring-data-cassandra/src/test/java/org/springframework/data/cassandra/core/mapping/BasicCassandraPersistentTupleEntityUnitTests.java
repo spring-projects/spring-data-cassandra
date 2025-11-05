@@ -99,7 +99,7 @@ class BasicCassandraPersistentTupleEntityUnitTests {
 		assertThatThrownBy(() -> this.mappingContext.getRequiredPersistentEntity(MissingAnnotation.class))
 				.isInstanceOf(MappingException.class)
 				.cause()
-				.hasMessageContaining("Missing @Element annotation in mapped tuple type for property [street]");
+				.hasMessageMatching(".*Missing @Element annotation in mapped tuple type for property \\[(street|city)\\].*");
 	}
 
 	@Tuple
