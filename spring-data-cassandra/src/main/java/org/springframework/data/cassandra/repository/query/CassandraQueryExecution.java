@@ -36,6 +36,7 @@ import org.springframework.data.domain.SearchResults;
 import org.springframework.data.domain.Similarity;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
+import org.springframework.data.domain.Window;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.model.EntityInstantiators;
 import org.springframework.data.repository.query.ResultProcessor;
@@ -96,7 +97,7 @@ interface CassandraQueryExecution {
 		private final Pageable pageable;
 
 		@Override
-		public Object execute(Statement<?> statement, Class<?> type) {
+		public Slice<?> execute(Statement<?> statement, Class<?> type) {
 
 			CassandraPageRequest.validatePageable(pageable);
 
@@ -137,7 +138,7 @@ interface CassandraQueryExecution {
 		}
 
 		@Override
-		public Object execute(Statement<?> statement, Class<?> type) {
+		public Window<?> execute(Statement<?> statement, Class<?> type) {
 
 			Statement<?> statementToUse = limit.isLimited() ? statement.setPageSize(limit.max()) : statement;
 
@@ -158,13 +159,27 @@ interface CassandraQueryExecution {
 	final class CollectionExecution implements CassandraQueryExecution {
 
 		private final CassandraOperations operations;
+		private final CassandraParameterAccessor parameterAccessor;
 
-		CollectionExecution(CassandraOperations operations) {
+		CollectionExecution(CassandraOperations operations, CassandraParameterAccessor parameterAccessor) {
 			this.operations = operations;
+			this.parameterAccessor = parameterAccessor;
 		}
 
 		@Override
 		public Object execute(Statement<?> statement, Class<?> type) {
+
+			Pageable pageable = parameterAccessor.getPageable();
+			if (pageable.isPaged()) {
+				return new SlicedExecution(operations, pageable).execute(statement, type).getContent();
+			}
+
+			Limit limit = parameterAccessor.getLimit();
+			CassandraScrollPosition scrollPosition = parameterAccessor.getScrollPosition();
+			if (limit.isLimited() || !scrollPosition.isInitial()) {
+				return new WindowExecution(operations, scrollPosition, limit).execute(statement, type).getContent();
+			}
+
 			return operations.select(statement, type);
 		}
 

@@ -398,6 +398,22 @@ class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedCassandr
 		assertThat(result).hasSize(2);
 	}
 
+	@Test // GH-1620
+	public void shouldSelectListWithPageRequest() {
+
+		List<Person> result = personRepository.findPagedByLastname("White", Pageable.ofSize(2));
+
+		assertThat(result).hasSize(2);
+	}
+
+	@Test // GH-1620
+	public void shouldSelectStreamableWithPageRequest() {
+
+		Streamable<Person> result = personRepository.findStreamableByLastname("White", Pageable.ofSize(2));
+
+		assertThat(result).hasSize(2);
+	}
+
 	@Test // DATACASS-512
 	public void shouldCountRecords() {
 
@@ -490,6 +506,10 @@ class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedCassandr
 		Window<Person> findTop2ByLastname(String lastname, ScrollPosition scrollPosition);
 
 		List<Person> findAllLimitedByLastname(String lastname, Limit limit);
+
+		List<Person> findPagedByLastname(String lastname, Pageable pageable);
+
+		Streamable<Person> findStreamableByLastname(String lastname, Pageable pageable);
 
 		Collection<PersonProjection> findPersonProjectedBy();
 

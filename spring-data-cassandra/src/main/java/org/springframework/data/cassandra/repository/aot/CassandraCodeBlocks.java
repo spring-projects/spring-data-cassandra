@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.repository.aot;
 
 import java.nio.ByteBuffer;
+import java.util.Collection;
 import java.util.Map;
 
 import org.jspecify.annotations.NullUnmarked;
@@ -133,14 +134,14 @@ class CassandraCodeBlocks {
 			Builder builder = CodeBlock.builder();
 			String pagingState = null;
 
-			if (queryMethod.isSliceQuery() && StringUtils.hasText(context.getPageableParameterName())) {
+			if (StringUtils.hasText(context.getPageableParameterName())) {
 
 				pagingState = context.localVariable("pagingState");
 				builder.addStatement("$1T $2L = $3L instanceof $4T $5L ? $5L.getPagingState() : null", ByteBuffer.class,
 						pagingState, context.getPageableParameterName(), CassandraPageRequest.class,
 						context.localVariable("pageRequest"));
 
-			} else if (queryMethod.isScrollQuery() && StringUtils.hasText(context.getScrollPositionParameterName())) {
+			} else if (StringUtils.hasText(context.getScrollPositionParameterName())) {
 
 				pagingState = context.localVariable("pagingState");
 				builder.addStatement("$1T $2L = $3L instanceof $4T $5L && !$5L.isInitial() ? $5L.getPagingState() : null",
@@ -662,7 +663,14 @@ class CassandraCodeBlocks {
 
 			String terminatingMethod;
 
-			if (queryMethod.isScrollQuery() || queryMethod.isSliceQuery() || queryMethod.isPageQuery()) {
+			boolean paginated = StringUtils.hasText(context.getPageableParameterName())
+					|| StringUtils.hasText(context.getScrollPositionParameterName())
+					|| StringUtils.hasText(context.getLimitParameterName());
+
+			boolean streamableResult = queryMethod.isScrollQuery() || queryMethod.isSliceQuery() || queryMethod.isPageQuery()
+					|| (queryMethod.isCollectionQuery() && paginated);
+
+			if (streamableResult) {
 				terminatingMethod = "slice()";
 			} else if (queryMethod.isCollectionQuery()) {
 				terminatingMethod = "all()";
@@ -688,28 +696,30 @@ class CassandraCodeBlocks {
 			} else {
 
 				if (rawProjection && isMapProjection) {
-					execution.add("($T) $L.$L", methodReturn.getClassName(), context.localVariable("select"),
-							terminatingMethod);
+					execution.add("($T) $L.$L", methodReturn.getClassName(), context.localVariable("select"), terminatingMethod);
 				} else {
 					execution.add("$L.$L", context.localVariable("select"), terminatingMethod);
 				}
 			}
 
 			LordOfTheStrings.TypedReturnBuilder returnBuilder = LordOfTheStrings.returning(methodReturn.toClass());
+
 			if (requiresConversion) {
 
 				String conversionMethod;
 
-				if (queryMethod.isCollectionQuery() || queryMethod.isPageQuery() || queryMethod.isSliceQuery()
-						|| queryMethod.isStreamQuery()) {
+				if (queryMethod.isCollectionQuery() || streamableResult || queryMethod.isStreamQuery()) {
 					conversionMethod = "convertMany";
 				} else {
 					conversionMethod = "convertOne";
 				}
 
 				CodeBlock result = CodeBlock.of("$L($L, $T.class)", conversionMethod, execution.build(), actualReturnType);
-				if (queryMethod.getReturnType().getType().equals(Streamable.class)) {
-					result = CodeBlock.of("$T.of($L)", Streamable.class, result);
+
+				if (streamableResult && Collection.class.isAssignableFrom(methodReturn.toClass())) {
+					result = CodeBlock.of("$L.getContent()", result);
+				} else if (!streamableResult && methodReturn.toClass().equals(Streamable.class)) {
+					result = CodeBlock.of("$T.of(($T) $L)", Streamable.class, Iterable.class, result);
 				}
 
 				builder.addStatement(returnBuilder //
@@ -721,7 +731,9 @@ class CassandraCodeBlocks {
 
 				if (query.isCount()) {
 					returnBuilder.whenPrimitiveOrBoxed(Integer.class, "(int) $L", executionBlock);
-				} else if (queryMethod.getReturnType().getType().equals(Streamable.class)) {
+				} else if (streamableResult && Collection.class.isAssignableFrom(methodReturn.toClass())) {
+					executionBlock = CodeBlock.of("$L.getContent()", executionBlock);
+				} else if (!streamableResult && methodReturn.toClass().equals(Streamable.class)) {
 					executionBlock = CodeBlock.of("$T.of($L)", Streamable.class, executionBlock);
 				}
 

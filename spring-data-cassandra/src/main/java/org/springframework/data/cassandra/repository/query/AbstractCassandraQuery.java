@@ -19,7 +19,16 @@ import org.jspecify.annotations.Nullable;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.cassandra.core.CassandraOperations;
-import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.*;
+import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.CollectionExecution;
+import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.ExistsExecution;
+import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.ResultProcessingConverter;
+import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.ResultProcessingExecution;
+import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.ResultSetQuery;
+import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.SearchExecution;
+import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.SingleEntityExecution;
+import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.SlicedExecution;
+import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.StreamExecution;
+import org.springframework.data.cassandra.repository.query.CassandraQueryExecution.WindowExecution;
 import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.query.ResultProcessor;
@@ -116,7 +125,7 @@ public abstract class AbstractCassandraQuery extends CassandraRepositoryQuerySup
 		} else if (getQueryMethod().isSearchQuery()) {
 			return new SearchExecution(getOperations(), parameterAccessor);
 		} else if (getQueryMethod().isCollectionQuery()) {
-			return new CollectionExecution(getOperations());
+			return new CollectionExecution(getOperations(), parameterAccessor);
 		} else if (getQueryMethod().isResultSetQuery()) {
 			return new ResultSetQuery(getOperations());
 		} else if (getQueryMethod().isStreamQuery()) {
