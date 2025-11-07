@@ -42,6 +42,7 @@ import org.springframework.data.javapoet.LordOfTheStrings;
 import org.springframework.data.javapoet.TypeNames;
 import org.springframework.data.repository.aot.generate.AotQueryMethodGenerationContext;
 import org.springframework.data.repository.aot.generate.MethodReturn;
+import org.springframework.data.util.Streamable;
 import org.springframework.javapoet.CodeBlock;
 import org.springframework.javapoet.CodeBlock.Builder;
 import org.springframework.javapoet.TypeName;
@@ -706,9 +707,13 @@ class CassandraCodeBlocks {
 					conversionMethod = "convertOne";
 				}
 
+				CodeBlock result = CodeBlock.of("$L($L, $T.class)", conversionMethod, execution.build(), actualReturnType);
+				if (queryMethod.getReturnType().getType().equals(Streamable.class)) {
+					result = CodeBlock.of("$T.of($L)", Streamable.class, result);
+				}
+
 				builder.addStatement(returnBuilder //
-						.optional("($T) $L($L, $T.class)", methodReturn.getTypeName(), conversionMethod, execution.build(),
-								actualReturnType) //
+						.optional("($T) $L", methodReturn.getTypeName(), result) //
 						.build());
 			} else {
 
@@ -716,6 +721,8 @@ class CassandraCodeBlocks {
 
 				if (query.isCount()) {
 					returnBuilder.whenPrimitiveOrBoxed(Integer.class, "(int) $L", executionBlock);
+				} else if (queryMethod.getReturnType().getType().equals(Streamable.class)) {
+					executionBlock = CodeBlock.of("$T.of($L)", Streamable.class, executionBlock);
 				}
 
 				builder.addStatement(returnBuilder.optional(executionBlock) //

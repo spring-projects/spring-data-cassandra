@@ -45,12 +45,14 @@ import org.springframework.data.cassandra.repository.config.EnableCassandraRepos
 import org.springframework.data.cassandra.repository.support.AbstractSpringDataEmbeddedCassandraIntegrationTest;
 import org.springframework.data.cassandra.repository.support.IntegrationTestConfig;
 import org.springframework.data.domain.Limit;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.ScoringFunction;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Vector;
 import org.springframework.data.domain.Window;
+import org.springframework.data.util.Streamable;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -194,6 +196,24 @@ class CassandraRepositoryContributorIntegrationTests extends AbstractSpringDataE
 				.containsSequence("Flynn (Walter Jr.)", "Skyler", "Walter");
 		assertThat(fragment.findByLastnameOrderByFirstnameAsc("White")).extracting(Person::getFirstname)
 				.containsSequence("Flynn (Walter Jr.)", "Skyler", "Walter");
+	}
+
+	@Test // GH-1620
+	void shouldConvertResultToStreamable() {
+
+		assertThat(fragment.streamByLastname("White", Sort.by("firstname")))
+			.isInstanceOf(Streamable.class) //
+			.extracting(Person::getFirstname) //
+			.containsExactly("Flynn (Walter Jr.)", "Skyler", "Walter");
+	}
+
+	@Test // GH-1620
+	void shouldConvertResultToStreamableWhenPageableParameterIsUsed() {
+
+		assertThat(fragment.streamByLastname("White", PageRequest.of(0, 2, Sort.by("firstname"))))
+			.isInstanceOf(Streamable.class) //
+			.extracting(Person::getFirstname) //
+			.containsExactly("Flynn (Walter Jr.)", "Skyler");
 	}
 
 	@Test // GH-1566

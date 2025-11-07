@@ -41,6 +41,7 @@ import org.springframework.data.repository.CrudRepository;
 
 import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
+import org.springframework.data.util.Streamable;
 
 /**
  * AOT repository interface for {@link Person} entities.
@@ -62,6 +63,10 @@ public interface PersonRepository extends CrudRepository<Person, String> {
 	Optional<Person> findOptionalByFirstname(String firstname);
 
 	List<Person> findByLastname(String lastname, Sort sort);
+
+	Streamable<Person> streamByLastname(String lastname, Sort sort);
+
+	Streamable<Person> streamByLastname(String lastname, Pageable pageable);
 
 	List<Person> findByLastnameOrderByFirstnameAsc(String lastname);
 
