@@ -15,6 +15,7 @@
  */
 package org.springframework.data.cassandra.repository.aot;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -38,10 +39,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Vector;
 import org.springframework.data.domain.Window;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.util.Streamable;
 
 import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
-import org.springframework.data.util.Streamable;
 
 /**
  * AOT repository interface for {@link Person} entities.
@@ -67,6 +68,10 @@ public interface PersonRepository extends CrudRepository<Person, String> {
 	Streamable<Person> streamByLastname(String lastname, Sort sort);
 
 	Streamable<Person> streamByLastname(String lastname, Pageable pageable);
+
+	People findWrapperByLastname(String lastname);
+
+	People findWrapperByLastname(String lastname, Pageable pageable);
 
 	List<Person> findByLastnameOrderByFirstnameAsc(String lastname);
 
@@ -121,6 +126,9 @@ public interface PersonRepository extends CrudRepository<Person, String> {
 	@Query(value = "select * from person where lastname = :lastname LIMIT :sliceLimit")
 	Window<Person> findDeclaredWindowByLastname(String lastname, ScrollPosition scrollPosition, int sliceLimit,
 			Limit pageSize);
+
+	@Query(value = "select * from person where lastname = ?0 LIMIT 3")
+	People findDeclaredWrapperByLastname(String lastname, Pageable pageable);
 
 	// -------------------------------------------------------------------------
 	// Value Expressions
@@ -238,6 +246,20 @@ public interface PersonRepository extends CrudRepository<Person, String> {
 
 		public void setLastname(String lastname) {
 			this.lastname = lastname;
+		}
+	}
+
+	class People implements Streamable<Person> {
+
+		private final Streamable<Person> people;
+
+		public People(Streamable<Person> people) {
+			this.people = people;
+		}
+
+		@Override
+		public Iterator<Person> iterator() {
+			return people.iterator();
 		}
 	}
 }

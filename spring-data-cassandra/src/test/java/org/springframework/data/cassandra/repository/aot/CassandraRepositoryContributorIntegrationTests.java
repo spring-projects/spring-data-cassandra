@@ -216,6 +216,24 @@ class CassandraRepositoryContributorIntegrationTests extends AbstractSpringDataE
 			.containsExactly("Flynn (Walter Jr.)", "Skyler");
 	}
 
+	@Test // GH-1620
+	void shouldConvertResultToStreamableWrapper() {
+
+		assertThat(fragment.findWrapperByLastname("White")) //
+				.isInstanceOf(PersonRepository.People.class) //
+				.extracting(Person::getFirstname) //
+				.hasSize(3);
+	}
+
+	@Test // GH-1620
+	void shouldConvertResultToStreamableWrapperWhenPageableParameterIsUsed() {
+
+		assertThat(fragment.findWrapperByLastname("White", PageRequest.of(0, 2, Sort.by("firstname"))))
+				.isInstanceOf(PersonRepository.People.class) //
+				.extracting(Person::getFirstname) //
+				.containsExactly("Flynn (Walter Jr.)", "Skyler");
+	}
+
 	@Test // GH-1566
 	void shouldFindByFirstnameContains() {
 
@@ -329,6 +347,15 @@ class CassandraRepositoryContributorIntegrationTests extends AbstractSpringDataE
 		assertThat(first.hasNext()).isTrue();
 		assertThat(second).hasSize(1);
 		assertThat(second.hasNext()).isFalse();
+	}
+
+	@Test // GH-1620
+	void shouldQueryDeclaredStreamable() {
+
+		PersonRepository.People people = fragment.findDeclaredWrapperByLastname("White",
+				PageRequest.of(0, 2, Sort.by("firstname")));
+
+		assertThat(people).hasSize(2);
 	}
 
 	@Test // GH-1566

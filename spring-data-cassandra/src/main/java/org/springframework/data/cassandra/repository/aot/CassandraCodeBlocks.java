@@ -23,6 +23,8 @@ import org.jspecify.annotations.NullUnmarked;
 import org.jspecify.annotations.Nullable;
 
 import org.springframework.core.annotation.MergedAnnotation;
+import org.springframework.core.convert.TypeDescriptor;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.ExecutableSelectOperation;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
@@ -718,13 +720,29 @@ class CassandraCodeBlocks {
 
 				if (streamableResult && Collection.class.isAssignableFrom(methodReturn.toClass())) {
 					result = CodeBlock.of("$L.getContent()", result);
-				} else if (!streamableResult && methodReturn.toClass().equals(Streamable.class)) {
+				} else if (!streamableResult && (isStreamable(methodReturn) || isStreamableWrapper(methodReturn))) {
 					result = CodeBlock.of("$T.of(($T) $L)", Streamable.class, Iterable.class, result);
 				}
 
-				builder.addStatement(returnBuilder //
+				if (isStreamableWrapper(methodReturn) && canConvert(Streamable.class, methodReturn)) {
+
+					Builder wrapperBuilder = CodeBlock.builder();
+
+					builder.addStatement("$1T<$2T> $3L = $4L", Streamable.class, actualReturnType,
+							context.localVariable("streamable"), result);
+
+					builder.addStatement(
+							"return ($1T) $2T.getSharedInstance().convert($3L, $4T.valueOf($5T.class), $4T.valueOf($6T.class))",
+							methodReturn.getTypeName(), DefaultConversionService.class, context.localVariable("streamable"),
+							TypeDescriptor.class, Streamable.class, methodReturn.toClass());
+
+					builder.add(wrapperBuilder.build());
+				} else {
+
+					builder.addStatement(returnBuilder //
 						.optional("($T) $L", methodReturn.getTypeName(), result) //
 						.build());
+				}
 			} else {
 
 				CodeBlock executionBlock = execution.build();
@@ -733,15 +751,39 @@ class CassandraCodeBlocks {
 					returnBuilder.whenPrimitiveOrBoxed(Integer.class, "(int) $L", executionBlock);
 				} else if (streamableResult && Collection.class.isAssignableFrom(methodReturn.toClass())) {
 					executionBlock = CodeBlock.of("$L.getContent()", executionBlock);
-				} else if (!streamableResult && methodReturn.toClass().equals(Streamable.class)) {
+				} else if (!streamableResult && (isStreamable(methodReturn) || isStreamableWrapper(methodReturn))) {
 					executionBlock = CodeBlock.of("$T.of($L)", Streamable.class, executionBlock);
 				}
 
-				builder.addStatement(returnBuilder.optional(executionBlock) //
+				if (isStreamableWrapper(methodReturn) && canConvert(Streamable.class, methodReturn)) {
+
+					builder.addStatement("$1T<$2T> $3L = $4L", Streamable.class, actualReturnType,
+							context.localVariable("streamable"), executionBlock);
+
+					builder.addStatement(
+							"return ($1T) $2T.getSharedInstance().convert($3L, $4T.valueOf($5T.class), $4T.valueOf($6T.class))",
+							methodReturn.getTypeName(), DefaultConversionService.class, context.localVariable("streamable"),
+							TypeDescriptor.class, Streamable.class, methodReturn.toClass());
+				} else {
+
+					builder.addStatement(returnBuilder.optional(executionBlock) //
 						.build());
+				}
 			}
 
 			return builder.build();
+		}
+
+		private boolean canConvert(Class<?> from, MethodReturn methodReturn) {
+			return DefaultConversionService.getSharedInstance().canConvert(from, methodReturn.toClass());
+		}
+
+		private static boolean isStreamable(MethodReturn methodReturn) {
+			return methodReturn.toClass().equals(Streamable.class);
+		}
+
+		private static boolean isStreamableWrapper(MethodReturn methodReturn) {
+			return !isStreamable(methodReturn) && Streamable.class.isAssignableFrom(methodReturn.toClass());
 		}
 	}
 
