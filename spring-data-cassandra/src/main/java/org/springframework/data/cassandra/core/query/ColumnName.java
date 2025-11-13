@@ -18,6 +18,9 @@ package org.springframework.data.cassandra.core.query;
 import java.util.Optional;
 
 import org.jspecify.annotations.Nullable;
+
+import org.springframework.data.core.PropertyPath;
+import org.springframework.data.core.TypedPropertyPath;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -37,6 +40,28 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
 public abstract class ColumnName {
 
 	/**
+	 * Create a {@link ColumnName} given a {@link TypedPropertyPath property}.
+	 *
+	 * @param property must not be {@literal null}.
+	 * @return the {@link ColumnName} for {@link PropertyPath}
+	 * @since 5.1
+	 */
+	public static <T, P> ColumnName from(TypedPropertyPath<T, P> property) {
+		return from((PropertyPath) TypedPropertyPath.of(property));
+	}
+
+	/**
+	 * Create a {@link ColumnName} given a {@link PropertyPath property}.
+	 *
+	 * @param propertyPath must not be {@literal null}.
+	 * @return the {@link ColumnName} for {@link PropertyPath}
+	 * @since 5.1
+	 */
+	public static ColumnName from(PropertyPath propertyPath) {
+		return new PropertyPathColumnName(propertyPath);
+	}
+
+	/**
 	 * Create a {@link ColumnName} given {@link CqlIdentifier}. The resulting instance uses CQL identifier rules to
 	 * identify column names (quoting, case-sensitivity).
 	 *
@@ -45,9 +70,6 @@ public abstract class ColumnName {
 	 * @see CqlIdentifier
 	 */
 	public static ColumnName from(CqlIdentifier cqlIdentifier) {
-
-		Assert.notNull(cqlIdentifier, "Column name must not be null");
-
 		return new CqlIdentifierColumnName(cqlIdentifier);
 	}
 
@@ -56,26 +78,79 @@ public abstract class ColumnName {
 	 * column names (case-sensitivity).
 	 *
 	 * @param columnName must not be {@literal null} or empty.
-	 * @return the {@link ColumnName} for {@link CqlIdentifier}
+	 * @return the {@link ColumnName} for {@code columnName}
 	 */
 	public static ColumnName from(String columnName) {
-
-		Assert.hasText(columnName, "Column name must not be null or empty");
-
 		return new StringColumnName(columnName);
 	}
 
 	/**
 	 * @return the optional column name.
 	 */
-	public abstract Optional<String> getColumnName();
+	public Optional<String> getColumnName() {
+		return Optional.empty();
+	}
+
+	/**
+	 * Indicates whether a column name is available.
+	 *
+	 * @return {@literal true} if a (string or {@link CqlIdentifier}) column name is available; {@literal false}
+	 *         otherwise.
+	 * @since 5.1
+	 */
+	public boolean hasColumnName() {
+		return getColumnName().isPresent();
+	}
+
+	/**
+	 * @return the optional {@link PropertyPath}.
+	 */
+	public @Nullable PropertyPath getPropertyPath() {
+		return null;
+	}
+
+	/**
+	 * Indicates whether a {@link PropertyPath} is available.
+	 *
+	 * @return {@literal true} if a {@link PropertyPath} is available; {@literal false} otherwise.
+	 * @since 5.1
+	 */
+	public boolean hasPropertyPath() {
+		return getPropertyPath() != null;
+	}
+
+	/**
+	 * Returns the required {@link PropertyPath} or throws an {@link IllegalStateException} if not available.
+	 *
+	 * @return the required {@link PropertyPath}.
+	 * @throws IllegalStateException if no {@link PropertyPath} is available.
+	 * @since 5.1
+	 */
+	public PropertyPath getRequiredPropertyPath() {
+
+		PropertyPath propertyPath = getPropertyPath();
+
+		if (propertyPath == null) {
+			throw new IllegalStateException("No PropertyPath available");
+		}
+
+		return propertyPath;
+	}
 
 	/**
 	 * @return the optional {@link CqlIdentifier}.
 	 */
-	public abstract Optional<CqlIdentifier> getCqlIdentifier();
+	public Optional<CqlIdentifier> getCqlIdentifier() {
+		return Optional.empty();
+	}
 
-	CqlIdentifier getRequiredCqlIdentifier() {
+	/**
+	 * Returns the required {@link CqlIdentifier} or constructs one from available information.
+	 *
+	 * @return the required {@link CqlIdentifier}.
+	 * @since 5.1
+	 */
+	public CqlIdentifier getRequiredCqlIdentifier() {
 		return getCqlIdentifier().or(() -> getColumnName().map(CqlIdentifier::fromCql))
 				.orElseGet(() -> CqlIdentifier.fromCql(toCql()));
 	}
@@ -111,6 +186,54 @@ public abstract class ColumnName {
 	}
 
 	/**
+	 * {@link PropertyPath}-based column name representation.
+	 *
+	 * @author Mark Paluch
+	 */
+	static class PropertyPathColumnName extends ColumnName {
+
+		private final PropertyPath propertyPath;
+
+		PropertyPathColumnName(PropertyPath propertyPath) {
+
+			Assert.notNull(propertyPath, "Property path must not be null");
+
+			this.propertyPath = propertyPath;
+		}
+
+		@Override
+		public Optional<String> getColumnName() {
+			return Optional.of(toCql());
+		}
+
+		@Override
+		public PropertyPath getPropertyPath() {
+			return propertyPath;
+		}
+
+		@Override
+		public boolean equals(@Nullable Object obj) {
+			return super.equals(obj)
+					&& (obj instanceof PropertyPathColumnName that && this.propertyPath.equals(that.propertyPath));
+		}
+
+		@Override
+		public String toCql() {
+			return this.propertyPath.toDotPath();
+		}
+
+		@Override
+		public String toString() {
+
+			if (this.propertyPath.hasNext()) {
+				return this.propertyPath.toString();
+			}
+
+			return this.propertyPath.toDotPath();
+		}
+	}
+
+	/**
 	 * {@link String}-based column name representation. Preserves letter casing.
 	 *
 	 * @author Mark Paluch
@@ -120,17 +243,15 @@ public abstract class ColumnName {
 		private final String columnName;
 
 		StringColumnName(String columnName) {
+
+			Assert.hasText(columnName, "Column name must not be null or empty");
+
 			this.columnName = columnName;
 		}
 
 		@Override
 		public Optional<String> getColumnName() {
 			return Optional.of(columnName);
-		}
-
-		@Override
-		public Optional<CqlIdentifier> getCqlIdentifier() {
-			return Optional.empty();
 		}
 
 		@Override
@@ -154,12 +275,10 @@ public abstract class ColumnName {
 		private final CqlIdentifier cqlIdentifier;
 
 		CqlIdentifierColumnName(CqlIdentifier cqlIdentifier) {
-			this.cqlIdentifier = cqlIdentifier;
-		}
 
-		@Override
-		public Optional<String> getColumnName() {
-			return Optional.empty();
+			Assert.notNull(cqlIdentifier, "Column name must not be null");
+
+			this.cqlIdentifier = cqlIdentifier;
 		}
 
 		@Override

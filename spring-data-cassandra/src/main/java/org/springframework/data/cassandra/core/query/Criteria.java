@@ -20,6 +20,7 @@ import java.util.Collection;
 
 import org.jspecify.annotations.Nullable;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.data.core.TypedPropertyPath;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
@@ -53,6 +54,17 @@ public class Criteria implements CriteriaDefinition {
 		Assert.notNull(columnName, "ColumnName must not be null");
 
 		this.columnName = columnName;
+	}
+
+	/**
+	 * Static factory method to create a {@link Criteria} using the provided {@code property}.
+	 *
+	 * @param property must not be {@literal null}.
+	 * @return a new {@link Criteria} for {@code property}.
+	 * @since 5.1
+	 */
+	public static <T, P> Criteria where(TypedPropertyPath<T, P> property) {
+		return where(ColumnName.from(property));
 	}
 
 	/**

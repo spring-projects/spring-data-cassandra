@@ -140,7 +140,7 @@ public class QueryMapperUnitTests {
 		assertThat(mappedCriteriaDefinition.getPredicate().getValue()).isInstanceOf(String.class).isEqualTo("Active");
 	}
 
-	@Test // DATACASS-343
+	@Test // DATACASS-343, GH-1625
 	void shouldMapEnumToNumber() {
 
 		Query query = Query.query(Criteria.where("number").is(State.Inactive));
@@ -152,7 +152,7 @@ public class QueryMapperUnitTests {
 		assertThat(mappedCriteriaDefinition.getPredicate().getValue()).isInstanceOf(Integer.class).isEqualTo(1);
 	}
 
-	@Test // DATACASS-343
+	@Test // DATACASS-343, GH-1625
 	void shouldMapEnumToNumberIn() {
 
 		Query query = Query.query(Criteria.where("number").in(State.Inactive));
@@ -191,7 +191,7 @@ public class QueryMapperUnitTests {
 		assertThat(mappedCriteriaDefinition.getPredicate().getValue()).isEqualTo(Collections.singletonList("Euro"));
 	}
 
-	@Test // DATACASS-343
+	@Test // DATACASS-343, GH-1625
 	void shouldMapApplyingUdtValueConversion() {
 
 		Query query = Query.query(Criteria.where("address").is(new Address("21 Jump-Street")));
@@ -206,7 +206,7 @@ public class QueryMapperUnitTests {
 		assertThat(predicate.as(UdtValue.class::cast).getFormattedContents()).isEqualTo("{street:'21 Jump-Street'}");
 	}
 
-	@Test // DATACASS-343
+	@Test // DATACASS-343, GH-1625
 	@SuppressWarnings("unchecked")
 	void shouldMapApplyingUdtValueCollectionConversion() {
 
@@ -224,7 +224,7 @@ public class QueryMapperUnitTests {
 				.contains("{street:'21 Jump-Street'}");
 	}
 
-	@Test // DATACASS-343
+	@Test // DATACASS-343, GH-1625
 	@SuppressWarnings("unchecked")
 	void shouldMapCollectionApplyingUdtValueCollectionConversion() {
 
@@ -241,7 +241,7 @@ public class QueryMapperUnitTests {
 				.contains("{street:'21 Jump-Street'}");
 	}
 
-	@Test // DATACASS-487
+	@Test // DATACASS-487, GH-1625
 	void shouldMapUdtMapContainsKey() {
 
 		Query query = Query.query(Criteria.where("relocations").containsKey(new Address("21 Jump-Street")));
@@ -256,7 +256,7 @@ public class QueryMapperUnitTests {
 				.isEqualTo("{street:'21 Jump-Street'}");
 	}
 
-	@Test // DATACASS-487
+	@Test // DATACASS-487, GH-1625
 	void shouldMapUdtMapContains() {
 
 		Query query = Query.query(Criteria.where("relocations").contains(new Address("21 Jump-Street")));
@@ -345,7 +345,7 @@ public class QueryMapperUnitTests {
 		assertThat(mappedObject).contains(new Order(Direction.ASC, "first_name"));
 	}
 
-	@Test // DATACASS-828
+	@Test // DATACASS-828, GH-1625
 	void allowSortByCompositeKey() {
 
 		Sort sort = Sort.by("key");
@@ -356,7 +356,7 @@ public class QueryMapperUnitTests {
 		assertThat(mappedSort).isEqualTo(Sort.by(asc("first_name"), asc("lastname")));
 	}
 
-	@Test // DATACASS-343
+	@Test // DATACASS-343, GH-1625
 	void shouldMapColumnWithCompositePrimaryKeyClass() {
 
 		Columns columnNames = Columns.from("key.firstname");
@@ -379,7 +379,7 @@ public class QueryMapperUnitTests {
 		assertThat(mappedObject).contains(CqlIdentifier.fromCql("array"));
 	}
 
-	@Test //
+	@Test
 	void shouldMapMultipleSelectorsNames() {
 
 		Columns columnNames = Columns.from("array").select("array",
@@ -476,7 +476,6 @@ public class QueryMapperUnitTests {
 		assertThat(mappedObject.iterator().next().getPredicate().getValue()).isEqualTo(new float[] { 1.1f, 2.2f });
 	}
 
-
 	@Test // GH-1504
 	void shouldConvertVectorSelectorFunction() {
 
@@ -506,7 +505,7 @@ public class QueryMapperUnitTests {
 		Currency currency;
 		State state;
 
-		Integer number;
+	Integer number;
 
 		LocalDate localDate;
 		LocalTime localTime;
