@@ -154,7 +154,6 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 		}
 
 		String overriddenName = null;
-		boolean forceQuote = false;
 
 		Column column = findAnnotation(Column.class);
 
@@ -209,6 +208,7 @@ public class BasicCassandraPersistentProperty extends AnnotationBasedPersistentP
 
 	@Override
 	public boolean isMapLike() {
+		// TODO: Super isMap?
 		return ClassUtils.isAssignable(Map.class, getType());
 	}
 
