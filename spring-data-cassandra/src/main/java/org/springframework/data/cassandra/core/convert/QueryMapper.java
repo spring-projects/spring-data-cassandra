@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -46,6 +45,7 @@ import org.springframework.data.core.PropertyPath;
 import org.springframework.data.core.PropertyReferenceException;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
+import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyPath;
 import org.springframework.data.mapping.PropertyHandler;
@@ -125,15 +125,15 @@ public class QueryMapper {
 
 			Field field = createPropertyField(entity, criteriaDefinition.getColumnName());
 
-			field.getProperty().filter(CassandraPersistentProperty::isCompositePrimaryKey).ifPresent(it -> {
+			if (field.hasProperty(CassandraPersistentProperty::isCompositePrimaryKey)) {
 				throw new IllegalArgumentException(
 						"Cannot use composite primary key directly; Reference a property of the composite primary key");
-			});
+			}
 
-			field.getProperty().filter(CassandraPersistentProperty::hasOrdinal).ifPresent(it -> {
+			if (field.hasProperty(CassandraPersistentProperty::hasOrdinal)) {
 				throw new IllegalArgumentException(
 						String.format("Cannot reference tuple value elements, property [%s]", field.getMappedKey()));
-			});
+			}
 
 			Predicate predicate = criteriaDefinition.getPredicate();
 			Object value = predicate.getValue();
@@ -148,10 +148,9 @@ public class QueryMapper {
 
 	protected @Nullable Object getMappedValue(Field field, CriteriaDefinition.Operator operator, Object value) {
 
-		if (field.getProperty().isPresent()
-				&& field.getProperty().filter(it -> converter.getCustomConversions().hasValueConverter(it)).isPresent()) {
+		if (field.hasProperty() && converter.getCustomConversions().hasValueConverter(field.getProperty())) {
 
-			CassandraPersistentProperty property = field.getProperty().get();
+			CassandraPersistentProperty property = field.getProperty();
 			CassandraConversionContext conversionContext = new CassandraConversionContext(new PropertyValueProvider<>() {
 				@Override
 				public <T> T getPropertyValue(CassandraPersistentProperty property) {
@@ -202,11 +201,23 @@ public class QueryMapper {
 
 			columns.getSelector(column).forEach(selector -> {
 
-				List<CqlIdentifier> mappedColumnNames = getCqlIdentifier(column, field);
+				List<CqlIdentifier> mappedColumnNames = getCqlIdentifiers(field);
 
-				for (CqlIdentifier mappedColumnName : mappedColumnNames) {
-					selectors.add(getMappedSelector(selector, mappedColumnName, field));
+				if (selector instanceof ColumnSelector cs && cs.getAlias().isEmpty()) {
+
+					for (CqlIdentifier mappedColumnName : mappedColumnNames) {
+						selectors.add(ColumnSelector.from(mappedColumnName));
+					}
+
+					return;
 				}
+
+				if (mappedColumnNames.size() != 1) {
+					throw new IllegalArgumentException(
+							"Cannot map selector %s to multiple columns %s".formatted(selector, mappedColumnNames));
+				}
+
+				selectors.add(getMappedSelector(selector, entity, field));
 			});
 		}
 
@@ -231,13 +242,10 @@ public class QueryMapper {
 		});
 	}
 
-	private Selector getMappedSelector(Selector selector, CqlIdentifier cqlIdentifier, Field field) {
+	private Selector getMappedSelector(Selector selector, CassandraPersistentEntity<?> entity, Field field) {
 
 		if (selector instanceof ColumnSelector columnSelector) {
-
-			ColumnSelector mappedColumnSelector = ColumnSelector.from(cqlIdentifier);
-
-			return columnSelector.getAlias().map(mappedColumnSelector::as).orElse(mappedColumnSelector);
+			return getMappedSelector(columnSelector, entity);
 		}
 
 		if (selector instanceof FunctionCall functionCall) {
@@ -246,22 +254,18 @@ public class QueryMapper {
 					functionCall.getParameters().stream().map(obj -> {
 
 						if (obj instanceof Selector sel) {
-							return getMappedSelector(sel, cqlIdentifier, field);
+							return getMappedSelector(sel, entity, field);
 						}
 
 						if (obj instanceof ColumnName cn) {
-
-							CqlIdentifier identifier = cn.getCqlIdentifier().or(() -> cn.getColumnName().map(CqlIdentifier::fromCql))
-									.orElseGet(() -> CqlIdentifier.fromCql(cn.toCql()));
-
-							return getMappedSelector(ColumnSelector.from(cn), identifier, field);
+							return getMappedSelector(cn, entity);
 						}
 
 						if (obj instanceof CqlIdentifier identifier) {
-							return getMappedSelector(ColumnSelector.from(identifier), identifier, field);
+							return getMappedSelector(ColumnName.from(identifier), entity);
 						}
 
-						if (field.getProperty().isPresent()) {
+						if (field.hasProperty()) {
 							return getMappedValue(field, CriteriaDefinition.Operators.EQ, obj);
 						}
 
@@ -273,6 +277,17 @@ public class QueryMapper {
 		}
 
 		throw new IllegalArgumentException(String.format("Selector [%s] not supported", selector));
+	}
+
+	private ColumnSelector getMappedSelector(ColumnSelector columnSelector, CassandraPersistentEntity<?> entity) {
+
+		ColumnSelector mappedSelector = getMappedSelector(columnSelector.getColumnName(), entity);
+		return columnSelector.getAlias().map(mappedSelector::as).orElse(mappedSelector);
+	}
+
+	private ColumnSelector getMappedSelector(ColumnName columnName, CassandraPersistentEntity<?> entity) {
+		Field mappedField = createPropertyField(entity, columnName);
+		return ColumnSelector.from(mappedField.getMappedKey());
 	}
 
 	/**
@@ -300,12 +315,14 @@ public class QueryMapper {
 		for (ColumnName column : columns) {
 
 			Field field = createPropertyField(entity, column);
-			field.getProperty().ifPresent(seen::add);
+			if (field.hasProperty()) {
+				seen.add(field.getProperty());
+			}
 
 			columns.getSelector(column).forEach(columnSelector -> {
 
 				if (columnSelector instanceof ColumnSelector) {
-					columnNames.addAll(getCqlIdentifier(column, field));
+					columnNames.addAll(getCqlIdentifiers(field));
 				}
 			});
 		}
@@ -342,15 +359,13 @@ public class QueryMapper {
 
 		for (Order order : sort) {
 
-			ColumnName columnName = ColumnName.from(order.getProperty());
-
-			Field field = createPropertyField(entity, columnName);
+			Field field = createPropertyField(entity, order.getProperty());
 
 			if (vector != null) {
 				vector = getMappedValue(field, CriteriaDefinition.Operators.EQ, vector);
 			}
 
-			List<CqlIdentifier> mappedColumnNames = getCqlIdentifier(columnName, field);
+			List<CqlIdentifier> mappedColumnNames = getCqlIdentifiers(field);
 
 			if (mappedColumnNames.isEmpty()) {
 				mappedOrders.add(order);
@@ -364,14 +379,14 @@ public class QueryMapper {
 		return vector != null ? new VectorSort(mappedOrders, vector) : Sort.by(mappedOrders);
 	}
 
-	private List<CqlIdentifier> getCqlIdentifier(ColumnName column, Field field) {
+	private List<CqlIdentifier> getCqlIdentifiers(Field field) {
 
 		List<CqlIdentifier> identifiers = new ArrayList<>(1);
 
 		try {
-			if (field.getProperty().isPresent()) {
+			if (field.hasProperty()) {
 
-				CassandraPersistentProperty property = field.getProperty().get();
+				CassandraPersistentProperty property = field.getProperty();
 
 				if (property.isCompositePrimaryKey()) {
 
@@ -383,10 +398,8 @@ public class QueryMapper {
 				} else {
 					identifiers.add(property.getRequiredColumnName());
 				}
-			} else if (column.getColumnName().isPresent()) {
-				identifiers.add(CqlIdentifier.fromCql(column.getColumnName().get()));
 			} else {
-				column.getCqlIdentifier().ifPresent(identifiers::add);
+				identifiers.add(field.getMappedKey().getRequiredCqlIdentifier());
 			}
 
 		} catch (IllegalStateException cause) {
@@ -396,18 +409,28 @@ public class QueryMapper {
 		return identifiers;
 	}
 
+	Field createPropertyField(@Nullable CassandraPersistentEntity<?> entity, String key) {
+		return createPropertyField(entity, ColumnName.from(key));
+	}
+
 	Field createPropertyField(@Nullable CassandraPersistentEntity<?> entity, ColumnName key) {
 
-		return Optional.ofNullable(entity).<Field> map(e -> new MetadataBackedField(key, e, getMappingContext()))
-				.orElseGet(() -> new Field(key));
+		if (entity == null) {
+			return new Field(key);
+		}
+
+		return MetadataBackedField.of(key, entity, getMappingContext());
 	}
 
 	ColumnType getColumnType(Field field, @Nullable Object value, ColumnTypeTransformer operator) {
 
 		ColumnTypeResolver resolver = converter.getColumnTypeResolver();
 
-		return field.getProperty().map(it -> operator.transform(resolver.resolve(it), it))
-				.orElseGet(() -> resolver.resolve(value));
+		if (field.hasProperty()) {
+			return operator.transform(resolver.resolve(field.getProperty()), field.getProperty());
+		}
+
+		return resolver.resolve(value);
 	}
 
 	/**
@@ -513,8 +536,11 @@ public class QueryMapper {
 		static ColumnTypeTransformer of(Field field, CriteriaDefinition.Operator operator) {
 
 			if (operator == CriteriaDefinition.Operators.CONTAINS) {
-				return field.getProperty().filter(CassandraPersistentProperty::isMapLike).map(it -> MAP_VALUE_TYPE)
-						.orElse(COLLECTION_COMPONENT_TYPE);
+
+				if (field.hasProperty(CassandraPersistentProperty::isMapLike)) {
+					return MAP_VALUE_TYPE;
+				}
+				return COLLECTION_COMPONENT_TYPE;
 			}
 
 			if (operator == CriteriaDefinition.Operators.CONTAINS_KEY) {
@@ -559,12 +585,36 @@ public class QueryMapper {
 		}
 
 		/**
+		 * Return {@literal true} if the field is backed by a {@link CassandraPersistentProperty}.
+		 *
+		 * @return {@literal true} if the field is backed by a property; {@literal false} otherwise.
+		 * @since 5.1
+		 */
+		public boolean hasProperty() {
+			return false;
+		}
+
+		/**
+		 * Return {@literal true} if the field is backed by a {@link CassandraPersistentProperty} and matches the given
+		 * {@link Predicate}.
+		 *
+		 * @return {@literal true} if the field is backed by a property and matches the given predicate; {@literal false}
+		 *         otherwise.
+		 * @since 5.1
+		 */
+		public boolean hasProperty(java.util.function.Predicate<CassandraPersistentProperty> predicate) {
+			return hasProperty() && predicate.test(getProperty());
+		}
+
+		/**
 		 * Returns the underlying {@link CassandraPersistentProperty} backing the field. For path traversals this will be
 		 * the property that represents the value to handle. This means it'll be the leaf property for plain paths or the
 		 * association property in case we refer to an association somewhere in the path.
+		 *
+		 * @throws IllegalStateException if the field is not backed by a property.
 		 */
-		public Optional<CassandraPersistentProperty> getProperty() {
-			return Optional.empty();
+		public CassandraPersistentProperty getProperty() {
+			throw new IllegalStateException("No property for this field: " + getMappedKey());
 		}
 
 		/**
@@ -586,93 +636,96 @@ public class QueryMapper {
 
 		private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
 
-		private final Optional<PersistentPropertyPath<CassandraPersistentProperty>> path;
+		private final @Nullable PropertyPath propertyPath;
+
+		private final @Nullable PersistentPropertyPath<CassandraPersistentProperty> path;
 
 		private final @Nullable CassandraPersistentProperty property;
 
-		private final Optional<CassandraPersistentProperty> optionalProperty;
-
-		/**
-		 * Creates a new {@link MetadataBackedField} with the given name, {@link CassandraPersistentEntity} and
-		 * {@link MappingContext}.
-		 *
-		 * @param name must not be {@literal null} or empty.
-		 * @param entity must not be {@literal null}.
-		 * @param mappingContext must not be {@literal null}.
-		 */
-		public MetadataBackedField(ColumnName name, CassandraPersistentEntity<?> entity,
-				MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext) {
-
-			this(name, entity, mappingContext, null);
-		}
-
-		/**
-		 * Creates a new {@link MetadataBackedField} with the given name, {@link CassandraPersistentProperty} and
-		 * {@link MappingContext} with the given {@link CassandraPersistentProperty}.
-		 *
-		 * @param name must not be {@literal null} or empty.
-		 * @param entity must not be {@literal null}.
-		 * @param mappingContext must not be {@literal null}.
-		 * @param property may be {@literal null}.
-		 */
-		public MetadataBackedField(ColumnName name, CassandraPersistentEntity<?> entity,
+		private MetadataBackedField(ColumnName name, CassandraPersistentEntity<?> entity,
 				MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext,
-				@Nullable CassandraPersistentProperty property) {
+				@Nullable PropertyPath propertyPath) {
 
 			super(name);
-
-			Assert.notNull(entity, "CassandraPersistentEntity must not be null");
-
 			this.entity = entity;
 			this.mappingContext = mappingContext;
-			this.path = getPath(name.toCql());
-			this.property = path.map(PersistentPropertyPath::getLeafProperty).orElse(property);
-			this.optionalProperty = Optional.ofNullable(this.property);
+			this.propertyPath = propertyPath;
+
+			if (propertyPath != null) {
+
+				PersistentPropertyPath<CassandraPersistentProperty> ppp = mappingContext
+						.getPersistentPropertyPath(propertyPath);
+				this.path = ppp;
+				this.property = ppp.getLeafProperty();
+			} else {
+				this.path = null;
+				this.property = null;
+			}
 		}
 
 		/**
-		 * Returns the {@link PersistentPropertyPath} for the given {@code pathExpression}.
+		 * Create a new {@link MetadataBackedField} with the given name, {@link CassandraPersistentEntity} and
+		 * {@link MappingContext}.
 		 *
-		 * @param pathExpression {@link String} containing the path expression to evaluate
-		 * @return the {@link PersistentPropertyPath} for the given {@code pathExpression}.
+		 * @param columnName must not be {@literal null} or empty.
+		 * @param entity must not be {@literal null}.
+		 * @param mappingContext must not be {@literal null}.
 		 */
-		private Optional<PersistentPropertyPath<CassandraPersistentProperty>> getPath(String pathExpression) {
+		public static MetadataBackedField of(ColumnName columnName, CassandraPersistentEntity<?> entity,
+				CassandraMappingContext mappingContext) {
+
+			PropertyPath propertyPath;
+			if (columnName.hasPropertyPath()) {
+				propertyPath = columnName.getRequiredPropertyPath();
+
+			} else {
+				propertyPath = getPath(entity, columnName.toCql());
+			}
+
+			return new MetadataBackedField(columnName, entity, mappingContext, propertyPath);
+		}
+
+		private static @Nullable PropertyPath getPath(PersistentEntity<?, ?> entity, String pathExpression) {
 
 			try {
-				PropertyPath propertyPath = PropertyPath.from(pathExpression.replaceAll("\\.\\d", ""),
-						this.entity.getTypeInformation());
-
-				PersistentPropertyPath<CassandraPersistentProperty> persistentPropertyPath = this.mappingContext
-						.getPersistentPropertyPath(propertyPath);
-
-				return Optional.of(persistentPropertyPath);
+				return PropertyPath.from(pathExpression.replaceAll("\\.\\d", ""), entity.getTypeInformation());
 			} catch (PropertyReferenceException e) {
-				return Optional.empty();
+				return null;
 			}
 		}
 
 		@Override
 		public MetadataBackedField with(ColumnName name) {
-			return new MetadataBackedField(name, entity, mappingContext, property);
+			return new MetadataBackedField(name, entity, mappingContext, propertyPath);
 		}
 
 		@Override
-		public Optional<CassandraPersistentProperty> getProperty() {
-			return this.optionalProperty;
+		public boolean hasProperty() {
+			return this.property != null;
+		}
+
+		@Override
+		public CassandraPersistentProperty getProperty() {
+
+			if (this.property == null) {
+				return super.getProperty();
+			}
+
+			return this.property;
 		}
 
 		@Override
 		@SuppressWarnings("NullAway")
 		public ColumnName getMappedKey() {
 
-			if (path.isEmpty()) {
+			if (path == null || path.isEmpty()) {
 				return name;
 			}
 
 			boolean embedded = false;
 			CassandraPersistentEntity<?> parentEntity = null;
 			CassandraPersistentProperty leafProperty = null;
-			for (CassandraPersistentProperty p : path.get()) {
+			for (CassandraPersistentProperty p : path) {
 
 				leafProperty = p;
 

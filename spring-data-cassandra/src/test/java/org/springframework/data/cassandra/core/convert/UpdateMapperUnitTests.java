@@ -63,7 +63,7 @@ class UpdateMapperUnitTests {
 
 	private CassandraMappingContext mappingContext = new CassandraMappingContext();
 
-	private CassandraPersistentEntity<?> persistentEntity;
+	private CassandraPersistentEntity<?> entity;
 
 	private Currency currencyEUR = Currency.getInstance("EUR");
 	private Currency currencyUSD = Currency.getInstance("USD");
@@ -93,7 +93,7 @@ class UpdateMapperUnitTests {
 
 		updateMapper = new UpdateMapper(cassandraConverter);
 
-		persistentEntity = mappingContext.getRequiredPersistentEntity(Person.class);
+		entity = mappingContext.getRequiredPersistentEntity(Person.class);
 
 		when(userTypeResolver.resolveType(CqlIdentifier.fromCql("manufacturer"))).thenReturn(manufacturer);
 	}
@@ -101,7 +101,7 @@ class UpdateMapperUnitTests {
 	@Test // DATACASS-343
 	void shouldCreateSimpleUpdate() {
 
-		Update update = updateMapper.getMappedObject(Update.empty().set("firstName", "foo"), persistentEntity);
+		Update update = updateMapper.getMappedObject(Update.empty().set("firstName", "foo"), entity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update).hasToString("first_name = 'foo'");
@@ -114,9 +114,9 @@ class UpdateMapperUnitTests {
 
 		Map<Manufacturer, Currency> map = Collections.singletonMap(manufacturer, currencyEUR);
 
-		Update update = Update.empty().set("manufacturers", map);
+		Update update = Update.empty().set(Person::getManufacturers, map);
 
-		Update mappedUpdate = updateMapper.getMappedObject(update, persistentEntity);
+		Update mappedUpdate = updateMapper.getMappedObject(update, entity);
 
 		assertThat(mappedUpdate.getUpdateOperations()).hasSize(1);
 		assertThat(mappedUpdate).hasToString("manufacturers = {{name:'foobar'}:'Euro'}");
@@ -125,8 +125,8 @@ class UpdateMapperUnitTests {
 	@Test // DATACASS-343
 	void shouldCreateSetAtIndexUpdate() {
 
-		Update update = updateMapper.getMappedObject(Update.empty().set("list").atIndex(10).to(currencyEUR),
-				persistentEntity);
+		Update update = updateMapper.getMappedObject(Update.empty().set(Person::getList).atIndex(10).to(currencyEUR),
+				entity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update).hasToString("list[10] = 'Euro'");
@@ -136,7 +136,7 @@ class UpdateMapperUnitTests {
 	void shouldCreateSetAtUdtIndexUpdate() {
 
 		Update update = updateMapper.getMappedObject(
-				Update.empty().set("manufacturerList").atIndex(10).to(new Manufacturer("foo")), persistentEntity);
+				Update.empty().set(Person::getManufacturerList).atIndex(10).to(new Manufacturer("foo")), entity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update).hasToString("manufacturerlist[10] = {name:'foo'}");
@@ -146,7 +146,7 @@ class UpdateMapperUnitTests {
 	void shouldCreateSetAtKeyUpdate() {
 
 		Update update = updateMapper.getMappedObject(Update.empty().set("map").atKey("baz").to(currencyEUR),
-				persistentEntity);
+				entity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update).hasToString("map['baz'] = 'Euro'");
@@ -159,7 +159,7 @@ class UpdateMapperUnitTests {
 
 		Update update = updateMapper
 				.getMappedObject(Update.empty().set("manufacturers").atKey(manufacturer).to(currencyEUR),
-				persistentEntity);
+						entity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update).hasToString("manufacturers[{name:'foobar'}] = 'Euro'");
@@ -169,7 +169,7 @@ class UpdateMapperUnitTests {
 	void shouldAddToMap() {
 
 		Update update = updateMapper.getMappedObject(Update.empty().addTo("map").entry("foo", currencyEUR),
-				persistentEntity);
+				entity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update).hasToString("map = map + {'foo':'Euro'}");
@@ -178,7 +178,7 @@ class UpdateMapperUnitTests {
 	@Test // #1007
 	void shouldRemoveFromMap() {
 
-		Update update = updateMapper.getMappedObject(Update.empty().removeFrom("map").value("foo"), persistentEntity);
+		Update update = updateMapper.getMappedObject(Update.empty().removeFrom(Person::getMap).value("foo"), entity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update).hasToString("map = map - {'foo'}");
@@ -189,9 +189,9 @@ class UpdateMapperUnitTests {
 
 		Manufacturer manufacturer = new Manufacturer("foobar");
 
-		Update update = Update.empty().addTo("manufacturers").entry(manufacturer, currencyEUR);
+		Update update = Update.empty().addTo(Person::getManufacturers).entry(manufacturer, currencyEUR);
 
-		Update mappedUpdate = updateMapper.getMappedObject(update, persistentEntity);
+		Update mappedUpdate = updateMapper.getMappedObject(update, entity);
 
 		assertThat(mappedUpdate.getUpdateOperations()).hasSize(1);
 		assertThat(mappedUpdate).hasToString("manufacturers = manufacturers + {{name:'foobar'}:'Euro'}");
@@ -201,7 +201,7 @@ class UpdateMapperUnitTests {
 	void shouldPrependAllToList() {
 
 		Update update = updateMapper.getMappedObject(Update.empty().addTo("list").prependAll("foo", currencyEUR),
-				persistentEntity);
+				entity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update).hasToString("list = ['foo','Euro'] + list");
@@ -211,7 +211,7 @@ class UpdateMapperUnitTests {
 	void shouldAppendAllToList() {
 
 		Update update = updateMapper.getMappedObject(Update.empty().addTo("list").appendAll("foo", currencyEUR),
-				persistentEntity);
+				entity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update).hasToString("list = list + ['foo','Euro']");
@@ -220,7 +220,7 @@ class UpdateMapperUnitTests {
 	@Test // DATACASS-343
 	void shouldRemoveFromList() {
 
-		Update update = updateMapper.getMappedObject(Update.empty().remove("list", currencyEUR), persistentEntity);
+		Update update = updateMapper.getMappedObject(Update.empty().remove(Person::getList, currencyEUR), entity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update).hasToString("list = list - ['Euro']");
@@ -229,7 +229,7 @@ class UpdateMapperUnitTests {
 	@Test // DATACASS-343
 	void shouldClearList() {
 
-		Update update = updateMapper.getMappedObject(Update.empty().clear("list"), persistentEntity);
+		Update update = updateMapper.getMappedObject(Update.empty().clear("list"), entity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update).hasToString("list = []");
@@ -239,7 +239,7 @@ class UpdateMapperUnitTests {
 	void shouldPrependAllToSet() {
 
 		Update update = updateMapper.getMappedObject(Update.empty().addTo("set").prependAll(currencyUSD, currencyEUR),
-				persistentEntity);
+				entity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update).hasToString("set_col = {'US Dollar','Euro'} + set_col");
@@ -248,8 +248,8 @@ class UpdateMapperUnitTests {
 	@Test // DATACASS-770
 	void shouldAppendAllToSet() {
 
-		Update update = updateMapper.getMappedObject(Update.empty().addTo("set").appendAll(currencyUSD, currencyEUR),
-				persistentEntity);
+		Update update = updateMapper
+				.getMappedObject(Update.empty().addTo(Person::getSet).appendAll(currencyUSD, currencyEUR), entity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update).hasToString("set_col = set_col + {'US Dollar','Euro'}");
@@ -260,7 +260,7 @@ class UpdateMapperUnitTests {
 
 		Update update = updateMapper.getMappedObject(
 				Update.empty().addTo("set_col").prependAll(new LinkedHashSet<>(Arrays.asList(currencyUSD, currencyEUR))),
-				persistentEntity);
+				entity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update).hasToString("set_col = {'US Dollar','Euro'} + set_col");
@@ -271,7 +271,7 @@ class UpdateMapperUnitTests {
 
 		Update update = updateMapper.getMappedObject(
 				Update.empty().addTo("set_col").appendAll(new LinkedHashSet<>(Arrays.asList(currencyUSD, currencyEUR))),
-				persistentEntity);
+				entity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update).hasToString("set_col = set_col + {'US Dollar','Euro'}");
@@ -281,7 +281,7 @@ class UpdateMapperUnitTests {
 	void shouldAppendToSet() {
 
 		Update update = updateMapper.getMappedObject(Update.empty().addTo("set").append(currencyEUR),
-				persistentEntity);
+				entity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update).hasToString("set_col = set_col + {'Euro'}");
@@ -291,7 +291,7 @@ class UpdateMapperUnitTests {
 	void shouldPrependToSet() {
 
 		Update update = updateMapper.getMappedObject(Update.empty().addTo("set").prepend(currencyEUR),
-				persistentEntity);
+				entity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update).hasToString("set_col = {'Euro'} + set_col");
@@ -300,7 +300,7 @@ class UpdateMapperUnitTests {
 	@Test // DATACASS-770
 	void shouldRemoveFromSet() {
 
-		Update update = updateMapper.getMappedObject(Update.empty().remove("set", currencyEUR), persistentEntity);
+		Update update = updateMapper.getMappedObject(Update.empty().remove("set", currencyEUR), entity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update).hasToString("set_col = set_col - {'Euro'}");
@@ -309,7 +309,7 @@ class UpdateMapperUnitTests {
 	@Test // DATACASS-343
 	void shouldClearSet() {
 
-		Update update = updateMapper.getMappedObject(Update.empty().clear("set"), persistentEntity);
+		Update update = updateMapper.getMappedObject(Update.empty().clear("set"), entity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update).hasToString("set_col = {}");
@@ -318,7 +318,7 @@ class UpdateMapperUnitTests {
 	@Test // DATACASS-343
 	void shouldCreateIncrementUpdate() {
 
-		Update update = updateMapper.getMappedObject(Update.empty().increment("number"), persistentEntity);
+		Update update = updateMapper.getMappedObject(Update.empty().increment(Person::getNumber), entity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update).hasToString("number = number + 1");
@@ -327,7 +327,7 @@ class UpdateMapperUnitTests {
 	@Test // DATACASS-343
 	void shouldCreateDecrementUpdate() {
 
-		Update update = updateMapper.getMappedObject(Update.empty().decrement("number"), persistentEntity);
+		Update update = updateMapper.getMappedObject(Update.empty().decrement(Person::getNumber), entity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update).hasToString("number = number - 1");
@@ -337,7 +337,7 @@ class UpdateMapperUnitTests {
 	void shouldMapTuple() {
 
 		Update update = this.updateMapper.getMappedObject(Update.empty().set("tuple", new MappedTuple("foo")),
-				this.persistentEntity);
+				this.entity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update).hasToString("tuple = ('foo')");
@@ -347,7 +347,7 @@ class UpdateMapperUnitTests {
 	void shouldMapTime() {
 
 		Update update = this.updateMapper.getMappedObject(Update.empty().set("localTime", LocalTime.of(1, 2, 3)),
-				this.persistentEntity);
+				this.entity);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update.toString()).startsWith("localtime = '01:02:03.");
@@ -356,7 +356,7 @@ class UpdateMapperUnitTests {
 	@Test // DATACASS-523
 	void referencingTupleElementsInQueryShouldFail() {
 		assertThatIllegalArgumentException().isThrownBy(
-				() -> this.updateMapper.getMappedObject(Update.empty().set("tuple.zip", "bar"), this.persistentEntity));
+				() -> this.updateMapper.getMappedObject(Update.empty().set("tuple.zip", "bar"), this.entity));
 	}
 
 	@Test // DATACASS-167
@@ -403,6 +403,93 @@ class UpdateMapperUnitTests {
 
 		@Column("first_name") String firstName;
 
+		public String getId() {
+			return id;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
+
+		public Currency getCurrency() {
+			return currency;
+		}
+
+		public void setCurrency(Currency currency) {
+			this.currency = currency;
+		}
+
+		public Integer getNumber() {
+			return number;
+		}
+
+		public void setNumber(Integer number) {
+			this.number = number;
+		}
+
+		public List<Currency> getList() {
+			return list;
+		}
+
+		public void setList(List<Currency> list) {
+			this.list = list;
+		}
+
+		public LocalTime getLocalTime() {
+			return localTime;
+		}
+
+		public void setLocalTime(LocalTime localTime) {
+			this.localTime = localTime;
+		}
+
+		public Map<String, Currency> getMap() {
+			return map;
+		}
+
+		public void setMap(Map<String, Currency> map) {
+			this.map = map;
+		}
+
+		public Map<Manufacturer, Currency> getManufacturers() {
+			return manufacturers;
+		}
+
+		public void setManufacturers(Map<Manufacturer, Currency> manufacturers) {
+			this.manufacturers = manufacturers;
+		}
+
+		public List<Manufacturer> getManufacturerList() {
+			return manufacturerList;
+		}
+
+		public void setManufacturerList(List<Manufacturer> manufacturerList) {
+			this.manufacturerList = manufacturerList;
+		}
+
+		public MappedTuple getTuple() {
+			return tuple;
+		}
+
+		public void setTuple(MappedTuple tuple) {
+			this.tuple = tuple;
+		}
+
+		public Set<Currency> getSet() {
+			return set;
+		}
+
+		public void setSet(Set<Currency> set) {
+			this.set = set;
+		}
+
+		public String getFirstName() {
+			return firstName;
+		}
+
+		public void setFirstName(String firstName) {
+			this.firstName = firstName;
+		}
 	}
 
 	@Tuple
