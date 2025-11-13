@@ -30,6 +30,7 @@ import org.jspecify.annotations.Nullable;
 
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
+import org.springframework.data.core.TypedPropertyPath;
 import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -89,6 +90,26 @@ public class Query implements Filter {
 	 */
 	public static Query empty() {
 		return EMPTY;
+	}
+
+	/**
+	 * Static factory method to create a {@link Query} for the given column selection.
+	 *
+	 * @return a new {@link Query} selecting {@link Columns}.
+	 * @since 5.1
+	 */
+	public static <T> Query select(TypedPropertyPath<T, ?>... properties) {
+		return select(Columns.from(properties));
+	}
+
+	/**
+	 * Static factory method to create a {@link Query} for the given column selection.
+	 *
+	 * @return a new {@link Query} selecting {@link Columns}.
+	 * @since 5.1
+	 */
+	public static <T> Query select(String... columnNames) {
+		return select(Columns.from(columnNames));
 	}
 
 	/**

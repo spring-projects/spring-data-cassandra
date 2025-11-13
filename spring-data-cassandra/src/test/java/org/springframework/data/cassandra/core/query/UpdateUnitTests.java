@@ -29,10 +29,10 @@ import org.springframework.data.cassandra.core.query.Update.IncrOp;
  */
 class UpdateUnitTests {
 
-	@Test // DATACASS-343
+	@Test // DATACASS-343, GH-1625
 	void shouldCreateSimpleUpdate() {
 
-		Update update = Update.update("foo", "bar");
+		Update update = Update.update(Person::getFoo, "bar");
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update).hasToString("foo = 'bar'");
@@ -146,10 +146,10 @@ class UpdateUnitTests {
 		assertThat(update.getUpdateOperations().iterator().next()).isInstanceOf(IncrOp.class);
 	}
 
-	@Test // DATACASS-718
+	@Test // DATACASS-718, GH-1625
 	void shouldCreateIncrementLongUpdate() {
 
-		Update update = Update.empty().increment("foo", 2400000000L);
+		Update update = Update.empty().increment(Person::getFoo, 2400000000L);
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update).hasToString("foo = foo + 2400000000");
@@ -182,10 +182,10 @@ class UpdateUnitTests {
 		assertThat(update).hasToString("foo['k1'] = 'v2'");
 	}
 
-	@Test // GH-1525
+	@Test // GH-1525, GH-1625
 	void shouldAllowMultipleSetAtIndexOperationsOnSameColumn() {
 
-		Update update = Update.empty().set("foo").atIndex(1).to("A").set("foo").atIndex(2).to("B");
+		Update update = Update.empty().set(Person::getFoo).atIndex(1).to("A").set(Person::getFoo).atIndex(2).to("B");
 
 		assertThat(update.getUpdateOperations()).hasSize(2);
 		assertThat(update).hasToString("foo[1] = 'A', foo[2] = 'B'");
@@ -194,17 +194,18 @@ class UpdateUnitTests {
 	@Test // GH-1525
 	void shouldUseLastWinsForDuplicateSetAtIndexOnSameIndex() {
 
-		Update update = Update.empty().set("foo").atIndex(1).to("A").set("bar").atIndex(1).to("B").set("foo").atIndex(1)
+		Update update = Update.empty().set(Person::getFoo).atIndex(1).to("A").set("bar").atIndex(1).to("B")
+				.set(Person::getFoo).atIndex(1)
 				.to("B");
 
 		assertThat(update.getUpdateOperations()).hasSize(2);
 		assertThat(update).hasToString("bar[1] = 'B', foo[1] = 'B'");
 	}
 
-	@Test // GH-1525
+	@Test // GH-1525, GH-1625
 	void wholeColumnAndElementLevelShouldConflict_LastWinsWholeColumn() {
 
-		Update update = Update.empty().set("foo").atKey("k1").to("v1").set("foo", "ALL");
+		Update update = Update.empty().set(Person::getFoo).atKey("k1").to("v1").set(Person::getFoo, "ALL");
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update).hasToString("foo = 'ALL'");
@@ -213,9 +214,24 @@ class UpdateUnitTests {
 	@Test // GH-1525
 	void wholeColumnAndElementLevelShouldConflict_LastWinsElementLevel() {
 
-		Update update = Update.empty().set("foo", "ALL").set("foo").atKey("k1").to("v1");
+		Update update = Update.empty().set(Person::getFoo, "ALL").set(Person::getFoo).atKey("k1").to("v1");
 
 		assertThat(update.getUpdateOperations()).hasSize(1);
 		assertThat(update).hasToString("foo['k1'] = 'v1'");
 	}
+
+	static class Person {
+
+		String foo;
+
+		public String getFoo() {
+			return foo;
+		}
+
+		public void setFoo(String foo) {
+			this.foo = foo;
+		}
+
+	}
+
 }
