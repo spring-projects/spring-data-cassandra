@@ -88,6 +88,14 @@ class EntityOperations {
 	interface Entity<T> {
 
 		/**
+		 * Returns the value of the identifier.
+		 *
+		 * @return
+		 */
+		@Nullable
+		Object getIdentifier();
+
+		/**
 		 * Returns whether the entity is versioned, i.e. if it contains a version property.
 		 *
 		 * @return
@@ -117,6 +125,7 @@ class EntityOperations {
 		 * @return
 		 */
 		boolean isNew();
+
 	}
 
 	/**
@@ -206,6 +215,11 @@ class EntityOperations {
 		@Override
 		public boolean isNew() {
 			return this.entity.isNew(getBean());
+		}
+
+		@Override
+		public @Nullable Object getIdentifier() {
+			return propertyAccessor.getProperty(entity.getRequiredIdProperty());
 		}
 
 		@Override
