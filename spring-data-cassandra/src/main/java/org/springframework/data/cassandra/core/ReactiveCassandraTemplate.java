@@ -34,7 +34,6 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.dao.DataAccessException;
-import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.data.cassandra.ReactiveResultSet;
 import org.springframework.data.cassandra.ReactiveSession;
@@ -588,17 +587,11 @@ public class ReactiveCassandraTemplate
 			CqlIdentifier tableName) {
 
 		return executeSave(entity, tableName, insert, (result, sink) -> {
-
-			if (!result.wasApplied()) {
-
-				sink.error(new OptimisticLockingFailureException(
-						String.format("Cannot insert entity %s with version %s into table %s as it already exists", entity,
-								source.getVersion(), tableName)));
-
-				return;
+			if (result.wasApplied()) {
+				sink.next(result);
+			} else {
+				sink.error(OptimisticLockingUtils.insertFailed(source));
 			}
-
-			sink.next(result);
 		});
 	}
 
@@ -639,17 +632,11 @@ public class ReactiveCassandraTemplate
 		SimpleStatement update = source.appendVersionCondition(builder, previousVersion).build();
 
 		return executeSave(toSave, tableName, update, (result, sink) -> {
-
-			if (!result.wasApplied()) {
-
-				sink.error(new OptimisticLockingFailureException(
-						String.format("Cannot save entity %s with version %s to table %s; Has it been modified meanwhile", toSave,
-								source.getVersion(), tableName)));
-
-				return;
+			if (result.wasApplied()) {
+				sink.next(result);
+			} else {
+				sink.error(OptimisticLockingUtils.updateFailed(source));
 			}
-
-			sink.next(result);
 		});
 	}
 
@@ -687,17 +674,11 @@ public class ReactiveCassandraTemplate
 			CqlIdentifier tableName) {
 
 		return executeDelete(entity, tableName, delete, (result, sink) -> {
-
-			if (!result.wasApplied()) {
-
-				sink.error(new OptimisticLockingFailureException(
-						String.format("Cannot delete entity %s with version %s in table %s; Has it been modified meanwhile", entity,
-								source.getVersion(), tableName)));
-
-				return;
+			if (result.wasApplied()) {
+				sink.next(result);
+			} else {
+				sink.error(OptimisticLockingUtils.deleteFailed(source));
 			}
-
-			sink.next(result);
 		});
 	}
 
