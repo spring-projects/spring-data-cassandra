@@ -35,7 +35,6 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.dao.DataAccessException;
-import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.data.cassandra.SessionFactory;
 import org.springframework.data.cassandra.core.EntityOperations.AdaptibleEntity;
@@ -544,9 +543,7 @@ public class AsyncCassandraTemplate
 		return executeSave(entity, tableName, insert, result -> {
 
 			if (!result.wasApplied()) {
-				throw new OptimisticLockingFailureException(
-						String.format("Cannot insert entity %s with version %s into table %s as it already exists", entity,
-								source.getVersion(), tableName));
+				throw OptimisticLockingUtils.insertFailed(source);
 			}
 		});
 	}
@@ -592,9 +589,7 @@ public class AsyncCassandraTemplate
 		return executeSave(toSave, tableName, update.build(), result -> {
 
 			if (!result.wasApplied()) {
-				throw new OptimisticLockingFailureException(
-						String.format("Cannot save entity %s with version %s to table %s; Has it been modified meanwhile", toSave,
-								source.getVersion(), tableName));
+				throw OptimisticLockingUtils.updateFailed(source);
 			}
 		});
 	}
@@ -634,9 +629,7 @@ public class AsyncCassandraTemplate
 		return executeDelete(entity, tableName, source.appendVersionCondition(delete).build(), result -> {
 
 			if (!result.wasApplied()) {
-				throw new OptimisticLockingFailureException(
-						String.format("Cannot delete entity %s with version %s in table %s; Has it been modified meanwhile", entity,
-								source.getVersion(), tableName));
+				throw OptimisticLockingUtils.deleteFailed(source);
 			}
 		});
 	}
