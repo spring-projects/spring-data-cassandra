@@ -22,6 +22,7 @@ import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.cql.util.StatementBuilder;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
+import org.springframework.data.cassandra.core.mapping.MapId;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.model.ConvertingPropertyAccessor;
@@ -45,22 +46,11 @@ import com.datastax.oss.driver.api.querybuilder.update.Update;
 class EntityOperations {
 
 	private final MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext;
+	private final CassandraConverter converter;
 
 	EntityOperations(CassandraConverter converter) {
+		this.converter = converter;
 		this.mappingContext = converter.getMappingContext();
-	}
-
-	/**
-	 * Creates a new {@link Entity} for the given bean.
-	 *
-	 * @param entity must not be {@literal null}.
-	 * @return
-	 */
-	public <T> Entity<T> forEntity(T entity) {
-
-		Assert.notNull(entity, "Bean must not be null");
-
-		return MappedEntity.of(entity, getMappingContext());
 	}
 
 	/**
@@ -75,11 +65,15 @@ class EntityOperations {
 		Assert.notNull(entity, "Bean must not be null");
 		Assert.notNull(conversionService, "ConversionService must not be null");
 
-		return AdaptibleMappedEntity.of(entity, getMappingContext(), conversionService);
+		return AdaptibleMappedEntity.of(entity, getConverter(), conversionService);
 	}
 
 	protected MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> getMappingContext() {
 		return this.mappingContext;
+	}
+
+	protected CassandraConverter getConverter() {
+		return converter;
 	}
 
 	/**
@@ -191,20 +185,14 @@ class EntityOperations {
 	private static class MappedEntity<T> implements Entity<T> {
 
 		private final CassandraPersistentEntity<?> entity;
+		private final CassandraConverter converter;
 		private final PersistentPropertyAccessor<T> propertyAccessor;
 
-		protected MappedEntity(CassandraPersistentEntity<?> entity, PersistentPropertyAccessor<T> propertyAccessor) {
+		protected MappedEntity(CassandraPersistentEntity<?> entity, CassandraConverter converter,
+				PersistentPropertyAccessor<T> propertyAccessor) {
 			this.entity = entity;
+			this.converter = converter;
 			this.propertyAccessor = propertyAccessor;
-		}
-
-		private static <T> MappedEntity<T> of(T bean,
-				MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> context) {
-
-			CassandraPersistentEntity<?> entity = context.getRequiredPersistentEntity(bean.getClass());
-			PersistentPropertyAccessor<T> propertyAccessor = entity.getPropertyAccessor(bean);
-
-			return new MappedEntity<>(entity, propertyAccessor);
 		}
 
 		@Override
@@ -219,7 +207,11 @@ class EntityOperations {
 
 		@Override
 		public @Nullable Object getIdentifier() {
-			return propertyAccessor.getProperty(entity.getRequiredIdProperty());
+			Object id = converter.getId(propertyAccessor.getBean(), entity);
+			if (id instanceof MapId mid && mid.isEmpty()) {
+				return null;
+			}
+			return id;
 		}
 
 		@Override
@@ -238,20 +230,21 @@ class EntityOperations {
 		private final CassandraPersistentEntity<?> entity;
 		private final ConvertingPropertyAccessor<T> propertyAccessor;
 
-		private static <T> AdaptibleEntity<T> of(T bean,
-				MappingContext<? extends CassandraPersistentEntity<?>, CassandraPersistentProperty> mappingContext,
+		private static <T> AdaptibleEntity<T> of(T bean, CassandraConverter converter,
 				ConversionService conversionService) {
 
-			CassandraPersistentEntity<?> entity = mappingContext.getRequiredPersistentEntity(bean.getClass());
+			CassandraPersistentEntity<?> entity = converter.getMappingContext().getRequiredPersistentEntity(bean.getClass());
 
 			PersistentPropertyAccessor<T> propertyAccessor = entity.getPropertyAccessor(bean);
 
-			return new AdaptibleMappedEntity<>(entity, new ConvertingPropertyAccessor<>(propertyAccessor, conversionService));
+			return new AdaptibleMappedEntity<>(entity, converter,
+					new ConvertingPropertyAccessor<>(propertyAccessor, conversionService));
 		}
 
-		private AdaptibleMappedEntity(CassandraPersistentEntity<?> entity, ConvertingPropertyAccessor<T> propertyAccessor) {
+		private AdaptibleMappedEntity(CassandraPersistentEntity<?> entity, CassandraConverter converter,
+				ConvertingPropertyAccessor<T> propertyAccessor) {
 
-			super(entity, propertyAccessor);
+			super(entity, converter, propertyAccessor);
 
 			this.entity = entity;
 			this.propertyAccessor = propertyAccessor;
@@ -278,9 +271,7 @@ class EntityOperations {
 		public T initializeVersionProperty() {
 
 			if (this.entity.hasVersionProperty()) {
-
 				CassandraPersistentProperty versionProperty = this.entity.getRequiredVersionProperty();
-
 				this.propertyAccessor.setProperty(versionProperty, versionProperty.getType().isPrimitive() ? 1 : 0);
 			}
 
@@ -304,7 +295,6 @@ class EntityOperations {
 		public @Nullable Number getVersion() {
 
 			CassandraPersistentProperty versionProperty = this.entity.getRequiredVersionProperty();
-
 			return this.propertyAccessor.getProperty(versionProperty, Number.class);
 		}
 
