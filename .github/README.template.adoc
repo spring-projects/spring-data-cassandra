@@ -1,0 +1,81 @@
+= Spring Data for Apache Cassandra image:https://img.shields.io/badge/Revved%20up%20by-Develocity-06A0CE?logo=Gradle&labelColor=02303A["Revved up by Develocity", link="https://ge.spring.io/scans?search.rootProjectNames=Spring Data for Apache Cassandra"]
+
+The primary goal of the https://projects.spring.io/spring-data[Spring Data] project is to make it easier to build Spring-powered applications that use new data access technologies such as non-relational databases, map-reduce frameworks, and cloud based data services.
+
+The Apache Cassandra NoSQL Database offers many new capabilities for teams seeking a solution to handle high velocity, high volume and variable data flows.
+This new way of thinking introduces new concepts and a learning curve that can be intimidating to team members and team managers.
+Spring Data for Apache Cassandra offers a familiar interface to those who have used other Spring Data modules in the past.
+
+The learning curve for developing applications with Apache Cassandra is significantly reduced when using Spring Data for Apache Cassandra.
+With the power to stay at a high level with annotated POJOs, or at a low level with high performance data ingestion capabilities, the Spring Data for Apache Cassandra templates are sure to meet every application need.
+
+== Features
+
+* Build repositories based on common Spring Data interfaces
+* Support for synchronous, reactive, and asynchronous data operations
+* Support for XML based Keyspace creation and CQL Table creation
+* JavaConfig and XML Support for all Cluster and Session Capabilities
+* Exception Translation to the familiar Spring DataAccessException hierarchy
+* Convenient QueryBuilders to eliminate the need to learn CQL
+* Automatic implementation of Repository interfaces including support for custom query methods
+* Based on the 4.x DataStax CQL Java Driver
+
+include::https://raw.githubusercontent.com/spring-projects/spring-data-build/refs/heads/main/etc/readme/code-of-conduct.adoc[]
+
+== Getting Started
+
+Here is a quick teaser of an application using Spring Data Repositories in Java:
+
+[source,java]
+----
+public interface PersonRepository extends CrudRepository<Person, Long> {
+
+  List<Person> findByLastname(String lastname);
+
+  List<Person> findByFirstnameLike(String firstname);
+}
+
+@Service
+public class MyService {
+
+  private final PersonRepository repository;
+
+  public MyService(PersonRepository repository) {
+    this.repository = repository;
+  }
+
+  public void doWork() {
+
+    repository.deleteAll();
+
+    Person person = new Person();
+    person.setFirstname("Matthew");
+    person.setLastname("Adams");
+    repository.save(person);
+
+    List<Person> lastNameResults = repository.findByLastname("Adams");
+    List<Person> firstNameResults = repository.findByFirstnameLike("M*");
+ }
+}
+
+@Configuration
+@EnableCassandraRepositories
+class ApplicationConfig extends AbstractCassandraConfiguration {
+
+  @Override
+  public String getContactPoints() {
+    return "localhost";
+  }
+
+  @Override
+  protected String getKeyspaceName() {
+    return "springdata";
+  }
+}
+----
+
+include::https://raw.githubusercontent.com/spring-projects/spring-data-build/refs/heads/main/etc/readme/dependencies.adoc[]
+
+include::https://raw.githubusercontent.com/spring-projects/spring-data-build/refs/heads/main/etc/readme/getting-help.adoc[]
+
+include::https://raw.githubusercontent.com/spring-projects/spring-data-build/refs/heads/main/etc/readme/license.adoc[]
