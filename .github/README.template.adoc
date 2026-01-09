@@ -76,6 +76,16 @@ class ApplicationConfig extends AbstractCassandraConfiguration {
 
 include::https://raw.githubusercontent.com/spring-projects/spring-data-build/refs/heads/main/etc/readme/dependencies.adoc[]
 
+:antora-output: spring-data-cassandra-distribution/target/site/index.html
+
 include::https://raw.githubusercontent.com/spring-projects/spring-data-build/refs/heads/main/etc/readme/getting-help.adoc[]
+
+== Initial Contributors
+
+Spring Data for Apache Cassandra was initially created and supported by the following companies and individuals:
+
+* http://www.prowaveconsulting.com[Prowave Consulting] - David Webb
+* http://www.scispike.com[SciSpike] - Matthew Adams
+* John McPeek
 
 include::https://raw.githubusercontent.com/spring-projects/spring-data-build/refs/heads/main/etc/readme/license.adoc[]
