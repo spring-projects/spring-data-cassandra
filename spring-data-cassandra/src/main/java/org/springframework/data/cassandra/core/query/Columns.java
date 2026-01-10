@@ -31,6 +31,7 @@ import org.jspecify.annotations.Nullable;
 
 import org.springframework.data.cassandra.core.convert.CassandraVector;
 import org.springframework.data.cassandra.core.mapping.SimilarityFunction;
+import org.springframework.data.core.TypedPropertyPath;
 import org.springframework.data.domain.Vector;
 import org.springframework.lang.CheckReturnValue;
 import org.springframework.util.Assert;
@@ -70,7 +71,30 @@ public class Columns implements Iterable<ColumnName> {
 	}
 
 	/**
+	 * Create a {@link Columns} given {@code properties} as property path. Property paths are mapped against the
+	 * underlying domain model.
+	 *
+	 * @param properties must not be {@literal null}.
+	 * @return the {@link Columns} object for {@code properties}.
+	 * @since 5.1
+	 */
+	public static <T> Columns from(TypedPropertyPath<T, ?>... properties) {
+
+		Assert.notNull(properties, "Column names must not be null");
+
+		Map<ColumnName, List<Selector>> columns = new LinkedHashMap<>(properties.length, 1);
+
+		for (TypedPropertyPath<T, ?> columnName : properties) {
+			TypedPropertyPath<T, ?> path = TypedPropertyPath.of(columnName);
+			add(columns, ColumnName.from(path));
+		}
+
+		return new Columns(columns);
+	}
+
+	/**
 	 * Create a {@link Columns} given {@code columnNames}. Individual column names can be either quoted or unquoted.
+	 * Property paths are mapped against the underlying domain model.
 	 *
 	 * @param columnNames must not be {@literal null}.
 	 * @return the {@link Columns} object for {@code columnNames}.
@@ -82,7 +106,7 @@ public class Columns implements Iterable<ColumnName> {
 		Map<ColumnName, List<Selector>> columns = new LinkedHashMap<>(columnNames.length, 1);
 
 		for (String columnName : columnNames) {
-			columns.put(ColumnName.from(columnName), new ArrayList<>(List.of(ColumnSelector.from(columnName))));
+			add(columns, ColumnName.from(columnName));
 		}
 
 		return new Columns(columns);
@@ -101,10 +125,27 @@ public class Columns implements Iterable<ColumnName> {
 		Map<ColumnName, List<Selector>> columns = new LinkedHashMap<>(columnNames.length, 1);
 
 		for (CqlIdentifier cqlId : columnNames) {
-			columns.put(ColumnName.from(cqlId), new ArrayList<>(List.of(ColumnSelector.from(cqlId))));
+			add(columns, ColumnName.from(cqlId));
 		}
 
 		return new Columns(columns);
+	}
+
+	private static void add(Map<ColumnName, List<Selector>> columns, ColumnName name) {
+		columns.put(name, new ArrayList<>(List.of(ColumnSelector.from(name))));
+	}
+
+	/**
+	 * Include column {@code propertyPath} to the selection. Column inclusion overrides an existing selection for the
+	 * column name.
+	 *
+	 * @param propertyPath must not be {@literal null}.
+	 * @return a new {@link Columns} object containing all column definitions and the included {@code propertyPath}.
+	 * @since 5.1
+	 */
+	@CheckReturnValue
+	public <T, P> Columns include(TypedPropertyPath<T, P> propertyPath) {
+		return select(ColumnName.from(propertyPath));
 	}
 
 	/**
@@ -116,7 +157,7 @@ public class Columns implements Iterable<ColumnName> {
 	 */
 	@CheckReturnValue
 	public Columns include(String columnName) {
-		return select(columnName, ColumnSelector.from(columnName));
+		return select(ColumnName.from(columnName));
 	}
 
 	/**
@@ -128,7 +169,7 @@ public class Columns implements Iterable<ColumnName> {
 	 */
 	@CheckReturnValue
 	public Columns include(CqlIdentifier columnName) {
-		return select(columnName, ColumnSelector.from(columnName));
+		return select(ColumnName.from(columnName));
 	}
 
 	/**
@@ -156,6 +197,30 @@ public class Columns implements Iterable<ColumnName> {
 	}
 
 	/**
+	 * Include column {@code columnName}. This column selection overrides an existing selection for the column name.
+	 *
+	 * @param columnName must not be {@literal null}.
+	 * @return a new {@link Columns} object containing all column definitions and the selected {@code columnName}.
+	 * @since 5.1
+	 */
+	private Columns select(ColumnName columnName) {
+		return select(columnName, ColumnSelector.from(columnName));
+	}
+
+	/**
+	 * Include column {@code propertyPath} with {@link Selector}. This column selection overrides an existing selection
+	 * for the column name.
+	 *
+	 * @param propertyPath must not be {@literal null}.
+	 * @return a new {@link Columns} object containing all column definitions and the selected {@code propertyPath}.
+	 * @since 5.1
+	 */
+	@CheckReturnValue
+	public <T, P> Columns select(TypedPropertyPath<T, P> propertyPath, Selector selector) {
+		return select(ColumnName.from(propertyPath), selector);
+	}
+
+	/**
 	 * Include column {@code columnName} with {@link Selector}. This column selection overrides an existing selection for
 	 * the column name.
 	 *
@@ -178,9 +243,21 @@ public class Columns implements Iterable<ColumnName> {
 	 */
 	@CheckReturnValue
 	public Columns select(CqlIdentifier columnName, Function<SelectorBuilder, Selector> builder) {
+		return select(ColumnName.from(columnName), builder);
+	}
 
-		ColumnName from = ColumnName.from(columnName);
-		return select(from, builder.apply(new DefaultSelectorBuilder(from)));
+	/**
+	 * Include column {@code propertyPath} with a built {@link Selector}. This column selection overrides an existing
+	 * selection for the column name. {@link SelectorBuilder} uses the given {@code propertyPath} as column alias to
+	 * represent the selection in the result.
+	 *
+	 * @param propertyPath must not be {@literal null}.
+	 * @return a new {@link Columns} object containing all column definitions and the selected {@code propertyPath}.
+	 * @since 5.1
+	 */
+	@CheckReturnValue
+	public <T, P> Columns select(TypedPropertyPath<T, P> propertyPath, Function<SelectorBuilder, Selector> builder) {
+		return select(ColumnName.from(propertyPath), builder);
 	}
 
 	/**
@@ -194,9 +271,7 @@ public class Columns implements Iterable<ColumnName> {
 	 */
 	@CheckReturnValue
 	public Columns select(String columnName, Function<SelectorBuilder, Selector> builder) {
-
-		ColumnName from = ColumnName.from(columnName);
-		return select(from, builder.apply(new DefaultSelectorBuilder(from)));
+		return select(ColumnName.from(columnName), builder);
 	}
 
 	/**
@@ -209,6 +284,10 @@ public class Columns implements Iterable<ColumnName> {
 	@CheckReturnValue
 	public Columns select(CqlIdentifier columnName, Selector selector) {
 		return select(ColumnName.from(columnName), selector);
+	}
+
+	private Columns select(ColumnName columnName, Function<SelectorBuilder, Selector> builder) {
+		return select(columnName, builder.apply(new DefaultSelectorBuilder(columnName)));
 	}
 
 	/**
@@ -424,6 +503,10 @@ public class Columns implements Iterable<ColumnName> {
 			return new ColumnSelector(columnName, alias);
 		}
 
+		public ColumnName getColumnName() {
+			return columnName;
+		}
+
 		@Override
 		public Optional<CqlIdentifier> getAlias() {
 			return alias;
@@ -465,6 +548,7 @@ public class Columns implements Iterable<ColumnName> {
 			return getAlias().map(cqlIdentifier -> String.format("%s AS %s", getExpression(), cqlIdentifier))
 					.orElseGet(this::getExpression);
 		}
+
 	}
 
 	/**
