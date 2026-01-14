@@ -24,23 +24,20 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.core.EntityWriteResult;
 import org.springframework.data.cassandra.core.InsertOptions;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
-import org.springframework.data.cassandra.core.cql.CqlOperations;
 import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
-import org.springframework.data.cassandra.core.mapping.UserTypeResolver;
 import org.springframework.data.cassandra.core.query.CassandraPageRequest;
 import org.springframework.data.cassandra.core.query.Query;
 import org.springframework.data.cassandra.domain.Person;
 import org.springframework.data.domain.Sort.Direction;
-
-import com.datastax.oss.driver.api.core.type.UserDefinedType;
 
 /**
  * Unit tests for {@link SimpleCassandraRepository}.
@@ -58,14 +55,11 @@ class SimpleCassandraRepositoryUnitTests {
 	private SimpleCassandraRepository<Object, ? extends Serializable> repository;
 
 	@Mock CassandraOperations cassandraOperations;
-	@Mock CqlOperations cqlOperations;
-	@Mock UserDefinedType userType;
-	@Mock UserTypeResolver userTypeResolver;
+
 	@Mock EntityWriteResult writeResult;
 
 	@BeforeEach
 	void before() {
-		converter.setUserTypeResolver(userTypeResolver);
 		when(cassandraOperations.getConverter()).thenReturn(converter);
 	}
 

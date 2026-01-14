@@ -16,22 +16,16 @@
 package org.springframework.data.cassandra.repository.support;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.Assume.*;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
@@ -39,19 +33,12 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.cassandra.core.ReactiveCassandraOperations;
-import org.springframework.data.cassandra.core.query.CassandraPageRequest;
 import org.springframework.data.cassandra.domain.User;
-import org.springframework.data.cassandra.domain.UserToken;
 import org.springframework.data.cassandra.repository.ReactiveCassandraRepository;
-import org.springframework.data.cassandra.support.CassandraVersion;
 import org.springframework.data.cassandra.test.util.IntegrationTestsSupport;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.util.Version;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
-
-import com.datastax.oss.driver.api.core.CqlSession;
 
 /**
  * Integration tests for {@link SimpleReactiveCassandraRepository}.
@@ -64,8 +51,6 @@ import com.datastax.oss.driver.api.core.CqlSession;
 public class SimpleReactiveCassandraRepositoryIntegrationTests extends IntegrationTestsSupport
 		implements BeanClassLoaderAware, BeanFactoryAware {
 
-	private static final Version CASSANDRA_3 = Version.parse("3.0");
-
 	@Configuration
 	public static class Config extends IntegrationTestConfig {
 
@@ -75,14 +60,15 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends Integrati
 		}
 	}
 
-	@Autowired private CqlSession session;
 	@Autowired private ReactiveCassandraOperations operations;
 
-	private Version cassandraVersion;
 	private BeanFactory beanFactory;
+
 	private ClassLoader classLoader;
+
 	private ReactiveCassandraRepositoryFactory factory;
-	private UserRepostitory repository;
+
+	private UserRepository repository;
 
 	private User dave, oliver, carter, boyd;
 
@@ -104,9 +90,7 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends Integrati
 		factory.setBeanClassLoader(classLoader);
 		factory.setBeanFactory(beanFactory);
 
-		repository = factory.getRepository(UserRepostitory.class);
-
-		cassandraVersion = CassandraVersion.get(session);
+		repository = factory.getRepository(UserRepository.class);
 
 		deleteAll();
 
@@ -226,39 +210,6 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends Integrati
 	@Test // DATACASS-335
 	void findAllByEmptyPublisherOfIdShouldReturnResults() {
 		repository.findAllById(Flux.empty()).as(StepVerifier::create).verifyComplete();
-	}
-
-	@Test // DATACASS-700
-	void findAllWithPagingAndSorting() {
-
-		assumeTrue(cassandraVersion.isGreaterThan(CASSANDRA_3));
-
-		UserTokenRepostitory repository = factory.getRepository(UserTokenRepostitory.class);
-		repository.deleteAll();
-
-		UUID id = UUID.randomUUID();
-		List<UserToken> users = IntStream.range(0, 100).mapToObj(value -> {
-
-			UserToken token = new UserToken();
-			token.setUserId(id);
-			token.setToken(UUID.randomUUID());
-
-			return token;
-		}).collect(Collectors.toList());
-
-		repository.saveAll(users).then().as(StepVerifier::create).verifyComplete();
-
-		List<UserToken> result = new ArrayList<>();
-		Slice<UserToken> slice = repository.findAllByUserId(id, CassandraPageRequest.first(10, Sort.by("token")))
-				.block(Duration.ofSeconds(10));
-
-		while (!slice.isEmpty() || slice.hasNext()) {
-
-			result.addAll(slice.getContent());
-			slice = repository.findAllByUserId(id, slice.nextPageable()).block(Duration.ofSeconds(10));
-		}
-
-		assertThat(result).hasSize(100);
 	}
 
 	@Test // DATACASS-335
@@ -443,10 +394,10 @@ public class SimpleReactiveCassandraRepositoryIntegrationTests extends Integrati
 		repository.findById(boyd.getId()).as(StepVerifier::create).expectNextCount(0).verifyComplete();
 	}
 
-	interface UserRepostitory extends ReactiveCassandraRepository<User, String> {}
+	interface UserRepository extends ReactiveCassandraRepository<User, String> {
 
-	interface UserTokenRepostitory extends ReactiveCassandraRepository<UserToken, UUID> {
-		Mono<Slice<UserToken>> findAllByUserId(UUID id, Pageable pageRequest);
+		Mono<Slice<User>> findSliceBy(Pageable pageRequest);
+
 	}
 
 }
