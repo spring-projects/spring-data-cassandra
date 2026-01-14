@@ -251,8 +251,14 @@ public class Query implements Filter {
 			scrollPosition = cpr.getScrollPosition();
 		}
 
-		QueryOptions queryOptions = this.queryOptions.map(QueryOptions::mutate).orElse(QueryOptions.builder())
-				.pageSize(pageable.getPageSize()).build();
+		QueryOptions queryOptions = this.queryOptions.map(QueryOptions::mutate).orElseGet(() -> {
+
+			QueryOptions.QueryOptionsBuilder builder = QueryOptions.builder();
+			if (pageable.isPaged()) {
+				builder.pageSize(pageable.getPageSize());
+			}
+			return builder;
+		}).build();
 
 		return new Query(this.criteriaDefinitions, this.columns, this.sort.and(pageable.getSort()), scrollPosition,
 				Optional.of(queryOptions), this.limit, this.allowFiltering);

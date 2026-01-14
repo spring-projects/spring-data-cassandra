@@ -331,6 +331,14 @@ class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedCassandr
 		assertThat(personRepository.findByNicknameContains("eisenber")).isEqualTo(walter);
 	}
 
+	@Test // GH-1636
+	public void shouldSelectUnpagedSlice() {
+
+		Slice<Person> slice = personRepository.findAllSlicedByLastname("White", Pageable.unpaged());
+
+		assertThat(slice).hasSize(3);
+	}
+
 	@Test // DATACASS-56
 	public void shouldSelectSliced() {
 

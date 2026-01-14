@@ -61,6 +61,7 @@ import org.springframework.data.cassandra.domain.UserToken;
 import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
 import org.springframework.data.cassandra.support.CassandraVersion;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.util.Version;
@@ -630,6 +631,15 @@ class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrat
 				BasicMapId.id("userId", userToken.getUserId()).with("token", userToken.getToken()), UserToken.class);
 
 		assertThat(loadAfterDelete).isNull();
+	}
+
+	@Test // GH-1636
+	void shouldReturnUnpagedSlice() {
+
+		Query query = Query.empty().pageRequest(Pageable.unpaged());
+
+		Slice<User> slice = template.slice(query, User.class);
+		assertThat(slice).isEmpty();
 	}
 
 	@Test // DATACASS-56

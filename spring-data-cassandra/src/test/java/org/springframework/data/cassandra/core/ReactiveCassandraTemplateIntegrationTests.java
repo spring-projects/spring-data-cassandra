@@ -36,6 +36,7 @@ import org.springframework.data.cassandra.domain.User;
 import org.springframework.data.cassandra.domain.UserToken;
 import org.springframework.data.cassandra.repository.support.SchemaTestUtils;
 import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingIntegrationTests;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 
@@ -346,6 +347,16 @@ class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceCreating
 		Query query = Query.query(Criteria.where("userId").is(token1.getUserId()));
 
 		assertThat(template.selectOne(query, UserToken.class).block()).isEqualTo(token1);
+	}
+
+	@Test // GH-1636
+	void shouldReturnUnpagedSlice() {
+
+		Query query = Query.empty().pageRequest(Pageable.unpaged());
+
+		template.slice(query, User.class).as(StepVerifier::create).consumeNextWith(it -> {
+			assertThat(it).isEmpty();
+		}).verifyComplete();
 	}
 
 	@Test // DATACASS-529

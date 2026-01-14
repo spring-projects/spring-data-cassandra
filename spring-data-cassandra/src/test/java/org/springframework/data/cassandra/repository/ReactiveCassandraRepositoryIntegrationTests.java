@@ -178,6 +178,12 @@ class ReactiveCassandraRepositoryIntegrationTests extends AbstractSpringDataEmbe
 		assertThat(result).contains(dave, oliver);
 	}
 
+	@Test // GH-1636
+	void shouldFindUnpagedSliceByLastName() {
+		repository.findByLastname(carter.getLastname(), Pageable.unpaged()).as(StepVerifier::create).expectNextCount(1)
+				.verifyComplete();
+	}
+
 	@Test // GH-1408
 	void shouldFindSliceByLastName() {
 		repository.findByLastname(carter.getLastname(), CassandraPageRequest.first(1)).as(StepVerifier::create)
