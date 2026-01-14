@@ -93,7 +93,7 @@ interface CassandraQueryExecution {
 
 			CassandraPageRequest.validatePageable(pageable);
 
-			Statement<?> statementToUse = statement.setPageSize(pageable.getPageSize());
+			Statement<?> statementToUse = pageable.isPaged() ? statement.setPageSize(pageable.getPageSize()) : statement;
 
 			if (pageable instanceof CassandraPageRequest) {
 				statementToUse = statementToUse.setPagingState(((CassandraPageRequest) pageable).getPagingState());
