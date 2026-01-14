@@ -28,10 +28,10 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
+import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.query.Filter;
 import org.springframework.data.cassandra.core.query.Update;
 import org.springframework.data.core.TypeInformation;
-import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.util.Assert;
 
 import com.datastax.oss.driver.api.core.type.DataType;
@@ -81,10 +81,10 @@ public class UpdateMapper extends QueryMapper {
 
 			Field field = createPropertyField(entity, assignmentOp.getColumnName());
 
-			field.getProperty().filter(it -> it.getOrdinal() != null).ifPresent(it -> {
+			if (field.hasProperty(CassandraPersistentProperty::hasOrdinal)) {
 				throw new IllegalArgumentException(
 						String.format("Cannot reference tuple value elements, property [%s]", field.getMappedKey()));
-			});
+			}
 
 			mapped.add(getMappedUpdateOperation(assignmentOp, field));
 		}
@@ -128,8 +128,9 @@ public class UpdateMapper extends QueryMapper {
 			Assert.state(op.getValue() != null,
 					() -> String.format("SetAtKeyOp for %s attempts to set null", field.getProperty()));
 
-			Optional<? extends TypeInformation<?>> typeInformation = field.getProperty()
-					.map(PersistentProperty::getTypeInformation);
+			Optional<? extends TypeInformation<?>> typeInformation = field.hasProperty()
+					? Optional.of(field.getProperty().getTypeInformation())
+					: Optional.empty();
 
 			Optional<TypeInformation<?>> keyType = typeInformation.map(TypeInformation::getComponentType);
 			Optional<TypeInformation<?>> valueType = typeInformation.map(TypeInformation::getMapValueType);
@@ -161,9 +162,9 @@ public class UpdateMapper extends QueryMapper {
 
 			if (collection.isEmpty()) {
 
-				int protocolCode = field.getProperty()
-						.map(property -> getConverter().getColumnTypeResolver().resolve(property).getDataType())
-						.map(DataType::getProtocolCode).orElse(ProtocolConstants.DataType.LIST);
+				int protocolCode = field.hasProperty()
+						? getConverter().getColumnTypeResolver().resolve(field.getProperty()).getDataType().getProtocolCode()
+						: ProtocolConstants.DataType.LIST;
 
 				if (protocolCode == ProtocolConstants.DataType.SET) {
 					return new SetOp(field.getMappedKey(), Collections.emptySet());
@@ -184,7 +185,7 @@ public class UpdateMapper extends QueryMapper {
 		ColumnType descriptor = getColumnType(field, value, ColumnTypeTransformer.AS_IS);
 		boolean mapLike = false;
 
-		if (field.getProperty().isPresent() && field.getProperty().get().isMapLike()) {
+		if (field.hasProperty(CassandraPersistentProperty::isMapLike)) {
 
 			descriptor = getColumnType(field, value, value instanceof Collection ? ColumnTypeTransformer.ENCLOSING_MAP_KEY_SET
 					: ColumnTypeTransformer.MAP_KEY_TYPE);
@@ -207,9 +208,9 @@ public class UpdateMapper extends QueryMapper {
 		ColumnType descriptor = getColumnType(field, value, ColumnTypeTransformer.AS_IS);
 		Collection<Object> mappedValue = (Collection) getConverter().convertToColumnType(value, descriptor);
 
-		if (field.getProperty().isPresent()) {
+		if (field.hasProperty()) {
 
-			DataType dataType = getConverter().getColumnTypeResolver().resolve(field.getProperty().get()).getDataType();
+			DataType dataType = getConverter().getColumnTypeResolver().resolve(field.getProperty()).getDataType();
 
 			if (dataType instanceof SetType && !(mappedValue instanceof Set)) {
 				Collection<Object> collection = new HashSet<>();
@@ -229,8 +230,9 @@ public class UpdateMapper extends QueryMapper {
 
 	private AssignmentOp getMappedUpdateOperation(Field field, AddToMapOp updateOp) {
 
-		Optional<? extends TypeInformation<?>> typeInformation = field.getProperty()
-				.map(PersistentProperty::getTypeInformation);
+		Optional<? extends TypeInformation<?>> typeInformation = field.hasProperty()
+				? Optional.of(field.getProperty().getTypeInformation())
+				: Optional.empty();
 
 		Optional<TypeInformation<?>> keyType = typeInformation.map(TypeInformation::getComponentType);
 		Optional<TypeInformation<?>> valueType = typeInformation.map(TypeInformation::getMapValueType);

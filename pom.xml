@@ -107,7 +107,7 @@
 		<cassandra-driver.version>4.19.2</cassandra-driver.version>
 		<dist.id>spring-data-cassandra</dist.id>
 		<multithreadedtc.version>1.01</multithreadedtc.version>
-		<springdata.commons>4.1.0-SNAPSHOT</springdata.commons>
+		<springdata.commons>4.1.0-GH-3400-SNAPSHOT</springdata.commons>
 	</properties>
 
 	<dependencyManagement>
