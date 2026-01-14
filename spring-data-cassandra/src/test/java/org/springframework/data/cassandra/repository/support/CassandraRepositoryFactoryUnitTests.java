@@ -44,11 +44,14 @@ import org.springframework.data.repository.core.support.AbstractRepositoryMetada
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public class CassandraRepositoryFactoryUnitTests {
+class CassandraRepositoryFactoryUnitTests {
 
 	@Mock BasicCassandraPersistentEntity entity;
+
 	@Mock CassandraConverter converter;
+
 	@Mock CassandraMappingContext mappingContext;
+
 	@Mock CassandraTemplate template;
 
 	@BeforeEach
