@@ -48,18 +48,21 @@ import com.datastax.oss.driver.api.core.type.UserDefinedType;
 class SimpleReactiveCassandraRepositoryUnitTests {
 
 	private CassandraMappingContext mappingContext = new CassandraMappingContext();
+
 	private MappingCassandraConverter converter = new MappingCassandraConverter(mappingContext);
 
 	private SimpleReactiveCassandraRepository<Object, ? extends Serializable> repository;
 
 	@Mock ReactiveCassandraOperations cassandraOperations;
+
 	@Mock UserTypeResolver userTypeResolver;
+
 	@Mock UserDefinedType userType;
+
 	@Mock EntityWriteResult writeResult;
 
 	@BeforeEach
 	void before() {
-		mappingContext.setUserTypeResolver(userTypeResolver);
 		when(cassandraOperations.getConverter()).thenReturn(converter);
 	}
 

@@ -111,11 +111,8 @@ class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedCassandr
 		deleteAllEntities();
 
 		Person person = new Person("Walter", "White");
-
 		person.setNumberOfChildren(2);
-
 		person.setMainAddress(new AddressType("Albuquerque", "USA"));
-
 		person.setAlternativeAddresses(Arrays.asList(new AddressType("Albuquerque", "USA"),
 				new AddressType("New Hampshire", "USA"), new AddressType("Grocery Store", "Mexico")));
 
@@ -340,7 +337,7 @@ class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedCassandr
 	}
 
 	@Test // DATACASS-56
-	public void shouldSelectSliced() {
+	public void shouldSelectSlice() {
 
 		List<Person> result = new ArrayList<>();
 
