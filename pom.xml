@@ -20,11 +20,21 @@
 
 	<developers>
 		<developer>
+			<id>scispike</id>
+			<email>info at scispike.com</email>
+			<organization>SciSpike Inc.</organization>
+			<organizationUrl>https://www.scispike.com</organizationUrl>
+			<roles>
+				<role>Sponsor</role>
+			</roles>
+			<timezone>-6</timezone>
+		</developer>
+		<developer>
 			<id>madams</id>
 			<name>Matthew T. Adams</name>
-			<email>matthew dot adams at scispike.com</email>
-			<organization>SciSpike Inc.</organization>
-			<organizationUrl>http://www.scispike.com</organizationUrl>
+			<email>spring-data-cassandra at matthewadams.me</email>
+			<organization>Matthew T. Adams</organization>
+			<organizationUrl>https://www.matthewadams.me</organizationUrl>
 			<roles>
 				<role>Project Lead</role>
 				<role>Developer</role>
