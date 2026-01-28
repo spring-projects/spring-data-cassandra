@@ -85,8 +85,7 @@ public class Columns implements Iterable<ColumnName> {
 		Map<ColumnName, List<Selector>> columns = new LinkedHashMap<>(properties.length, 1);
 
 		for (TypedPropertyPath<T, ?> columnName : properties) {
-			TypedPropertyPath<T, ?> path = TypedPropertyPath.of(columnName);
-			add(columns, ColumnName.from(path));
+			add(columns, ColumnName.from(columnName));
 		}
 
 		return new Columns(columns);

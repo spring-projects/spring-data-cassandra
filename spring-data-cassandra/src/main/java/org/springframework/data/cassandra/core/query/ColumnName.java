@@ -47,7 +47,9 @@ public abstract class ColumnName {
 	 * @since 5.1
 	 */
 	public static <T, P> ColumnName from(TypedPropertyPath<T, P> property) {
-		return from((PropertyPath) TypedPropertyPath.of(property));
+		// lambdas/method references do not provide equality semantics, so we need to obtain the resolved PropertyPath
+		// variant
+		return from((PropertyPath) (TypedPropertyPath.of(property)));
 	}
 
 	/**
@@ -213,8 +215,14 @@ public abstract class ColumnName {
 
 		@Override
 		public boolean equals(@Nullable Object obj) {
-			return super.equals(obj)
-					&& (obj instanceof PropertyPathColumnName that && this.propertyPath.equals(that.propertyPath));
+
+			if (obj instanceof PropertyPathColumnName that) {
+				if (!this.propertyPath.equals(that.propertyPath)) {
+					return false;
+				}
+			}
+
+			return super.equals(obj);
 		}
 
 		@Override
