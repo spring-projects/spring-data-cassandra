@@ -27,6 +27,7 @@ import java.util.Map;
 import org.jspecify.annotations.Nullable;
 
 import org.springframework.data.cassandra.core.query.Update.AddToOp.Mode;
+import org.springframework.data.core.TypedPropertyPath;
 import org.springframework.lang.CheckReturnValue;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
@@ -79,6 +80,15 @@ public class Update {
 	}
 
 	/**
+	 * Set the {@code property} to {@code value}.
+	 *
+	 * @return a new {@link Update}.
+	 */
+	public static <T, P> Update update(TypedPropertyPath<T, P> property, @Nullable Object value) {
+		return empty().set(property, value);
+	}
+
+	/**
 	 * Set the {@code columnName} to {@code value}.
 	 *
 	 * @return a new {@link Update}.
@@ -92,6 +102,19 @@ public class Update {
 	}
 
 	/**
+	 * Set the {@code property} to {@code value}.
+	 *
+	 * @param property must not be {@literal null}.
+	 * @param value value to set on column with name, may be {@literal null}.
+	 * @return a new {@link Update} object containing the merge result of the existing assignments and the current
+	 *         assignment.
+	 */
+	@CheckReturnValue
+	public <T, P> Update set(TypedPropertyPath<T, P> property, @Nullable Object value) {
+		return set(ColumnName.from(property), value);
+	}
+
+	/**
 	 * Set the {@code columnName} to {@code value}.
 	 *
 	 * @param columnName must not be {@literal null}.
@@ -101,7 +124,23 @@ public class Update {
 	 */
 	@CheckReturnValue
 	public Update set(String columnName, @Nullable Object value) {
-		return add(new SetOp(ColumnName.from(columnName), value));
+		return set(ColumnName.from(columnName), value);
+	}
+
+	private Update set(ColumnName columnName, @Nullable Object value) {
+		return add(new SetOp(columnName, value));
+	}
+
+	/**
+	 * Create a new {@link SetBuilder} to set a collection item for {@code property} in a fluent style.
+	 *
+	 * @param property must not be {@literal null}.
+	 * @return a new {@link AddToBuilder} to build a set assignment.
+	 * @since 5.1
+	 */
+	@CheckReturnValue
+	public <T, P> SetBuilder set(TypedPropertyPath<T, P> property) {
+		return set(ColumnName.from(property));
 	}
 
 	/**
@@ -112,7 +151,22 @@ public class Update {
 	 */
 	@CheckReturnValue
 	public SetBuilder set(String columnName) {
-		return new DefaultSetBuilder(ColumnName.from(columnName));
+		return set(ColumnName.from(columnName));
+	}
+
+	private SetBuilder set(ColumnName columnName) {
+		return new DefaultSetBuilder(columnName);
+	}
+
+	/**
+	 * Create a new {@link AddToBuilder} to add items to a collection for {@code property} in a fluent style.
+	 *
+	 * @param property must not be {@literal null}.
+	 * @return a new {@link AddToBuilder} to build an add-to assignment.
+	 */
+	@CheckReturnValue
+	public <T, P> AddToBuilder addTo(TypedPropertyPath<T, P> property) {
+		return new DefaultAddToBuilder(ColumnName.from(property));
 	}
 
 	/**
@@ -127,15 +181,41 @@ public class Update {
 	}
 
 	/**
+	 * Create a new {@link RemoveFromBuilder} to remove items from a collection for {@code property} in a fluent style.
+	 *
+	 * @param property must not be {@literal null}.
+	 * @return a new {@link RemoveFromBuilder} to build a remove-from assignment.
+	 * @since 5.1
+	 */
+	@CheckReturnValue
+	public <T, P> RemoveFromBuilder removeFrom(TypedPropertyPath<T, P> property) {
+		return new DefaultRemoveFromBuilder(ColumnName.from(property));
+	}
+
+	/**
 	 * Create a new {@link RemoveFromBuilder} to remove items from a collection for {@code columnName} in a fluent style.
 	 *
 	 * @param columnName must not be {@literal null}.
-	 * @return a new {@link RemoveFromBuilder} to build an remove-from assignment.
+	 * @return a new {@link RemoveFromBuilder} to build a remove-from assignment.
 	 * @since 3.1.4
 	 */
 	@CheckReturnValue
 	public RemoveFromBuilder removeFrom(String columnName) {
 		return new DefaultRemoveFromBuilder(ColumnName.from(columnName));
+	}
+
+	/**
+	 * Remove {@code value} from the collection at {@code property}.
+	 *
+	 * @param property must not be {@literal null}.
+	 * @param value must not be {@literal null}.
+	 * @return a new {@link Update} object containing the merge result of the existing assignments and the current
+	 *         assignment.
+	 * @since 5.1s
+	 */
+	@CheckReturnValue
+	public <T, P> Update remove(TypedPropertyPath<T, P> property, Object value) {
+		return remove(ColumnName.from(property), value);
 	}
 
 	/**
@@ -148,7 +228,25 @@ public class Update {
 	 */
 	@CheckReturnValue
 	public Update remove(String columnName, Object value) {
-		return add(new RemoveOp(ColumnName.from(columnName), Collections.singletonList(value)));
+		return remove(ColumnName.from(columnName), value);
+	}
+
+	@CheckReturnValue
+	private Update remove(ColumnName columnName, Object value) {
+		return add(new RemoveOp(columnName, Collections.singletonList(value)));
+	}
+
+	/**
+	 * Cleat the collection at {@code property}.
+	 *
+	 * @param property must not be {@literal null}.
+	 * @return a new {@link Update} object containing the merge result of the existing assignments and the current
+	 *         assignment.
+	 * @since 5.1
+	 */
+	@CheckReturnValue
+	public <T, P> Update clear(TypedPropertyPath<T, P> property) {
+		return set(property, Collections.emptyList());
 	}
 
 	/**
@@ -160,7 +258,34 @@ public class Update {
 	 */
 	@CheckReturnValue
 	public Update clear(String columnName) {
-		return add(new SetOp(ColumnName.from(columnName), Collections.emptyList()));
+		return set(columnName, Collections.emptyList());
+	}
+
+	/**
+	 * Increment the value at {@code property} by {@literal 1}.
+	 *
+	 * @param property must not be {@literal null}.
+	 * @return a new {@link Update} object containing the merge result of the existing assignments and the current
+	 *         assignment.
+	 * @since 5.1
+	 */
+	@CheckReturnValue
+	public <T, P> Update increment(TypedPropertyPath<T, P> property) {
+		return increment(property, 1);
+	}
+
+	/**
+	 * Increment the value at {@code property} by {@code delta}.
+	 *
+	 * @param property must not be {@literal null}.
+	 * @param delta increment value.
+	 * @return a new {@link Update} object containing the merge result of the existing assignments and the current
+	 *         assignment.
+	 * @since 5.1
+	 */
+	@CheckReturnValue
+	public <T, P> Update increment(TypedPropertyPath<T, P> property, Number delta) {
+		return increment(ColumnName.from(property), delta);
 	}
 
 	/**
@@ -185,7 +310,39 @@ public class Update {
 	 */
 	@CheckReturnValue
 	public Update increment(String columnName, Number delta) {
-		return add(new IncrOp(ColumnName.from(columnName), delta));
+		return increment(ColumnName.from(columnName), delta);
+	}
+
+	@CheckReturnValue
+	private Update increment(ColumnName columnName, Number delta) {
+		return add(new IncrOp(columnName, delta));
+	}
+
+	/**
+	 * Decrement the value at {@code property} by {@literal 1}.
+	 *
+	 * @param property must not be {@literal null}.
+	 * @return a new {@link Update} object containing the merge result of the existing assignments and the current
+	 *         assignment.
+	 * @since 5.1
+	 */
+	@CheckReturnValue
+	public <T, P> Update decrement(TypedPropertyPath<T, P> property) {
+		return decrement(property, 1);
+	}
+
+	/**
+	 * Decrement the value at {@code property} by {@code delta}.
+	 *
+	 * @param property must not be {@literal null}.
+	 * @param delta decrement value.
+	 * @return a new {@link Update} object containing the merge result of the existing assignments and the current
+	 *         assignment.
+	 * @since 5.1
+	 */
+	@CheckReturnValue
+	public <T, P> Update decrement(TypedPropertyPath<T, P> property, Number delta) {
+		return decrement(ColumnName.from(property), delta);
 	}
 
 	/**
@@ -210,18 +367,22 @@ public class Update {
 	 */
 	@CheckReturnValue
 	public Update decrement(String columnName, Number delta) {
+		return decrement(ColumnName.from(columnName), delta);
+	}
+
+	private Update decrement(ColumnName columnName, Number delta) {
 
 		if (delta instanceof Integer || delta instanceof Long) {
 
 			long deltaValue = delta.longValue() > 0 ? -Math.abs(delta.longValue()) : delta.longValue();
-			return add(new IncrOp(ColumnName.from(columnName), deltaValue));
+			return add(new IncrOp(columnName, deltaValue));
 		}
 
 		double deltaValue = delta.doubleValue();
 
 		deltaValue = deltaValue > 0 ? -Math.abs(deltaValue) : deltaValue;
 
-		return add(new IncrOp(ColumnName.from(columnName), deltaValue));
+		return add(new IncrOp(columnName, deltaValue));
 	}
 
 	/**
