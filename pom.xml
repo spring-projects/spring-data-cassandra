@@ -106,6 +106,7 @@
 		<cassandra.version>5.0.3</cassandra.version>
 		<cassandra-driver.version>4.19.2</cassandra-driver.version>
 		<dist.id>spring-data-cassandra</dist.id>
+		<antora.javadoc-artifactId>spring-data-cassandra</antora.javadoc-artifactId>
 		<el.version>1.0</el.version>
 		<multithreadedtc.version>1.01</multithreadedtc.version>
 		<project.type>multi</project.type>
