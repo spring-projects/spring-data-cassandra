@@ -15,11 +15,11 @@
  */
 package org.springframework.data.cassandra.config;
 
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.Set;
 
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,7 +30,6 @@ import org.springframework.data.cassandra.SessionFactory;
 import org.springframework.data.cassandra.core.CassandraAdminTemplate;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.data.cassandra.core.convert.CassandraCustomConversions;
-import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.cql.session.init.KeyspacePopulator;
 import org.springframework.data.cassandra.core.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.core.mapping.SimpleUserTypeResolver;
@@ -69,15 +68,11 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 	public CassandraConverter cassandraConverter() {
 
 		CqlSession cqlSession = getRequiredSession();
+		CassandraCustomConversions customConversions = requireBeanOfType(CassandraCustomConversions.class);
+		CassandraMappingContext mappingContext = requireBeanOfType(CassandraMappingContext.class);
 
-		MappingCassandraConverter converter = new MappingCassandraConverter(
-				requireBeanOfType(CassandraMappingContext.class));
-
-		converter.setCodecRegistry(cqlSession.getContext().getCodecRegistry());
-		converter.setUserTypeResolver(userTypeResolver(cqlSession));
-		converter.setCustomConversions(requireBeanOfType(CassandraCustomConversions.class));
-
-		return converter;
+		return CassandraConfiguration.createConverter(customConversions, mappingContext, userTypeResolver(cqlSession),
+				cqlSession.getContext().getCodecRegistry());
 	}
 
 	/**
@@ -100,18 +95,8 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 	@Bean
 	public CassandraMappingContext cassandraMappingContext(CassandraManagedTypes cassandraManagedTypes) {
 
-		CqlSession cqlSession = getRequiredSession();
-
-		CassandraMappingContext mappingContext = new CassandraMappingContext();
-
 		CustomConversions customConversions = requireBeanOfType(CassandraCustomConversions.class);
-
-		getBeanClassLoader().ifPresent(mappingContext::setBeanClassLoader);
-
-		mappingContext.setManagedTypes(cassandraManagedTypes);
-		mappingContext.setSimpleTypeHolder(customConversions.getSimpleTypeHolder());
-
-		return mappingContext;
+		return CassandraConfiguration.createMappingContext(cassandraManagedTypes, customConversions);
 	}
 
 	/**
@@ -207,12 +192,9 @@ public abstract class AbstractCassandraConfiguration extends AbstractSessionConf
 	 * @since 2.0
 	 */
 	protected Set<Class<?>> getInitialEntitySet() throws ClassNotFoundException {
-
-		CassandraEntityClassScanner scanner = new CassandraEntityClassScanner();
-		scanner.setBeanClassLoader(this.beanClassLoader);
-		scanner.setEntityBasePackages(Arrays.asList(getEntityBasePackages()));
-
-		return scanner.scanForEntityClasses();
+		return CassandraConfiguration.getInitialEntitySet(
+				this.getBeanClassLoader().orElseThrow(() -> new IllegalStateException("No BeanClassLoader available")),
+				getEntityBasePackages());
 	}
 
 	/**
