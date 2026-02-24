@@ -140,6 +140,7 @@ public class CassandraMappingContext
 		this.applicationContext = applicationContext;
 	}
 
+	@Override
 	public void setBeanClassLoader(ClassLoader beanClassLoader) {
 		this.beanClassLoader = beanClassLoader;
 	}
