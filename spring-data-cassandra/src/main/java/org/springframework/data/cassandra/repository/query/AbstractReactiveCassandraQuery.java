@@ -121,6 +121,7 @@ public abstract class AbstractReactiveCassandraQuery extends CassandraRepository
 		return new ResultProcessingExecution(getExecutionToWrap(parameterAccessor), resultProcessing);
 	}
 
+	@SuppressWarnings("NullAway")
 	private ReactiveCassandraQueryExecution getExecutionToWrap(CassandraParameterAccessor parameterAccessor) {
 
 		if (getQueryMethod().isSliceQuery()) {

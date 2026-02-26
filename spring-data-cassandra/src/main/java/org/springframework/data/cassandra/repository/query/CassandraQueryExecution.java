@@ -176,7 +176,7 @@ interface CassandraQueryExecution {
 
 			Limit limit = parameterAccessor.getLimit();
 			CassandraScrollPosition scrollPosition = parameterAccessor.getScrollPosition();
-			if (limit.isLimited() || !scrollPosition.isInitial()) {
+			if (limit.isLimited() || (scrollPosition != null && !scrollPosition.isInitial())) {
 				return new WindowExecution(operations, scrollPosition, limit).execute(statement, type).getContent();
 			}
 
@@ -362,6 +362,7 @@ interface CassandraQueryExecution {
 		}
 
 		@Override
+		@SuppressWarnings("NullAway")
 		public @Nullable Object convert(@Nullable Object source) {
 
 			ReturnedType returnedType = processor.getReturnedType();

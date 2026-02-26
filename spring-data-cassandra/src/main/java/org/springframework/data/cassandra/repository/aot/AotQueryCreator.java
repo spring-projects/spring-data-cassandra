@@ -74,6 +74,7 @@ class AotQueryCreator extends CassandraQueryCreator {
 		}
 
 		@Override
+		@SuppressWarnings("NullAway")
 		public CassandraScrollPosition getScrollPosition() {
 			return null;
 		}

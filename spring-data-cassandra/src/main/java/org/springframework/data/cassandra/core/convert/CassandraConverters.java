@@ -105,6 +105,7 @@ public abstract class CassandraConverters {
 		INSTANCE;
 
 		@Override
+		@SuppressWarnings("NullAway")
 		public @Nullable Date convert(Row row) {
 
 			Instant instant = row.getInstant(0);
@@ -124,6 +125,7 @@ public abstract class CassandraConverters {
 		INSTANCE;
 
 		@Override
+		@SuppressWarnings("NullAway")
 		public @Nullable Instant convert(Row row) {
 			return row.getInstant(0);
 		}
@@ -140,6 +142,7 @@ public abstract class CassandraConverters {
 		INSTANCE;
 
 		@Override
+		@SuppressWarnings("NullAway")
 		public @Nullable InetAddress convert(Row row) {
 			return row.getInetAddress(0);
 		}
@@ -180,6 +183,7 @@ public abstract class CassandraConverters {
 			}
 
 			@Override
+			@SuppressWarnings("NullAway")
 			public @Nullable T convert(Row source) {
 
 				Object object = source.getObject(0);
@@ -200,6 +204,7 @@ public abstract class CassandraConverters {
 		INSTANCE;
 
 		@Override
+		@SuppressWarnings("NullAway")
 		public @Nullable String convert(Row row) {
 			return row.getString(0);
 		}
@@ -216,6 +221,7 @@ public abstract class CassandraConverters {
 		INSTANCE;
 
 		@Override
+		@SuppressWarnings("NullAway")
 		public @Nullable UUID convert(Row row) {
 			return row.getUuid(0);
 		}
@@ -232,6 +238,7 @@ public abstract class CassandraConverters {
 		INSTANCE;
 
 		@Override
+		@SuppressWarnings("NullAway")
 		public @Nullable LocalDate convert(Row row) {
 			return row.getLocalDate(0);
 		}

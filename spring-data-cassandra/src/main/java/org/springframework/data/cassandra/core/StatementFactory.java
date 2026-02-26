@@ -1624,7 +1624,7 @@ public class StatementFactory {
 							Predicates.negate(CassandraPersistentProperty::hasExplicitColumnName));
 
 					for (CassandraPersistentProperty property : mapped) {
-						columns = columns.include(translator.translate(property).getColumnName());
+						columns = columns.include(translator.translate(property).getRequiredColumnName());
 					}
 				}
 

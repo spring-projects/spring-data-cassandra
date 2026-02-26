@@ -16,6 +16,7 @@
 package org.springframework.data.cassandra.core;
 
 import com.datastax.oss.driver.api.core.cql.Row;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Converter for Cassandra query results.
@@ -31,7 +32,7 @@ import com.datastax.oss.driver.api.core.cql.Row;
  * @since 5.0
  */
 @FunctionalInterface
-public interface QueryResultConverter<T, R> {
+public interface QueryResultConverter<T, R extends @Nullable Object> {
 
 	/**
 	 * Returns a function that returns the materialized entity.

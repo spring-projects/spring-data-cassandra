@@ -115,6 +115,7 @@ public abstract class AbstractCassandraQuery extends CassandraRepositoryQuerySup
 		return new ResultProcessingExecution(getExecutionToWrap(parameterAccessor, resultProcessing), resultProcessing);
 	}
 
+	@SuppressWarnings("NullAway")
 	private CassandraQueryExecution getExecutionToWrap(CassandraParameterAccessor parameterAccessor,
 			Converter<Object, Object> resultProcessing) {
 
