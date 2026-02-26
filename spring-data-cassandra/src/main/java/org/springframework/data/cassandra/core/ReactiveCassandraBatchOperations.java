@@ -279,7 +279,7 @@ public interface ReactiveCassandraBatchOperations {
 	 * @throws IllegalStateException if the batch was already executed.
 	 * @see UpdateOptions
 	 */
-	@Contract("_ -> this")
+	@Contract("_, _ -> this")
 	ReactiveCassandraBatchOperations update(Mono<? extends Iterable<?>> entities, WriteOptions options);
 
 	/**
@@ -291,7 +291,7 @@ public interface ReactiveCassandraBatchOperations {
 	 * @throws IllegalStateException if the batch was already executed.
 	 * @since 3.2.2
 	 */
-	@Contract("_ -> this")
+	@Contract("_, _ -> this")
 	default ReactiveCassandraBatchOperations delete(Object entity, WriteOptions options) {
 
 		Assert.notNull(entity, "Entity must not be null");

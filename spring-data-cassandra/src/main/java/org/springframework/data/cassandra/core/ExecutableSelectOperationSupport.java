@@ -117,6 +117,7 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 			}
 	}
 
+	@SuppressWarnings("unchecked")
 	class TypedSelectSupport<T> extends TerminatingSelectResultSupport<T, T> implements TerminatingResults<T> {
 
 		private final Class<T> domainType;
@@ -142,12 +143,12 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 
 		final Statement<?> statement;
 
-		final @Nullable RowMapper<T> rowMapper;
+		final RowMapper<T> rowMapper;
 
 		TerminatingSelectResultSupport(Statement<?> statement,
 				@Nullable RowMapper<T> rowMapper) {
 			this.statement = statement;
-			this.rowMapper = rowMapper;
+			this.rowMapper = rowMapper != null ? rowMapper : NoOpRowMapper.INSTANCE;
 		}
 
 		TerminatingSelectResultSupport(Statement<?> statement, Class<S> domainType,
@@ -177,7 +178,7 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 		@Override
 		public @Nullable T oneValue() {
 
-			if (this.rowMapper == null) {
+			if (ObjectUtils.nullSafeEquals(NoOpRowMapper.INSTANCE, this.rowMapper)) {
 				return (T) template.queryForResultSet(this.statement);
 			}
 
@@ -208,6 +209,18 @@ class ExecutableSelectOperationSupport implements ExecutableSelectOperation {
 		@Override
 		public Stream<T> stream() {
 			return template.getCqlOperations().queryForStream(this.statement, this.rowMapper);
+		}
+
+		@SuppressWarnings("rawtypes")
+		enum NoOpRowMapper implements RowMapper {
+
+			INSTANCE;
+
+
+			@Override
+			public Object mapRow(Row row, int rowNum) {
+				return row;
+			}
 		}
 
 	}

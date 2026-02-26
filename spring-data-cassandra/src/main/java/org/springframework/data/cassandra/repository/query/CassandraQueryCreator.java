@@ -106,6 +106,7 @@ public class CassandraQueryCreator extends AbstractQueryCreator<Query, Filter> {
 	}
 
 	@Override
+	@SuppressWarnings("NullAway")
 	protected Filter create(Part part, Iterator<Object> iterator) {
 
 		PersistentPropertyPath<CassandraPersistentProperty> path = getMappingContext()
@@ -122,6 +123,7 @@ public class CassandraQueryCreator extends AbstractQueryCreator<Query, Filter> {
 	}
 
 	@Override
+	@SuppressWarnings("NullAway")
 	protected Filter and(Part part, @Nullable Filter base, Iterator<Object> iterator) {
 
 		if (base != null) {
@@ -158,6 +160,7 @@ public class CassandraQueryCreator extends AbstractQueryCreator<Query, Filter> {
 		return query;
 	}
 
+	@SuppressWarnings("NullAway")
 	private Sort getVectorSort() {
 		return VectorSort.ann(getVectorProperty().toDotPath(), parameterAccessor.getVector());
 	}

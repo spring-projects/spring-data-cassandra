@@ -89,6 +89,7 @@ class QueryStatementCreator {
 	 * @param parameterAccessor must not be {@literal null}.
 	 * @return the {@literal SELECT} {@link Statement}.
 	 */
+	@SuppressWarnings("NullAway")
 	SimpleStatement select(StatementFactory statementFactory, PartTree tree, CassandraParameterAccessor parameterAccessor,
 			ResultProcessor processor) {
 

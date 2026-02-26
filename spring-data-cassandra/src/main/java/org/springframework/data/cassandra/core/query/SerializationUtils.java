@@ -113,11 +113,13 @@ abstract class SerializationUtils {
 				s -> String.format("%s : %s", serialize(s.getKey()), serialize(s.getValue())));
 	}
 
+	@SuppressWarnings("NullAway")
 	private static String toString(Set<?> source) {
 		return iterableToDelimitedString(source, "{", "}",
 				(Converter<Object, Object>) SerializationUtils::serializeToCqlSafely);
 	}
 
+	@SuppressWarnings("NullAway")
 	private static String toString(Collection<?> source) {
 		return iterableToDelimitedString(source, "[", "]",
 				(Converter<Object, Object>) SerializationUtils::serializeToCqlSafely);

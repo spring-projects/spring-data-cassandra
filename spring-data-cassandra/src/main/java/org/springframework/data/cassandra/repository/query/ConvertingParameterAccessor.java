@@ -57,11 +57,13 @@ public class ConvertingParameterAccessor implements CassandraParameterAccessor {
 	}
 
 	@Override
+	@SuppressWarnings("NullAway")
 	public CassandraScrollPosition getScrollPosition() {
 		return delegate.getScrollPosition();
 	}
 
 	@Override
+	@SuppressWarnings("NullAway")
 	public ScoringFunction getScoringFunction() {
 		return delegate.getScoringFunction();
 	}
@@ -82,6 +84,7 @@ public class ConvertingParameterAccessor implements CassandraParameterAccessor {
 	}
 
 	@Override
+	@SuppressWarnings("NullAway")
 	public Pageable getPageable() {
 		return this.delegate.getPageable();
 	}
