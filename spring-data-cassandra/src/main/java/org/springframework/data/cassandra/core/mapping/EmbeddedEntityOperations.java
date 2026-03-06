@@ -198,6 +198,16 @@ public class EmbeddedEntityOperations {
 		}
 
 		@Override
+		public @Nullable CassandraPersistentProperty getTransientProperty(String name) {
+			return delegate.getTransientProperty(name);
+		}
+
+		@Override
+		public boolean isTransient(String property) {
+			return delegate.isTransient(property);
+		}
+
+		@Override
 		public boolean hasIdProperty() {
 			return delegate.hasIdProperty();
 		}
