@@ -15,11 +15,17 @@
  */
 package org.springframework.data.cassandra.observability;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 import io.micrometer.observation.Observation;
 import io.micrometer.observation.tck.TestObservationRegistry;
 
+import org.assertj.core.api.Assertions;
+import org.assertj.core.api.InstanceOfAssertFactory;
 import org.junit.jupiter.api.Test;
 
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
@@ -28,6 +34,7 @@ import com.datastax.oss.driver.api.core.cql.SimpleStatement;
  * Unit test for {@link ObservationStatement}
  *
  * @author Mark Paluch
+ * @author Ben Efrati
  */
 class ObservationStatementUnitTests {
 
@@ -49,5 +56,26 @@ class ObservationStatementUnitTests {
 		assertThat(statement1).isEqualTo(statement2).hasSameHashCodeAs(statement2);
 		assertThat(statement1).isNotEqualTo(statement3);
 		assertThat(statement1.hashCode()).isNotEqualTo(statement3.hashCode());
+	}
+
+	@Test // GH-1651
+	void mutatingCallsReturnProxyPreservingObservation() {
+
+		TestObservationRegistry registry = TestObservationRegistry.create();
+
+		Observation observation = Observation.start("foo", registry);
+
+		SimpleStatement statement = ObservationStatement.createProxy(observation,
+				SimpleStatement.newInstance("SELECT * FROM foo"));
+		Map<String, ByteBuffer> customPayload = Map.of("key",
+				ByteBuffer.wrap("value".getBytes(StandardCharsets.UTF_8)));
+		SimpleStatement customPayloadStatement = statement.setCustomPayload(customPayload);
+		assertThat(customPayloadStatement)
+				.isNotEqualTo(statement)
+				.doesNotHaveSameHashCodeAs(statement)
+				.asInstanceOf(new InstanceOfAssertFactory<>(CassandraObservationSupplier.class, Assertions::assertThat))
+				.extracting(CassandraObservationSupplier::getObservation)
+				.isEqualTo(observation);
+
 	}
 }
