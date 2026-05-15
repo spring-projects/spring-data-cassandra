@@ -34,6 +34,7 @@ import com.datastax.oss.driver.api.core.cql.Statement;
  *
  * @author Mark Paluch
  * @author Marcin Grzejszczak
+ * @author Ben Efrati
  * @since 4.0
  */
 final class ObservationStatement implements MethodInterceptor {
@@ -103,9 +104,10 @@ final class ObservationStatement implements MethodInterceptor {
 			}
 		}
 
-		Object result = invocation.proceed();
-		if (result instanceof Statement<?>) {
-			this.delegate = (Statement<?>) result;
+		Object result = invocation.proceed(); 
+		if (result instanceof Statement<?> statement) { 
+			this.delegate = statement;
+			return createProxy(this.observation, statement);
 		}
 
 		return result;
