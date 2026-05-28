@@ -195,10 +195,12 @@ class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceCreating
 	@Test // DATACASS-292
 	void updateShouldUpdateEntityWithLwt() {
 
+		InsertOptions seedOptions = InsertOptions.builder().withIfNotExists().build();
 		UpdateOptions lwtOptions = UpdateOptions.builder().withIfExists().build();
 
 		User user = new User("heisenberg", "Walter", "White");
-		template.insert(user).as(StepVerifier::create).expectNextCount(1).verifyComplete();
+		template.insert(user, seedOptions).map(WriteResult::wasApplied).as(StepVerifier::create).expectNext(true)
+				.verifyComplete();
 
 		user.setFirstname("Walter Hartwell");
 
@@ -276,10 +278,14 @@ class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceCreating
 	@Test // DATACASS-606
 	void deleteShouldRemoveEntityWithLwt() {
 
+		InsertOptions seedOptions = InsertOptions.builder().withIfNotExists().build();
 		DeleteOptions lwtOptions = DeleteOptions.builder().withIfExists().build();
 
 		User user = new User("heisenberg", "Walter", "White");
-		template.insert(user).as(StepVerifier::create).expectNextCount(1).verifyComplete();
+		template.insert(user, seedOptions).map(WriteResult::wasApplied) //
+				.as(StepVerifier::create) //
+				.expectNext(true) //
+				.verifyComplete();
 
 		template.delete(user, lwtOptions).map(WriteResult::wasApplied) //
 				.as(StepVerifier::create) //
@@ -295,10 +301,14 @@ class ReactiveCassandraTemplateIntegrationTests extends AbstractKeyspaceCreating
 	@Test // DATACASS-606
 	void deleteByQueryShouldRemoveEntityWithLwt() {
 
+		InsertOptions seedOptions = InsertOptions.builder().withIfNotExists().build();
 		DeleteOptions lwtOptions = DeleteOptions.builder().withIfExists().build();
 
 		User user = new User("heisenberg", "Walter", "White");
-		template.insert(user).as(StepVerifier::create).expectNextCount(1).verifyComplete();
+		template.insert(user, seedOptions).map(WriteResult::wasApplied) //
+				.as(StepVerifier::create) //
+				.expectNext(true) //
+				.verifyComplete();
 
 		Query query = Query.query(where("id").is("heisenberg")).queryOptions(lwtOptions);
 
