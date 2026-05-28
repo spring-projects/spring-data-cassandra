@@ -295,10 +295,11 @@ class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 	@Test // DATACASS-606
 	void deleteShouldRemoveEntityWithLwt() {
 
+		InsertOptions seedOptions = InsertOptions.builder().withIfNotExists().build();
 		DeleteOptions lwtOptions = DeleteOptions.builder().withIfExists().build();
 
 		User user = new User("heisenberg", "Walter", "White");
-		getUninterruptibly(template.insert(user));
+		assertThat(getUninterruptibly(template.insert(user, seedOptions)).wasApplied()).isTrue();
 
 		assertThat(getUninterruptibly(template.delete(user, lwtOptions)).wasApplied()).isTrue();
 	}
@@ -306,10 +307,11 @@ class AsyncCassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingInt
 	@Test // DATACASS-606
 	void deleteByQueryShouldRemoveEntityWithLwt() {
 
+		InsertOptions seedOptions = InsertOptions.builder().withIfNotExists().build();
 		DeleteOptions lwtOptions = DeleteOptions.builder().withIfExists().build();
 
 		User user = new User("heisenberg", "Walter", "White");
-		getUninterruptibly(template.insert(user));
+		assertThat(getUninterruptibly(template.insert(user, seedOptions)).wasApplied()).isTrue();
 
 		Query query = Query.query(where("id").is("heisenberg")).queryOptions(lwtOptions);
 		assertThat(getUninterruptibly(template.delete(query, User.class))).isTrue();

@@ -368,11 +368,12 @@ class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrat
 	@Test // DATACASS-292
 	void updateShouldUpdateEntityWithLwt() {
 
+		InsertOptions seedOptions = InsertOptions.builder().withIfNotExists().build();
 		UpdateOptions lwtOptions = UpdateOptions.builder().withIfExists().build();
 
 		User user = new User("heisenberg", "Walter", "White");
 
-		template.insert(user);
+		assertThat(template.insert(user, seedOptions).wasApplied()).isTrue();
 
 		user.setFirstname("Walter Hartwell");
 
@@ -447,10 +448,11 @@ class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrat
 	@Test // DATACASS-606
 	void deleteShouldRemoveEntityWithLwt() {
 
+		InsertOptions seedOptions = InsertOptions.builder().withIfNotExists().build();
 		DeleteOptions lwtOptions = DeleteOptions.builder().withIfExists().build();
 
 		User user = new User("heisenberg", "Walter", "White");
-		template.insert(user);
+		assertThat(template.insert(user, seedOptions).wasApplied()).isTrue();
 
 		assertThat(template.delete(user, lwtOptions).wasApplied()).isTrue();
 	}
@@ -458,10 +460,11 @@ class CassandraTemplateIntegrationTests extends AbstractKeyspaceCreatingIntegrat
 	@Test // DATACASS-606
 	void deleteByQueryShouldRemoveEntityWithLwt() {
 
+		InsertOptions seedOptions = InsertOptions.builder().withIfNotExists().build();
 		DeleteOptions lwtOptions = DeleteOptions.builder().withIfExists().build();
 
 		User user = new User("heisenberg", "Walter", "White");
-		template.insert(user);
+		assertThat(template.insert(user, seedOptions).wasApplied()).isTrue();
 
 		Query query = Query.query(where("id").is("heisenberg")).queryOptions(lwtOptions);
 		assertThat(template.delete(query, User.class)).isTrue();
