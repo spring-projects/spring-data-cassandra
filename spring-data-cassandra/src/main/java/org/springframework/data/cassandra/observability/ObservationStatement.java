@@ -37,7 +37,7 @@ import com.datastax.oss.driver.api.core.cql.Statement;
  * @author Ben Efrati
  * @since 4.0
  */
-final class ObservationStatement implements MethodInterceptor {
+class ObservationStatement implements MethodInterceptor {
 
 	private final Observation observation;
 
@@ -80,7 +80,6 @@ final class ObservationStatement implements MethodInterceptor {
 	public @Nullable Object invoke(MethodInvocation invocation) throws Throwable {
 
 		Method method = invocation.getMethod();
-		@Nullable
 		Object[] args = invocation.getArguments();
 
 		String name = method.getName();
@@ -104,8 +103,8 @@ final class ObservationStatement implements MethodInterceptor {
 			}
 		}
 
-		Object result = invocation.proceed(); 
-		if (result instanceof Statement<?> statement) { 
+		Object result = invocation.proceed();
+		if (result instanceof Statement<?> statement) {
 			this.delegate = statement;
 			return createProxy(this.observation, statement);
 		}
@@ -114,7 +113,7 @@ final class ObservationStatement implements MethodInterceptor {
 	}
 
 	@Override
-	public boolean equals(Object o) {
+	public boolean equals(@Nullable Object o) {
 		if (!(o instanceof ObservationStatement that)) {
 			return false;
 		}
@@ -125,4 +124,5 @@ final class ObservationStatement implements MethodInterceptor {
 	public int hashCode() {
 		return ObjectUtils.nullSafeHash(delegate);
 	}
+
 }
