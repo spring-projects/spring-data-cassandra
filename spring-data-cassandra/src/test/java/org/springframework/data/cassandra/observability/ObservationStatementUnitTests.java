@@ -15,17 +15,16 @@
  */
 package org.springframework.data.cassandra.observability;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.InstanceOfAssertFactories.*;
+
+import io.micrometer.observation.Observation;
+import io.micrometer.observation.tck.TestObservationRegistry;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-import io.micrometer.observation.Observation;
-import io.micrometer.observation.tck.TestObservationRegistry;
-
-import org.assertj.core.api.Assertions;
-import org.assertj.core.api.InstanceOfAssertFactory;
 import org.junit.jupiter.api.Test;
 
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
@@ -67,15 +66,13 @@ class ObservationStatementUnitTests {
 
 		SimpleStatement statement = ObservationStatement.createProxy(observation,
 				SimpleStatement.newInstance("SELECT * FROM foo"));
-		Map<String, ByteBuffer> customPayload = Map.of("key",
-				ByteBuffer.wrap("value".getBytes(StandardCharsets.UTF_8)));
+		Map<String, ByteBuffer> customPayload = Map.of("key", ByteBuffer.wrap("value".getBytes(StandardCharsets.UTF_8)));
 		SimpleStatement customPayloadStatement = statement.setCustomPayload(customPayload);
-		assertThat(customPayloadStatement)
-				.isNotEqualTo(statement)
-				.doesNotHaveSameHashCodeAs(statement)
-				.asInstanceOf(new InstanceOfAssertFactory<>(CassandraObservationSupplier.class, Assertions::assertThat))
-				.extracting(CassandraObservationSupplier::getObservation)
-				.isEqualTo(observation);
 
+		assertThat(customPayloadStatement) //
+				.isNotSameAs(statement) //
+				.asInstanceOf(type(CassandraObservationSupplier.class)) //
+				.extracting(CassandraObservationSupplier::getObservation) //
+				.isEqualTo(observation);
 	}
 }
