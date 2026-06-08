@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.jspecify.annotations.Nullable;
@@ -203,9 +204,8 @@ public class QueryMapper {
 			columns.getSelector(column).forEach(selector -> {
 
 				List<CqlIdentifier> mappedColumnNames = getCqlIdentifier(column, field);
-
 				for (CqlIdentifier mappedColumnName : mappedColumnNames) {
-					selectors.add(getMappedSelector(selector, mappedColumnName, field));
+					selectors.add(getMappedSelector(field, selector, entity, mappedColumnName));
 				}
 			});
 		}
@@ -215,6 +215,16 @@ public class QueryMapper {
 		}
 
 		return selectors;
+	}
+
+	private void doWithSelector(Selector selector, ColumnName column, CassandraPersistentEntity<?> entity,
+			Consumer<Selector> mappedConsumer) {
+
+		Field field = createPropertyField(entity, column);
+		List<CqlIdentifier> mappedColumnNames = getCqlIdentifier(column, field);
+		for (CqlIdentifier mappedColumnName : mappedColumnNames) {
+			mappedConsumer.accept(getMappedSelector(field, selector, entity, mappedColumnName));
+		}
 	}
 
 	private void addColumns(CassandraPersistentEntity<?> entity, List<Selector> selectors) {
@@ -231,44 +241,44 @@ public class QueryMapper {
 		});
 	}
 
-	private Selector getMappedSelector(Selector selector, CqlIdentifier cqlIdentifier, Field field) {
+	private Selector getMappedSelector(Field field, Selector selector, CassandraPersistentEntity<?> entity,
+			CqlIdentifier cqlIdentifier) {
 
 		if (selector instanceof ColumnSelector columnSelector) {
-
 			ColumnSelector mappedColumnSelector = ColumnSelector.from(cqlIdentifier);
-
 			return columnSelector.getAlias().map(mappedColumnSelector::as).orElse(mappedColumnSelector);
 		}
 
 		if (selector instanceof FunctionCall functionCall) {
 
-			FunctionCall mappedFunctionCall = FunctionCall.from(functionCall.getExpression(),
-					functionCall.getParameters().stream().map(obj -> {
+			List<Object> selectors = new ArrayList<>(functionCall.getParameters().size());
+			for (Object obj : functionCall.getParameters()) {
 
-						if (obj instanceof Selector sel) {
-							return getMappedSelector(sel, cqlIdentifier, field);
-						}
+				if (obj instanceof ColumnSelector columnSelector) {
+					doWithSelector(columnSelector, columnSelector.getColumnName(), entity, selectors::add);
+					continue;
+				}
 
-						if (obj instanceof ColumnName cn) {
+				if (obj instanceof Selector) {
+					selectors.add(getMappedSelector(field, (Selector) obj, entity, cqlIdentifier));
+					continue;
+				}
 
-							CqlIdentifier identifier = cn.getCqlIdentifier().or(() -> cn.getColumnName().map(CqlIdentifier::fromCql))
-									.orElseGet(() -> CqlIdentifier.fromCql(cn.toCql()));
+				if (obj instanceof CqlIdentifier identifier) {
+					selectors.add(getMappedSelector(field, ColumnSelector.from(identifier), entity, cqlIdentifier));
+					continue;
+				}
 
-							return getMappedSelector(ColumnSelector.from(cn), identifier, field);
-						}
+				if (obj instanceof ColumnName columnName) {
+					selectors.add(getMappedSelector(field, ColumnSelector.from(columnName), entity, cqlIdentifier));
+					continue;
+				}
 
-						if (obj instanceof CqlIdentifier identifier) {
-							return getMappedSelector(ColumnSelector.from(identifier), identifier, field);
-						}
+				obj = getMappedValue(field, CriteriaDefinition.Operators.EQ, obj);
+				selectors.add(obj);
+			}
 
-						if (field.getProperty().isPresent()) {
-							return getMappedValue(field, CriteriaDefinition.Operators.EQ, obj);
-						}
-
-						return obj;
-
-					}).toArray());
-
+			FunctionCall mappedFunctionCall = FunctionCall.from(functionCall.getExpression(), selectors.toArray());
 			return functionCall.getAlias().map(mappedFunctionCall::as).orElse(mappedFunctionCall);
 		}
 
