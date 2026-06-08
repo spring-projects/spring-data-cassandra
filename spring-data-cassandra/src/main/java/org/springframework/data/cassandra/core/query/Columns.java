@@ -40,6 +40,7 @@ import org.springframework.util.StringUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.data.CqlVector;
+import com.datastax.oss.driver.api.querybuilder.term.Term;
 
 /**
  * Value object to abstract column names involved in a CQL query. Columns can be constructed from an array of names and
@@ -470,6 +471,10 @@ public class Columns implements Iterable<ColumnName> {
 			this.alias = Optional.of(alias);
 		}
 
+		public ColumnName getColumnName() {
+			return columnName;
+		}
+
 		/**
 		 * Create a {@link ColumnSelector} given {@link ColumnName}.
 		 */
@@ -502,17 +507,13 @@ public class Columns implements Iterable<ColumnName> {
 			return new ColumnSelector(columnName, alias);
 		}
 
-		public ColumnName getColumnName() {
-			return columnName;
-		}
-
 		@Override
 		public Optional<CqlIdentifier> getAlias() {
 			return alias;
 		}
 
-		public CqlIdentifier getIdentifier() {
-			return columnName.getCqlIdentifier().orElseGet(() -> CqlIdentifier.fromCql(columnName.toCql()));
+		public CqlIdentifier getCqlIdentifier() {
+			return columnName.getCqlIdentifier().orElseGet(() -> CqlIdentifier.fromCql(getExpression()));
 		}
 
 		@Override
@@ -552,6 +553,10 @@ public class Columns implements Iterable<ColumnName> {
 
 	/**
 	 * Function call selector with alias support.
+	 * <p>
+	 * Function calls accept {@link Selector}, {@link com.datastax.oss.driver.api.querybuilder.select.Selector} or
+	 * {@link com.datastax.oss.driver.api.querybuilder.term.Term} as parameters. Numeric values are rendered inline (such
+	 * as {@code 1 in COUNT(1)}). Other parameters are represented as {@link Term}s.
 	 */
 	public static class FunctionCall implements Selector {
 
@@ -573,6 +578,16 @@ public class Columns implements Iterable<ColumnName> {
 			this.alias = Optional.of(alias);
 		}
 
+		/**
+		 * Create a {@link FunctionCall} given {@code expression} and {@code params}.
+		 *
+		 * @param expression the CQL function name.
+		 * @param params function parameters such as {@link Selector},
+		 *          {@link com.datastax.oss.driver.api.querybuilder.select.Selector} or
+		 *          {@link com.datastax.oss.driver.api.querybuilder.term.Term}.
+		 * @return the function call.
+		 * @since 4.5.12
+		 */
 		public static FunctionCall from(String expression, Object... params) {
 			return new FunctionCall(expression, Arrays.asList(params));
 		}

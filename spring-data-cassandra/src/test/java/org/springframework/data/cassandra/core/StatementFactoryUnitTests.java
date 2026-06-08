@@ -58,6 +58,7 @@ import com.datastax.oss.driver.api.core.type.DataType;
 import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.datastax.oss.driver.api.core.type.codec.TypeCodec;
 import com.datastax.oss.driver.api.core.type.reflect.GenericType;
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
 import com.datastax.oss.driver.api.querybuilder.delete.Delete;
 import com.datastax.oss.driver.api.querybuilder.insert.RegularInsert;
 import com.datastax.oss.driver.api.querybuilder.select.Select;
@@ -998,6 +999,77 @@ class StatementFactoryUnitTests {
 		String cql = updateStatementBuilder.build(ParameterHandling.INLINE).getQuery();
 
 		assertThat(cql).isEqualTo("UPDATE person SET map['key1']='value1', map['key2']='value2'");
+	}
+
+	@Test // GH-1659
+	void shouldCreateFunctionForCompositeId() {
+
+		Columns.FunctionCall call = Columns.FunctionCall.from("toJson", Columns.ColumnSelector.from("id"));
+		Query query = Query.empty().columns(Columns.empty().select("json", call));
+
+		StatementBuilder<Select> select = statementFactory.select(query,
+				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
+
+		SimpleStatement inline = select.build();
+		assertThat(inline.getQuery()).isEqualTo("SELECT tojson(groupname,hash_prefix,username) FROM group");
+	}
+
+	@Test // GH-1659
+	void shouldCreateFunctionWithTerm() {
+
+		Columns.FunctionCall call = Columns.FunctionCall.from("toJson", "foo", QueryBuilder.literal("bar"));
+		Query query = Query.empty().columns(Columns.empty().select("json", call));
+
+		StatementBuilder<Select> select = statementFactory.select(query,
+				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
+
+		SimpleStatement inline = select.build(ParameterHandling.INLINE);
+		assertThat(inline.getQuery()).isEqualTo("SELECT tojson('foo','bar') FROM group");
+
+		SimpleStatement byName = select.build(ParameterHandling.BY_NAME);
+		assertThat(byName.getQuery()).isEqualTo("SELECT tojson(:p0,'bar') FROM group");
+
+		SimpleStatement byIndex = select.build(ParameterHandling.BY_INDEX);
+		assertThat(byIndex.getQuery()).isEqualTo("SELECT tojson(?,'bar') FROM group");
+	}
+
+	@Test // GH-1659
+	void shouldCreateFunctionWithLiteral() {
+
+		Columns.FunctionCall call = Columns.FunctionCall.from("toJson", 1L);
+		Query query = Query.empty().columns(Columns.empty().select("json", call));
+
+		StatementBuilder<Select> select = statementFactory.select(query,
+				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
+
+		SimpleStatement inline = select.build(ParameterHandling.INLINE);
+		assertThat(inline.getQuery()).isEqualTo("SELECT tojson(1) FROM group");
+
+		SimpleStatement byName = select.build(ParameterHandling.BY_NAME);
+		assertThat(byName.getQuery()).isEqualTo("SELECT tojson(1) FROM group");
+
+		SimpleStatement byIndex = select.build(ParameterHandling.BY_INDEX);
+		assertThat(byIndex.getQuery()).isEqualTo("SELECT tojson(1) FROM group");
+	}
+
+	@Test // GH-1659
+	void shouldCreateFunctionWithColumn() {
+
+		Columns.ColumnSelector column = Columns.ColumnSelector.from(CqlIdentifier.fromInternal("myCol"));
+		Columns.FunctionCall call = Columns.FunctionCall.from("toJson", column);
+		Query query = Query.empty().columns(Columns.empty().select("json", call));
+
+		StatementBuilder<Select> select = statementFactory.select(query,
+				converter.getMappingContext().getRequiredPersistentEntity(Group.class));
+
+		SimpleStatement inline = select.build(ParameterHandling.INLINE);
+		assertThat(inline.getQuery()).isEqualTo("SELECT tojson(\"myCol\") FROM group");
+
+		SimpleStatement byName = select.build(ParameterHandling.BY_NAME);
+		assertThat(byName.getQuery()).isEqualTo("SELECT tojson(\"myCol\") FROM group");
+
+		SimpleStatement byIndex = select.build(ParameterHandling.BY_INDEX);
+		assertThat(byIndex.getQuery()).isEqualTo("SELECT tojson(\"myCol\") FROM group");
 	}
 
 	@SuppressWarnings("unused")

@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.jspecify.annotations.Nullable;
@@ -199,26 +200,13 @@ public class QueryMapper {
 
 			Field field = createPropertyField(entity, column);
 
-			columns.getSelector(column).forEach(selector -> {
+		columns.getSelector(column).forEach(selector -> {
 
-				List<CqlIdentifier> mappedColumnNames = getCqlIdentifiers(field);
-
-				if (selector instanceof ColumnSelector cs && cs.getAlias().isEmpty()) {
-
-					for (CqlIdentifier mappedColumnName : mappedColumnNames) {
-						selectors.add(ColumnSelector.from(mappedColumnName));
-					}
-
-					return;
-				}
-
-				if (mappedColumnNames.size() != 1) {
-					throw new IllegalArgumentException(
-							"Cannot map selector %s to multiple columns %s".formatted(selector, mappedColumnNames));
-				}
-
-				selectors.add(getMappedSelector(selector, entity, field));
-			});
+			List<CqlIdentifier> mappedColumnNames = getCqlIdentifiers(field);
+			for (CqlIdentifier mappedColumnName : mappedColumnNames) {
+				selectors.add(getMappedSelector(field, selector, entity, mappedColumnName));
+			}
+		});
 		}
 
 		if (columns.isEmpty()) {
@@ -226,6 +214,16 @@ public class QueryMapper {
 		}
 
 		return selectors;
+	}
+
+	private void doWithSelector(Selector selector, ColumnName column, CassandraPersistentEntity<?> entity,
+			Consumer<Selector> mappedConsumer) {
+
+		Field field = createPropertyField(entity, column);
+		List<CqlIdentifier> mappedColumnNames = getCqlIdentifiers(field);
+		for (CqlIdentifier mappedColumnName : mappedColumnNames) {
+			mappedConsumer.accept(getMappedSelector(field, selector, entity, mappedColumnName));
+		}
 	}
 
 	private void addColumns(CassandraPersistentEntity<?> entity, List<Selector> selectors) {
@@ -242,37 +240,44 @@ public class QueryMapper {
 		});
 	}
 
-	private Selector getMappedSelector(Selector selector, CassandraPersistentEntity<?> entity, Field field) {
+	private Selector getMappedSelector(Field field, Selector selector, CassandraPersistentEntity<?> entity,
+			CqlIdentifier cqlIdentifier) {
 
 		if (selector instanceof ColumnSelector columnSelector) {
-			return getMappedSelector(columnSelector, entity);
+			ColumnSelector mappedColumnSelector = ColumnSelector.from(cqlIdentifier);
+			return columnSelector.getAlias().map(mappedColumnSelector::as).orElse(mappedColumnSelector);
 		}
 
 		if (selector instanceof FunctionCall functionCall) {
 
-			FunctionCall mappedFunctionCall = FunctionCall.from(functionCall.getExpression(),
-					functionCall.getParameters().stream().map(obj -> {
+			List<Object> selectors = new ArrayList<>(functionCall.getParameters().size());
+			for (Object obj : functionCall.getParameters()) {
 
-						if (obj instanceof Selector sel) {
-							return getMappedSelector(sel, entity, field);
-						}
+				if (obj instanceof ColumnSelector columnSelector) {
+					doWithSelector(columnSelector, columnSelector.getColumnName(), entity, selectors::add);
+					continue;
+				}
 
-						if (obj instanceof ColumnName cn) {
-							return getMappedSelector(cn, entity);
-						}
+				if (obj instanceof Selector) {
+					selectors.add(getMappedSelector(field, (Selector) obj, entity, cqlIdentifier));
+					continue;
+				}
 
-						if (obj instanceof CqlIdentifier identifier) {
-							return getMappedSelector(ColumnName.from(identifier), entity);
-						}
+				if (obj instanceof CqlIdentifier identifier) {
+					selectors.add(getMappedSelector(field, ColumnSelector.from(identifier), entity, cqlIdentifier));
+					continue;
+				}
 
-						if (field.hasProperty()) {
-							return getMappedValue(field, CriteriaDefinition.Operators.EQ, obj);
-						}
+				if (obj instanceof ColumnName columnName) {
+					selectors.add(getMappedSelector(field, ColumnSelector.from(columnName), entity, cqlIdentifier));
+					continue;
+				}
 
-						return obj;
+				obj = getMappedValue(field, CriteriaDefinition.Operators.EQ, obj);
+				selectors.add(obj);
+			}
 
-					}).toArray());
-
+			FunctionCall mappedFunctionCall = FunctionCall.from(functionCall.getExpression(), selectors.toArray());
 			return functionCall.getAlias().map(mappedFunctionCall::as).orElse(mappedFunctionCall);
 		}
 
