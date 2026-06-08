@@ -41,6 +41,7 @@ import org.springframework.data.cassandra.core.mapping.BasicCassandraPersistentE
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentEntity;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
 import org.springframework.data.cassandra.core.mapping.PersistentPropertyTranslator;
+import org.springframework.data.cassandra.core.query.ColumnName;
 import org.springframework.data.cassandra.core.query.Columns;
 import org.springframework.data.cassandra.core.query.Columns.ColumnSelector;
 import org.springframework.data.cassandra.core.query.Columns.FunctionCall;
@@ -277,7 +278,6 @@ public class StatementFactory {
 		Assert.notNull(entity, "Table name must not be null");
 
 		Filter filter = getQueryMapper().getMappedObject(query, entity);
-
 		List<Selector> selectors = getQueryMapper().getMappedSelectors(query.getColumns(), entity);
 
 		return createSelect(query, entity, filter, selectors, tableName);
@@ -690,31 +690,10 @@ public class StatementFactory {
 	private StatementBuilder<Select> createSelectAndOrder(List<Selector> selectors, CassandraPersistentEntity<?> entity,
 			CqlIdentifier from, Filter filter, Sort sort) {
 
-		StatementBuilder<Select> builder = StatementBuilder.of((Select) QueryBuilder.selectFrom(from),
-				cassandraConverter.getCodecRegistry());
+		StatementBuilder<Select> builder = StatementBuilder
+				.of((Select) QueryBuilder.selectFrom(getKeyspace(entity, from), from), cassandraConverter.getCodecRegistry());
 
-		builder.bind((statement, factory) -> {
-
-			Select select;
-
-			if (selectors.isEmpty()) {
-				select = QueryBuilder.selectFrom(getKeyspace(entity, from), from).all();
-			} else {
-
-				List<com.datastax.oss.driver.api.querybuilder.select.Selector> mappedSelectors = new ArrayList<>(
-						selectors.size());
-				for (Selector selector : selectors) {
-					com.datastax.oss.driver.api.querybuilder.select.Selector orElseGet = selector.getAlias()
-							.map(it -> getSelection(selector, factory).as(it)).orElseGet(() -> getSelection(selector, factory));
-					mappedSelectors.add(orElseGet);
-				}
-
-				select = QueryBuilder.selectFrom(getKeyspace(entity, from), from).selectors(mappedSelectors);
-			}
-
-			return select;
-		});
-
+		builder.bind((statement, factory) -> getSelect(selectors, entity, from, factory));
 		builder.bind((statement, factory) -> {
 			return statement.where(getRelations(filter, factory));
 		});
@@ -747,6 +726,23 @@ public class StatementFactory {
 		return builder;
 	}
 
+	private Select getSelect(List<Selector> selectors, CassandraPersistentEntity<?> entity, CqlIdentifier from,
+			TermFactory factory) {
+
+		if (selectors.isEmpty()) {
+			return QueryBuilder.selectFrom(getKeyspace(entity, from), from).all();
+		}
+
+		List<com.datastax.oss.driver.api.querybuilder.select.Selector> mappedSelectors = new ArrayList<>(selectors.size());
+		for (Selector selector : selectors) {
+			com.datastax.oss.driver.api.querybuilder.select.Selector orElseGet = selector.getAlias()
+					.map(it -> getSelection(selector, factory).as(it)).orElseGet(() -> getSelection(selector, factory));
+			mappedSelectors.add(orElseGet);
+		}
+
+		return QueryBuilder.selectFrom(getKeyspace(entity, from), from).selectors(mappedSelectors);
+	}
+
 	private static List<Relation> getRelations(Filter filter, TermFactory factory) {
 
 		List<Relation> relations = new ArrayList<>();
@@ -758,7 +754,7 @@ public class StatementFactory {
 		return relations;
 	}
 
-	private static com.datastax.oss.driver.api.querybuilder.select.Selector getSelection(Selector selector,
+	private com.datastax.oss.driver.api.querybuilder.select.Selector getSelection(Selector selector,
 			TermFactory factory) {
 
 		if (selector instanceof FunctionCall) {
@@ -766,16 +762,31 @@ public class StatementFactory {
 			com.datastax.oss.driver.api.querybuilder.select.Selector[] arguments = ((FunctionCall) selector).getParameters()
 					.stream().map(param -> {
 
-						if (param instanceof ColumnSelector s) {
-
-							return com.datastax.oss.driver.api.querybuilder.select.Selector.column(s.getExpression());
+						if (param == null) {
+							return new SimpleSelector("null");
 						}
 
-						if (param instanceof CqlIdentifier i) {
-							return com.datastax.oss.driver.api.querybuilder.select.Selector.column(i.toString());
+						if (param instanceof ColumnSelector column) {
+							return com.datastax.oss.driver.api.querybuilder.select.Selector.column(column.getCqlIdentifier());
 						}
 
-						return new SimpleSelector(param.toString());
+						if (param instanceof ColumnName column) {
+
+							CqlIdentifier cqlIdentifier = column.getCqlIdentifier()
+									.or(() -> column.getColumnName().map(CqlIdentifier::fromCql)).get();
+							return com.datastax.oss.driver.api.querybuilder.select.Selector.column(cqlIdentifier);
+						}
+
+						Term term = getTerm(factory, param);
+
+						if (term instanceof com.datastax.oss.driver.api.querybuilder.select.Selector) {
+							return (com.datastax.oss.driver.api.querybuilder.select.Selector) term;
+						}
+
+						StringBuilder builder = new StringBuilder();
+						term.appendTo(builder);
+
+						return QueryBuilder.raw(builder.toString());
 
 					}).toArray(com.datastax.oss.driver.api.querybuilder.select.Selector[]::new);
 
@@ -784,6 +795,24 @@ public class StatementFactory {
 
 		return com.datastax.oss.driver.api.querybuilder.select.Selector
 				.column(CqlIdentifier.fromInternal(selector.getExpression()));
+	}
+
+	private Term getTerm(TermFactory factory, Object param) {
+
+		if (param instanceof Term) {
+			return (Term) param;
+		}
+
+		if (param instanceof CqlVector<?> vector) {
+			return QueryBuilder.raw(vector.toString());
+		}
+
+		try {
+			Double.parseDouble(param.toString());
+			return QueryBuilder.raw(param.toString());
+		} catch (NumberFormatException e) {
+			return factory.create(param);
+		}
 	}
 
 	private StatementBuilder<com.datastax.oss.driver.api.querybuilder.update.Update> update(
