@@ -1,16 +1,17 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
 		<groupId>org.springframework.data.build</groupId>
 		<artifactId>spring-data-parent</artifactId>
-		<version>4.1.0-SNAPSHOT</version>
+		<version>4.1.0</version>
 	</parent>
 
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-cassandra-parent</artifactId>
-	<version>5.1.0-SNAPSHOT</version>
+	<version>5.1.0</version>
 	<packaging>pom</packaging>
 
 	<name>Spring Data for Apache Cassandra</name>
@@ -77,8 +78,7 @@
 	</developers>
 
 	<scm>
-		<connection>scm:git:https://github.com/spring-projects/spring-data-cassandra.git
-		</connection>
+		<connection>scm:git:https://github.com/spring-projects/spring-data-cassandra.git</connection>
 		<developerConnection>
 			scm:git:git@github.com:spring-projects/spring-data-cassandra.git
 		</developerConnection>
@@ -107,7 +107,7 @@
 		<dist.id>spring-data-cassandra</dist.id>
 		<antora.javadoc-artifactId>spring-data-cassandra</antora.javadoc-artifactId>
 		<multithreadedtc.version>1.01</multithreadedtc.version>
-		<springdata.commons>4.1.0-SNAPSHOT</springdata.commons>
+		<springdata.commons>4.1.0</springdata.commons>
 	</properties>
 
 	<dependencyManagement>
@@ -212,8 +212,7 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-resources-plugin</artifactId>
 					<configuration>
-						<propertiesEncoding>${project.build.sourceEncoding}
-						</propertiesEncoding>
+						<propertiesEncoding>${project.build.sourceEncoding}</propertiesEncoding>
 					</configuration>
 				</plugin>
 			</plugins>
@@ -279,20 +278,8 @@
 	</profiles>
 
 	<repositories>
-		<repository>
-			<id>spring-snapshot</id>
-			<url>https://repo.spring.io/snapshot</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-		</repository>
-		<repository>
-			<id>spring-milestone</id>
-			<url>https://repo.spring.io/milestone</url>
-		</repository>
+		
+		
 	</repositories>
 
 </project>
