@@ -188,28 +188,39 @@ class CassandraQueryCreatorUnitTests {
 				.isEqualTo("SELECT * FROM person WHERE firstname LIKE 'Walter'");
 	}
 
-	@Test // DATACASS-7
+	@Test // DATACASS-7, GH-54
 	void createsStartsWithQueryCorrectly() {
 
-		String query = createQuery("findByFirstnameStartsWith", Person.class, "Walter");
-
-		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname LIKE 'Walter%'");
+		assertThat(createQuery("findByFirstnameStartsWith", Person.class, "Walter"))
+				.isEqualTo("SELECT * FROM person WHERE firstname LIKE 'Walter%'");
+		assertThat(createQuery("findByFirstnameStartsWith", Person.class, "%%%Walter"))
+				.isEqualTo("SELECT * FROM person WHERE firstname LIKE 'Walter%'");
+		assertThat(createQuery("findByFirstnameStartsWith", Person.class, "Wal%ter"))
+				.isEqualTo("SELECT * FROM person WHERE firstname LIKE 'Wal%ter%'");
+		assertThat(createQuery("findByFirstnameStartsWith", Person.class, "Walter%"))
+				.isEqualTo("SELECT * FROM person WHERE firstname LIKE 'Walter%%'");
 	}
 
-	@Test // DATACASS-7
+	@Test // DATACASS-7, GH-54
 	void createsEndsWithQueryCorrectly() {
 
-		String query = createQuery("findByFirstnameEndsWith", Person.class, "Walter");
-
-		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname LIKE '%Walter'");
+		assertThat(createQuery("findByFirstnameEndsWith", Person.class, "Walter"))
+				.isEqualTo("SELECT * FROM person WHERE firstname LIKE '%Walter'");
+		assertThat(createQuery("findByFirstnameEndsWith", Person.class, "Walter%%%"))
+				.isEqualTo("SELECT * FROM person WHERE firstname LIKE '%Walter'");
+		assertThat(createQuery("findByFirstnameEndsWith", Person.class, "Wal%ter"))
+				.isEqualTo("SELECT * FROM person WHERE firstname LIKE '%Wal%ter'");
+		assertThat(createQuery("findByFirstnameEndsWith", Person.class, "%Walter"))
+				.isEqualTo("SELECT * FROM person WHERE firstname LIKE '%%Walter'");
 	}
 
-	@Test // DATACASS-7
+	@Test // DATACASS-7, GH-54
 	void createsContainsQueryOnSimplePropertyCorrectly() {
 
-		String query = createQuery("findByFirstnameContains", Person.class, "Walter");
-
-		assertThat(query).isEqualTo("SELECT * FROM person WHERE firstname LIKE '%Walter%'");
+		assertThat(createQuery("findByFirstnameContains", Person.class, "Walter"))
+				.isEqualTo("SELECT * FROM person WHERE firstname LIKE '%Walter%'");
+		assertThat(createQuery("findByFirstnameContains", Person.class, "%Walter%"))
+				.isEqualTo("SELECT * FROM person WHERE firstname LIKE '%%Walter%%'");
 	}
 
 	@Test // DATACASS-7

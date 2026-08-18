@@ -35,6 +35,7 @@ import org.springframework.data.cassandra.core.query.Columns;
 import org.springframework.data.cassandra.core.query.Criteria;
 import org.springframework.data.cassandra.core.query.CriteriaDefinition;
 import org.springframework.data.cassandra.repository.Query;
+import org.springframework.data.cassandra.repository.query.CassandraQueryCreator;
 import org.springframework.data.cassandra.repository.query.CassandraQueryMethod;
 import org.springframework.data.cassandra.repository.query.ParameterBinding;
 import org.springframework.data.cassandra.repository.query.WindowUtil;
@@ -45,10 +46,11 @@ import org.springframework.data.javapoet.LordOfTheStrings;
 import org.springframework.data.javapoet.TypeNames;
 import org.springframework.data.repository.aot.generate.AotQueryMethodGenerationContext;
 import org.springframework.data.repository.aot.generate.MethodReturn;
+import org.springframework.data.repository.query.parser.Part;
 import org.springframework.data.util.Streamable;
 import org.springframework.javapoet.CodeBlock;
-import org.springframework.javapoet.CodeBlock.Builder;
 import org.springframework.javapoet.TypeName;
+import org.springframework.javapoet.CodeBlock.Builder;
 import org.springframework.util.StringUtils;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
@@ -479,14 +481,8 @@ class CassandraCodeBlocks {
 				String parameterName = getParameterName(binding);
 
 				if (binding instanceof LikeParameterBinding like) {
-
-					return switch (like.getType()) {
-
-						case CONTAINING -> "\"%\" + " + parameterName + " + \"%\"";
-						case STARTING_WITH -> parameterName + " + \"%\"";
-						case ENDING_WITH -> "\"%\" + " + parameterName;
-						default -> parameterName;
-					};
+					return CodeBlock.of("$T.createLikePattern($T.$L, $L)", CassandraQueryCreator.class, Part.Type.class,
+							like.getType().name(), parameterName);
 				}
 
 				return parameterName;
