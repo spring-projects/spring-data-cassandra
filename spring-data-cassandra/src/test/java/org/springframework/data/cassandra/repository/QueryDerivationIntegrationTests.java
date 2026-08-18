@@ -30,10 +30,11 @@ import org.assertj.core.api.Assertions;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.config.SchemaAction;
@@ -289,13 +290,36 @@ class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedCassandr
 		assertThat(result).hasSize(1);
 	}
 
-	@Test // DATACASS-7
+	@Test // DATACASS-7, GH-54
 	public void shouldUseStartsWithQuery() throws InterruptedException {
 
 		assumeTrue(cassandraVersion.isGreaterThanOrEqualTo(Version.parse("3.4")));
 
 		CreateIndexSpecification indexSpecification = CreateIndexSpecification.createIndex("fn_starts_with").ifNotExists()
-				.tableName("person").columnName("nickname").using("org.apache.cassandra.index.sasi.SASIIndex");
+				.tableName("person").columnName("nickname").using("org.apache.cassandra.index.sasi.SASIIndex")
+				.withOption("mode", "CONTAINS");
+
+		template.getCqlOperations().execute(CqlGenerator.toCql(indexSpecification));
+
+		// Give Cassandra some time to build the index
+		Thread.sleep(500);
+
+		walter.setNickname("eisenberg");
+		personRepository.save(walter);
+		skyler.setNickname("not-eisenberg");
+		personRepository.save(skyler);
+
+		assertThat(personRepository.findPeopleByNicknameStartsWith("%eisen")).containsOnly(walter);
+	}
+
+	@Test // GH-54
+	public void shouldUseEndsWithQuery() throws InterruptedException {
+
+		assumeTrue(cassandraVersion.isGreaterThanOrEqualTo(Version.parse("3.4")));
+
+		CreateIndexSpecification indexSpecification = CreateIndexSpecification.createIndex("fn_ends_with").ifNotExists()
+				.tableName("person").columnName("nickname").using("org.apache.cassandra.index.sasi.SASIIndex")
+				.withOption("mode", "CONTAINS");
 
 		template.getCqlOperations().execute(CqlGenerator.toCql(indexSpecification));
 
@@ -304,8 +328,10 @@ class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedCassandr
 
 		walter.setNickname("Heisenberg");
 		personRepository.save(walter);
+		skyler.setNickname("Heisenberg-not");
+		personRepository.save(skyler);
 
-		assertThat(personRepository.findByNicknameStartsWith("Heis")).isEqualTo(walter);
+		assertThat(personRepository.findPeopleByNicknameEndsWith("berg%")).containsOnly(walter);
 	}
 
 	@Test // DATACASS-7
@@ -491,6 +517,10 @@ class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedCassandr
 		Person findByCreatedDate(LocalDate createdDate);
 
 		Person findByNicknameStartsWith(String prefix);
+
+		List<Person> findPeopleByNicknameEndsWith(String suffix);
+
+		List<Person> findPeopleByNicknameStartsWith(String suffix);
 
 		Person findByNicknameContains(String contains);
 

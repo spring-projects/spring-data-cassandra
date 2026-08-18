@@ -77,7 +77,11 @@ public interface PersonRepository extends CrudRepository<Person, String> {
 
 	Person findByFirstnameStartsWith(String prefix);
 
+	Person findByFirstnameEndsWith(String suffix);
+
 	Person findByFirstnameContains(String contains);
+
+	Person findByFirstnameLike(String pattern);
 
 	@AllowFiltering
 	List<Person> findByNumberOfChildrenGreaterThan(int ch);
