@@ -41,8 +41,8 @@ import org.springframework.data.mapping.PersistentPropertyPath;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.query.parser.AbstractQueryCreator;
 import org.springframework.data.repository.query.parser.Part;
-import org.springframework.data.repository.query.parser.Part.Type;
 import org.springframework.data.repository.query.parser.PartTree;
+import org.springframework.data.repository.query.parser.Part.Type;
 import org.springframework.util.Assert;
 
 /**
@@ -290,16 +290,50 @@ public class CassandraQueryCreator extends AbstractQueryCreator<Query, Filter> {
 	}
 
 	protected Object like(Type type, Object value) {
+		return createLikePattern(type, value);
+	}
+
+	/**
+	 * Create a Cassandra LIKE pattern for the given {@link Type} and value.
+	 *
+	 * @param type the LIKE predicate type.
+	 * @param value the value to create the pattern for.
+	 * @return the LIKE pattern.
+	 * @since 5.2
+	 */
+	public static Object createLikePattern(Type type, Object value) {
 
 		return switch (type) {
 			case LIKE -> value;
 			case CONTAINING -> "%" + value + "%";
-			case STARTING_WITH -> value + "%";
-			case ENDING_WITH -> "%" + value;
+			case STARTING_WITH -> stripLeadingWildcards(String.valueOf(value)) + "%";
+			case ENDING_WITH -> "%" + stripTrailingWildcards(String.valueOf(value));
 			default ->
 				throw new IllegalArgumentException(String.format("Part Type [%s] not supported with like queries", type));
 		};
 
+	}
+
+	private static String stripLeadingWildcards(String value) {
+
+		int index = 0;
+
+		while (index < value.length() && value.charAt(index) == '%') {
+			index++;
+		}
+
+		return value.substring(index);
+	}
+
+	private static String stripTrailingWildcards(String value) {
+
+		int index = value.length();
+
+		while (index > 0 && value.charAt(index - 1) == '%') {
+			index--;
+		}
+
+		return value.substring(0, index);
 	}
 
 	private Object[] nextAsArray(Iterator<Object> iterator) {

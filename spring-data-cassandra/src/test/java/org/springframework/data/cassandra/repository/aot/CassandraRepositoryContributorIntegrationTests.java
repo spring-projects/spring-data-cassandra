@@ -243,6 +243,18 @@ class CassandraRepositoryContributorIntegrationTests extends AbstractSpringDataE
 		assertThat(walter.getFirstname()).isEqualTo("Flynn (Walter Jr.)");
 	}
 
+	@Test // GH-54
+	void shouldRetainAnchoredLikeSemantics() {
+
+		assertThat(fragment.findByFirstnameStartsWith("%Walt")).isEqualTo(walter);
+		assertThat(fragment.findByFirstnameEndsWith("ter%")).isEqualTo(walter);
+	}
+
+	@Test // GH-54
+	void shouldPreserveExplicitLikeSemantics() {
+		assertThat(fragment.findByFirstnameLike("Walt%")).isEqualTo(walter);
+	}
+
 	@Test // GH-1566
 	void shouldFindByGteLte() {
 
