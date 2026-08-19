@@ -15,21 +15,22 @@
  */
 package org.springframework.data.cassandra.core.cql.generator;
 
-import static org.springframework.data.cassandra.core.cql.keyspace.CqlStringUtils.*;
-
 import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
 
+import org.springframework.data.cassandra.core.cql.keyspace.CqlStringUtils;
 import org.springframework.data.cassandra.core.cql.keyspace.Option;
 
 /**
+ * Utility to render {@link Option}s.
+ *
  * @author Mark Paluch
  * @since 2.0
  */
 class OptionRenderUtil {
 
-	static String render(Map<Option, @Nullable Object> valueMap) {
+	static String render(Map<?, @Nullable Object> valueMap) {
 
 		if (valueMap.isEmpty()) {
 			return "";
@@ -41,28 +42,33 @@ class OptionRenderUtil {
 		// append { 'name' : 'value', ... }
 		cql.append("{ ");
 		boolean mapFirst = true;
-		for (Map.Entry<Option, @Nullable Object> entry : valueMap.entrySet()) {
+		for (Map.Entry<?, @Nullable Object> entry : valueMap.entrySet()) {
 			if (mapFirst) {
 				mapFirst = false;
 			} else {
 				cql.append(", ");
 			}
 
-			Option option = entry.getKey();
-			cql.append(singleQuote(option.getName())); // entries in map keys are always quoted
-			cql.append(" : ");
+			Object option = entry.getKey();
 			Object entryValue = entry.getValue();
-			entryValue = entryValue == null ? "" : entryValue.toString();
-			if (option.escapesValue()) {
-				entryValue = escapeSingle(entryValue);
+			if (option instanceof Option knownOption) {
+
+				cql.append(CqlStringUtils.toCqlLiteral(knownOption.getName())); // entries in map keys are always quoted
+				cql.append(" : ");
+
+				knownOption.checkValue(entryValue);
+
+				cql.append(CqlStringUtils.toString(entryValue, knownOption.escapesValue(), knownOption.quotesValue()));
 			}
-			if (option.quotesValue()) {
-				entryValue = singleQuote(entryValue);
+			else {
+				cql.append(CqlStringUtils.toCqlLiteral(option)); // entries in map keys are always quoted
+				cql.append(" : ");
+				cql.append(CqlStringUtils.toCqlLiteral(entryValue));
 			}
-			cql.append(entryValue);
 		}
 		cql.append(" }");
 
 		return cql.toString();
 	}
+
 }

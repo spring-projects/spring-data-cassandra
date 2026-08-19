@@ -33,12 +33,11 @@ public abstract class TableOptionsCqlGenerator<T extends TableOptionsSpecificati
 		super(specification);
 	}
 
-	@SuppressWarnings("unchecked")
 	protected T spec() {
 		return getSpecification();
 	}
 
-	void optionValueMap(Map<Option, Object> valueMap, StringBuilder cql) {
+	void optionValueMap(Map<?, Object> valueMap, StringBuilder cql) {
 		cql.append(OptionRenderUtil.render(valueMap));
 	}
 
