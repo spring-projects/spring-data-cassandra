@@ -61,10 +61,10 @@ public abstract class TableOptionsSpecification<T extends TableOptionsSpecificat
 	public T with(TableOption option) {
 
 		if (option.requiresValue() && ClassUtils.resolvePrimitiveIfNecessary(option.getType()) == Boolean.class) {
-			return with(option.getName(), true, option.escapesValue(), option.quotesValue());
+			return addOption(option.getName(), true, option.escapesValue(), option.quotesValue());
 		}
 
-		return with(option.getName(), null);
+		return addOption(option.getName(), null, option.escapesValue(), option.quotesValue());
 	}
 
 	/**
@@ -79,54 +79,52 @@ public abstract class TableOptionsSpecification<T extends TableOptionsSpecificat
 	 */
 	public T with(TableOption option, Object value) {
 		option.checkValue(value);
-		return with(option.getName(), value, option.escapesValue(), option.quotesValue());
+		return addOption(option.getName(), value, option.escapesValue(), option.quotesValue());
 	}
 
 	/**
-	 * Adds the given option by name to this table's options.
+	 * Adds the given option by CQL identifier to this table's options.
 	 * <p>
-	 * Options that have {@literal null} values are considered single string options where the name of the option is the
-	 * string to be used. Otherwise, the result of {@link Object#toString()} is considered to be the value of the option
-	 * with the given name. Values that require escaping or quoting should be handled by the specification must be either
-	 * quoted and escaped already or provided through {@link #with(String, Object, boolean, boolean)}.
+	 * A non-{@link Map} value is rendered as a single-quoted CQL string literal. Use
+	 * {@link #with(String, Object, boolean, boolean)} for an option that requires another trusted CQL value
+	 * representation.
 	 *
-	 * @param name the name of the option
-	 * @param value the value of the option. If {@literal null}, the value is ignored and the option is considered to be
-	 *          composed of only the name, otherwise the value's {@link Object#toString()} value is used.
-	 * @return this
+	 * @param name the CQL identifier of the option.
+	 * @param value the option value, or {@literal null} for a valueless option.
+	 * @return this specification.
+	 * @throws IllegalArgumentException if {@code name} is not a valid CQL identifier.
 	 * @since 5.0
 	 */
 	public T with(String name, @Nullable Object value) {
-		return with(name, value, false, true);
+		return with(name, value, true, true);
 	}
 
 	/**
-	 * Adds the given option by name to this table's options.
+	 * Adds the given option by CQL identifier with explicit value rendering to this table's options.
 	 * <p>
-	 * Options that have {@literal null} values are considered single string options where the name of the option is the
-	 * string to be used. Otherwise, the result of {@link Object#toString()} is considered to be the value of the option
-	 * with the given name. The value, after conversion to string, may have embedded single quotes escaped according to
-	 * parameter {@code escape} and may be single-quoted according to parameter <code>quote</code>.
+	 * This method is intended for trusted values that require a CQL representation other than the safe string literal
+	 * rendering provided by {@link #with(String, Object)}.
 	 *
-	 * @param name the name of the option
-	 * @param value the value of the option. If {@literal null}, the value is ignored and the option is considered to be
-	 *          composed of only the name, otherwise the value's {@link Object#toString()} value is used.
+	 * @param name the CQL identifier of the option.
+	 * @param value the option value, or {@literal null} for a valueless option.
 	 * @param escape whether to escape the value via {@link CqlStringUtils#escapeSingle(Object)}. Ignored if given value
-	 *          is an instance of a {@link Map}.
+	 * is an instance of a {@link Map}.
 	 * @param quote whether to quote the value via {@link CqlStringUtils#singleQuote(Object)}. Ignored if given value is
-	 *          an instance of a {@link Map}.
-	 * @return this
+	 * an instance of a {@link Map}.
+	 * @return this specification.
+	 * @throws IllegalArgumentException if {@code name} is not a valid CQL identifier.
 	 */
-	@SuppressWarnings("unchecked")
 	public T with(String name, @Nullable Object value, boolean escape, boolean quote) {
+		CqlIdentifier.fromCql(name);
+
+		return addOption(name, value, escape, quote);
+	}
+
+	@SuppressWarnings("unchecked")
+	private T addOption(String name, @Nullable Object value, boolean escape, boolean quote) {
 
 		if (!(value instanceof Map)) {
-			if (escape) {
-				value = escapeSingle(value);
-			}
-			if (quote) {
-				value = singleQuote(value);
-			}
+			value = CqlStringUtils.toString(value, escape, quote);
 		}
 
 		this.options.put(name, value);

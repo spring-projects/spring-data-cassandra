@@ -230,7 +230,7 @@ public enum TableOption implements Option {
 	}
 
 	@Override
-	public void checkValue(Object value) {
+	public void checkValue(@Nullable Object value) {
 		this.delegate.checkValue(value);
 	}
 
@@ -439,7 +439,7 @@ public enum TableOption implements Option {
 		}
 
 		@Override
-		public void checkValue(Object value) {
+		public void checkValue(@Nullable Object value) {
 			this.delegate.checkValue(value);
 		}
 
@@ -518,7 +518,7 @@ public enum TableOption implements Option {
 		}
 
 		@Override
-		public void checkValue(Object value) {
+		public void checkValue(@Nullable Object value) {
 			this.delegate.checkValue(value);
 		}
 

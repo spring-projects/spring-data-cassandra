@@ -45,7 +45,7 @@ class AlterTableCqlGeneratorUnitTests {
 		AlterTableSpecification spec = SpecificationBuilder.alterTable("addamsFamily").alter("lastKnownLocation",
 				DataTypes.UUID);
 
-		assertThat(toCql(spec)).isEqualTo("ALTER TABLE addamsfamily ALTER lastknownlocation TYPE uuid;");
+		assertThat(CqlGenerator.toCql(spec)).isEqualTo("ALTER TABLE addamsfamily ALTER lastknownlocation TYPE uuid;");
 	}
 
 	@Test // DATACASS-192
@@ -54,7 +54,7 @@ class AlterTableCqlGeneratorUnitTests {
 		AlterTableSpecification spec = SpecificationBuilder.alterTable("addamsFamily").alter("lastKnownLocation",
 				DataTypes.listOf(DataTypes.ASCII));
 
-		assertThat(toCql(spec)).isEqualTo("ALTER TABLE addamsfamily ALTER lastknownlocation TYPE list<ascii>;");
+		assertThat(CqlGenerator.toCql(spec)).isEqualTo("ALTER TABLE addamsfamily ALTER lastknownlocation TYPE list<ascii>;");
 	}
 
 	@Test // DATACASS-192
@@ -62,7 +62,7 @@ class AlterTableCqlGeneratorUnitTests {
 
 		AlterTableSpecification spec = SpecificationBuilder.alterTable("addamsFamily").add("gravesite", DataTypes.TEXT);
 
-		assertThat(toCql(spec)).isEqualTo("ALTER TABLE addamsfamily ADD gravesite text;");
+		assertThat(CqlGenerator.toCql(spec)).isEqualTo("ALTER TABLE addamsfamily ADD gravesite text;");
 	}
 
 	@Test // DATACASS-192
@@ -71,7 +71,7 @@ class AlterTableCqlGeneratorUnitTests {
 		AlterTableSpecification spec = SpecificationBuilder.alterTable("users").add("top_places",
 				DataTypes.listOf(DataTypes.ASCII));
 
-		assertThat(toCql(spec)).isEqualTo("ALTER TABLE users ADD top_places list<ascii>;");
+		assertThat(CqlGenerator.toCql(spec)).isEqualTo("ALTER TABLE users ADD top_places list<ascii>;");
 	}
 
 	@Test // DATACASS-192
@@ -79,7 +79,7 @@ class AlterTableCqlGeneratorUnitTests {
 
 		AlterTableSpecification spec = SpecificationBuilder.alterTable("addamsFamily").drop("gender");
 
-		assertThat(toCql(spec)).isEqualTo("ALTER TABLE addamsfamily DROP gender;");
+		assertThat(CqlGenerator.toCql(spec)).isEqualTo("ALTER TABLE addamsfamily DROP gender;");
 	}
 
 	@Test // DATACASS-192
@@ -87,7 +87,7 @@ class AlterTableCqlGeneratorUnitTests {
 
 		AlterTableSpecification spec = SpecificationBuilder.alterTable("addamsFamily").rename("firstname", "lastname");
 
-		assertThat(toCql(spec)).isEqualTo("ALTER TABLE addamsfamily RENAME firstname TO lastname;");
+		assertThat(CqlGenerator.toCql(spec)).isEqualTo("ALTER TABLE addamsfamily RENAME firstname TO lastname;");
 	}
 
 	@Test // DATACASS-192
@@ -96,7 +96,7 @@ class AlterTableCqlGeneratorUnitTests {
 		AlterTableSpecification spec = SpecificationBuilder.alterTable("addamsFamily")
 				.with(TableOption.READ_REPAIR_CHANCE, 0.2f).with(TableOption.COMMENT, "A most excellent and useful table");
 
-		assertThat(toCql(spec)).isEqualTo(
+		assertThat(CqlGenerator.toCql(spec)).isEqualTo(
 				"ALTER TABLE addamsfamily WITH read_repair_chance = 0.2 AND comment = 'A most excellent and useful table';");
 	}
 
@@ -107,7 +107,7 @@ class AlterTableCqlGeneratorUnitTests {
 				.add("top_places", DataTypes.listOf(DataTypes.ASCII)).add("other", DataTypes.listOf(DataTypes.ASCII))
 				.with(TableOption.COMMENT, "A most excellent and useful table");
 
-		assertThat(toCql(spec)).isEqualTo(
+		assertThat(CqlGenerator.toCql(spec)).isEqualTo(
 				"ALTER TABLE addamsfamily ADD top_places list<ascii> ADD other list<ascii> WITH comment = 'A most excellent and useful table';");
 	}
 
@@ -120,8 +120,21 @@ class AlterTableCqlGeneratorUnitTests {
 
 		AlterTableSpecification spec = SpecificationBuilder.alterTable("users").with(TableOption.CACHING, cachingMap);
 
-		assertThat(toCql(spec))
+		assertThat(CqlGenerator.toCql(spec))
 				.isEqualTo("ALTER TABLE users WITH caching = { 'keys' : 'none', 'rows_per_partition' : '15' };");
+	}
+
+	@Test // GH-58
+	void alterTableEscapesUnknownOptionAndNestedOptionValue() {
+
+		Map<Object, Object> cachingMap = new LinkedHashMap<>();
+		cachingMap.put("future_cache", "O'Reilly");
+
+		AlterTableSpecification spec = SpecificationBuilder.alterTable("users").with("future_option", "O'Reilly")
+				.with(TableOption.CACHING, cachingMap);
+
+		assertThat(CqlGenerator.toCql(spec)).isEqualTo(
+				"ALTER TABLE users WITH future_option = 'O''Reilly' AND caching = { 'future_cache' : 'O''Reilly' };");
 	}
 
 	@Test // GH-1584
@@ -137,11 +150,8 @@ class AlterTableCqlGeneratorUnitTests {
 				.with(TableOption.MAX_INDEX_INTERVAL, 2048L)
 				.with(TableOption.READ_REPAIR, "BLOCKING");
 
-		assertThat(toCql(spec))
+		assertThat(CqlGenerator.toCql(spec))
 				.isEqualTo("ALTER TABLE users WITH default_time_to_live = 3600 AND cdc = true AND speculative_retry = '90percentile' AND memtable_flush_period_in_ms = 1000 AND crc_check_chance = 0.9 AND min_index_interval = 128 AND max_index_interval = 2048 AND read_repair = 'BLOCKING';");
 	}
 
-	private String toCql(AlterTableSpecification spec) {
-		return CqlGenerator.toCql(spec);
-	}
 }

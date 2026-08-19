@@ -38,7 +38,7 @@ public abstract class KeyspaceOptionsCqlGenerator<T extends KeyspaceOptionsSpeci
 		return (T) getSpecification();
 	}
 
-	void optionValueMap(Map<Option, Object> valueMap, StringBuilder cql) {
+	void optionValueMap(Map<?, Object> valueMap, StringBuilder cql) {
 		cql.append(OptionRenderUtil.render(valueMap));
 	}
 

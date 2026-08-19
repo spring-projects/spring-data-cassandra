@@ -104,7 +104,7 @@ public class DefaultOption implements Option {
 			return tryParse(value, Float::parseFloat);
 		}
 		if (type == Boolean.class) {
-			return tryParse(value, Boolean::valueOf);
+			return tryParse(value, this::valueOf);
 		}
 
 		// check class via String constructor
@@ -122,6 +122,12 @@ public class DefaultOption implements Option {
 
 		}
 		return false;
+	}
+
+	private Boolean valueOf(String b) {
+		Assert.notNull(b, "Value must not be null");
+		Assert.isTrue(b.equalsIgnoreCase("true") || b.equalsIgnoreCase("false"), "Value must be true or false");
+		return Boolean.valueOf(b);
 	}
 
 	private boolean tryParse(Object value, Consumer<String> parseFunction) {
@@ -189,11 +195,7 @@ public class DefaultOption implements Option {
 		}
 
 		checkValue(value);
-
-		String string = value.toString();
-		string = escapesValue ? escapeSingle(string) : string;
-		string = quotesValue ? singleQuote(string) : string;
-		return string;
+		return CqlStringUtils.toString(value.toString(), escapesValue, quotesValue);
 	}
 
 	@Override
