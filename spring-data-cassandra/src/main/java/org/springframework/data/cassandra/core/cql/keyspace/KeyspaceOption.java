@@ -55,7 +55,7 @@ public enum KeyspaceOption implements Option {
 		return delegate.requiresValue();
 	}
 
-	public void checkValue(Object value) {
+	public void checkValue(@Nullable Object value) {
 		delegate.checkValue(value);
 	}
 

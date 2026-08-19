@@ -59,6 +59,24 @@ class CreateTableSpecificationUnitTests {
 		assertThat(specification.getOptions()).containsEntry("read_repair", "'BLOCKING'");
 	}
 
+	@Test // GH-58
+	void shouldEscapeUnknownOptionStringValue() {
+
+		CreateTableSpecification specification = CreateTableSpecification.createTable(CqlIdentifier.fromCql("person"))
+				.with("future_option", "O'Reilly");
+
+		assertThat(specification.getOptions()).containsEntry("future_option", "'O''Reilly'");
+	}
+
+	@Test // GH-58
+	void shouldRejectInvalidOptionName() {
+
+		CreateTableSpecification specification = CreateTableSpecification.createTable(CqlIdentifier.fromCql("person"));
+
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> specification.with("comment = 'value' AND cdc = true", null));
+	}
+
 	@Test // GH-1584
 	void shouldPreserveEscapedStringWhenProvidedByCaller() {
 

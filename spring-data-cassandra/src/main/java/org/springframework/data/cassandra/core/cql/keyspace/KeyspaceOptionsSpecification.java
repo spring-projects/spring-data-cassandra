@@ -15,13 +15,12 @@
  */
 package org.springframework.data.cassandra.core.cql.keyspace;
 
-import static org.springframework.data.cassandra.core.cql.keyspace.CqlStringUtils.*;
-
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
+
 import org.springframework.util.ObjectUtils;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -93,12 +92,7 @@ public abstract class KeyspaceOptionsSpecification<T extends KeyspaceOptionsSpec
 	public T with(String name, @Nullable Object value, boolean escape, boolean quote) {
 
 		if (!(value instanceof Map)) {
-			if (escape) {
-				value = escapeSingle(value);
-			}
-			if (quote) {
-				value = singleQuote(value);
-			}
+			value = CqlStringUtils.toString(value, escape, quote);
 		}
 		options.put(name, value);
 		return (T) this;

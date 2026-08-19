@@ -57,7 +57,7 @@ public interface Option {
 	/**
 	 * Checks that the given value can be coerced into the type given by {@link #getType()}.
 	 */
-	void checkValue(Object value);
+	void checkValue(@Nullable Object value);
 
 	/**
 	 * Tests whether the given value can be coerced into the type given by {@link #getType()}.
