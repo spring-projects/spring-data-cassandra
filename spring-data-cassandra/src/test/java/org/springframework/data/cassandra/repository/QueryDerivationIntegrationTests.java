@@ -25,11 +25,15 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.assertj.core.api.Assertions;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -309,7 +313,11 @@ class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedCassandr
 		skyler.setNickname("not-eisenberg");
 		personRepository.save(skyler);
 
-		assertThat(personRepository.findPeopleByNicknameStartsWith("%eisen")).containsOnly(walter);
+		assertThat(personRepository.findPeopleByNicknameStartsWith("eisen")).containsOnly(walter);
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> personRepository.findPeopleByNicknameStartsWith("%eisen"));
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> personRepository.findPeopleByNicknameStartsWith("\u0025"));
 	}
 
 	@Test // GH-54
@@ -331,7 +339,33 @@ class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedCassandr
 		skyler.setNickname("Heisenberg-not");
 		personRepository.save(skyler);
 
-		assertThat(personRepository.findPeopleByNicknameEndsWith("berg%")).containsOnly(walter);
+		assertThat(personRepository.findPeopleByNicknameEndsWith("berg")).containsOnly(walter);
+		assertThatIllegalArgumentException().isThrownBy(() -> personRepository.findPeopleByNicknameEndsWith("berg%"));
+	}
+
+	@ParameterizedTest(name = "{0}") // GH-54
+	@MethodSource("invisibleCharacters")
+	void startWithEndWithMatchingWorksWithinBoundaryWhenTruingToSneakInChars(String name, String padding)
+		throws InterruptedException {
+
+		assumeTrue(cassandraVersion.isGreaterThanOrEqualTo(Version.parse("3.4")));
+
+		CreateIndexSpecification indexSpecification = CreateIndexSpecification.createIndex("fn_contains").ifNotExists()
+			.tableName("person").columnName("nickname").using("org.apache.cassandra.index.sasi.SASIIndex")
+			.withOption("mode", "CONTAINS");
+
+		template.getCqlOperations().execute(CqlGenerator.toCql(indexSpecification));
+
+		// Give Cassandra some time to build the index
+		Thread.sleep(500);
+
+		walter.setNickname("XeisenbergX");
+		personRepository.save(walter);
+
+		assertThat(personRepository.findByNicknameContains("eisenberg")).isEqualTo(walter);
+
+		assertThat(personRepository.findPeopleByNicknameStartsWith(padding + "%eisen")).isEmpty();
+		assertThat(personRepository.findPeopleByNicknameEndsWith("berg%" + padding)).isEmpty();
 	}
 
 	@Test // DATACASS-7
@@ -489,6 +523,23 @@ class QueryDerivationIntegrationTests extends AbstractSpringDataEmbeddedCassandr
 		personWithEmbeddedRepository.save(source);
 
 		assertThat(personWithEmbeddedRepository.findByName_Firstname("spring")).isEqualTo(source);
+	}
+
+	static Stream<Arguments> invisibleCharacters() {
+
+		return Stream.of( //
+			Arguments.of("SPACE", " "), //
+			Arguments.of("TAB", "\t"), //
+			Arguments.of("LINE FEED", "\n"), //
+			Arguments.of("NO-BREAK SPACE", "\u00A0"), //
+			Arguments.of("IDEOGRAPHIC SPACE", "\u3000"), //
+			Arguments.of("ZERO WIDTH SPACE", "\u200B"), //
+			Arguments.of("ZERO WIDTH NON-JOINER", "\u200C"), //
+			Arguments.of("LEFT-TO-RIGHT MARK", "\u200E"), //
+			Arguments.of("FULLWIDTH PERCENT SIGN", "\uFF05"),
+			Arguments.of("SMALL PERCENT SIGN", "\uFE6A"),
+			Arguments.of("ARABIC PERCENT SIGN", "\u066A")
+		);
 	}
 
 	/**

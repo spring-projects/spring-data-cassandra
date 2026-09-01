@@ -28,6 +28,8 @@ import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.cassandra.core.StatementFactory;
@@ -54,6 +56,7 @@ import com.datastax.oss.driver.api.core.type.codec.registry.CodecRegistry;
  * Unit tests for {@link CassandraQueryCreator}.
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  */
 class CassandraQueryCreatorUnitTests {
 
@@ -188,30 +191,36 @@ class CassandraQueryCreatorUnitTests {
 				.isEqualTo("SELECT * FROM person WHERE firstname LIKE 'Walter'");
 	}
 
-	@Test // DATACASS-7, GH-54
-	void createsStartsWithQueryCorrectly() {
+	@ParameterizedTest // DATACASS-7, GH-54
+	@ValueSource(strings = {"Walter", "Wal%ter", "Walter%"})
+	void createsStartsWithQueryCorrectly(String value) {
 
-		assertThat(createQuery("findByFirstnameStartsWith", Person.class, "Walter"))
-				.isEqualTo("SELECT * FROM person WHERE firstname LIKE 'Walter%'");
-		assertThat(createQuery("findByFirstnameStartsWith", Person.class, "%%%Walter"))
-				.isEqualTo("SELECT * FROM person WHERE firstname LIKE 'Walter%'");
-		assertThat(createQuery("findByFirstnameStartsWith", Person.class, "Wal%ter"))
-				.isEqualTo("SELECT * FROM person WHERE firstname LIKE 'Wal%ter%'");
-		assertThat(createQuery("findByFirstnameStartsWith", Person.class, "Walter%"))
-				.isEqualTo("SELECT * FROM person WHERE firstname LIKE 'Walter%%'");
+		assertThat(createQuery("findByFirstnameStartsWith", Person.class, value))
+			.isEqualTo("SELECT * FROM person WHERE firstname LIKE '%s%%'".formatted(value));
 	}
 
-	@Test // DATACASS-7, GH-54
-	void createsEndsWithQueryCorrectly() {
+	@Test // GH-54
+	void rejectsStartsWithQueryWithLeadingWildcard() {
 
-		assertThat(createQuery("findByFirstnameEndsWith", Person.class, "Walter"))
-				.isEqualTo("SELECT * FROM person WHERE firstname LIKE '%Walter'");
-		assertThat(createQuery("findByFirstnameEndsWith", Person.class, "Walter%%%"))
-				.isEqualTo("SELECT * FROM person WHERE firstname LIKE '%Walter'");
-		assertThat(createQuery("findByFirstnameEndsWith", Person.class, "Wal%ter"))
-				.isEqualTo("SELECT * FROM person WHERE firstname LIKE '%Wal%ter'");
-		assertThat(createQuery("findByFirstnameEndsWith", Person.class, "%Walter"))
-				.isEqualTo("SELECT * FROM person WHERE firstname LIKE '%%Walter'");
+		assertThatIllegalArgumentException()
+			.isThrownBy(() -> createQuery("findByFirstnameStartsWith", Person.class, "%Walter"))
+			.withMessageContainingAll("must not contain", "wildcard");
+	}
+
+	@ParameterizedTest // DATACASS-7, GH-54
+	@ValueSource(strings = {"Walter", "Wal%ter", "%Walter"})
+	void createsEndsWithQueryCorrectly(String value) {
+
+		assertThat(createQuery("findByFirstnameEndsWith", Person.class, value))
+			.isEqualTo("SELECT * FROM person WHERE firstname LIKE '%%%s'".formatted(value));
+	}
+
+	@Test // GH-54
+	void rejectsEndsWithQueryWithTrailingWildcard() {
+
+		assertThatIllegalArgumentException()
+			.isThrownBy(() -> createQuery("findByFirstnameEndsWith", Person.class, "Walter%"))
+			.withMessageContainingAll("must not contain", "wildcard");
 	}
 
 	@Test // DATACASS-7, GH-54
