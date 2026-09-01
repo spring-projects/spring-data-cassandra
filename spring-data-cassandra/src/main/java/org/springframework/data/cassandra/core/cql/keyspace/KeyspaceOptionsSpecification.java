@@ -91,7 +91,7 @@ public abstract class KeyspaceOptionsSpecification<T extends KeyspaceOptionsSpec
 	@SuppressWarnings("unchecked")
 	public T with(String name, @Nullable Object value, boolean escape, boolean quote) {
 
-		if (!(value instanceof Map)) {
+		if ((escape || quote) && !(value instanceof Map)) {
 			value = CqlStringUtils.toString(value, escape, quote);
 		}
 		options.put(name, value);
