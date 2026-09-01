@@ -54,6 +54,7 @@ import org.springframework.util.Assert;
  * @author Mark Paluch
  * @author John Blum
  * @author Chris Bono
+ * @author Christoph Strobl
  */
 public class CassandraQueryCreator extends AbstractQueryCreator<Query, Filter> {
 
@@ -295,10 +296,14 @@ public class CassandraQueryCreator extends AbstractQueryCreator<Query, Filter> {
 
 	/**
 	 * Create a Cassandra LIKE pattern for the given {@link Type} and value.
+	 * <p>
+	 * Rejects values with leading/trailing {@code %} use alogn {@link Type#STARTING_WITH}/{@link Type#ENDING_WITH}.
 	 *
 	 * @param type the LIKE predicate type.
 	 * @param value the value to create the pattern for.
 	 * @return the LIKE pattern.
+	 * @throws IllegalArgumentException if the value contains a wildcard that conflicts with the anchoring of the
+	 *           {@literal type}.
 	 * @since 5.2
 	 */
 	public static Object createLikePattern(Type type, Object value) {
@@ -306,34 +311,22 @@ public class CassandraQueryCreator extends AbstractQueryCreator<Query, Filter> {
 		return switch (type) {
 			case LIKE -> value;
 			case CONTAINING -> "%" + value + "%";
-			case STARTING_WITH -> stripLeadingWildcards(String.valueOf(value)) + "%";
-			case ENDING_WITH -> "%" + stripTrailingWildcards(String.valueOf(value));
+			case STARTING_WITH -> {
+
+				String pattern = String.valueOf(value);
+				validatePattern(type, pattern);
+				yield pattern + "%";
+			}
+			case ENDING_WITH -> {
+
+				String pattern = String.valueOf(value);
+				validatePattern(type, pattern);
+				yield "%" + pattern;
+			}
 			default ->
 				throw new IllegalArgumentException(String.format("Part Type [%s] not supported with like queries", type));
 		};
 
-	}
-
-	private static String stripLeadingWildcards(String value) {
-
-		int index = 0;
-
-		while (index < value.length() && value.charAt(index) == '%') {
-			index++;
-		}
-
-		return value.substring(index);
-	}
-
-	private static String stripTrailingWildcards(String value) {
-
-		int index = value.length();
-
-		while (index > 0 && value.charAt(index - 1) == '%') {
-			index--;
-		}
-
-		return value.substring(0, index);
 	}
 
 	private Object[] nextAsArray(Iterator<Object> iterator) {
@@ -369,6 +362,13 @@ public class CassandraQueryCreator extends AbstractQueryCreator<Query, Filter> {
 			Query query = Query.query(criterias);
 
 			return query.sort(sort);
+		}
+	}
+
+	private static void validatePattern(Type type, String pattern) {
+
+		if ((type.equals(Type.ENDING_WITH) && pattern.endsWith("%")) || ((type.equals(Type.STARTING_WITH) && pattern.startsWith("%")))) {
+			throw new IllegalArgumentException("Value must not contain a '%' wildcard.");
 		}
 	}
 }

@@ -159,6 +159,12 @@ lower / upper bounds (`>` / `>=` & `<` / `<=`) according to `Range`
 
 |===
 
+[NOTE]
+====
+`StartingWith` and `EndingWith` parameter values must not contain leading/trailing wildcards. Those are rejected with an `IllegalArgumentException`.
+Use the xref:cassandra/template.adoc#cassandra.template.query[template API] if you need more control over the query.
+====
+
 [[cassandra.repositories.queries.delete]]
 == Repository Delete Queries
 
