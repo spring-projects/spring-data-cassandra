@@ -244,10 +244,17 @@ class CassandraRepositoryContributorIntegrationTests extends AbstractSpringDataE
 	}
 
 	@Test // GH-54
-	void shouldRetainAnchoredLikeSemantics() {
+	void shouldApplyAnchoredLikeSemantics() {
 
-		assertThat(fragment.findByFirstnameStartsWith("%Walt")).isEqualTo(walter);
-		assertThat(fragment.findByFirstnameEndsWith("ter%")).isEqualTo(walter);
+		assertThat(fragment.findByFirstnameStartsWith("Walt")).isEqualTo(walter);
+		assertThat(fragment.findByFirstnameEndsWith("ter")).isEqualTo(walter);
+	}
+
+	@Test // GH-54
+	void shouldRejectUnanchoredLikeInput() {
+
+		assertThatIllegalArgumentException().isThrownBy(() -> fragment.findByFirstnameStartsWith("%Walt"));
+		assertThatIllegalArgumentException().isThrownBy(() -> fragment.findByFirstnameEndsWith("ter%"));
 	}
 
 	@Test // GH-54
