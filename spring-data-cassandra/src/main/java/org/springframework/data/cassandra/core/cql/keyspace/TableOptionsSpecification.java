@@ -123,7 +123,7 @@ public abstract class TableOptionsSpecification<T extends TableOptionsSpecificat
 	@SuppressWarnings("unchecked")
 	private T addOption(String name, @Nullable Object value, boolean escape, boolean quote) {
 
-		if (!(value instanceof Map)) {
+		if ((escape || quote) && !(value instanceof Map)) {
 			value = CqlStringUtils.toString(value, escape, quote);
 		}
 
