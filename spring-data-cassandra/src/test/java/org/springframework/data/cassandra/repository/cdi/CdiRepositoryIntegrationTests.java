@@ -34,7 +34,7 @@ import org.springframework.data.cassandra.test.util.IntegrationTestsSupport;
  * @author Mohsin Husen
  * @author Mark Paluch
  */
-class CdiRepositoryTests extends IntegrationTestsSupport {
+class CdiRepositoryIntegrationTests extends IntegrationTestsSupport {
 
 	private static SeContainer cdiContainer;
 

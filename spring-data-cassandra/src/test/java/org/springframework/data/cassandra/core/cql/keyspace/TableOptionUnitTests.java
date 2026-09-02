@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Seungho Kang
  */
-class TableOptionTest {
+class TableOptionUnitTests {
 
 	@Test // GH-1584
 	void shouldResolveTableOptionUsingValueOfIgnoreCase() {
