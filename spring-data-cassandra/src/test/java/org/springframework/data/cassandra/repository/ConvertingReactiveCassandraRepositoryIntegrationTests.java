@@ -49,8 +49,8 @@ import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
  * @author Mark Paluch
  * @author Christoph Strobl
  */
-@SpringJUnitConfig(classes = ConvertingReactiveCassandraRepositoryTests.Config.class)
-class ConvertingReactiveCassandraRepositoryTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
+@SpringJUnitConfig(classes = ConvertingReactiveCassandraRepositoryIntegrationTests.Config.class)
+class ConvertingReactiveCassandraRepositoryIntegrationTests extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
 
 	@EnableReactiveCassandraRepositories(includeFilters = @Filter(value = Repository.class),
 			considerNestedRepositories = true)
@@ -197,18 +197,23 @@ class ConvertingReactiveCassandraRepositoryTests extends AbstractSpringDataEmbed
 	@Repository
 	interface UserRepostitory extends ReactiveCrudRepository<User, String> {
 
+		@AllowFiltering
 		Publisher<User> findByLastname(String lastname);
 
+		@AllowFiltering
 		Flux<UserDto> findProjectedByLastname(String lastname);
 	}
 
 	@Repository
 	interface RxJava3UserRepository extends org.springframework.data.repository.Repository<User, String> {
 
+		@AllowFiltering
 		io.reactivex.rxjava3.core.Observable<User> findManyByLastname(String lastname);
 
+		@AllowFiltering
 		io.reactivex.rxjava3.core.Single<User> findByLastname(String lastname);
 
+		@AllowFiltering
 		io.reactivex.rxjava3.core.Single<ProjectedUser> findProjectedByLastname(String lastname);
 
 		io.reactivex.rxjava3.core.Single<Boolean> existsById(String id);
@@ -219,8 +224,10 @@ class ConvertingReactiveCassandraRepositoryTests extends AbstractSpringDataEmbed
 	@Repository
 	interface MixedUserRepository extends ReactiveCassandraRepository<User, String> {
 
+		@AllowFiltering
 		Single<User> findByLastname(String lastname);
 
+		@AllowFiltering
 		Mono<User> findByLastname(Single<String> lastname);
 	}
 

@@ -26,7 +26,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  *
  * @author Seungho Kang
  */
-class CreateTableSpecificationTest {
+class CreateTableSpecificationUnitTests {
 
 	@Test // GH-1584
 	void shouldSupportStandardTableOptions() {

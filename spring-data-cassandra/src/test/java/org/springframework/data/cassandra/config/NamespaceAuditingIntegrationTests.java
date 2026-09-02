@@ -28,7 +28,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
  */
 @SpringJUnitConfig
 @ExtendWith(CassandraExtension.class)
-class NamespaceAuditingTests extends AbstractAuditingTests {
+class NamespaceAuditingIntegrationTests extends AbstractAuditingTests {
 
 	@Autowired ApplicationContext context;
 
