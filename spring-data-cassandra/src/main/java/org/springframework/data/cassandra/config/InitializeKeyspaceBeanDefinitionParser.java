@@ -41,6 +41,7 @@ import org.w3c.dom.Element;
  * elements and configures a {@link ResourceKeyspacePopulator} for them.
  *
  * @author Mark Paluch
+ * @author Christoph Strobl
  * @since 3.0
  */
 class InitializeKeyspaceBeanDefinitionParser extends AbstractBeanDefinitionParser {
@@ -51,7 +52,9 @@ class InitializeKeyspaceBeanDefinitionParser extends AbstractBeanDefinitionParse
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(SessionFactoryInitializer.class);
 
 		if (element.hasAttribute("session-factory-ref")) {
-			addRequiredPropertyReference(builder, "session", element, "session-factory-ref");
+			addRequiredPropertyReference(builder, "sessionFactory", element, "session-factory-ref");
+		} else {
+			addRequiredPropertyReference(builder, "sessionFactory", DefaultBeanNames.SESSION_FACTORY);
 		}
 
 		builder.addPropertyValue("enabled", element.getAttribute("enabled"));

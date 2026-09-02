@@ -29,7 +29,7 @@ import com.datastax.oss.driver.api.core.data.UdtValue;
  *
  * @author Mark Paluch
  */
-class CassandraManagedTypesBeanRegistrationAotProcessorTests {
+class CassandraManagedTypesBeanRegistrationAotProcessorUnitTests {
 
 	@Test // GH-1606
 	void shouldFilterUnreachableFieldTypes() {

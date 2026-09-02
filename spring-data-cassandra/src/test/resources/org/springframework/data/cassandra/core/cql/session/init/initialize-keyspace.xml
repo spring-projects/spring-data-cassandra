@@ -5,9 +5,9 @@
 	   xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/data/cassandra https://www.springframework.org/schema/data/cassandra/spring-cassandra.xsd">
 
 	<bean id="sessionFactory"
-		  class="org.springframework.data.cassandra.core.cql.session.init.SessionFactoryInitializerTests.MockSessionFactoryFactoryBean"/>
+		  class="org.springframework.data.cassandra.core.cql.session.init.SessionFactoryInitializerUnitTests.MockSessionFactoryFactoryBean"/>
 
-	<cassandra:initialize-keyspace>
+	<cassandra:initialize-keyspace session-factory-ref="sessionFactory">
 		<cassandra:script location="org/springframework/data/cassandra/core/cql/session/init/schema.cql"/>
 	</cassandra:initialize-keyspace>
 

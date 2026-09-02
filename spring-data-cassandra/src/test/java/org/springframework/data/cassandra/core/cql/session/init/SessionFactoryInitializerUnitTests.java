@@ -31,7 +31,7 @@ import com.datastax.oss.driver.api.core.cql.ResultSet;
  *
  * @author Mark Paluch
  */
-public class SessionFactoryInitializerTests {
+public class SessionFactoryInitializerUnitTests {
 
 	@Test // DATACASS-704
 	void shouldInitializeKeyspace() {

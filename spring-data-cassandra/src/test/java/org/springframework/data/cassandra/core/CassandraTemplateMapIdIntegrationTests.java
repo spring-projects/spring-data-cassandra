@@ -33,7 +33,7 @@ import org.springframework.data.cassandra.test.util.AbstractKeyspaceCreatingInte
  *
  * @author Matthew T. Adams
  */
-class CassandraTemplateMapIdIntegrationTest extends AbstractKeyspaceCreatingIntegrationTests {
+class CassandraTemplateMapIdIntegrationTests extends AbstractKeyspaceCreatingIntegrationTests {
 
 	private CassandraOperations operations;
 

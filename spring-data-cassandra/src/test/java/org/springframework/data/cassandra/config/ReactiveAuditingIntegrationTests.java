@@ -38,7 +38,7 @@ import org.springframework.data.cassandra.core.mapping.Table;
 import org.springframework.data.cassandra.core.mapping.event.ReactiveBeforeConvertCallback;
 import org.springframework.data.domain.ReactiveAuditorAware;
 import org.springframework.data.mapping.callback.ReactiveEntityCallbacks;
-import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 
@@ -47,8 +47,8 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  *
  * @author Mark Paluch
  */
-@ContextConfiguration
-class ReactiveAuditingTests {
+@SpringJUnitConfig
+class ReactiveAuditingIntegrationTests {
 
 	@Autowired ApplicationContext context;
 
@@ -57,7 +57,7 @@ class ReactiveAuditingTests {
 	static class TestConfig {
 
 		@Bean
-		public CassandraMappingContext mappingContext() {
+		public CassandraMappingContext cassandraMappingContext() {
 			return new CassandraMappingContext();
 		}
 

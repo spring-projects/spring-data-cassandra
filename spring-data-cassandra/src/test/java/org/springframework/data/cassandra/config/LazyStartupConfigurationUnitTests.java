@@ -43,7 +43,7 @@ import com.datastax.oss.driver.api.core.CqlSession;
  *
  * @author Christoph Strobl
  */
-class LazyStartupConfigurationTest {
+class LazyStartupConfigurationUnitTests {
 
 	@Test // GH-380
 	void shouldDelayCqlSessionBeanInitializationTillFirstUsage() {
