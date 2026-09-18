@@ -16,9 +16,9 @@
 package org.springframework.data.cassandra.aot;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.aot.generate.ClassNameGenerator;
 import org.springframework.aot.generate.DefaultGenerationContext;
 import org.springframework.aot.generate.InMemoryGeneratedFiles;
+import org.springframework.aot.generate.NameGenerator;
 import org.springframework.data.cassandra.core.mapping.event.BeforeConvertCallback;
 import org.springframework.data.cassandra.core.mapping.event.BeforeSaveCallback;
 import org.springframework.data.cassandra.core.mapping.event.ReactiveBeforeConvertCallback;
@@ -39,7 +39,7 @@ class CassandraRuntimeHintsUnitTests {
 
 		CassandraRuntimeHints registrar = new CassandraRuntimeHints();
 
-		DefaultGenerationContext context = new DefaultGenerationContext(new ClassNameGenerator(ClassName.get(Object.class)),
+		DefaultGenerationContext context = new DefaultGenerationContext(new NameGenerator(ClassName.get(Object.class)),
 				new InMemoryGeneratedFiles());
 		registrar.registerHints(context.getRuntimeHints(), null);
 
