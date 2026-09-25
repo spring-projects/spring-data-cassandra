@@ -37,7 +37,7 @@ public interface ReactiveStatementCallback<T> {
 
 	/**
 	 * Gets called by {@link ReactiveCqlTemplate#execute(String)} with an active Cassandra session. Does not need to care
-	 * about closing the the session: this will all be handled by Spring's {@link ReactiveCqlTemplate}.
+	 * about closing the session: this will all be handled by Spring's {@link ReactiveCqlTemplate}.
 	 * <p>
 	 * Allows for returning a result object created within the callback, i.e. a domain object or a collection of domain
 	 * objects. Note that there's special support for single step actions: see
