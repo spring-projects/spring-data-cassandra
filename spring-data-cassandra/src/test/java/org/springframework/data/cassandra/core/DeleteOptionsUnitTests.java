@@ -21,6 +21,8 @@ import java.time.Duration;
 import java.time.Instant;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.data.cassandra.core.query.Criteria;
+import org.springframework.data.cassandra.core.query.Filter;
 import org.springframework.data.cassandra.core.query.Query;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -84,4 +86,21 @@ class DeleteOptionsUnitTests {
 		assertThat(deleteOptions.isIfExists()).isFalse();
 		assertThat(deleteOptions.getIfCondition()).isEqualTo(Query.empty());
 	}
+
+	@Test // GH-1679
+	void mutateShouldRetainIfCondition() {
+
+		Filter condition = Filter.from(Criteria.where("version").is(1));
+
+		DeleteOptions deleteOptions = DeleteOptions.builder() //
+				.ifCondition(condition) //
+				.build();
+
+		DeleteOptions mutated = deleteOptions.mutate().ttl(20).build();
+
+		assertThat(mutated.isIfExists()).isFalse();
+		assertThat(mutated.getIfCondition()).isEqualTo(condition);
+		assertThat(mutated.getTtl()).isEqualTo(Duration.ofSeconds(20));
+	}
+
 }
