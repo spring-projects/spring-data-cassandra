@@ -37,6 +37,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * @author Mark Paluch
  * @author Tomasz Lelek
  * @author Sam Lightfoot
+ * @author chuuminggg
  * @since 2.2
  */
 public class DeleteOptions extends WriteOptions {
@@ -153,6 +154,7 @@ public class DeleteOptions extends WriteOptions {
 			super(deleteOptions);
 
 			this.ifExists = deleteOptions.ifExists;
+			this.ifCondition = deleteOptions.ifCondition;
 		}
 
 		@Override
