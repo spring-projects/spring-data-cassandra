@@ -39,6 +39,7 @@ import com.datastax.oss.driver.api.core.cql.SimpleStatement;
  * @author Mark Paluch
  * @author Tomasz Lelek
  * @author Sam Lightfoot
+ * @author chuuminggg
  */
 @ExtendWith(MockitoExtension.class)
 class QueryOptionsUtilUnitTests {
@@ -104,6 +105,31 @@ class QueryOptionsUtilUnitTests {
 		verify(simpleStatement).setIdempotent(true);
 		verify(simpleStatement).setRoutingKeyspace(CqlIdentifier.fromCql("routing_ks"));
 		verify(simpleStatement).setRoutingKey(ByteBuffer.allocate(1));
+	}
+
+	@Test // GH-1677
+	void addStatementQueryOptionsShouldRetainOptionsWhenApplyingRoutingKey() {
+
+		QueryOptions queryOptions = QueryOptions.builder() //
+				.consistencyLevel(DefaultConsistencyLevel.QUORUM) //
+				.executionProfile("foo") //
+				.idempotent(true) //
+				.pageSize(10) //
+				.routingKeyspace(CqlIdentifier.fromCql("routing_ks")) //
+				.routingKey(ByteBuffer.allocate(1)) //
+				.serialConsistencyLevel(DefaultConsistencyLevel.LOCAL_SERIAL) //
+				.build();
+
+		SimpleStatement statement = QueryOptionsUtil.addQueryOptions(SimpleStatement.newInstance("SELECT * FROM person"),
+				queryOptions);
+
+		assertThat(statement.getConsistencyLevel()).isEqualTo(DefaultConsistencyLevel.QUORUM);
+		assertThat(statement.getExecutionProfileName()).isEqualTo("foo");
+		assertThat(statement.isIdempotent()).isTrue();
+		assertThat(statement.getPageSize()).isEqualTo(10);
+		assertThat(statement.getRoutingKeyspace()).isEqualTo(CqlIdentifier.fromCql("routing_ks"));
+		assertThat(statement.getRoutingKey()).isEqualTo(ByteBuffer.allocate(1));
+		assertThat(statement.getSerialConsistencyLevel()).isEqualTo(DefaultConsistencyLevel.LOCAL_SERIAL);
 	}
 
 	@Test // DATACASS-767
