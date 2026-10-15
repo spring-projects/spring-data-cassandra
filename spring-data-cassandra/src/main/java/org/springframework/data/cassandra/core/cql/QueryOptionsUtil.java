@@ -41,6 +41,7 @@ import com.datastax.oss.driver.api.querybuilder.update.UpdateStart;
  * @author Lukasz Antoniak
  * @author Tomasz Lelek
  * @author Sam Lightfoot
+ * @author chuuminggg
  * @since 2.0
  */
 public abstract class QueryOptionsUtil {
@@ -77,7 +78,7 @@ public abstract class QueryOptionsUtil {
 		}
 
 		if (queryOptions.getRoutingKey() != null) {
-			statementToUse = statement.setRoutingKey(queryOptions.getRoutingKey());
+			statementToUse = statementToUse.setRoutingKey(queryOptions.getRoutingKey());
 		}
 
 		if (queryOptions.getSerialConsistencyLevel() != null) {
