@@ -22,16 +22,19 @@ import java.nio.ByteBuffer;
 
 import org.junit.jupiter.api.Test;
 
+import org.springframework.data.cassandra.core.cql.QueryOptions;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 
+import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
 import com.datastax.oss.driver.api.core.cql.PagingState;
 
 /**
  * Unit tests for {@link Query}.
  *
  * @author Mark Paluch
+ * @author chuuminggg
  */
 class QueryUnitTests {
 
@@ -87,6 +90,19 @@ class QueryUnitTests {
 		assertThat(query.getPagingState()).contains(pagingState);
 		assertThat(query.getQueryOptions())
 				.hasValueSatisfying(actual -> assertThat(actual).extracting("pageSize").isEqualTo(42));
+	}
+
+	@Test // GH-1681
+	void pageRequestShouldApplyPageSizeToExistingQueryOptions() {
+
+		QueryOptions queryOptions = QueryOptions.builder().consistencyLevel(DefaultConsistencyLevel.QUORUM).build();
+
+		Query query = Query.empty().queryOptions(queryOptions).pageRequest(PageRequest.of(0, 42));
+
+		assertThat(query.getQueryOptions()).hasValueSatisfying(actual -> {
+			assertThat(actual).extracting("pageSize").isEqualTo(42);
+			assertThat(actual).extracting("consistencyLevel").isEqualTo(DefaultConsistencyLevel.QUORUM);
+		});
 	}
 
 	@Test // GH-1585
