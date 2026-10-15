@@ -153,6 +153,7 @@ public class DeleteOptions extends WriteOptions {
 			super(deleteOptions);
 
 			this.ifExists = deleteOptions.ifExists;
+			this.ifCondition = deleteOptions.ifCondition;
 		}
 
 		@Override
