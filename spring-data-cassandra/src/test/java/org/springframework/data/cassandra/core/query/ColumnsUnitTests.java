@@ -25,6 +25,7 @@ import com.datastax.oss.driver.api.core.CqlIdentifier;
  * Unit tests for {@link Columns}.
  *
  * @author Mark Paluch
+ * @author Minju Kim
  */
 class ColumnsUnitTests {
 
@@ -75,5 +76,19 @@ class ColumnsUnitTests {
 
 		assertThat(columns.hashCode()).isEqualTo(other.hashCode());
 		assertThat(columns.hashCode()).isNotEqualTo(withTtl.hashCode());
+	}
+
+	@Test // GH-1683
+	void selectShouldNotMutateOriginalColumns() {
+
+		Columns columns = Columns.from("name");
+
+		Columns withTtl = columns.ttl("name");
+		Columns combined = columns.and(Columns.empty().ttl("name"));
+
+		assertThat(columns.getSelector(ColumnName.from("name"))).hasSize(1);
+		assertThat(columns).isEqualTo(Columns.from("name"));
+		assertThat(withTtl.getSelector(ColumnName.from("name"))).hasSize(2);
+		assertThat(combined.getSelector(ColumnName.from("name"))).hasSize(2);
 	}
 }
