@@ -34,7 +34,6 @@ import com.datastax.oss.driver.api.core.cql.PagingState;
  * Unit tests for {@link Query}.
  *
  * @author Mark Paluch
- * @author chuuminggg
  */
 class QueryUnitTests {
 
@@ -76,7 +75,7 @@ class QueryUnitTests {
 		assertThat(query.isAllowFiltering()).isTrue();
 	}
 
-	@Test // DATACASS-56
+	@Test // DATACASS-56, GH-1681
 	void shouldApplyPageRequests() {
 
 		ByteBuffer pagingState = ByteBuffer.allocate(0);
@@ -90,14 +89,9 @@ class QueryUnitTests {
 		assertThat(query.getPagingState()).contains(pagingState);
 		assertThat(query.getQueryOptions())
 				.hasValueSatisfying(actual -> assertThat(actual).extracting("pageSize").isEqualTo(42));
-	}
-
-	@Test // GH-1681
-	void pageRequestShouldApplyPageSizeToExistingQueryOptions() {
 
 		QueryOptions queryOptions = QueryOptions.builder().consistencyLevel(DefaultConsistencyLevel.QUORUM).build();
-
-		Query query = Query.empty().queryOptions(queryOptions).pageRequest(PageRequest.of(0, 42));
+		query = Query.empty().queryOptions(queryOptions).pageRequest(PageRequest.of(0, 42));
 
 		assertThat(query.getQueryOptions()).hasValueSatisfying(actual -> {
 			assertThat(actual).extracting("pageSize").isEqualTo(42);

@@ -45,7 +45,6 @@ import com.datastax.oss.driver.api.core.cql.PagingState;
  * and {@link QueryOptions} for a CQL query. {@link Query} is created with a fluent API creating immutable objects.
  *
  * @author Mark Paluch
- * @author chuuminggg
  * @see org.springframework.data.cassandra.core.query.Filter
  * @see org.springframework.data.domain.Sort
  * @since 2.0
@@ -215,8 +214,8 @@ public class Query implements Filter {
 			sortToUse = this.sort.and(sort);
 		}
 
-		return new Query(this.criteriaDefinitions, this.columns, sortToUse, this.scrollPosition,
-				this.queryOptions, this.limit, this.allowFiltering);
+		return new Query(this.criteriaDefinitions, this.columns, sortToUse, this.scrollPosition, this.queryOptions,
+				this.limit, this.allowFiltering);
 	}
 
 	/**
@@ -252,11 +251,20 @@ public class Query implements Filter {
 			scrollPosition = cpr.getScrollPosition();
 		}
 
-		QueryOptions queryOptions = this.queryOptions.map(QueryOptions::mutate).orElseGet(QueryOptions::builder)
-				.pageSize(pageable.getPageSize()).build();
+		Optional<QueryOptions> queryOptions;
+
+		if (pageable.isPaged()) {
+			queryOptions = Optional.of(this.queryOptions //
+					.map(QueryOptions::mutate) //
+					.orElseGet(QueryOptions::builder) //
+					.pageSize(pageable.getPageSize()) //
+					.build());
+		} else {
+			queryOptions = this.queryOptions;
+		}
 
 		return new Query(this.criteriaDefinitions, this.columns, this.sort.and(pageable.getSort()), scrollPosition,
-				Optional.of(queryOptions), this.limit, this.allowFiltering);
+				queryOptions, this.limit, this.allowFiltering);
 	}
 
 	/**
