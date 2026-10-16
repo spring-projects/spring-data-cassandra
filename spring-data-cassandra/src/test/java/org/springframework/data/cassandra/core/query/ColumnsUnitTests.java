@@ -81,14 +81,14 @@ class ColumnsUnitTests {
 	@Test // GH-1683
 	void selectShouldNotMutateOriginalColumns() {
 
-		Columns columns = Columns.from("foo");
+		Columns columns = Columns.from("name");
 
-		Columns withTtl = columns.ttl("foo");
-		Columns combined = columns.and(Columns.empty().ttl("foo"));
+		Columns withTtl = columns.ttl("name");
+		Columns combined = columns.and(Columns.empty().ttl("name"));
 
-		assertThat(columns.getSelector(ColumnName.from("foo"))).hasSize(1);
-		assertThat(columns).isEqualTo(Columns.from("foo"));
-		assertThat(withTtl.getSelector(ColumnName.from("foo"))).hasSize(2);
-		assertThat(combined.getSelector(ColumnName.from("foo"))).hasSize(2);
+		assertThat(columns.getSelector(ColumnName.from("name"))).hasSize(1);
+		assertThat(columns).isEqualTo(Columns.from("name"));
+		assertThat(withTtl.getSelector(ColumnName.from("name"))).hasSize(2);
+		assertThat(combined.getSelector(ColumnName.from("name"))).hasSize(2);
 	}
 }
