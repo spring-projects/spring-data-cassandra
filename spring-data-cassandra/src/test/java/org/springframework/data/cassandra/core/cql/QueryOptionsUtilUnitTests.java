@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.nio.ByteBuffer;
-import java.time.Duration;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,7 +27,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
-import com.datastax.oss.driver.api.core.cql.BatchStatement;
 import com.datastax.oss.driver.api.core.cql.BoundStatement;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 
@@ -39,34 +37,12 @@ import com.datastax.oss.driver.api.core.cql.SimpleStatement;
  * @author Mark Paluch
  * @author Tomasz Lelek
  * @author Sam Lightfoot
- * @author chuuminggg
  */
 @ExtendWith(MockitoExtension.class)
 class QueryOptionsUtilUnitTests {
 
 	@Mock SimpleStatement simpleStatement;
-	@Mock BatchStatement batchStatement;
 	@Mock BoundStatement boundStatement;
-
-	@Test // DATACASS-202, DATACASS-708
-	void addPreparedStatementOptionsShouldAddDriverQueryOptions() {
-
-		when(simpleStatement.setConsistencyLevel(any())).thenReturn(simpleStatement);
-		when(simpleStatement.setSerialConsistencyLevel(any())).thenReturn(simpleStatement);
-		when(simpleStatement.setExecutionProfileName(anyString())).thenReturn(simpleStatement);
-
-		QueryOptions queryOptions = QueryOptions.builder() //
-				.consistencyLevel(DefaultConsistencyLevel.EACH_QUORUM) //
-				.serialConsistencyLevel(DefaultConsistencyLevel.LOCAL_ONE) //
-				.executionProfile("foo") //
-				.build();
-
-		QueryOptionsUtil.addQueryOptions(simpleStatement, queryOptions);
-
-		verify(simpleStatement).setConsistencyLevel(DefaultConsistencyLevel.EACH_QUORUM);
-		verify(simpleStatement).setSerialConsistencyLevel(DefaultConsistencyLevel.LOCAL_ONE);
-		verify(simpleStatement).setExecutionProfileName("foo");
-	}
 
 	@Test // DATACASS-202
 	void addStatementQueryOptionsShouldNotAddOptions() {
@@ -81,40 +57,12 @@ class QueryOptionsUtilUnitTests {
 	@Test // DATACASS-202, GH-1220
 	void addStatementQueryOptionsShouldAddGenericQueryOptions() {
 
-		when(simpleStatement.setPageSize(anyInt())).thenReturn(simpleStatement);
-		when(simpleStatement.setTimeout(any())).thenReturn(simpleStatement);
-		when(simpleStatement.setTracing(anyBoolean())).thenReturn(simpleStatement);
-		when(simpleStatement.setIdempotent(anyBoolean())).thenReturn(simpleStatement);
-		when(simpleStatement.setRoutingKeyspace(any(CqlIdentifier.class))).thenReturn(simpleStatement);
-		when(simpleStatement.setRoutingKey(any(ByteBuffer.class))).thenReturn(simpleStatement);
-
-		QueryOptions queryOptions = QueryOptions.builder() //
-				.pageSize(10) //
-				.timeout(Duration.ofMinutes(1)) //
-				.withTracing() //
-				.idempotent(true) //
-				.routingKeyspace(CqlIdentifier.fromCql("routing_ks")) //
-				.routingKey(ByteBuffer.allocate(1)) //
-				.build();
-
-		QueryOptionsUtil.addQueryOptions(simpleStatement, queryOptions);
-
-		verify(simpleStatement).setTimeout(Duration.ofMinutes(1));
-		verify(simpleStatement).setPageSize(10);
-		verify(simpleStatement).setTracing(true);
-		verify(simpleStatement).setIdempotent(true);
-		verify(simpleStatement).setRoutingKeyspace(CqlIdentifier.fromCql("routing_ks"));
-		verify(simpleStatement).setRoutingKey(ByteBuffer.allocate(1));
-	}
-
-	@Test // GH-1677
-	void addStatementQueryOptionsShouldRetainOptionsWhenApplyingRoutingKey() {
-
 		QueryOptions queryOptions = QueryOptions.builder() //
 				.consistencyLevel(DefaultConsistencyLevel.QUORUM) //
 				.executionProfile("foo") //
 				.idempotent(true) //
 				.pageSize(10) //
+				.keyspace(CqlIdentifier.fromCql("ks1")) //
 				.routingKeyspace(CqlIdentifier.fromCql("routing_ks")) //
 				.routingKey(ByteBuffer.allocate(1)) //
 				.serialConsistencyLevel(DefaultConsistencyLevel.LOCAL_SERIAL) //
@@ -127,35 +75,10 @@ class QueryOptionsUtilUnitTests {
 		assertThat(statement.getExecutionProfileName()).isEqualTo("foo");
 		assertThat(statement.isIdempotent()).isTrue();
 		assertThat(statement.getPageSize()).isEqualTo(10);
+		assertThat(statement.getKeyspace()).isEqualTo(CqlIdentifier.fromCql("ks1"));
 		assertThat(statement.getRoutingKeyspace()).isEqualTo(CqlIdentifier.fromCql("routing_ks"));
 		assertThat(statement.getRoutingKey()).isEqualTo(ByteBuffer.allocate(1));
 		assertThat(statement.getSerialConsistencyLevel()).isEqualTo(DefaultConsistencyLevel.LOCAL_SERIAL);
-	}
-
-	@Test // DATACASS-767
-	void addKeyspaceOptionsOnSimpleStatementShouldAddDriverQueryOptions() {
-
-		when(simpleStatement.setKeyspace(any(CqlIdentifier.class))).thenReturn(simpleStatement);
-
-		QueryOptions queryOptions = QueryOptions.builder() //
-				.keyspace(CqlIdentifier.fromCql("ks1")).build();
-
-		QueryOptionsUtil.addQueryOptions(simpleStatement, queryOptions);
-
-		verify(simpleStatement).setKeyspace(CqlIdentifier.fromCql("ks1"));
-	}
-
-	@Test // DATACASS-767
-	void addKeyspaceOptionsOnBatchStatementShouldAddDriverQueryOptions() {
-
-		when(batchStatement.setKeyspace(any(CqlIdentifier.class))).thenReturn(batchStatement);
-
-		QueryOptions queryOptions = QueryOptions.builder() //
-				.keyspace(CqlIdentifier.fromCql("ks1")).build();
-
-		QueryOptionsUtil.addQueryOptions(batchStatement, queryOptions);
-
-		verify(batchStatement).setKeyspace(CqlIdentifier.fromCql("ks1"));
 	}
 
 	@Test // DATACASS-767
