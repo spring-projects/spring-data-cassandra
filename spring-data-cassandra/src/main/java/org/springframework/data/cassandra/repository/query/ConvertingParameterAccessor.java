@@ -162,7 +162,8 @@ public class ConvertingParameterAccessor implements CassandraParameterAccessor {
 		CassandraType cassandraType = this.delegate.findCassandraType(index);
 
 		if (cassandraType != null) {
-			this.converter.convertToColumnType(bindableValue, converter.getColumnTypeResolver().resolve(cassandraType));
+			return this.converter.convertToColumnType(bindableValue,
+					converter.getColumnTypeResolver().resolve(cassandraType));
 		}
 
 		return this.converter.convertToColumnType(bindableValue, converter.getColumnTypeResolver().resolve(bindableValue));
