@@ -41,6 +41,7 @@ import com.datastax.oss.driver.api.core.type.DataType;
  *
  * @author Mark Paluch
  * @author Chris Bono
+ * @author Minju Kim
  * @see org.springframework.data.cassandra.repository.query.ConvertingParameterAccessor
  * @since 1.5
  */
@@ -162,7 +163,8 @@ public class ConvertingParameterAccessor implements CassandraParameterAccessor {
 		CassandraType cassandraType = this.delegate.findCassandraType(index);
 
 		if (cassandraType != null) {
-			this.converter.convertToColumnType(bindableValue, converter.getColumnTypeResolver().resolve(cassandraType));
+			return this.converter.convertToColumnType(bindableValue,
+					converter.getColumnTypeResolver().resolve(cassandraType));
 		}
 
 		return this.converter.convertToColumnType(bindableValue, converter.getColumnTypeResolver().resolve(bindableValue));
