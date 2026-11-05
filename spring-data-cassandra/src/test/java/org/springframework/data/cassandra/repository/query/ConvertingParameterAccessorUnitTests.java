@@ -27,6 +27,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.cassandra.core.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.mapping.CassandraPersistentProperty;
+import org.springframework.data.cassandra.core.mapping.CassandraType;
 
 import com.datastax.oss.driver.api.core.type.DataTypes;
 
@@ -34,6 +35,7 @@ import com.datastax.oss.driver.api.core.type.DataTypes;
  * Unit tests for {@link ConvertingParameterAccessor}.
  *
  * @author Mark Paluch
+ * @author Minju Kim
  */
 @SuppressWarnings("Since15")
 @ExtendWith(MockitoExtension.class)
@@ -82,12 +84,29 @@ class ConvertingParameterAccessorUnitTests {
 		assertThat(convertingParameterAccessor.getBindableValue(0)).isEqualTo(LocalDate.of(2010, 7, 4));
 	}
 
+	@Test // GH-1692
+	void shouldConvertBindableValueToAnnotatedCassandraType() throws Exception {
+
+		CassandraType cassandraType = PersonRepository.class.getMethod("findByNickname", int.class).getParameters()[0]
+				.getAnnotation(CassandraType.class);
+
+		when(mockParameterAccessor.getBindableValue(0)).thenReturn(42);
+		when(mockParameterAccessor.findCassandraType(0)).thenReturn(cassandraType);
+
+		assertThat(convertingParameterAccessor.getBindableValue(0)).isEqualTo("42");
+	}
+
 	@Test // DATACASS-296, DATACASS-7
 	void shouldReturnDataTypeProvidedByDelegate() {
 
 		when(mockParameterAccessor.getDataType(0)).thenReturn(DataTypes.TEXT);
 
 		assertThat(convertingParameterAccessor.getDataType(0)).isEqualTo(DataTypes.TEXT);
+	}
+
+	interface PersonRepository {
+
+		void findByNickname(@CassandraType(type = CassandraType.Name.TEXT) int nickname);
 	}
 
 }
