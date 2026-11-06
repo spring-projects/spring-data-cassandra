@@ -1,6 +1,6 @@
 = Spring Data for Apache Cassandra image:https://img.shields.io/badge/Revved%20up%20by-Develocity-06A0CE?logo=Gradle&labelColor=02303A["Revved up by Develocity", link="https://ge.spring.io/scans?search.rootProjectNames=Spring Data for Apache Cassandra"]
 
-The primary goal of the https://projects.spring.io/spring-data[Spring Data] project is to make it easier to build Spring-powered applications that use new data access technologies such as non-relational databases, map-reduce frameworks, and cloud based data services.
+The primary goal of the https://projects.spring.io/spring-data[Spring Data] project is to make it easier to build Spring-powered applications that use new data access technologies such as non-relational databases, map-reduce frameworks, and cloud-based data services.
 
 The Apache Cassandra NoSQL Database offers many new capabilities for teams seeking a solution to handle high velocity, high volume and variable data flows.
 This new way of thinking introduces new concepts and a learning curve that can be intimidating to team members and team managers. Spring Data for Apache Cassandra offers a familiar interface to those who have used other Spring Data modules in the past.
@@ -12,7 +12,7 @@ With the power to stay at a high level with annotated POJOs, or at a low level w
 
 * Build repositories based on common Spring Data interfaces
 * Support for synchronous, reactive, and asynchronous data operations
-* Support for XML based Keyspace creation and CQL Table creation
+* Support for XML-based Keyspace creation and CQL Table creation
 * JavaConfig and XML Support for all Cluster and Session Capabilities
 * Exception Translation to the familiar Spring DataAccessException hierarchy
 * Convenient QueryBuilders to eliminate the need to learn CQL
