@@ -47,6 +47,7 @@ import com.datastax.oss.driver.api.querybuilder.term.Term;
  * included using a {@link Selector}.
  *
  * @author Mark Paluch
+ * @author Minju Kim
  * @see com.datastax.oss.driver.api.core.CqlIdentifier
  * @see org.springframework.data.cassandra.core.query.ColumnName
  * @see Selector
@@ -300,9 +301,18 @@ public class Columns implements Iterable<ColumnName> {
 	private Columns select(ColumnName columnName, Selector selector) {
 
 		Map<ColumnName, List<Selector>> result = new LinkedHashMap<>(this.columns);
-		result.computeIfAbsent(columnName, it -> new ArrayList<>()).add(selector);
+		result.merge(columnName, List.of(selector), Columns::concat);
 
 		return new Columns(result);
+	}
+
+	private static List<Selector> concat(List<Selector> existing, List<Selector> additional) {
+
+		List<Selector> result = new ArrayList<>(existing.size() + additional.size());
+		result.addAll(existing);
+		result.addAll(additional);
+
+		return result;
 	}
 
 	/**
@@ -324,8 +334,7 @@ public class Columns implements Iterable<ColumnName> {
 
 		Map<ColumnName, List<Selector>> result = new LinkedHashMap<>(this.columns);
 
-		columns.columns
-				.forEach((col, selectors) -> result.computeIfAbsent(col, columnName -> new ArrayList<>()).addAll(selectors));
+		columns.columns.forEach((col, selectors) -> result.merge(col, selectors, Columns::concat));
 
 		return new Columns(result);
 	}
