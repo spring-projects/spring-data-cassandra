@@ -146,7 +146,8 @@ _Also see link:CONTRIBUTING.adoc[CONTRIBUTING.adoc] if you wish to submit pull r
 Spring Data for Apache Cassandra was initially created and supported by the following companies and individuals:
 
 * http://www.prowaveconsulting.com[Prowave Consulting] - David Webb
-* http://www.scispike.com[SciSpike] - Matthew Adams
+* https://www.scispike.com[SciSpike] - Sponsoring Organization
+* https://www.matthewadams.me[Matthew Adams]
 * John McPeek
 
 === Building reference documentation
